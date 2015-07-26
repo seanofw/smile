@@ -89,7 +89,7 @@ void StringBuilder_AppendFormatStringv(StringBuilder stringBuilder, const String
 	StringBuilder_AppendFormatInternal(stringBuilder, s->text, s->length, v);
 }
 
-#define BUFFER_LIMIT 100
+#define BUFFER_LIMIT 256
 
 /// <summary>
 /// Perform simplified sprintf-style formatting, appending the result to the given StringBuilder.
@@ -103,13 +103,14 @@ void StringBuilder_AppendFormatStringv(StringBuilder stringBuilder, const String
 /// <li>%u - An unsigned UInt argument, formatted as an unsigned decimal number.</li>
 /// <li>%x - An unsigned UInt argument, formatted as an unsigned hexadecimal number in lowercase.</li>
 /// <li>%X - An unsigned UInt argument, formatted as an unsigned hexadecimal number in uppercase.</li>
+/// <li>%p - A pointer argument.</li>
 /// </ul>
 /// In addition, the %d, %u, %x, and %X format arguments also accept the following modifiers:
 /// <ul>
 /// <li>h - The argument must be Int32 or UInt32, and only 32 bits of integer value will be formatted.</li>
 /// <li>l - The argument must be Int64 or UInt64, and 64 bits of integer value will be formatted.</li>
 /// <li>1-9 - These digits may be used to specify the minimum width of the output; ' ' character will be applied if necessary to pad it.
-///           This width may be at most 100 characters; any larger width will be treated as 100.</li>
+///           This width may be at most 255 characters; any larger width will be treated as 255.</li>
 /// <li>0 - If this is specified with a width, the number will be padded with '0', not with ' ' characters.</li>
 /// </ul>
 /// There is no support for other common format codes, other modifiers (like '+' and '-'), or precision in addition to width.
@@ -126,6 +127,7 @@ void StringBuilder_AppendFormatInternal(StringBuilder stringBuilder, const Byte 
 	Byte padChar;
 	Int width;
 	UInt64 number;
+	Bool negative;
 
 	Byte buffer[BUFFER_LIMIT];
 
@@ -231,10 +233,11 @@ void StringBuilder_AppendFormatInternal(StringBuilder stringBuilder, const Byte 
 					}
 					if (value < 0) {
 						number = (UInt64)-value;
-						StringBuilder_AppendByte(stringBuilder, '-');
+						negative = True;
 					}
 					else {
 						number = (UInt64)value;
+						negative = False;
 					}
 					goto common_number_format;
 				}
@@ -255,6 +258,7 @@ void StringBuilder_AppendFormatInternal(StringBuilder stringBuilder, const Byte 
 							number = va_arg(v, UInt32);
 							break;
 					}
+					negative = False;
 				}
 
 			common_number_format:
@@ -267,13 +271,49 @@ void StringBuilder_AppendFormatInternal(StringBuilder stringBuilder, const Byte 
 					}
 					if (dest == buffer + BUFFER_LIMIT)
 						*--dest = '0';
+					if (width > BUFFER_LIMIT - 1) width = BUFFER_LIMIT - 1;
+					width -= (buffer + BUFFER_LIMIT) - dest;
+					if (negative) {
+						if (padChar != '0')
+							*--dest = '-';
+						width--;
+					}
 					if (width > 0) {
-						if (width > BUFFER_LIMIT) width = BUFFER_LIMIT;
-						width -= (buffer + BUFFER_LIMIT) - dest;
 						while (width--) {
 							*--dest = padChar;
 						}
 					}
+					if (negative && padChar == '0')
+						*--dest = '-';
+					StringBuilder_Append(stringBuilder, dest, 0, (buffer + BUFFER_LIMIT) - dest);
+				}
+				break;
+
+			case 'p':
+			case 'P':
+				{
+					Byte *dest = buffer + BUFFER_LIMIT;
+					Byte letterOffset = (mode == 'P' ? 'A' - 10 : 'a' - 10);
+
+					number = (UInt64)(PtrInt)va_arg(v, void *);
+
+					while (number != 0) {
+						Byte digit = (Byte)(number & 0xFL);
+						number >>= 4;
+						*--dest = digit <= 9 ? digit + '0' : digit + letterOffset;
+					}
+
+					width = sizeof(PtrInt) * 2;
+					width -= (buffer + BUFFER_LIMIT) - dest;
+
+					if (width > 0) {
+						while (width--) {
+							*--dest = '0';
+						}
+					}
+					*--dest = 'x';
+					*--dest = '0';
+
 					StringBuilder_Append(stringBuilder, dest, 0, (buffer + BUFFER_LIMIT) - dest);
 				}
 				break;
@@ -305,9 +345,9 @@ void StringBuilder_AppendFormatInternal(StringBuilder stringBuilder, const Byte 
 					}
 					if (dest == buffer + BUFFER_LIMIT)
 						*--dest = '0';
+					if (width > BUFFER_LIMIT - 1) width = BUFFER_LIMIT - 1;
+					width -= (buffer + BUFFER_LIMIT) - dest;
 					if (width > 0) {
-						if (width > BUFFER_LIMIT) width = BUFFER_LIMIT;
-						width -= (buffer + BUFFER_LIMIT) - dest;
 						while (width--) {
 							*--dest = padChar;
 						}
