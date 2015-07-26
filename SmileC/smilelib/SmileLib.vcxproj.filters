@@ -1,0 +1,272 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="include">
+      <UniqueIdentifier>{594086cf-6724-45db-9aa8-ba1d15cbf904}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\dict">
+      <UniqueIdentifier>{e30025e3-eb4f-4eeb-a02e-950b070e6bc6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\internal">
+      <UniqueIdentifier>{3d9e424e-18ef-4a2b-b76c-58d8ee1d1c5e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gc">
+      <UniqueIdentifier>{73d337d5-bf5c-409a-95ab-f7d63e835768}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gc\src">
+      <UniqueIdentifier>{48f84ca9-4c2e-4159-8043-1aec11285ff0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gc\include">
+      <UniqueIdentifier>{08b88397-0183-442b-8275-504f2cab8042}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gc\include\private">
+      <UniqueIdentifier>{2e02d5ff-0720-4c9a-9ed9-52663ada462d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{0D5279D7-0CEC-415B-91E3-B65BF01557C4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\dict">
+      <UniqueIdentifier>{3C6DBC6A-E344-4101-B5EF-C94B4CFC8D91}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\string">
+      <UniqueIdentifier>{3E621436-3588-4F4E-810F-7F47F3260C93}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\unicode">
+      <UniqueIdentifier>{99FCEC4D-4000-4396-9913-10FBB0AB85BF}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="gc\src\allchblk.c">
+      <Filter>gc\src</Filter>
+    </ClCompile>
+    <ClCompile Include="gc\src\alloc.c">
+      <Filter>gc\src</Filter>
+    </ClCompile>
+    <ClCompile Include="gc\src\blacklst.c">
+      <Filter>gc\src</Filter>
+    </ClCompile>
+    <ClCompile Include="gc\src\dbg_mlc.c">
+      <Filter>gc\src</Filter>
+    </ClCompile>
+    <ClCompile Include="gc\src\dyn_load.c">
+      <Filter>gc\src</Filter>
+    </ClCompile>
+    <ClCompile Include="gc\src\finalize.c">
+      <Filter>gc\src</Filter>
+    </ClCompile>
+    <ClCompile Include="gc\src\headers.c">
+      <Filter>gc\src</Filter>
+    </ClCompile>
+    <ClCompile Include="gc\src\mach_dep.c">
+      <Filter>gc\src</Filter>
+    </ClCompile>
+    <ClCompile Include="gc\src\malloc.c">
+      <Filter>gc\src</Filter>
+    </ClCompile>
+    <ClCompile Include="gc\src\mallocx.c">
+      <Filter>gc\src</Filter>
+    </ClCompile>
+    <ClCompile Include="gc\src\mark.c">
+      <Filter>gc\src</Filter>
+    </ClCompile>
+    <ClCompile Include="gc\src\mark_rts.c">
+      <Filter>gc\src</Filter>
+    </ClCompile>
+    <ClCompile Include="gc\src\misc.c">
+      <Filter>gc\src</Filter>
+    </ClCompile>
+    <ClCompile Include="gc\src\msvc_dbg.c">
+      <Filter>gc\src</Filter>
+    </ClCompile>
+    <ClCompile Include="gc\src\new_hblk.c">
+      <Filter>gc\src</Filter>
+    </ClCompile>
+    <ClCompile Include="gc\src\obj_map.c">
+      <Filter>gc\src</Filter>
+    </ClCompile>
+    <ClCompile Include="gc\src\os_dep.c">
+      <Filter>gc\src</Filter>
+    </ClCompile>
+    <ClCompile Include="gc\src\ptr_chck.c">
+      <Filter>gc\src</Filter>
+    </ClCompile>
+    <ClCompile Include="gc\src\reclaim.c">
+      <Filter>gc\src</Filter>
+    </ClCompile>
+    <ClCompile Include="gc\src\stubborn.c">
+      <Filter>gc\src</Filter>
+    </ClCompile>
+    <ClCompile Include="gc\src\thread_local_alloc.c">
+      <Filter>gc\src</Filter>
+    </ClCompile>
+    <ClCompile Include="gc\src\typd_mlc.c">
+      <Filter>gc\src</Filter>
+    </ClCompile>
+    <ClCompile Include="gc\src\win32_threads.c">
+      <Filter>gc\src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\init.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dict\int32dict.c">
+      <Filter>src\dict</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dict\stringdict.c">
+      <Filter>src\dict</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dict\stringintdict.c">
+      <Filter>src\dict</Filter>
+    </ClCompile>
+    <ClCompile Include="src\string\htmltables.c">
+      <Filter>src\string</Filter>
+    </ClCompile>
+    <ClCompile Include="src\string\stringbuilder.c">
+      <Filter>src\string</Filter>
+    </ClCompile>
+    <ClCompile Include="src\string\stringbuilder_format.c">
+      <Filter>src\string</Filter>
+    </ClCompile>
+    <ClCompile Include="src\string\string_core.c">
+      <Filter>src\string</Filter>
+    </ClCompile>
+    <ClCompile Include="src\string\string_extra.c">
+      <Filter>src\string</Filter>
+    </ClCompile>
+    <ClCompile Include="src\string\string_html.c">
+      <Filter>src\string</Filter>
+    </ClCompile>
+    <ClCompile Include="src\string\string_parse.c">
+      <Filter>src\string</Filter>
+    </ClCompile>
+    <ClCompile Include="src\string\string_unicode.c">
+      <Filter>src\string</Filter>
+    </ClCompile>
+    <ClCompile Include="src\unicode\casefolding.c">
+      <Filter>src\unicode</Filter>
+    </ClCompile>
+    <ClCompile Include="src\unicode\combiningclass.c">
+      <Filter>src\unicode</Filter>
+    </ClCompile>
+    <ClCompile Include="src\unicode\composition.c">
+      <Filter>src\unicode</Filter>
+    </ClCompile>
+    <ClCompile Include="src\unicode\decomposition.c">
+      <Filter>src\unicode</Filter>
+    </ClCompile>
+    <ClCompile Include="src\unicode\lowercase.c">
+      <Filter>src\unicode</Filter>
+    </ClCompile>
+    <ClCompile Include="src\unicode\titlecase.c">
+      <Filter>src\unicode</Filter>
+    </ClCompile>
+    <ClCompile Include="src\unicode\uppercase.c">
+      <Filter>src\unicode</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="gc\include\atomic_ops.h">
+      <Filter>gc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\gc.h">
+      <Filter>gc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\gc_allocator.h">
+      <Filter>gc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\gc_amiga_redirects.h">
+      <Filter>gc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\gc_backptr.h">
+      <Filter>gc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\gc_config_macros.h">
+      <Filter>gc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\gc_cpp.h">
+      <Filter>gc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\gc_gcj.h">
+      <Filter>gc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\gc_inline.h">
+      <Filter>gc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\gc_mark.h">
+      <Filter>gc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\gc_pthread_redirects.h">
+      <Filter>gc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\gc_tiny_fl.h">
+      <Filter>gc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\gc_typed.h">
+      <Filter>gc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\gc_version.h">
+      <Filter>gc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\private\gc_hdrs.h">
+      <Filter>gc\include\private</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\private\gc_locks.h">
+      <Filter>gc\include\private</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\private\gc_pmark.h">
+      <Filter>gc\include\private</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\private\gc_priv.h">
+      <Filter>gc\include\private</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\smile\array.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\bittwiddling.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\gc.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\mem.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\string.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\stringbuilder.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\types.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\dict\int32dict.h">
+      <Filter>include\dict</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\dict\shared.h">
+      <Filter>include\dict</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\dict\stringdict.h">
+      <Filter>include\dict</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\dict\stringintdict.h">
+      <Filter>include\dict</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\internal\html.h">
+      <Filter>include\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\internal\sprintf.h">
+      <Filter>include\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\internal\types.h">
+      <Filter>include\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\internal\unicode.h">
+      <Filter>include\internal</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

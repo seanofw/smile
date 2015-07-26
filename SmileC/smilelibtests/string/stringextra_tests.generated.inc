@@ -1,0 +1,43 @@
+// This file was auto-generated.  Do not edit!
+
+START_TEST_SUITE(StringExtraTests)
+{
+	SplitHandlesEmptyStrings,
+	SplitExplodesTheCharactersIfThePatternIsEmpty,
+	SplitCanSplitUpStrings,
+	SplitCanSplitUpStringsUsingALargeSplitterString,
+	SplitDoesntCutOffWhenTheLimitIsLarge,
+	SplitCanDiscardEmptyStrings,
+	SplitCutsOffAtTheLimit,
+	SplitCutsOffAtTheLimitWhenDiscardingEmptyStrings,
+	RawReverseReordersText,
+	ReverseReordersTextButPreservesCharacters,
+	RepeatClonesStrings,
+	PadStartPadsTheStartOfShortStrings,
+	PadEndPadsTheEndOfShortStrings,
+	TrimEndRemovesWhitespaceFromTheEndOfStrings,
+	TrimStartRemovesWhitespaceFromTheStartOfStrings,
+	TrimRemovesWhitespaceFromBothEndsOfStrings,
+	CompactWhitespaceResultsInTrimmingAndSingleSpaceCharactersInStrings,
+	AddCSlashesMakesStringsSafe,
+	StripCSlashesDecodesStrings,
+	AddCSlashesEncodesSpecialCharactersSpecially,
+	StripCSlashesDecodesSpecialCharacters,
+	AddCSlashesEncodesNonAsciiCharactersAsHexCodes,
+	StripCSlashesDecodesAllHexCodes,
+	StripCSlashesDecodesAllDecimalCodes,
+	Rot13EncodesTextWithEpicL33tness,
+	RegexEscapeAddsBackslashesToRegexPunctuationMarks,
+	RegexEscapeAddsBackslashesToControlCodes,
+	WildcardMatchWorksInNormalMode,
+	WildcardMatchWorksCaseInsensitive,
+	WildcardMatchWorksInFilenameMode,
+	WildcardMatchWorksInEscapeMode,
+	JoinEnglishNamesWorksForEmptyInput,
+	JoinEnglishNamesWorksForOneValue,
+	JoinEnglishNamesWorksForTwoValues,
+	JoinEnglishNamesWorksForThreeValues,
+	JoinEnglishNamesWorksForFourValues,
+}
+END_TEST_SUITE(StringExtraTests)
+

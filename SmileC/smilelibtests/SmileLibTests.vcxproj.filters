@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.c" />
+    <ClCompile Include="stdafx.c" />
+    <ClCompile Include="testlib.c" />
+    <ClCompile Include="string\stringcore_tests.c">
+      <Filter>string</Filter>
+    </ClCompile>
+    <ClCompile Include="string\stringextra_tests.c">
+      <Filter>string</Filter>
+    </ClCompile>
+    <ClCompile Include="string\stringformat_tests.c">
+      <Filter>string</Filter>
+    </ClCompile>
+    <ClCompile Include="string\stringhtml_tests.c">
+      <Filter>string</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="testlib.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="string">
+      <UniqueIdentifier>{57df2134-4099-4509-b515-a5d0e149e365}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="string\stringcore_tests.generated.inc">
+      <Filter>string</Filter>
+    </None>
+    <None Include="string\stringextra_tests.generated.inc">
+      <Filter>string</Filter>
+    </None>
+    <None Include="string\stringformat_tests.generated.inc">
+      <Filter>string</Filter>
+    </None>
+    <None Include="string\stringhtml_tests.generated.inc">
+      <Filter>string</Filter>
+    </None>
+    <None Include="testsuites.generated.inc" />
+  </ItemGroup>
+</Project>

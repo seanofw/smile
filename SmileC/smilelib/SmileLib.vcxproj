@@ -1,0 +1,316 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{060B99B1-FD7B-4C51-B20B-DB0969ACC235}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>SmileLib</RootNamespace>
+    <ProjectName>SmileLib</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <OutDir>$(ProjectDir)bin\$(Platform)-$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)obj\$(Platform)-$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <LinkIncremental>false</LinkIncremental>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_CONSOLE;GC_DLL;GC_BUILD;SMILELIB_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <DisableSpecificWarnings>4820;4057;4211;4710;4711</DisableSpecificWarnings>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="gc\include\atomic_ops.h" />
+    <ClInclude Include="gc\include\gc.h" />
+    <ClInclude Include="gc\include\gc_allocator.h" />
+    <ClInclude Include="gc\include\gc_amiga_redirects.h" />
+    <ClInclude Include="gc\include\gc_backptr.h" />
+    <ClInclude Include="gc\include\gc_config_macros.h" />
+    <ClInclude Include="gc\include\gc_cpp.h" />
+    <ClInclude Include="gc\include\gc_gcj.h" />
+    <ClInclude Include="gc\include\gc_inline.h" />
+    <ClInclude Include="gc\include\gc_mark.h" />
+    <ClInclude Include="gc\include\gc_pthread_redirects.h" />
+    <ClInclude Include="gc\include\gc_tiny_fl.h" />
+    <ClInclude Include="gc\include\gc_typed.h" />
+    <ClInclude Include="gc\include\gc_version.h" />
+    <ClInclude Include="gc\include\private\gc_hdrs.h" />
+    <ClInclude Include="gc\include\private\gc_locks.h" />
+    <ClInclude Include="gc\include\private\gc_pmark.h" />
+    <ClInclude Include="gc\include\private\gc_priv.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\smile.h" />
+    <ClInclude Include="include\smile\array.h" />
+    <ClInclude Include="include\smile\bittwiddling.h" />
+    <ClInclude Include="include\smile\gc.h" />
+    <ClInclude Include="include\smile\mem.h" />
+    <ClInclude Include="include\smile\string.h" />
+    <ClInclude Include="include\smile\stringbuilder.h" />
+    <ClInclude Include="include\smile\types.h" />
+    <ClInclude Include="include\smile\dict\int32dict.h" />
+    <ClInclude Include="include\smile\dict\shared.h" />
+    <ClInclude Include="include\smile\dict\stringdict.h" />
+    <ClInclude Include="include\smile\dict\stringintdict.h" />
+    <ClInclude Include="include\smile\internal\html.h" />
+    <ClInclude Include="include\smile\internal\sprintf.h" />
+    <ClInclude Include="include\smile\internal\types.h" />
+    <ClInclude Include="include\smile\internal\unicode.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="gc\src\allchblk.c">
+      <PreprocessorDefinitions>WIN32;ALL_INTERIOR_POINTERS;GC_DLL;GC_THREADS;THREAD_LOCAL_ALLOC;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)\include;$(PROJECTDIR)\gc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4668;4820;4255;4100</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="gc\src\alloc.c">
+      <PreprocessorDefinitions>WIN32;ALL_INTERIOR_POINTERS;GC_DLL;GC_THREADS;THREAD_LOCAL_ALLOC;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)\include;$(PROJECTDIR)\gc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4668;4820;4255;4100</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="gc\src\blacklst.c">
+      <PreprocessorDefinitions>WIN32;ALL_INTERIOR_POINTERS;GC_DLL;GC_THREADS;THREAD_LOCAL_ALLOC;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)\include;$(PROJECTDIR)\gc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4668;4820;4255;4100</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="gc\src\dbg_mlc.c">
+      <PreprocessorDefinitions>WIN32;ALL_INTERIOR_POINTERS;GC_DLL;GC_THREADS;THREAD_LOCAL_ALLOC;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)\include;$(PROJECTDIR)\gc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4668;4820;4255;4100</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="gc\src\dyn_load.c">
+      <PreprocessorDefinitions>WIN32;ALL_INTERIOR_POINTERS;GC_DLL;GC_THREADS;THREAD_LOCAL_ALLOC;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)\include;$(PROJECTDIR)\gc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4668;4820;4255;4100</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="gc\src\finalize.c">
+      <PreprocessorDefinitions>WIN32;ALL_INTERIOR_POINTERS;GC_DLL;GC_THREADS;THREAD_LOCAL_ALLOC;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)\include;$(PROJECTDIR)\gc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4668;4820;4255;4100</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="gc\src\headers.c">
+      <PreprocessorDefinitions>WIN32;ALL_INTERIOR_POINTERS;GC_DLL;GC_THREADS;THREAD_LOCAL_ALLOC;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)\include;$(PROJECTDIR)\gc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4668;4820;4255;4100</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="gc\src\mach_dep.c">
+      <PreprocessorDefinitions>WIN32;ALL_INTERIOR_POINTERS;GC_DLL;GC_THREADS;THREAD_LOCAL_ALLOC;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)\include;$(PROJECTDIR)\gc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4668;4820;4255;4100</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="gc\src\malloc.c">
+      <PreprocessorDefinitions>WIN32;ALL_INTERIOR_POINTERS;GC_DLL;GC_THREADS;THREAD_LOCAL_ALLOC;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)\include;$(PROJECTDIR)\gc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4668;4820;4255;4100</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="gc\src\mallocx.c">
+      <PreprocessorDefinitions>WIN32;ALL_INTERIOR_POINTERS;GC_DLL;GC_THREADS;THREAD_LOCAL_ALLOC;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)\include;$(PROJECTDIR)\gc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4668;4820;4255;4100</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="gc\src\mark.c">
+      <PreprocessorDefinitions>WIN32;ALL_INTERIOR_POINTERS;GC_DLL;GC_THREADS;THREAD_LOCAL_ALLOC;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)\include;$(PROJECTDIR)\gc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4668;4820;4255;4100</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="gc\src\mark_rts.c">
+      <PreprocessorDefinitions>WIN32;ALL_INTERIOR_POINTERS;GC_DLL;GC_THREADS;THREAD_LOCAL_ALLOC;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)\include;$(PROJECTDIR)\gc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4668;4820;4255;4100</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="gc\src\misc.c">
+      <PreprocessorDefinitions>WIN32;ALL_INTERIOR_POINTERS;GC_DLL;GC_THREADS;THREAD_LOCAL_ALLOC;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)\include;$(PROJECTDIR)\gc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4668;4820;4255;4100;4267</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="gc\src\msvc_dbg.c">
+      <PreprocessorDefinitions>WIN32;ALL_INTERIOR_POINTERS;GC_DLL;GC_THREADS;THREAD_LOCAL_ALLOC;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)\include;$(PROJECTDIR)\gc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4668;4820;4255;4100;4133</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="gc\src\new_hblk.c">
+      <PreprocessorDefinitions>WIN32;ALL_INTERIOR_POINTERS;GC_DLL;GC_THREADS;THREAD_LOCAL_ALLOC;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)\include;$(PROJECTDIR)\gc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4668;4820;4255;4100</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="gc\src\obj_map.c">
+      <PreprocessorDefinitions>WIN32;ALL_INTERIOR_POINTERS;GC_DLL;GC_THREADS;THREAD_LOCAL_ALLOC;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)\include;$(PROJECTDIR)\gc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4668;4820;4255;4100</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="gc\src\os_dep.c">
+      <PreprocessorDefinitions>WIN32;ALL_INTERIOR_POINTERS;GC_DLL;GC_THREADS;THREAD_LOCAL_ALLOC;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)\include;$(PROJECTDIR)\gc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4668;4820;4255;4100</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="gc\src\ptr_chck.c">
+      <PreprocessorDefinitions>WIN32;ALL_INTERIOR_POINTERS;GC_DLL;GC_THREADS;THREAD_LOCAL_ALLOC;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)\include;$(PROJECTDIR)\gc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4668;4820;4255;4100</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="gc\src\reclaim.c">
+      <PreprocessorDefinitions>WIN32;ALL_INTERIOR_POINTERS;GC_DLL;GC_THREADS;THREAD_LOCAL_ALLOC;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)\include;$(PROJECTDIR)\gc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4668;4820;4255;4100</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="gc\src\stubborn.c">
+      <PreprocessorDefinitions>WIN32;ALL_INTERIOR_POINTERS;GC_DLL;GC_THREADS;THREAD_LOCAL_ALLOC;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)\include;$(PROJECTDIR)\gc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4668;4820;4255;4100</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="gc\src\thread_local_alloc.c">
+      <PreprocessorDefinitions>WIN32;ALL_INTERIOR_POINTERS;GC_DLL;GC_THREADS;THREAD_LOCAL_ALLOC;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)\include;$(PROJECTDIR)\gc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4668;4820;4255;4100</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="gc\src\typd_mlc.c">
+      <PreprocessorDefinitions>WIN32;ALL_INTERIOR_POINTERS;GC_DLL;GC_THREADS;THREAD_LOCAL_ALLOC;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)\include;$(PROJECTDIR)\gc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4668;4820;4255;4100</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="gc\src\win32_threads.c">
+      <PreprocessorDefinitions>WIN32;ALL_INTERIOR_POINTERS;GC_DLL;GC_THREADS;THREAD_LOCAL_ALLOC;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)\include;$(PROJECTDIR)\gc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4668;4820;4255;4100</DisableSpecificWarnings>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\init.c">
+      <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</PreprocessToFile>
+    </ClCompile>
+    <ClCompile Include="src\dict\int32dict.c" />
+    <ClCompile Include="src\dict\stringdict.c" />
+    <ClCompile Include="src\dict\stringintdict.c" />
+    <ClCompile Include="src\string\htmltables.c" />
+    <ClCompile Include="src\string\stringbuilder.c" />
+    <ClCompile Include="src\string\stringbuilder_format.c" />
+    <ClCompile Include="src\string\string_core.c" />
+    <ClCompile Include="src\string\string_extra.c" />
+    <ClCompile Include="src\string\string_html.c" />
+    <ClCompile Include="src\string\string_parse.c" />
+    <ClCompile Include="src\string\string_unicode.c" />
+    <ClCompile Include="src\unicode\casefolding.c" />
+    <ClCompile Include="src\unicode\combiningclass.c" />
+    <ClCompile Include="src\unicode\composition.c" />
+    <ClCompile Include="src\unicode\decomposition.c" />
+    <ClCompile Include="src\unicode\lowercase.c" />
+    <ClCompile Include="src\unicode\titlecase.c" />
+    <ClCompile Include="src\unicode\uppercase.c" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
