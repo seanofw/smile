@@ -608,10 +608,11 @@ START_TEST(WildcardMatchWorksInNormalMode)
 	const int numPatterns = sizeof(WildcardTestPatterns) / sizeof(WildcardTestPattern);
 	int i;
 	Bool result;
+	String pattern;
 
 	for (i = 0; i < numPatterns; i++) {
 		wildcardTestPattern = &WildcardTestPatterns[i];
-		String pattern = String_FromC(wildcardTestPattern->pattern);
+		pattern = String_FromC(wildcardTestPattern->pattern);
 		result = String_WildcardMatch(pattern, String_FromC(wildcardTestPattern->text), 0);
 		ASSERT(result == wildcardTestPattern->expectedResult);
 	}
@@ -624,10 +625,11 @@ START_TEST(WildcardMatchWorksCaseInsensitive)
 	const int numPatterns = sizeof(WildcardTestPatterns) / sizeof(WildcardTestPattern);
 	int i;
 	Bool result;
+	String pattern;
 
 	for (i = 0; i < numPatterns; i++) {
 		wildcardTestPattern = &WildcardTestPatterns[i];
-		String pattern = String_ToUpper(String_FromC(wildcardTestPattern->pattern));
+		pattern = String_ToUpper(String_FromC(wildcardTestPattern->pattern));
 		result = String_WildcardMatch(pattern, String_FromC(wildcardTestPattern->text), StringWildcardOptions_CaseInsensitive);
 		ASSERT(result == wildcardTestPattern->expectedResult);
 	}
@@ -640,10 +642,11 @@ START_TEST(WildcardMatchWorksInFilenameMode)
 	const int numPatterns = sizeof(WildcardPathTestPatterns) / sizeof(WildcardTestPattern);
 	int i;
 	Bool result;
+	String pattern;
 
 	for (i = 0; i < numPatterns; i++) {
 		wildcardTestPattern = &WildcardPathTestPatterns[i];
-		String pattern = String_FromC(wildcardTestPattern->pattern);
+		pattern = String_FromC(wildcardTestPattern->pattern);
 		result = String_WildcardMatch(pattern, String_FromC(wildcardTestPattern->text), StringWildcardOptions_FilenameMode);
 		ASSERT(result == wildcardTestPattern->expectedResult);
 	}
@@ -656,10 +659,11 @@ START_TEST(WildcardMatchWorksInEscapeMode)
 	const int numPatterns = sizeof(WildcardEscapeTestPatterns) / sizeof(WildcardTestPattern);
 	int i;
 	Bool result;
+	String pattern;
 
 	for (i = 0; i < numPatterns; i++) {
 		wildcardTestPattern = &WildcardEscapeTestPatterns[i];
-		String pattern = String_FromC(wildcardTestPattern->pattern);
+		pattern = String_FromC(wildcardTestPattern->pattern);
 		result = String_WildcardMatch(pattern, String_FromC(wildcardTestPattern->text), StringWildcardOptions_BackslashEscapes);
 
 		ASSERT(result == wildcardTestPattern->expectedResult);
