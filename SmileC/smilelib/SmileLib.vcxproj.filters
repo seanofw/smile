@@ -105,6 +105,15 @@
     <ClCompile Include="gc\src\win32_threads.c">
       <Filter>gc\src</Filter>
     </ClCompile>
+    <ClCompile Include="src\string\html_entitytable.c">
+      <Filter>src\string</Filter>
+    </ClCompile>
+    <ClCompile Include="src\string\html_entitytovalue.c">
+      <Filter>src\string</Filter>
+    </ClCompile>
+    <ClCompile Include="src\string\html_valuetoentity.c">
+      <Filter>src\string</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">
@@ -118,9 +127,6 @@
     </ClCompile>
     <ClCompile Include="src\dict\stringintdict.c">
       <Filter>src\dict</Filter>
-    </ClCompile>
-    <ClCompile Include="src\string\htmltables.c">
-      <Filter>src\string</Filter>
     </ClCompile>
     <ClCompile Include="src\string\stringbuilder.c">
       <Filter>src\string</Filter>
