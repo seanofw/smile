@@ -14,11 +14,11 @@ Lisp, but it reads more like Python or Ruby.
 More information on Smile can be found at http://www.smile-lang.org.  An
 informal development blog can also be found at http://www.werkema.com.
 
-(*Note: This implementation is currently **very** incomplete but growing,
+(_Note: This implementation is currently **very** incomplete but growing,
 and it will eventually become the official implementation.  It is **not**
 usable in its current form (yet).  If you want the much-more-complete and
 fairly-usable (but slow) C# implementation, you'll need to look elsewhere,
-as it's not hosted here.*)
+as it's not hosted here._)
 
 <hr />
 
