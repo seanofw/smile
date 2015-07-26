@@ -1,5 +1,6 @@
-======== Smile Programming Language Interpreter =======
-*Copyright &copy; 2004-2015 Sean Werkema*
+# Smile Programming Language Interpreter
+
+**Copyright &copy; 2004-2015 Sean Werkema**
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this software except in compliance with the License.
@@ -15,7 +16,7 @@ limitations under the License.
 
 <hr />
 
-*This is the C implementation of the Smile Programming Language.*
+**This is the C implementation of the Smile Programming Language.**
 
 Smile is a functional, object-oriented, dynamically-typed programming
 language with a flexible syntax.  It is heavily inspired by Lisp and
@@ -25,9 +26,9 @@ Lisp, but it reads more like Python or Ruby.
 More information on Smile can be found at http://www.smile-lang.org.  An
 informal development blog can also be found at http://www.werkema.com.
 
-(_Note: This implementation is currently very incomplete but growing,
+(*Note: This implementation is currently very incomplete but growing,
 and it will eventually become the official implementation.  If you want
 the much-more-complete and fairly-usable C# implementation, you'll need
-to look elsewhere, as it's not hosted here._)
+to look elsewhere, as it's not hosted here.*)
 
 
