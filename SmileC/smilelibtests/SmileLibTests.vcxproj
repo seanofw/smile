@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -28,7 +28,7 @@
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <OutDir>$(ProjectDir)bin\$(Platform)-$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)obj\$(Platform)-$(Configuration)\</IntDir>
@@ -113,6 +113,7 @@
     <ClCompile Include="string\stringextra_tests.c" />
     <ClCompile Include="string\stringformat_tests.c" />
     <ClCompile Include="string\stringhtml_tests.c" />
+    <ClCompile Include="string\stringparse_tests.c" />
     <ClCompile Include="testlib.c" />
   </ItemGroup>
   <ItemGroup>
@@ -120,6 +121,7 @@
     <None Include="string\stringextra_tests.generated.inc" />
     <None Include="string\stringformat_tests.generated.inc" />
     <None Include="string\stringhtml_tests.generated.inc" />
+    <None Include="string\stringparse_tests.generated.inc" />
     <None Include="testsuites.generated.inc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

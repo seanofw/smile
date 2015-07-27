@@ -16,6 +16,9 @@
     <ClCompile Include="string\stringhtml_tests.c">
       <Filter>string</Filter>
     </ClCompile>
+    <ClCompile Include="string\stringparse_tests.c">
+      <Filter>string</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -40,5 +43,8 @@
       <Filter>string</Filter>
     </None>
     <None Include="testsuites.generated.inc" />
+    <None Include="string\stringparse_tests.generated.inc">
+      <Filter>string</Filter>
+    </None>
   </ItemGroup>
 </Project>

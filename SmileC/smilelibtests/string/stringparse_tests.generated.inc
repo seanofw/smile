@@ -1,0 +1,19 @@
+// This file was auto-generated.  Do not edit!
+
+START_TEST_SUITE(StringParseTests)
+{
+	EmptyStringsShouldFailToBeParsedAsBooleans,
+	ThingsThatArentBooleanShouldFailToBeParsed,
+	KnownBooleanTruthValuesShouldParseAsTrue,
+	WhitespaceShouldNotAffectBooleanTruthValueParsing,
+	KnownBooleanFalsehoodValuesShouldParseAsFalse,
+	WhitespaceShouldNotAffectBooleanFalsehoodValueParsing,
+	EmptyStringsShouldFailToBeParsedAsIntegers,
+	ThingsThatArentIntegersShouldFailToBeParsed,
+	ShouldParsePositiveDecimalIntegers,
+	ShouldParsePositiveHexIntegers,
+	ShouldParseNegativeDecimalIntegers,
+	ShouldParseNegativeHexIntegers,
+}
+END_TEST_SUITE(StringParseTests)
+

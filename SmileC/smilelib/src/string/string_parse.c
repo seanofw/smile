@@ -43,6 +43,10 @@ Bool String_ParseBool(const String str, Bool *result)
 	index = 0;
 
 	while (index < length && text[index] <= 32) index++;
+	if (index == length) {
+		*result = False;
+		return False;
+	}
 
 	// We recognize any of the following six strings (case insensitive):  0, 1, t, f, true, false
 	switch (text[index]) {

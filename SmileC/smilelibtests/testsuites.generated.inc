@@ -4,6 +4,7 @@ EXTERN_TEST_SUITE(StringCoreTests);
 EXTERN_TEST_SUITE(StringExtraTests);
 EXTERN_TEST_SUITE(StringFormatTests);
 EXTERN_TEST_SUITE(StringHtmlTests);
+EXTERN_TEST_SUITE(StringParseTests);
 
 void RunAllTests()
 {
@@ -13,6 +14,7 @@ void RunAllTests()
 	RUN_TEST_SUITE(results, StringExtraTests);
 	RUN_TEST_SUITE(results, StringFormatTests);
 	RUN_TEST_SUITE(results, StringHtmlTests);
+	RUN_TEST_SUITE(results, StringParseTests);
 
 	DisplayTestSuiteResults(results);
 }
