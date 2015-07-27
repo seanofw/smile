@@ -14,6 +14,9 @@ START_TEST_SUITE(StringParseTests)
 	ShouldParsePositiveHexIntegers,
 	ShouldParseNegativeDecimalIntegers,
 	ShouldParseNegativeHexIntegers,
+	EmptyStringsShouldFailToBeParsedAsReals,
+	ThingsThatArentRealsShouldFailToBeParsed,
+	ShouldParsePositiveDecimalRealsThatLookLikeIntegers,
 }
 END_TEST_SUITE(StringParseTests)
 

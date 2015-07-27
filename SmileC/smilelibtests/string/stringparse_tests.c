@@ -170,4 +170,42 @@ START_TEST(ShouldParseNegativeHexIntegers)
 }
 END_TEST
 
+//-------------------------------------------------------------------------------------------------
+//  Real-Number-Parsing Tests.
+
+START_TEST(EmptyStringsShouldFailToBeParsedAsReals)
+{
+	Real64 result;
+	ASSERT(String_ParseReal(String_Empty, 10, &result) == False);
+	ASSERT(String_ParseReal(String_FromC("  \t\r\n  "), 10, &result) == False);
+}
+END_TEST
+
+START_TEST(ThingsThatArentRealsShouldFailToBeParsed)
+{
+	Real64 result;
+	ASSERT(String_ParseReal(String_FromC("gronk"), 10, &result) == False);
+	ASSERT(String_ParseReal(String_FromC("true"), 10, &result) == False);
+	ASSERT(String_ParseReal(String_FromC(".!?:;"), 10, &result) == False);
+	ASSERT(String_ParseReal(String_FromC("11xx"), 10, &result) == False);
+	ASSERT(String_ParseReal(String_FromC("0x5a"), 10, &result) == False);
+	ASSERT(String_ParseReal(String_FromC("fal"), 10, &result) == False);
+}
+END_TEST
+
+START_TEST(ShouldParsePositiveDecimalRealsThatLookLikeIntegers)
+{
+	Real64 result;
+	ASSERT(String_ParseReal(String_FromC("0"), 10, &result) == True && result == 0);
+	ASSERT(String_ParseReal(String_FromC("  1  "), 10, &result) == True && result == 1);
+	ASSERT(String_ParseReal(String_FromC("3"), 10, &result) == True && result == 3);
+	ASSERT(String_ParseReal(String_FromC("  42  "), 10, &result) == True && result == 42);
+	ASSERT(String_ParseReal(String_FromC("123456"), 10, &result) == True && result == 123456);
+	ASSERT(String_ParseReal(String_FromC("  3958164207  "), 10, &result) == True && result == (Real64)(Int64)3958164207);
+
+	// Courtesy of the weirdness of floating-point rounding, this should also pass.
+	ASSERT(String_ParseReal(String_FromC("9223372036854775700"), 10, &result) == True && result == (Real64)Int64Max);
+}
+END_TEST
+
 #include "stringparse_tests.generated.inc"
