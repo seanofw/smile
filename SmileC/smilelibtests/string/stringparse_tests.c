@@ -171,6 +171,36 @@ START_TEST(ShouldParseNegativeHexIntegers)
 END_TEST
 
 //-------------------------------------------------------------------------------------------------
+//  Real-Number Diffing helper.
+
+// Courtesy Bruce Dawson, https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
+// C port of Bruce's code, with some minor tweaks.  Like Bruce's, this doesn't play nice with zero.
+// Don't use this function if you don't know what you're doing.
+typedef union
+{
+	Int64 i;
+	Real64 r;
+} Real64Mash;
+
+Inline Bool NearlyEqual(Real64 a, Real64 b, int maxUlpsDiff)
+{
+	Real64Mash am;
+	Real64Mash bm;
+	Int64 ulpsDiff;
+
+	am.r = a;
+	bm.r = b;
+
+	if ((am.i >> 63) != (bm.i >> 63))
+		return a == b;
+
+	ulpsDiff = am.i - bm.i;
+	if (ulpsDiff < 0) ulpsDiff = -ulpsDiff;
+
+	return ulpsDiff <= maxUlpsDiff;
+}
+
+//-------------------------------------------------------------------------------------------------
 //  Real-Number-Parsing Tests.
 
 START_TEST(EmptyStringsShouldFailToBeParsedAsReals)
@@ -200,11 +230,96 @@ START_TEST(ShouldParsePositiveDecimalRealsThatLookLikeIntegers)
 	ASSERT(String_ParseReal(String_FromC("  1  "), 10, &result) == True && result == 1);
 	ASSERT(String_ParseReal(String_FromC("3"), 10, &result) == True && result == 3);
 	ASSERT(String_ParseReal(String_FromC("  42  "), 10, &result) == True && result == 42);
-	ASSERT(String_ParseReal(String_FromC("123456"), 10, &result) == True && result == 123456);
-	ASSERT(String_ParseReal(String_FromC("  3958164207  "), 10, &result) == True && result == (Real64)(Int64)3958164207);
+	ASSERT(String_ParseReal(String_FromC("123'456"), 10, &result) == True && result == 123456);
+	ASSERT(String_ParseReal(String_FromC("  3'958'164'207  "), 10, &result) == True && result == (Real64)(Int64)3958164207);
 
-	// Courtesy of the weirdness of floating-point rounding, this should also pass.
-	ASSERT(String_ParseReal(String_FromC("9223372036854775700"), 10, &result) == True && result == (Real64)Int64Max);
+	ASSERT(String_ParseReal(String_FromC("9'223'372'036'854'775'700"), 10, &result) == True && NearlyEqual(result, (Real64)Int64Max, 1));
+}
+END_TEST
+
+START_TEST(ShouldParseNegativeDecimalRealsThatLookLikeIntegers)
+{
+	Real64 result;
+	ASSERT(String_ParseReal(String_FromC("-0"), 10, &result) == True && result == 0);
+	ASSERT(String_ParseReal(String_FromC("  -1  "), 10, &result) == True && result == -1);
+	ASSERT(String_ParseReal(String_FromC("-3"), 10, &result) == True && result == -3);
+	ASSERT(String_ParseReal(String_FromC("  -42  "), 10, &result) == True && result == -42);
+	ASSERT(String_ParseReal(String_FromC("-123'456"), 10, &result) == True && result == -123456);
+	ASSERT(String_ParseReal(String_FromC("  -3'958'164'207  "), 10, &result) == True && result == -(Real64)(Int64)3958164207);
+
+	ASSERT(String_ParseReal(String_FromC("-9'223'372'036'854'775'700"), 10, &result) == True && NearlyEqual(result, -(Real64)Int64Max, 1));
+}
+END_TEST
+
+START_TEST(ShouldParsePositiveDecimalRealsThatAreOfTheFormIntegerDot)
+{
+	Real64 result;
+	ASSERT(String_ParseReal(String_FromC("0."), 10, &result) == True && result == 0);
+	ASSERT(String_ParseReal(String_FromC("  1.  "), 10, &result) == True && result == 1);
+	ASSERT(String_ParseReal(String_FromC("3."), 10, &result) == True && result == 3);
+	ASSERT(String_ParseReal(String_FromC("  42.  "), 10, &result) == True && result == 42);
+	ASSERT(String_ParseReal(String_FromC("123'456."), 10, &result) == True && result == 123456);
+	ASSERT(String_ParseReal(String_FromC("  3'958'164'207.  "), 10, &result) == True && result == (Real64)(Int64)3958164207);
+}
+END_TEST
+
+START_TEST(ShouldParseNegativeDecimalRealsThatAreOfTheFormIntegerDot)
+{
+	Real64 result;
+	ASSERT(String_ParseReal(String_FromC("-0."), 10, &result) == True && result == 0);
+	ASSERT(String_ParseReal(String_FromC("  -1.  "), 10, &result) == True && result == -1);
+	ASSERT(String_ParseReal(String_FromC("-3."), 10, &result) == True && result == -3);
+	ASSERT(String_ParseReal(String_FromC("  -42.  "), 10, &result) == True && result == -42);
+	ASSERT(String_ParseReal(String_FromC("-123'456."), 10, &result) == True && result == -123456);
+	ASSERT(String_ParseReal(String_FromC("  -3'958'164'207.  "), 10, &result) == True && result == -(Real64)(Int64)3958164207);
+}
+END_TEST
+
+START_TEST(ShouldParsePositiveDecimalRealsThatAreOfTheFormIntegerDotDigits)
+{
+	Real64 result;
+	ASSERT(String_ParseReal(String_FromC("0.0"), 10, &result) == True && result == 0.0);
+	ASSERT(String_ParseReal(String_FromC("0.5"), 10, &result) == True && result == 0.5);
+	ASSERT(String_ParseReal(String_FromC("  1.5  "), 10, &result) == True && result == 1.5);
+	ASSERT(String_ParseReal(String_FromC("3.14159'26535"), 10, &result) == True && NearlyEqual(result, 3.1415926535, 1));
+	ASSERT(String_ParseReal(String_FromC("  42.0  "), 10, &result) == True && result == 42.0);
+	ASSERT(String_ParseReal(String_FromC("123'456.789"), 10, &result) == True && NearlyEqual(result, 123456.789, 1));
+	ASSERT(String_ParseReal(String_FromC("  3'958'164.270'819  "), 10, &result) == True && NearlyEqual(result, 3958164.270819, 1));
+}
+END_TEST
+
+START_TEST(ShouldParseNegativeDecimalRealsThatAreOfTheFormIntegerDotDigits)
+{
+	Real64 result;
+	ASSERT(String_ParseReal(String_FromC("-0.0"), 10, &result) == True && result == 0.0);
+	ASSERT(String_ParseReal(String_FromC("-0.5"), 10, &result) == True && result == -0.5);
+	ASSERT(String_ParseReal(String_FromC("  -1.5  "), 10, &result) == True && result == -1.5);
+	ASSERT(String_ParseReal(String_FromC("-3.14159'26535"), 10, &result) == True && NearlyEqual(result, -3.1415926535, 1));
+	ASSERT(String_ParseReal(String_FromC("  -42.0  "), 10, &result) == True && result == -42.0);
+	ASSERT(String_ParseReal(String_FromC("-123'456.789"), 10, &result) == True && NearlyEqual(result, -123456.789, 1));
+	ASSERT(String_ParseReal(String_FromC("  -3'958'164.270'819  "), 10, &result) == True && NearlyEqual(result, -3958164.270819, 1));
+}
+END_TEST
+
+START_TEST(ShouldParsePositiveDecimalRealsThatAreOfTheFormDotDigits)
+{
+	Real64 result;
+	ASSERT(String_ParseReal(String_FromC(".0"), 10, &result) == True && result == 0.0);
+	ASSERT(String_ParseReal(String_FromC(".5"), 10, &result) == True && result == 0.5);
+	ASSERT(String_ParseReal(String_FromC("  .5  "), 10, &result) == True && result == 0.5);
+	ASSERT(String_ParseReal(String_FromC("  .125  "), 10, &result) == True && result == 0.125);
+	ASSERT(String_ParseReal(String_FromC(".14159'26535'89793'23"), 10, &result) == True && NearlyEqual(result, 0.14159265358979323, 1));
+}
+END_TEST
+
+START_TEST(ShouldParseNegativeDecimalRealsThatAreOfTheFormDotDigits)
+{
+	Real64 result;
+	ASSERT(String_ParseReal(String_FromC("-.0"), 10, &result) == True && result == 0.0);
+	ASSERT(String_ParseReal(String_FromC("-.5"), 10, &result) == True && result == -0.5);
+	ASSERT(String_ParseReal(String_FromC("  -.5  "), 10, &result) == True && result == -0.5);
+	ASSERT(String_ParseReal(String_FromC("  -.125  "), 10, &result) == True && result == -0.125);
+	ASSERT(String_ParseReal(String_FromC("-.14159'26535'89793'23"), 10, &result) == True && NearlyEqual(result, -0.14159265358979323, 1));
 }
 END_TEST
 
