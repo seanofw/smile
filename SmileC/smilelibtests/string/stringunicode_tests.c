@@ -67,4 +67,11 @@ START_TEST(CompareIShouldLexicallyOrderNonAsciiStringsThatDifferByCase)
 }
 END_TEST
 
+START_TEST(CompareIUsesTrueCaseFolding)
+{
+	ASSERT(String_CompareI(String_FromC("Wasserschlo\xC3\x9F"), String_FromC("WASSERSCHLOSS")) == 0);
+	ASSERT(String_CompareI(String_FromC("Wasserschlo\xC3\x9F"), String_FromC("wasserschloss")) == 0);
+}
+END_TEST
+
 #include "stringunicode_tests.generated.inc"

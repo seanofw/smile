@@ -292,7 +292,7 @@ Int String_CompareRangeI(const String a, Int astart, Int alength, const String b
 		newCodeValueA = ach + codePageA[ach & 0xFF];
 		newCodeValueB = bch + codePageB[bch & 0xFF];
 
-		if (newCodeValueA < 0 || newCodeValueB < 0)
+		if (newCodeValueA <= 0 || newCodeValueB <= 0)
 		{
 			// We did as much of the easy character-for-character comparison as we could,
 			// but one of these characters case-folded to multiple resulting characters.  So

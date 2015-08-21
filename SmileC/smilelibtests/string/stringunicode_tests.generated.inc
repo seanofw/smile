@@ -7,6 +7,7 @@ START_TEST_SUITE(StringUnicodeTests)
 	CompareIShouldMatchAsciiStringsThatDifferByCase,
 	CompareIShouldLexicallyOrderAsciiStringsThatDifferByCase,
 	CompareIShouldLexicallyOrderNonAsciiStringsThatDifferByCase,
+	CompareIUsesTrueCaseFolding,
 }
 END_TEST_SUITE(StringUnicodeTests)
 
