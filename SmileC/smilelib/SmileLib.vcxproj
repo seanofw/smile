@@ -302,7 +302,9 @@
     <ClCompile Include="src\string\string_core.c" />
     <ClCompile Include="src\string\string_extra.c" />
     <ClCompile Include="src\string\string_html.c" />
-    <ClCompile Include="src\string\string_parse.c" />
+    <ClCompile Include="src\string\string_parse.c">
+      <FloatingPointModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Strict</FloatingPointModel>
+    </ClCompile>
     <ClCompile Include="src\string\string_unicode.c" />
     <ClCompile Include="src\unicode\casefolding.c" />
     <ClCompile Include="src\unicode\combiningclass.c" />
@@ -311,6 +313,9 @@
     <ClCompile Include="src\unicode\lowercase.c" />
     <ClCompile Include="src\unicode\titlecase.c" />
     <ClCompile Include="src\unicode\uppercase.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\string\string_parsereal.generated.inc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

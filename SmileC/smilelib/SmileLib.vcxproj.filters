@@ -275,4 +275,9 @@
       <Filter>include\internal</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="src\string\string_parsereal.generated.inc">
+      <Filter>src\string</Filter>
+    </None>
+  </ItemGroup>
 </Project>

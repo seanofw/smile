@@ -16,6 +16,7 @@ START_TEST_SUITE(StringParseTests)
 	ShouldParseNegativeHexIntegers,
 	EmptyStringsShouldFailToBeParsedAsReals,
 	ThingsThatArentRealsShouldFailToBeParsed,
+	ThingsThatAreSimilarToRealsButNotRealsShouldFailToBeParsed,
 	ShouldParsePositiveDecimalRealsThatLookLikeIntegers,
 	ShouldParseNegativeDecimalRealsThatLookLikeIntegers,
 	ShouldParsePositiveDecimalRealsThatAreOfTheFormIntegerDot,
@@ -24,6 +25,10 @@ START_TEST_SUITE(StringParseTests)
 	ShouldParseNegativeDecimalRealsThatAreOfTheFormIntegerDotDigits,
 	ShouldParsePositiveDecimalRealsThatAreOfTheFormDotDigits,
 	ShouldParseNegativeDecimalRealsThatAreOfTheFormDotDigits,
+	ShouldParsePositiveExponents,
+	ShouldParseNegativeExponents,
+	CertainProblematicNumbersParseExactly,
+	VeryProblematicNumbersParseWithinOneOrTwoUlps,
 }
 END_TEST_SUITE(StringParseTests)
 

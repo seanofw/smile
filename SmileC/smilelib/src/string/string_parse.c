@@ -277,22 +277,34 @@ Inline Int ParseRealIntegerPart(const Byte *text, Int length, Int *index, Int nu
 	return digits;
 }
 
+static const Real64 *_realMultipliersByBase[37];
+
 Inline Int ParseRealFractionalPart(const Byte *text, Int length, Int *index, Int numericBase, Real64 *result)
 {
-	Real64 baseMultiplier, multiplier, value;
-	Int i, digits, digitValue;
-
-	baseMultiplier = 1.0 / numericBase;
-	multiplier = baseMultiplier;
+	Real64 value;
+	Int i, digits, significantDigits, digitValue;
+	UInt64 intDigits;
+	Bool isInitial;
 
 	i = *index;
+	intDigits = 0;
 	digits = 0;
-	value = 0;
+	significantDigits = 0;
+	isInitial = True;
 
 	while (i < length) {
 		switch (text[i]) {
-			case '\'': case '\"': case '_': i++; continue;
-			case '0': digitValue = 0; break;
+			case '\'': case '\"': case '_':
+				i++;
+				continue;
+			case '0':
+				if (isInitial) {
+					digits++;
+					i++;
+					continue;
+				}
+				digitValue = 0;
+				break;
 			case '1': digitValue = 1; break;
 			case '2': digitValue = 2; break;
 			case '3': digitValue = 3; break;
@@ -331,15 +343,81 @@ Inline Int ParseRealFractionalPart(const Byte *text, Int length, Int *index, Int
 			default: digitValue = 99; break;
 		}
 		if (digitValue >= numericBase) break;
-		value += digitValue * multiplier;
-		multiplier *= baseMultiplier;
-		digits++;
+
+		// We cut off at 58 bits.  58 is the largest number greater than the 52 bits of a Real64's
+		// mantissa, but still with enough room to handle up to base 36 (6 bits).  This means we're
+		// able to be a full 6 bits more precise than the Real64's mantissa, which is exactly enough
+		// for one extra digit of precision in every base.
+		if (intDigits < (((UInt64)1) << (64 - 6))) {
+			intDigits *= (UInt)numericBase;
+			intDigits += digitValue;
+			digits++;
+			significantDigits++;
+		}
+
 		i++;
+		isInitial = False;
+	}
+
+	if (digits > 0) {
+		// We have the mantissa's correct value, but it's represented as a large integer, not
+		// as fractional bits.  So now we do a little math to shuffle those integer bits down to
+		// the correct position to be floating-point fractional bits.
+		value = (Real64)intDigits;
+
+		// Shuffle the bits down, quickly, using precomputed multipliers to avoid loss of
+		// precision where possible.
+		if (digits == significantDigits) {
+			value /= _realMultipliersByBase[numericBase][significantDigits - 1];
+		}
+		else {
+			while (digits >= 64) {
+				value /= _realMultipliersByBase[numericBase][63];
+			}
+			if (digits > 0) {
+				value /= _realMultipliersByBase[numericBase][digits - 1];
+			}
+		}
+	}
+	else {
+		// No digits, or we hit an invalid character.
+		value = 0;
 	}
 
 	*index = i;
 	*result = value;
 	return digits;
+}
+
+Inline Real64 ApplyExponent(Real64 value, Int numericBase, Int exponent)
+{
+	Real64 multiplier;
+
+	if (exponent < 0) {
+		exponent = -exponent;
+		while (exponent >= 64) {
+			multiplier = _realMultipliersByBase[numericBase][63];
+			value /= multiplier;
+			exponent -= 64;
+		}
+		if (exponent > 0) {
+			multiplier = _realMultipliersByBase[numericBase][exponent - 1];
+			value /= multiplier;
+		}
+	}
+	else if (exponent > 0) {
+		while (exponent >= 64) {
+			multiplier = _realMultipliersByBase[numericBase][63];
+			value *= multiplier;
+			exponent -= 64;
+		}
+		if (exponent > 0) {
+			multiplier = _realMultipliersByBase[numericBase][exponent - 1];
+			value *= multiplier;
+		}
+	}
+
+	return value;
 }
 
 Inline Bool ParseRealExponent(const Byte *text, Int length, Int *index, Int numericBase, Real64 *result)
@@ -355,19 +433,18 @@ Inline Bool ParseRealExponent(const Byte *text, Int length, Int *index, Int nume
 		i++;
 	else if (i < length && text[i] == '-')
 		i++, exponentSign = True;
-	else {
-		*result = 0;
-		return False;
-	}
 
 	digits = ParseIntegerInternal(text, length, &i, numericBase, &exponent);
 
 	if (digits == 0) {
 		*result = 0;
+		*index = i;
 		return False;
 	}
 
-	*result *= pow((Real64)numericBase, exponentSign ? -(Real64)(Int64)exponent : (Real64)(Int64)exponent);
+	*result = ApplyExponent(*result, numericBase, exponentSign ? -(Int)exponent : (Int)exponent);
+
+	*index = i;
 	return True;
 }
 
@@ -448,3 +525,5 @@ Bool String_ParseReal(const String str, Int numericBase, Real64 *result)
 	*result = neg ? -sum : sum;
 	return True;
 }
+
+#include "string_parsereal.generated.inc"
