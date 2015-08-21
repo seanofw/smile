@@ -114,6 +114,7 @@
     <ClCompile Include="string\stringformat_tests.c" />
     <ClCompile Include="string\stringhtml_tests.c" />
     <ClCompile Include="string\stringparse_tests.c" />
+    <ClCompile Include="string\stringunicode_tests.c" />
     <ClCompile Include="testlib.c" />
   </ItemGroup>
   <ItemGroup>

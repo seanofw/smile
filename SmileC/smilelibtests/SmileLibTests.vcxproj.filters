@@ -19,6 +19,9 @@
     <ClCompile Include="string\stringparse_tests.c">
       <Filter>string</Filter>
     </ClCompile>
+    <ClCompile Include="string\stringunicode_tests.c">
+      <Filter>string</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
