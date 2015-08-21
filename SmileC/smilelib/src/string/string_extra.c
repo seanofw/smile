@@ -25,7 +25,7 @@ PRIVATE_STATIC_STRING(CommaSpace, ", ", 2);
 
 /// <summary>
 /// Split a string by a given pattern string.
-/// <summary>
+/// </summary>
 /// <param name="str">The string to split.</param>
 /// <param name="pattern">The substring on which to split that string.  If this is the empty string, no splitting will be performed.</param>
 /// <param name="limit">The maximum number of split pieces to emit as output.</param>

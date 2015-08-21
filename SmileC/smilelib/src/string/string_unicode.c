@@ -50,7 +50,7 @@ static const Int32 _identityTable[] =
 /// <summary>
 /// Read from the string at the given index, extracting a complete Unicode character (code point)
 /// that has been encoded in UTF-8 form.
-/// <summary>
+/// </summary>
 /// <param name="str">The string from which you would like to extract the next Unicode character.</param>
 /// <param name="index">A pointer to the byte index from the start of the string at which the UTF-8-encoded
 /// Unicode character (code point) can be found.  After the character has been read, this will be updated
@@ -124,7 +124,7 @@ Int32 String_ExtractUnicodeCharacter(const String str, Int *index)
 /// <summary>
 /// Read from the string at the given start pointer, extracting a complete Unicode character (code point)
 /// that has been encoded in UTF-8 form.
-/// <summary>
+/// </summary>
 /// <param name="start">A pointer to a pointer to the start of the the next Unicode character.  After the
 /// character has been read, this will be updated to point to the start of the next Unicode character
 /// (code point) in the string.</param>
@@ -198,7 +198,7 @@ Int32 String_ExtractUnicodeCharacterInternal(const Byte **start, const Byte *end
 /// <summary>
 /// Compare substrings in two strings, case-insensitive, to lexically order those substrings,
 /// without extracting the substrings to new string instances if possible.
-/// <summary>
+/// </summary>
 /// <param name="a">The first string to compare.</param>
 /// <param name="astart">The start of the substring to compare within the first string.</param>
 /// <param name="alength">The number of characters to compare within the first string.</param>
@@ -404,7 +404,7 @@ static String ConvertCase(const String str, Int start, Int length, const Int32 *
 /// <summary>
 /// Extract a substring from the given string, and then convert that substring to
 /// lowercase where it is not already lowercase.
-/// <summary>
+/// </summary>
 /// <param name="str">The string whose substring you would like to convert.</param>
 /// <param name="start">The start of the substring within that string.</param>
 /// <param name="length">The length of the substring within that string.</param>
@@ -420,7 +420,7 @@ String String_ToLowerRange(const String str, Int start, Int length)
 /// <summary>
 /// Extract a substring from the given string, and then convert that substring to
 /// titlecase where it is not already titlecase.
-/// <summary>
+/// </summary>
 /// <param name="str">The string whose substring you would like to convert.</param>
 /// <param name="start">The start of the substring within that string.</param>
 /// <param name="length">The length of the substring within that string.</param>
@@ -436,7 +436,7 @@ String String_ToTitleRange(const String str, Int start, Int length)
 /// <summary>
 /// Extract a substring from the given string, and then convert that substring to
 /// uppercase where it is not already titlecase.
-/// <summary>
+/// </summary>
 /// <param name="str">The string whose substring you would like to convert.</param>
 /// <param name="start">The start of the substring within that string.</param>
 /// <param name="length">The length of the substring within that string.</param>
@@ -452,7 +452,7 @@ String String_ToUpperRange(const String str, Int start, Int length)
 /// <summary>
 /// Extract a substring from the given string, and then case-fold that substring, so that
 /// its characters are suitable for case-insensitive comparison.
-/// <summary>
+/// </summary>
 /// <param name="str">The string whose substring you would like to convert.</param>
 /// <param name="start">The start of the substring within that string.</param>
 /// <param name="length">The length of the substring within that string.</param>
@@ -468,7 +468,7 @@ String String_CaseFoldRange(const String str, Int start, Int length)
 /// <summary>
 /// Extract a substring from the given string, and then decompose any composed Unicode
 /// characters within it into their constituent combining forms.
-/// <summary>
+/// </summary>
 /// <param name="str">The string whose substring you would like to convert.</param>
 /// <param name="start">The start of the substring within that string.</param>
 /// <param name="length">The length of the substring within that string.</param>
@@ -485,7 +485,7 @@ String String_DecomposeRange(const String str, Int start, Int length)
 /// Extract a substring from the given string, and then compose any decomposed characters in
 /// it so that all combining diacritics and compound characters are joined to result in as few
 /// Unicode code points as possible.
-/// <summary>
+/// </summary>
 /// <param name="str">The string whose substring you would like to compose.</param>
 /// <param name="start">The start of the substring within that string.</param>
 /// <param name="length">The length of the substring within that string.</param>
@@ -575,7 +575,7 @@ String String_ComposeRange(const String str, Int start, Int length)
 
 /// <summary>
 /// Normalize a substring within a string, so that its combining characters are in canonical order.
-/// <summary>
+/// </summary>
 /// <param name="str">The string whose substring you would like to normalize.</param>
 /// <param name="start">The start of the substring within that string.</param>
 /// <param name="length">The length of the substring within that string.</param>
@@ -831,7 +831,7 @@ static void SortCombiningCharacters(UInt32 *buffer, UInt32 *temp, Int start, Int
 
 /// <summary>
 /// Convert a substring within a string from UTF-8 encoding to that described by the given code-page tables.
-/// <summary>
+/// </summary>
 /// <param name="str">The string whose substring you would like to convert to a code page.</param>
 /// <param name="start">The start of the substring within that string.</param>
 /// <param name="length">The length of the substring within that string.</param>
@@ -899,7 +899,7 @@ String String_ConvertUtf8ToCodePageRange(const String str, Int start, Int length
 
 /// <summary>
 /// Convert a substring within a string from a specific code-page encoding to standard UTF-8.
-/// <summary>
+/// </summary>
 /// <param name="str">The string whose substring you would like to convert to UTF-8.</param>
 /// <param name="start">The start of the substring within that string.</param>
 /// <param name="length">The length of the substring within that string.</param>
@@ -946,7 +946,7 @@ String String_ConvertCodePageToUtf8Range(const String str, Int start, Int length
 
 /// <summary>
 /// Search through a given string for the first index of a given substring, case-insensitive.
-/// <summary>
+/// </summary>
 /// <param name="str">The string you would like to search through.</param>
 /// <param name="pattern">The substring you would like to search for.</param>
 /// <param name="start">The start character index within the string where the search should begin (usually zero).</param>
@@ -970,7 +970,7 @@ Int String_IndexOfI(const String str, const String pattern, Int start)
 
 /// <summary>
 /// Search backward through a given string for the last index of a given substring, case-insensitive.
-/// <summary>
+/// </summary>
 /// <param name="str">The string you would like to search through.</param>
 /// <param name="pattern">The substring you would like to search for.</param>
 /// <param name="start">The start character index within the string where the search should begin (usually the length of the string).

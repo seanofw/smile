@@ -258,7 +258,7 @@ Inline Bool String_Contains(const String str, const String pattern)
 
 /// <summary>
 /// Convert a string to lowercase, if it is not already lowercase.
-/// <summary>
+/// </summary>
 /// <param name="str">The string you would like to convert.</param>
 /// <returns>The whole string converted to lowercase.</returns>
 Inline String String_ToLower(const String str)
@@ -268,7 +268,7 @@ Inline String String_ToLower(const String str)
 
 /// <summary>
 /// Convert a string to titlecase, if it is not already titlecase.
-/// <summary>
+/// </summary>
 /// <param name="str">The string you would like to convert.</param>
 /// <returns>The whole string converted to titlecase.</returns>
 Inline String String_ToTitle(const String str)
@@ -278,7 +278,7 @@ Inline String String_ToTitle(const String str)
 
 /// <summary>
 /// Convert a string to uppercase, if it is not already uppercase.
-/// <summary>
+/// </summary>
 /// <param name="str">The string you would like to convert.</param>
 /// <returns>The whole string converted to uppercase.</returns>
 Inline String String_ToUpper(const String str)
@@ -288,7 +288,7 @@ Inline String String_ToUpper(const String str)
 
 /// <summary>
 /// Case-fold a given string so that its characters are suitable for case-insensitive comparison.
-/// <summary>
+/// </summary>
 /// <param name="str">The string you would like to convert.</param>
 /// <returns>The whole string, case-folded.</returns>
 Inline String String_CaseFold(const String str)
@@ -299,7 +299,7 @@ Inline String String_CaseFold(const String str)
 /// <summary>
 /// Decompose all composed characters within a given string, so that all combining diacritics and
 /// compound characters are exposed as separate Unicode code points.
-/// <summary>
+/// </summary>
 /// <param name="str">The string you would like to decompose.</param>
 /// <returns>The whole string, decomposed.</returns>
 Inline String String_Decompose(const String str)
@@ -310,7 +310,7 @@ Inline String String_Decompose(const String str)
 /// <summary>
 /// Compose all decomposed characters within a given string, so that all combining diacritics and
 /// compound characters are joined to result in as few Unicode code points as possible.
-/// <summary>
+/// </summary>
 /// <param name="str">The string you would like to compose.</param>
 /// <returns>The whole string, composed.</returns>
 Inline String String_Compose(const String str)
@@ -320,7 +320,7 @@ Inline String String_Compose(const String str)
 
 /// <summary>
 /// Normalize a string, so that its combining characters are in canonical order.
-/// <summary>
+/// </summary>
 /// <param name="str">The string you would like to normalize.</param>
 /// <returns>The whole string, normalized.</returns>
 Inline String String_Normalize(const String str)
@@ -330,7 +330,7 @@ Inline String String_Normalize(const String str)
 
 /// <summary>
 /// Convert a string from UTF-8 encoding to that described by the given code-page tables.
-/// <summary>
+/// </summary>
 /// <param name="str">The string you would like to convert to a code page.</param>
 /// <param name="utf8ToCodePageTables">A pointer to a table of pointers to 256-byte tables that describe how to
 /// convert each Unicode code point.</param>
@@ -343,7 +343,7 @@ Inline String String_ConvertUtf8ToCodePage(const String str, const Byte **utf8To
 
 /// <summary>
 /// Convert a string from a specific code-page encoding to standard UTF-8.
-/// <summary>
+/// </summary>
 /// <param name="str">The string you would like to convert to UTF-8.</param>
 /// <param name="codePageToUtf8Table">A 256-entry table describing the resulting Unicode code point for each byte in the string.</param>
 /// <returns>The whole string, converted to UTF-8.</returns>
@@ -355,7 +355,7 @@ Inline String String_ConvertCodePageToUtf8(const String str, const Int32 *codePa
 /// <summary>
 /// Compare two strings, case-insensitive, to lexically order those strings,
 /// without converting the strings to new string instances if possible.
-/// <summary>
+/// </summary>
 /// <param name="a">The first string to compare.</param>
 /// <param name="b">The second string to compare.</param>
 /// <returns>0 if the strings were equal; -1 if a comes before b; or +1 if b comes before a.</returns>
@@ -367,7 +367,7 @@ Inline Int String_CompareI(const String a, const String b)
 
 /// <summary>
 /// Split a string by a given pattern string.
-/// <summary>
+/// </summary>
 /// <param name="str">The string to split.</param>
 /// <param name="pattern">The substring on which to split that string.  If this is the empty string, no splitting will be performed.</param>
 /// <param name="pieces">If non-NULL, this will be set to an array containing the resulting split strings.</param>
