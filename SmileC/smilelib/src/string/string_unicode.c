@@ -225,12 +225,12 @@ Int String_CompareRangeI(const String a, Int astart, Int alength, const String b
 	if (astart < 0)
 	{
 		alength += astart;
-		alength = 0;
+		astart = 0;
 	}
 	if (bstart < 0)
 	{
 		blength += bstart;
-		blength = 0;
+		bstart = 0;
 	}
 
 	if (String_IsNullOrEmpty(a) || astart >= astr->length || alength <= 0)
@@ -253,10 +253,10 @@ Int String_CompareRangeI(const String a, Int astart, Int alength, const String b
 		blength = bstr->length - bstart;
 	}
 
-	aptr = astr->text;
-	bptr = bstr->text;
-	aend = aptr + astr->length;
-	bend = bptr + bstr->length;
+	aptr = astr->text + astart;
+	bptr = bstr->text + bstart;
+	aend = aptr + alength;
+	bend = bptr + blength;
 	while (aptr < aend && bptr < bend)
 	{
 		// Read one complete Unicode code point from string A.
@@ -954,15 +954,19 @@ String String_ConvertCodePageToUtf8Range(const String str, Int start, Int length
 Int String_IndexOfI(const String str, const String pattern, Int start)
 {
 	const struct StringInt *s, *p;
-	Int end;
+	Int end, slength, plength;
 	Bool usedSlowConversion;
 
 	s = (const struct StringInt *)str;
 	p = (const struct StringInt *)pattern;
+	slength = s->length;
+	plength = p->length;
 
-	for (end = s->length - p->length; start <= end; start++)
+	if (start < 0) start = 0;
+
+	for (end = slength - plength; start <= end; start++)
 	{
-		if (String_CompareRangeI(pattern, 0, p->length, str, start, p->length, &usedSlowConversion) == 0)
+		if (String_CompareRangeI(pattern, 0, plength, str, start, plength, &usedSlowConversion) == 0)
 			return start;
 	}
 	return -1;
@@ -981,17 +985,20 @@ Int String_LastIndexOfI(const String str, const String pattern, Int start)
 {
 	const struct StringInt *s, *p;
 	Bool usedSlowConversion;
+	Int slength, plength;
 
 	s = (const struct StringInt *)str;
 	p = (const struct StringInt *)pattern;
+	slength = s->length;
+	plength = p->length;
 
-	if (start >= s->length - p->length)
+	if (start >= slength - plength)
 	{
-		start = s->length - p->length;
+		start = slength - plength;
 	}
-	for (start -= s->length; start >= 0; start--)
+	for (start -= slength; start >= 0; start--)
 	{
-		if (String_CompareRangeI(pattern, 0, p->length, str, start, p->length, &usedSlowConversion) == 0)
+		if (String_CompareRangeI(pattern, 0, plength, str, start, plength, &usedSlowConversion) == 0)
 			return start;
 	}
 	return -1;

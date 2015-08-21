@@ -8,6 +8,15 @@ START_TEST_SUITE(StringUnicodeTests)
 	CompareIShouldLexicallyOrderAsciiStringsThatDifferByCase,
 	CompareIShouldLexicallyOrderNonAsciiStringsThatDifferByCase,
 	CompareIUsesTrueCaseFolding,
+	IndexOfIShouldFindNothingInEmptyStrings,
+	IndexOfIShouldFindEmptyStringsInsideEmptyStrings,
+	IndexOfIShouldFindEmptyStringsBeforeAndAfterEveryCharacter,
+	IndexOfIFindsContentWhenItExists,
+	IndexOfIFindsUnicodeContentWhenItExists,
+	IndexOfIDoesNotFindContentWhenItDoesNotExist,
+	IndexOfIStartsWhereYouTellItToStart,
+	IndexOfIClipsStartIndexesToTheString,
+	IndexOfIFindsSubsequentMatches,
 }
 END_TEST_SUITE(StringUnicodeTests)
 
