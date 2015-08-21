@@ -57,7 +57,7 @@ enum StringWildcardOptions {
 
 SMILE_API String String_Empty;
 
-SMILE_API String String_Create(const Byte *text, Int start, Int length);
+SMILE_API String String_Create(const Byte *text, Int length);
 SMILE_API String String_CreateInternal(Int length);
 SMILE_API String String_CreateRepeat(Byte b, Int repeatCount);
 
@@ -231,7 +231,7 @@ Inline Int String_Length(const String str)
 /// <returns>A new String instance that contains a copy of the C-style string.</returns>
 Inline String String_FromC(const char *text)
 {
-	return String_Create((const Byte *)text, 0, StrLen(text));
+	return String_Create((const Byte *)text, StrLen(text));
 }
 
 /// <summary>

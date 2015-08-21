@@ -43,14 +43,14 @@ END_TEST
 
 START_TEST(CanCreateEmptyString)
 {
-	String str = String_Create(NULL, 0, 0);
+	String str = String_Create(NULL, 0);
 	AssertString(str, NULL, 0);
 }
 END_TEST
 
 START_TEST(CanCreateFromText)
 {
-	String str = String_Create("This is a test.", 4, 6);
+	String str = String_Create("This is a test." + 4, 6);
 	AssertString(str, " is a ", 6);
 }
 END_TEST
@@ -61,7 +61,7 @@ START_TEST(CreateCopiesItsInput)
 	String str;
 
 	strcpy(test, "This is a test.");
-	str = String_Create(test, 0, strlen(test));
+	str = String_Create(test, strlen(test));
 	strcpy(test, "Hello, World.");
 
 	AssertString(str, "This is a test.", 15);
@@ -70,7 +70,7 @@ END_TEST
 
 START_TEST(CreateCanContainWeirdCharacters)
 {
-	String str = String_Create(" \t\r\n\0\xFF\x7F\xA0\xCC ", 1, 8);
+	String str = String_Create(" \t\r\n\0\xFF\x7F\xA0\xCC " + 1, 8);
 	AssertString(str, "\t\r\n\0\xFF\x7F\xA0\xCC", 8);
 }
 END_TEST
@@ -536,17 +536,17 @@ END_TEST
 
 START_TEST(EqualsHandlesUnusualCharacters)
 {
-	String str1 = String_Create("This is\0\r\n\xFF\xAA a test.", 0, 20);
-	String str2 = String_Create("This is\0\r\n\xFF\xAA a test.", 0, 20);
+	String str1 = String_Create("This is\0\r\n\xFF\xAA a test.", 20);
+	String str2 = String_Create("This is\0\r\n\xFF\xAA a test.", 20);
 	ASSERT(String_Equals(str1, str2));
 }
 END_TEST
 
 START_TEST(EqualsComparesTheFullString)
 {
-	String str1 = String_Create("This is\0\r\n\xFF\xAA an aardvark.", 0, 24);
-	String str2 = String_Create("This is\0\r\n\xFF\xAA an aardvark.", 0, 24);
-	String str3 = String_Create("This is\0\r\n\xFF\xAA an oglethorpe.", 0, 26);
+	String str1 = String_Create("This is\0\r\n\xFF\xAA an aardvark.", 24);
+	String str2 = String_Create("This is\0\r\n\xFF\xAA an aardvark.", 24);
+	String str3 = String_Create("This is\0\r\n\xFF\xAA an oglethorpe.", 26);
 	ASSERT(String_Equals(str1, str2));
 	ASSERT(!String_Equals(str1, str3));
 }
@@ -1249,9 +1249,9 @@ END_TEST
 
 START_TEST(ReplaceSubstitutesContentEvenWithControlCodesAndHighASCIIValuesInIt)
 {
-	String str1 = String_Create("This is a te\0\xFF\xAA\x1Ast for te\0\xFF\xAA\x1Asting te\0\xFF\xAA\x1Asts.", 0, 45);
-	String str2 = String_Create("te\0\xFF\xAA\x1Ast", 0, 8);
-	String str3 = String_Create("f\0o\xFFo", 0, 5);
+	String str1 = String_Create("This is a te\0\xFF\xAA\x1Ast for te\0\xFF\xAA\x1Asting te\0\xFF\xAA\x1Asts.", 45);
+	String str2 = String_Create("te\0\xFF\xAA\x1Ast", 8);
+	String str3 = String_Create("f\0o\xFFo", 5);
 
 	AssertString(String_Replace(str1, str2, str3), "This is a f\0o\xFFo for f\0o\xFFoing f\0o\xFFos.", 36);
 }

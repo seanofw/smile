@@ -440,7 +440,7 @@ String String_CompactWhitespace(const String str)
 		dest--;
 	}
 
-	return String_Create(result, 0, dest - result);
+	return String_Create(result, dest - result);
 }
 
 /// <summary>
@@ -616,7 +616,7 @@ String String_StripCSlashes(const String str)
 		}
 	}
 
-	return String_Create(result, 0, dest - result);
+	return String_Create(result, dest - result);
 }
 
 /// <summary>

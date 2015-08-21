@@ -38,7 +38,7 @@ END_TEST
 
 START_TEST(FormatTreatsUnusualCharactersLikeAllOtherCharacters)
 {
-	String formatString = String_Create("This is a test.\r\n Pack my box\0 with five dozen\xFF liquor jugs.", 0, 60);
+	String formatString = String_Create("This is a test.\r\n Pack my box\0 with five dozen\xFF liquor jugs.", 60);
 	AssertString(String_FormatString(formatString), String_ToC(formatString), String_Length(formatString));
 }
 END_TEST
@@ -59,8 +59,8 @@ END_TEST
 
 START_TEST(FormatCanInsertStringObjectsWithWeirdCharactersInThem)
 {
-	String expectedResult = String_Create("This is a test. Pack my bo\0x with five dozen li\rq\0u\nor jugs.", 0, 60);
-	AssertString(String_Format("This is a test. Pack my %S with five dozen %S jugs.", String_Create("bo\0x", 0, 4), String_Create("li\rq\0u\nor", 0, 9)), String_ToC(expectedResult), String_Length(expectedResult));
+	String expectedResult = String_Create("This is a test. Pack my bo\0x with five dozen li\rq\0u\nor jugs.", 60);
+	AssertString(String_Format("This is a test. Pack my %S with five dozen %S jugs.", String_Create("bo\0x", 4), String_Create("li\rq\0u\nor", 9)), String_ToC(expectedResult), String_Length(expectedResult));
 }
 END_TEST
 
@@ -73,7 +73,7 @@ END_TEST
 
 START_TEST(FormatCanInsertSpecialCharacters)
 {
-	String expectedResult = String_Create("This is a test insert of '\0'.", 0, 29);
+	String expectedResult = String_Create("This is a test insert of '\0'.", 29);
 	AssertString(String_Format("This is a test insert of '%c'.", '\0'), String_ToC(expectedResult), String_Length(expectedResult));
 }
 END_TEST

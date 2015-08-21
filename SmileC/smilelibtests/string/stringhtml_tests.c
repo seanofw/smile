@@ -30,14 +30,14 @@ END_TEST
 
 START_TEST(HtmlEncodeShouldEncodeTheFourDangerousCharactersToNamedEntities)
 {
-	String str = String_Create("<This 'is & a \"test.\">", 0, 22);
+	String str = String_Create("<This 'is & a \"test.\">", 22);
 	AssertString(String_HtmlEncode(str), "&lt;This 'is &amp; a &quot;test.&quot;&gt;", 42);
 }
 END_TEST
 
 START_TEST(HtmlEncodeShouldOnlyChangeTheFourDangerousCharacters)
 {
-	String str = String_Create("<\xA0\x00\x1A\xFF'\t\n\r&#\x7F?\"test.\">", 0, 21);
+	String str = String_Create("<\xA0\x00\x1A\xFF'\t\n\r&#\x7F?\"test.\">", 21);
 	AssertString(String_HtmlEncode(str), "&lt;\xA0\x00\x1A\xFF'\t\n\r&amp;#\x7F?&quot;test.&quot;&gt;", 41);
 }
 END_TEST
@@ -53,14 +53,14 @@ END_TEST
 
 START_TEST(HtmlEncodeToAsciiShouldEncodeTheFourDangerousCharactersToNamedEntities)
 {
-	String str = String_Create("<This 'is & a \"test.\">", 0, 22);
+	String str = String_Create("<This 'is & a \"test.\">", 22);
 	AssertString(String_HtmlEncodeToAscii(str), "&lt;This 'is &amp; a &quot;test.&quot;&gt;", 42);
 }
 END_TEST
 
 START_TEST(HtmlEncodeToAsciiShouldEncodeAllNonAsciiCharacters)
 {
-	String str = String_Create("\xEF\xBB\xBF<\xC2\xA0\x00\x1A'\n\r&#\x7F?\"test.\">", 0, 23);
+	String str = String_Create("\xEF\xBB\xBF<\xC2\xA0\x00\x1A'\n\r&#\x7F?\"test.\">", 23);
 	AssertString(String_HtmlEncodeToAscii(str), "&#65279;&lt;&nbsp;\x00\x1A'\n\r&amp;#\x7F?&quot;test.&quot;&gt;", 52);
 }
 END_TEST
@@ -160,7 +160,7 @@ END_TEST
 
 START_TEST(UrlEncodeShouldEncodeDangerousCharactersToEscapes)
 {
-	String str = String_Create("[(!*This ';is :@&= a +%$test,/?#)]", 0, 34);
+	String str = String_Create("[(!*This ';is :@&= a +%$test,/?#)]", 34);
 	const char *expectedResult = "%5B%28%21%2AThis%20%27%3Bis%20%3A%40%26%3D%20a%20%2B%25%24test%2C%2F%3F%23%29%5D";
 	AssertString(String_UrlEncode(str), expectedResult, StrLen(expectedResult));
 }
@@ -176,7 +176,7 @@ END_TEST
 
 START_TEST(UrlEncodeShouldEncodeNonAsciiCharacters)
 {
-	String str = String_Create("This\0is\r\na\x7F\xC2\xA0test.", 0, 18);
+	String str = String_Create("This\0is\r\na\x7F\xC2\xA0test.", 18);
 	const char *expectedResult = "This%00is%0D%0Aa%7F%C2%A0test.";
 	AssertString(String_UrlEncode(str), expectedResult, StrLen(expectedResult));
 }
@@ -196,7 +196,7 @@ END_TEST
 
 START_TEST(UrlQueryEncodeShouldEncodeOnlyAFewDangerousCharactersToEscapes)
 {
-	String str = String_Create("[(!*This ';is :@&= a +%$test,/?#)]", 0, 34);
+	String str = String_Create("[(!*This ';is :@&= a +%$test,/?#)]", 34);
 	const char *expectedResult = "[(!*This%20';is%20:@%26%3D%20a%20+%25$test,/%3F%23)]";
 	AssertString(String_UrlQueryEncode(str), expectedResult, StrLen(expectedResult));
 }
@@ -212,7 +212,7 @@ END_TEST
 
 START_TEST(UrlQueryEncodeShouldEncodeNonAsciiCharacters)
 {
-	String str = String_Create("This\0is\r\na\x7F\xC2\xA0test.", 0, 18);
+	String str = String_Create("This\0is\r\na\x7F\xC2\xA0test.", 18);
 	const char *expectedResult = "This%00is%0D%0Aa%7F%C2%A0test.";
 	AssertString(String_UrlQueryEncode(str), expectedResult, StrLen(expectedResult));
 }

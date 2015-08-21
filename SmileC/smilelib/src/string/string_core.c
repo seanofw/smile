@@ -34,7 +34,7 @@ STATIC_STRING(String_Empty, "", 0);
 /// <param name="start">The offset within the source bytes to start copying from.</param>
 /// <param name="length">The length of bytes to copy into the new string.</param>
 /// <returns>The new String instance.</returns>
-String String_Create(const Byte *text, Int start, Int length)
+String String_Create(const Byte *text, Int length)
 {
 	struct StringInt *str;
 	Byte *newText;
@@ -49,7 +49,7 @@ String String_Create(const Byte *text, Int start, Int length)
 	str->length = length;
 	str->text = newText;
 
-	MemCpy(newText, text + start, length);
+	MemCpy(newText, text, length);
 	newText[length] = '\0';
 
 	return (String)str;
@@ -376,7 +376,7 @@ String String_SubstringAt(const String str, Int start)
 	if (start >= s->length)
 		return String_Empty;
 
-	return String_Create(s->text, start, s->length - start);
+	return String_Create(s->text + start, s->length - start);
 }
 
 /// <summary>
@@ -401,7 +401,7 @@ String String_Substring(const String str, Int start, Int length)
 		length = s->length - start;
 	}
 
-	return String_Create(s->text, start, length);
+	return String_Create(s->text + start, length);
 }
 
 /// <summary>

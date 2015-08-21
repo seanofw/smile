@@ -92,7 +92,7 @@ Inline StringBuilder StringBuilder_CreateFromSubstring(const String str, Int sta
 Inline String StringBuilder_ToString(const StringBuilder stringBuilder)
 {
 	const struct StringBuilderInt *sb = (const struct StringBuilderInt *)stringBuilder;
-	return String_Create(sb->text, 0, sb->length);
+	return String_Create(sb->text, sb->length);
 }
 
 Inline void StringBuilder_SetLength(StringBuilder stringBuilder, Int length)

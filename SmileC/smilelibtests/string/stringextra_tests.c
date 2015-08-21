@@ -160,7 +160,7 @@ START_TEST(RawReverseReordersText)
 {
 	AssertString(String_RawReverse(String_Empty), NULL, 0);
 	AssertString(String_RawReverse(String_FromC("This is a test.")), ".tset a si sihT", 15);
-	AssertString(String_RawReverse(String_Create("\xEF\xBB\xBFThis\xC2\xA0is a\0test.", 0, 19)), ".tset\0a si\xA0\xC2sihT\xBF\xBB\xEF", 19);
+	AssertString(String_RawReverse(String_Create("\xEF\xBB\xBFThis\xC2\xA0is a\0test.", 19)), ".tset\0a si\xA0\xC2sihT\xBF\xBB\xEF", 19);
 }
 END_TEST
 
@@ -168,7 +168,7 @@ START_TEST(ReverseReordersTextButPreservesCharacters)
 {
 	AssertString(String_Reverse(String_Empty), NULL, 0);
 	AssertString(String_Reverse(String_FromC("This is a test.")), ".tset a si sihT", 15);
-	AssertString(String_Reverse(String_Create("\xEF\xBB\xBFThis\xC2\xA0is a\0test.", 0, 19)), ".tset\0a si\xC2\xA0sihT\xEF\xBB\xBF", 19);
+	AssertString(String_Reverse(String_Create("\xEF\xBB\xBFThis\xC2\xA0is a\0test.", 19)), ".tset\0a si\xC2\xA0sihT\xEF\xBB\xBF", 19);
 }
 END_TEST
 
@@ -215,8 +215,8 @@ END_TEST
 START_TEST(TrimEndRemovesWhitespaceFromTheEndOfStrings)
 {
 	String str1 = String_FromC("This is a test.");
-	String str2 = String_Create(" \x1A\t\r\n\b\1\0This \x1A\t\r\n\b\1\0is \x1A\t\r\n\b\1\0a \x1A\t\r\n\b\1\0test. \x1A\t\r\n\b\1\0", 0, 52);
-	String str3 = String_Create(" \x1A\t\r\n\b\1\0This \x1A\t\r\n\b\1\0is \x1A\t\r\n\b\1\0a \x1A\t\r\n\b\1\0test.", 0, 44);
+	String str2 = String_Create(" \x1A\t\r\n\b\1\0This \x1A\t\r\n\b\1\0is \x1A\t\r\n\b\1\0a \x1A\t\r\n\b\1\0test. \x1A\t\r\n\b\1\0", 52);
+	String str3 = String_Create(" \x1A\t\r\n\b\1\0This \x1A\t\r\n\b\1\0is \x1A\t\r\n\b\1\0a \x1A\t\r\n\b\1\0test.", 44);
 
 	AssertString(String_TrimEnd(str1), String_GetBytes(str1), String_Length(str1));
 	AssertString(String_TrimEnd(str2), String_GetBytes(str3), String_Length(str3));
@@ -226,8 +226,8 @@ END_TEST
 START_TEST(TrimStartRemovesWhitespaceFromTheStartOfStrings)
 {
 	String str1 = String_FromC("This is a test.");
-	String str2 = String_Create(" \x1A\t\r\n\b\1\0This \x1A\t\r\n\b\1\0is \x1A\t\r\n\b\1\0a \x1A\t\r\n\b\1\0test. \x1A\t\r\n\b\1\0", 0, 52);
-	String str3 = String_Create("This \x1A\t\r\n\b\1\0is \x1A\t\r\n\b\1\0a \x1A\t\r\n\b\1\0test. \x1A\t\r\n\b\1\0", 0, 44);
+	String str2 = String_Create(" \x1A\t\r\n\b\1\0This \x1A\t\r\n\b\1\0is \x1A\t\r\n\b\1\0a \x1A\t\r\n\b\1\0test. \x1A\t\r\n\b\1\0", 52);
+	String str3 = String_Create("This \x1A\t\r\n\b\1\0is \x1A\t\r\n\b\1\0a \x1A\t\r\n\b\1\0test. \x1A\t\r\n\b\1\0", 44);
 
 	AssertString(String_TrimStart(str1), String_GetBytes(str1), String_Length(str1));
 	AssertString(String_TrimStart(str2), String_GetBytes(str3), String_Length(str3));
@@ -237,8 +237,8 @@ END_TEST
 START_TEST(TrimRemovesWhitespaceFromBothEndsOfStrings)
 {
 	String str1 = String_FromC("This is a test.");
-	String str2 = String_Create(" \x1A\t\r\n\b\1\0This \x1A\t\r\n\b\1\0is \x1A\t\r\n\b\1\0a \x1A\t\r\n\b\1\0test. \x1A\t\r\n\b\1\0", 0, 52);
-	String str3 = String_Create("This \x1A\t\r\n\b\1\0is \x1A\t\r\n\b\1\0a \x1A\t\r\n\b\1\0test.", 0, 36);
+	String str2 = String_Create(" \x1A\t\r\n\b\1\0This \x1A\t\r\n\b\1\0is \x1A\t\r\n\b\1\0a \x1A\t\r\n\b\1\0test. \x1A\t\r\n\b\1\0", 52);
+	String str3 = String_Create("This \x1A\t\r\n\b\1\0is \x1A\t\r\n\b\1\0a \x1A\t\r\n\b\1\0test.", 36);
 
 	AssertString(String_Trim(str1), String_GetBytes(str1), String_Length(str1));
 	AssertString(String_Trim(str2), String_GetBytes(str3), String_Length(str3));
@@ -248,7 +248,7 @@ END_TEST
 START_TEST(CompactWhitespaceResultsInTrimmingAndSingleSpaceCharactersInStrings)
 {
 	String str1 = String_FromC("This is a test.");
-	String str2 = String_Create(" \x1A\t \r\n \b\1\0This \x1A\t \r\n \b\1\0is \x1A\t \r\n \b\1\0a \x1A\t \r\n \b\1\0test. \x1A\t \r\n \b\1\0", 0, 62);
+	String str2 = String_Create(" \x1A\t \r\n \b\1\0This \x1A\t \r\n \b\1\0is \x1A\t \r\n \b\1\0a \x1A\t \r\n \b\1\0test. \x1A\t \r\n \b\1\0", 62);
 
 	AssertString(String_CompactWhitespace(str1), String_GetBytes(str1), String_Length(str1));
 	AssertString(String_CompactWhitespace(str2), String_GetBytes(str1), String_Length(str1));
@@ -258,8 +258,8 @@ END_TEST
 START_TEST(AddCSlashesMakesStringsSafe)
 {
 	String str1 = String_FromC("This is a test.");
-	String str2 = String_Create(" \x1A\t \r\n \b\x01\x00 This is a test. \x1A\t \r\n \b\x01\x00 ", 0, 37);
-	String str3 = String_Create(" \\x1A\\t \\r\\n \\b\\x01\\x00 This is a test. \\x1A\\t \\r\\n \\b\\x01\\x00 ", 0, 63);
+	String str2 = String_Create(" \x1A\t \r\n \b\x01\x00 This is a test. \x1A\t \r\n \b\x01\x00 ", 37);
+	String str3 = String_Create(" \\x1A\\t \\r\\n \\b\\x01\\x00 This is a test. \\x1A\\t \\r\\n \\b\\x01\\x00 ", 63);
 
 	AssertString(String_AddCSlashes(str1), String_GetBytes(str1), String_Length(str1));
 	AssertString(String_AddCSlashes(str2), String_GetBytes(str3), String_Length(str3));
@@ -269,8 +269,8 @@ END_TEST
 START_TEST(StripCSlashesDecodesStrings)
 {
 	String str1 = String_FromC("This is a test.");
-	String str2 = String_Create(" \x1A\t \r\n \b\x01\x00 This is a test. \x1A\t \r\n \b\x0F\x00 ", 0, 37);
-	String str3 = String_Create(" \\x1A\\t \\r\\n \\b\\x01\\x00 This is a test. \\x1A\\t \\r\\n \\b\\15\\0 ", 0, 60);
+	String str2 = String_Create(" \x1A\t \r\n \b\x01\x00 This is a test. \x1A\t \r\n \b\x0F\x00 ", 37);
+	String str3 = String_Create(" \\x1A\\t \\r\\n \\b\\x01\\x00 This is a test. \\x1A\\t \\r\\n \\b\\15\\0 ", 60);
 
 	AssertString(String_StripCSlashes(str1), String_GetBytes(str1), String_Length(str1));
 	AssertString(String_StripCSlashes(str3), String_GetBytes(str2), String_Length(str2));
@@ -285,7 +285,7 @@ START_TEST(AddCSlashesEncodesSpecialCharactersSpecially)
 	String str, encodedResult;
 
 	for (i = 0; i < sizeof(specialChars) / sizeof(const Byte); i++) {
-		str = String_Create(&specialChars[i], 0, 1);
+		str = String_Create(&specialChars[i], 1);
 		encodedResult = String_AddCSlashes(str);
 
 		AssertString(encodedResult, encodings[i], StrLen(encodings[i]));
@@ -301,7 +301,7 @@ START_TEST(StripCSlashesDecodesSpecialCharacters)
 	String str, decodedResult;
 
 	for (i = 0; i < sizeof(specialChars) / sizeof(const Byte); i++) {
-		str = String_Create(encodings[i], 0, 2);
+		str = String_Create(encodings[i], 2);
 		decodedResult = String_StripCSlashes(str);
 
 		AssertString(decodedResult, &specialChars[i], 1);
@@ -346,7 +346,7 @@ START_TEST(AddCSlashesEncodesNonAsciiCharactersAsHexCodes)
 	Byte expectedResult[8];
 
 	for (i = 0; i < sizeof(specialChars) / sizeof(const Byte); i++) {
-		str = String_Create(&specialChars[i], 0, 1);
+		str = String_Create(&specialChars[i], 1);
 		encodedResult = String_AddCSlashes(str);
 		sprintf((char *)expectedResult, "\\x%02X", specialChars[i]);
 
@@ -364,28 +364,28 @@ START_TEST(StripCSlashesDecodesAllHexCodes)
 	for (i = 0; i < 16; i++) {
 		sprintf((char *)buffer1, "\\x%X", (int)i);
 		buffer2[0] = (Byte)i;
-		str1 = String_Create(buffer1, 0, 3);
+		str1 = String_Create(buffer1, 3);
 		AssertString(String_StripCSlashes(str1), buffer2, 1);
 	}
 
 	for (i = 0; i < 16; i++) {
 		sprintf((char *)buffer1, "\\x%x", (int)i);
 		buffer2[0] = (Byte)i;
-		str1 = String_Create(buffer1, 0, 3);
+		str1 = String_Create(buffer1, 3);
 		AssertString(String_StripCSlashes(str1), buffer2, 1);
 	}
 
 	for (i = 0; i < 256; i++) {
 		sprintf((char *)buffer1, "\\x%02X", (int)i);
 		buffer2[0] = (Byte)i;
-		str1 = String_Create(buffer1, 0, 4);
+		str1 = String_Create(buffer1, 4);
 		AssertString(String_StripCSlashes(str1), buffer2, 1);
 	}
 
 	for (i = 0; i < 256; i++) {
 		sprintf((char *)buffer1, "\\x%02x", (int)i);
 		buffer2[0] = (Byte)i;
-		str1 = String_Create(buffer1, 0, 4);
+		str1 = String_Create(buffer1, 4);
 		AssertString(String_StripCSlashes(str1), buffer2, 1);
 	}
 }
@@ -400,21 +400,21 @@ START_TEST(StripCSlashesDecodesAllDecimalCodes)
 	for (i = 0; i < 256; i++) {
 		sprintf((char *)buffer1, "\\%u", (int)i);
 		buffer2[0] = (Byte)i;
-		str1 = String_Create(buffer1, 0, StrLen((const char *)buffer1));
+		str1 = String_Create(buffer1, StrLen((const char *)buffer1));
 		AssertString(String_StripCSlashes(str1), buffer2, 1);
 	}
 
 	for (i = 0; i < 256; i++) {
 		sprintf((char *)buffer1, "\\%02u", (int)i);
 		buffer2[0] = (Byte)i;
-		str1 = String_Create(buffer1, 0, StrLen((const char *)buffer1));
+		str1 = String_Create(buffer1, StrLen((const char *)buffer1));
 		AssertString(String_StripCSlashes(str1), buffer2, 1);
 	}
 
 	for (i = 0; i < 256; i++) {
 		sprintf((char *)buffer1, "\\%03u", (int)i);
 		buffer2[0] = (Byte)i;
-		str1 = String_Create(buffer1, 0, StrLen((const char *)buffer1));
+		str1 = String_Create(buffer1, StrLen((const char *)buffer1));
 		AssertString(String_StripCSlashes(str1), buffer2, 1);
 	}
 }
@@ -460,7 +460,7 @@ START_TEST(RegexEscapeAddsBackslashesToControlCodes)
 
 	for (i = 0; i < 32; i++) {
 		sprintf(buffer, "<This is a %c test.>", (char)i);
-		str = String_Create(buffer, 0, 19);
+		str = String_Create(buffer, 19);
 
 		if (i < 7 || i > 13) {
 			sprintf(buffer, "<This is a \\x%02X test\\.>", i);
