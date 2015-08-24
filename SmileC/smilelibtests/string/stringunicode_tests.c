@@ -478,4 +478,112 @@ START_TEST(EndsWithIFindsUnicodeContentWhenItExists)
 }
 END_TEST
 
+//-------------------------------------------------------------------------------------------------
+//  ToLower Tests
+
+START_TEST(ToLowerDoesNothingToEmptyAndWhitespaceStrings)
+{
+	AssertString(String_ToLower(String_Empty), "", 0);
+	AssertString(String_ToLower(String_FromC("  \t\r\n  ")), "  \t\r\n  ", 7);
+}
+END_TEST
+
+START_TEST(ToLowerConvertsAsciiToLowercase)
+{
+	AssertString(String_ToLower(String_FromC("This IS A tEsT.")), "this is a test.", 15);
+	AssertString(String_ToLower(String_FromC("PACK MY BOX WITH FIVE DOZEN LIQUOR JUGS.")), "pack my box with five dozen liquor jugs.", 40);
+}
+END_TEST
+
+START_TEST(ToLowerConvertsUnicodeToLowercase)
+{
+	AssertString(String_ToLower(String_FromC("PACK MY BOX WITH FIVE DOZ\xC3\x89N LIQUOR JUGS.")), "pack my box with five doz\xC3\xA9n liquor jugs.", 41);
+}
+END_TEST
+
+//-------------------------------------------------------------------------------------------------
+//  ToUpper Tests
+
+START_TEST(ToUpperDoesNothingToEmptyAndWhitespaceStrings)
+{
+	AssertString(String_ToUpper(String_Empty), "", 0);
+	AssertString(String_ToUpper(String_FromC("  \t\r\n  ")), "  \t\r\n  ", 7);
+}
+END_TEST
+
+START_TEST(ToUpperConvertsAsciiToUppercase)
+{
+	AssertString(String_ToUpper(String_FromC("This IS A tEsT.")), "THIS IS A TEST.", 15);
+	AssertString(String_ToUpper(String_FromC("pack my box with five dozen liquor jugs.")), "PACK MY BOX WITH FIVE DOZEN LIQUOR JUGS.", 40);
+}
+END_TEST
+
+START_TEST(ToUpperConvertsUnicodeToUppercase)
+{
+	AssertString(String_ToUpper(String_FromC("pack my box with five doz\xC3\xA9n liquor jugs.")), "PACK MY BOX WITH FIVE DOZ\xC3\x89N LIQUOR JUGS.", 41);
+	AssertString(String_ToUpper(String_FromC("pack my box with five dozen liquor jug\xC3\x9F.")), "PACK MY BOX WITH FIVE DOZEN LIQUOR JUGSS.", 41);
+}
+END_TEST
+
+//-------------------------------------------------------------------------------------------------
+//  ToTitle Tests
+
+START_TEST(ToTitleDoesNothingToEmptyAndWhitespaceStrings)
+{
+	AssertString(String_ToTitle(String_Empty), "", 0);
+	AssertString(String_ToTitle(String_FromC("  \t\r\n  ")), "  \t\r\n  ", 7);
+}
+END_TEST
+
+START_TEST(ToTitleConvertsAsciiToUppercase)
+{
+	AssertString(String_ToTitle(String_FromC("This IS A tEsT.")), "THIS IS A TEST.", 15);
+	AssertString(String_ToTitle(String_FromC("pack my box with five dozen liquor jugs.")), "PACK MY BOX WITH FIVE DOZEN LIQUOR JUGS.", 40);
+}
+END_TEST
+
+START_TEST(ToTitleConvertsUnicodeToUppercase)
+{
+	AssertString(String_ToTitle(String_FromC("pack my box with five doz\xC3\xA9n liquor jugs.")), "PACK MY BOX WITH FIVE DOZ\xC3\x89N LIQUOR JUGS.", 41);
+}
+END_TEST
+
+START_TEST(ToTitleConvertsCertainCompoundUnicodeCodePointsToTitlecase)
+{
+	AssertString(String_ToTitle(String_FromC("pack my box with five dozen liquor jug\xC3\x9F.")), "PACK MY BOX WITH FIVE DOZEN LIQUOR JUGSs.", 41);
+
+	AssertString(String_ToTitle(String_FromC("This is a DZ: \xC7\x84.")), "THIS IS A DZ: \xC7\x85.", 17);
+	AssertString(String_ToTitle(String_FromC("This is a Dz: \xC7\x85.")), "THIS IS A DZ: \xC7\x85.", 17);
+	AssertString(String_ToTitle(String_FromC("This is a dz: \xC7\x86.")), "THIS IS A DZ: \xC7\x85.", 17);
+
+	AssertString(String_ToTitle(String_FromC("This is a LJ: \xC7\x87.")), "THIS IS A LJ: \xC7\x88.", 17);
+	AssertString(String_ToTitle(String_FromC("This is a Lj: \xC7\x88.")), "THIS IS A LJ: \xC7\x88.", 17);
+	AssertString(String_ToTitle(String_FromC("This is a lj: \xC7\x89.")), "THIS IS A LJ: \xC7\x88.", 17);
+}
+END_TEST
+
+//-------------------------------------------------------------------------------------------------
+//  CaseFold Tests
+
+START_TEST(CaseFoldDoesNothingToEmptyAndWhitespaceStrings)
+{
+	AssertString(String_CaseFold(String_Empty), "", 0);
+	AssertString(String_CaseFold(String_FromC("  \t\r\n  ")), "  \t\r\n  ", 7);
+}
+END_TEST
+
+START_TEST(CaseFoldConvertsAsciiToLowercase)
+{
+	AssertString(String_CaseFold(String_FromC("This IS A tEsT.")), "this is a test.", 15);
+	AssertString(String_CaseFold(String_FromC("PACK MY BOX WITH FIVE DOZEN LIQUOR JUGS.")), "pack my box with five dozen liquor jugs.", 40);
+}
+END_TEST
+
+START_TEST(CaseFoldConvertsUnicodeToComparableForm)
+{
+	AssertString(String_CaseFold(String_FromC("PACK MY BOX WITH FIVE DOZ\xC3\x89N LIQUOR JUGS.")), "pack my box with five doz\xC3\xA9n liquor jugs.", 41);
+	AssertString(String_CaseFold(String_FromC("pack my box with five dozen liquor jug\xC3\x9F.")), "pack my box with five dozen liquor jugss.", 41);
+}
+END_TEST
+
 #include "stringunicode_tests.generated.inc"

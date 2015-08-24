@@ -40,6 +40,19 @@ START_TEST_SUITE(StringUnicodeTests)
 	EndsWithIDoesNotFindContentWhenItDoesNotExist,
 	EndsWithIAlwaysMatchesTheEmptyString,
 	EndsWithIFindsUnicodeContentWhenItExists,
+	ToLowerDoesNothingToEmptyAndWhitespaceStrings,
+	ToLowerConvertsAsciiToLowercase,
+	ToLowerConvertsUnicodeToLowercase,
+	ToUpperDoesNothingToEmptyAndWhitespaceStrings,
+	ToUpperConvertsAsciiToUppercase,
+	ToUpperConvertsUnicodeToUppercase,
+	ToTitleDoesNothingToEmptyAndWhitespaceStrings,
+	ToTitleConvertsAsciiToUppercase,
+	ToTitleConvertsUnicodeToUppercase,
+	ToTitleConvertsCertainCompoundUnicodeCodePointsToTitlecase,
+	CaseFoldDoesNothingToEmptyAndWhitespaceStrings,
+	CaseFoldConvertsAsciiToLowercase,
+	CaseFoldConvertsUnicodeToComparableForm,
 }
 END_TEST_SUITE(StringUnicodeTests)
 
