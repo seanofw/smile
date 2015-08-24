@@ -49,5 +49,8 @@
     <None Include="string\stringparse_tests.generated.inc">
       <Filter>string</Filter>
     </None>
+    <None Include="string\stringunicode_tests.generated.inc">
+      <Filter>string</Filter>
+    </None>
   </ItemGroup>
 </Project>

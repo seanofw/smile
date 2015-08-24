@@ -123,6 +123,7 @@
     <None Include="string\stringformat_tests.generated.inc" />
     <None Include="string\stringhtml_tests.generated.inc" />
     <None Include="string\stringparse_tests.generated.inc" />
+    <None Include="string\stringunicode_tests.generated.inc" />
     <None Include="testsuites.generated.inc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

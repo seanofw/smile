@@ -533,20 +533,23 @@ Int String_IndexOf(const String str, const String pattern, Int start)
 Int String_LastIndexOf(const String str, const String pattern, Int start)
 {
 	const struct StringInt *s, *p;
+	Int slength, plength;
 
 	s = (const struct StringInt *)str;
 	p = (const struct StringInt *)pattern;
+	slength = s->length;
+	plength = p->length;
 
-	if (p->length > s->length || start < p->length) return -1;
+	if (plength > slength || start < plength) return -1;
 
-	start -= p->length;
-	if (start >= s->length - p->length)
+	start -= plength;
+	if (start >= slength - plength)
 	{
-		start = s->length - p->length;
+		start = slength - plength;
 	}
 	for (; start >= 0; start--)
 	{
-		if (IsMatch(s->text, p->text, start, p->length))
+		if (IsMatch(s->text, p->text, start, plength))
 			return start;
 	}
 	return -1;

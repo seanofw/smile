@@ -992,11 +992,14 @@ Int String_LastIndexOfI(const String str, const String pattern, Int start)
 	slength = s->length;
 	plength = p->length;
 
+	if (plength > slength || start < plength) return -1;
+
+	start -= plength;
 	if (start >= slength - plength)
 	{
 		start = slength - plength;
 	}
-	for (start -= slength; start >= 0; start--)
+	for (; start >= 0; start--)
 	{
 		if (String_CompareRangeI(pattern, 0, plength, str, start, plength, &usedSlowConversion) == 0)
 			return start;
