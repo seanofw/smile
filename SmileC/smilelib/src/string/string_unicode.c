@@ -817,12 +817,20 @@ static void SortCombiningCharacters(UInt32 *buffer, UInt32 *temp, Int start, Int
 		c2 = GetCombiningClass(buffer[src2]);
 		if (c1 <= c2) {
 			temp[dest++] = buffer[src1++];
-			temp[dest++] = buffer[src2++];
+			count1--;
 		}
 		else {
-			temp[dest++] = buffer[src1++];
 			temp[dest++] = buffer[src2++];
+			count2--;
 		}
+	}
+	while (count1 > 0) {
+		temp[dest++] = buffer[src1++];
+		count1--;
+	}
+	while (count2 > 0) {
+		temp[dest++] = buffer[src2++];
+		count2--;
 	}
 
 	// Copy from temp back to the original buffer.

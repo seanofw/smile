@@ -586,4 +586,172 @@ START_TEST(CaseFoldConvertsUnicodeToComparableForm)
 }
 END_TEST
 
+//-------------------------------------------------------------------------------------------------
+//  Unicode Decomposition Tests
+
+START_TEST(DecomposeDoesNothingToEmptyAndWhitespaceAndAsciiStrings)
+{
+	AssertString(String_Decompose(String_Empty), "", 0);
+	AssertString(String_Decompose(String_FromC("  \t\r\n  ")), "  \t\r\n  ", 7);
+	AssertString(String_Decompose(String_FromC("This is a test.")), "This is a test.", 15);
+	AssertString(String_Decompose(String_FromC("Pack my box with five dozen liquor jugs.")), "Pack my box with five dozen liquor jugs.", 40);
+}
+END_TEST
+
+START_TEST(DecomposeDisassemblesCompoundAccentedCharacters)
+{
+	AssertString(String_Decompose(String_FromC("trouv\xC3\xA9.")), "trouve\xCC\x81.", 9);
+	AssertString(String_Decompose(String_FromC("\xC3\xA0 bient\xC3\xB4t.")), "a\xCC\x80 biento\xCC\x82t.", 14);
+}
+END_TEST
+
+START_TEST(DecomposeIgnoresNonAccentedUnicodeCharacters)
+{
+	AssertString(String_Decompose(String_FromC("tr\xC3\x97uv\xC3\xB0.")), "tr\xC3\x97uv\xC3\xB0.", 9);
+}
+END_TEST
+
+//-------------------------------------------------------------------------------------------------
+//  Unicode Composition Tests
+
+START_TEST(ComposeDoesNothingToEmptyAndWhitespaceAndAsciiStrings)
+{
+	AssertString(String_Compose(String_Empty), "", 0);
+	AssertString(String_Compose(String_FromC("  \t\r\n  ")), "  \t\r\n  ", 7);
+	AssertString(String_Compose(String_FromC("This is a test.")), "This is a test.", 15);
+	AssertString(String_Compose(String_FromC("Pack my box with five dozen liquor jugs.")), "Pack my box with five dozen liquor jugs.", 40);
+}
+END_TEST
+
+START_TEST(ComposeAssemblesCompoundAccentedCharacters)
+{
+	AssertString(String_Compose(String_FromC("trouve\xCC\x81.")), "trouv\xC3\xA9.", 8);
+	AssertString(String_Compose(String_FromC("a\xCC\x80 biento\xCC\x82t.")), "\xC3\xA0 bient\xC3\xB4t.", 12);
+}
+END_TEST
+
+START_TEST(ComposeIgnoresNonAccentedUnicodeCharacters)
+{
+	AssertString(String_Compose(String_FromC("tr\xC3\x97uv\xC3\xB0.")), "tr\xC3\x97uv\xC3\xB0.", 9);
+}
+END_TEST
+
+//-------------------------------------------------------------------------------------------------
+//  Unicode Combining-Character Normalization Tests
+
+START_TEST(NormalizeDoesNothingToEmptyAndWhitespaceAndAsciiStrings)
+{
+	AssertString(String_Normalize(String_Empty), "", 0);
+	AssertString(String_Normalize(String_FromC("  \t\r\n  ")), "  \t\r\n  ", 7);
+	AssertString(String_Normalize(String_FromC("This is a test.")), "This is a test.", 15);
+	AssertString(String_Normalize(String_FromC("Pack my box with five dozen liquor jugs.")), "Pack my box with five dozen liquor jugs.", 40);
+}
+END_TEST
+
+START_TEST(NormalizeIgnoresCompoundCharactersWithoutSeparatedDiacritics)
+{
+	AssertString(String_Normalize(String_FromC("trouv\xC3\xA9.")), "trouv\xC3\xA9.", 8);
+	AssertString(String_Normalize(String_FromC("\xC3\xA0 bient\xC3\xB4t.")), "\xC3\xA0 bient\xC3\xB4t.", 12);
+}
+END_TEST
+
+
+START_TEST(NormalizeIgnoresSingleAccents)
+{
+	AssertString(String_Normalize(String_FromC("trouve\xCC\x81.")), "trouve\xCC\x81.", 9);
+	AssertString(String_Normalize(String_FromC("a\xCC\x80 biento\xCC\x82t.")), "a\xCC\x80 biento\xCC\x82t.", 14);
+}
+END_TEST
+
+START_TEST(NormalizeIgnoresNonAccentedUnicodeCharacters)
+{
+	AssertString(String_Normalize(String_FromC("tr\xC3\x97uv\xC3\xB0.")), "tr\xC3\x97uv\xC3\xB0.", 9);
+}
+END_TEST
+
+START_TEST(NormalizeSortsPairsOfDiacriticsCorrectly)
+{
+	// 'x' with dot below followed by dot above can be left alone.
+	AssertString(String_Normalize(String_FromC("x\xCC\xA3\xCC\x87.")), "x\xCC\xA3\xCC\x87.", 6);
+
+	// 'x' with dot above followed by dot below must be transformed.
+	AssertString(String_Normalize(String_FromC("x\xCC\x87\xCC\xA3.")), "x\xCC\xA3\xCC\x87.", 6);
+}
+END_TEST
+
+START_TEST(NormalizeSortsManyDiacriticsCorrectly)
+{
+	// The test below uses the diacritics in this table; the code points (and UTF-8 "magic numbers")
+	// are provided here for reference.
+	//
+	// Tilde overlay           U+0334:  \xCC\xB4:  class 1
+	// Palatalized hook below  U+0321:  \xCC\xA1:  class 202
+	// Horn                    U+031B:  \xCC\x9B:  class 216
+	// Ring below              U+0325:  \xCC\xA5:  class 220
+	// Ring above              U+030A:  \xCC\x8A:  class 230
+	// Grave                   U+0300:  \xCC\x80:  class 230
+	// Acute                   U+0301:  \xCC\x81:  class 230
+	// Left angle above        U+031A:  \xCC\x9A:  class 232
+	// Double inverted breve   U+0361:  \xCD\xA1:  class 234
+
+	// Try all of the diacritics in forward (sorted) order.  Should be unchanged.
+	AssertString(String_Normalize(String_FromC("x\xCC\xB4\xCC\xA1\xCC\x9B\xCC\xA5\xCC\x8A\xCC\x80\xCC\x81\xCC\x9A\xCD\xA1.")),
+		"x\xCC\xB4\xCC\xA1\xCC\x9B\xCC\xA5\xCC\x8A\xCC\x80\xCC\x81\xCC\x9A\xCD\xA1.", 20);
+
+	// Try all of the diacritics in reverse order.  Should come out reversed, with the class-230 diacritics
+	// still in reverse order (i.e., a stable sort was used).
+	AssertString(String_Normalize(String_FromC("x\xCD\xA1\xCC\x9A\xCC\x8A\xCC\x80\xCC\x81\xCC\xA5\xCC\x9B\xCC\xA1\xCC\xB4.")),
+		"x\xCC\xB4\xCC\xA1\xCC\x9B\xCC\xA5\xCC\x8A\xCC\x80\xCC\x81\xCC\x9A\xCD\xA1.", 20);
+
+	// Try all of the diacritics in a random shuffly order.  The class-230 diacritics should stay in order.
+	AssertString(String_Normalize(String_FromC("x\xCC\xA5\xCC\xA1\xCC\x80\xCC\x9A\xCC\x8A\xCC\xB4\xCD\xA1\xCC\x81\xCC\x9B.")),
+		"x\xCC\xB4\xCC\xA1\xCC\x9B\xCC\xA5\xCC\x80\xCC\x8A\xCC\x81\xCC\x9A\xCD\xA1.", 20);
+}
+END_TEST
+
+//-------------------------------------------------------------------------------------------------
+//  Unicode Character-Extraction Tests.
+
+START_TEST(ExtractUnicodeCharacterCorrectlyRecognizesUtf8Sequences)
+{
+	String str = String_FromC("a\xCC\x80 biento\xCC\x82t. \xC3\xA0 bient\xC3\xB4t.");
+	const Int32 expectedResult[] = {
+		'a', 0x0300, ' ', 'b', 'i', 'e', 'n', 't', 'o', 0x0302, 't', '.',
+		' ', 0x00E0, ' ', 'b', 'i', 'e', 'n', 't', 0x00F4, 't', '.',
+	};
+	Int i, src;
+	Int32 ch;
+
+	for (i = 0, src = 0; i < sizeof(expectedResult) / sizeof(Int32); i++) {
+		ch = String_ExtractUnicodeCharacter(str, &src);
+		ASSERT(ch == expectedResult[i]);
+	}
+}
+END_TEST
+
+START_TEST(ExtractUnicodeCharacterInternalCorrectlyRecognizesUtf8Sequences)
+{
+	String str = String_FromC("a\xCC\x80 biento\xCC\x82t. \xC3\xA0 bient\xC3\xB4t.");
+	const Int32 expectedResult[] = {
+		'a', 0x0300, ' ', 'b', 'i', 'e', 'n', 't', 'o', 0x0302, 't', '.',
+		' ', 0x00E0, ' ', 'b', 'i', 'e', 'n', 't', 0x00F4, 't', '.',
+	};
+	Int i;
+	Int32 ch;
+	const Byte *src, *end;
+
+	src = String_GetBytes(str);
+	end = src + String_Length(str);
+	for (i = 0; i < sizeof(expectedResult) / sizeof(Int32); i++) {
+		ch = String_ExtractUnicodeCharacterInternal(&src, end);
+		ASSERT(ch == expectedResult[i]);
+	}
+}
+END_TEST
+
+//-------------------------------------------------------------------------------------------------
+//  Unicode Code-Page Conversion Tests
+
+// TODO: Implement tests for code-page conversion to and from UTF-8.
+
 #include "stringunicode_tests.generated.inc"
