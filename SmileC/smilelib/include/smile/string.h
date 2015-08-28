@@ -148,7 +148,44 @@ SMILE_API Int32 String_ExtractUnicodeCharacter(const String str, Int *index);
 SMILE_API Int32 String_ExtractUnicodeCharacterInternal(const Byte **start, const Byte *end);
 
 SMILE_API String String_ConvertUtf8ToCodePageRange(const String str, Int start, Int length, const Byte **utf8ToCodePageTables, Int numTables);
-SMILE_API String String_ConvertCodePageToUtf8Range(const String str, Int start, Int length, const Int32 *codePageToUtf8Table);
+SMILE_API String String_ConvertCodePageToUtf8Range(const String str, Int start, Int length, const UInt16 *codePageToUtf8Table);
+
+//-------------------------------------------------------------------------------------------------
+//  Known (supported) legacy code pages.
+
+enum {
+	LEGACY_CODE_PAGE_ISO_8859_1 = 1,
+	LEGACY_CODE_PAGE_ISO_8859_2 = 2,
+	LEGACY_CODE_PAGE_ISO_8859_3 = 3,
+	LEGACY_CODE_PAGE_ISO_8859_4 = 4,
+	LEGACY_CODE_PAGE_ISO_8859_5 = 5,
+	LEGACY_CODE_PAGE_ISO_8859_6 = 6,
+	LEGACY_CODE_PAGE_ISO_8859_7 = 7,
+	LEGACY_CODE_PAGE_ISO_8859_8 = 8,
+	LEGACY_CODE_PAGE_ISO_8859_9 = 9,
+	LEGACY_CODE_PAGE_ISO_8859_10 = 10,
+	LEGACY_CODE_PAGE_ISO_8859_11 = 11,
+	// There is no such thing as ISO 8859-12.
+	LEGACY_CODE_PAGE_ISO_8859_13 = 13,
+	LEGACY_CODE_PAGE_ISO_8859_14 = 14,
+	LEGACY_CODE_PAGE_ISO_8859_15 = 15,
+	LEGACY_CODE_PAGE_ISO_8859_16 = 16,
+
+	LEGACY_CODE_PAGE_CP437 = 437,
+
+	LEGACY_CODE_PAGE_WIN1250 = 1250,
+	LEGACY_CODE_PAGE_WIN1251 = 1251,
+	LEGACY_CODE_PAGE_WIN1252 = 1252,
+	LEGACY_CODE_PAGE_WIN1253 = 1253,
+	LEGACY_CODE_PAGE_WIN1254 = 1254,
+	LEGACY_CODE_PAGE_WIN1255 = 1255,
+	LEGACY_CODE_PAGE_WIN1256 = 1256,
+	LEGACY_CODE_PAGE_WIN1257 = 1257,
+	LEGACY_CODE_PAGE_WIN1258 = 1258,
+};
+
+SMILE_API String String_ConvertUtf8ToKnownCodePageRange(const String str, Int start, Int length, Int legacyCodePageID);
+SMILE_API String String_ConvertKnownCodePageToUtf8Range(const String str, Int start, Int length, Int legacyCodePageID);
 
 //-------------------------------------------------------------------------------------------------
 //  Inline parts of the implementation
@@ -347,9 +384,31 @@ Inline String String_ConvertUtf8ToCodePage(const String str, const Byte **utf8To
 /// <param name="str">The string you would like to convert to UTF-8.</param>
 /// <param name="codePageToUtf8Table">A 256-entry table describing the resulting Unicode code point for each byte in the string.</param>
 /// <returns>The whole string, converted to UTF-8.</returns>
-Inline String String_ConvertCodePageToUtf8(const String str, const Int32 *codePageToUtf8Table)
+Inline String String_ConvertCodePageToUtf8(const String str, const UInt16 *codePageToUtf8Table)
 {
 	return str != NULL ? String_ConvertCodePageToUtf8Range(str, 0, ((const struct StringInt *)str)->length, codePageToUtf8Table) : (String )str;
+}
+
+/// <summary>
+/// Convert a string from UTF-8 encoding to that described by the given well-known legacy code page.
+/// </summary>
+/// <param name="str">The string you would like to convert to a code page.</param>
+/// <param name="legacyCodePageID">The ID of the known legacy code-page.  If the code page is unknown, this will return the empty string.</param>
+/// <returns>The whole string, converted to that code page.</returns>
+Inline String String_ConvertUtf8ToKnownCodePage(const String str, Int legacyCodePageID)
+{
+	return str != NULL ? String_ConvertUtf8ToKnownCodePageRange(str, 0, ((const struct StringInt *)str)->length, legacyCodePageID) : (String )str;
+}
+
+/// <summary>
+/// Convert a string from a specific well-known legacy code-page encoding to standard UTF-8.
+/// </summary>
+/// <param name="str">The string you would like to convert to UTF-8.</param>
+/// <param name="legacyCodePageID">The ID of the known legacy code-page.  If the code page is unknown, this will return the empty string.</param>
+/// <returns>The whole string, converted to UTF-8.</returns>
+Inline String String_ConvertKnownCodePageToUtf8(const String str, Int legacyCodePageID)
+{
+	return str != NULL ? String_ConvertKnownCodePageToUtf8Range(str, 0, ((const struct StringInt *)str)->length, legacyCodePageID) : (String )str;
 }
 
 /// <summary>

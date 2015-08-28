@@ -655,7 +655,6 @@ START_TEST(NormalizeIgnoresCompoundCharactersWithoutSeparatedDiacritics)
 }
 END_TEST
 
-
 START_TEST(NormalizeIgnoresSingleAccents)
 {
 	AssertString(String_Normalize(String_FromC("trouve\xCC\x81.")), "trouve\xCC\x81.", 9);
@@ -752,6 +751,53 @@ END_TEST
 //-------------------------------------------------------------------------------------------------
 //  Unicode Code-Page Conversion Tests
 
-// TODO: Implement tests for code-page conversion to and from UTF-8.
+START_TEST(ConvertingFromUtf8ToLatin1ConvertsLatin1CodePoints)
+{
+	String str = String_FromC("\xC3\xA0 bient\xC3\xB4t.");
+	AssertString(String_ConvertUtf8ToKnownCodePage(str, LEGACY_CODE_PAGE_ISO_8859_1), "\xE0 bient\xF4t.", 10);
+}
+END_TEST
+
+START_TEST(ConvertingFromUtf8ToLatin1ConvertsNonLatin1CodePointsToQuestionMarks)
+{
+	String str = String_FromC("a\xCC\x80 biento\xCC\x82t.");
+	AssertString(String_ConvertUtf8ToKnownCodePage(str, LEGACY_CODE_PAGE_ISO_8859_1), "a? biento?t.", 12);
+}
+END_TEST
+
+START_TEST(ConvertingFromLatin1ToUtf8ConvertsLatin1CodePointsToCombinedForms)
+{
+	String str = String_FromC("\xE0 bient\xF4t.");
+	AssertString(String_ConvertKnownCodePageToUtf8(str, LEGACY_CODE_PAGE_ISO_8859_1), "\xC3\xA0 bient\xC3\xB4t.", 12);
+}
+END_TEST
+
+START_TEST(ConvertingToWindows1252IsNotTheSameAsLatin1)
+{
+	String str = String_FromC("\x8A\xE0 \x93\x62ient\xF4t.\x94");
+	AssertString(String_ConvertKnownCodePageToUtf8(str, LEGACY_CODE_PAGE_ISO_8859_1), "\xC2\x8A\xC3\xA0 \xC2\x93\x62ient\xC3\xB4t.\xC2\x94", 18);
+
+	str = String_FromC("\x8A\xE0 \x93\x62ient\xF4t.\x94");
+	AssertString(String_ConvertKnownCodePageToUtf8(str, LEGACY_CODE_PAGE_WIN1252), "\xC5\xA0\xC3\xA0 \xE2\x80\x9C\x62ient\xC3\xB4t.\xE2\x80\x9D", 20);
+}
+END_TEST
+
+START_TEST(ConvertingFromWindows1252IsNotTheSameAsLatin1)
+{
+	String str = String_FromC("\xC2\x8A\xC3\xA0 \xC2\x93\x62ient\xC3\xB4t.\xC2\x94");
+	AssertString(String_ConvertUtf8ToKnownCodePage(str, LEGACY_CODE_PAGE_ISO_8859_1), "\x8A\xE0 \x93\x62ient\xF4t.\x94", 13);
+
+	str = String_FromC("\xC5\xA0\xC3\xA0 \xE2\x80\x9C\x62ient\xC3\xB4t.\xE2\x80\x9D");
+	AssertString(String_ConvertUtf8ToKnownCodePage(str, LEGACY_CODE_PAGE_WIN1252), "\x8A\xE0 \x93\x62ient\xF4t.\x94", 13);
+}
+END_TEST
+
+START_TEST(ConvertingToAnUnknownCodePageResultsInEmptyString)
+{
+	String str = String_FromC("\xE0 bient\xF4t.");
+	AssertString(String_ConvertKnownCodePageToUtf8(str, 12), "", 0);
+	AssertString(String_ConvertUtf8ToKnownCodePage(str, 12), "", 0);
+}
+END_TEST
 
 #include "stringunicode_tests.generated.inc"

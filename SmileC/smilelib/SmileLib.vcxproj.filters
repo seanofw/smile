@@ -114,6 +114,15 @@
     <ClCompile Include="src\string\html_valuetoentity.c">
       <Filter>src\string</Filter>
     </ClCompile>
+    <ClCompile Include="src\unicode\codepages_cpx.c">
+      <Filter>src\unicode</Filter>
+    </ClCompile>
+    <ClCompile Include="src\unicode\codepages_iso8859.c">
+      <Filter>src\unicode</Filter>
+    </ClCompile>
+    <ClCompile Include="src\unicode\codepages_win125x.c">
+      <Filter>src\unicode</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">

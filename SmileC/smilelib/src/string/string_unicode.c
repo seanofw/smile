@@ -838,7 +838,7 @@ static void SortCombiningCharacters(UInt32 *buffer, UInt32 *temp, Int start, Int
 }
 
 /// <summary>
-/// Convert a substring within a string from UTF-8 encoding to that described by the given code-page tables.
+/// Convert a substring within a string from UTF-8 encoding to that described by the given legacy code-page tables.
 /// </summary>
 /// <param name="str">The string whose substring you would like to convert to a code page.</param>
 /// <param name="start">The start of the substring within that string.</param>
@@ -879,7 +879,6 @@ String String_ConvertUtf8ToCodePageRange(const String str, Int start, Int length
 	newText = GC_MALLOC_TEXT(length);
 	if (newText == NULL) Smile_Abort_OutOfMemory();
 
-	resultStr->length = length;
 	resultStr->text = newText;
 
 	src = start;
@@ -902,22 +901,24 @@ String String_ConvertUtf8ToCodePageRange(const String str, Int start, Int length
 
 	newText[dest] = '\0';
 
+	resultStr->length = dest;
+
 	return (String)resultStr;
 }
 
 /// <summary>
-/// Convert a substring within a string from a specific code-page encoding to standard UTF-8.
+/// Convert a substring within a string from a specific legacy code-page encoding to standard UTF-8.
 /// </summary>
 /// <param name="str">The string whose substring you would like to convert to UTF-8.</param>
 /// <param name="start">The start of the substring within that string.</param>
 /// <param name="length">The length of the substring within that string.</param>
 /// <param name="codePageToUtf8Table">A 256-entry table describing the resulting Unicode code point for each byte in the string.</param>
 /// <returns>The whole string, with the given substring converted to UTF-8.</returns>
-String String_ConvertCodePageToUtf8Range(const String str, Int start, Int length, const Int32 *codePageToUtf8Table)
+String String_ConvertCodePageToUtf8Range(const String str, Int start, Int length, const UInt16 *codePageToUtf8Table)
 {
 	StringBuilder stringBuilder;
 	Int strLength, src;
-	Int32 value;
+	UInt16 value;
 	const Byte *text;
 	Byte ch;
 
@@ -950,6 +951,148 @@ String String_ConvertCodePageToUtf8Range(const String str, Int start, Int length
 	}
 
 	return StringBuilder_ToString(stringBuilder);
+}
+
+/// <summary>
+/// Convert a substring within a string from UTF-8 encoding to that described by the given legacy code page.
+/// </summary>
+/// <param name="str">The string whose substring you would like to convert to a code page.</param>
+/// <param name="start">The start of the substring within that string.</param>
+/// <param name="length">The length of the substring within that string.</param>
+/// <param name="legacyCodePageID">The ID of the known legacy code-page.  If the code page is unknown, this will return the empty string.</param>
+/// <returns>The whole string, with the given substring converted to that code page.</returns>
+String String_ConvertUtf8ToKnownCodePageRange(const String str, Int start, Int length, Int legacyCodePageID)
+{
+	switch (legacyCodePageID) {
+
+		case LEGACY_CODE_PAGE_ISO_8859_1:
+			return String_ConvertUtf8ToCodePageRange(str, start, length, UnicodeTables_UnicodeToIso_8859_1Table, UnicodeTables_UnicodeToIso_8859_1TableCount);
+		case LEGACY_CODE_PAGE_ISO_8859_2:
+			return String_ConvertUtf8ToCodePageRange(str, start, length, UnicodeTables_UnicodeToIso_8859_2Table, UnicodeTables_UnicodeToIso_8859_2TableCount);
+		case LEGACY_CODE_PAGE_ISO_8859_3:
+			return String_ConvertUtf8ToCodePageRange(str, start, length, UnicodeTables_UnicodeToIso_8859_3Table, UnicodeTables_UnicodeToIso_8859_3TableCount);
+		case LEGACY_CODE_PAGE_ISO_8859_4:
+			return String_ConvertUtf8ToCodePageRange(str, start, length, UnicodeTables_UnicodeToIso_8859_4Table, UnicodeTables_UnicodeToIso_8859_4TableCount);
+		case LEGACY_CODE_PAGE_ISO_8859_5:
+			return String_ConvertUtf8ToCodePageRange(str, start, length, UnicodeTables_UnicodeToIso_8859_5Table, UnicodeTables_UnicodeToIso_8859_5TableCount);
+		case LEGACY_CODE_PAGE_ISO_8859_6:
+			return String_ConvertUtf8ToCodePageRange(str, start, length, UnicodeTables_UnicodeToIso_8859_6Table, UnicodeTables_UnicodeToIso_8859_6TableCount);
+		case LEGACY_CODE_PAGE_ISO_8859_7:
+			return String_ConvertUtf8ToCodePageRange(str, start, length, UnicodeTables_UnicodeToIso_8859_7Table, UnicodeTables_UnicodeToIso_8859_7TableCount);
+		case LEGACY_CODE_PAGE_ISO_8859_8:
+			return String_ConvertUtf8ToCodePageRange(str, start, length, UnicodeTables_UnicodeToIso_8859_8Table, UnicodeTables_UnicodeToIso_8859_8TableCount);
+		case LEGACY_CODE_PAGE_ISO_8859_9:
+			return String_ConvertUtf8ToCodePageRange(str, start, length, UnicodeTables_UnicodeToIso_8859_9Table, UnicodeTables_UnicodeToIso_8859_9TableCount);
+		case LEGACY_CODE_PAGE_ISO_8859_10:
+			return String_ConvertUtf8ToCodePageRange(str, start, length, UnicodeTables_UnicodeToIso_8859_10Table, UnicodeTables_UnicodeToIso_8859_10TableCount);
+		case LEGACY_CODE_PAGE_ISO_8859_11:
+			return String_ConvertUtf8ToCodePageRange(str, start, length, UnicodeTables_UnicodeToIso_8859_11Table, UnicodeTables_UnicodeToIso_8859_11TableCount);
+		// There is no such thing as ISO 8859-12.
+		case LEGACY_CODE_PAGE_ISO_8859_13:
+			return String_ConvertUtf8ToCodePageRange(str, start, length, UnicodeTables_UnicodeToIso_8859_13Table, UnicodeTables_UnicodeToIso_8859_13TableCount);
+		case LEGACY_CODE_PAGE_ISO_8859_14:
+			return String_ConvertUtf8ToCodePageRange(str, start, length, UnicodeTables_UnicodeToIso_8859_14Table, UnicodeTables_UnicodeToIso_8859_14TableCount);
+		case LEGACY_CODE_PAGE_ISO_8859_15:
+			return String_ConvertUtf8ToCodePageRange(str, start, length, UnicodeTables_UnicodeToIso_8859_15Table, UnicodeTables_UnicodeToIso_8859_15TableCount);
+		case LEGACY_CODE_PAGE_ISO_8859_16:
+			return String_ConvertUtf8ToCodePageRange(str, start, length, UnicodeTables_UnicodeToIso_8859_16Table, UnicodeTables_UnicodeToIso_8859_16TableCount);
+
+		case LEGACY_CODE_PAGE_CP437:
+			return String_ConvertUtf8ToCodePageRange(str, start, length, UnicodeTables_UnicodeToCp437Table, UnicodeTables_UnicodeToCp437TableCount);
+
+		case LEGACY_CODE_PAGE_WIN1250:
+			return String_ConvertUtf8ToCodePageRange(str, start, length, UnicodeTables_UnicodeToWindows1250Table, UnicodeTables_UnicodeToWindows1250TableCount);
+		case LEGACY_CODE_PAGE_WIN1251:
+			return String_ConvertUtf8ToCodePageRange(str, start, length, UnicodeTables_UnicodeToWindows1251Table, UnicodeTables_UnicodeToWindows1251TableCount);
+		case LEGACY_CODE_PAGE_WIN1252:
+			return String_ConvertUtf8ToCodePageRange(str, start, length, UnicodeTables_UnicodeToWindows1252Table, UnicodeTables_UnicodeToWindows1252TableCount);
+		case LEGACY_CODE_PAGE_WIN1253:
+			return String_ConvertUtf8ToCodePageRange(str, start, length, UnicodeTables_UnicodeToWindows1253Table, UnicodeTables_UnicodeToWindows1253TableCount);
+		case LEGACY_CODE_PAGE_WIN1254:
+			return String_ConvertUtf8ToCodePageRange(str, start, length, UnicodeTables_UnicodeToWindows1254Table, UnicodeTables_UnicodeToWindows1254TableCount);
+		case LEGACY_CODE_PAGE_WIN1255:
+			return String_ConvertUtf8ToCodePageRange(str, start, length, UnicodeTables_UnicodeToWindows1255Table, UnicodeTables_UnicodeToWindows1255TableCount);
+		case LEGACY_CODE_PAGE_WIN1256:
+			return String_ConvertUtf8ToCodePageRange(str, start, length, UnicodeTables_UnicodeToWindows1256Table, UnicodeTables_UnicodeToWindows1256TableCount);
+		case LEGACY_CODE_PAGE_WIN1257:
+			return String_ConvertUtf8ToCodePageRange(str, start, length, UnicodeTables_UnicodeToWindows1257Table, UnicodeTables_UnicodeToWindows1257TableCount);
+		case LEGACY_CODE_PAGE_WIN1258:
+			return String_ConvertUtf8ToCodePageRange(str, start, length, UnicodeTables_UnicodeToWindows1258Table, UnicodeTables_UnicodeToWindows1258TableCount);
+
+		default:
+			return String_Empty;
+	}
+}
+
+/// <summary>
+/// Convert a substring within a string from a specific legacy code-page encoding to standard UTF-8.
+/// </summary>
+/// <param name="str">The string whose substring you would like to convert to UTF-8.</param>
+/// <param name="start">The start of the substring within that string.</param>
+/// <param name="length">The length of the substring within that string.</param>
+/// <param name="legacyCodePageID">The ID of the known legacy code-page.  If the code page is unknown, this will return the empty string.</param>
+/// <returns>The whole string, with the given substring converted to UTF-8.</returns>
+String String_ConvertKnownCodePageToUtf8Range(const String str, Int start, Int length, Int legacyCodePageID)
+{
+	switch (legacyCodePageID) {
+
+		case LEGACY_CODE_PAGE_ISO_8859_1:
+			return String_ConvertCodePageToUtf8Range(str, start, length, UnicodeTables_Iso_8859_1ToUnicodeTable);
+		case LEGACY_CODE_PAGE_ISO_8859_2:
+			return String_ConvertCodePageToUtf8Range(str, start, length, UnicodeTables_Iso_8859_2ToUnicodeTable);
+		case LEGACY_CODE_PAGE_ISO_8859_3:
+			return String_ConvertCodePageToUtf8Range(str, start, length, UnicodeTables_Iso_8859_3ToUnicodeTable);
+		case LEGACY_CODE_PAGE_ISO_8859_4:
+			return String_ConvertCodePageToUtf8Range(str, start, length, UnicodeTables_Iso_8859_4ToUnicodeTable);
+		case LEGACY_CODE_PAGE_ISO_8859_5:
+			return String_ConvertCodePageToUtf8Range(str, start, length, UnicodeTables_Iso_8859_5ToUnicodeTable);
+		case LEGACY_CODE_PAGE_ISO_8859_6:
+			return String_ConvertCodePageToUtf8Range(str, start, length, UnicodeTables_Iso_8859_6ToUnicodeTable);
+		case LEGACY_CODE_PAGE_ISO_8859_7:
+			return String_ConvertCodePageToUtf8Range(str, start, length, UnicodeTables_Iso_8859_7ToUnicodeTable);
+		case LEGACY_CODE_PAGE_ISO_8859_8:
+			return String_ConvertCodePageToUtf8Range(str, start, length, UnicodeTables_Iso_8859_8ToUnicodeTable);
+		case LEGACY_CODE_PAGE_ISO_8859_9:
+			return String_ConvertCodePageToUtf8Range(str, start, length, UnicodeTables_Iso_8859_9ToUnicodeTable);
+		case LEGACY_CODE_PAGE_ISO_8859_10:
+			return String_ConvertCodePageToUtf8Range(str, start, length, UnicodeTables_Iso_8859_10ToUnicodeTable);
+		case LEGACY_CODE_PAGE_ISO_8859_11:
+			return String_ConvertCodePageToUtf8Range(str, start, length, UnicodeTables_Iso_8859_11ToUnicodeTable);
+		// There is no such thing as ISO 8859-12.
+		case LEGACY_CODE_PAGE_ISO_8859_13:
+			return String_ConvertCodePageToUtf8Range(str, start, length, UnicodeTables_Iso_8859_13ToUnicodeTable);
+		case LEGACY_CODE_PAGE_ISO_8859_14:
+			return String_ConvertCodePageToUtf8Range(str, start, length, UnicodeTables_Iso_8859_14ToUnicodeTable);
+		case LEGACY_CODE_PAGE_ISO_8859_15:
+			return String_ConvertCodePageToUtf8Range(str, start, length, UnicodeTables_Iso_8859_15ToUnicodeTable);
+		case LEGACY_CODE_PAGE_ISO_8859_16:
+			return String_ConvertCodePageToUtf8Range(str, start, length, UnicodeTables_Iso_8859_16ToUnicodeTable);
+
+		case LEGACY_CODE_PAGE_CP437:
+			return String_ConvertCodePageToUtf8Range(str, start, length, UnicodeTables_Cp437ToUnicodeTable);
+
+		case LEGACY_CODE_PAGE_WIN1250:
+			return String_ConvertCodePageToUtf8Range(str, start, length, UnicodeTables_Windows1250ToUnicodeTable);
+		case LEGACY_CODE_PAGE_WIN1251:
+			return String_ConvertCodePageToUtf8Range(str, start, length, UnicodeTables_Windows1251ToUnicodeTable);
+		case LEGACY_CODE_PAGE_WIN1252:
+			return String_ConvertCodePageToUtf8Range(str, start, length, UnicodeTables_Windows1252ToUnicodeTable);
+		case LEGACY_CODE_PAGE_WIN1253:
+			return String_ConvertCodePageToUtf8Range(str, start, length, UnicodeTables_Windows1253ToUnicodeTable);
+		case LEGACY_CODE_PAGE_WIN1254:
+			return String_ConvertCodePageToUtf8Range(str, start, length, UnicodeTables_Windows1254ToUnicodeTable);
+		case LEGACY_CODE_PAGE_WIN1255:
+			return String_ConvertCodePageToUtf8Range(str, start, length, UnicodeTables_Windows1255ToUnicodeTable);
+		case LEGACY_CODE_PAGE_WIN1256:
+			return String_ConvertCodePageToUtf8Range(str, start, length, UnicodeTables_Windows1256ToUnicodeTable);
+		case LEGACY_CODE_PAGE_WIN1257:
+			return String_ConvertCodePageToUtf8Range(str, start, length, UnicodeTables_Windows1257ToUnicodeTable);
+		case LEGACY_CODE_PAGE_WIN1258:
+			return String_ConvertCodePageToUtf8Range(str, start, length, UnicodeTables_Windows1258ToUnicodeTable);
+
+		default:
+			return String_Empty;
+	}
 }
 
 /// <summary>
