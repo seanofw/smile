@@ -66,6 +66,8 @@ print "Generating testsuites.generated.inc.\r\n";
 open DEST, ">testsuites.generated.inc";
 print DEST "// This file was auto-generated.  Do not edit!\r\n\r\n";
 
+@testsuites = sort @testsuites;
+
 foreach $testsuite (@testsuites) {
 	print DEST "EXTERN_TEST_SUITE($testsuite);\r\n";
 }

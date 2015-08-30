@@ -1,6 +1,26 @@
 #ifndef __SMILE_DICT_SHARED_H__
 #define __SMILE_DICT_SHARED_H__
 
+#ifndef __SMILE_STRING_H__
+#include <smile/string.h>
+#endif
+
+/// <summary>
+/// Statistics on a dictionary.
+/// </summary>
+typedef struct DictStatsStruct {
+	Int64 heapTotal;			// The total size of the dictionary's heap (available nodes).
+	Int64 heapAlloc;			// The number of entries in this dictionary.
+	Int64 heapFree;				// The number of free nodes in the heap ( = heapTotal - count).
+
+	Int64 bucketMin;			// The minimum number of nodes in any one bucket.
+	Int64 bucketMax;			// The maximum number of nodes in any one bucket.
+	double bucketAvg;			// The average (mean) number of nodes in any one bucket.
+	double bucketStdDev;		// The standard deviation of the number of nodes in any one bucket.
+} *DictStats;
+
+SMILE_API String DictStats_ToString(DictStats stats);
+
 /// <summary>
 /// Perform a search through a dictionary (hash table with internal linked lists) construct
 /// for the node associated with a known key.

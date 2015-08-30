@@ -66,7 +66,6 @@ SMILE_API String String_Join(const String glue, const String *strs, Int numStrs)
 SMILE_API String String_SlashAppend(const String *strs, Int numStrs);
 
 SMILE_API Bool String_Equals(const String str, const String other);
-SMILE_API Int32 String_GetHashCode(const String str);
 SMILE_API Int String_Compare(const String a, const String b);
 SMILE_API Int String_CompareRange(const String a, Int astart, Int alength, const String b, Int bstart, Int blength);
 
@@ -280,6 +279,16 @@ Inline String String_FromC(const char *text)
 Inline Bool String_IsNullOrEmpty(const String str)
 {
 	return str == NULL || ((const struct StringInt *)str)->length == 0;
+}
+
+/// <summary>
+/// Compute a simple 32-bit hash code for the given string, based on its bytes.
+/// </summary>
+/// <param name="str">The string to hash.</param>
+/// <returns>A reasonably-unique hash value for that string.</returns>
+Inline Int32 String_GetHashCode(const String str)
+{
+	return (Int32)Smile_Hash(((const struct StringInt *)str)->text, ((const struct StringInt *)str)->length);
 }
 
 /// <summary>

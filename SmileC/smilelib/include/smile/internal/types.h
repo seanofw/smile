@@ -5,6 +5,4 @@
 #include <smile/types.h>
 #endif
 
-extern UInt32 Smile_HashOracle;
-
 #endif

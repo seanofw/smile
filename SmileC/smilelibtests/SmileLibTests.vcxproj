@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -28,7 +28,7 @@
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <OutDir>$(ProjectDir)bin\$(Platform)-$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)obj\$(Platform)-$(Configuration)\</IntDir>
@@ -107,6 +107,9 @@
     <ClInclude Include="testlib.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="dict\int32dict_tests.c" />
+    <ClCompile Include="dict\stringdict_tests.c" />
+    <ClCompile Include="dict\stringintdict_tests.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="stdafx.c" />
     <ClCompile Include="string\stringcore_tests.c" />
@@ -118,6 +121,9 @@
     <ClCompile Include="testlib.c" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="dict\int32dict_tests.generated.inc" />
+    <None Include="dict\stringdict_tests.generated.inc" />
+    <None Include="dict\stringintdict_tests.generated.inc" />
     <None Include="string\stringcore_tests.generated.inc" />
     <None Include="string\stringextra_tests.generated.inc" />
     <None Include="string\stringformat_tests.generated.inc" />

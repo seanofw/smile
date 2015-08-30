@@ -221,5 +221,24 @@ typedef unsigned char Bool;
 SMILE_API void Smile_Init(void);
 SMILE_API void Smile_End(void);
 SMILE_API void Smile_Abort_OutOfMemory(void);
+SMILE_API UInt32 Smile_RawHash(const void *buffer, Int length);
+
+SMILE_API UInt32 Smile_HashOracle;
+
+/// <summary>
+/// Hash:  Perform a 32 bit hash on a buffer.  The hash is guaranteed to always be the
+/// same value for the same sequence of bytes within the current process, and approximates
+/// a random distribution for that sequence (quickly!).
+/// </summary>
+/// <param name="buffer">Start of buffer to hash.</param>
+/// <param name="length">Length of buffer in bytes.</param>
+/// <returns>32 bit hash of the buffer.</returns>
+Inline UInt32 Smile_Hash(const void *buffer, Int length)
+{
+	// Mix in the HashOracle to ensure that hash values remain unique per process,
+	// so that people don't try to share them.  Hashes are solely for efficient
+	// comparisons in-process, and are not to be shared out-of-process.
+	return Smile_RawHash(buffer, length) ^ Smile_HashOracle;
+}
 
 #endif

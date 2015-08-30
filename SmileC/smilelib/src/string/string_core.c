@@ -241,27 +241,6 @@ Bool String_Equals(const String str, const String other)
 }
 
 /// <summary>
-/// Compute a simple 32-bit hash code for the given string, based on its bytes.
-/// </summary>
-/// <param name="str">The string to hash.</param>
-/// <returns>A reasonably-unique hash value for that string.</returns>
-Int32 String_GetHashCode(const String str)
-{
-	Byte *text = ((const struct StringInt *)str)->text;
-	Int length = ((const struct StringInt *)str)->length;
-	Int i;
-
-	UInt32 hash = Smile_HashOracle;
-
-	for (i = 0; i < length; i++)
-	{
-		hash = RotateLeft32(hash, 3) + *text++;
-	}
-
-	return (Int32)hash;
-}
-
-/// <summary>
 /// Answer whether two strings are equal, i.e., of the same length and containing the same bytes,
 /// or if they are not equal, which one lexically precedes the other.
 /// </summary>

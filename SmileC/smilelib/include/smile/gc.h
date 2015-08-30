@@ -7,6 +7,10 @@
 	#define GC_DLL
 #endif
 
+// The GC warnings aren't especially useful here, since Dictionaries and StringBuilders
+// may trigger them during normal operations.
+#define GC_IGNORE_WARN
+
 #include "../../gc/include/gc.h"
 
 /// <summary>Allocate a raw array of the given type.  Raw arrays must not contain pointers within them,

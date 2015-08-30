@@ -22,6 +22,15 @@
     <ClCompile Include="string\stringunicode_tests.c">
       <Filter>string</Filter>
     </ClCompile>
+    <ClCompile Include="dict\int32dict_tests.c">
+      <Filter>dict</Filter>
+    </ClCompile>
+    <ClCompile Include="dict\stringdict_tests.c">
+      <Filter>dict</Filter>
+    </ClCompile>
+    <ClCompile Include="dict\stringintdict_tests.c">
+      <Filter>dict</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -30,6 +39,9 @@
   <ItemGroup>
     <Filter Include="string">
       <UniqueIdentifier>{57df2134-4099-4509-b515-a5d0e149e365}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dict">
+      <UniqueIdentifier>{233ea057-cf92-4f61-85c3-e7b57363cf2e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -51,6 +63,15 @@
     </None>
     <None Include="string\stringunicode_tests.generated.inc">
       <Filter>string</Filter>
+    </None>
+    <None Include="dict\int32dict_tests.generated.inc">
+      <Filter>dict</Filter>
+    </None>
+    <None Include="dict\stringdict_tests.generated.inc">
+      <Filter>dict</Filter>
+    </None>
+    <None Include="dict\stringintdict_tests.generated.inc">
+      <Filter>dict</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -123,6 +123,12 @@
     <ClCompile Include="src\unicode\codepages_win125x.c">
       <Filter>src\unicode</Filter>
     </ClCompile>
+    <ClCompile Include="src\hash.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dict\dictstats.c">
+      <Filter>src\dict</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">

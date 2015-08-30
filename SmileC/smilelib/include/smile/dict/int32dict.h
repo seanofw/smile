@@ -28,14 +28,10 @@ struct Int32DictNode {
 /// </summary>
 struct Int32DictInt {
 	Int32 *buckets;				// The buckets contain pointers into the heap, indexed by masked hash code.
-	Int32 bucketsLen;			// The current size of the buckets.
-
 	struct Int32DictNode *heap;	// The heap, which holds all of the key/value pairs as Node structs.
-	Int32 heapLen;				// The current size of the heap.
-
+	Int32 mask;					// The current size of both the heap and buckets.  Always equal to 2^n - 1 for some n.
 	Int32 firstFree;			// The first free node in the heap (successive free nodes follow the 'next' pointers).
 	Int32 count;				// The number of allocated nodes in the heap.
-	Int32 mask;					// The current hash mask.  Always equal to 2^n-1 for some n.
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -65,11 +61,29 @@ SMILE_API Int32 *Int32Dict_GetKeys(Int32Dict intDict);
 SMILE_API void **Int32Dict_GetValues(Int32Dict intDict);
 SMILE_API Int32DictKeyValuePair *Int32Dict_GetAll(Int32Dict intDict);
 
-SMILE_API void Int32Dict_Clear(Int32Dict intDict);
+SMILE_API void Int32Dict_ClearWithSize(Int32Dict intDict, Int32 newSize);
 SMILE_API Bool Int32Dict_Remove(Int32Dict intDict, Int32 key);
+
+SMILE_API DictStats Int32Dict_ComputeStats(Int32Dict intDict);
 
 //-------------------------------------------------------------------------------------------------
 //  Inline parts of the implementation
+
+/// <summary>
+/// Construct a new, empty dictionary, and control its allocation behavior.
+/// </summary>
+/// <param name="newSize">The initial allocation size of the dictionary, which is the number of
+/// items the dictionary can hold without it needing to invoke another reallocation.</param>
+/// <returns>The new, empty dictionary.</returns>
+Inline Int32Dict Int32Dict_CreateWithSize(Int32 newSize)
+{
+	Int32Dict intDict;
+	
+	intDict = (Int32Dict)GC_MALLOC_STRUCT(struct Int32DictInt);
+	if (intDict == NULL) Smile_Abort_OutOfMemory();
+	Int32Dict_ClearWithSize(intDict, newSize);
+	return intDict;
+}
 
 /// <summary>
 /// Construct a new, empty dictionary.
@@ -77,12 +91,15 @@ SMILE_API Bool Int32Dict_Remove(Int32Dict intDict, Int32 key);
 /// <returns>The new, empty dictionary.</returns>
 Inline Int32Dict Int32Dict_Create(void)
 {
-	Int32Dict intDict;
-	
-	intDict = (Int32Dict)GC_MALLOC_STRUCT(struct Int32DictInt);
-	if (intDict == NULL) Smile_Abort_OutOfMemory();
-	Int32Dict_Clear(intDict);
-	return intDict;
+	return Int32Dict_CreateWithSize(16);
+}
+
+/// <summary>
+/// Delete all key/value pairs in the dictionary, resetting it back to an initial state.
+/// </summary>
+Inline void Int32Dict_Clear(Int32Dict intDict)
+{
+	Int32Dict_ClearWithSize(intDict, 16);
 }
 
 /// <summary>
