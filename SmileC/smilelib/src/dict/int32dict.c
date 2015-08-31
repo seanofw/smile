@@ -338,7 +338,6 @@ SMILE_API DictStats Int32Dict_ComputeStats(Int32Dict intDict)
 	Int32 bucketIndex, nodeIndex, numInThisBucket;
 	Int32 *buckets;
 	DictStats stats;
-	double avg, sigmaSquared;
 
 	self = (struct Int32DictInt *)intDict;
 	heap = self->heap;
@@ -350,25 +349,17 @@ SMILE_API DictStats Int32Dict_ComputeStats(Int32Dict intDict)
 	stats->heapAlloc = self->count;
 	stats->heapFree = self->mask + 1 - self->count;
 
-	stats->bucketMin = Int32Max;
-	stats->bucketMax = Int32Min;
-	stats->bucketAvg = avg = (double)stats->heapAlloc / (double)stats->heapTotal;
-
-	sigmaSquared = 0.0;
+	stats->bucketStats = SimpleStats_Create();
+	stats->keyStats = SimpleStats_Create();
 
 	for (bucketIndex = 0; bucketIndex <= self->mask; bucketIndex++) {
 		numInThisBucket = 0;
 		for (nodeIndex = buckets[bucketIndex]; nodeIndex >= 0; nodeIndex = heap[nodeIndex].next) {
 			numInThisBucket++;
+			SimpleStats_Add(stats->keyStats, 1);
 		}
-		if (numInThisBucket > stats->bucketMax)
-			stats->bucketMax = numInThisBucket;
-		if (numInThisBucket < stats->bucketMin)
-			stats->bucketMin = numInThisBucket;
-		sigmaSquared += (avg - numInThisBucket) * (avg - numInThisBucket);
+		SimpleStats_Add(stats->bucketStats, numInThisBucket);
 	}
-
-	stats->bucketStdDev = sqrt(sigmaSquared / stats->heapTotal);
 
 	return stats;
 }

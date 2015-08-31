@@ -554,24 +554,24 @@ END_TEST
 
 START_TEST(HashCodesForIdenticalStringsAreIdentical)
 {
-	Int hash1 = String_GetHashCode(String_FromC("This is an aardvark."));
-	Int hash2 = String_GetHashCode(String_FromC("This is an aardvark."));
+	UInt32 hash1 = String_Hash(String_FromC("This is an aardvark."));
+	UInt32 hash2 = String_Hash(String_FromC("This is an aardvark."));
 	ASSERT(hash1 == hash2);
 
-	hash1 = String_GetHashCode(String_Empty);
-	hash2 = String_GetHashCode(String_Empty);
+	hash1 = String_Hash(String_Empty);
+	hash2 = String_Hash(String_Empty);
 	ASSERT(hash1 == hash2);
 }
 END_TEST
 
 START_TEST(HashCodesForDifferentStringsAreDifferent)
 {
-	Int hash1 = String_GetHashCode(String_FromC("This is an aardvark."));
-	Int hash2 = String_GetHashCode(String_FromC("This is an oglethorpe."));
+	UInt32 hash1 = String_Hash(String_FromC("This is an aardvark."));
+	UInt32 hash2 = String_Hash(String_FromC("This is an oglethorpe."));
 	ASSERT(hash1 != hash2);
 
-	hash1 = String_GetHashCode(String_FromC("This is an aardvark."));
-	hash2 = String_GetHashCode(String_Empty);
+	hash1 = String_Hash(String_FromC("This is an aardvark."));
+	hash2 = String_Hash(String_Empty);
 	ASSERT(hash1 != hash2);
 }
 END_TEST

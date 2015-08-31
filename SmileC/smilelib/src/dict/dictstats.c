@@ -25,20 +25,15 @@
 String DictStats_ToString(DictStats stats)
 {
 	return String_Format(
-		"DictStats:\n"
-		"  heap total: %lu\n"
-		"  heap alloc: %lu\n"
-		"  heap free: %lu\n"
-		"  bucket min size: %lu\n"
-		"  bucket max size: %lu\n"
-		"  bucket avg size: %u.%02u\n"
-		"  bucket stddev: %u.%02u\n",
+		"Dictionary Stats:\n"
+		"  Heap:     total: %lu, alloc: %lu, free: %lu\n"
+		"  Buckets:  %S\n"
+		"  Keys:     %S\n",
+
 		stats->heapTotal,
 		stats->heapAlloc,
 		stats->heapFree,
-		stats->bucketMin,
-		stats->bucketMax,
-		(int)stats->bucketAvg, (int)((stats->bucketAvg - floor(stats->bucketAvg)) * 100),
-		(int)stats->bucketStdDev, (int)((stats->bucketStdDev - floor(stats->bucketStdDev)) * 100)
+		SimpleStats_ToString(stats->bucketStats),
+		SimpleStats_ToString(stats->keyStats)
 	);
 }

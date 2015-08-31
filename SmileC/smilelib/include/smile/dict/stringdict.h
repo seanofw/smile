@@ -24,6 +24,7 @@ struct StringDictNode {
 	Int next;					// A pointer to the next node in this bucket (relative to the StringDict's heap).
 	String key;					// The key for this node.
 	void *value;				// The value for this node.
+	UInt32 keyHash;				// The hash code for the key for this node (cached for efficient rebalancing).
 };
 
 /// <summary>
@@ -31,13 +32,9 @@ struct StringDictNode {
 /// </summary>
 struct StringDictInt {
 	Int *buckets;				// The buckets contain pointers into the heap, indexed by masked hash code.
-	Int bucketsLen;				// The current size of the buckets.
-
 	struct StringDictNode *heap;	// The heap, which holds all of the key/value pairs as Node structs.
-	Int heapLen;				// The current size of the heap.
-
-	Int firstFree;				// The first free node in the heap (successive free nodes follow the 'next' pointers).
 	Int count;					// The number of allocated nodes in the heap.
+	Int firstFree;				// The first free node in the heap (successive free nodes follow the 'next' pointers).
 	Int mask;					// The current hash mask.  Always equal to 2^n-1 for some n.
 };
 
@@ -68,11 +65,30 @@ SMILE_API String *StringDict_GetKeys(StringDict stringDict);
 SMILE_API void **StringDict_GetValues(StringDict stringDict);
 SMILE_API StringDictKeyValuePair *StringDict_GetAll(StringDict stringDict);
 
-SMILE_API void StringDict_Clear(StringDict stringDict);
+SMILE_API void StringDict_ClearWithSize(StringDict stringDict, Int newSize);
 SMILE_API Bool StringDict_Remove(StringDict stringDict, String key);
+
+SMILE_API DictStats StringDict_ComputeStats(StringDict stringDict);
 
 //-------------------------------------------------------------------------------------------------
 //  Inline parts of the implementation
+
+
+/// <summary>
+/// Construct a new, empty dictionary, and control its allocation behavior.
+/// </summary>
+/// <param name="newSize">The initial allocation size of the dictionary, which is the number of
+/// items the dictionary can hold without it needing to invoke another reallocation.</param>
+/// <returns>The new, empty dictionary.</returns>
+Inline StringDict StringDict_CreateWithSize(Int newSize)
+{
+	StringDict intDict;
+
+	intDict = (StringDict)GC_MALLOC_STRUCT(struct StringDictInt);
+	if (intDict == NULL) Smile_Abort_OutOfMemory();
+	StringDict_ClearWithSize(intDict, newSize);
+	return intDict;
+}
 
 /// <summary>
 /// Construct a new, empty dictionary.
@@ -80,12 +96,15 @@ SMILE_API Bool StringDict_Remove(StringDict stringDict, String key);
 /// <returns>The new, empty dictionary.</returns>
 Inline StringDict StringDict_Create(void)
 {
-	StringDict stringDict;
-	
-	stringDict = (StringDict)GC_MALLOC_STRUCT(struct StringDictInt);
-	if (stringDict == NULL) Smile_Abort_OutOfMemory();
-	StringDict_Clear(stringDict);
-	return stringDict;
+	return StringDict_CreateWithSize(16);
+}
+
+/// <summary>
+/// Delete all key/value pairs in the dictionary, resetting it back to an initial state.
+/// </summary>
+Inline void StringDict_Clear(StringDict stringDict)
+{
+	StringDict_ClearWithSize(stringDict, 16);
 }
 
 /// <summary>
@@ -97,13 +116,27 @@ Inline StringDict StringDict_Create(void)
 Inline Bool StringDict_ContainsKey(StringDict stringDict, String key)
 {
 	SMILE_DICT_SEARCH(struct StringDictInt, struct StringDictNode, Int,
-		stringDict, String_GetHashCode(key), String_Equals(node->key, key),
+		stringDict, String_Hash(key), String_Equals(node->key, key),
 		{
 			return True;
 		},
 		{
 			return False;
 		})
+}
+
+/// <summary>
+/// Determine if the given key exists in the dictionary.
+/// </summary>
+/// <param name="stringDict">A pointer to the dictionary.</param>
+/// <param name="ckey">The key to search for.</param>
+/// <returns>True if the key was found, False if the key was not found.</returns>
+Inline Bool StringDict_ContainsKeyC(StringDict stringDict, const char *ckey)
+{
+	struct StringInt tempStr;
+	tempStr.text = (Byte *)ckey;
+	tempStr.length = StrLen(ckey);
+	return StringDict_ContainsKey(stringDict, (String)&tempStr);
 }
 
 /// <summary>
@@ -116,7 +149,7 @@ Inline Bool StringDict_ContainsKey(StringDict stringDict, String key)
 Inline Bool StringDict_Add(StringDict stringDict, String key, const void *value)
 {
 	SMILE_DICT_SEARCH(struct StringDictInt, struct StringDictNode, Int,
-		stringDict, String_GetHashCode(key), String_Equals(node->key, key),
+		stringDict, String_Hash(key), String_Equals(node->key, key),
 		{
 			return False;
 		},
@@ -124,6 +157,18 @@ Inline Bool StringDict_Add(StringDict stringDict, String key, const void *value)
 			StringDictInt_Append((struct StringDictInt *)stringDict, key, keyHash, value);
 			return True;
 		})
+}
+
+/// <summary>
+/// Add a new key/value pair to the dictionary.  If the key already exists, this will fail.
+/// </summary>
+/// <param name="stringDict">A pointer to the dictionary.</param>
+/// <param name="ckey">The key for the new key/value pair to add.</param>
+/// <param name="value">The value for the new key/value pair to add.</param>
+/// <returns>True if the pair was successfully added, False if the key already existed.</returns>
+Inline Bool StringDict_AddC(StringDict stringDict, const char *ckey, const void *value)
+{
+	return StringDict_Add(stringDict, String_FromC(ckey), value);
 }
 
 /// <summary>
@@ -145,13 +190,27 @@ Inline Int StringDict_Count(StringDict stringDict)
 Inline void *StringDict_GetValue(StringDict stringDict, String key)
 {
 	SMILE_DICT_SEARCH(struct StringDictInt, struct StringDictNode, Int,
-		stringDict, String_GetHashCode(key), String_Equals(node->key, key),
+		stringDict, String_Hash(key), String_Equals(node->key, key),
 		{
 			return node->value;
 		},
 		{
 			return NULL;
 		})
+}
+
+/// <summary>
+/// Get a specific value from the dictionary by its key.
+/// </summary>
+/// <param name="stringDict">A pointer to the dictionary.</param>
+/// <param name="ckey">The key to search for.</param>
+/// <returns>The value for that key (NULL if the key is not found).</returns>
+Inline void *StringDict_GetValueC(StringDict stringDict, const char *ckey)
+{
+	struct StringInt tempStr;
+	tempStr.text = (Byte *)ckey;
+	tempStr.length = StrLen(ckey);
+	return StringDict_GetValue(stringDict, (String)&tempStr);
 }
 
 /// <summary>
@@ -164,7 +223,7 @@ Inline void *StringDict_GetValue(StringDict stringDict, String key)
 Inline Bool StringDict_SetValue(StringDict stringDict, String key, void *value)
 {
 	SMILE_DICT_SEARCH(struct StringDictInt, struct StringDictNode, Int,
-		stringDict, String_GetHashCode(key), String_Equals(node->key, key),
+		stringDict, String_Hash(key), String_Equals(node->key, key),
 		{
 			node->value = value;
 			return True;
@@ -173,6 +232,21 @@ Inline Bool StringDict_SetValue(StringDict stringDict, String key, void *value)
 			StringDictInt_Append((struct StringDictInt *)stringDict, key, keyHash, value);
 			return False;
 		})
+}
+
+/// <summary>
+/// Create or update a key/value pair in the dictionary.
+/// </summary>
+/// <param name="stringDict">A pointer to the dictionary.</param>
+/// <param name="ckey">The key to create or update.</param>
+/// <param name="value">The new value for that key.</param>
+/// <returns>True if the key already existed, False if it needed to be added.</returns>
+Inline Bool StringDict_SetValueC(StringDict stringDict, const char *ckey, void *value)
+{
+	struct StringInt tempStr;
+	tempStr.text = (Byte *)ckey;
+	tempStr.length = StrLen(ckey);
+	StringDict_SetValue(stringDict, (String)&tempStr, value);
 }
 
 /// <summary>
@@ -187,7 +261,7 @@ Inline Bool StringDict_SetValue(StringDict stringDict, String key, void *value)
 Inline Bool StringDict_TryGetValue(StringDict stringDict, String key, void **value)
 {
 	SMILE_DICT_SEARCH(struct StringDictInt, struct StringDictNode, Int,
-		stringDict, String_GetHashCode(key), String_Equals(node->key, key),
+		stringDict, String_Hash(key), String_Equals(node->key, key),
 		{
 			*value = node->value;
 			return True;
@@ -196,6 +270,23 @@ Inline Bool StringDict_TryGetValue(StringDict stringDict, String key, void **val
 			*value = NULL;
 			return False;
 		})
+}
+
+/// <summary>
+/// Try to get a specific value from the dictionary by its key; this function,
+/// unlike StringDict_GetValueC(), can tell you whether the key was found in addition
+/// to returning the value.
+/// </summary>
+/// <param name="stringDict">A pointer to the dictionary.</param>
+/// <param name="ckey">The key to search for.</param>
+/// <param name="value">This will be set to the value for that key (NULL if the key is not found).</param>
+/// <returns>True if the key was found, False if the key was not found.</returns>
+Inline Bool StringDict_TryGetValueC(StringDict stringDict, const char *ckey, void **value)
+{
+	struct StringInt tempStr;
+	tempStr.text = (Byte *)ckey;
+	tempStr.length = StrLen(ckey);
+	return StringDict_TryGetValue(stringDict, (String)&tempStr, value);
 }
 
 #endif

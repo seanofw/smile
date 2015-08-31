@@ -18,6 +18,8 @@
 #include <smile/gc.h>
 #include <smile/stringbuilder.h>
 
+#include <math.h>
+
 static void StringBuilder_AppendFormatInternal(StringBuilder stringBuilder, const Byte *text, Int textLength, va_list v);
 
 /// <summary>
@@ -103,6 +105,8 @@ void StringBuilder_AppendFormatStringv(StringBuilder stringBuilder, const String
 /// <li>%u - An unsigned UInt argument, formatted as an unsigned decimal number.</li>
 /// <li>%x - An unsigned UInt argument, formatted as an unsigned hexadecimal number in lowercase.</li>
 /// <li>%X - An unsigned UInt argument, formatted as an unsigned hexadecimal number in uppercase.</li>
+/// <li>%f - A 64-bit "double" floating-point argument, always formatted as "###.###", with as
+///	         few digits after the decimal place as possible.  %e and %g are recognized as synonyms.</li>
 /// <li>%p - A pointer argument.</li>
 /// </ul>
 /// In addition, the %d, %u, %x, and %X format arguments also accept the following modifiers:
@@ -128,6 +132,7 @@ void StringBuilder_AppendFormatInternal(StringBuilder stringBuilder, const Byte 
 	Int width;
 	UInt64 number;
 	Bool negative;
+	double d, intPart, fracPart, origFracPart;
 
 	Byte buffer[BUFFER_LIMIT];
 
@@ -353,6 +358,64 @@ void StringBuilder_AppendFormatInternal(StringBuilder stringBuilder, const Byte 
 						}
 					}
 					StringBuilder_Append(stringBuilder, dest, 0, (buffer + BUFFER_LIMIT) - dest);
+				}
+				break;
+
+			case 'e':
+			case 'f':
+			case 'g':
+				d = va_arg(v, double);
+
+				if (isnan(d)) {
+					StringBuilder_Append(stringBuilder, "NaN", 0, 3);
+					break;
+				}
+				if (isinf(d)) {
+					if (d < 0.0) StringBuilder_AppendByte(stringBuilder, '-');
+					StringBuilder_Append(stringBuilder, "inf", 0, 3);
+					break;
+				}
+
+				if (d < 0.0) {
+					StringBuilder_AppendByte(stringBuilder, '-');
+					d = -d;
+				}
+
+				{
+					Byte *dest;
+					
+					intPart = floor(d);
+					origFracPart = fracPart = d - intPart;
+
+					dest = buffer + BUFFER_LIMIT;
+					while (intPart >= 1.0 && dest > buffer) {
+						Byte digit = (Byte)(fmod(intPart, 10.0));
+						intPart /= 10.0;
+						*--dest = digit + '0';
+					}
+					if (dest == buffer + BUFFER_LIMIT)
+						*--dest = '0';
+
+					StringBuilder_Append(stringBuilder, dest, 0, (buffer + BUFFER_LIMIT) - dest);
+
+					dest = buffer;
+					while (fracPart > 0.0 && dest < buffer + 6) {
+						double realDigit;
+						fracPart *= 10.0;
+						realDigit = floor(fracPart);
+						fracPart -= realDigit;
+						*dest++ = (Byte)realDigit + '0';
+					}
+
+					if (origFracPart == 0.0 || fracPart == 0.0) {
+						// Truncate unnecessary trailing zeros.
+						while (dest > buffer && dest[-1] == '0') dest--;
+					}
+
+					if (dest > buffer) {
+						StringBuilder_AppendByte(stringBuilder, '.');
+						StringBuilder_Append(stringBuilder, buffer, 0, dest - buffer);
+					}
 				}
 				break;
 

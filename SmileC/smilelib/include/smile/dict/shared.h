@@ -4,6 +4,9 @@
 #ifndef __SMILE_STRING_H__
 #include <smile/string.h>
 #endif
+#ifndef __SMILE_SIMPLESTATS_H__
+#include <smile/simplestats.h>
+#endif
 
 /// <summary>
 /// Statistics on a dictionary.
@@ -13,10 +16,8 @@ typedef struct DictStatsStruct {
 	Int64 heapAlloc;			// The number of entries in this dictionary.
 	Int64 heapFree;				// The number of free nodes in the heap ( = heapTotal - count).
 
-	Int64 bucketMin;			// The minimum number of nodes in any one bucket.
-	Int64 bucketMax;			// The maximum number of nodes in any one bucket.
-	double bucketAvg;			// The average (mean) number of nodes in any one bucket.
-	double bucketStdDev;		// The standard deviation of the number of nodes in any one bucket.
+	SimpleStats bucketStats;	// Statistics on bucket sizes.
+	SimpleStats keyStats;		// Statistics on key lengths.
 } *DictStats;
 
 SMILE_API String DictStats_ToString(DictStats stats);

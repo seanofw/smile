@@ -15,9 +15,84 @@
 //  limitations under the License.
 //---------------------------------------------------------------------------------------
 
+#include <math.h>
+
 #include <smile/gc.h>
 #include <smile/mem.h>
+#include <smile/bittwiddling.h>
 #include <smile/dict/stringdict.h>
+
+//-------------------------------------------------------------------------------------------------
+//  Private functions
+
+static void StringDictInt_Resize(struct StringDictInt *self, Int newLen)
+{
+	struct StringDictNode *newHeap, *oldHeap;
+	Int *newBuckets, *oldBuckets;
+	Int i, oldLen, newMask, oldBucketIndex, newBucketIndex, oldNodeIndex;
+
+	// Get the old heap info.
+	oldLen = self->mask + 1;
+	oldHeap = self->heap;
+	oldBuckets = self->buckets;
+
+	// Construct a new heap and buckets twice as large as the old ones.
+	if (newLen >= IntMax || newLen >= IntMax / sizeof(struct StringDictNode)) Smile_Abort_OutOfMemory();
+	newBuckets = GC_MALLOC_RAW_ARRAY(Int, newLen);
+	if (newBuckets == NULL) Smile_Abort_OutOfMemory();
+	newHeap = GC_MALLOC_STRUCT_ARRAY(struct StringDictNode, newLen);
+	if (newHeap == NULL) Smile_Abort_OutOfMemory();
+
+	// The new buckets start out empty.  This runs in O(n) time.
+	for (i = 0; i < newLen; i++) {
+		newBuckets[i] = -1;
+	}
+
+	// Spin over the nodes in the old heap and insert them into a new set of buckets twice as large
+	// as the old set of buckets, which keeps the average bucket size <= 1 node, guaranteeing amortized
+	// O(1) read time.
+	newMask = newLen - 1;
+	i = 0;
+
+	// The outer loop spins over O(n) buckets.
+	for (oldBucketIndex = 0; oldBucketIndex < oldLen; oldBucketIndex++) {
+
+		// This inner loop runs in O(1) amortized time, assuming reasonable random distribution of the keys.
+		for (oldNodeIndex = oldBuckets[oldBucketIndex]; oldNodeIndex >= 0; oldNodeIndex = oldHeap[oldNodeIndex].next) {
+			newBucketIndex = oldHeap[oldNodeIndex].keyHash & newMask;
+
+			newHeap[i].next = newBuckets[newBucketIndex];
+			newHeap[i].key = oldHeap[oldNodeIndex].key;
+			newHeap[i].keyHash = oldHeap[oldNodeIndex].keyHash;
+			newHeap[i].value = oldHeap[oldNodeIndex].value;
+			newBuckets[newBucketIndex] = i++;
+
+			oldHeap[oldNodeIndex].value = NULL;		// Help the GC out by breaking references.
+		}
+	}
+
+	// The new buckets and new heap are now the canonical data, so replace this dictionary's content
+	// with them.
+	self->heap = newHeap;
+	self->buckets = newBuckets;
+	self->mask = newMask;
+
+	// Everything has been inserted into the new buckets and new heap, but the new heap still needs
+	// the rest of its free nodes to be created, if there's any unused space at the end.  This runs
+	// in O(n) time, since the callers guarantee the number of free nodes is always proportional to
+	// the number of allocated nodes.
+	self->firstFree = (i < newLen ? i : -1);
+	for (; i < newLen - 1; i++) {
+		newHeap[i].next = i + 1;
+		newHeap[i].key = 0;
+		newHeap[i].keyHash = 0;
+		newHeap[i].value = NULL;
+	}
+	newHeap[i].next = -1;
+	newHeap[i].key = 0;
+	newHeap[i].keyHash = 0;
+	newHeap[i].value = NULL;
+}
 
 //-------------------------------------------------------------------------------------------------
 //  Semi-Private interface
@@ -32,26 +107,13 @@
 /// <param name="value">The value for the new key/value pair to add.</param>
 Int StringDictInt_Append(struct StringDictInt *self, String key, Int32 keyHash, const void *value)
 {
-	struct StringDictNode *heap, *newHeap;
-	Int nodeIndex, bucketIndex, i, oldmax, newmax;
+	struct StringDictNode *heap;
+	Int nodeIndex, bucketIndex;
+
+	if (key == NULL) return -1;
 
 	if (self->firstFree < 0) {
-		oldmax = self->heapLen;
-		newmax = oldmax * 2;
-		newHeap = GC_MALLOC_STRUCT_ARRAY(struct StringDictNode, newmax);
-		if (newHeap == NULL) Smile_Abort_OutOfMemory();
-		MemCpy(newHeap, self->heap, oldmax * sizeof(struct StringDictNode *));
-
-		for (i = oldmax; i < newmax; i++) {
-			newHeap[i].next = i + 1;
-			newHeap[i].key = 0;
-			newHeap[i].value = NULL;
-		}
-
-		newHeap[newmax - 1].next = -1;
-
-		self->heap = newHeap;
-		self->firstFree = oldmax;
+		StringDictInt_Resize(self, (self->mask + 1) * 2);
 	}
 
 	heap = self->heap;
@@ -62,6 +124,7 @@ Int StringDictInt_Append(struct StringDictInt *self, String key, Int32 keyHash, 
 
 	heap[nodeIndex].next = self->buckets[bucketIndex];
 	heap[nodeIndex].key = key;
+	heap[nodeIndex].keyHash = keyHash;
 	heap[nodeIndex].value = (void *)value;
 
 	self->buckets[bucketIndex] = nodeIndex;
@@ -82,7 +145,7 @@ Int StringDictInt_Append(struct StringDictInt *self, String key, Int32 keyHash, 
 StringDictKeyValuePair *StringDict_GetAll(StringDict stringDict)
 {
 	struct StringDictInt *self;
-	Int bucket, bucketsLen, nodeIndex;
+	Int bucket, nodeIndex;
 	Int *buckets;
 	StringDictKeyValuePair *pairs, *dest;
 	struct StringDictNode *heap, *node;
@@ -92,12 +155,11 @@ StringDictKeyValuePair *StringDict_GetAll(StringDict stringDict)
 	pairs = GC_MALLOC_STRUCT_ARRAY(StringDictKeyValuePair, self->count);
 	if (pairs == NULL) Smile_Abort_OutOfMemory();
 
-	bucketsLen = self->bucketsLen;
 	buckets = self->buckets;
 	dest = pairs;
 	heap = self->heap;
 
-	for (bucket = 0; bucket < self->bucketsLen; bucket++) {
+	for (bucket = 0; bucket <= self->mask; bucket++) {
 		nodeIndex = buckets[bucket];
 		while (nodeIndex >= 0) {
 			node = heap + nodeIndex;
@@ -120,7 +182,7 @@ StringDictKeyValuePair *StringDict_GetAll(StringDict stringDict)
 String *StringDict_GetKeys(StringDict stringDict)
 {
 	struct StringDictInt *self;
-	Int bucket, bucketsLen, nodeIndex;
+	Int bucket, nodeIndex;
 	Int *buckets;
 	String *keys, *dest;
 	struct StringDictNode *heap, *node;
@@ -130,12 +192,11 @@ String *StringDict_GetKeys(StringDict stringDict)
 	keys = GC_MALLOC_STRUCT_ARRAY(String, self->count);
 	if (keys == NULL) Smile_Abort_OutOfMemory();
 
-	bucketsLen = self->bucketsLen;
 	buckets = self->buckets;
 	dest = keys;
 	heap = self->heap;
 
-	for (bucket = 0; bucket < self->bucketsLen; bucket++) {
+	for (bucket = 0; bucket <= self->mask; bucket++) {
 		nodeIndex = buckets[bucket];
 		while (nodeIndex >= 0) {
 			node = heap + nodeIndex;
@@ -156,7 +217,7 @@ String *StringDict_GetKeys(StringDict stringDict)
 void **StringDict_GetValues(StringDict stringDict)
 {
 	struct StringDictInt *self;
-	Int bucket, bucketsLen, nodeIndex;
+	Int bucket, nodeIndex;
 	Int *buckets;
 	void **values, **dest;
 	struct StringDictNode *heap, *node;
@@ -166,12 +227,11 @@ void **StringDict_GetValues(StringDict stringDict)
 	values = GC_MALLOC_STRUCT_ARRAY(void *, self->count);
 	if (values == NULL) Smile_Abort_OutOfMemory();
 
-	bucketsLen = self->bucketsLen;
 	buckets = self->buckets;
 	dest = values;
 	heap = self->heap;
 
-	for (bucket = 0; bucket < self->bucketsLen; bucket++) {
+	for (bucket = 0; bucket <= self->mask; bucket++) {
 		nodeIndex = buckets[bucket];
 		while (nodeIndex >= 0) {
 			node = heap + nodeIndex;
@@ -186,39 +246,45 @@ void **StringDict_GetValues(StringDict stringDict)
 /// <summary>
 /// Delete all key/value pairs in the dictionary, resetting it back to its initial state.
 /// </summary>
-void StringDict_Clear(StringDict stringDict)
+/// <param name="newSize">The new allocation size of the dictionary, which is the number of
+/// items the dictionary can hold without it needing to invoke another reallocation.</param>
+void StringDict_ClearWithSize(StringDict stringDict, Int newSize)
 {
-	const Int DefaultBucketCount = 16;
-	const Int DefaultHeapSize = 16;
-
 	struct StringDictInt *self;
 	struct StringDictNode *heap;
 	Int *buckets;
 	Int i;
 
+	if (newSize < 0x10) newSize = 0x10;
+	if (newSize > 0x1000000) newSize = 0x1000000;
+
+	newSize = NextPowerOfTwo32(newSize);
+
 	self = (struct StringDictInt *)stringDict;
 
-	self->buckets = buckets = GC_MALLOC_RAW_ARRAY(Int, DefaultBucketCount);
+	self->buckets = buckets = GC_MALLOC_RAW_ARRAY(Int, newSize);
 	if (buckets == NULL) Smile_Abort_OutOfMemory();
-	self->bucketsLen = DefaultBucketCount;
-	self->heap = heap = GC_MALLOC_STRUCT_ARRAY(struct StringDictNode, DefaultHeapSize);
+	self->heap = heap = GC_MALLOC_STRUCT_ARRAY(struct StringDictNode, newSize);
 	if (heap == NULL) Smile_Abort_OutOfMemory();
-	self->heapLen = DefaultHeapSize;
 	self->firstFree = 0;
 	self->count = 0;
-	self->mask = DefaultHeapSize - 1;
+	self->mask = newSize - 1;
 
-	for (i = 0; i < DefaultBucketCount; i++) {
+	for (i = 0; i < newSize; i++) {
 		buckets[i] = -1;
 	}
 
-	for (i = 0; i < (DefaultHeapSize - 1); i++) {
+	for (i = 0; i < newSize - 1; i++) {
 		heap[i].next = i + 1;
-		heap[i].key = 0;
+		heap[i].key = NULL;
+		heap[i].keyHash = 0;
 		heap[i].value = NULL;
 	}
 
-	heap[DefaultHeapSize - 1].next = -1;
+	heap[i].next = -1;
+	heap[i].key = NULL;
+	heap[i].keyHash = 0;
+	heap[i].value = NULL;
 }
 
 /// <summary>
@@ -232,17 +298,18 @@ Bool StringDict_Remove(StringDict stringDict, String key)
 	struct StringDictInt *self;
 	struct StringDictNode *heap;
 	Int *buckets;
-	Int32 keyHash;
-
 	Int nodeIndex, prevIndex;
+	Int mask;
+	UInt32 keyHash;
 
 	self = (struct StringDictInt *)stringDict;
 	heap = self->heap;
 	buckets = self->buckets;
-	
-	keyHash = String_GetHashCode(key);
 
-	nodeIndex = buckets[keyHash & self->mask];
+	keyHash = String_Hash(key);
+
+	mask = self->mask;
+	nodeIndex = buckets[keyHash & mask];
 	prevIndex = -1;
 
 	while (nodeIndex >= 0) {
@@ -250,15 +317,19 @@ Bool StringDict_Remove(StringDict stringDict, String key)
 			if (prevIndex >= 0)
 				heap[prevIndex].next = heap[nodeIndex].next;
 			else
-				buckets[keyHash & self->mask] = heap[nodeIndex].next;
+				buckets[keyHash & mask] = heap[nodeIndex].next;
 
 			heap[nodeIndex].key = NULL;
+			heap[nodeIndex].keyHash = 0;
 			heap[nodeIndex].value = NULL;
 			heap[nodeIndex].next = self->firstFree;
 
 			self->firstFree = nodeIndex;
 			self->count--;
 
+			if (self->count <= ((mask + 1) >> 2) && (mask + 1) > 16) {
+				StringDictInt_Resize(self, (mask + 1) >> 1);
+			}
 			return True;
 		}
 
@@ -267,4 +338,41 @@ Bool StringDict_Remove(StringDict stringDict, String key)
 	}
 
 	return False;
+}
+
+/// <summary>
+/// Compute statistics on this dictionary.
+/// </summary>
+/// <param name="intDict">A pointer to the dictionary.</param>
+SMILE_API DictStats StringDict_ComputeStats(StringDict stringDict)
+{
+	struct StringDictInt *self;
+	struct StringDictNode *heap;
+	Int bucketIndex, nodeIndex, numInThisBucket;
+	Int *buckets;
+	DictStats stats;
+
+	self = (struct StringDictInt *)stringDict;
+	heap = self->heap;
+	buckets = self->buckets;
+
+	stats = GC_MALLOC_STRUCT(struct DictStatsStruct);
+
+	stats->heapTotal = self->mask + 1;
+	stats->heapAlloc = self->count;
+	stats->heapFree = self->mask + 1 - self->count;
+
+	stats->bucketStats = SimpleStats_Create();
+	stats->keyStats = SimpleStats_Create();
+
+	for (bucketIndex = 0; bucketIndex <= self->mask; bucketIndex++) {
+		numInThisBucket = 0;
+		for (nodeIndex = buckets[bucketIndex]; nodeIndex >= 0; nodeIndex = heap[nodeIndex].next) {
+			numInThisBucket++;
+			SimpleStats_Add(stats->keyStats, String_Length(heap[nodeIndex].key));
+		}
+		SimpleStats_Add(stats->bucketStats, numInThisBucket);
+	}
+
+	return stats;
 }

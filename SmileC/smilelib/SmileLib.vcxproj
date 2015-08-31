@@ -112,6 +112,7 @@
     <ClInclude Include="include\smile\bittwiddling.h" />
     <ClInclude Include="include\smile\gc.h" />
     <ClInclude Include="include\smile\mem.h" />
+    <ClInclude Include="include\smile\simplestats.h" />
     <ClInclude Include="include\smile\string.h" />
     <ClInclude Include="include\smile\stringbuilder.h" />
     <ClInclude Include="include\smile\types.h" />
@@ -289,13 +290,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\dict\dictstats.c" />
-    <ClCompile Include="src\hash.c" />
+    <ClCompile Include="src\fnvhash.c" />
     <ClCompile Include="src\init.c">
       <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</PreprocessToFile>
     </ClCompile>
     <ClCompile Include="src\dict\int32dict.c" />
     <ClCompile Include="src\dict\stringdict.c" />
     <ClCompile Include="src\dict\stringintdict.c" />
+    <ClCompile Include="src\siphash.c" />
     <ClCompile Include="src\string\html_entitytable.c" />
     <ClCompile Include="src\string\html_entitytovalue.c" />
     <ClCompile Include="src\string\html_valuetoentity.c" />

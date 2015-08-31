@@ -97,7 +97,7 @@ Inline StringIntDict StringIntDict_Create(void)
 Inline Bool StringIntDict_ContainsKey(StringIntDict stringDict, String key)
 {
 	SMILE_DICT_SEARCH(struct StringIntDictInt, struct StringIntDictNode, Int,
-		stringDict, String_GetHashCode(key), String_Equals(node->key, key),
+		stringDict, String_Hash(key), String_Equals(node->key, key),
 		{
 			return True;
 		},
@@ -116,7 +116,7 @@ Inline Bool StringIntDict_ContainsKey(StringIntDict stringDict, String key)
 Inline Bool StringIntDict_Add(StringIntDict stringDict, String key, Int value)
 {
 	SMILE_DICT_SEARCH(struct StringIntDictInt, struct StringIntDictNode, Int,
-		stringDict, String_GetHashCode(key), String_Equals(node->key, key),
+		stringDict, String_Hash(key), String_Equals(node->key, key),
 		{
 			return False;
 		},
@@ -145,7 +145,7 @@ Inline Int StringIntDict_Count(StringIntDict stringDict)
 Inline Int StringIntDict_GetValue(StringIntDict stringDict, String key)
 {
 	SMILE_DICT_SEARCH(struct StringIntDictInt, struct StringIntDictNode, Int,
-		stringDict, String_GetHashCode(key), String_Equals(node->key, key),
+		stringDict, String_Hash(key), String_Equals(node->key, key),
 		{
 			return node->value;
 		},
@@ -164,7 +164,7 @@ Inline Int StringIntDict_GetValue(StringIntDict stringDict, String key)
 Inline Bool StringIntDict_SetValue(StringIntDict stringDict, String key, Int value)
 {
 	SMILE_DICT_SEARCH(struct StringIntDictInt, struct StringIntDictNode, Int,
-		stringDict, String_GetHashCode(key), String_Equals(node->key, key),
+		stringDict, String_Hash(key), String_Equals(node->key, key),
 		{
 			node->value = value;
 			return True;
@@ -187,7 +187,7 @@ Inline Bool StringIntDict_SetValue(StringIntDict stringDict, String key, Int val
 Inline Bool StringIntDict_TryGetValue(StringIntDict stringDict, String key, Int *value)
 {
 	SMILE_DICT_SEARCH(struct StringIntDictInt, struct StringIntDictNode, Int,
-		stringDict, String_GetHashCode(key), String_Equals(node->key, key),
+		stringDict, String_Hash(key), String_Equals(node->key, key),
 		{
 			*value = node->value;
 			return True;

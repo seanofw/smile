@@ -123,11 +123,14 @@
     <ClCompile Include="src\unicode\codepages_win125x.c">
       <Filter>src\unicode</Filter>
     </ClCompile>
-    <ClCompile Include="src\hash.c">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\dict\dictstats.c">
       <Filter>src\dict</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fnvhash.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\siphash.c">
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -242,6 +245,9 @@
       <Filter>gc\include\private</Filter>
     </ClInclude>
     <ClInclude Include="include\smile.h" />
+    <ClInclude Include="include\smile\simplestats.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\smile\array.h">

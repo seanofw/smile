@@ -282,13 +282,23 @@ Inline Bool String_IsNullOrEmpty(const String str)
 }
 
 /// <summary>
-/// Compute a simple 32-bit hash code for the given string, based on its bytes.
+/// Compute a 32-bit hash code for the given string, based on its bytes.
 /// </summary>
 /// <param name="str">The string to hash.</param>
 /// <returns>A reasonably-unique hash value for that string.</returns>
-Inline Int32 String_GetHashCode(const String str)
+Inline UInt32 String_Hash(const String str)
 {
-	return (Int32)Smile_Hash(((const struct StringInt *)str)->text, ((const struct StringInt *)str)->length);
+	return Smile_Hash(((const struct StringInt *)str)->text, ((const struct StringInt *)str)->length);
+}
+
+/// <summary>
+/// Compute a 64-bit hash code for the given string, based on its bytes.
+/// </summary>
+/// <param name="str">The string to hash.</param>
+/// <returns>A reasonably-unique hash value for that string.</returns>
+Inline UInt64 String_Hash64(const String str)
+{
+	return Smile_Hash64(((const struct StringInt *)str)->text, ((const struct StringInt *)str)->length);
 }
 
 /// <summary>

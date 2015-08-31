@@ -232,7 +232,7 @@ Bool StringIntDict_Remove(StringIntDict stringDict, String key)
 	struct StringIntDictInt *self;
 	struct StringIntDictNode *heap;
 	Int *buckets;
-	Int32 keyHash;
+	UInt32 keyHash;
 
 	Int nodeIndex, prevIndex;
 
@@ -240,7 +240,7 @@ Bool StringIntDict_Remove(StringIntDict stringDict, String key)
 	heap = self->heap;
 	buckets = self->buckets;
 	
-	keyHash = String_GetHashCode(key);
+	keyHash = String_Hash(key);
 
 	nodeIndex = buckets[keyHash & self->mask];
 	prevIndex = -1;

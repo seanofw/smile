@@ -2,12 +2,12 @@
 
 EXTERN_TEST_SUITE(Int32DictTests);
 EXTERN_TEST_SUITE(StringCoreTests);
+EXTERN_TEST_SUITE(StringDictTests);
 EXTERN_TEST_SUITE(StringExtraTests);
 EXTERN_TEST_SUITE(StringFormatTests);
 EXTERN_TEST_SUITE(StringHtmlTests);
 EXTERN_TEST_SUITE(StringParseTests);
 EXTERN_TEST_SUITE(StringUnicodeTests);
-EXTERN_TEST_SUITE(Z_StringDictTests);
 EXTERN_TEST_SUITE(Z_StringIntDictTests);
 
 void RunAllTests()
@@ -16,12 +16,12 @@ void RunAllTests()
 
 	RUN_TEST_SUITE(results, Int32DictTests);
 	RUN_TEST_SUITE(results, StringCoreTests);
+	RUN_TEST_SUITE(results, StringDictTests);
 	RUN_TEST_SUITE(results, StringExtraTests);
 	RUN_TEST_SUITE(results, StringFormatTests);
 	RUN_TEST_SUITE(results, StringHtmlTests);
 	RUN_TEST_SUITE(results, StringParseTests);
 	RUN_TEST_SUITE(results, StringUnicodeTests);
-	RUN_TEST_SUITE(results, Z_StringDictTests);
 	RUN_TEST_SUITE(results, Z_StringIntDictTests);
 
 	DisplayTestSuiteResults(results);

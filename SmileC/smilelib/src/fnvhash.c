@@ -63,16 +63,13 @@
 #include <smile/internal/types.h>
 
 /// <summary>
-/// RawHash:  Perform a 32 bit hash on a buffer.
+/// FnvHash:  Perform a 32 bit hash on a buffer using Fowler/Noll/Vo FNV-1a hashing.
 /// The hash is guaranteed to always be the same value for the same sequence of bytes.
 /// </summary>
-/// <remarks>
-/// This is currently implemented as a Fowler/Noll/Vo FNV-1a hash.
-/// </remarks>
 /// <param name="buffer">Start of buffer to hash.</param>
 /// <param name="length">Length of buffer in bytes.</param>
 /// <returns>32 bit hash of the buffer.</returns>
-UInt32 Smile_RawHash(const void *buffer, Int length)
+UInt32 Smile_FnvHash(const void *buffer, Int length)
 {
 	Byte *bp = (Byte *)buffer;	// Start of buffer
 	Byte *be = bp + length;		// Beyond end of buffer
