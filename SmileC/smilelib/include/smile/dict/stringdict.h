@@ -73,7 +73,6 @@ SMILE_API DictStats StringDict_ComputeStats(StringDict stringDict);
 //-------------------------------------------------------------------------------------------------
 //  Inline parts of the implementation
 
-
 /// <summary>
 /// Construct a new, empty dictionary, and control its allocation behavior.
 /// </summary>
@@ -82,12 +81,12 @@ SMILE_API DictStats StringDict_ComputeStats(StringDict stringDict);
 /// <returns>The new, empty dictionary.</returns>
 Inline StringDict StringDict_CreateWithSize(Int newSize)
 {
-	StringDict intDict;
+	StringDict stringDict;
 
-	intDict = (StringDict)GC_MALLOC_STRUCT(struct StringDictInt);
-	if (intDict == NULL) Smile_Abort_OutOfMemory();
-	StringDict_ClearWithSize(intDict, newSize);
-	return intDict;
+	stringDict = (StringDict)GC_MALLOC_STRUCT(struct StringDictInt);
+	if (stringDict == NULL) Smile_Abort_OutOfMemory();
+	StringDict_ClearWithSize(stringDict, newSize);
+	return stringDict;
 }
 
 /// <summary>
