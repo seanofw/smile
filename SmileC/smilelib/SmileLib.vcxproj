@@ -110,6 +110,9 @@
     <ClInclude Include="include\smile.h" />
     <ClInclude Include="include\smile\array.h" />
     <ClInclude Include="include\smile\bittwiddling.h" />
+    <ClInclude Include="include\smile\env\env.h" />
+    <ClInclude Include="include\smile\env\knownsymbols.h" />
+    <ClInclude Include="include\smile\env\symboltable.h" />
     <ClInclude Include="include\smile\gc.h" />
     <ClInclude Include="include\smile\mem.h" />
     <ClInclude Include="include\smile\simplestats.h" />
@@ -290,6 +293,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\dict\dictstats.c" />
+    <ClCompile Include="src\env\env.c" />
+    <ClCompile Include="src\env\knownsymbols.c" />
+    <ClCompile Include="src\env\symboltable.c" />
     <ClCompile Include="src\fnvhash.c" />
     <ClCompile Include="src\init.c">
       <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</PreprocessToFile>

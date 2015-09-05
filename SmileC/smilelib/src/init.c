@@ -15,11 +15,11 @@
 //  limitations under the License.
 //---------------------------------------------------------------------------------------
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #include <smile/internal/types.h>
 #include <smile/gc.h>
-
-extern void puts(const char *);
-extern void exit(int);
 
 /// <summary>
 /// Whether or not the Smile runtime has been initialized yet.
@@ -57,6 +57,14 @@ void Smile_End(void)
 /// </summary>
 void Smile_Abort_OutOfMemory(void)
 {
-	puts("Fatal error:  Out of memory!  Aborting program.");
+	Smile_Abort_FatalError("Out of memory!");
+}
+
+/// <summary>
+/// Abort execution of the program because the runtime has run out of memory.
+/// </summary>
+void Smile_Abort_FatalError(const char *message)
+{
+	fprintf(stderr, "Fatal error:  %s  Aborting program.", message);
 	exit(-1);
 }

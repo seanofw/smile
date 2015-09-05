@@ -34,6 +34,12 @@
     <Filter Include="src\unicode">
       <UniqueIdentifier>{99FCEC4D-4000-4396-9913-10FBB0AB85BF}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\env">
+      <UniqueIdentifier>{c5ad549b-7e33-4ded-ab69-ec18668f12d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\env">
+      <UniqueIdentifier>{b619632b-cc52-4af0-aed0-078c08f9ccff}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gc\src\allchblk.c">
@@ -131,6 +137,15 @@
     </ClCompile>
     <ClCompile Include="src\siphash.c">
       <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\env\symboltable.c">
+      <Filter>src\env</Filter>
+    </ClCompile>
+    <ClCompile Include="src\env\env.c">
+      <Filter>src\env</Filter>
+    </ClCompile>
+    <ClCompile Include="src\env\knownsymbols.c">
+      <Filter>src\env</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -247,6 +262,15 @@
     <ClInclude Include="include\smile.h" />
     <ClInclude Include="include\smile\simplestats.h">
       <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\env\env.h">
+      <Filter>include\env</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\env\symboltable.h">
+      <Filter>include\env</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\env\knownsymbols.h">
+      <Filter>include\env</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

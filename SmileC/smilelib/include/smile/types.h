@@ -221,6 +221,7 @@ typedef unsigned char Bool;
 SMILE_API void Smile_Init(void);
 SMILE_API void Smile_End(void);
 SMILE_API void Smile_Abort_OutOfMemory(void);
+SMILE_API void Smile_Abort_FatalError(const char *message);
 
 SMILE_API UInt32 Smile_FnvHash(const void *buffer, Int length);
 SMILE_API UInt64 Smile_SipHash(const void *buffer, Int length, UInt64 secret1, UInt64 secret2);
