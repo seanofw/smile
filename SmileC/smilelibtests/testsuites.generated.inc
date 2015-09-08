@@ -9,6 +9,7 @@ EXTERN_TEST_SUITE(StringHtmlTests);
 EXTERN_TEST_SUITE(StringIntDictTests);
 EXTERN_TEST_SUITE(StringParseTests);
 EXTERN_TEST_SUITE(StringUnicodeTests);
+EXTERN_TEST_SUITE(SymbolTableTests);
 
 void RunAllTests()
 {
@@ -23,6 +24,7 @@ void RunAllTests()
 	RUN_TEST_SUITE(results, StringIntDictTests);
 	RUN_TEST_SUITE(results, StringParseTests);
 	RUN_TEST_SUITE(results, StringUnicodeTests);
+	RUN_TEST_SUITE(results, SymbolTableTests);
 
 	DisplayTestSuiteResults(results);
 }

@@ -316,6 +316,7 @@
       <FloatingPointModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Strict</FloatingPointModel>
     </ClCompile>
     <ClCompile Include="src\string\string_unicode.c" />
+    <ClCompile Include="src\ticks.c" />
     <ClCompile Include="src\unicode\casefolding.c" />
     <ClCompile Include="src\unicode\codepages_cpx.c" />
     <ClCompile Include="src\unicode\codepages_iso8859.c" />

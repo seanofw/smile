@@ -45,5 +45,14 @@
 #ifndef __SMILE_DICT_STRINGINTDICT_H__
 #include <smile/dict/stringintdict.h>
 #endif
+#ifndef __SMILE_ENV_SYMBOLTABLE_H__
+#include <smile/env/symboltable.h>
+#endif
+#ifndef __SMILE_ENV_KNOWNSYMBOLS_H__
+#include <smile/env/knownsymbols.h>
+#endif
+#ifndef __SMILE_ENV_ENV_H__
+#include <smile/env/env.h>
+#endif
 
 #endif

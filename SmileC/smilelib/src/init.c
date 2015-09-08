@@ -21,6 +21,8 @@
 #include <smile/internal/types.h>
 #include <smile/gc.h>
 
+extern void Smile_InitTicks(void);
+
 /// <summary>
 /// Whether or not the Smile runtime has been initialized yet.
 /// </summary>
@@ -39,6 +41,8 @@ UInt32 Smile_HashOracle;
 void Smile_Init(void)
 {
 	if (Smile_IsInitialized) return;
+
+	Smile_InitTicks();
 
 	GC_INIT();
 

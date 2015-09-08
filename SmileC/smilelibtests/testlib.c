@@ -24,11 +24,27 @@ static jmp_buf TestJmpBuf;
 
 int RunTestInternal(const char *name, const char *file, int line, TestFuncInternal testFuncInternal)
 {
+	UInt64 startTicks, endTicks;
+	double usec;
+
 	printf("  %s: ", name);
 	fflush(stdout);
 	if (!setjmp(TestJmpBuf)) {
+		startTicks = Smile_GetTicks();
 		testFuncInternal();
-		printf("OK\n");
+		endTicks = Smile_GetTicks();
+
+		usec = (double)Smile_TicksToMicroseconds(endTicks - startTicks);
+		if (usec >= 1000000.0) {
+			printf("OK (%.*f s)\n", usec > 100000000.0 ? 0 : usec > 10000000.0 ? 1 : 2, usec / 1000000.0);
+		}
+		else if (usec >= 1000.0) {
+			printf("OK (%.*f ms)\n", usec > 100000.0 ? 0 : usec > 10000.0 ? 1 : 2, usec / 1000.0);
+		}
+		else {
+			printf("OK (%.*f us)\n", usec > 100.0 ? 0 : usec > 10.0 ? 1 : usec > 1.0 ? 2 : 0, usec);
+		}
+
 		fflush(stdout);
 		return 1;
 	}

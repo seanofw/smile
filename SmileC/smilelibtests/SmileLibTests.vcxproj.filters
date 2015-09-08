@@ -31,6 +31,9 @@
     <ClCompile Include="dict\stringintdict_tests.c">
       <Filter>dict</Filter>
     </ClCompile>
+    <ClCompile Include="env\symboltable_tests.c">
+      <Filter>env</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -42,6 +45,9 @@
     </Filter>
     <Filter Include="dict">
       <UniqueIdentifier>{233ea057-cf92-4f61-85c3-e7b57363cf2e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="env">
+      <UniqueIdentifier>{a48276c9-2fbd-4004-a3c1-95516177f792}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

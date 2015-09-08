@@ -147,6 +147,9 @@
     <ClCompile Include="src\env\knownsymbols.c">
       <Filter>src\env</Filter>
     </ClCompile>
+    <ClCompile Include="src\ticks.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">

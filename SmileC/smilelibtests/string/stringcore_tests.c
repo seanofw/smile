@@ -1194,9 +1194,6 @@ END_TEST
 //-------------------------------------------------------------------------------------------------
 //  String-replace tests
 
-//SMILE_API String String_Replace(const String str, const String pattern, const String replacement);
-//SMILE_API String String_ReplaceChar(const String str, Byte pattern, Byte replacement);
-
 START_TEST(ReplaceDoesNothingToAnEmptyString)
 {
 	String str1 = String_FromC("foo");
@@ -1259,6 +1256,10 @@ END_TEST
 
 START_TEST(ReplaceCharSubstitutesCharsWhereTheyMatch)
 {
+	//----------------------------------------------------------------------
+	// TODO: FIXME: Investigate why this test sometimes fails unpredictably!
+	//----------------------------------------------------------------------
+
 	String str1 = String_FromC("This is a test for testing tests.");
 	String str2 = String_ReplaceChar(str1, 't', 'x');
 	String str3 = String_ReplaceChar(str2, 'e', 'y');

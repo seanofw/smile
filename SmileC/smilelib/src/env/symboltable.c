@@ -103,12 +103,8 @@ Symbol SymbolTable_GetSymbol(SymbolTable symbolTable, String name)
 Symbol SymbolTable_GetSymbolC(SymbolTable symbolTable, const char *name)
 {
 	Symbol symbol;
-	if ((symbol = (Symbol)StringIntDict_GetValueC(((struct SymbolTableInt *)symbolTable)->symbolLookup, name)) == 0) {
-		struct StringInt string;
-		string.text = (Byte *)name;
-		string.length = StrLen(name);
-		return SymbolTableInt_AddSymbol(symbolTable, (String)&string);
-	}
+	if ((symbol = (Symbol)StringIntDict_GetValueC(((struct SymbolTableInt *)symbolTable)->symbolLookup, name)) == 0)
+		return SymbolTableInt_AddSymbol(symbolTable, String_FromC(name));
 
 	return symbol;
 }

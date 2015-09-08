@@ -49,17 +49,17 @@ typedef unsigned char Bool;
 	#endif
 
 	// Macros for performing bit-rotation on an integer.
-	#define RotateLeft8(__n__, __m__) ((((UInt8)__n__) << (__m__)) | (((UInt8)__n__) >> (8 - (__m__))))
-	#define RotateRight8(__n__, __m__) ((((UInt8)__n__) >> (__m__)) | (((UInt8)__n__) << (8 - (__m__))))
+	#define Smile_RotateLeft8(__n__, __m__) ((((UInt8)__n__) << (__m__)) | (((UInt8)__n__) >> (8 - (__m__))))
+	#define Smile_RotateRight8(__n__, __m__) ((((UInt8)__n__) >> (__m__)) | (((UInt8)__n__) << (8 - (__m__))))
 
-	#define RotateLeft16(__n__, __m__) ((((UInt16)__n__) << (__m__)) | (((UInt16)__n__) >> (16 - (__m__))))
-	#define RotateRight16(__n__, __m__) ((((UInt16)__n__) >> (__m__)) | (((UInt16)__n__) << (16 - (__m__))))
+	#define Smile_RotateLeft16(__n__, __m__) ((((UInt16)__n__) << (__m__)) | (((UInt16)__n__) >> (16 - (__m__))))
+	#define Smile_RotateRight16(__n__, __m__) ((((UInt16)__n__) >> (__m__)) | (((UInt16)__n__) << (16 - (__m__))))
 
-	#define RotateLeft32(__n__, __m__) ((((UInt32)__n__) << (__m__)) | (((UInt32)__n__) >> (32 - (__m__))))
-	#define RotateRight32(__n__, __m__) ((((UInt32)__n__) >> (__m__)) | (((UInt32)__n__) << (32 - (__m__))))
+	#define Smile_RotateLeft32(__n__, __m__) ((((UInt32)__n__) << (__m__)) | (((UInt32)__n__) >> (32 - (__m__))))
+	#define Smile_RotateRight32(__n__, __m__) ((((UInt32)__n__) >> (__m__)) | (((UInt32)__n__) << (32 - (__m__))))
 
-	#define RotateLeft64(__n__, __m__) ((((UInt64)__n__) << (__m__)) | (((UInt64)__n__) >> (64 - (__m__))))
-	#define RotateRight64(__n__, __m__) ((((UInt64)__n__) >> (__m__)) | (((UInt64)__n__) << (64 - (__m__))))
+	#define Smile_RotateLeft64(__n__, __m__) ((((UInt64)__n__) << (__m__)) | (((UInt64)__n__) >> (64 - (__m__))))
+	#define Smile_RotateRight64(__n__, __m__) ((((UInt64)__n__) >> (__m__)) | (((UInt64)__n__) << (64 - (__m__))))
 
 	#if defined(_M_IX86)
 
@@ -133,17 +133,17 @@ typedef unsigned char Bool;
 	#define SMILE_API extern
 
 	// Macros for performing bit-rotation on an integer.
-	#define RotateLeft8(__n__, __m__) ((((UInt8)__n__) << (__m__)) | (((UInt8)__n__) >> (8 - (__m__))))
-	#define RotateRight8(__n__, __m__) ((((UInt8)__n__) >> (__m__)) | (((UInt8)__n__) << (8 - (__m__))))
+	#define Smile_RotateLeft8(__n__, __m__) ((((UInt8)__n__) << (__m__)) | (((UInt8)__n__) >> (8 - (__m__))))
+	#define Smile_RotateRight8(__n__, __m__) ((((UInt8)__n__) >> (__m__)) | (((UInt8)__n__) << (8 - (__m__))))
 
-	#define RotateLeft16(__n__, __m__) ((((UInt16)__n__) << (__m__)) | (((UInt16)__n__) >> (16 - (__m__))))
-	#define RotateRight16(__n__, __m__) ((((UInt16)__n__) >> (__m__)) | (((UInt16)__n__) << (16 - (__m__))))
+	#define Smile_RotateLeft16(__n__, __m__) ((((UInt16)__n__) << (__m__)) | (((UInt16)__n__) >> (16 - (__m__))))
+	#define Smile_RotateRight16(__n__, __m__) ((((UInt16)__n__) >> (__m__)) | (((UInt16)__n__) << (16 - (__m__))))
 
-	#define RotateLeft32(__n__, __m__) ((((UInt32)__n__) << (__m__)) | (((UInt32)__n__) >> (32 - (__m__))))
-	#define RotateRight32(__n__, __m__) ((((UInt32)__n__) >> (__m__)) | (((UInt32)__n__) << (32 - (__m__))))
+	#define Smile_RotateLeft32(__n__, __m__) ((((UInt32)__n__) << (__m__)) | (((UInt32)__n__) >> (32 - (__m__))))
+	#define Smile_RotateRight32(__n__, __m__) ((((UInt32)__n__) >> (__m__)) | (((UInt32)__n__) << (32 - (__m__))))
 
-	#define RotateLeft64(__n__, __m__) ((((UInt64)__n__) << (__m__)) | (((UInt64)__n__) >> (64 - (__m__))))
-	#define RotateRight64(__n__, __m__) ((((UInt64)__n__) >> (__m__)) | (((UInt64)__n__) << (64 - (__m__))))
+	#define Smile_RotateLeft64(__n__, __m__) ((((UInt64)__n__) << (__m__)) | (((UInt64)__n__) >> (64 - (__m__))))
+	#define Smile_RotateRight64(__n__, __m__) ((((UInt64)__n__) >> (__m__)) | (((UInt64)__n__) << (64 - (__m__))))
 
 	#if defined(__i386__)
 
@@ -223,10 +223,15 @@ SMILE_API void Smile_End(void);
 SMILE_API void Smile_Abort_OutOfMemory(void);
 SMILE_API void Smile_Abort_FatalError(const char *message);
 
+SMILE_API UInt32 Smile_HashOracle;
 SMILE_API UInt32 Smile_FnvHash(const void *buffer, Int length);
 SMILE_API UInt64 Smile_SipHash(const void *buffer, Int length, UInt64 secret1, UInt64 secret2);
 
-SMILE_API UInt32 Smile_HashOracle;
+SMILE_API UInt64 Smile_StartTicks;
+SMILE_API UInt64 Smile_GetTicks(void);
+SMILE_API double Smile_TicksToSeconds(UInt64 ticks);
+SMILE_API UInt64 Smile_TicksToMilliseconds(UInt64 ticks);
+SMILE_API UInt64 Smile_TicksToMicroseconds(UInt64 ticks);
 
 #ifndef Smile_Hash
 	/// <summary>
