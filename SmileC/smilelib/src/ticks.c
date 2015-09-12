@@ -51,11 +51,14 @@ UInt64 Smile_StartTicks = 0;
 /// </summary>
 void Smile_InitTicks(void)
 {
+	#if defined(_MSC_VER)
+		LARGE_INTEGER performanceFrequency;
+	#endif
+
 	Smile_StartTicks = Smile_GetTicks();
 
 	#if defined(_MSC_VER)
 		// Precalculate the Windows ticks-per-second value.
-		LARGE_INTEGER performanceFrequency;
 		if (!QueryPerformanceFrequency(&performanceFrequency)) {
 			WindowsTicksPerSecond = 1;
 			WindowsTicksPerSecondFloat = 1.0;
