@@ -108,12 +108,12 @@ START_TEST(CanAddSymbolsFastToAnEmptySymbolTable)
 	ASSERT(e == 5);
 	ASSERT(f == 6);
 
-	AssertString(SymbolTable_GetName(symbolTable, a), "soup", 4);
-	AssertString(SymbolTable_GetName(symbolTable, b), "nuts", 4);
-	AssertString(SymbolTable_GetName(symbolTable, c), "raspberry", 9);
-	AssertString(SymbolTable_GetName(symbolTable, d), "banana", 6);
-	AssertString(SymbolTable_GetName(symbolTable, e), "hamburger", 9);
-	AssertString(SymbolTable_GetName(symbolTable, f), "milkshake", 9);
+	ASSERT_STRING(SymbolTable_GetName(symbolTable, a), "soup", 4);
+	ASSERT_STRING(SymbolTable_GetName(symbolTable, b), "nuts", 4);
+	ASSERT_STRING(SymbolTable_GetName(symbolTable, c), "raspberry", 9);
+	ASSERT_STRING(SymbolTable_GetName(symbolTable, d), "banana", 6);
+	ASSERT_STRING(SymbolTable_GetName(symbolTable, e), "hamburger", 9);
+	ASSERT_STRING(SymbolTable_GetName(symbolTable, f), "milkshake", 9);
 }
 END_TEST
 
@@ -230,12 +230,12 @@ START_TEST(CanGetNamesFromSymbols)
 	e = SymbolTable_GetSymbol(symbolTable, String_FromC("hamburger"));
 	f = SymbolTable_GetSymbol(symbolTable, String_FromC("milkshake"));
 
-	AssertString(SymbolTable_GetName(symbolTable, a), "soup", 4);
-	AssertString(SymbolTable_GetName(symbolTable, b), "nuts", 4);
-	AssertString(SymbolTable_GetName(symbolTable, c), "raspberry", 9);
-	AssertString(SymbolTable_GetName(symbolTable, d), "banana", 6);
-	AssertString(SymbolTable_GetName(symbolTable, e), "hamburger", 9);
-	AssertString(SymbolTable_GetName(symbolTable, f), "milkshake", 9);
+	ASSERT_STRING(SymbolTable_GetName(symbolTable, a), "soup", 4);
+	ASSERT_STRING(SymbolTable_GetName(symbolTable, b), "nuts", 4);
+	ASSERT_STRING(SymbolTable_GetName(symbolTable, c), "raspberry", 9);
+	ASSERT_STRING(SymbolTable_GetName(symbolTable, d), "banana", 6);
+	ASSERT_STRING(SymbolTable_GetName(symbolTable, e), "hamburger", 9);
+	ASSERT_STRING(SymbolTable_GetName(symbolTable, f), "milkshake", 9);
 }
 END_TEST
 
@@ -254,12 +254,12 @@ START_TEST(CanGetNamesFromSymbolsC)
 	e = SymbolTable_GetSymbolC(symbolTable, "hamburger");
 	f = SymbolTable_GetSymbolC(symbolTable, "milkshake");
 
-	AssertString(SymbolTable_GetName(symbolTable, a), "soup", 4);
-	AssertString(SymbolTable_GetName(symbolTable, b), "nuts", 4);
-	AssertString(SymbolTable_GetName(symbolTable, c), "raspberry", 9);
-	AssertString(SymbolTable_GetName(symbolTable, d), "banana", 6);
-	AssertString(SymbolTable_GetName(symbolTable, e), "hamburger", 9);
-	AssertString(SymbolTable_GetName(symbolTable, f), "milkshake", 9);
+	ASSERT_STRING(SymbolTable_GetName(symbolTable, a), "soup", 4);
+	ASSERT_STRING(SymbolTable_GetName(symbolTable, b), "nuts", 4);
+	ASSERT_STRING(SymbolTable_GetName(symbolTable, c), "raspberry", 9);
+	ASSERT_STRING(SymbolTable_GetName(symbolTable, d), "banana", 6);
+	ASSERT_STRING(SymbolTable_GetName(symbolTable, e), "hamburger", 9);
+	ASSERT_STRING(SymbolTable_GetName(symbolTable, f), "milkshake", 9);
 }
 END_TEST
 

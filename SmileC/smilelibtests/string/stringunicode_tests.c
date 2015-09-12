@@ -483,21 +483,21 @@ END_TEST
 
 START_TEST(ToLowerDoesNothingToEmptyAndWhitespaceStrings)
 {
-	AssertString(String_ToLower(String_Empty), "", 0);
-	AssertString(String_ToLower(String_FromC("  \t\r\n  ")), "  \t\r\n  ", 7);
+	ASSERT_STRING(String_ToLower(String_Empty), "", 0);
+	ASSERT_STRING(String_ToLower(String_FromC("  \t\r\n  ")), "  \t\r\n  ", 7);
 }
 END_TEST
 
 START_TEST(ToLowerConvertsAsciiToLowercase)
 {
-	AssertString(String_ToLower(String_FromC("This IS A tEsT.")), "this is a test.", 15);
-	AssertString(String_ToLower(String_FromC("PACK MY BOX WITH FIVE DOZEN LIQUOR JUGS.")), "pack my box with five dozen liquor jugs.", 40);
+	ASSERT_STRING(String_ToLower(String_FromC("This IS A tEsT.")), "this is a test.", 15);
+	ASSERT_STRING(String_ToLower(String_FromC("PACK MY BOX WITH FIVE DOZEN LIQUOR JUGS.")), "pack my box with five dozen liquor jugs.", 40);
 }
 END_TEST
 
 START_TEST(ToLowerConvertsUnicodeToLowercase)
 {
-	AssertString(String_ToLower(String_FromC("PACK MY BOX WITH FIVE DOZ\xC3\x89N LIQUOR JUGS.")), "pack my box with five doz\xC3\xA9n liquor jugs.", 41);
+	ASSERT_STRING(String_ToLower(String_FromC("PACK MY BOX WITH FIVE DOZ\xC3\x89N LIQUOR JUGS.")), "pack my box with five doz\xC3\xA9n liquor jugs.", 41);
 }
 END_TEST
 
@@ -506,22 +506,22 @@ END_TEST
 
 START_TEST(ToUpperDoesNothingToEmptyAndWhitespaceStrings)
 {
-	AssertString(String_ToUpper(String_Empty), "", 0);
-	AssertString(String_ToUpper(String_FromC("  \t\r\n  ")), "  \t\r\n  ", 7);
+	ASSERT_STRING(String_ToUpper(String_Empty), "", 0);
+	ASSERT_STRING(String_ToUpper(String_FromC("  \t\r\n  ")), "  \t\r\n  ", 7);
 }
 END_TEST
 
 START_TEST(ToUpperConvertsAsciiToUppercase)
 {
-	AssertString(String_ToUpper(String_FromC("This IS A tEsT.")), "THIS IS A TEST.", 15);
-	AssertString(String_ToUpper(String_FromC("pack my box with five dozen liquor jugs.")), "PACK MY BOX WITH FIVE DOZEN LIQUOR JUGS.", 40);
+	ASSERT_STRING(String_ToUpper(String_FromC("This IS A tEsT.")), "THIS IS A TEST.", 15);
+	ASSERT_STRING(String_ToUpper(String_FromC("pack my box with five dozen liquor jugs.")), "PACK MY BOX WITH FIVE DOZEN LIQUOR JUGS.", 40);
 }
 END_TEST
 
 START_TEST(ToUpperConvertsUnicodeToUppercase)
 {
-	AssertString(String_ToUpper(String_FromC("pack my box with five doz\xC3\xA9n liquor jugs.")), "PACK MY BOX WITH FIVE DOZ\xC3\x89N LIQUOR JUGS.", 41);
-	AssertString(String_ToUpper(String_FromC("pack my box with five dozen liquor jug\xC3\x9F.")), "PACK MY BOX WITH FIVE DOZEN LIQUOR JUGSS.", 41);
+	ASSERT_STRING(String_ToUpper(String_FromC("pack my box with five doz\xC3\xA9n liquor jugs.")), "PACK MY BOX WITH FIVE DOZ\xC3\x89N LIQUOR JUGS.", 41);
+	ASSERT_STRING(String_ToUpper(String_FromC("pack my box with five dozen liquor jug\xC3\x9F.")), "PACK MY BOX WITH FIVE DOZEN LIQUOR JUGSS.", 41);
 }
 END_TEST
 
@@ -530,35 +530,35 @@ END_TEST
 
 START_TEST(ToTitleDoesNothingToEmptyAndWhitespaceStrings)
 {
-	AssertString(String_ToTitle(String_Empty), "", 0);
-	AssertString(String_ToTitle(String_FromC("  \t\r\n  ")), "  \t\r\n  ", 7);
+	ASSERT_STRING(String_ToTitle(String_Empty), "", 0);
+	ASSERT_STRING(String_ToTitle(String_FromC("  \t\r\n  ")), "  \t\r\n  ", 7);
 }
 END_TEST
 
 START_TEST(ToTitleConvertsAsciiToUppercase)
 {
-	AssertString(String_ToTitle(String_FromC("This IS A tEsT.")), "THIS IS A TEST.", 15);
-	AssertString(String_ToTitle(String_FromC("pack my box with five dozen liquor jugs.")), "PACK MY BOX WITH FIVE DOZEN LIQUOR JUGS.", 40);
+	ASSERT_STRING(String_ToTitle(String_FromC("This IS A tEsT.")), "THIS IS A TEST.", 15);
+	ASSERT_STRING(String_ToTitle(String_FromC("pack my box with five dozen liquor jugs.")), "PACK MY BOX WITH FIVE DOZEN LIQUOR JUGS.", 40);
 }
 END_TEST
 
 START_TEST(ToTitleConvertsUnicodeToUppercase)
 {
-	AssertString(String_ToTitle(String_FromC("pack my box with five doz\xC3\xA9n liquor jugs.")), "PACK MY BOX WITH FIVE DOZ\xC3\x89N LIQUOR JUGS.", 41);
+	ASSERT_STRING(String_ToTitle(String_FromC("pack my box with five doz\xC3\xA9n liquor jugs.")), "PACK MY BOX WITH FIVE DOZ\xC3\x89N LIQUOR JUGS.", 41);
 }
 END_TEST
 
 START_TEST(ToTitleConvertsCertainCompoundUnicodeCodePointsToTitlecase)
 {
-	AssertString(String_ToTitle(String_FromC("pack my box with five dozen liquor jug\xC3\x9F.")), "PACK MY BOX WITH FIVE DOZEN LIQUOR JUGSs.", 41);
+	ASSERT_STRING(String_ToTitle(String_FromC("pack my box with five dozen liquor jug\xC3\x9F.")), "PACK MY BOX WITH FIVE DOZEN LIQUOR JUGSs.", 41);
 
-	AssertString(String_ToTitle(String_FromC("This is a DZ: \xC7\x84.")), "THIS IS A DZ: \xC7\x85.", 17);
-	AssertString(String_ToTitle(String_FromC("This is a Dz: \xC7\x85.")), "THIS IS A DZ: \xC7\x85.", 17);
-	AssertString(String_ToTitle(String_FromC("This is a dz: \xC7\x86.")), "THIS IS A DZ: \xC7\x85.", 17);
+	ASSERT_STRING(String_ToTitle(String_FromC("This is a DZ: \xC7\x84.")), "THIS IS A DZ: \xC7\x85.", 17);
+	ASSERT_STRING(String_ToTitle(String_FromC("This is a Dz: \xC7\x85.")), "THIS IS A DZ: \xC7\x85.", 17);
+	ASSERT_STRING(String_ToTitle(String_FromC("This is a dz: \xC7\x86.")), "THIS IS A DZ: \xC7\x85.", 17);
 
-	AssertString(String_ToTitle(String_FromC("This is a LJ: \xC7\x87.")), "THIS IS A LJ: \xC7\x88.", 17);
-	AssertString(String_ToTitle(String_FromC("This is a Lj: \xC7\x88.")), "THIS IS A LJ: \xC7\x88.", 17);
-	AssertString(String_ToTitle(String_FromC("This is a lj: \xC7\x89.")), "THIS IS A LJ: \xC7\x88.", 17);
+	ASSERT_STRING(String_ToTitle(String_FromC("This is a LJ: \xC7\x87.")), "THIS IS A LJ: \xC7\x88.", 17);
+	ASSERT_STRING(String_ToTitle(String_FromC("This is a Lj: \xC7\x88.")), "THIS IS A LJ: \xC7\x88.", 17);
+	ASSERT_STRING(String_ToTitle(String_FromC("This is a lj: \xC7\x89.")), "THIS IS A LJ: \xC7\x88.", 17);
 }
 END_TEST
 
@@ -567,22 +567,22 @@ END_TEST
 
 START_TEST(CaseFoldDoesNothingToEmptyAndWhitespaceStrings)
 {
-	AssertString(String_CaseFold(String_Empty), "", 0);
-	AssertString(String_CaseFold(String_FromC("  \t\r\n  ")), "  \t\r\n  ", 7);
+	ASSERT_STRING(String_CaseFold(String_Empty), "", 0);
+	ASSERT_STRING(String_CaseFold(String_FromC("  \t\r\n  ")), "  \t\r\n  ", 7);
 }
 END_TEST
 
 START_TEST(CaseFoldConvertsAsciiToLowercase)
 {
-	AssertString(String_CaseFold(String_FromC("This IS A tEsT.")), "this is a test.", 15);
-	AssertString(String_CaseFold(String_FromC("PACK MY BOX WITH FIVE DOZEN LIQUOR JUGS.")), "pack my box with five dozen liquor jugs.", 40);
+	ASSERT_STRING(String_CaseFold(String_FromC("This IS A tEsT.")), "this is a test.", 15);
+	ASSERT_STRING(String_CaseFold(String_FromC("PACK MY BOX WITH FIVE DOZEN LIQUOR JUGS.")), "pack my box with five dozen liquor jugs.", 40);
 }
 END_TEST
 
 START_TEST(CaseFoldConvertsUnicodeToComparableForm)
 {
-	AssertString(String_CaseFold(String_FromC("PACK MY BOX WITH FIVE DOZ\xC3\x89N LIQUOR JUGS.")), "pack my box with five doz\xC3\xA9n liquor jugs.", 41);
-	AssertString(String_CaseFold(String_FromC("pack my box with five dozen liquor jug\xC3\x9F.")), "pack my box with five dozen liquor jugss.", 41);
+	ASSERT_STRING(String_CaseFold(String_FromC("PACK MY BOX WITH FIVE DOZ\xC3\x89N LIQUOR JUGS.")), "pack my box with five doz\xC3\xA9n liquor jugs.", 41);
+	ASSERT_STRING(String_CaseFold(String_FromC("pack my box with five dozen liquor jug\xC3\x9F.")), "pack my box with five dozen liquor jugss.", 41);
 }
 END_TEST
 
@@ -591,23 +591,23 @@ END_TEST
 
 START_TEST(DecomposeDoesNothingToEmptyAndWhitespaceAndAsciiStrings)
 {
-	AssertString(String_Decompose(String_Empty), "", 0);
-	AssertString(String_Decompose(String_FromC("  \t\r\n  ")), "  \t\r\n  ", 7);
-	AssertString(String_Decompose(String_FromC("This is a test.")), "This is a test.", 15);
-	AssertString(String_Decompose(String_FromC("Pack my box with five dozen liquor jugs.")), "Pack my box with five dozen liquor jugs.", 40);
+	ASSERT_STRING(String_Decompose(String_Empty), "", 0);
+	ASSERT_STRING(String_Decompose(String_FromC("  \t\r\n  ")), "  \t\r\n  ", 7);
+	ASSERT_STRING(String_Decompose(String_FromC("This is a test.")), "This is a test.", 15);
+	ASSERT_STRING(String_Decompose(String_FromC("Pack my box with five dozen liquor jugs.")), "Pack my box with five dozen liquor jugs.", 40);
 }
 END_TEST
 
 START_TEST(DecomposeDisassemblesCompoundAccentedCharacters)
 {
-	AssertString(String_Decompose(String_FromC("trouv\xC3\xA9.")), "trouve\xCC\x81.", 9);
-	AssertString(String_Decompose(String_FromC("\xC3\xA0 bient\xC3\xB4t.")), "a\xCC\x80 biento\xCC\x82t.", 14);
+	ASSERT_STRING(String_Decompose(String_FromC("trouv\xC3\xA9.")), "trouve\xCC\x81.", 9);
+	ASSERT_STRING(String_Decompose(String_FromC("\xC3\xA0 bient\xC3\xB4t.")), "a\xCC\x80 biento\xCC\x82t.", 14);
 }
 END_TEST
 
 START_TEST(DecomposeIgnoresNonAccentedUnicodeCharacters)
 {
-	AssertString(String_Decompose(String_FromC("tr\xC3\x97uv\xC3\xB0.")), "tr\xC3\x97uv\xC3\xB0.", 9);
+	ASSERT_STRING(String_Decompose(String_FromC("tr\xC3\x97uv\xC3\xB0.")), "tr\xC3\x97uv\xC3\xB0.", 9);
 }
 END_TEST
 
@@ -616,23 +616,23 @@ END_TEST
 
 START_TEST(ComposeDoesNothingToEmptyAndWhitespaceAndAsciiStrings)
 {
-	AssertString(String_Compose(String_Empty), "", 0);
-	AssertString(String_Compose(String_FromC("  \t\r\n  ")), "  \t\r\n  ", 7);
-	AssertString(String_Compose(String_FromC("This is a test.")), "This is a test.", 15);
-	AssertString(String_Compose(String_FromC("Pack my box with five dozen liquor jugs.")), "Pack my box with five dozen liquor jugs.", 40);
+	ASSERT_STRING(String_Compose(String_Empty), "", 0);
+	ASSERT_STRING(String_Compose(String_FromC("  \t\r\n  ")), "  \t\r\n  ", 7);
+	ASSERT_STRING(String_Compose(String_FromC("This is a test.")), "This is a test.", 15);
+	ASSERT_STRING(String_Compose(String_FromC("Pack my box with five dozen liquor jugs.")), "Pack my box with five dozen liquor jugs.", 40);
 }
 END_TEST
 
 START_TEST(ComposeAssemblesCompoundAccentedCharacters)
 {
-	AssertString(String_Compose(String_FromC("trouve\xCC\x81.")), "trouv\xC3\xA9.", 8);
-	AssertString(String_Compose(String_FromC("a\xCC\x80 biento\xCC\x82t.")), "\xC3\xA0 bient\xC3\xB4t.", 12);
+	ASSERT_STRING(String_Compose(String_FromC("trouve\xCC\x81.")), "trouv\xC3\xA9.", 8);
+	ASSERT_STRING(String_Compose(String_FromC("a\xCC\x80 biento\xCC\x82t.")), "\xC3\xA0 bient\xC3\xB4t.", 12);
 }
 END_TEST
 
 START_TEST(ComposeIgnoresNonAccentedUnicodeCharacters)
 {
-	AssertString(String_Compose(String_FromC("tr\xC3\x97uv\xC3\xB0.")), "tr\xC3\x97uv\xC3\xB0.", 9);
+	ASSERT_STRING(String_Compose(String_FromC("tr\xC3\x97uv\xC3\xB0.")), "tr\xC3\x97uv\xC3\xB0.", 9);
 }
 END_TEST
 
@@ -641,40 +641,40 @@ END_TEST
 
 START_TEST(NormalizeDoesNothingToEmptyAndWhitespaceAndAsciiStrings)
 {
-	AssertString(String_Normalize(String_Empty), "", 0);
-	AssertString(String_Normalize(String_FromC("  \t\r\n  ")), "  \t\r\n  ", 7);
-	AssertString(String_Normalize(String_FromC("This is a test.")), "This is a test.", 15);
-	AssertString(String_Normalize(String_FromC("Pack my box with five dozen liquor jugs.")), "Pack my box with five dozen liquor jugs.", 40);
+	ASSERT_STRING(String_Normalize(String_Empty), "", 0);
+	ASSERT_STRING(String_Normalize(String_FromC("  \t\r\n  ")), "  \t\r\n  ", 7);
+	ASSERT_STRING(String_Normalize(String_FromC("This is a test.")), "This is a test.", 15);
+	ASSERT_STRING(String_Normalize(String_FromC("Pack my box with five dozen liquor jugs.")), "Pack my box with five dozen liquor jugs.", 40);
 }
 END_TEST
 
 START_TEST(NormalizeIgnoresCompoundCharactersWithoutSeparatedDiacritics)
 {
-	AssertString(String_Normalize(String_FromC("trouv\xC3\xA9.")), "trouv\xC3\xA9.", 8);
-	AssertString(String_Normalize(String_FromC("\xC3\xA0 bient\xC3\xB4t.")), "\xC3\xA0 bient\xC3\xB4t.", 12);
+	ASSERT_STRING(String_Normalize(String_FromC("trouv\xC3\xA9.")), "trouv\xC3\xA9.", 8);
+	ASSERT_STRING(String_Normalize(String_FromC("\xC3\xA0 bient\xC3\xB4t.")), "\xC3\xA0 bient\xC3\xB4t.", 12);
 }
 END_TEST
 
 START_TEST(NormalizeIgnoresSingleAccents)
 {
-	AssertString(String_Normalize(String_FromC("trouve\xCC\x81.")), "trouve\xCC\x81.", 9);
-	AssertString(String_Normalize(String_FromC("a\xCC\x80 biento\xCC\x82t.")), "a\xCC\x80 biento\xCC\x82t.", 14);
+	ASSERT_STRING(String_Normalize(String_FromC("trouve\xCC\x81.")), "trouve\xCC\x81.", 9);
+	ASSERT_STRING(String_Normalize(String_FromC("a\xCC\x80 biento\xCC\x82t.")), "a\xCC\x80 biento\xCC\x82t.", 14);
 }
 END_TEST
 
 START_TEST(NormalizeIgnoresNonAccentedUnicodeCharacters)
 {
-	AssertString(String_Normalize(String_FromC("tr\xC3\x97uv\xC3\xB0.")), "tr\xC3\x97uv\xC3\xB0.", 9);
+	ASSERT_STRING(String_Normalize(String_FromC("tr\xC3\x97uv\xC3\xB0.")), "tr\xC3\x97uv\xC3\xB0.", 9);
 }
 END_TEST
 
 START_TEST(NormalizeSortsPairsOfDiacriticsCorrectly)
 {
 	// 'x' with dot below followed by dot above can be left alone.
-	AssertString(String_Normalize(String_FromC("x\xCC\xA3\xCC\x87.")), "x\xCC\xA3\xCC\x87.", 6);
+	ASSERT_STRING(String_Normalize(String_FromC("x\xCC\xA3\xCC\x87.")), "x\xCC\xA3\xCC\x87.", 6);
 
 	// 'x' with dot above followed by dot below must be transformed.
-	AssertString(String_Normalize(String_FromC("x\xCC\x87\xCC\xA3.")), "x\xCC\xA3\xCC\x87.", 6);
+	ASSERT_STRING(String_Normalize(String_FromC("x\xCC\x87\xCC\xA3.")), "x\xCC\xA3\xCC\x87.", 6);
 }
 END_TEST
 
@@ -694,16 +694,16 @@ START_TEST(NormalizeSortsManyDiacriticsCorrectly)
 	// Double inverted breve   U+0361:  \xCD\xA1:  class 234
 
 	// Try all of the diacritics in forward (sorted) order.  Should be unchanged.
-	AssertString(String_Normalize(String_FromC("x\xCC\xB4\xCC\xA1\xCC\x9B\xCC\xA5\xCC\x8A\xCC\x80\xCC\x81\xCC\x9A\xCD\xA1.")),
+	ASSERT_STRING(String_Normalize(String_FromC("x\xCC\xB4\xCC\xA1\xCC\x9B\xCC\xA5\xCC\x8A\xCC\x80\xCC\x81\xCC\x9A\xCD\xA1.")),
 		"x\xCC\xB4\xCC\xA1\xCC\x9B\xCC\xA5\xCC\x8A\xCC\x80\xCC\x81\xCC\x9A\xCD\xA1.", 20);
 
 	// Try all of the diacritics in reverse order.  Should come out reversed, with the class-230 diacritics
 	// still in reverse order (i.e., a stable sort was used).
-	AssertString(String_Normalize(String_FromC("x\xCD\xA1\xCC\x9A\xCC\x8A\xCC\x80\xCC\x81\xCC\xA5\xCC\x9B\xCC\xA1\xCC\xB4.")),
+	ASSERT_STRING(String_Normalize(String_FromC("x\xCD\xA1\xCC\x9A\xCC\x8A\xCC\x80\xCC\x81\xCC\xA5\xCC\x9B\xCC\xA1\xCC\xB4.")),
 		"x\xCC\xB4\xCC\xA1\xCC\x9B\xCC\xA5\xCC\x8A\xCC\x80\xCC\x81\xCC\x9A\xCD\xA1.", 20);
 
 	// Try all of the diacritics in a random shuffly order.  The class-230 diacritics should stay in order.
-	AssertString(String_Normalize(String_FromC("x\xCC\xA5\xCC\xA1\xCC\x80\xCC\x9A\xCC\x8A\xCC\xB4\xCD\xA1\xCC\x81\xCC\x9B.")),
+	ASSERT_STRING(String_Normalize(String_FromC("x\xCC\xA5\xCC\xA1\xCC\x80\xCC\x9A\xCC\x8A\xCC\xB4\xCD\xA1\xCC\x81\xCC\x9B.")),
 		"x\xCC\xB4\xCC\xA1\xCC\x9B\xCC\xA5\xCC\x80\xCC\x8A\xCC\x81\xCC\x9A\xCD\xA1.", 20);
 }
 END_TEST
@@ -754,49 +754,49 @@ END_TEST
 START_TEST(ConvertingFromUtf8ToLatin1ConvertsLatin1CodePoints)
 {
 	String str = String_FromC("\xC3\xA0 bient\xC3\xB4t.");
-	AssertString(String_ConvertUtf8ToKnownCodePage(str, LEGACY_CODE_PAGE_ISO_8859_1), "\xE0 bient\xF4t.", 10);
+	ASSERT_STRING(String_ConvertUtf8ToKnownCodePage(str, LEGACY_CODE_PAGE_ISO_8859_1), "\xE0 bient\xF4t.", 10);
 }
 END_TEST
 
 START_TEST(ConvertingFromUtf8ToLatin1ConvertsNonLatin1CodePointsToQuestionMarks)
 {
 	String str = String_FromC("a\xCC\x80 biento\xCC\x82t.");
-	AssertString(String_ConvertUtf8ToKnownCodePage(str, LEGACY_CODE_PAGE_ISO_8859_1), "a? biento?t.", 12);
+	ASSERT_STRING(String_ConvertUtf8ToKnownCodePage(str, LEGACY_CODE_PAGE_ISO_8859_1), "a? biento?t.", 12);
 }
 END_TEST
 
 START_TEST(ConvertingFromLatin1ToUtf8ConvertsLatin1CodePointsToCombinedForms)
 {
 	String str = String_FromC("\xE0 bient\xF4t.");
-	AssertString(String_ConvertKnownCodePageToUtf8(str, LEGACY_CODE_PAGE_ISO_8859_1), "\xC3\xA0 bient\xC3\xB4t.", 12);
+	ASSERT_STRING(String_ConvertKnownCodePageToUtf8(str, LEGACY_CODE_PAGE_ISO_8859_1), "\xC3\xA0 bient\xC3\xB4t.", 12);
 }
 END_TEST
 
 START_TEST(ConvertingToWindows1252IsNotTheSameAsLatin1)
 {
 	String str = String_FromC("\x8A\xE0 \x93\x62ient\xF4t.\x94");
-	AssertString(String_ConvertKnownCodePageToUtf8(str, LEGACY_CODE_PAGE_ISO_8859_1), "\xC2\x8A\xC3\xA0 \xC2\x93\x62ient\xC3\xB4t.\xC2\x94", 18);
+	ASSERT_STRING(String_ConvertKnownCodePageToUtf8(str, LEGACY_CODE_PAGE_ISO_8859_1), "\xC2\x8A\xC3\xA0 \xC2\x93\x62ient\xC3\xB4t.\xC2\x94", 18);
 
 	str = String_FromC("\x8A\xE0 \x93\x62ient\xF4t.\x94");
-	AssertString(String_ConvertKnownCodePageToUtf8(str, LEGACY_CODE_PAGE_WIN1252), "\xC5\xA0\xC3\xA0 \xE2\x80\x9C\x62ient\xC3\xB4t.\xE2\x80\x9D", 20);
+	ASSERT_STRING(String_ConvertKnownCodePageToUtf8(str, LEGACY_CODE_PAGE_WIN1252), "\xC5\xA0\xC3\xA0 \xE2\x80\x9C\x62ient\xC3\xB4t.\xE2\x80\x9D", 20);
 }
 END_TEST
 
 START_TEST(ConvertingFromWindows1252IsNotTheSameAsLatin1)
 {
 	String str = String_FromC("\xC2\x8A\xC3\xA0 \xC2\x93\x62ient\xC3\xB4t.\xC2\x94");
-	AssertString(String_ConvertUtf8ToKnownCodePage(str, LEGACY_CODE_PAGE_ISO_8859_1), "\x8A\xE0 \x93\x62ient\xF4t.\x94", 13);
+	ASSERT_STRING(String_ConvertUtf8ToKnownCodePage(str, LEGACY_CODE_PAGE_ISO_8859_1), "\x8A\xE0 \x93\x62ient\xF4t.\x94", 13);
 
 	str = String_FromC("\xC5\xA0\xC3\xA0 \xE2\x80\x9C\x62ient\xC3\xB4t.\xE2\x80\x9D");
-	AssertString(String_ConvertUtf8ToKnownCodePage(str, LEGACY_CODE_PAGE_WIN1252), "\x8A\xE0 \x93\x62ient\xF4t.\x94", 13);
+	ASSERT_STRING(String_ConvertUtf8ToKnownCodePage(str, LEGACY_CODE_PAGE_WIN1252), "\x8A\xE0 \x93\x62ient\xF4t.\x94", 13);
 }
 END_TEST
 
 START_TEST(ConvertingToAnUnknownCodePageResultsInEmptyString)
 {
 	String str = String_FromC("\xE0 bient\xF4t.");
-	AssertString(String_ConvertKnownCodePageToUtf8(str, 12), "", 0);
-	AssertString(String_ConvertUtf8ToKnownCodePage(str, 12), "", 0);
+	ASSERT_STRING(String_ConvertKnownCodePageToUtf8(str, 12), "", 0);
+	ASSERT_STRING(String_ConvertUtf8ToKnownCodePage(str, 12), "", 0);
 }
 END_TEST
 

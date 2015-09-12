@@ -30,7 +30,7 @@ START_TEST(SplitHandlesEmptyStrings)
 	numPieces = String_SplitWithOptions(String_FromC(""), String_FromC(";"), 0, 0, &pieces);
 
 	ASSERT(numPieces == 1);
-	AssertString(pieces[0], NULL, 0);
+	ASSERT_STRING(pieces[0], NULL, 0);
 }
 END_TEST
 
@@ -42,21 +42,21 @@ START_TEST(SplitExplodesTheCharactersIfThePatternIsEmpty)
 	numPieces = String_SplitWithOptions(String_FromC("This is a test."), String_FromC(""), 0, 0, &pieces);
 
 	ASSERT(numPieces == 15);
-	AssertString(pieces[0], "T", 1);
-	AssertString(pieces[1], "h", 1);
-	AssertString(pieces[2], "i", 1);
-	AssertString(pieces[3], "s", 1);
-	AssertString(pieces[4], " ", 1);
-	AssertString(pieces[5], "i", 1);
-	AssertString(pieces[6], "s", 1);
-	AssertString(pieces[7], " ", 1);
-	AssertString(pieces[8], "a", 1);
-	AssertString(pieces[9], " ", 1);
-	AssertString(pieces[10], "t", 1);
-	AssertString(pieces[11], "e", 1);
-	AssertString(pieces[12], "s", 1);
-	AssertString(pieces[13], "t", 1);
-	AssertString(pieces[14], ".", 1);
+	ASSERT_STRING(pieces[0], "T", 1);
+	ASSERT_STRING(pieces[1], "h", 1);
+	ASSERT_STRING(pieces[2], "i", 1);
+	ASSERT_STRING(pieces[3], "s", 1);
+	ASSERT_STRING(pieces[4], " ", 1);
+	ASSERT_STRING(pieces[5], "i", 1);
+	ASSERT_STRING(pieces[6], "s", 1);
+	ASSERT_STRING(pieces[7], " ", 1);
+	ASSERT_STRING(pieces[8], "a", 1);
+	ASSERT_STRING(pieces[9], " ", 1);
+	ASSERT_STRING(pieces[10], "t", 1);
+	ASSERT_STRING(pieces[11], "e", 1);
+	ASSERT_STRING(pieces[12], "s", 1);
+	ASSERT_STRING(pieces[13], "t", 1);
+	ASSERT_STRING(pieces[14], ".", 1);
 }
 END_TEST
 
@@ -68,10 +68,10 @@ START_TEST(SplitCanSplitUpStrings)
 	numPieces = String_SplitWithOptions(String_FromC("This is a test."), String_FromC(" "), 0, 0, &pieces);
 
 	ASSERT(numPieces == 4);
-	AssertString(pieces[0], "This", 4);
-	AssertString(pieces[1], "is", 2);
-	AssertString(pieces[2], "a", 1);
-	AssertString(pieces[3], "test.", 5);
+	ASSERT_STRING(pieces[0], "This", 4);
+	ASSERT_STRING(pieces[1], "is", 2);
+	ASSERT_STRING(pieces[2], "a", 1);
+	ASSERT_STRING(pieces[3], "test.", 5);
 }
 END_TEST
 
@@ -83,12 +83,12 @@ START_TEST(SplitCanSplitUpStringsUsingALargeSplitterString)
 	numPieces = String_SplitWithOptions(String_FromC("testers testtested testing testworthy."), String_FromC("test"), 0, 0, &pieces);
 
 	ASSERT(numPieces == 6);
-	AssertString(pieces[0], NULL, 0);
-	AssertString(pieces[1], "ers ", 4);
-	AssertString(pieces[2], NULL, 0);
-	AssertString(pieces[3], "ed ", 3);
-	AssertString(pieces[4], "ing ", 4);
-	AssertString(pieces[5], "worthy.", 7);
+	ASSERT_STRING(pieces[0], NULL, 0);
+	ASSERT_STRING(pieces[1], "ers ", 4);
+	ASSERT_STRING(pieces[2], NULL, 0);
+	ASSERT_STRING(pieces[3], "ed ", 3);
+	ASSERT_STRING(pieces[4], "ing ", 4);
+	ASSERT_STRING(pieces[5], "worthy.", 7);
 }
 END_TEST
 
@@ -100,12 +100,12 @@ START_TEST(SplitDoesntCutOffWhenTheLimitIsLarge)
 	numPieces = String_SplitWithOptions(String_FromC("testers testtested testing testworthy."), String_FromC("test"), 10, 0, &pieces);
 
 	ASSERT(numPieces == 6);
-	AssertString(pieces[0], NULL, 0);
-	AssertString(pieces[1], "ers ", 4);
-	AssertString(pieces[2], NULL, 0);
-	AssertString(pieces[3], "ed ", 3);
-	AssertString(pieces[4], "ing ", 4);
-	AssertString(pieces[5], "worthy.", 7);
+	ASSERT_STRING(pieces[0], NULL, 0);
+	ASSERT_STRING(pieces[1], "ers ", 4);
+	ASSERT_STRING(pieces[2], NULL, 0);
+	ASSERT_STRING(pieces[3], "ed ", 3);
+	ASSERT_STRING(pieces[4], "ing ", 4);
+	ASSERT_STRING(pieces[5], "worthy.", 7);
 }
 END_TEST
 
@@ -117,10 +117,10 @@ START_TEST(SplitCanDiscardEmptyStrings)
 	numPieces = String_SplitWithOptions(String_FromC("testers testtested testing testworthy."), String_FromC("test"), 0, StringSplitOptions_RemoveEmptyEntries, &pieces);
 
 	ASSERT(numPieces == 4);
-	AssertString(pieces[0], "ers ", 4);
-	AssertString(pieces[1], "ed ", 3);
-	AssertString(pieces[2], "ing ", 4);
-	AssertString(pieces[3], "worthy.", 7);
+	ASSERT_STRING(pieces[0], "ers ", 4);
+	ASSERT_STRING(pieces[1], "ed ", 3);
+	ASSERT_STRING(pieces[2], "ing ", 4);
+	ASSERT_STRING(pieces[3], "worthy.", 7);
 }
 END_TEST
 
@@ -132,10 +132,10 @@ START_TEST(SplitCutsOffAtTheLimit)
 	numPieces = String_SplitWithOptions(String_FromC("testers testtested testing testworthy."), String_FromC("test"), 4, 0, &pieces);
 
 	ASSERT(numPieces == 4);
-	AssertString(pieces[0], NULL, 0);
-	AssertString(pieces[1], "ers ", 4);
-	AssertString(pieces[2], NULL, 0);
-	AssertString(pieces[3], "ed ", 3);
+	ASSERT_STRING(pieces[0], NULL, 0);
+	ASSERT_STRING(pieces[1], "ers ", 4);
+	ASSERT_STRING(pieces[2], NULL, 0);
+	ASSERT_STRING(pieces[3], "ed ", 3);
 }
 END_TEST
 
@@ -147,9 +147,9 @@ START_TEST(SplitCutsOffAtTheLimitWhenDiscardingEmptyStrings)
 	numPieces = String_SplitWithOptions(String_FromC("testers testtested testing testworthy."), String_FromC("test"), 3, StringSplitOptions_RemoveEmptyEntries, &pieces);
 
 	ASSERT(numPieces == 3);
-	AssertString(pieces[0], "ers ", 4);
-	AssertString(pieces[1], "ed ", 3);
-	AssertString(pieces[2], "ing ", 4);
+	ASSERT_STRING(pieces[0], "ers ", 4);
+	ASSERT_STRING(pieces[1], "ed ", 3);
+	ASSERT_STRING(pieces[2], "ing ", 4);
 }
 END_TEST
 
@@ -158,27 +158,27 @@ END_TEST
 
 START_TEST(RawReverseReordersText)
 {
-	AssertString(String_RawReverse(String_Empty), NULL, 0);
-	AssertString(String_RawReverse(String_FromC("This is a test.")), ".tset a si sihT", 15);
-	AssertString(String_RawReverse(String_Create("\xEF\xBB\xBFThis\xC2\xA0is a\0test.", 19)), ".tset\0a si\xA0\xC2sihT\xBF\xBB\xEF", 19);
+	ASSERT_STRING(String_RawReverse(String_Empty), NULL, 0);
+	ASSERT_STRING(String_RawReverse(String_FromC("This is a test.")), ".tset a si sihT", 15);
+	ASSERT_STRING(String_RawReverse(String_Create("\xEF\xBB\xBFThis\xC2\xA0is a\0test.", 19)), ".tset\0a si\xA0\xC2sihT\xBF\xBB\xEF", 19);
 }
 END_TEST
 
 START_TEST(ReverseReordersTextButPreservesCharacters)
 {
-	AssertString(String_Reverse(String_Empty), NULL, 0);
-	AssertString(String_Reverse(String_FromC("This is a test.")), ".tset a si sihT", 15);
-	AssertString(String_Reverse(String_Create("\xEF\xBB\xBFThis\xC2\xA0is a\0test.", 19)), ".tset\0a si\xC2\xA0sihT\xEF\xBB\xBF", 19);
+	ASSERT_STRING(String_Reverse(String_Empty), NULL, 0);
+	ASSERT_STRING(String_Reverse(String_FromC("This is a test.")), ".tset a si sihT", 15);
+	ASSERT_STRING(String_Reverse(String_Create("\xEF\xBB\xBFThis\xC2\xA0is a\0test.", 19)), ".tset\0a si\xC2\xA0sihT\xEF\xBB\xBF", 19);
 }
 END_TEST
 
 START_TEST(RepeatClonesStrings)
 {
-	AssertString(String_Repeat(String_Empty, 10), NULL, 0);
-	AssertString(String_Repeat(String_FromC("test:"), 0), NULL, 0);
-	AssertString(String_Repeat(String_FromC("test:"), 1), "test:", 5);
-	AssertString(String_Repeat(String_FromC("test:"), 2), "test:test:", 10);
-	AssertString(String_Repeat(String_FromC("test:"), 10), "test:test:test:test:test:test:test:test:test:test:", 50);
+	ASSERT_STRING(String_Repeat(String_Empty, 10), NULL, 0);
+	ASSERT_STRING(String_Repeat(String_FromC("test:"), 0), NULL, 0);
+	ASSERT_STRING(String_Repeat(String_FromC("test:"), 1), "test:", 5);
+	ASSERT_STRING(String_Repeat(String_FromC("test:"), 2), "test:test:", 10);
+	ASSERT_STRING(String_Repeat(String_FromC("test:"), 10), "test:test:test:test:test:test:test:test:test:test:", 50);
 }
 END_TEST
 
@@ -186,14 +186,14 @@ START_TEST(PadStartPadsTheStartOfShortStrings)
 {
 	String str = String_FromC("This is a test.");
 
-	AssertString(String_PadStart(String_Empty, 0, '.'), NULL, 0);
-	AssertString(String_PadStart(String_Empty, 10, '.'), "..........", 10);
+	ASSERT_STRING(String_PadStart(String_Empty, 0, '.'), NULL, 0);
+	ASSERT_STRING(String_PadStart(String_Empty, 10, '.'), "..........", 10);
 
-	AssertString(String_PadStart(str, 0, ':'), "This is a test.", 15);
-	AssertString(String_PadStart(str, 10, ':'), "This is a test.", 15);
-	AssertString(String_PadStart(str, 15, ':'), "This is a test.", 15);
-	AssertString(String_PadStart(str, 16, ':'), ":This is a test.", 16);
-	AssertString(String_PadStart(str, 20, ':'), ":::::This is a test.", 20);
+	ASSERT_STRING(String_PadStart(str, 0, ':'), "This is a test.", 15);
+	ASSERT_STRING(String_PadStart(str, 10, ':'), "This is a test.", 15);
+	ASSERT_STRING(String_PadStart(str, 15, ':'), "This is a test.", 15);
+	ASSERT_STRING(String_PadStart(str, 16, ':'), ":This is a test.", 16);
+	ASSERT_STRING(String_PadStart(str, 20, ':'), ":::::This is a test.", 20);
 }
 END_TEST
 
@@ -201,14 +201,14 @@ START_TEST(PadEndPadsTheEndOfShortStrings)
 {
 	String str = String_FromC("This is a test.");
 
-	AssertString(String_PadEnd(String_Empty, 0, '.'), NULL, 0);
-	AssertString(String_PadEnd(String_Empty, 10, '.'), "..........", 10);
+	ASSERT_STRING(String_PadEnd(String_Empty, 0, '.'), NULL, 0);
+	ASSERT_STRING(String_PadEnd(String_Empty, 10, '.'), "..........", 10);
 
-	AssertString(String_PadEnd(str, 0, ':'), "This is a test.", 15);
-	AssertString(String_PadEnd(str, 10, ':'), "This is a test.", 15);
-	AssertString(String_PadEnd(str, 15, ':'), "This is a test.", 15);
-	AssertString(String_PadEnd(str, 16, ':'), "This is a test.:", 16);
-	AssertString(String_PadEnd(str, 20, ':'), "This is a test.:::::", 20);
+	ASSERT_STRING(String_PadEnd(str, 0, ':'), "This is a test.", 15);
+	ASSERT_STRING(String_PadEnd(str, 10, ':'), "This is a test.", 15);
+	ASSERT_STRING(String_PadEnd(str, 15, ':'), "This is a test.", 15);
+	ASSERT_STRING(String_PadEnd(str, 16, ':'), "This is a test.:", 16);
+	ASSERT_STRING(String_PadEnd(str, 20, ':'), "This is a test.:::::", 20);
 }
 END_TEST
 
@@ -218,8 +218,8 @@ START_TEST(TrimEndRemovesWhitespaceFromTheEndOfStrings)
 	String str2 = String_Create(" \x1A\t\r\n\b\1\0This \x1A\t\r\n\b\1\0is \x1A\t\r\n\b\1\0a \x1A\t\r\n\b\1\0test. \x1A\t\r\n\b\1\0", 52);
 	String str3 = String_Create(" \x1A\t\r\n\b\1\0This \x1A\t\r\n\b\1\0is \x1A\t\r\n\b\1\0a \x1A\t\r\n\b\1\0test.", 44);
 
-	AssertString(String_TrimEnd(str1), String_GetBytes(str1), String_Length(str1));
-	AssertString(String_TrimEnd(str2), String_GetBytes(str3), String_Length(str3));
+	ASSERT_STRING(String_TrimEnd(str1), String_GetBytes(str1), String_Length(str1));
+	ASSERT_STRING(String_TrimEnd(str2), String_GetBytes(str3), String_Length(str3));
 }
 END_TEST
 
@@ -229,8 +229,8 @@ START_TEST(TrimStartRemovesWhitespaceFromTheStartOfStrings)
 	String str2 = String_Create(" \x1A\t\r\n\b\1\0This \x1A\t\r\n\b\1\0is \x1A\t\r\n\b\1\0a \x1A\t\r\n\b\1\0test. \x1A\t\r\n\b\1\0", 52);
 	String str3 = String_Create("This \x1A\t\r\n\b\1\0is \x1A\t\r\n\b\1\0a \x1A\t\r\n\b\1\0test. \x1A\t\r\n\b\1\0", 44);
 
-	AssertString(String_TrimStart(str1), String_GetBytes(str1), String_Length(str1));
-	AssertString(String_TrimStart(str2), String_GetBytes(str3), String_Length(str3));
+	ASSERT_STRING(String_TrimStart(str1), String_GetBytes(str1), String_Length(str1));
+	ASSERT_STRING(String_TrimStart(str2), String_GetBytes(str3), String_Length(str3));
 }
 END_TEST
 
@@ -240,8 +240,8 @@ START_TEST(TrimRemovesWhitespaceFromBothEndsOfStrings)
 	String str2 = String_Create(" \x1A\t\r\n\b\1\0This \x1A\t\r\n\b\1\0is \x1A\t\r\n\b\1\0a \x1A\t\r\n\b\1\0test. \x1A\t\r\n\b\1\0", 52);
 	String str3 = String_Create("This \x1A\t\r\n\b\1\0is \x1A\t\r\n\b\1\0a \x1A\t\r\n\b\1\0test.", 36);
 
-	AssertString(String_Trim(str1), String_GetBytes(str1), String_Length(str1));
-	AssertString(String_Trim(str2), String_GetBytes(str3), String_Length(str3));
+	ASSERT_STRING(String_Trim(str1), String_GetBytes(str1), String_Length(str1));
+	ASSERT_STRING(String_Trim(str2), String_GetBytes(str3), String_Length(str3));
 }
 END_TEST
 
@@ -250,8 +250,8 @@ START_TEST(CompactWhitespaceResultsInTrimmingAndSingleSpaceCharactersInStrings)
 	String str1 = String_FromC("This is a test.");
 	String str2 = String_Create(" \x1A\t \r\n \b\1\0This \x1A\t \r\n \b\1\0is \x1A\t \r\n \b\1\0a \x1A\t \r\n \b\1\0test. \x1A\t \r\n \b\1\0", 62);
 
-	AssertString(String_CompactWhitespace(str1), String_GetBytes(str1), String_Length(str1));
-	AssertString(String_CompactWhitespace(str2), String_GetBytes(str1), String_Length(str1));
+	ASSERT_STRING(String_CompactWhitespace(str1), String_GetBytes(str1), String_Length(str1));
+	ASSERT_STRING(String_CompactWhitespace(str2), String_GetBytes(str1), String_Length(str1));
 }
 END_TEST
 
@@ -261,8 +261,8 @@ START_TEST(AddCSlashesMakesStringsSafe)
 	String str2 = String_Create(" \x1A\t \r\n \b\x01\x00 This is a test. \x1A\t \r\n \b\x01\x00 ", 37);
 	String str3 = String_Create(" \\x1A\\t \\r\\n \\b\\x01\\x00 This is a test. \\x1A\\t \\r\\n \\b\\x01\\x00 ", 63);
 
-	AssertString(String_AddCSlashes(str1), String_GetBytes(str1), String_Length(str1));
-	AssertString(String_AddCSlashes(str2), String_GetBytes(str3), String_Length(str3));
+	ASSERT_STRING(String_AddCSlashes(str1), String_GetBytes(str1), String_Length(str1));
+	ASSERT_STRING(String_AddCSlashes(str2), String_GetBytes(str3), String_Length(str3));
 }
 END_TEST
 
@@ -272,8 +272,8 @@ START_TEST(StripCSlashesDecodesStrings)
 	String str2 = String_Create(" \x1A\t \r\n \b\x01\x00 This is a test. \x1A\t \r\n \b\x0F\x00 ", 37);
 	String str3 = String_Create(" \\x1A\\t \\r\\n \\b\\x01\\x00 This is a test. \\x1A\\t \\r\\n \\b\\15\\0 ", 60);
 
-	AssertString(String_StripCSlashes(str1), String_GetBytes(str1), String_Length(str1));
-	AssertString(String_StripCSlashes(str3), String_GetBytes(str2), String_Length(str2));
+	ASSERT_STRING(String_StripCSlashes(str1), String_GetBytes(str1), String_Length(str1));
+	ASSERT_STRING(String_StripCSlashes(str3), String_GetBytes(str2), String_Length(str2));
 }
 END_TEST
 
@@ -288,7 +288,7 @@ START_TEST(AddCSlashesEncodesSpecialCharactersSpecially)
 		str = String_Create(&specialChars[i], 1);
 		encodedResult = String_AddCSlashes(str);
 
-		AssertString(encodedResult, encodings[i], StrLen(encodings[i]));
+		ASSERT_STRING(encodedResult, encodings[i], StrLen(encodings[i]));
 	}
 }
 END_TEST
@@ -304,7 +304,7 @@ START_TEST(StripCSlashesDecodesSpecialCharacters)
 		str = String_Create(encodings[i], 2);
 		decodedResult = String_StripCSlashes(str);
 
-		AssertString(decodedResult, &specialChars[i], 1);
+		ASSERT_STRING(decodedResult, &specialChars[i], 1);
 	}
 }
 END_TEST
@@ -350,7 +350,7 @@ START_TEST(AddCSlashesEncodesNonAsciiCharactersAsHexCodes)
 		encodedResult = String_AddCSlashes(str);
 		sprintf((char *)expectedResult, "\\x%02X", specialChars[i]);
 
-		AssertString(encodedResult, expectedResult, 4);
+		ASSERT_STRING(encodedResult, expectedResult, 4);
 	}
 }
 END_TEST
@@ -365,28 +365,28 @@ START_TEST(StripCSlashesDecodesAllHexCodes)
 		sprintf((char *)buffer1, "\\x%X", (int)i);
 		buffer2[0] = (Byte)i;
 		str1 = String_Create(buffer1, 3);
-		AssertString(String_StripCSlashes(str1), buffer2, 1);
+		ASSERT_STRING(String_StripCSlashes(str1), buffer2, 1);
 	}
 
 	for (i = 0; i < 16; i++) {
 		sprintf((char *)buffer1, "\\x%x", (int)i);
 		buffer2[0] = (Byte)i;
 		str1 = String_Create(buffer1, 3);
-		AssertString(String_StripCSlashes(str1), buffer2, 1);
+		ASSERT_STRING(String_StripCSlashes(str1), buffer2, 1);
 	}
 
 	for (i = 0; i < 256; i++) {
 		sprintf((char *)buffer1, "\\x%02X", (int)i);
 		buffer2[0] = (Byte)i;
 		str1 = String_Create(buffer1, 4);
-		AssertString(String_StripCSlashes(str1), buffer2, 1);
+		ASSERT_STRING(String_StripCSlashes(str1), buffer2, 1);
 	}
 
 	for (i = 0; i < 256; i++) {
 		sprintf((char *)buffer1, "\\x%02x", (int)i);
 		buffer2[0] = (Byte)i;
 		str1 = String_Create(buffer1, 4);
-		AssertString(String_StripCSlashes(str1), buffer2, 1);
+		ASSERT_STRING(String_StripCSlashes(str1), buffer2, 1);
 	}
 }
 END_TEST
@@ -401,21 +401,21 @@ START_TEST(StripCSlashesDecodesAllDecimalCodes)
 		sprintf((char *)buffer1, "\\%u", (int)i);
 		buffer2[0] = (Byte)i;
 		str1 = String_Create(buffer1, StrLen((const char *)buffer1));
-		AssertString(String_StripCSlashes(str1), buffer2, 1);
+		ASSERT_STRING(String_StripCSlashes(str1), buffer2, 1);
 	}
 
 	for (i = 0; i < 256; i++) {
 		sprintf((char *)buffer1, "\\%02u", (int)i);
 		buffer2[0] = (Byte)i;
 		str1 = String_Create(buffer1, StrLen((const char *)buffer1));
-		AssertString(String_StripCSlashes(str1), buffer2, 1);
+		ASSERT_STRING(String_StripCSlashes(str1), buffer2, 1);
 	}
 
 	for (i = 0; i < 256; i++) {
 		sprintf((char *)buffer1, "\\%03u", (int)i);
 		buffer2[0] = (Byte)i;
 		str1 = String_Create(buffer1, StrLen((const char *)buffer1));
-		AssertString(String_StripCSlashes(str1), buffer2, 1);
+		ASSERT_STRING(String_StripCSlashes(str1), buffer2, 1);
 	}
 }
 END_TEST
@@ -425,8 +425,8 @@ START_TEST(Rot13EncodesTextWithEpicL33tness)
 	String str = String_FromC("PACK MY BOX WITH FIVE DOZEN LIQUOR JUGS.  pack my box with five dozen liquor jugs.");
 	const char *expectedResult = "CNPX ZL OBK JVGU SVIR QBMRA YVDHBE WHTF.  cnpx zl obk jvgu svir qbmra yvdhbe whtf.";
 
-	AssertString(String_Rot13(str), expectedResult, StrLen(expectedResult));
-	AssertString(String_Rot13(String_FromC(expectedResult)), String_GetBytes(str), String_Length(str));
+	ASSERT_STRING(String_Rot13(str), expectedResult, StrLen(expectedResult));
+	ASSERT_STRING(String_Rot13(String_FromC(expectedResult)), String_GetBytes(str), String_Length(str));
 }
 END_TEST
 
@@ -443,7 +443,7 @@ START_TEST(RegexEscapeAddsBackslashesToRegexPunctuationMarks)
 		sprintf(buffer, "<This is a %c test.>", escapablePunctuation[i]);
 		str = String_FromC(buffer);
 		sprintf(buffer, "<This is a \\%c test\\.>", escapablePunctuation[i]);
-		AssertString(String_RegexEscape(str), buffer, StrLen(buffer));
+		ASSERT_STRING(String_RegexEscape(str), buffer, StrLen(buffer));
 	}
 }
 END_TEST
@@ -469,7 +469,7 @@ START_TEST(RegexEscapeAddsBackslashesToControlCodes)
 			sprintf(buffer, "<This is a \\%c test\\.>", specialchars[i - 7]);
 		}
 
-		AssertString(String_RegexEscape(str), buffer, StrLen(buffer));
+		ASSERT_STRING(String_RegexEscape(str), buffer, StrLen(buffer));
 	}
 }
 END_TEST
@@ -676,7 +676,7 @@ END_TEST
 
 START_TEST(JoinEnglishNamesWorksForEmptyInput)
 {
-	AssertString(String_JoinEnglishNames(NULL, 0, String_FromC("and")), NULL, 0);
+	ASSERT_STRING(String_JoinEnglishNames(NULL, 0, String_FromC("and")), NULL, 0);
 }
 END_TEST
 
@@ -684,7 +684,7 @@ START_TEST(JoinEnglishNamesWorksForOneValue)
 {
 	String buffer[5];
 	buffer[0] = String_FromC("Alice");
-	AssertString(String_JoinEnglishNames(buffer, 1, String_FromC("and")), "Alice", 5);
+	ASSERT_STRING(String_JoinEnglishNames(buffer, 1, String_FromC("and")), "Alice", 5);
 }
 END_TEST
 
@@ -693,7 +693,7 @@ START_TEST(JoinEnglishNamesWorksForTwoValues)
 	String buffer[5];
 	buffer[0] = String_FromC("Alice");
 	buffer[1] = String_FromC("Bill");
-	AssertString(String_JoinEnglishNames(buffer, 2, String_FromC("and")), "Alice and Bill", 14);
+	ASSERT_STRING(String_JoinEnglishNames(buffer, 2, String_FromC("and")), "Alice and Bill", 14);
 }
 END_TEST
 
@@ -703,7 +703,7 @@ START_TEST(JoinEnglishNamesWorksForThreeValues)
 	buffer[0] = String_FromC("Alice");
 	buffer[1] = String_FromC("Bill");
 	buffer[2] = String_FromC("Charles");
-	AssertString(String_JoinEnglishNames(buffer, 3, String_FromC("and")), "Alice, Bill, and Charles", 24);
+	ASSERT_STRING(String_JoinEnglishNames(buffer, 3, String_FromC("and")), "Alice, Bill, and Charles", 24);
 }
 END_TEST
 
@@ -714,7 +714,7 @@ START_TEST(JoinEnglishNamesWorksForFourValues)
 	buffer[1] = String_FromC("Bill");
 	buffer[2] = String_FromC("Charles");
 	buffer[3] = String_FromC("Diane");
-	AssertString(String_JoinEnglishNames(buffer, 4, String_FromC("and")), "Alice, Bill, Charles, and Diane", 31);
+	ASSERT_STRING(String_JoinEnglishNames(buffer, 4, String_FromC("and")), "Alice, Bill, Charles, and Diane", 31);
 }
 END_TEST
 

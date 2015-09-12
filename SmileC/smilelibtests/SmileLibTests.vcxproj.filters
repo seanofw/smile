@@ -34,10 +34,12 @@
     <ClCompile Include="env\symboltable_tests.c">
       <Filter>env</Filter>
     </ClCompile>
+    <ClCompile Include="ansicolor-w32.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="testlib.h" />
+    <ClInclude Include="ansicolor-w32.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="string">

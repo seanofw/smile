@@ -233,6 +233,12 @@ SMILE_API double Smile_TicksToSeconds(UInt64 ticks);
 SMILE_API UInt64 Smile_TicksToMilliseconds(UInt64 ticks);
 SMILE_API UInt64 Smile_TicksToMicroseconds(UInt64 ticks);
 
+/// <summary>
+/// Convert a numeric value to its string representation at compile time.
+/// </summary>
+#define TOSTRING_AT_COMPILE_TIME(__n__) TOSTRING_AT_COMPILE_TIME2(__n__)
+#define TOSTRING_AT_COMPILE_TIME2(__n__) #__n__
+
 #ifndef Smile_Hash
 	/// <summary>
 	/// Compute a 32 bit hash for a buffer.  The hash is guaranteed to always be the

@@ -23,12 +23,12 @@ TEST_SUITE(StringCoreTests)
 //  Creation Tests.
 //
 //  Note:  There is no explicit test for String_GetBytes() or String_Length() because
-//  those functions are invoked by AssertString(), so they're implicitly tested by nearly
+//  those functions are invoked by ASSERT_STRING(), so they're implicitly tested by nearly
 //  every test function below.
 
 START_TEST(EmptyStringShouldBePredefined)
 {
-	AssertString(String_Empty, NULL, 0);
+	ASSERT_STRING(String_Empty, NULL, 0);
 }
 END_TEST
 
@@ -44,14 +44,14 @@ END_TEST
 START_TEST(CanCreateEmptyString)
 {
 	String str = String_Create(NULL, 0);
-	AssertString(str, NULL, 0);
+	ASSERT_STRING(str, NULL, 0);
 }
 END_TEST
 
 START_TEST(CanCreateFromText)
 {
 	String str = String_Create("This is a test." + 4, 6);
-	AssertString(str, " is a ", 6);
+	ASSERT_STRING(str, " is a ", 6);
 }
 END_TEST
 
@@ -64,42 +64,42 @@ START_TEST(CreateCopiesItsInput)
 	str = String_Create(test, strlen(test));
 	strcpy(test, "Hello, World.");
 
-	AssertString(str, "This is a test.", 15);
+	ASSERT_STRING(str, "This is a test.", 15);
 }
 END_TEST
 
 START_TEST(CreateCanContainWeirdCharacters)
 {
 	String str = String_Create(" \t\r\n\0\xFF\x7F\xA0\xCC " + 1, 8);
-	AssertString(str, "\t\r\n\0\xFF\x7F\xA0\xCC", 8);
+	ASSERT_STRING(str, "\t\r\n\0\xFF\x7F\xA0\xCC", 8);
 }
 END_TEST
 
 START_TEST(CreateRepeatCreatesManyOfTheSameLetter)
 {
 	String str = String_CreateRepeat('*', 64);
-	AssertString(str, "****************************************************************", 64);
+	ASSERT_STRING(str, "****************************************************************", 64);
 }
 END_TEST
 
 START_TEST(CreateRepeatCreatesAnEmptyStringForZero)
 {
 	String str = String_CreateRepeat('*', 0);
-	AssertString(str, NULL, 0);
+	ASSERT_STRING(str, NULL, 0);
 }
 END_TEST
 
 START_TEST(CreateFromCCanConvertCStrings)
 {
 	String str = String_FromC("This is a test.");
-	AssertString(str, "This is a test.", 15);
+	ASSERT_STRING(str, "This is a test.", 15);
 }
 END_TEST
 
 START_TEST(CreateFromCConvertsEmptyStrings)
 {
 	String str = String_FromC("");
-	AssertString(str, NULL, 0);
+	ASSERT_STRING(str, NULL, 0);
 }
 END_TEST
 
@@ -112,7 +112,7 @@ START_TEST(CreateFromCCopiesItsInput)
 	str = String_FromC(test);
 	strcpy(test, "Hello, World.");
 
-	AssertString(str, "This is a test.", 15);
+	ASSERT_STRING(str, "This is a test.", 15);
 }
 END_TEST
 
@@ -122,7 +122,7 @@ END_TEST
 START_TEST(ConcatManyCanHandleEmptyInput)
 {
 	String joined = String_ConcatMany(NULL, 0);
-	AssertString(joined, NULL, 0);
+	ASSERT_STRING(joined, NULL, 0);
 }
 END_TEST
 
@@ -130,7 +130,7 @@ START_TEST(ConcatManyCanHandleOneString)
 {
 	String str = String_FromC("This is a test.");
 	String joined = String_ConcatMany(&str, 1);
-	AssertString(joined, "This is a test.", 15);
+	ASSERT_STRING(joined, "This is a test.", 15);
 }
 END_TEST
 
@@ -145,7 +145,7 @@ START_TEST(ConcatManyCanHandleTwoStrings)
 	strs[1] = str2;
 	joined = String_ConcatMany(strs, 2);
 
-	AssertString(joined, "This is a test.Hello, World.", 28);
+	ASSERT_STRING(joined, "This is a test.Hello, World.", 28);
 }
 END_TEST
 
@@ -164,7 +164,7 @@ START_TEST(ConcatManyCanHandleManyStrings)
 	strs[3] = str4;
 	joined = String_ConcatMany(strs, 4);
 
-	AssertString(joined, "This is a test.Hello, World.Narf poit zort fjord.Red green blue.", 64);
+	ASSERT_STRING(joined, "This is a test.Hello, World.Narf poit zort fjord.Red green blue.", 64);
 }
 END_TEST
 
@@ -183,7 +183,7 @@ START_TEST(ConcatManyCanHandleEmptyStrings)
 	strs[3] = str4;
 	joined = String_ConcatMany(strs, 4);
 
-	AssertString(joined, "This is a test.Narf poit zort fjord.", 36);
+	ASSERT_STRING(joined, "This is a test.Narf poit zort fjord.", 36);
 }
 END_TEST
 
@@ -202,7 +202,7 @@ START_TEST(ConcatManyCanHandleBizarreDegenerateCases)
 	strs[3] = str4;
 	joined = String_ConcatMany(strs, 4);
 
-	AssertString(joined, "", 0);
+	ASSERT_STRING(joined, "", 0);
 }
 END_TEST
 
@@ -210,7 +210,7 @@ START_TEST(JoinCanHandleEmptyInput)
 {
 	String glue = String_FromC(",");
 	String joined = String_Join(glue, NULL, 0);
-	AssertString(joined, NULL, 0);
+	ASSERT_STRING(joined, NULL, 0);
 }
 END_TEST
 
@@ -219,7 +219,7 @@ START_TEST(JoinCanHandleOneString)
 	String glue = String_FromC(",");
 	String str = String_FromC("This is a test.");
 	String joined = String_Join(glue, &str, 1);
-	AssertString(joined, "This is a test.", 15);
+	ASSERT_STRING(joined, "This is a test.", 15);
 }
 END_TEST
 
@@ -235,7 +235,7 @@ START_TEST(JoinCanHandleTwoStrings)
 	strs[1] = str2;
 	joined = String_Join(glue, strs, 2);
 
-	AssertString(joined, "This is a test.,Hello, World.", 29);
+	ASSERT_STRING(joined, "This is a test.,Hello, World.", 29);
 }
 END_TEST
 
@@ -250,7 +250,7 @@ START_TEST(JoinCanHandleTwoStringsWithEmptyGlue)
 	strs[1] = str2;
 	joined = String_Join(String_Empty, strs, 2);
 
-	AssertString(joined, "This is a test.Hello, World.", 28);
+	ASSERT_STRING(joined, "This is a test.Hello, World.", 28);
 }
 END_TEST
 
@@ -270,7 +270,7 @@ START_TEST(JoinCanHandleManyStrings)
 	strs[3] = str4;
 	joined = String_Join(glue, strs, 4);
 
-	AssertString(joined, "This is a test.,Hello, World.,Narf poit zort fjord.,Red green blue.", 67);
+	ASSERT_STRING(joined, "This is a test.,Hello, World.,Narf poit zort fjord.,Red green blue.", 67);
 }
 END_TEST
 
@@ -289,7 +289,7 @@ START_TEST(JoinCanHandleManyStringsWithEmptyGlue)
 	strs[3] = str4;
 	joined = String_Join(String_Empty, strs, 4);
 
-	AssertString(joined, "This is a test.Hello, World.Narf poit zort fjord.Red green blue.", 64);
+	ASSERT_STRING(joined, "This is a test.Hello, World.Narf poit zort fjord.Red green blue.", 64);
 }
 END_TEST
 
@@ -309,7 +309,7 @@ START_TEST(JoinCanHandleEmptyStrings)
 	strs[3] = str4;
 	joined = String_Join(glue, strs, 4);
 
-	AssertString(joined, "This is a test.,,Narf poit zort fjord.,", 39);
+	ASSERT_STRING(joined, "This is a test.,,Narf poit zort fjord.,", 39);
 }
 END_TEST
 
@@ -328,7 +328,7 @@ START_TEST(JoinCanHandleEmptyStringsWithEmptyGlue)
 	strs[3] = str4;
 	joined = String_Join(String_Empty, strs, 4);
 
-	AssertString(joined, "This is a test.Narf poit zort fjord.", 36);
+	ASSERT_STRING(joined, "This is a test.Narf poit zort fjord.", 36);
 }
 END_TEST
 
@@ -348,7 +348,7 @@ START_TEST(JoinCanHandleBizarreDegenerateCases)
 	strs[3] = str4;
 	joined = String_Join(glue, strs, 4);
 
-	AssertString(joined, ",,,", 3);
+	ASSERT_STRING(joined, ",,,", 3);
 }
 END_TEST
 
@@ -367,14 +367,14 @@ START_TEST(JoinCanHandleBizarreDegenerateCasesWithEmptyGlue)
 	strs[3] = str4;
 	joined = String_Join(String_Empty, strs, 4);
 
-	AssertString(joined, "", 0);
+	ASSERT_STRING(joined, "", 0);
 }
 END_TEST
 
 START_TEST(SlashAppendCanHandleEmptyInput)
 {
 	String joined = String_SlashAppend(NULL, 0);
-	AssertString(joined, NULL, 0);
+	ASSERT_STRING(joined, NULL, 0);
 }
 END_TEST
 
@@ -382,7 +382,7 @@ START_TEST(SlashAppendCanHandleOnePlainString)
 {
 	String str = String_FromC("my-path");
 	String joined = String_SlashAppend(&str, 1);
-	AssertString(joined, "my-path", 7);
+	ASSERT_STRING(joined, "my-path", 7);
 }
 END_TEST
 
@@ -390,11 +390,11 @@ START_TEST(SlashAppendDoesNotAffectSlashesOnASingleString)
 {
 	String str = String_FromC("//my-path//");
 	String joined = String_SlashAppend(&str, 1);
-	AssertString(joined, "//my-path//", 11);
+	ASSERT_STRING(joined, "//my-path//", 11);
 
 	str = String_FromC("\\\\my-path\\\\");
 	joined = String_SlashAppend(&str, 1);
-	AssertString(joined, "\\\\my-path\\\\", 11);
+	ASSERT_STRING(joined, "\\\\my-path\\\\", 11);
 }
 END_TEST
 
@@ -409,7 +409,7 @@ START_TEST(SlashAppendCanHandleTwoPlainStrings)
 	strs[1] = str2;
 	joined = String_SlashAppend(strs, 2);
 
-	AssertString(joined, "my-path/your-path", 17);
+	ASSERT_STRING(joined, "my-path/your-path", 17);
 }
 END_TEST
 
@@ -424,7 +424,7 @@ START_TEST(SlashAppendDoesNotDamageSlashesAtStartsOrEndsOfStrings)
 	strs[1] = str2;
 	joined = String_SlashAppend(strs, 2);
 
-	AssertString(joined, "//my-path/your-path//", 21);
+	ASSERT_STRING(joined, "//my-path/your-path//", 21);
 
 	str1 = String_FromC("\\\\my-path");
 	str2 = String_FromC("your-path\\\\");
@@ -433,7 +433,7 @@ START_TEST(SlashAppendDoesNotDamageSlashesAtStartsOrEndsOfStrings)
 	strs[1] = str2;
 	joined = String_SlashAppend(strs, 2);
 
-	AssertString(joined, "\\\\my-path/your-path\\\\", 21);
+	ASSERT_STRING(joined, "\\\\my-path/your-path\\\\", 21);
 }
 END_TEST
 
@@ -452,7 +452,7 @@ START_TEST(SlashAppendCanHandleManyPlainStrings)
 	strs[3] = str4;
 	joined = String_SlashAppend(strs, 4);
 
-	AssertString(joined, "my-path/your-path/our-path/their-path", 37);
+	ASSERT_STRING(joined, "my-path/your-path/our-path/their-path", 37);
 }
 END_TEST
 
@@ -471,7 +471,7 @@ START_TEST(SlashAppendCleansUpMedialSlashes)
 	strs[3] = str4;
 	joined = String_SlashAppend(strs, 4);
 
-	AssertString(joined, "//my-path/your-path/our-path/their-path\\\\", 41);
+	ASSERT_STRING(joined, "//my-path/your-path/our-path/their-path\\\\", 41);
 }
 END_TEST
 
@@ -490,7 +490,7 @@ START_TEST(SlashAppendCanHandleEmptyPlainStrings)
 	strs[3] = str4;
 	joined = String_SlashAppend(strs, 4);
 
-	AssertString(joined, "my-path/your-path", 17);
+	ASSERT_STRING(joined, "my-path/your-path", 17);
 }
 END_TEST
 
@@ -509,7 +509,7 @@ START_TEST(SlashAppendCanHandleBizarreDegenerateCases)
 	strs[3] = str4;
 	joined = String_SlashAppend(strs, 4);
 
-	AssertString(joined, "", 0);
+	ASSERT_STRING(joined, "", 0);
 }
 END_TEST
 
@@ -655,14 +655,14 @@ START_TEST(SubstringAtExtractsSubstrings)
 {
 	String str1 = String_FromC("This is a test.");
 	String str2 = String_SubstringAt(str1, 8);
-	AssertString(str2, "a test.", 7);
+	ASSERT_STRING(str2, "a test.", 7);
 }
 END_TEST
 
 START_TEST(SubstringAtExtractsNothingForEmptyStrings)
 {
 	String str1 = String_SubstringAt(String_Empty, 0);
-	AssertString(str1, NULL, 0);
+	ASSERT_STRING(str1, NULL, 0);
 }
 END_TEST
 
@@ -672,10 +672,10 @@ START_TEST(SubstringAtExtractsNothingAtOrAfterTheEndOfTheString)
 
 	str1 = String_FromC("This is a test.");
 	str2 = String_SubstringAt(str1, 15);
-	AssertString(str2, NULL, 0);
+	ASSERT_STRING(str2, NULL, 0);
 
 	str3 = String_SubstringAt(str1, 20);
-	AssertString(str3, NULL, 0);
+	ASSERT_STRING(str3, NULL, 0);
 }
 END_TEST
 
@@ -685,10 +685,10 @@ START_TEST(SubstringAtClipsToTheStartOfTheString)
 
 	str1 = String_FromC("This is a test.");
 	str2 = String_SubstringAt(str1, 0);
-	AssertString(str2, "This is a test.", 15);
+	ASSERT_STRING(str2, "This is a test.", 15);
 
 	str3 = String_SubstringAt(str1, -10);
-	AssertString(str3, "This is a test.", 15);
+	ASSERT_STRING(str3, "This is a test.", 15);
 }
 END_TEST
 
@@ -698,10 +698,10 @@ START_TEST(SubstringExtractsSubstrings)
 
 	str1 = String_FromC("This is a test of the emergency broadcasting system.");
 	str2 = String_Substring(str1, 8, 6);
-	AssertString(str2, "a test", 6);
+	ASSERT_STRING(str2, "a test", 6);
 
 	str3 = String_Substring(str1, 22, 9);
-	AssertString(str3, "emergency", 9);
+	ASSERT_STRING(str3, "emergency", 9);
 }
 END_TEST
 
@@ -709,7 +709,7 @@ START_TEST(SubstringClipsTheLengthParameter)
 {
 	String str1 = String_FromC("This is a test of the emergency broadcasting system.");
 	String str2 = String_Substring(str1, 22, 100);
-	AssertString(str2, "emergency broadcasting system.", 30);
+	ASSERT_STRING(str2, "emergency broadcasting system.", 30);
 }
 END_TEST
 
@@ -720,10 +720,10 @@ START_TEST(SubstringClipsTheStartParameter)
 	str1 = String_FromC("This is a test of the emergency broadcasting system.");
 
 	str2 = String_Substring(str1, -20, 100);
-	AssertString(str2, "This is a test of the emergency broadcasting system.", 52);
+	ASSERT_STRING(str2, "This is a test of the emergency broadcasting system.", 52);
 
 	str3 = String_Substring(str1, 0, 100);
-	AssertString(str3, "This is a test of the emergency broadcasting system.", 52);
+	ASSERT_STRING(str3, "This is a test of the emergency broadcasting system.", 52);
 }
 END_TEST
 
@@ -731,7 +731,7 @@ START_TEST(SubstringCorrectsTheLengthParameterIfStartIsClipped)
 {
 	String str1 = String_FromC("This is a test of the emergency broadcasting system.");
 	String str2 = String_Substring(str1, -5, 20);
-	AssertString(str2, "This is a test ", 15);
+	ASSERT_STRING(str2, "This is a test ", 15);
 }
 END_TEST
 
@@ -742,10 +742,10 @@ START_TEST(SubstringReturnsNothingForAZeroOrNegativeLength)
 	str1 = String_FromC("This is a test of the emergency broadcasting system.");
 
 	str2 = String_Substring(str1, 22, 0);
-	AssertString(str2, NULL, 0);
+	ASSERT_STRING(str2, NULL, 0);
 
 	str3 = String_Substring(str1, 22, -10);
-	AssertString(str3, NULL, 0);
+	ASSERT_STRING(str3, NULL, 0);
 }
 END_TEST
 
@@ -755,10 +755,10 @@ START_TEST(SubstringExtractsNothingAtOrAfterTheEndOfTheString)
 
 	str1 = String_FromC("This is a test.");
 	str2 = String_Substring(str1, 15, 10);
-	AssertString(str2, NULL, 0);
+	ASSERT_STRING(str2, NULL, 0);
 
 	str3 = String_Substring(str1, 20, 10);
-	AssertString(str3, NULL, 0);
+	ASSERT_STRING(str3, NULL, 0);
 }
 END_TEST
 
@@ -787,9 +787,9 @@ START_TEST(ConcatJoinsStrings)
 	str2 = String_FromC(" of the emergency ");
 	str3 = String_FromC("broadcasting system.");
 
-	AssertString(String_Concat(str1, str2), "This is a test of the emergency ", 32);
-	AssertString(String_Concat(str2, str3), " of the emergency broadcasting system.", 38);
-	AssertString(String_Concat(String_Concat(str1, str2), str3), "This is a test of the emergency broadcasting system.", 52);
+	ASSERT_STRING(String_Concat(str1, str2), "This is a test of the emergency ", 32);
+	ASSERT_STRING(String_Concat(str2, str3), " of the emergency broadcasting system.", 38);
+	ASSERT_STRING(String_Concat(String_Concat(str1, str2), str3), "This is a test of the emergency broadcasting system.", 52);
 }
 END_TEST
 
@@ -797,18 +797,18 @@ START_TEST(ConcatHandlesEmptyStrings)
 {
 	String str = String_FromC("This is a test.");
 
-	AssertString(String_Concat(str, String_Empty), "This is a test.", 15);
-	AssertString(String_Concat(String_Empty, str), "This is a test.", 15);
-	AssertString(String_Concat(String_Empty, String_Empty), NULL, 0);
+	ASSERT_STRING(String_Concat(str, String_Empty), "This is a test.", 15);
+	ASSERT_STRING(String_Concat(String_Empty, str), "This is a test.", 15);
+	ASSERT_STRING(String_Concat(String_Empty, String_Empty), NULL, 0);
 }
 END_TEST
 
 START_TEST(ConcatByteTacksOnBytes)
 {
 	String str = String_FromC("This is a test");
-	AssertString(String_ConcatByte(str, '.'), "This is a test.", 15);
-	AssertString(String_ConcatByte(str, '?'), "This is a test?", 15);
-	AssertString(String_ConcatByte(str, '\0'), "This is a test\0", 15);
+	ASSERT_STRING(String_ConcatByte(str, '.'), "This is a test.", 15);
+	ASSERT_STRING(String_ConcatByte(str, '?'), "This is a test?", 15);
+	ASSERT_STRING(String_ConcatByte(str, '\0'), "This is a test\0", 15);
 }
 END_TEST
 
@@ -1199,8 +1199,8 @@ START_TEST(ReplaceDoesNothingToAnEmptyString)
 	String str1 = String_FromC("foo");
 	String str2 = String_FromC("bar");
 
-	AssertString(String_Replace(String_Empty, str1, str2), NULL, 0);
-	AssertString(String_Replace(NULL, str1, str2), NULL, 0);
+	ASSERT_STRING(String_Replace(String_Empty, str1, str2), NULL, 0);
+	ASSERT_STRING(String_Replace(NULL, str1, str2), NULL, 0);
 }
 END_TEST
 
@@ -1209,8 +1209,8 @@ START_TEST(ReplaceDoesNothingWithAnEmptyPattern)
 	String str1 = String_FromC("foo");
 	String str2 = String_FromC("bar");
 
-	AssertString(String_Replace(str1, String_Empty, str2), "foo", 3);
-	AssertString(String_Replace(str1, NULL, str2), "foo", 3);
+	ASSERT_STRING(String_Replace(str1, String_Empty, str2), "foo", 3);
+	ASSERT_STRING(String_Replace(str1, NULL, str2), "foo", 3);
 }
 END_TEST
 
@@ -1220,7 +1220,7 @@ START_TEST(ReplaceSubstitutesContentWhereItMatches)
 	String str2 = String_FromC("test");
 	String str3 = String_FromC("foo");
 
-	AssertString(String_Replace(str1, str2, str3), "This is a foo for fooing foos.", 30);
+	ASSERT_STRING(String_Replace(str1, str2, str3), "This is a foo for fooing foos.", 30);
 }
 END_TEST
 
@@ -1229,8 +1229,8 @@ START_TEST(ReplaceRemovesContentWhenTheReplacementIsNullOrEmpty)
 	String str1 = String_FromC("This is a test for testing tests.");
 	String str2 = String_FromC("test");
 
-	AssertString(String_Replace(str1, str2, String_Empty), "This is a  for ing s.", 21);
-	AssertString(String_Replace(str1, str2, NULL), "This is a  for ing s.", 21);
+	ASSERT_STRING(String_Replace(str1, str2, String_Empty), "This is a  for ing s.", 21);
+	ASSERT_STRING(String_Replace(str1, str2, NULL), "This is a  for ing s.", 21);
 }
 END_TEST
 
@@ -1240,7 +1240,7 @@ START_TEST(ReplaceSubstitutesContentWhereItDoesNotOverlap)
 	String str2 = String_FromC("test");
 	String str3 = String_FromC("foo");
 
-	AssertString(String_Replace(str1, str2, str3), "This is a fooest for fooesfooing fooesfoos.", 43);
+	ASSERT_STRING(String_Replace(str1, str2, str3), "This is a fooest for fooesfooing fooesfoos.", 43);
 }
 END_TEST
 
@@ -1250,24 +1250,20 @@ START_TEST(ReplaceSubstitutesContentEvenWithControlCodesAndHighASCIIValuesInIt)
 	String str2 = String_Create("te\0\xFF\xAA\x1Ast", 8);
 	String str3 = String_Create("f\0o\xFFo", 5);
 
-	AssertString(String_Replace(str1, str2, str3), "This is a f\0o\xFFo for f\0o\xFFoing f\0o\xFFos.", 36);
+	ASSERT_STRING(String_Replace(str1, str2, str3), "This is a f\0o\xFFo for f\0o\xFFoing f\0o\xFFos.", 36);
 }
 END_TEST
 
 START_TEST(ReplaceCharSubstitutesCharsWhereTheyMatch)
 {
-	//----------------------------------------------------------------------
-	// TODO: FIXME: Investigate why this test sometimes fails unpredictably!
-	//----------------------------------------------------------------------
-
 	String str1 = String_FromC("This is a test for testing tests.");
 	String str2 = String_ReplaceChar(str1, 't', 'x');
 	String str3 = String_ReplaceChar(str2, 'e', 'y');
 	String str4 = String_ReplaceChar(str3, 's', 'o');
 
-	AssertString(str2, "This is a xesx for xesxing xesxs.", 33);
-	AssertString(str3, "This is a xysx for xysxing xysxs.", 33);
-	AssertString(str4, "Thio io a xyox for xyoxing xyoxo.", 33);
+	ASSERT_STRING(str2, "This is a xesx for xesxing xesxs.", 33);
+	ASSERT_STRING(str3, "This is a xysx for xysxing xysxs.", 33);
+	ASSERT_STRING(str4, "Thio io a xyox for xyoxing xyoxo.", 33);
 }
 END_TEST
 

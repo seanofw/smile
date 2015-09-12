@@ -21,14 +21,13 @@ extern void RunAllTests();
 
 int main()
 {
-	char buffer[100];
-
 	Smile_Init();
 
+	printf(" Running all unit tests...\n\n");
 	RunAllTests();
 
-	printf("Press Enter to exit. ");
-	fgets(buffer, 99, stdin);
+	printf(" Press any key to exit the test runner. ");
+	WaitForAnyKey();
 
 	Smile_End();
 

@@ -103,10 +103,12 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ansicolor-w32.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="testlib.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ansicolor-w32.c" />
     <ClCompile Include="dict\int32dict_tests.c" />
     <ClCompile Include="dict\stringdict_tests.c" />
     <ClCompile Include="dict\stringintdict_tests.c" />
