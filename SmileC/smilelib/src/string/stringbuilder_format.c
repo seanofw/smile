@@ -20,6 +20,16 @@
 
 #include <math.h>
 
+#if defined(_MSC_VER)
+	#include <float.h>
+	#ifndef isnan
+		#define isnan(x) _isnan(x)
+	#endif
+	#ifndef isinf
+		#define isinf(x) (!_finite(x))
+	#endif
+#endif
+
 static void StringBuilder_AppendFormatInternal(StringBuilder stringBuilder, const Byte *text, Int textLength, va_list v);
 
 /// <summary>
