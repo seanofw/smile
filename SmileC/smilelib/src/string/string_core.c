@@ -738,6 +738,7 @@ String String_ReplaceChar(const String str, Byte pattern, Byte replacement)
 	{
 		*dest++ = ((ch = *src++) == pattern ? replacement : ch);
 	}
+	*dest = '\0';
 
 	return (String)newString;
 }
