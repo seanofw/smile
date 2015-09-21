@@ -24,7 +24,7 @@
 /// <summary>
 /// The shared empty string instance, which is readonly static (non-heap) data.
 /// </summary>
-STATIC_STRING(String_Empty, "", 0);
+EXTERN_STATIC_STRING(String_Empty, "", 0);
 
 /// <summary>
 /// Construct a new String instance containing the given substring of text,

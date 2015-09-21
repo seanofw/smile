@@ -33,5 +33,20 @@ SmileEnv SmileEnv_Create(void)
 	// Preload the known symbols into this environment.
 	KnownSymbols_PreloadSymbolTable(smileEnv->symbolTable, &smileEnv->knownSymbols);
 
+	// Preload the known strings into this environment.
+	KnownStrings_Preload(smileEnv, &smileEnv->knownStrings);
+
+	// Preload the known objects into this environment.
+	KnownObjects_Preload(smileEnv, &smileEnv->knownObjects);
+
 	return smileEnv;
+}
+
+void SmileEnv_ThrowException(SmileEnv env, Symbol exceptionKind, String message)
+{
+	UNUSED(env);
+	UNUSED(exceptionKind);
+	UNUSED(message);
+
+	Smile_Abort_FatalError(String_ToC(message));
 }

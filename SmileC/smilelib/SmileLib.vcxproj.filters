@@ -40,6 +40,24 @@
     <Filter Include="src\env">
       <UniqueIdentifier>{b619632b-cc52-4af0-aed0-078c08f9ccff}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\smiletypes">
+      <UniqueIdentifier>{c2dd38c6-013e-41d3-b1e4-0c5e3d4fe239}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\smiletypes">
+      <UniqueIdentifier>{4a49031e-64f2-4023-8219-541f9146dd10}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\smiletypes\text">
+      <UniqueIdentifier>{d67a4da6-d556-4aa7-96a7-01d4c824bd56}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\smiletypes\text">
+      <UniqueIdentifier>{651e6438-1254-4d63-bead-dc5bc7adb7b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\smiletypes\numeric">
+      <UniqueIdentifier>{589a36fe-cd7d-406f-94ef-42dd76c5bcea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\smiletypes\numeric">
+      <UniqueIdentifier>{8c6e1978-7f52-4fe1-a8f3-26af8155531b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gc\src\allchblk.c">
@@ -149,6 +167,36 @@
     </ClCompile>
     <ClCompile Include="src\ticks.c">
       <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\env\knownstrings.c">
+      <Filter>src\env</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\text\smilestring.c">
+      <Filter>src\smiletypes\text</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\smileobject.c">
+      <Filter>src\smiletypes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\numeric\smileinteger32.c">
+      <Filter>src\smiletypes\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\text\smilesymbol.c">
+      <Filter>src\smiletypes\text</Filter>
+    </ClCompile>
+    <ClCompile Include="src\env\knownobjects.c">
+      <Filter>src\env</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\numeric\smileinteger64.c">
+      <Filter>src\smiletypes\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\smilebool.c">
+      <Filter>src\smiletypes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\smilelist.c">
+      <Filter>src\smiletypes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\smilenull.c">
+      <Filter>src\smiletypes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -274,6 +322,54 @@
     </ClInclude>
     <ClInclude Include="include\smile\env\knownsymbols.h">
       <Filter>include\env</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\env\knownobjects.h">
+      <Filter>include\env</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\env\knownstrings.h">
+      <Filter>include\env</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\predecl.h">
+      <Filter>include\smiletypes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\text\smilestring.h">
+      <Filter>include\smiletypes\text</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\text\smilesymbol.h">
+      <Filter>include\smiletypes\text</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\smilelist.h">
+      <Filter>include\smiletypes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\smilenull.h">
+      <Filter>include\smiletypes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\smileobject.h">
+      <Filter>include\smiletypes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\smileuserobject.h">
+      <Filter>include\smiletypes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\kind.h">
+      <Filter>include\smiletypes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\numeric\smilebyte.h">
+      <Filter>include\smiletypes\numeric</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\numeric\smileinteger16.h">
+      <Filter>include\smiletypes\numeric</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\numeric\smileinteger32.h">
+      <Filter>include\smiletypes\numeric</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\numeric\smileinteger64.h">
+      <Filter>include\smiletypes\numeric</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\numeric\smileinteger128.h">
+      <Filter>include\smiletypes\numeric</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\smilebool.h">
+      <Filter>include\smiletypes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

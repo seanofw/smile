@@ -91,8 +91,8 @@ typedef struct KnownSymbolsStruct {
 	Symbol zero_q;
 
 	// Error and exception symbols.
-	Symbol compile_error, configuration_error, eval_error, exec_error, json_error, lexer_error, load_error, native_method_error;
-	Symbol post_condition_assertion, pre_condition_assertion, syntax_error, system_exception, type_assertion, user_exception;
+	Symbol compile_error, configuration_error, eval_error, exec_error, json_error, lexer_error, load_error, native_method_error, object_security_error;
+	Symbol post_condition_assertion, pre_condition_assertion, property_error, syntax_error, system_exception, type_assertion, user_exception;
 } *KnownSymbols;
 
 SMILE_API void KnownSymbols_PreloadSymbolTable(SymbolTable symbolTable, KnownSymbols knownSymbols);

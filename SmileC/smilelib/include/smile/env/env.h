@@ -17,8 +17,20 @@
 #include <smile/env/symboltable.h>
 #endif
 
+#ifndef __SMILE_SMILETYPES_PREDECL_H__
+#include <smile/smiletypes/predecl.h>
+#endif
+
 #ifndef __SMILE_ENV_KNOWNSYMBOLS_H__
 #include <smile/env/knownsymbols.h>
+#endif
+
+#ifndef __SMILE_ENV_KNOWNSTRINGS_H__
+#include <smile/env/knownstrings.h>
+#endif
+
+#ifndef __SMILE_ENV_KNOWNOBJECTS_H__
+#include <smile/env/knownobjects.h>
 #endif
 
 //-------------------------------------------------------------------------------------------------
@@ -27,14 +39,17 @@
 /// <summary>
 /// The Smile runtime environment.
 /// </summary>
-typedef struct SmileEnvInt {
+struct SmileEnvInt {
 	SymbolTable symbolTable;					// The symbol table itself.
 	struct KnownSymbolsStruct knownSymbols;		// The known (preregistered) symbols.
-} *SmileEnv;
+	struct KnownStringsStruct knownStrings;		// The known (preconstructed) string instances.
+	struct KnownObjectsStruct knownObjects;		// The known (preconstructed) object instances.
+};
 
 //-------------------------------------------------------------------------------------------------
 //  External parts of the implementation (core)
 
 SMILE_API SmileEnv SmileEnv_Create(void);
+SMILE_API void SmileEnv_ThrowException(SmileEnv env, Symbol exceptionKind, String message);
 
 #endif

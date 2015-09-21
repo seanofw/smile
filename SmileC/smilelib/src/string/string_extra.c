@@ -19,9 +19,9 @@
 #include <smile/string.h>
 #include <smile/stringbuilder.h>
 
-PRIVATE_STATIC_STRING(Space, " ", 1);
+STATIC_STRING(Space, " ", 1);
 
-PRIVATE_STATIC_STRING(CommaSpace, ", ", 2);
+STATIC_STRING(CommaSpace, ", ", 2);
 
 /// <summary>
 /// Split a string by a given pattern string.

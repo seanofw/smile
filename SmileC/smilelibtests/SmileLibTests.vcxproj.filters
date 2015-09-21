@@ -51,6 +51,9 @@
     <Filter Include="env">
       <UniqueIdentifier>{a48276c9-2fbd-4004-a3c1-95516177f792}</UniqueIdentifier>
     </Filter>
+    <Filter Include="smiletypes">
+      <UniqueIdentifier>{4f4f275d-3708-487c-8e56-26655d7c8708}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="string\stringcore_tests.generated.inc">

@@ -15,6 +15,8 @@ typedef unsigned char Bool;
 #define True 1
 #define False 0
 
+// A macro to mark unused parameters as unused to avoid compiler warnings.
+#define UNUSED(__x__) ((void)(__x__))
 
 //------------------------------------------------------------------------------------------------
 //  Platform-specific type declarations.
