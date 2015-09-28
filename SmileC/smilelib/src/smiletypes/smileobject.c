@@ -18,11 +18,10 @@
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/text/smilestring.h>
 
-SmileObject SmileObject_Create(SmileEnv env)
+SmileObject SmileObject_Create(void)
 {
 	SmileObject obj = GC_MALLOC_STRUCT(struct SmileObjectInt);
 	obj->kind = SMILE_KIND_OBJECT;
-	obj->env = env;
 	obj->base = NULL;
 	obj->vtable = SmileObject_VTable;
 	return obj;
@@ -43,7 +42,7 @@ void SmileObject_SetSecurity(SmileObject self, Int security)
 {
 	UNUSED(self);
 	UNUSED(security);
-	SmileEnv_ThrowException(self->env, self->env->knownSymbols.object_security_error,
+	Smile_ThrowException(Smile_KnownSymbols.object_security_error,
 		String_Format("Cannot alter security on base Object, which is read-only."));
 }
 
@@ -55,16 +54,18 @@ Int SmileObject_GetSecurity(SmileObject self)
 
 SmileObject SmileObject_GetProperty(SmileObject self, Symbol propertyName)
 {
+	UNUSED(self);
 	UNUSED(propertyName);
-	return (SmileObject)self->env->knownObjects.Null;
+	return (SmileObject)Smile_KnownObjects.Null;
 }
 
 void SmileObject_SetProperty(SmileObject self, Symbol propertyName, SmileObject value)
 {
+	UNUSED(self);
 	UNUSED(value);
-	SmileEnv_ThrowException(self->env, self->env->knownSymbols.object_security_error,
+	Smile_ThrowException(Smile_KnownSymbols.object_security_error,
 		String_Format("Cannot set property \"%S\" on base Object, which is read-only.",
-			SymbolTable_GetName(self->env->symbolTable, propertyName)));
+			SymbolTable_GetName(Smile_SymbolTable, propertyName)));
 }
 
 Bool SmileObject_HasProperty(SmileObject self, Symbol propertyName)
@@ -76,7 +77,8 @@ Bool SmileObject_HasProperty(SmileObject self, Symbol propertyName)
 
 SmileList SmileObject_GetPropertyNames(SmileObject self)
 {
-	return self->env->knownObjects.Null;
+	UNUSED(self);
+	return Smile_KnownObjects.Null;
 }
 
 Bool SmileObject_ToBool(SmileObject self)
@@ -99,7 +101,8 @@ Real64 SmileObject_ToReal64(SmileObject self)
 
 String SmileObject_ToString(SmileObject self)
 {
-	return KNOWN_STRING(self->env, Object);
+	UNUSED(self);
+	return KNOWN_STRING(Object);
 }
 
 SMILE_VTABLE(SmileObject_VTable, SmileObject)

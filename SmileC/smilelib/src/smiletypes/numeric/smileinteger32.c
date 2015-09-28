@@ -19,12 +19,11 @@
 #include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 
-SmileInteger32 SmileInteger32_CreateInternal(SmileEnv env, Int32 value)
+SmileInteger32 SmileInteger32_CreateInternal(Int32 value)
 {
 	SmileInteger32 smileInt = GC_MALLOC_STRUCT(struct SmileInteger32Int);
 	if (smileInt == NULL) Smile_Abort_OutOfMemory();
-	smileInt->base = env->knownObjects.Object;
-	smileInt->env = env;
+	smileInt->base = Smile_KnownObjects.Object;
 	smileInt->kind = SMILE_KIND_INTEGER32;
 	smileInt->vtable = SmileInteger32_VTable;
 	smileInt->value = value;
@@ -50,7 +49,7 @@ void SmileInteger32_SetSecurity(SmileInteger32 self, Int security)
 {
 	UNUSED(self);
 	UNUSED(security);
-	SmileEnv_ThrowException(self->env, self->env->knownSymbols.object_security_error,
+	Smile_ThrowException(Smile_KnownSymbols.object_security_error,
 		String_Format("Cannot alter security on integers, which are read-only."));
 }
 
@@ -67,10 +66,11 @@ SmileObject SmileInteger32_GetProperty(SmileInteger32 self, Symbol propertyName)
 
 void SmileInteger32_SetProperty(SmileInteger32 self, Symbol propertyName, SmileObject value)
 {
+	UNUSED(self);
 	UNUSED(value);
-	SmileEnv_ThrowException(self->env, self->env->knownSymbols.object_security_error,
+	Smile_ThrowException(Smile_KnownSymbols.object_security_error,
 		String_Format("Cannot set property \"%S\" on an integer, which is read-only.",
-		SymbolTable_GetName(self->env->symbolTable, propertyName)));
+		SymbolTable_GetName(Smile_SymbolTable, propertyName)));
 }
 
 Bool SmileInteger32_HasProperty(SmileInteger32 self, Symbol propertyName)
@@ -82,7 +82,8 @@ Bool SmileInteger32_HasProperty(SmileInteger32 self, Symbol propertyName)
 
 SmileList SmileInteger32_GetPropertyNames(SmileInteger32 self)
 {
-	return self->env->knownObjects.Null;
+	UNUSED(self);
+	return Smile_KnownObjects.Null;
 }
 
 Bool SmileInteger32_ToBool(SmileInteger32 self)

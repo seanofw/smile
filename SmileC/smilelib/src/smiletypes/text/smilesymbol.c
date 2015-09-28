@@ -19,12 +19,11 @@
 #include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 
-SmileSymbol SmileSymbol_Create(SmileEnv env, Symbol symbol)
+SmileSymbol SmileSymbol_Create(Symbol symbol)
 {
 	SmileSymbol smileInt = GC_MALLOC_STRUCT(struct SmileSymbolInt);
 	if (smileInt == NULL) Smile_Abort_OutOfMemory();
-	smileInt->base = env->knownObjects.Object;
-	smileInt->env = env;
+	smileInt->base = Smile_KnownObjects.Object;
 	smileInt->kind = SMILE_KIND_SYMBOL;
 	smileInt->vtable = SmileSymbol_VTable;
 	smileInt->symbol = symbol;
@@ -50,7 +49,7 @@ void SmileSymbol_SetSecurity(SmileSymbol self, Int security)
 {
 	UNUSED(self);
 	UNUSED(security);
-	SmileEnv_ThrowException(self->env, self->env->knownSymbols.object_security_error,
+	Smile_ThrowException(Smile_KnownSymbols.object_security_error,
 		String_Format("Cannot alter security on symbols, which are read-only."));
 }
 
@@ -67,10 +66,11 @@ SmileObject SmileSymbol_GetProperty(SmileSymbol self, Symbol propertyName)
 
 void SmileSymbol_SetProperty(SmileSymbol self, Symbol propertyName, SmileObject value)
 {
+	UNUSED(self);
 	UNUSED(value);
-	SmileEnv_ThrowException(self->env, self->env->knownSymbols.object_security_error,
+	Smile_ThrowException(Smile_KnownSymbols.object_security_error,
 		String_Format("Cannot set property \"%S\" on a symbol, which is read-only.",
-		SymbolTable_GetName(self->env->symbolTable, propertyName)));
+		SymbolTable_GetName(Smile_SymbolTable, propertyName)));
 }
 
 Bool SmileSymbol_HasProperty(SmileSymbol self, Symbol propertyName)
@@ -82,7 +82,8 @@ Bool SmileSymbol_HasProperty(SmileSymbol self, Symbol propertyName)
 
 SmileList SmileSymbol_GetPropertyNames(SmileSymbol self)
 {
-	return self->env->knownObjects.Null;
+	UNUSED(self);
+	return Smile_KnownObjects.Null;
 }
 
 Bool SmileSymbol_ToBool(SmileSymbol self)
@@ -105,7 +106,7 @@ Real64 SmileSymbol_ToReal64(SmileSymbol self)
 
 String SmileSymbol_ToString(SmileSymbol self)
 {
-	return SymbolTable_GetName(self->env->symbolTable, self->symbol);
+	return SymbolTable_GetName(Smile_SymbolTable, self->symbol);
 }
 
 SMILE_VTABLE(SmileSymbol_VTable, SmileSymbol)

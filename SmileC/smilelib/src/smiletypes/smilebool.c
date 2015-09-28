@@ -19,12 +19,11 @@
 #include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/smilebool.h>
 
-SmileBool SmileBool_Create(SmileEnv env, Bool value)
+SmileBool SmileBool_Create(Bool value)
 {
 	SmileBool smileInt = GC_MALLOC_STRUCT(struct SmileBoolInt);
 	if (smileInt == NULL) Smile_Abort_OutOfMemory();
-	smileInt->base = env->knownObjects.Object;
-	smileInt->env = env;
+	smileInt->base = Smile_KnownObjects.Object;
 	smileInt->kind = SMILE_KIND_BOOL;
 	smileInt->vtable = SmileBool_VTable;
 	smileInt->value = value;
@@ -50,7 +49,7 @@ void SmileBool_SetSecurity(SmileBool self, Int security)
 {
 	UNUSED(self);
 	UNUSED(security);
-	SmileEnv_ThrowException(self->env, self->env->knownSymbols.object_security_error,
+	Smile_ThrowException(Smile_KnownSymbols.object_security_error,
 		String_Format("Cannot alter security on Booleans, which are read-only."));
 }
 
@@ -67,10 +66,11 @@ SmileObject SmileBool_GetProperty(SmileBool self, Symbol propertyName)
 
 void SmileBool_SetProperty(SmileBool self, Symbol propertyName, SmileObject value)
 {
+	UNUSED(self);
 	UNUSED(value);
-	SmileEnv_ThrowException(self->env, self->env->knownSymbols.object_security_error,
+	Smile_ThrowException(Smile_KnownSymbols.object_security_error,
 		String_Format("Cannot set property \"%S\" on a Booleans, which is read-only.",
-		SymbolTable_GetName(self->env->symbolTable, propertyName)));
+		SymbolTable_GetName(Smile_SymbolTable, propertyName)));
 }
 
 Bool SmileBool_HasProperty(SmileBool self, Symbol propertyName)
@@ -82,7 +82,8 @@ Bool SmileBool_HasProperty(SmileBool self, Symbol propertyName)
 
 SmileList SmileBool_GetPropertyNames(SmileBool self)
 {
-	return self->env->knownObjects.Null;
+	UNUSED(self);
+	return Smile_KnownObjects.Null;
 }
 
 Bool SmileBool_ToBool(SmileBool self)

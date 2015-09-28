@@ -21,6 +21,8 @@ extern void RunAllTests();
 
 int main()
 {
+	printf(" Initializing the Smile runtime environment.\n");
+
 	Smile_Init();
 
 	printf(" Running all unit tests...\n\n");

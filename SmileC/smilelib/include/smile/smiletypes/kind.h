@@ -17,13 +17,13 @@
 // Other aggregations of data.
 #define SMILE_KIND_USEROBJECT			0x08
 #define SMILE_KIND_PAIR					0x09
-#define SMILE_KIND_WEAKREF				0x0A
-#define SMILE_KIND_WEAKMAP				0x0B
+#define SMILE_KIND_WEAKREF				0x0A		// Not yet supported.
 
 // Opaque handles.
+#define SMILE_KIND_HANDLE				0x0B
 #define SMILE_KIND_CLOSURE				0x0C
 #define SMILE_KIND_FACADE				0x0D
-#define SMILE_KIND_HANDLE				0x0E
+#define SMILE_KIND_MACRO				0x0E		// Not yet supported.
 #define SMILE_KIND_FUNCTION				0x0F
 
 // Integer numeric types.

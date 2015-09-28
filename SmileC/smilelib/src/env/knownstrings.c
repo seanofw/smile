@@ -23,9 +23,9 @@ STATIC_STRING(ObjectString, "Object", 6);
 STATIC_STRING(true_, "true", 4);
 STATIC_STRING(false_, "false", 5);
 
-void KnownStrings_Preload(SmileEnv env, struct KnownStringsStruct *knownStrings)
+void KnownStrings_Preload(struct KnownStringsStruct *knownStrings)
 {
-	knownStrings->Object = SmileString_Create(env, ObjectString);
-	knownStrings->true_ = SmileString_Create(env, true_);
-	knownStrings->false_ = SmileString_Create(env, false_);
+	knownStrings->Object = SmileString_Create(ObjectString);
+	knownStrings->true_ = SmileString_Create(true_);
+	knownStrings->false_ = SmileString_Create(false_);
 }

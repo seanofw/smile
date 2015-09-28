@@ -20,12 +20,11 @@
 #include <smile/smiletypes/smilenull.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 
-SmileNull SmileNull_Create(SmileEnv env)
+SmileNull SmileNull_Create(void)
 {
 	SmileNull smileNull = GC_MALLOC_STRUCT(struct SmileListInt);
 	if (smileNull == NULL) Smile_Abort_OutOfMemory();
-	smileNull->base = env->knownObjects.Object;
-	smileNull->env = env;
+	smileNull->base = Smile_KnownObjects.Object;
 	smileNull->kind = SMILE_KIND_NULL;
 	smileNull->vtable = SmileNull_VTable;
 	smileNull->a = (SmileObject)smileNull;
@@ -49,7 +48,7 @@ void SmileNull_SetSecurity(SmileNull self, Int security)
 {
 	UNUSED(self);
 	UNUSED(security);
-	SmileEnv_ThrowException(self->env, self->env->knownSymbols.object_security_error,
+	Smile_ThrowException(Smile_KnownSymbols.object_security_error,
 		String_Format("Cannot alter security on null, which is read-only."));
 }
 
@@ -69,9 +68,9 @@ void SmileNull_SetProperty(SmileNull self, Symbol propertyName, SmileObject valu
 	UNUSED(self);
 	UNUSED(propertyName);
 	UNUSED(value);
-	SmileEnv_ThrowException(self->env, self->env->knownSymbols.property_error,
+	Smile_ThrowException(Smile_KnownSymbols.property_error,
 		String_Format("Cannot set property \"%S\" on null; null is read-only.",
-		SymbolTable_GetName(self->env->symbolTable, propertyName)));
+		SymbolTable_GetName(Smile_SymbolTable, propertyName)));
 }
 
 Bool SmileNull_HasProperty(SmileNull self, Symbol propertyName)
@@ -83,7 +82,8 @@ Bool SmileNull_HasProperty(SmileNull self, Symbol propertyName)
 
 SmileList SmileNull_GetPropertyNames(SmileNull self)
 {
-	return (SmileList)(self->env->knownObjects.Null);
+	UNUSED(self);
+	return (SmileList)(Smile_KnownObjects.Null);
 }
 
 Bool SmileNull_ToBool(SmileNull self)

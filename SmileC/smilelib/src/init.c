@@ -20,6 +20,9 @@
 
 #include <smile/internal/types.h>
 #include <smile/gc.h>
+#include <smile/env/env.h>
+#include <smile/env/symboltable.h>
+#include <smile/env/knownsymbols.h>
 
 extern void Smile_InitTicks(void);
 
@@ -35,6 +38,13 @@ static Bool Smile_IsInitialized = False;
 /// </summary>
 UInt32 Smile_HashOracle;
 
+// The environment.
+SymbolTable Smile_SymbolTable;
+struct KnownSymbolsStruct Smile_KnownSymbols;
+struct KnownStringsStruct Smile_KnownStrings;
+struct KnownObjectsStruct Smile_KnownObjects;
+
+
 /// <summary>
 /// Initialize the Smile runtime.  This must be performed at least once on startup.
 /// </summary>
@@ -47,6 +57,23 @@ void Smile_Init(void)
 	GC_INIT();
 
 	Smile_HashOracle = (UInt32)GetBaselineEntropy();
+
+	Smile_ResetEnvironment();
+}
+
+void Smile_ResetEnvironment(void)
+{
+	// Make a symbol table for this environment.
+	Smile_SymbolTable = SymbolTable_Create();
+
+	// Preload the known symbols into this environment.
+	KnownSymbols_PreloadSymbolTable(Smile_SymbolTable, &Smile_KnownSymbols);
+
+	// Preload the known strings into this environment.
+	KnownStrings_Preload(&Smile_KnownStrings);
+
+	// Preload the known objects into this environment.
+	KnownObjects_Preload(&Smile_KnownObjects);
 }
 
 /// <summary>
@@ -71,4 +98,12 @@ void Smile_Abort_FatalError(const char *message)
 {
 	fprintf(stderr, "Fatal error:  %s  Aborting program.", message);
 	exit(-1);
+}
+
+void Smile_ThrowException(Symbol exceptionKind, String message)
+{
+	UNUSED(exceptionKind);
+	UNUSED(message);
+
+	Smile_Abort_FatalError(String_ToC(message));
 }

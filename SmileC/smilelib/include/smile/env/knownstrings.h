@@ -16,12 +16,9 @@ struct KnownStringsStruct {
 	SmileString false_;
 };
 
-#define KNOWN_SMILESTRING(__env__, __name__) \
-	((__env__)->knownStrings.__name__)
+#define KNOWN_STRING(__name__) \
+	((String)&(Smile_KnownStrings.__name__->string))
 
-#define KNOWN_STRING(__env__, __name__) \
-	((String)&((__env__)->knownStrings.__name__->string))
-
-void KnownStrings_Preload(SmileEnv env, struct KnownStringsStruct *knownStrings);
+void KnownStrings_Preload(struct KnownStringsStruct *knownStrings);
 
 #endif

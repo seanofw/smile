@@ -28,8 +28,8 @@ struct SmileListInt {
 
 SMILE_API SmileVTable SmileList_VTable;
 
-SMILE_API SmileList SmileList_Cons(SmileEnv env, SmileObject a, SmileObject d);
-SMILE_API SmileList SmileList_CreateList(SmileEnv env, SmileObject *objects, Int numObjects);
+SMILE_API SmileList SmileList_Cons(SmileObject a, SmileObject d);
+SMILE_API SmileList SmileList_CreateList(SmileObject *objects, Int numObjects);
 
 SMILE_API Bool SmileList_CompareEqual(SmileList self, SmileObject other);
 SMILE_API UInt32 SmileList_Hash(SmileList self);
@@ -50,7 +50,7 @@ SMILE_API String SmileList_ToString(SmileList self);
 Inline SmileList SmileList_Rest(SmileList list)
 {
 	SmileObject d = list->d;
-	return ((d->kind & ~SMILE_KIND_LIST) == SMILE_KIND_NULL) ? (SmileList)d : (SmileList)list->env->knownObjects.Null;
+	return ((d->kind & ~SMILE_KIND_LIST) == SMILE_KIND_NULL) ? (SmileList)d : (SmileList)Smile_KnownObjects.Null;
 }
 
 Inline SmileObject SmileList_First(SmileList list)
@@ -69,20 +69,20 @@ Inline SmileObject SmileList_First(SmileList list)
 //-------------------------------------------------------------------------------------------------
 //  List builders
 
-#define DECLARE_LIST_BUILDER(__env__, __name__) \
-	SmileList __name__##Null = (__env__)->knownObjects.Null, \
+#define DECLARE_LIST_BUILDER(__name__) \
+	SmileList __name__##Null = Smile_KnownObjects.Null, \
 		__name__##Head = __name__##Null, \
 		*__name__##Tail = &(__name__##Head), \
 		__name__##Temp
-#define LIST_BUILDER_APPEND(__env__, __name__, __item__) \
+#define LIST_BUILDER_APPEND(__name__, __item__) \
 	( \
-		__name__##Temp = SmileList_Cons((__env__), (SmileObject)__item__, (SmileObject)__name__##Null), \
+		__name__##Temp = SmileList_Cons((SmileObject)__item__, (SmileObject)__name__##Null), \
 		*__name__##Tail = (__name__##Temp), \
 		__name__##Tail = (SmileList *)&((__name__##Temp)->d) \
 	)
-#define LIST_BUILDER_INSERT(__env__, __name__, __item__) \
+#define LIST_BUILDER_INSERT(__name__, __item__) \
 	( \
-		__name__##Head = SmileList_Cons((__env__), (SmileObject)__item__, (SmileObject)__name__##Head), \
+		__name__##Head = SmileList_Cons((SmileObject)__item__, (SmileObject)__name__##Head), \
 		__name__##Tail = (__name__##Tail == &(__name__##Head) ? &((SmileList *)(__name__##Head)->d) : (__name__##Tail)) \
 	)
 #define LIST_BUILDER_HEAD(__name__) \

@@ -23,7 +23,7 @@ struct SmileInteger64Int {
 
 SMILE_API SmileVTable SmileInteger64_VTable;
 
-SMILE_API SmileInteger64 SmileInteger64_CreateInternal(SmileEnv env, Int64 value);
+SMILE_API SmileInteger64 SmileInteger64_CreateInternal(Int64 value);
 
 SMILE_API Bool SmileInteger64_CompareEqual(SmileInteger64 self, SmileObject other);
 SMILE_API UInt32 SmileInteger64_Hash(SmileInteger64 self);
@@ -41,12 +41,12 @@ SMILE_API String SmileInteger64_ToString(SmileInteger64 self);
 //-------------------------------------------------------------------------------------------------
 //  Inline operations
 
-Inline SmileInteger64 SmileInteger64_Create(SmileEnv env, Int64 value)
+Inline SmileInteger64 SmileInteger64_Create(Int64 value)
 {
 	if (value >= -100 && value <= 100)
-		return env->knownObjects.SmallInt64s[value + 100];
+		return Smile_KnownObjects.SmallInt64s[value + 100];
 	else
-		return SmileInteger64_CreateInternal(env, value);
+		return SmileInteger64_CreateInternal(value);
 }
 
 #endif

@@ -21,12 +21,11 @@
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/smilelist.h>
 
-SmileString SmileString_Create(SmileEnv env, String string)
+SmileString SmileString_Create(String string)
 {
 	SmileString str = GC_MALLOC_STRUCT(struct SmileStringInt);
 	if (str == NULL) Smile_Abort_OutOfMemory();
-	str->base = env->knownObjects.Object;
-	str->env = env;
+	str->base = Smile_KnownObjects.Object;
 	str->kind = SMILE_KIND_STRING;
 	str->vtable = SmileString_VTable;
 	str->string.text = ((struct StringInt *)string)->text;
@@ -60,7 +59,7 @@ void SmileString_SetSecurity(SmileString self, Int security)
 {
 	UNUSED(self);
 	UNUSED(security);
-	SmileEnv_ThrowException(self->env, self->env->knownSymbols.object_security_error,
+	Smile_ThrowException(Smile_KnownSymbols.object_security_error,
 		String_Format("Cannot alter security on strings, which are read-only."));
 }
 
@@ -72,31 +71,32 @@ Int SmileString_GetSecurity(SmileString self)
 
 SmileObject SmileString_GetProperty(SmileString self, Symbol propertyName)
 {
-	if (propertyName == self->env->knownSymbols.length) {
-		return (SmileObject)SmileInteger32_Create(self->env, self->string.length);
+	if (propertyName == Smile_KnownSymbols.length) {
+		return (SmileObject)SmileInteger32_Create(self->string.length);
 	}
 	return self->base->vtable->getProperty((SmileObject)self, propertyName);
 }
 
 void SmileString_SetProperty(SmileString self, Symbol propertyName, SmileObject value)
 {
+	UNUSED(self);
 	UNUSED(value);
-	SmileEnv_ThrowException(self->env, self->env->knownSymbols.object_security_error,
+	Smile_ThrowException(Smile_KnownSymbols.object_security_error,
 		String_Format("Cannot set property \"%S\" on a string, which is read-only.",
-		SymbolTable_GetName(self->env->symbolTable, propertyName)));
+		SymbolTable_GetName(Smile_SymbolTable, propertyName)));
 }
 
 Bool SmileString_HasProperty(SmileString self, Symbol propertyName)
 {
-	return (propertyName == self->env->knownSymbols.length);
+	UNUSED(self);
+	return (propertyName == Smile_KnownSymbols.length);
 }
 
 SmileList SmileString_GetPropertyNames(SmileString self)
 {
-	SmileEnv env = self->env;
-
-	DECLARE_LIST_BUILDER(env, listBuilder);
-	LIST_BUILDER_APPEND(env, listBuilder, SmileSymbol_Create(env, env->knownSymbols.length));
+	UNUSED(self);
+	DECLARE_LIST_BUILDER(listBuilder);
+	LIST_BUILDER_APPEND(listBuilder, SmileSymbol_Create(Smile_KnownSymbols.length));
 	return LIST_BUILDER_HEAD(listBuilder);
 }
 

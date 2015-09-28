@@ -23,7 +23,7 @@
 
 SMILE_API SmileVTable SmileNull_VTable;
 
-extern SmileNull SmileNull_Create(SmileEnv env);
+extern SmileNull SmileNull_Create(void);
 
 extern Bool SmileNull_CompareEqual(SmileNull self, SmileObject other);
 extern UInt32 SmileNull_Hash(SmileNull self);

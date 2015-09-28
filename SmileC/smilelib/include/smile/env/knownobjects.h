@@ -23,6 +23,6 @@ struct KnownObjectsStruct {
 	SmileInteger64 OneInt64;
 };
 
-extern void KnownObjects_Preload(SmileEnv env, struct KnownObjectsStruct *knownObjects);
+extern void KnownObjects_Preload(struct KnownObjectsStruct *knownObjects);
 
 #endif

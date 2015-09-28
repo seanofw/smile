@@ -34,22 +34,15 @@
 #endif
 
 //-------------------------------------------------------------------------------------------------
-//  Public type declarations
+//  The core Smile implementation
 
-/// <summary>
-/// The Smile runtime environment.
-/// </summary>
-struct SmileEnvInt {
-	SymbolTable symbolTable;					// The symbol table itself.
-	struct KnownSymbolsStruct knownSymbols;		// The known (preregistered) symbols.
-	struct KnownStringsStruct knownStrings;		// The known (preconstructed) string instances.
-	struct KnownObjectsStruct knownObjects;		// The known (preconstructed) object instances.
-};
+SMILE_API SymbolTable Smile_SymbolTable;
+SMILE_API struct KnownSymbolsStruct Smile_KnownSymbols;
+SMILE_API struct KnownStringsStruct Smile_KnownStrings;
+SMILE_API struct KnownObjectsStruct Smile_KnownObjects;
 
-//-------------------------------------------------------------------------------------------------
-//  External parts of the implementation (core)
+SMILE_API void Smile_ThrowException(Symbol exceptionKind, String message);
 
-SMILE_API SmileEnv SmileEnv_Create(void);
-SMILE_API void SmileEnv_ThrowException(SmileEnv env, Symbol exceptionKind, String message);
+SMILE_API void Smile_ResetEnvironment(void);
 
 #endif

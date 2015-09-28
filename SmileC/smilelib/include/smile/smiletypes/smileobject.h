@@ -29,7 +29,6 @@
 #define DECLARE_BASE_OBJECT_PROPERTIES \
 	UInt32 kind; \
 	Symbol assignedSymbol; \
-	SmileEnv env; \
 	SmileVTable vtable; \
 	SmileObject base
 
@@ -80,7 +79,7 @@ SMILE_API Int32 SmileObject_ToInteger32(SmileObject self);
 SMILE_API Real64 SmileObject_ToReal64(SmileObject self);
 SMILE_API String SmileObject_ToString(SmileObject self);
 
-SMILE_API SmileObject SmileObject_Create(SmileEnv env);
+SMILE_API SmileObject SmileObject_Create(void);
 
 Inline Bool SmileObject_IsList(SmileObject self)
 {

@@ -27,7 +27,7 @@ struct SmileStringInt {
 
 SMILE_API SmileVTable SmileString_VTable;
 
-SMILE_API SmileString SmileString_Create(SmileEnv env, String str);
+SMILE_API SmileString SmileString_Create(String str);
 
 SMILE_API Bool SmileString_CompareEqual(SmileString self, SmileObject other);
 SMILE_API UInt32 SmileString_Hash(SmileString self);
@@ -44,10 +44,10 @@ SMILE_API Real64 SmileString_ToReal64(SmileString self);
 //-------------------------------------------------------------------------------------------------
 //  Inline operations
 
-Inline SmileString SmileString_CreateC(SmileEnv env, const char *text)
+Inline SmileString SmileString_CreateC(const char *text)
 {
 	String str = String_FromC(text);
-	return SmileString_Create(env, str);
+	return SmileString_Create(str);
 }
 
 Inline String SmileString_ToString(SmileString str)

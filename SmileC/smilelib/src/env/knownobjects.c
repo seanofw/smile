@@ -24,25 +24,25 @@
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
 
-void KnownObjects_Preload(SmileEnv env, struct KnownObjectsStruct *knownObjects)
+void KnownObjects_Preload(struct KnownObjectsStruct *knownObjects)
 {
 	Int i;
 
-	knownObjects->Object = SmileObject_Create(env);
-	knownObjects->Null = SmileNull_Create(env);
+	knownObjects->Object = SmileObject_Create();
+	knownObjects->Null = SmileNull_Create();
 
 	for (i = -100; i <= 100; i++) {
-		knownObjects->SmallInt32s[i + 100] = SmileInteger32_CreateInternal(env, i);
+		knownObjects->SmallInt32s[i + 100] = SmileInteger32_CreateInternal(i);
 	}
 	knownObjects->ZeroInt32 = knownObjects->SmallInt32s[0 + 100];
 	knownObjects->OneInt32 = knownObjects->SmallInt32s[1 + 100];
 
 	for (i = -100; i <= 100; i++) {
-		knownObjects->SmallInt64s[i + 100] = SmileInteger64_CreateInternal(env, i);
+		knownObjects->SmallInt64s[i + 100] = SmileInteger64_CreateInternal(i);
 	}
 	knownObjects->ZeroInt64 = knownObjects->SmallInt64s[0 + 100];
 	knownObjects->OneInt64 = knownObjects->SmallInt64s[1 + 100];
 
-	knownObjects->TrueObj = SmileBool_Create(env, True);
-	knownObjects->FalseObj = SmileBool_Create(env, False);
+	knownObjects->TrueObj = SmileBool_Create(True);
+	knownObjects->FalseObj = SmileBool_Create(False);
 }

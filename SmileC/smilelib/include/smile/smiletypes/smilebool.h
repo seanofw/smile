@@ -27,7 +27,7 @@ struct SmileBoolInt {
 
 SMILE_API SmileVTable SmileBool_VTable;
 
-SMILE_API SmileBool SmileBool_Create(SmileEnv env, Bool value);
+SMILE_API SmileBool SmileBool_Create(Bool value);
 
 SMILE_API Bool SmileBool_CompareEqual(SmileBool self, SmileObject other);
 SMILE_API UInt32 SmileBool_Hash(SmileBool self);

@@ -18,35 +18,3 @@
 #include <smile/env/env.h>
 #include <smile/env/symboltable.h>
 #include <smile/env/knownsymbols.h>
-
-SmileEnv SmileEnv_Create(void)
-{
-	SmileEnv smileEnv;
-
-	// Create the environment itself.
-	smileEnv = GC_MALLOC_STRUCT(struct SmileEnvInt);
-	if (smileEnv == NULL) Smile_Abort_OutOfMemory();
-
-	// Make a symbol table for this environment.
-	smileEnv->symbolTable = SymbolTable_Create();
-
-	// Preload the known symbols into this environment.
-	KnownSymbols_PreloadSymbolTable(smileEnv->symbolTable, &smileEnv->knownSymbols);
-
-	// Preload the known strings into this environment.
-	KnownStrings_Preload(smileEnv, &smileEnv->knownStrings);
-
-	// Preload the known objects into this environment.
-	KnownObjects_Preload(smileEnv, &smileEnv->knownObjects);
-
-	return smileEnv;
-}
-
-void SmileEnv_ThrowException(SmileEnv env, Symbol exceptionKind, String message)
-{
-	UNUSED(env);
-	UNUSED(exceptionKind);
-	UNUSED(message);
-
-	Smile_Abort_FatalError(String_ToC(message));
-}

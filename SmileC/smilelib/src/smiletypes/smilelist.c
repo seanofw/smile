@@ -19,12 +19,11 @@
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 
-SmileList SmileList_Cons(SmileEnv env, SmileObject a, SmileObject d)
+SmileList SmileList_Cons(SmileObject a, SmileObject d)
 {
 	SmileList smileList = GC_MALLOC_STRUCT(struct SmileListInt);
 	if (smileList == NULL) Smile_Abort_OutOfMemory();
-	smileList->base = env->knownObjects.Object;
-	smileList->env = env;
+	smileList->base = Smile_KnownObjects.Object;
 	smileList->kind = SMILE_KIND_LIST;
 	smileList->vtable = SmileList_VTable;
 	smileList->a = a;
@@ -49,62 +48,53 @@ UInt32 SmileList_Hash(SmileList self)
 
 void SmileList_SetSecurity(SmileList self, Int security)
 {
-	Int currentSecurity = self->kind & SMILE_SECURITY_READWRITEAPPEND;
-
-	if ((currentSecurity | security) != currentSecurity) {
-		// Attempting to make this less secure, so throw an exception, since we do not yet support keyed security.
-		SmileEnv_ThrowException(self->env, self->env->knownSymbols.object_security_error,
-			String_Format("Cannot alter security of an object to be less than its current security level."));
-	}
-
-	self->kind = (currentSecurity & ~SMILE_SECURITY_READWRITEAPPEND) | security;
+	UNUSED(self);
+	UNUSED(security);
+	Smile_ThrowException(Smile_KnownSymbols.object_security_error,
+		String_Format("Cannot alter security of a list cell to be anything other than read/write."));
 }
 
 Int SmileList_GetSecurity(SmileList self)
 {
-	return self->kind & SMILE_SECURITY_READWRITEAPPEND;
+	UNUSED(self);
+	return SMILE_SECURITY_WRITABLE;
 }
 
 SmileObject SmileList_GetProperty(SmileList self, Symbol propertyName)
 {
-	if (propertyName == self->env->knownSymbols.a)
+	if (propertyName == Smile_KnownSymbols.a)
 		return self->a;
-	else if (propertyName == self->env->knownSymbols.d)
+	else if (propertyName == Smile_KnownSymbols.d)
 		return self->d;
 	else
-		return self->base->vtable->getProperty((SmileObject)self, propertyName);
+		return (SmileObject)Smile_KnownObjects.Null;
 }
 
 void SmileList_SetProperty(SmileList self, Symbol propertyName, SmileObject value)
 {
-	if (!self->kind & SMILE_SECURITY_WRITABLE) {
-		SmileEnv_ThrowException(self->env, self->env->knownSymbols.object_security_error,
-			String_Format("Cannot set property \"%S\" on list cell: This list cell's properties are not writable.",
-			SymbolTable_GetName(self->env->symbolTable, propertyName)));
-	}
-	else if (propertyName == self->env->knownSymbols.a)
+	if (propertyName == Smile_KnownSymbols.a)
 		self->a = value;
-	else if (propertyName == self->env->knownSymbols.d)
+	else if (propertyName == Smile_KnownSymbols.d)
 		self->d = value;
 	else {
-		SmileEnv_ThrowException(self->env, self->env->knownSymbols.property_error,
+		Smile_ThrowException(Smile_KnownSymbols.property_error,
 			String_Format("Cannot set property \"%S\" on list cell: This property does not exist, and list cells are not appendable objects.",
-			SymbolTable_GetName(self->env->symbolTable, propertyName)));
+			SymbolTable_GetName(Smile_SymbolTable, propertyName)));
 	}
 }
 
 Bool SmileList_HasProperty(SmileList self, Symbol propertyName)
 {
-	return (propertyName == self->env->knownSymbols.a || propertyName == self->env->knownSymbols.d);
+	UNUSED(self);
+	return (propertyName == Smile_KnownSymbols.a || propertyName == Smile_KnownSymbols.d);
 }
 
 SmileList SmileList_GetPropertyNames(SmileList self)
 {
-	SmileEnv env = self->env;
-
-	DECLARE_LIST_BUILDER(env, listBuilder);
-	LIST_BUILDER_APPEND(env, listBuilder, SmileSymbol_Create(env, env->knownSymbols.a));
-	LIST_BUILDER_APPEND(env, listBuilder, SmileSymbol_Create(env, env->knownSymbols.d));
+	UNUSED(self);
+	DECLARE_LIST_BUILDER(listBuilder);
+	LIST_BUILDER_APPEND(listBuilder, SmileSymbol_Create(Smile_KnownSymbols.a));
+	LIST_BUILDER_APPEND(listBuilder, SmileSymbol_Create(Smile_KnownSymbols.d));
 	return LIST_BUILDER_HEAD(listBuilder);
 }
 

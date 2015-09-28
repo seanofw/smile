@@ -1,8 +1,6 @@
 #ifndef __SMILE_SMLIETYPES_PREDECL_H__
 #define __SMILE_SMLIETYPES_PREDECL_H__
 
-typedef struct SmileEnvInt *SmileEnv;
-
 typedef struct SmileVTableInt *SmileVTable;
 
 typedef struct SmileObjectInt *SmileObject;
