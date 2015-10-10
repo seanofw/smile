@@ -27,7 +27,7 @@ extern SmileNull SmileNull_Create(void);
 
 extern Bool SmileNull_CompareEqual(SmileNull self, SmileObject other);
 extern UInt32 SmileNull_Hash(SmileNull self);
-extern void SmileNull_SetSecurity(SmileNull self, Int security);
+extern void SmileNull_SetSecurity(SmileNull self, Int security, SmileObject securityKey);
 extern Int SmileNull_GetSecurity(SmileNull self);
 extern SmileObject SmileNull_GetProperty(SmileNull self, Symbol propertyName);
 extern void SmileNull_SetProperty(SmileNull self, Symbol propertyName, SmileObject value);

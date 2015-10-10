@@ -40,6 +40,7 @@ SMILE_API SymbolTable Smile_SymbolTable;
 SMILE_API struct KnownSymbolsStruct Smile_KnownSymbols;
 SMILE_API struct KnownStringsStruct Smile_KnownStrings;
 SMILE_API struct KnownObjectsStruct Smile_KnownObjects;
+SMILE_API struct KnownBasesStruct Smile_KnownBases;
 
 SMILE_API void Smile_ThrowException(Symbol exceptionKind, String message);
 

@@ -31,7 +31,7 @@ SMILE_API SmileBool SmileBool_Create(Bool value);
 
 SMILE_API Bool SmileBool_CompareEqual(SmileBool self, SmileObject other);
 SMILE_API UInt32 SmileBool_Hash(SmileBool self);
-SMILE_API void SmileBool_SetSecurity(SmileBool self, Int security);
+SMILE_API void SmileBool_SetSecurity(SmileBool self, Int security, SmileObject securityKey);
 SMILE_API Int SmileBool_GetSecurity(SmileBool self);
 SMILE_API SmileObject SmileBool_GetProperty(SmileBool self, Symbol propertyName);
 SMILE_API void SmileBool_SetProperty(SmileBool self, Symbol propertyName, SmileObject value);

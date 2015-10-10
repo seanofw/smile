@@ -111,6 +111,7 @@
     <ClInclude Include="include\smile\array.h" />
     <ClInclude Include="include\smile\bittwiddling.h" />
     <ClInclude Include="include\smile\env\env.h" />
+    <ClInclude Include="include\smile\env\knownbases.h" />
     <ClInclude Include="include\smile\env\knownobjects.h" />
     <ClInclude Include="include\smile\env\knownstrings.h" />
     <ClInclude Include="include\smile\env\knownsymbols.h" />
@@ -310,6 +311,7 @@
   <ItemGroup>
     <ClCompile Include="src\dict\dictstats.c" />
     <ClCompile Include="src\env\env.c" />
+    <ClCompile Include="src\env\knownbases.c" />
     <ClCompile Include="src\env\knownobjects.c" />
     <ClCompile Include="src\env\knownstrings.c" />
     <ClCompile Include="src\env\knownsymbols.c" />
@@ -328,6 +330,7 @@
     <ClCompile Include="src\smiletypes\smilelist.c" />
     <ClCompile Include="src\smiletypes\smilenull.c" />
     <ClCompile Include="src\smiletypes\smileobject.c" />
+    <ClCompile Include="src\smiletypes\smileuserobject.c" />
     <ClCompile Include="src\smiletypes\text\smilestring.c" />
     <ClCompile Include="src\smiletypes\text\smilesymbol.c" />
     <ClCompile Include="src\string\html_entitytable.c" />

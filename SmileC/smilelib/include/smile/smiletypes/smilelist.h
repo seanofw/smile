@@ -33,7 +33,7 @@ SMILE_API SmileList SmileList_CreateList(SmileObject *objects, Int numObjects);
 
 SMILE_API Bool SmileList_CompareEqual(SmileList self, SmileObject other);
 SMILE_API UInt32 SmileList_Hash(SmileList self);
-SMILE_API void SmileList_SetSecurity(SmileList self, Int security);
+SMILE_API void SmileList_SetSecurity(SmileList self, Int security, SmileObject securityKey);
 SMILE_API Int SmileList_GetSecurity(SmileList self);
 SMILE_API SmileObject SmileList_GetProperty(SmileList self, Symbol propertyName);
 SMILE_API void SmileList_SetProperty(SmileList self, Symbol propertyName, SmileObject value);

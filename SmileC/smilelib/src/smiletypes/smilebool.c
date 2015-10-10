@@ -45,12 +45,20 @@ UInt32 SmileBool_Hash(SmileBool self)
 	return (UInt32)self->value;
 }
 
-void SmileBool_SetSecurity(SmileBool self, Int security)
+void SmileBool_SetSecurityKey(SmileBool self, SmileObject newSecurityKey, SmileObject oldSecurityKey)
+{
+	UNUSED(self);
+	UNUSED(newSecurityKey);
+	UNUSED(oldSecurityKey);
+	Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
+}
+
+void SmileBool_SetSecurity(SmileBool self, Int security, SmileObject securityKey)
 {
 	UNUSED(self);
 	UNUSED(security);
-	Smile_ThrowException(Smile_KnownSymbols.object_security_error,
-		String_Format("Cannot alter security on Booleans, which are read-only."));
+	UNUSED(securityKey);
+	Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
 }
 
 Int SmileBool_GetSecurity(SmileBool self)
@@ -112,17 +120,19 @@ String SmileBool_ToString(SmileBool self)
 SMILE_VTABLE(SmileBool_VTable, SmileBool)
 {
 	SmileBool_CompareEqual,
-		SmileBool_Hash,
-		SmileBool_SetSecurity,
-		SmileBool_GetSecurity,
+	SmileBool_Hash,
 
-		SmileBool_GetProperty,
-		SmileBool_SetProperty,
-		SmileBool_HasProperty,
-		SmileBool_GetPropertyNames,
+	SmileBool_SetSecurityKey,
+	SmileBool_SetSecurity,
+	SmileBool_GetSecurity,
 
-		SmileBool_ToBool,
-		SmileBool_ToInteger32,
-		SmileBool_ToReal64,
-		SmileBool_ToString,
+	SmileBool_GetProperty,
+	SmileBool_SetProperty,
+	SmileBool_HasProperty,
+	SmileBool_GetPropertyNames,
+
+	SmileBool_ToBool,
+	SmileBool_ToInteger32,
+	SmileBool_ToReal64,
+	SmileBool_ToString,
 };

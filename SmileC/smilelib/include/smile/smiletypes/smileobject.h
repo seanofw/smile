@@ -40,7 +40,9 @@ struct SmileObjectInt {
 	__name__ { \
 		Bool (*compareEqual)(__type__ self, SmileObject other); \
 		UInt32 (*hash)(__type__ self); \
-		void (*setSecurity)(__type__ self, Int security); \
+		\
+		void (*setSecurityKey)(__type__ self, SmileObject newSecurityKey, SmileObject oldSecurityKey); \
+		void (*setSecurity)(__type__ self, Int security, SmileObject securityKey); \
 		Int (*getSecurity)(__type__ self); \
 		\
 		SmileObject (*getProperty)(__type__ self, Symbol propertyName); \
@@ -62,13 +64,22 @@ struct SmileObjectInt {
 	\
 	static struct __name__##Int __name__##Data =
 
+#define SMILE_VCALL(__obj__, __method__) \
+	((__obj__)->vtable->__method__((SmileObject)(__obj__)))
+
+#define SMILE_VCALL1(__obj__, __method__, __arg1__) \
+	((__obj__)->vtable->__method__((SmileObject)(__obj__), __arg1__))
+
+#define SMILE_VCALL2(__obj__, __method__, __arg1__, __arg2__) \
+	((__obj__)->vtable->__method__((SmileObject)(__obj__), __arg1__, __arg2__))
+
 SMILE_VTABLE_TYPE(struct SmileVTableInt, SmileObject);
 
 SMILE_API SmileVTable SmileObject_VTable;
 
 SMILE_API Bool SmileObject_CompareEqual(SmileObject self, SmileObject other);
 SMILE_API UInt32 SmileObject_Hash(SmileObject self);
-SMILE_API void SmileObject_SetSecurity(SmileObject self, Int security);
+SMILE_API void SmileObject_SetSecurity(SmileObject self, Int security, SmileObject securityKey);
 SMILE_API Int SmileObject_GetSecurity(SmileObject self);
 SMILE_API SmileObject SmileObject_GetProperty(SmileObject self, Symbol propertyName);
 SMILE_API void SmileObject_SetProperty(SmileObject self, Symbol propertyName, SmileObject value);

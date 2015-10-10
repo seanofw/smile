@@ -18,13 +18,14 @@
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/text/smilesymbol.h>
+#include <smile/smiletypes/text/smilestring.h>
 
 SmileList SmileList_Cons(SmileObject a, SmileObject d)
 {
 	SmileList smileList = GC_MALLOC_STRUCT(struct SmileListInt);
 	if (smileList == NULL) Smile_Abort_OutOfMemory();
 	smileList->base = Smile_KnownObjects.Object;
-	smileList->kind = SMILE_KIND_LIST;
+	smileList->kind = SMILE_KIND_LIST | SMILE_SECURITY_WRITABLE;
 	smileList->vtable = SmileList_VTable;
 	smileList->a = a;
 	smileList->d = d;
@@ -46,12 +47,20 @@ UInt32 SmileList_Hash(SmileList self)
 	return (UInt32)(PtrInt)self;
 }
 
-void SmileList_SetSecurity(SmileList self, Int security)
+void SmileList_SetSecurityKey(SmileList self, SmileObject newSecurityKey, SmileObject oldSecurityKey)
+{
+	UNUSED(self);
+	UNUSED(newSecurityKey);
+	UNUSED(oldSecurityKey);
+	Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
+}
+
+void SmileList_SetSecurity(SmileList self, Int security, SmileObject securityKey)
 {
 	UNUSED(self);
 	UNUSED(security);
-	Smile_ThrowException(Smile_KnownSymbols.object_security_error,
-		String_Format("Cannot alter security of a list cell to be anything other than read/write."));
+	UNUSED(securityKey);
+	Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
 }
 
 Int SmileList_GetSecurity(SmileList self)
@@ -126,6 +135,8 @@ SMILE_VTABLE(SmileList_VTable, SmileList)
 {
 	SmileList_CompareEqual,
 	SmileList_Hash,
+
+	SmileList_SetSecurityKey,
 	SmileList_SetSecurity,
 	SmileList_GetSecurity,
 

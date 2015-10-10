@@ -27,7 +27,7 @@ SMILE_API SmileInteger64 SmileInteger64_CreateInternal(Int64 value);
 
 SMILE_API Bool SmileInteger64_CompareEqual(SmileInteger64 self, SmileObject other);
 SMILE_API UInt32 SmileInteger64_Hash(SmileInteger64 self);
-SMILE_API void SmileInteger64_SetSecurity(SmileInteger64 self, Int security);
+SMILE_API void SmileInteger64_SetSecurity(SmileInteger64 self, Int security, SmileObject securityKey);
 SMILE_API Int SmileInteger64_GetSecurity(SmileInteger64 self);
 SMILE_API SmileObject SmileInteger64_GetProperty(SmileInteger64 self, Symbol propertyName);
 SMILE_API void SmileInteger64_SetProperty(SmileInteger64 self, Symbol propertyName, SmileObject value);

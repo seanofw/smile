@@ -46,12 +46,20 @@ UInt32 SmileInteger64_Hash(SmileInteger64 self)
 	return (UInt32)(value ^ (value >> 32));
 }
 
-void SmileInteger64_SetSecurity(SmileInteger64 self, Int security)
+void SmileInteger64_SetSecurityKey(SmileInteger64 self, SmileObject newSecurityKey, SmileObject oldSecurityKey)
+{
+	UNUSED(self);
+	UNUSED(newSecurityKey);
+	UNUSED(oldSecurityKey);
+	Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
+}
+
+void SmileInteger64_SetSecurity(SmileInteger64 self, Int security, SmileObject securityKey)
 {
 	UNUSED(self);
 	UNUSED(security);
-	Smile_ThrowException(Smile_KnownSymbols.object_security_error,
-		String_Format("Cannot alter security on integers, which are read-only."));
+	UNUSED(securityKey);
+	Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
 }
 
 Int SmileInteger64_GetSecurity(SmileInteger64 self)
@@ -111,6 +119,8 @@ SMILE_VTABLE(SmileInteger64_VTable, SmileInteger64)
 {
 	SmileInteger64_CompareEqual,
 	SmileInteger64_Hash,
+
+	SmileInteger64_SetSecurityKey,
 	SmileInteger64_SetSecurity,
 	SmileInteger64_GetSecurity,
 

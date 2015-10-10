@@ -27,7 +27,7 @@ SMILE_API SmileInteger32 SmileInteger32_CreateInternal(Int32 value);
 
 SMILE_API Bool SmileInteger32_CompareEqual(SmileInteger32 self, SmileObject other);
 SMILE_API UInt32 SmileInteger32_Hash(SmileInteger32 self);
-SMILE_API void SmileInteger32_SetSecurity(SmileInteger32 self, Int security);
+SMILE_API void SmileInteger32_SetSecurity(SmileInteger32 self, Int security, SmileObject securityKey);
 SMILE_API Int SmileInteger32_GetSecurity(SmileInteger32 self);
 SMILE_API SmileObject SmileInteger32_GetProperty(SmileInteger32 self, Symbol propertyName);
 SMILE_API void SmileInteger32_SetProperty(SmileInteger32 self, Symbol propertyName, SmileObject value);

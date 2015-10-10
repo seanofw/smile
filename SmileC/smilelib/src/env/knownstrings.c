@@ -22,10 +22,12 @@
 STATIC_STRING(ObjectString, "Object", 6);
 STATIC_STRING(true_, "true", 4);
 STATIC_STRING(false_, "false", 5);
+STATIC_STRING(InvalidSecurityKey, "Invalid security key.", 21);
 
 void KnownStrings_Preload(struct KnownStringsStruct *knownStrings)
 {
 	knownStrings->Object = SmileString_Create(ObjectString);
 	knownStrings->true_ = SmileString_Create(true_);
 	knownStrings->false_ = SmileString_Create(false_);
+	knownStrings->InvalidSecurityKey = SmileString_Create(InvalidSecurityKey);
 }

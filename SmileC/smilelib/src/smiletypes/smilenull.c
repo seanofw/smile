@@ -19,6 +19,7 @@
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/smilenull.h>
 #include <smile/smiletypes/text/smilesymbol.h>
+#include <smile/smiletypes/text/smilestring.h>
 
 SmileNull SmileNull_Create(void)
 {
@@ -44,12 +45,20 @@ UInt32 SmileNull_Hash(SmileNull self)
 	return 0;
 }
 
-void SmileNull_SetSecurity(SmileNull self, Int security)
+void SmileNull_SetSecurityKey(SmileNull self, SmileObject newSecurityKey, SmileObject oldSecurityKey)
+{
+	UNUSED(self);
+	UNUSED(newSecurityKey);
+	UNUSED(oldSecurityKey);
+	Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
+}
+
+void SmileNull_SetSecurity(SmileNull self, Int security, SmileObject securityKey)
 {
 	UNUSED(self);
 	UNUSED(security);
-	Smile_ThrowException(Smile_KnownSymbols.object_security_error,
-		String_Format("Cannot alter security on null, which is read-only."));
+	UNUSED(securityKey);
+	Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
 }
 
 Int SmileNull_GetSecurity(SmileNull self)
@@ -114,6 +123,8 @@ SMILE_VTABLE(SmileNull_VTable, SmileNull)
 {
 	SmileNull_CompareEqual,
 	SmileNull_Hash,
+
+	SmileNull_SetSecurityKey,
 	SmileNull_SetSecurity,
 	SmileNull_GetSecurity,
 

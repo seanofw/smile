@@ -23,6 +23,8 @@
 #include <smile/env/env.h>
 #include <smile/env/symboltable.h>
 #include <smile/env/knownsymbols.h>
+#include <smile/env/knownobjects.h>
+#include <smile/env/knownbases.h>
 
 extern void Smile_InitTicks(void);
 
@@ -43,7 +45,7 @@ SymbolTable Smile_SymbolTable;
 struct KnownSymbolsStruct Smile_KnownSymbols;
 struct KnownStringsStruct Smile_KnownStrings;
 struct KnownObjectsStruct Smile_KnownObjects;
-
+struct KnownBasesStruct Smile_KnownBases;
 
 /// <summary>
 /// Initialize the Smile runtime.  This must be performed at least once on startup.
@@ -74,6 +76,9 @@ void Smile_ResetEnvironment(void)
 
 	// Preload the known objects into this environment.
 	KnownObjects_Preload(&Smile_KnownObjects);
+
+	// Preload the known bases into this environment.
+	KnownBases_Preload(&Smile_KnownBases, Smile_KnownObjects.Object);
 }
 
 /// <summary>

@@ -38,12 +38,20 @@ UInt32 SmileObject_Hash(SmileObject self)
 	return 0;
 }
 
-void SmileObject_SetSecurity(SmileObject self, Int security)
+void SmileObject_SetSecurityKey(SmileObject self, SmileObject newSecurityKey, SmileObject oldSecurityKey)
+{
+	UNUSED(self);
+	UNUSED(newSecurityKey);
+	UNUSED(oldSecurityKey);
+	Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
+}
+
+void SmileObject_SetSecurity(SmileObject self, Int security, SmileObject securityKey)
 {
 	UNUSED(self);
 	UNUSED(security);
-	Smile_ThrowException(Smile_KnownSymbols.object_security_error,
-		String_Format("Cannot alter security on base Object, which is read-only."));
+	UNUSED(securityKey);
+	Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
 }
 
 Int SmileObject_GetSecurity(SmileObject self)
@@ -109,6 +117,8 @@ SMILE_VTABLE(SmileObject_VTable, SmileObject)
 {
 	SmileObject_CompareEqual,
 	SmileObject_Hash,
+
+	SmileObject_SetSecurityKey,
 	SmileObject_SetSecurity,
 	SmileObject_GetSecurity,
 

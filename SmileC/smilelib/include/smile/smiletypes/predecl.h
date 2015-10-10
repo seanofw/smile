@@ -9,6 +9,8 @@ typedef struct SmileListInt *SmileList;
 typedef struct SmileListInt *SmileNull;
 typedef struct SmilePairInt *SmilePair;
 
+typedef struct SmileUserObjectInt *SmileUserObject;
+
 typedef struct SmileBoolInt *SmileBool;
 typedef struct SmileStringInt *SmileString;
 typedef struct SmileSymbolInt *SmileSymbol;

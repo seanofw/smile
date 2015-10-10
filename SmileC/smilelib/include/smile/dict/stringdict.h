@@ -213,6 +213,41 @@ Inline void *StringDict_GetValueC(StringDict stringDict, const char *ckey)
 }
 
 /// <summary>
+/// Update a preexisting key/value pair in the dictionary.
+/// </summary>
+/// <param name="intDict">A pointer to the dictionary.</param>
+/// <param name="key">The key to update.</param>
+/// <param name="value">The new value for that key.</param>
+/// <returns>True if the key was updated, False if it did not exist.</returns>
+Inline Bool StringDict_ReplaceValue(StringDict stringDict, String key, void *value)
+{
+	SMILE_DICT_SEARCH(struct StringDictInt, struct StringDictNode, Int,
+		stringDict, String_Hash(key), String_Equals(node->key, key),
+		{
+			node->value = value;
+			return True;
+		},
+		{
+			return False;
+		})
+}
+
+/// <summary>
+/// Update a preexisting key/value pair in the dictionary.
+/// </summary>
+/// <param name="intDict">A pointer to the dictionary.</param>
+/// <param name="key">The key to update.</param>
+/// <param name="value">The new value for that key.</param>
+/// <returns>True if the key was updated, False if it did not exist.</returns>
+Inline Int StringDict_ReplaceValueC(StringDict stringDict, const char *ckey, void *value)
+{
+	struct StringInt tempStr;
+	tempStr.text = (Byte *)ckey;
+	tempStr.length = StrLen(ckey);
+	return StringDict_ReplaceValue(stringDict, (String)&tempStr, value);
+}
+
+/// <summary>
 /// Create or update a key/value pair in the dictionary.
 /// </summary>
 /// <param name="stringDict">A pointer to the dictionary.</param>

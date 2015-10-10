@@ -198,6 +198,12 @@
     <ClCompile Include="src\smiletypes\smilenull.c">
       <Filter>src\smiletypes</Filter>
     </ClCompile>
+    <ClCompile Include="src\smiletypes\smileuserobject.c">
+      <Filter>src\smiletypes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\env\knownbases.c">
+      <Filter>src\env</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">
@@ -370,6 +376,9 @@
     </ClInclude>
     <ClInclude Include="include\smile\smiletypes\smilebool.h">
       <Filter>include\smiletypes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\env\knownbases.h">
+      <Filter>include\env</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
