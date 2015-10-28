@@ -195,8 +195,8 @@ SMILE_API String String_ConvertKnownCodePageToUtf8Range(const String str, Int st
 /// <param name="__name__">The name of the static string instance to declare.</param>
 /// <param name="__text__">A C-style string that contains the static text.</param>
 /// <param name="__textLength__">The number of bytes in the C-style string, not including the terminating nul character.</param>
-#define EXTERN_STATIC_STRING(__name__, __text__, __textLength__) \
-	static struct StringInt __name__##Struct = { (Byte *)(__text__), (__textLength__) }; \
+#define EXTERN_STATIC_STRING(__name__, __text__) \
+	static struct StringInt __name__##Struct = { (Byte *)(__text__), (sizeof(__text__) - 1) }; \
 	String __name__ = (String)(&__name__##Struct)
 
 /// <summary>
@@ -206,8 +206,8 @@ SMILE_API String String_ConvertKnownCodePageToUtf8Range(const String str, Int st
 /// <param name="__name__">The name of the static string instance to declare.</param>
 /// <param name="__text__">A C-style string that contains the static text.</param>
 /// <param name="__textLength__">The number of bytes in the C-style string, not including the terminating nul character.</param>
-#define STATIC_STRING(__name__, __text__, __textLength__) \
-	static struct StringInt __name__##Struct = { (Byte *)(__text__), (__textLength__) }; \
+#define STATIC_STRING(__name__, __text__) \
+	static struct StringInt __name__##Struct = { (Byte *)(__text__), (sizeof(__text__) - 1) }; \
 	static String __name__ = (String)(&__name__##Struct)
 
 /// <summary>

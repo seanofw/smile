@@ -19,10 +19,10 @@
 #include <smile/env/knownstrings.h>
 #include <smile/smiletypes/text/smilestring.h>
 
-STATIC_STRING(ObjectString, "Object", 6);
-STATIC_STRING(true_, "true", 4);
-STATIC_STRING(false_, "false", 5);
-STATIC_STRING(InvalidSecurityKey, "Invalid security key.", 21);
+STATIC_STRING(ObjectString, "Object");
+STATIC_STRING(true_, "true");
+STATIC_STRING(false_, "false");
+STATIC_STRING(InvalidSecurityKey, "Invalid security key.");
 
 void KnownStrings_Preload(struct KnownStringsStruct *knownStrings)
 {

@@ -109,8 +109,8 @@ Real64 SmileBool_ToReal64(SmileBool self)
 	return (Real64)self->value;
 }
 
-STATIC_STRING(trueString, "true", 4);
-STATIC_STRING(falseString, "false", 5);
+STATIC_STRING(trueString, "true");
+STATIC_STRING(falseString, "false");
 
 String SmileBool_ToString(SmileBool self)
 {

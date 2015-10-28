@@ -59,6 +59,18 @@ SMILE_API void StringBuilder_AppendFormatStringv(StringBuilder stringBuilder, co
 //-------------------------------------------------------------------------------------------------
 //  Inline parts of the implementation
 
+#define DECLARE_INLINE_STRINGBUILDER(__name__, __size__) \
+	Byte __name__##TempBuf[(__size__)]; \
+	struct StringBuilderInt __name__##Int; \
+	StringBuilder __name__
+
+#define INIT_INLINE_STRINGBUILDER(__name__) \
+	(__name__##Int.text = __name__##TempBuf, \
+	 __name__##Int.length = 0, \
+	 __name__##Int.max = sizeof(__name__##TempBuf), \
+	 __name__##TempBuf[0] = '\0', \
+	 __name__ = (StringBuilder)&(__name__##Int))
+
 Inline StringBuilder StringBuilder_CreateWithSize(Int initialSize)
 {
 	struct StringBuilderInt *sb = GC_MALLOC_STRUCT(struct StringBuilderInt);
