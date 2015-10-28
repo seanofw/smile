@@ -36,7 +36,7 @@ struct SymbolTableInt {
 // A symbol is (currently) a magic integer that is not zero (zero is an invalid symbol ID).
 typedef Int Symbol;
 
-typedef struct {
+typedef struct SymbolTableStruct {
 	struct SymbolTableInt _opaque;
 } *SymbolTable;
 

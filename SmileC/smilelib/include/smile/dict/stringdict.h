@@ -44,7 +44,7 @@ struct StringDictInt {
 /// <summary>
 /// A dictionary of key/value pairs, keyed by Strings, with arbitrary pointers as the values.
 /// </summary>
-typedef struct {
+typedef struct StringDictStruct {
 	struct StringDictInt _opaque;
 } *StringDict;
 

@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+	<!-- String and StringBuilder -->
+	<Type Name="StringStruct">
+		<DisplayString>{(char *)_opaque.text,s}</DisplayString>
+		<StringView>(char *)_opaque.text,s</StringView>
+		<Expand>
+			<ExpandedItem>_opaque</ExpandedItem>
+		</Expand>
+	</Type>
+	<Type Name="StringInt">
+		<DisplayString>{(char *)text,s}</DisplayString>
+		<StringView>(char *)text,s</StringView>
+	</Type>
+	<Type Name="StringBuilderStruct">
+		<DisplayString>{(char *)_opaque.text,s}</DisplayString>
+		<StringView>(char *)_opaque.text,s</StringView>
+		<Expand>
+			<ExpandedItem>_opaque</ExpandedItem>
+		</Expand>
+	</Type>
+	<Type Name="StringBuilderInt">
+		<DisplayString>{(char *)text,s}</DisplayString>
+		<StringView>(char *)text,s</StringView>
+	</Type>
+
+	<!-- Int32Dict -->
+	<Type Name="Int32DictNode">
+		<DisplayString Condition="key != 0 || value != 0 &amp;&amp; next &gt;= 0">key {key} --&gt; value {value}, next={next}</DisplayString>
+		<DisplayString Condition="key == 0 &amp;&amp; value == 0 &amp;&amp; next &gt;= 0">next={next}</DisplayString>
+		<DisplayString Condition="key != 0 || value != 0 &amp;&amp; next &lt; 0">key {key} --&gt; value {value}</DisplayString>
+		<DisplayString Condition="key == 0 &amp;&amp; value == 0 &amp;&amp; next &lt; 0">null</DisplayString>
+	</Type>
+	<Type Name="Int32DictKeyValuePairStruct">
+		<DisplayString>key {key} --&gt; value {value}</DisplayString>
+	</Type>
+	<Type Name="Int32DictStruct">
+		<DisplayString>Int32Dict: {_opaque.count} nodes</DisplayString>
+		<Expand>
+			<ExpandedItem>_opaque</ExpandedItem>
+		</Expand>
+	</Type>
+	<Type Name="Int32DictInt">
+		<DisplayString>Int32Dict: {count} nodes</DisplayString>
+		<Expand>
+			<Item Name="[count]">count</Item>
+			<Item Name="[max nodes]">mask + 1</Item>
+			<Item Name="[first free]">firstFree</Item>
+			<Synthetic Name="[buckets]">
+				<Expand>
+					<Item Name="[address]">buckets</Item>
+					<IndexListItems>
+						<Size>mask + 1</Size>
+						<ValueNode>*(buckets[$i] >= 0 ? heap+buckets[$i] : 0)</ValueNode>
+					</IndexListItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="[raw buckets]">
+				<Expand>
+					<Item Name="[address]">buckets</Item>
+					<IndexListItems>
+						<Size>mask + 1</Size>
+						<ValueNode>buckets[$i]</ValueNode>
+					</IndexListItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="[heap]">
+				<Expand>
+					<Item Name="[address]">heap</Item>
+					<IndexListItems>
+						<Size>mask + 1</Size>
+						<ValueNode>heap[$i]</ValueNode>
+					</IndexListItems>
+				</Expand>
+			</Synthetic>
+		</Expand>
+	</Type>
+
+	<!-- StringDict -->
+	<Type Name="StringDictNode">
+		<DisplayString Condition="key != 0 || value != 0 &amp;&amp; next &gt;= 0">key {key} --&gt; value {value}, next={next}</DisplayString>
+		<DisplayString Condition="key == 0 &amp;&amp; value == 0 &amp;&amp; next &gt;= 0">next={next}</DisplayString>
+		<DisplayString Condition="key != 0 || value != 0 &amp;&amp; next &lt; 0">key {key} --&gt; value {value}</DisplayString>
+		<DisplayString Condition="key == 0 &amp;&amp; value == 0 &amp;&amp; next &lt; 0">null</DisplayString>
+	</Type>
+	<Type Name="StringDictKeyValuePairStruct">
+		<DisplayString>key {key} --&gt; value {value}</DisplayString>
+	</Type>
+	<Type Name="StringDictStruct">
+		<DisplayString>StringDict: {_opaque.count} nodes</DisplayString>
+		<Expand>
+			<ExpandedItem>_opaque</ExpandedItem>
+		</Expand>
+	</Type>
+	<Type Name="StringDictInt">
+		<DisplayString>StringDict: {count} nodes</DisplayString>
+		<Expand>
+			<Item Name="[count]">count</Item>
+			<Item Name="[max nodes]">mask + 1</Item>
+			<Item Name="[first free]">firstFree</Item>
+			<Synthetic Name="[buckets]">
+				<Expand>
+					<Item Name="[address]">buckets</Item>
+					<IndexListItems>
+						<Size>mask + 1</Size>
+						<ValueNode>*(buckets[$i] >= 0 ? heap+buckets[$i] : 0)</ValueNode>
+					</IndexListItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="[raw buckets]">
+				<Expand>
+					<Item Name="[address]">buckets</Item>
+					<IndexListItems>
+						<Size>mask + 1</Size>
+						<ValueNode>buckets[$i]</ValueNode>
+					</IndexListItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="[heap]">
+				<Expand>
+					<Item Name="[address]">heap</Item>
+					<IndexListItems>
+						<Size>mask + 1</Size>
+						<ValueNode>heap[$i]</ValueNode>
+					</IndexListItems>
+				</Expand>
+			</Synthetic>
+		</Expand>
+	</Type>
+
+	<!-- StringIntDict -->
+	<Type Name="StringIntDictNode">
+		<DisplayString Condition="key != 0 || value != 0 &amp;&amp; next &gt;= 0">key {key} --&gt; value {value}, next={next}</DisplayString>
+		<DisplayString Condition="key == 0 &amp;&amp; value == 0 &amp;&amp; next &gt;= 0">next={next}</DisplayString>
+		<DisplayString Condition="key != 0 || value != 0 &amp;&amp; next &lt; 0">key {key} --&gt; value {value}</DisplayString>
+		<DisplayString Condition="key == 0 &amp;&amp; value == 0 &amp;&amp; next &lt; 0">null</DisplayString>
+	</Type>
+	<Type Name="StringIntDictKeyValuePairStruct">
+		<DisplayString>key {key} --&gt; value {value}</DisplayString>
+	</Type>
+	<Type Name="StringIntDictStruct">
+		<DisplayString>StringIntDict: {_opaque.count} nodes</DisplayString>
+		<Expand>
+			<ExpandedItem>_opaque</ExpandedItem>
+		</Expand>
+	</Type>
+	<Type Name="StringIntDictInt">
+		<DisplayString>StringIntDict: {count} nodes</DisplayString>
+		<Expand>
+			<Item Name="[count]">count</Item>
+			<Item Name="[max nodes]">mask + 1</Item>
+			<Item Name="[first free]">firstFree</Item>
+			<Synthetic Name="[buckets]">
+				<Expand>
+					<Item Name="[address]">buckets</Item>
+					<IndexListItems>
+						<Size>mask + 1</Size>
+						<ValueNode>*(buckets[$i] >= 0 ? heap+buckets[$i] : 0)</ValueNode>
+					</IndexListItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="[raw buckets]">
+				<Expand>
+					<Item Name="[address]">buckets</Item>
+					<IndexListItems>
+						<Size>mask + 1</Size>
+						<ValueNode>buckets[$i]</ValueNode>
+					</IndexListItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="[heap]">
+				<Expand>
+					<Item Name="[address]">heap</Item>
+					<IndexListItems>
+						<Size>mask + 1</Size>
+						<ValueNode>heap[$i]</ValueNode>
+					</IndexListItems>
+				</Expand>
+			</Synthetic>
+		</Expand>
+	</Type>
+
+	<!-- SymbolTable -->
+	<Type Name="SymbolTableStruct">
+		<DisplayString>SymbolTable: {_opaque.count} entries</DisplayString>
+		<Expand>
+			<ExpandedItem>_opaque</ExpandedItem>
+		</Expand>
+	</Type>
+	<Type Name="SymbolTableInt">
+		<DisplayString>SymbolTable: {count} entries</DisplayString>
+		<Expand>
+			<Item Name="[count]">count</Item>
+			<Item Name="[max]">max</Item>
+			<Item Name="[lookup]">symbolLookup</Item>
+			<IndexListItems>
+				<Size>count</Size>
+				<ValueNode>symbolNames[$i]</ValueNode>
+			</IndexListItems>
+		</Expand>
+	</Type>
+
+</AutoVisualizer>
+

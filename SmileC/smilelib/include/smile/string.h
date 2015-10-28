@@ -30,7 +30,7 @@ struct StringInt {
 /// <summary>
 /// A String, which is an IMMUTABLE array of characters, with many functions to operate on it.
 /// </summary>
-typedef struct {
+typedef struct StringStruct {
 	struct StringInt _opaque;
 } *String;
 

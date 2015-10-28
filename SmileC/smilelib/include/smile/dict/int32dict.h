@@ -40,14 +40,14 @@ struct Int32DictInt {
 /// <summary>
 /// A dictionary of key/value pairs, keyed by Int32 keys, with arbitrary pointers as the values.
 /// </summary>
-typedef struct {
+typedef struct Int32DictStruct {
 	struct Int32DictInt _opaque;
 } *Int32Dict;
 
 /// <summary>
 /// A key/value pair in an Int32Dict, as returned by Int32Dict_GetAll().
 /// </summary>
-typedef struct {
+typedef struct Int32DictKeyValuePairStruct {
 	Int32 key;					// The key for this pair.
 	void *value;				// The value for this pair.
 } Int32DictKeyValuePair;
