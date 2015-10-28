@@ -118,6 +118,10 @@
     <ClInclude Include="include\smile\env\symboltable.h" />
     <ClInclude Include="include\smile\gc.h" />
     <ClInclude Include="include\smile\mem.h" />
+    <ClInclude Include="include\smile\parsing\identkind.h" />
+    <ClInclude Include="include\smile\parsing\internal\lexerinternal.h" />
+    <ClInclude Include="include\smile\parsing\lexer.h" />
+    <ClInclude Include="include\smile\parsing\tokenkind.h" />
     <ClInclude Include="include\smile\simplestats.h" />
     <ClInclude Include="include\smile\smiletypes\smilebool.h" />
     <ClInclude Include="include\smile\smiletypes\smilelist.h" />
@@ -323,6 +327,14 @@
     <ClCompile Include="src\dict\int32dict.c" />
     <ClCompile Include="src\dict\stringdict.c" />
     <ClCompile Include="src\dict\stringintdict.c" />
+    <ClCompile Include="src\parsing\lexer\identtable.c" />
+    <ClCompile Include="src\parsing\lexer\lexer.c" />
+    <ClCompile Include="src\parsing\lexer\lexerextra.c" />
+    <ClCompile Include="src\parsing\lexer\lexloanword.c" />
+    <ClCompile Include="src\parsing\lexer\lexnames.c" />
+    <ClCompile Include="src\parsing\lexer\lexnumbers.c" />
+    <ClCompile Include="src\parsing\lexer\lexpunct.c" />
+    <ClCompile Include="src\parsing\lexer\lexstrings.c" />
     <ClCompile Include="src\siphash.c" />
     <ClCompile Include="src\smiletypes\numeric\smileinteger32.c" />
     <ClCompile Include="src\smiletypes\numeric\smileinteger64.c" />
