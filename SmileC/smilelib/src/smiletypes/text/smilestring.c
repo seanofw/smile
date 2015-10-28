@@ -102,9 +102,12 @@ Bool SmileString_HasProperty(SmileString self, Symbol propertyName)
 
 SmileList SmileString_GetPropertyNames(SmileString self)
 {
-	UNUSED(self);
 	DECLARE_LIST_BUILDER(listBuilder);
+
+	UNUSED(self);
+
 	LIST_BUILDER_APPEND(listBuilder, SmileSymbol_Create(Smile_KnownSymbols.length));
+
 	return LIST_BUILDER_HEAD(listBuilder);
 }
 

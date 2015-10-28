@@ -101,10 +101,13 @@ Bool SmileList_HasProperty(SmileList self, Symbol propertyName)
 
 SmileList SmileList_GetPropertyNames(SmileList self)
 {
-	UNUSED(self);
 	DECLARE_LIST_BUILDER(listBuilder);
+
+	UNUSED(self);
+
 	LIST_BUILDER_APPEND(listBuilder, SmileSymbol_Create(Smile_KnownSymbols.a));
 	LIST_BUILDER_APPEND(listBuilder, SmileSymbol_Create(Smile_KnownSymbols.d));
+
 	return LIST_BUILDER_HEAD(listBuilder);
 }
 
