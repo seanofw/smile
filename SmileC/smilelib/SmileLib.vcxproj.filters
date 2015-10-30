@@ -73,6 +73,15 @@
     <Filter Include="include\parsing\internal">
       <UniqueIdentifier>{ae3ee69a-d231-4987-afd7-b7115541ee6c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="decimal">
+      <UniqueIdentifier>{4f4ef5be-6330-4f9a-b2cb-4843b9e7838b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="decimal\include">
+      <UniqueIdentifier>{bcacae55-31dc-4af7-871f-11d11145d654}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="decimal\src">
+      <UniqueIdentifier>{09ba4d11-9a85-4cf2-ac67-d2ecdf706088}</UniqueIdentifier>
+    </Filter>
     <Filter Include="include\numeric">
       <UniqueIdentifier>{2414b5eb-acf2-4146-8fe3-0bf020473621}</UniqueIdentifier>
     </Filter>
@@ -248,6 +257,393 @@
     </ClCompile>
     <ClCompile Include="src\parsing\lexer\lexpunct.c">
       <Filter>src\parsing\lexer</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid_binarydecimal.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid_convert_data.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid_decimal_data.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid_decimal_globals.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid_dpd.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid_feclearexcept.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid_fegetexceptflag.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid_feraiseexcept.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid_fesetexceptflag.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid_fetestexcept.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid_flag_operations.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid_from_int.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid_round.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_add.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_cbrt.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_compare.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_div.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_fdimd.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_fma.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_fmod.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_frexp.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_ldexp.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_llrintd.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_lrintd.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_lround.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_minmax.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_modf.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_mul.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_nearbyintd.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_next.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_nexttowardd.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_noncomp.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_pow.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_quantexpd.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_quantize.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_rem.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_round_integral.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_scalb.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_scalbl.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_string.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_sub.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_to_bid64.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_to_bid128.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_to_int8.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_to_int16.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_to_int32.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_to_int64.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_to_uint8.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_to_uint16.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_to_uint32.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_to_uint64.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_add.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_compare.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_div.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_fdimd.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_fma.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_fmod.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_frexp.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_llrintd.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_lrintd.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_lround.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_minmax.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_modf.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_mul.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_nearbyintd.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_next.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_nexttowardd.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_noncomp.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_quantexpd.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_quantize.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_rem.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_round_integral.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_scalb.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_scalbl.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_string.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_to_bid128.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_to_int8.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_to_int16.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_to_int32.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_to_int64.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_to_uint8.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_to_uint16.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_to_uint32.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_to_uint64.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_2_str_tables.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_add.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_compare.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_div.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_fdimd.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_fma.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_fmod.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_frexp.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_ldexp.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_llrintd.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_lrintd.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_lround.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_minmax.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_modf.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_mul.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_nearbyintd.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_next.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_nexttowardd.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_noncomp.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_quantexpd.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_quantize.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_rem.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_round_integral.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_scalb.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_scalbl.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_string.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_to_int8.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_to_int16.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_to_int32.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_to_int64.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_to_uint8.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_to_uint16.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_to_uint32.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_to_uint64.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\strtod32.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\strtod64.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\strtod128.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\wcstod32.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\wcstod64.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\wcstod128.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_ldexp.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_sqrt.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_sqrt.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_sqrt.c">
+      <Filter>decimal\src</Filter>
     </ClCompile>
     <ClCompile Include="src\numeric\real32.c">
       <Filter>src\numeric</Filter>
@@ -451,6 +847,48 @@
     </ClInclude>
     <ClInclude Include="include\smile\parsing\internal\lexerinternal.h">
       <Filter>include\parsing\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="decimal\bid_b2d.h">
+      <Filter>decimal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="decimal\bid_conf.h">
+      <Filter>decimal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="decimal\bid_div_macros.h">
+      <Filter>decimal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="decimal\bid_functions.h">
+      <Filter>decimal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="decimal\bid_gcc_intrinsics.h">
+      <Filter>decimal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="decimal\bid_inline_add.h">
+      <Filter>decimal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="decimal\bid_internal.h">
+      <Filter>decimal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="decimal\bid_sqrt_macros.h">
+      <Filter>decimal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="decimal\bid_strtod.h">
+      <Filter>decimal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="decimal\bid_trans.h">
+      <Filter>decimal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="decimal\bid_wrap_names.h">
+      <Filter>decimal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="decimal\bid128_2_str.h">
+      <Filter>decimal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="decimal\bid128_2_str_macros.h">
+      <Filter>decimal\include</Filter>
+    </ClInclude>
+    <ClInclude Include="decimal\dfp754.h">
+      <Filter>decimal\include</Filter>
     </ClInclude>
     <ClInclude Include="include\smile\numeric\real32.h">
       <Filter>include\numeric</Filter>
