@@ -73,6 +73,12 @@
     <Filter Include="include\parsing\internal">
       <UniqueIdentifier>{ae3ee69a-d231-4987-afd7-b7115541ee6c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\numeric">
+      <UniqueIdentifier>{2414b5eb-acf2-4146-8fe3-0bf020473621}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\numeric">
+      <UniqueIdentifier>{a28b1148-a1be-460f-887d-00f394800e9d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gc\src\allchblk.c">
@@ -242,6 +248,21 @@
     </ClCompile>
     <ClCompile Include="src\parsing\lexer\lexpunct.c">
       <Filter>src\parsing\lexer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\numeric\real32.c">
+      <Filter>src\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\numeric\real64.c">
+      <Filter>src\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\numeric\real128.c">
+      <Filter>src\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\string\string_parsefloat.c">
+      <Filter>src\string</Filter>
+    </ClCompile>
+    <ClCompile Include="src\string\string_parsereal.c">
+      <Filter>src\string</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -431,6 +452,15 @@
     <ClInclude Include="include\smile\parsing\internal\lexerinternal.h">
       <Filter>include\parsing\internal</Filter>
     </ClInclude>
+    <ClInclude Include="include\smile\numeric\real32.h">
+      <Filter>include\numeric</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\numeric\real64.h">
+      <Filter>include\numeric</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\numeric\real128.h">
+      <Filter>include\numeric</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\smile\array.h">
@@ -480,7 +510,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\string\string_parsereal.generated.inc">
+    <None Include="src\string\string_parsefloat.generated.inc">
       <Filter>src\string</Filter>
     </None>
   </ItemGroup>

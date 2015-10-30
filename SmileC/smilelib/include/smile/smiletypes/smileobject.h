@@ -52,6 +52,7 @@ struct SmileObjectInt {
 		\
 		Bool (*toBool)(__type__ self); \
 		Int32 (*toInteger32)(__type__ self); \
+		Float64 (*toFloat64)(__type__ self); \
 		Real64 (*toReal64)(__type__ self); \
 		String (*toString)(__type__ self); \
 	}
@@ -87,6 +88,7 @@ SMILE_API Bool SmileObject_HasProperty(SmileObject self, Symbol propertyName);
 SMILE_API SmileList SmileObject_GetPropertyNames(SmileObject self);
 SMILE_API Bool SmileObject_ToBool(SmileObject self);
 SMILE_API Int32 SmileObject_ToInteger32(SmileObject self);
+SMILE_API Float64 SmileObject_ToFloat64(SmileObject self);
 SMILE_API Real64 SmileObject_ToReal64(SmileObject self);
 SMILE_API String SmileObject_ToString(SmileObject self);
 

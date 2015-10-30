@@ -118,6 +118,9 @@
     <ClInclude Include="include\smile\env\symboltable.h" />
     <ClInclude Include="include\smile\gc.h" />
     <ClInclude Include="include\smile\mem.h" />
+    <ClInclude Include="include\smile\numeric\real128.h" />
+    <ClInclude Include="include\smile\numeric\real32.h" />
+    <ClInclude Include="include\smile\numeric\real64.h" />
     <ClInclude Include="include\smile\parsing\identkind.h" />
     <ClInclude Include="include\smile\parsing\internal\lexerinternal.h" />
     <ClInclude Include="include\smile\parsing\lexer.h" />
@@ -327,6 +330,9 @@
     <ClCompile Include="src\dict\int32dict.c" />
     <ClCompile Include="src\dict\stringdict.c" />
     <ClCompile Include="src\dict\stringintdict.c" />
+    <ClCompile Include="src\numeric\real128.c" />
+    <ClCompile Include="src\numeric\real32.c" />
+    <ClCompile Include="src\numeric\real64.c" />
     <ClCompile Include="src\parsing\lexer\identtable.c" />
     <ClCompile Include="src\parsing\lexer\lexer.c" />
     <ClCompile Include="src\parsing\lexer\lexerextra.c" />
@@ -356,6 +362,8 @@
     <ClCompile Include="src\string\string_parse.c">
       <FloatingPointModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Strict</FloatingPointModel>
     </ClCompile>
+    <ClCompile Include="src\string\string_parsefloat.c" />
+    <ClCompile Include="src\string\string_parsereal.c" />
     <ClCompile Include="src\string\string_unicode.c" />
     <ClCompile Include="src\ticks.c" />
     <ClCompile Include="src\unicode\casefolding.c" />
@@ -370,7 +378,7 @@
     <ClCompile Include="src\unicode\uppercase.c" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\string\string_parsereal.generated.inc" />
+    <None Include="src\string\string_parsefloat.generated.inc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

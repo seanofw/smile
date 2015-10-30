@@ -15,6 +15,8 @@
 //  limitations under the License.
 //---------------------------------------------------------------------------------------
 
+#include <smile/numeric/real64.h>
+#include <smile/numeric/real128.h>
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/text/smilesymbol.h>
@@ -123,10 +125,16 @@ Int32 SmileString_ToInteger32(SmileString self)
 	return String_ParseInteger(SmileString_ToString(self), 10, &result) ? (Int32)result : 0;
 }
 
+Float64 SmileString_ToFloat64(SmileString self)
+{
+	Float64 result;
+	return String_ParseFloat(SmileString_ToString(self), 10, &result) ? result : 0.0;
+}
+
 Real64 SmileString_ToReal64(SmileString self)
 {
-	Real64 result;
-	return String_ParseReal(SmileString_ToString(self), 10, &result) ? result : 0.0;
+	Real128 result;
+	return String_ParseReal(SmileString_ToString(self), 10, &result) ? Real128_ToReal64(result) : Real64_Zero;
 }
 
 SMILE_VTABLE(SmileString_VTable, SmileString)
@@ -145,6 +153,7 @@ SMILE_VTABLE(SmileString_VTable, SmileString)
 
 	SmileString_ToBool,
 	SmileString_ToInteger32,
+	SmileString_ToFloat64,
 	SmileString_ToReal64,
 	SmileString_ToString,
 };

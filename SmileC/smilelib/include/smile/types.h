@@ -37,8 +37,16 @@ typedef unsigned char Bool;
 	typedef unsigned long UInt32;
 	typedef __int64 Int64;
 	typedef unsigned __int64 UInt64;
-	typedef float Real32;
-	typedef double Real64;
+
+	// Portable binary floating-point types.
+	typedef float Float32;
+	typedef double Float64;
+	typedef struct { UInt64 value[2]; } Float128;
+
+	// Portable decimal floating-point types.
+	typedef struct { UInt32 value; } Real32;
+	typedef struct { UInt64 value; } Real64;
+	typedef struct { UInt64 value[2]; } Real128;
 
 	// How to make functions behave as 'inline' in this compiler.
 	#define Inline static __inline
@@ -125,8 +133,16 @@ typedef unsigned char Bool;
 	typedef unsigned long UInt32;
 	typedef long long Int64;
 	typedef unsigned long long UInt64;
-	typedef float Real32;
-	typedef double Real64;
+
+	// Portable binary floating-point types.
+	typedef float Float32;
+	typedef double Float64;
+	typedef struct { UInt64 value[2]; } Float128;
+
+	// Portable decimal floating-point types.
+	typedef struct { UInt32 value; } Real32;
+	typedef struct { UInt64 value; } Real64;
+	typedef struct { UInt64 value[2]; } Real128;
 
 	// How to make functions behave as 'inline' in this compiler.
 	#define Inline static __inline__

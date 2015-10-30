@@ -15,6 +15,7 @@
 //  limitations under the License.
 //---------------------------------------------------------------------------------------
 
+#include <smile/numeric/real64.h>
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/smileuserobject.h>
@@ -181,10 +182,16 @@ Int32 SmileUserObject_ToInteger32(SmileUserObject self)
 	return 0;
 }
 
+Float64 SmileUserObject_ToFloat64(SmileUserObject self)
+{
+	UNUSED(self);
+	return 0.0;
+}
+
 Real64 SmileUserObject_ToReal64(SmileUserObject self)
 {
 	UNUSED(self);
-	return 0;
+	return Real64_Zero;
 }
 
 String SmileUserObject_ToString(SmileUserObject self)
@@ -209,6 +216,7 @@ SMILE_VTABLE(SmileUserObject_VTable_ReadWriteAppend, SmileUserObject)
 
 	SmileUserObject_ToBool,
 	SmileUserObject_ToInteger32,
+	SmileUserObject_ToFloat64,
 	SmileUserObject_ToReal64,
 	SmileUserObject_ToString,
 };
@@ -229,6 +237,7 @@ SMILE_VTABLE(SmileUserObject_VTable_ReadWrite, SmileUserObject)
 
 	SmileUserObject_ToBool,
 	SmileUserObject_ToInteger32,
+	SmileUserObject_ToFloat64,
 	SmileUserObject_ToReal64,
 	SmileUserObject_ToString,
 };
@@ -249,6 +258,7 @@ SMILE_VTABLE(SmileUserObject_VTable_ReadAppend, SmileUserObject)
 
 	SmileUserObject_ToBool,
 	SmileUserObject_ToInteger32,
+	SmileUserObject_ToFloat64,
 	SmileUserObject_ToReal64,
 	SmileUserObject_ToString,
 };
@@ -269,6 +279,7 @@ SMILE_VTABLE(SmileUserObject_VTable_ReadOnly, SmileUserObject)
 
 	SmileUserObject_ToBool,
 	SmileUserObject_ToInteger32,
+	SmileUserObject_ToFloat64,
 	SmileUserObject_ToReal64,
 	SmileUserObject_ToString,
 };

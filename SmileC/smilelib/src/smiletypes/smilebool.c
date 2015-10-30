@@ -15,6 +15,7 @@
 //  limitations under the License.
 //---------------------------------------------------------------------------------------
 
+#include <smile/numeric/real64.h>
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/smilebool.h>
@@ -104,9 +105,14 @@ Int32 SmileBool_ToInteger32(SmileBool self)
 	return (Int32)self->value;
 }
 
+Float64 SmileBool_ToFloat64(SmileBool self)
+{
+	return (Float64)self->value;
+}
+
 Real64 SmileBool_ToReal64(SmileBool self)
 {
-	return (Real64)self->value;
+	return Real64_FromInt32(self->value);
 }
 
 STATIC_STRING(trueString, "true");
@@ -133,6 +139,7 @@ SMILE_VTABLE(SmileBool_VTable, SmileBool)
 
 	SmileBool_ToBool,
 	SmileBool_ToInteger32,
+	SmileBool_ToFloat64,
 	SmileBool_ToReal64,
 	SmileBool_ToString,
 };

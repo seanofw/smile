@@ -16,6 +16,7 @@
 //---------------------------------------------------------------------------------------
 
 #include <smile/types.h>
+#include <smile/numeric/real64.h>
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/text/smilesymbol.h>
@@ -123,10 +124,16 @@ Int32 SmileList_ToInteger32(SmileList self)
 	return 1;
 }
 
+Float64 SmileList_ToFloat64(SmileList self)
+{
+	UNUSED(self);
+	return 1.0;
+}
+
 Real64 SmileList_ToReal64(SmileList self)
 {
 	UNUSED(self);
-	return 1;
+	return Real64_One;
 }
 
 String SmileList_ToString(SmileList self)
@@ -151,6 +158,7 @@ SMILE_VTABLE(SmileList_VTable, SmileList)
 
 	SmileList_ToBool,
 	SmileList_ToInteger32,
+	SmileList_ToFloat64,
 	SmileList_ToReal64,
 	SmileList_ToString,
 };

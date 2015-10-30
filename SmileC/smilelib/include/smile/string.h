@@ -123,7 +123,8 @@ SMILE_API String String_UrlDecode(const String str);
 
 SMILE_API Bool String_ParseBool(const String str, Bool *result);
 SMILE_API Bool String_ParseInteger(const String str, Int numericBase, Int64 *result);
-SMILE_API Bool String_ParseReal(const String str, Int numericBase, Real64 *result);
+SMILE_API Bool String_ParseReal(const String str, Int numericBase, Real128 *result);
+SMILE_API Bool String_ParseFloat(const String str, Int numericBase, Float64 *result);
 
 //-------------------------------------------------------------------------------------------------
 //  External parts of the implementation (Unicode support)
