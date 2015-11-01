@@ -35,6 +35,9 @@
       <Filter>env</Filter>
     </ClCompile>
     <ClCompile Include="ansicolor-w32.c" />
+    <ClCompile Include="numeric\real128_tests.c">
+      <Filter>numeric</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -53,6 +56,9 @@
     </Filter>
     <Filter Include="smiletypes">
       <UniqueIdentifier>{4f4f275d-3708-487c-8e56-26655d7c8708}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="numeric">
+      <UniqueIdentifier>{7eafc3df-d7a2-4ed9-a824-f4eb9afe382e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

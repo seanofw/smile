@@ -161,6 +161,8 @@ typedef unsigned bid__int64 fexcept_t;
 #else
 #ifdef __QNX__
 #include <fenv.h>
+#elif defined(_WIN32)
+typedef unsigned long fexcept_t;
 #else
 typedef unsigned short int fexcept_t;
 #endif

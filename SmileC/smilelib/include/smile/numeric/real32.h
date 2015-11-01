@@ -7,6 +7,7 @@
 
 SMILE_API Real32 Real32_Zero;
 SMILE_API Real32 Real32_One;
+SMILE_API Real32 Real32_NegOne;
 
 SMILE_API Real32 Real32_FromInt32(Int32 int32);
 SMILE_API Real32 Real32_FromInt64(Int64 int64);

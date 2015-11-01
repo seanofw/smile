@@ -114,6 +114,7 @@
     <ClCompile Include="dict\stringintdict_tests.c" />
     <ClCompile Include="env\symboltable_tests.c" />
     <ClCompile Include="main.c" />
+    <ClCompile Include="numeric\real128_tests.c" />
     <ClCompile Include="stdafx.c" />
     <ClCompile Include="string\stringcore_tests.c" />
     <ClCompile Include="string\stringextra_tests.c" />

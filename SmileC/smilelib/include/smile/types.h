@@ -137,12 +137,12 @@ typedef unsigned char Bool;
 	// Portable binary floating-point types.
 	typedef float Float32;
 	typedef double Float64;
-	typedef struct { UInt64 value[2]; } Float128;
+	typedef struct __attribute__((aligned(16))) { UInt64 value[2]; } Float128;
 
 	// Portable decimal floating-point types.
 	typedef struct { UInt32 value; } Real32;
 	typedef struct { UInt64 value; } Real64;
-	typedef struct { UInt64 value[2]; } Real128;
+	typedef struct __attribute__((aligned(16))) { UInt64 value[2]; } Real128;
 
 	// How to make functions behave as 'inline' in this compiler.
 	#define Inline static __inline__

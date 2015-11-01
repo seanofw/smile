@@ -19,7 +19,7 @@
 #include <smile/numeric/real64.h>
 #include <smile/numeric/real128.h>
 
-SMILE_API Real32 Real32_Zero = { 0 };
+SMILE_API Real32 Real32_Zero = { 0x00000000 };
 SMILE_API Real32 Real32_One = { 1 };
 
 SMILE_API Real32 Real32_FromInt32(Int32 int32)

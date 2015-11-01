@@ -19,8 +19,9 @@
 #include <smile/numeric/real64.h>
 #include <smile/numeric/real128.h>
 
-SMILE_API Real64 Real64_Zero = { 0 };
-SMILE_API Real64 Real64_One = { 1 };
+SMILE_API Real64 Real64_Zero	= { 0x31C0000000000000ULL };
+SMILE_API Real64 Real64_One		= { 0x31C0000000000001ULL };
+SMILE_API Real64 Real64_NegOne	= { 0xB1C0000000000001ULL };
 
 SMILE_API Real64 Real64_FromInt32(Int32 int32)
 {

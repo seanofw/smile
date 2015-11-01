@@ -27,6 +27,16 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
 
+
+/*****************************************************************************/
+#define DECIMAL_CALL_BY_REFERENCE 1
+#define DECIMAL_GLOBAL_ROUNDING 1
+#define DECIMAL_GLOBAL_ROUNDING_ACCESS_FUNCTIONS 1
+#define DECIMAL_GLOBAL_EXCEPTION_FLAGS 1
+#define DECIMAL_GLOBAL_EXCEPTION_FLAGS_ACCESS_FUNCTIONS 1
+/*****************************************************************************/
+
+
 #if defined(__cplusplus) 
 #define BID_EXTERN_C extern "C" 
 #else 

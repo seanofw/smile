@@ -1,6 +1,7 @@
 // This file was auto-generated.  Do not edit!
 
 EXTERN_TEST_SUITE(Int32DictTests);
+EXTERN_TEST_SUITE(Real128Tests);
 EXTERN_TEST_SUITE(StringCoreTests);
 EXTERN_TEST_SUITE(StringDictTests);
 EXTERN_TEST_SUITE(StringExtraTests);
@@ -16,6 +17,7 @@ void RunAllTests()
 	TestSuiteResults *results = CreateEmptyTestSuiteResults();
 
 	RUN_TEST_SUITE(results, Int32DictTests);
+	RUN_TEST_SUITE(results, Real128Tests);
 	RUN_TEST_SUITE(results, StringCoreTests);
 	RUN_TEST_SUITE(results, StringDictTests);
 	RUN_TEST_SUITE(results, StringExtraTests);

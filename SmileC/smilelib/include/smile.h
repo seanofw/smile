@@ -45,6 +45,15 @@
 #ifndef __SMILE_DICT_STRINGINTDICT_H__
 #include <smile/dict/stringintdict.h>
 #endif
+#ifndef __SMILE_NUMERIC_REAL32_H__
+#include <smile/numeric/real32.h>
+#endif
+#ifndef __SMILE_NUMERIC_REAL64_H__
+#include <smile/numeric/real64.h>
+#endif
+#ifndef __SMILE_NUMERIC_REAL128_H__
+#include <smile/numeric/real128.h>
+#endif
 #ifndef __SMILE_ENV_SYMBOLTABLE_H__
 #include <smile/env/symboltable.h>
 #endif
