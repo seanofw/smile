@@ -51,6 +51,10 @@ typedef unsigned char Bool;
 	// How to make functions behave as 'inline' in this compiler.
 	#define Inline static __inline
 
+	// How to declare thread-local data.
+	#define SMILE_HAS_THREAD_LOCAL True
+	#define SMILE_THREAD_LOCAL __declspec(thread)
+
 	// How to export public functions outside SmileLib.
 	#ifdef SMILELIB_BUILD
 		#define SMILE_API extern __declspec(dllexport)
@@ -146,6 +150,10 @@ typedef unsigned char Bool;
 
 	// How to make functions behave as 'inline' in this compiler.
 	#define Inline static __inline__
+
+	// How to declare thread-local data.
+	#define SMILE_HAS_THREAD_LOCAL True
+	#define SMILE_THREAD_LOCAL __thread
 
 	// How to export public functions outside SmileLib.
 	#define SMILE_API extern

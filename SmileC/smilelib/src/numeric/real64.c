@@ -15,34 +15,8 @@
 //  limitations under the License.
 //---------------------------------------------------------------------------------------
 
-#include <smile/numeric/real32.h>
 #include <smile/numeric/real64.h>
-#include <smile/numeric/real128.h>
 
 SMILE_API Real64 Real64_Zero	= { 0x31C0000000000000ULL };
 SMILE_API Real64 Real64_One		= { 0x31C0000000000001ULL };
 SMILE_API Real64 Real64_NegOne	= { 0xB1C0000000000001ULL };
-
-SMILE_API Real64 Real64_FromInt32(Int32 int32)
-{
-	UNUSED(int32);
-	return Real64_Zero;
-}
-
-SMILE_API Real64 Real64_FromInt64(Int64 int64)
-{
-	UNUSED(int64);
-	return Real64_Zero;
-}
-
-SMILE_API Real32 Real64_ToReal32(Real64 real64)
-{
-	UNUSED(real64);
-	return Real32_Zero;
-}
-
-SMILE_API Real128 Real64_ToReal128(Real64 real64)
-{
-	UNUSED(real64);
-	return Real128_Zero;
-}

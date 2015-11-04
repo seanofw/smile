@@ -132,9 +132,11 @@
     <ClInclude Include="include\smile\env\symboltable.h" />
     <ClInclude Include="include\smile\gc.h" />
     <ClInclude Include="include\smile\mem.h" />
+    <ClInclude Include="include\smile\numeric\real.h" />
     <ClInclude Include="include\smile\numeric\real128.h" />
     <ClInclude Include="include\smile\numeric\real32.h" />
     <ClInclude Include="include\smile\numeric\real64.h" />
+    <ClInclude Include="include\smile\numeric\realshared.h" />
     <ClInclude Include="include\smile\parsing\identkind.h" />
     <ClInclude Include="include\smile\parsing\internal\lexerinternal.h" />
     <ClInclude Include="include\smile\parsing\lexer.h" />

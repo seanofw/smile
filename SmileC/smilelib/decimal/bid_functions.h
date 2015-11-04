@@ -416,7 +416,7 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
                                BID_UINT64 * py
                                _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid128_add (BID_UINT128 * pres, BID_UINT128 * px,
+     BID_EXTERN_API void bid128_add (BID_UINT128 * pres, BID_UINT128 * px,
                              BID_UINT128 *
                              py _RND_MODE_PARAM _EXC_FLAGS_PARAM
                              _EXC_MASKS_PARAM _EXC_INFO_PARAM);
@@ -432,7 +432,7 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
                                BID_UINT64 * py
                                _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid128_sub (BID_UINT128 * pres, BID_UINT128 * px,
+     BID_EXTERN_API void bid128_sub (BID_UINT128 * pres, BID_UINT128 * px,
                              BID_UINT128 *
                              py _RND_MODE_PARAM _EXC_FLAGS_PARAM
                              _EXC_MASKS_PARAM _EXC_INFO_PARAM);
@@ -448,11 +448,11 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
                                BID_UINT64 * py
                                _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid128_mul (BID_UINT128 * pres, BID_UINT128 * px,
+     BID_EXTERN_API void bid128_mul (BID_UINT128 * pres, BID_UINT128 * px,
                              BID_UINT128 * py
                              _RND_MODE_PARAM _EXC_FLAGS_PARAM
                              _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid128_div (BID_UINT128 * pres, BID_UINT128 * px,
+     BID_EXTERN_API void bid128_div (BID_UINT128 * pres, BID_UINT128 * px,
                              BID_UINT128 *
                              py _RND_MODE_PARAM _EXC_FLAGS_PARAM
                              _EXC_MASKS_PARAM _EXC_INFO_PARAM);
@@ -807,7 +807,7 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C void bid64_add (BID_UINT64 * pres, BID_UINT64 * px,
+     BID_EXTERN_API void bid64_add (BID_UINT64 * pres, BID_UINT64 * px,
                             BID_UINT64 * py
                                  _RND_MODE_PARAM _EXC_FLAGS_PARAM
                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
@@ -823,7 +823,7 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
                               BID_UINT128 * py
                               _RND_MODE_PARAM _EXC_FLAGS_PARAM
                               _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid64_sub (BID_UINT64 * pres, BID_UINT64 * px,
+     BID_EXTERN_API void bid64_sub (BID_UINT64 * pres, BID_UINT64 * px,
                             BID_UINT64 *
                             py _RND_MODE_PARAM _EXC_FLAGS_PARAM
                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
@@ -839,7 +839,7 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
                               BID_UINT128 * py
                               _RND_MODE_PARAM _EXC_FLAGS_PARAM
                               _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid64_mul (BID_UINT64 * pres, BID_UINT64 * px,
+     BID_EXTERN_API void bid64_mul (BID_UINT64 * pres, BID_UINT64 * px,
                             BID_UINT64 * py
                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
@@ -855,7 +855,7 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
                               BID_UINT128 * py
                               _RND_MODE_PARAM _EXC_FLAGS_PARAM
                               _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid64_div (BID_UINT64 * pres, BID_UINT64 * px,
+     BID_EXTERN_API void bid64_div (BID_UINT64 * pres, BID_UINT64 * px,
                             BID_UINT64 *
                             py _RND_MODE_PARAM _EXC_FLAGS_PARAM
                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
@@ -2398,35 +2398,35 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
      BID_EXTERN_C void bid128_maxnum_mag (BID_UINT128 * pres, BID_UINT128 * px,
                                     BID_UINT128 * py _EXC_FLAGS_PARAM _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C void bid32_from_int32 (BID_UINT32 * pres, int *px
+     BID_EXTERN_API void bid32_from_int32 (BID_UINT32 * pres, int *px
          _RND_MODE_PARAM _EXC_FLAGS_PARAM _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_C void bid32_from_uint32 (BID_UINT32 * pres, unsigned int *px
          _RND_MODE_PARAM _EXC_FLAGS_PARAM _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid32_from_int64 (BID_UINT32 * pres, BID_SINT64 * px
+     BID_EXTERN_API void bid32_from_int64 (BID_UINT32 * pres, BID_SINT64 * px
                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_C void bid32_from_uint64 (BID_UINT32 * pres,
                                     BID_UINT64 *
                                     px _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid64_from_int32 (BID_UINT64 * pres, int *px
+     BID_EXTERN_API void bid64_from_int32 (BID_UINT64 * pres, int *px
                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_C void bid64_from_uint32 (BID_UINT64 * pres, unsigned int *px
                                     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid64_from_int64 (BID_UINT64 * pres, BID_SINT64 * px
+     BID_EXTERN_API void bid64_from_int64 (BID_UINT64 * pres, BID_SINT64 * px
                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_C void bid64_from_uint64 (BID_UINT64 * pres,
                                     BID_UINT64 *
                                     px _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid128_from_int32 (BID_UINT128 * pres,
+     BID_EXTERN_API void bid128_from_int32 (BID_UINT128 * pres,
                                     int *px _EXC_MASKS_PARAM
                                     _EXC_INFO_PARAM);
      BID_EXTERN_C void bid128_from_uint32 (BID_UINT128 * pres,
                                      unsigned int *px _EXC_MASKS_PARAM
                                      _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid128_from_int64 (BID_UINT128 * pres,
+     BID_EXTERN_API void bid128_from_int64 (BID_UINT128 * pres,
                                     BID_SINT64 *
                                     px _EXC_MASKS_PARAM
                                     _EXC_INFO_PARAM);
@@ -2455,9 +2455,9 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
                               _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_C void bid32_copy (BID_UINT32 * pres, BID_UINT32 * px
                              _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid32_negate (BID_UINT32 * pres, BID_UINT32 * px
+     BID_EXTERN_API void bid32_negate (BID_UINT32 * pres, BID_UINT32 * px
                                _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid32_abs (BID_UINT32 * pres, BID_UINT32 * px
+     BID_EXTERN_API void bid32_abs (BID_UINT32 * pres, BID_UINT32 * px
                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_C void bid32_copySign (BID_UINT32 * pres, BID_UINT32 * px, BID_UINT32 * py
                                  _EXC_MASKS_PARAM _EXC_INFO_PARAM);
@@ -2495,9 +2495,9 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
                               _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_C void bid64_copy (BID_UINT64 * pres, BID_UINT64 * px
                              _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid64_negate (BID_UINT64 * pres, BID_UINT64 * px
+     BID_EXTERN_API void bid64_negate (BID_UINT64 * pres, BID_UINT64 * px
                                _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid64_abs (BID_UINT64 * pres, BID_UINT64 * px
+     BID_EXTERN_API void bid64_abs (BID_UINT64 * pres, BID_UINT64 * px
                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_C void bid64_copySign (BID_UINT64 * pres, BID_UINT64 * px, BID_UINT64 * py
                                  _EXC_MASKS_PARAM _EXC_INFO_PARAM);
@@ -2515,29 +2515,29 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
                               BID_UINT64 *
                               px _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C void bid128_isSigned (int *pres, BID_UINT128 * px
+     BID_EXTERN_API void bid128_isSigned (int *pres, BID_UINT128 * px
                                   _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_C void bid128_isNormal (int *pres, BID_UINT128 * px
                                   _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_C void bid128_isSubnormal (int *pres, BID_UINT128 * px
                                      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid128_isFinite (int *pres, BID_UINT128 * px
+     BID_EXTERN_API void bid128_isFinite (int *pres, BID_UINT128 * px
                                   _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid128_isZero (int *pres, BID_UINT128 * px
+     BID_EXTERN_API void bid128_isZero (int *pres, BID_UINT128 * px
                                 _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid128_isInf (int *pres, BID_UINT128 * px
+     BID_EXTERN_API void bid128_isInf (int *pres, BID_UINT128 * px
                                _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_C void bid128_isSignaling (int *pres, BID_UINT128 * px
                                      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_C void bid128_isCanonical (int *pres, BID_UINT128 * px
                                      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid128_isNaN (int *pres, BID_UINT128 * px
+     BID_EXTERN_API void bid128_isNaN (int *pres, BID_UINT128 * px
                                _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_C void bid128_copy (BID_UINT128 * pres, BID_UINT128 * px
                               _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid128_negate (BID_UINT128 * pres, BID_UINT128 * px
+     BID_EXTERN_API void bid128_negate (BID_UINT128 * pres, BID_UINT128 * px
                                 _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid128_abs (BID_UINT128 * pres, BID_UINT128 * px
+     BID_EXTERN_API void bid128_abs (BID_UINT128 * pres, BID_UINT128 * px
                              _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_C void bid128_copySign (BID_UINT128 * pres, BID_UINT128 * px,
                                   BID_UINT128 *
@@ -2561,7 +2561,7 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
                                BID_UINT128 *
                                px _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C void bid32_rem (BID_UINT32 * pres, BID_UINT32 * px, BID_UINT32 * py
+     BID_EXTERN_API void bid32_rem (BID_UINT32 * pres, BID_UINT32 * px, BID_UINT32 * py
                             _EXC_FLAGS_PARAM
                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_C void bid32_ilogb (int * pres, BID_UINT32 * px
@@ -2574,7 +2574,7 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
                               int *pn _RND_MODE_PARAM _EXC_FLAGS_PARAM
                               _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C void bid64_rem (BID_UINT64 * pres, BID_UINT64 * px, BID_UINT64 * py
+     BID_EXTERN_API void bid64_rem (BID_UINT64 * pres, BID_UINT64 * px, BID_UINT64 * py
                             _EXC_FLAGS_PARAM
                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_C void bid64_ilogb (int * pres, BID_UINT64 * px
@@ -2587,7 +2587,7 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
                               int *pn _RND_MODE_PARAM _EXC_FLAGS_PARAM
                               _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C void bid128_rem (BID_UINT128 * pres, BID_UINT128 * px, BID_UINT128 * py
+     BID_EXTERN_API void bid128_rem (BID_UINT128 * pres, BID_UINT128 * px, BID_UINT128 * py
                              _EXC_FLAGS_PARAM
                              _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_C void bid128_ilogb (int * pres, BID_UINT128 * px
@@ -2600,47 +2600,47 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
                                int *pn _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C void bid32_to_bid64 (BID_UINT64 * pres,
+     BID_EXTERN_API void bid32_to_bid64 (BID_UINT64 * pres,
                                  BID_UINT32 *
                                  px _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
                                  _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid32_to_bid128 (BID_UINT128 * pres,
+	 BID_EXTERN_API void bid32_to_bid128 (BID_UINT128 * pres,
                                   BID_UINT32 *
                                   px _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
                                   _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid64_to_bid128 (BID_UINT128 * pres,
+	 BID_EXTERN_API void bid64_to_bid128 (BID_UINT128 * pres,
                                   BID_UINT64 *
                                   px _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
                                   _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid64_to_bid32 (BID_UINT32 * pres,
+	 BID_EXTERN_API void bid64_to_bid32 (BID_UINT32 * pres,
                                  BID_UINT64 *
                                  px _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                  _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid128_to_bid32 (BID_UINT32 * pres,
+	 BID_EXTERN_API void bid128_to_bid32 (BID_UINT32 * pres,
                                   BID_UINT128 *
                                   px _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                   _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid128_to_bid64 (BID_UINT64 * pres,
+	 BID_EXTERN_API void bid128_to_bid64 (BID_UINT64 * pres,
                                   BID_UINT128 *
                                   px _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                   _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C void bid32_from_string (BID_UINT32 * pres, char *ps
+     BID_EXTERN_API void bid32_from_string (BID_UINT32 * pres, char *ps
                                     _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid32_to_string (char *ps, BID_UINT32 * px
+     BID_EXTERN_API void bid32_to_string (char *ps, BID_UINT32 * px
                                   _EXC_FLAGS_PARAM
                                   _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid64_from_string (BID_UINT64 * pres, char *ps
+     BID_EXTERN_API void bid64_from_string (BID_UINT64 * pres, char *ps
                                     _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid64_to_string (char *ps, BID_UINT64 * px
+     BID_EXTERN_API void bid64_to_string (char *ps, BID_UINT64 * px
                                   _EXC_FLAGS_PARAM
                                   _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid128_from_string (BID_UINT128 * pres, char *ps
+     BID_EXTERN_API void bid128_from_string (BID_UINT128 * pres, char *ps
                                      _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid128_to_string (char *str, BID_UINT128 * px
+     BID_EXTERN_API void bid128_to_string (char *str, BID_UINT128 * px
                                    _EXC_FLAGS_PARAM
                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
@@ -2659,11 +2659,11 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
                                   py _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                   _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C void bid128_to_binary32 (float *pres, BID_UINT128 * px
+     BID_EXTERN_API void bid128_to_binary32 (float *pres, BID_UINT128 * px
                                      _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C void bid128_to_binary64 (double *pres, BID_UINT128 * px
+     BID_EXTERN_API void bid128_to_binary64 (double *pres, BID_UINT128 * px
                                      _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
@@ -2687,11 +2687,11 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
                                       _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                       _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C void bid64_to_binary32 (float *pres, BID_UINT64 * px
+     BID_EXTERN_API void bid64_to_binary32 (float *pres, BID_UINT64 * px
                                     _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C void bid64_to_binary64 (double *pres, BID_UINT64 * px
+     BID_EXTERN_API void bid64_to_binary64 (double *pres, BID_UINT64 * px
                                     _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
@@ -2703,23 +2703,23 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
                                      _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C void binary64_to_bid32 (BID_UINT32 * pres, double *px
+     BID_EXTERN_API void binary64_to_bid32 (BID_UINT32 * pres, double *px
                                     _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C void binary64_to_bid64 (BID_UINT64 * pres, double *px
+     BID_EXTERN_API void binary64_to_bid64 (BID_UINT64 * pres, double *px
                                     _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C void binary64_to_bid128 (BID_UINT128 * pres, double *px
+     BID_EXTERN_API void binary64_to_bid128 (BID_UINT128 * pres, double *px
                                      _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C void bid32_to_binary32 (float *pres, BID_UINT32 * px
+     BID_EXTERN_API void bid32_to_binary32 (float *pres, BID_UINT32 * px
                                     _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C void bid32_to_binary64 (double *pres, BID_UINT32 * px
+     BID_EXTERN_API void bid32_to_binary64 (double *pres, BID_UINT32 * px
                                     _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
@@ -2731,15 +2731,15 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
                                      _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C void binary32_to_bid32 (BID_UINT32 * pres, float *px
+     BID_EXTERN_API void binary32_to_bid32 (BID_UINT32 * pres, float *px
                                     _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C void binary32_to_bid64 (BID_UINT64 * pres, float *px
+     BID_EXTERN_API void binary32_to_bid64 (BID_UINT64 * pres, float *px
                                     _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C void binary32_to_bid128 (BID_UINT128 * pres, float *px
+     BID_EXTERN_API void binary32_to_bid128 (BID_UINT128 * pres, float *px
                                      _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
@@ -2784,19 +2784,19 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
      BID_EXTERN_C void bid_setDecimalRoundingDirection (_IDEC_round *
                                        rounding_mode _RND_MODE_PARAM);
 
-     BID_EXTERN_C void bid32_add (BID_UINT32 * pres, BID_UINT32 * px,
+     BID_EXTERN_API void bid32_add (BID_UINT32 * pres, BID_UINT32 * px,
                             BID_UINT32 * py
                                 _RND_MODE_PARAM _EXC_FLAGS_PARAM
                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid32_sub (BID_UINT32 * pres, BID_UINT32 * px,
+     BID_EXTERN_API void bid32_sub (BID_UINT32 * pres, BID_UINT32 * px,
                             BID_UINT32 * py
                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid32_mul (BID_UINT32 * pres, BID_UINT32 * px,
+     BID_EXTERN_API void bid32_mul (BID_UINT32 * pres, BID_UINT32 * px,
                             BID_UINT32 * py
                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid32_div (BID_UINT32 * pres, BID_UINT32 * px,
+     BID_EXTERN_API void bid32_div (BID_UINT32 * pres, BID_UINT32 * px,
                             BID_UINT32 * py
                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
@@ -2998,7 +2998,7 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
      BID_EXTERN_C BID_UINT128 bid128qd_add (BID_UINT128 x, BID_UINT64 y
                                   _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                   _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C BID_UINT128 bid128_add (BID_UINT128 x, BID_UINT128 y
+     BID_EXTERN_API BID_UINT128 bid128_add (BID_UINT128 x, BID_UINT128 y
                                 _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                 _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_C BID_UINT128 bid128dd_sub (BID_UINT64 x, BID_UINT64 y
@@ -3010,7 +3010,7 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
      BID_EXTERN_C BID_UINT128 bid128qd_sub (BID_UINT128 x, BID_UINT64 y
                                   _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                   _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C BID_UINT128 bid128_sub (BID_UINT128 x,
+     BID_EXTERN_API BID_UINT128 bid128_sub (BID_UINT128 x,
                                 BID_UINT128 y _RND_MODE_PARAM
                                 _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
                                 _EXC_INFO_PARAM);
@@ -3023,10 +3023,10 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
      BID_EXTERN_C BID_UINT128 bid128qd_mul (BID_UINT128 x, BID_UINT64 y
                                   _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                   _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C BID_UINT128 bid128_mul (BID_UINT128 x, BID_UINT128 y
+     BID_EXTERN_API BID_UINT128 bid128_mul (BID_UINT128 x, BID_UINT128 y
                                 _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                 _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C BID_UINT128 bid128_div (BID_UINT128 x,
+     BID_EXTERN_API BID_UINT128 bid128_div (BID_UINT128 x,
                                 BID_UINT128 y _RND_MODE_PARAM
                                 _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
                                 _EXC_INFO_PARAM);
@@ -3371,7 +3371,7 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
                               _RND_MODE_PARAM _EXC_FLAGS_PARAM
                               _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C BID_UINT64 bid64_add (BID_UINT64 x, BID_UINT64 y
+     BID_EXTERN_API BID_UINT64 bid64_add (BID_UINT64 x, BID_UINT64 y
                               _RND_MODE_PARAM _EXC_FLAGS_PARAM
                               _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_C BID_UINT64 bid64dq_add (BID_UINT64 x, BID_UINT128 y
@@ -3383,7 +3383,7 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
      BID_EXTERN_C BID_UINT64 bid64qq_add (BID_UINT128 x, BID_UINT128 y
                                 _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                 _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C BID_UINT64 bid64_sub (BID_UINT64 x,
+     BID_EXTERN_API BID_UINT64 bid64_sub (BID_UINT64 x,
                               BID_UINT64 y _RND_MODE_PARAM
                               _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
                               _EXC_INFO_PARAM);
@@ -3396,7 +3396,7 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
      BID_EXTERN_C BID_UINT64 bid64qq_sub (BID_UINT128 x, BID_UINT128 y
                                 _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                 _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C BID_UINT64 bid64_mul (BID_UINT64 x, BID_UINT64 y
+     BID_EXTERN_API BID_UINT64 bid64_mul (BID_UINT64 x, BID_UINT64 y
                               _RND_MODE_PARAM _EXC_FLAGS_PARAM
                               _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_C BID_UINT64 bid64dq_mul (BID_UINT64 x, BID_UINT128 y
@@ -3408,7 +3408,7 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
      BID_EXTERN_C BID_UINT64 bid64qq_mul (BID_UINT128 x, BID_UINT128 y
                                 _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                 _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C BID_UINT64 bid64_div (BID_UINT64 x,
+     BID_EXTERN_API BID_UINT64 bid64_div (BID_UINT64 x,
                               BID_UINT64 y _RND_MODE_PARAM
                               _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
                               _EXC_INFO_PARAM);
@@ -4609,31 +4609,31 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
      BID_EXTERN_C BID_UINT128 bid128_maxnum_mag (BID_UINT128 x, BID_UINT128 y _EXC_FLAGS_PARAM
                                  _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C BID_UINT32 bid32_from_int32 (int x
+     BID_EXTERN_API BID_UINT32 bid32_from_int32 (int x
          _RND_MODE_PARAM _EXC_FLAGS_PARAM _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_C BID_UINT32 bid32_from_uint32 (unsigned int x
          _RND_MODE_PARAM _EXC_FLAGS_PARAM _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C BID_UINT32 bid32_from_int64 (BID_SINT64 x _RND_MODE_PARAM
+     BID_EXTERN_API BID_UINT32 bid32_from_int64 (BID_SINT64 x _RND_MODE_PARAM
                                      _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
                                      _EXC_INFO_PARAM);
      BID_EXTERN_C BID_UINT32 bid32_from_uint64 (BID_UINT64 _RND_MODE_PARAM
                                       _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
                                       _EXC_INFO_PARAM);
-     BID_EXTERN_C BID_UINT64 bid64_from_int32 (int x _EXC_MASKS_PARAM
+     BID_EXTERN_API BID_UINT64 bid64_from_int32 (int x _EXC_MASKS_PARAM
                                      _EXC_INFO_PARAM);
      BID_EXTERN_C BID_UINT64 bid64_from_uint32 (unsigned int x _EXC_MASKS_PARAM
                                       _EXC_INFO_PARAM);
-     BID_EXTERN_C BID_UINT64 bid64_from_int64 (BID_SINT64 x _RND_MODE_PARAM
+     BID_EXTERN_API BID_UINT64 bid64_from_int64 (BID_SINT64 x _RND_MODE_PARAM
                                      _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
                                      _EXC_INFO_PARAM);
      BID_EXTERN_C BID_UINT64 bid64_from_uint64 (BID_UINT64 _RND_MODE_PARAM
                                       _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
                                       _EXC_INFO_PARAM);
-     BID_EXTERN_C BID_UINT128 bid128_from_int32 (int x _EXC_MASKS_PARAM
+     BID_EXTERN_API BID_UINT128 bid128_from_int32 (int x _EXC_MASKS_PARAM
                                        _EXC_INFO_PARAM);
      BID_EXTERN_C BID_UINT128 bid128_from_uint32 (unsigned int x _EXC_MASKS_PARAM
                                         _EXC_INFO_PARAM);
-     BID_EXTERN_C BID_UINT128 bid128_from_int64 (BID_SINT64 x _EXC_MASKS_PARAM
+     BID_EXTERN_API BID_UINT128 bid128_from_int64 (BID_SINT64 x _EXC_MASKS_PARAM
                                        _EXC_INFO_PARAM);
      BID_EXTERN_C BID_UINT128 bid128_from_uint64 (BID_UINT64 x _EXC_MASKS_PARAM
                                         _EXC_INFO_PARAM);
@@ -4656,9 +4656,9 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
      BID_EXTERN_C int bid32_isNaN (BID_UINT32 x _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_C BID_UINT32 bid32_copy (BID_UINT32 x _EXC_MASKS_PARAM
                                _EXC_INFO_PARAM);
-     BID_EXTERN_C BID_UINT32 bid32_negate (BID_UINT32 x _EXC_MASKS_PARAM
+     BID_EXTERN_API BID_UINT32 bid32_negate (BID_UINT32 x _EXC_MASKS_PARAM
                                  _EXC_INFO_PARAM);
-     BID_EXTERN_C BID_UINT32 bid32_abs (BID_UINT32 x _EXC_MASKS_PARAM
+     BID_EXTERN_API BID_UINT32 bid32_abs (BID_UINT32 x _EXC_MASKS_PARAM
                               _EXC_INFO_PARAM);
      BID_EXTERN_C BID_UINT32 bid32_copySign (BID_UINT32 x,
                                    BID_UINT32 y _EXC_MASKS_PARAM
@@ -4690,9 +4690,9 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
      BID_EXTERN_C int bid64_isNaN (BID_UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_C BID_UINT64 bid64_copy (BID_UINT64 x _EXC_MASKS_PARAM
                                _EXC_INFO_PARAM);
-     BID_EXTERN_C BID_UINT64 bid64_negate (BID_UINT64 x _EXC_MASKS_PARAM
+     BID_EXTERN_API BID_UINT64 bid64_negate (BID_UINT64 x _EXC_MASKS_PARAM
                                  _EXC_INFO_PARAM);
-     BID_EXTERN_C BID_UINT64 bid64_abs (BID_UINT64 x _EXC_MASKS_PARAM
+     BID_EXTERN_API BID_UINT64 bid64_abs (BID_UINT64 x _EXC_MASKS_PARAM
                               _EXC_INFO_PARAM);
      BID_EXTERN_C BID_UINT64 bid64_copySign (BID_UINT64 x,
                                    BID_UINT64 y _EXC_MASKS_PARAM
@@ -4726,9 +4726,9 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
                               _EXC_INFO_PARAM);
      BID_EXTERN_C BID_UINT128 bid128_copy (BID_UINT128 x _EXC_MASKS_PARAM
                                  _EXC_INFO_PARAM);
-     BID_EXTERN_C BID_UINT128 bid128_negate (BID_UINT128 x _EXC_MASKS_PARAM
+     BID_EXTERN_API BID_UINT128 bid128_negate (BID_UINT128 x _EXC_MASKS_PARAM
                                    _EXC_INFO_PARAM);
-     BID_EXTERN_C BID_UINT128 bid128_abs (BID_UINT128 x _EXC_MASKS_PARAM
+     BID_EXTERN_API BID_UINT128 bid128_abs (BID_UINT128 x _EXC_MASKS_PARAM
                                 _EXC_INFO_PARAM);
      BID_EXTERN_C BID_UINT128 bid128_copySign (BID_UINT128 x,
                                      BID_UINT128 y _EXC_MASKS_PARAM
@@ -4747,7 +4747,7 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
      BID_EXTERN_C int bid128_radix (BID_UINT128 x _EXC_MASKS_PARAM
                               _EXC_INFO_PARAM);
 
-     BID_EXTERN_C BID_UINT32 bid32_rem (BID_UINT32 x, BID_UINT32 y
+     BID_EXTERN_API BID_UINT32 bid32_rem (BID_UINT32 x, BID_UINT32 y
                               _EXC_FLAGS_PARAM
                               _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_C int bid32_ilogb (BID_UINT32 x _EXC_FLAGS_PARAM
@@ -4759,7 +4759,7 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
                                 int n _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                 _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C BID_UINT64 bid64_rem (BID_UINT64 x, BID_UINT64 y
+     BID_EXTERN_API BID_UINT64 bid64_rem (BID_UINT64 x, BID_UINT64 y
                               _EXC_FLAGS_PARAM
                               _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_C int bid64_ilogb (BID_UINT64 x _EXC_FLAGS_PARAM
@@ -4771,7 +4771,7 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
                                 int n _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                 _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C BID_UINT128 bid128_rem (BID_UINT128 x, BID_UINT128 y
+     BID_EXTERN_API BID_UINT128 bid128_rem (BID_UINT128 x, BID_UINT128 y
                                 _EXC_FLAGS_PARAM
                                 _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_C int bid128_ilogb (BID_UINT128 x
@@ -4784,38 +4784,38 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
                                   int n _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                   _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C BID_UINT64 bid32_to_bid64 (BID_UINT32 x _EXC_FLAGS_PARAM
+     BID_EXTERN_API BID_UINT64 bid32_to_bid64 (BID_UINT32 x _EXC_FLAGS_PARAM
                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C BID_UINT128 bid32_to_bid128 (BID_UINT32 x _EXC_FLAGS_PARAM
+	 BID_EXTERN_API BID_UINT128 bid32_to_bid128(BID_UINT32 x _EXC_FLAGS_PARAM
                                      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C BID_UINT128 bid64_to_bid128 (BID_UINT64 x _EXC_FLAGS_PARAM
+	 BID_EXTERN_API BID_UINT128 bid64_to_bid128(BID_UINT64 x _EXC_FLAGS_PARAM
                                      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C BID_UINT32 bid64_to_bid32 (BID_UINT64 x
+	 BID_EXTERN_API BID_UINT32 bid64_to_bid32(BID_UINT64 x
                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C BID_UINT32 bid128_to_bid32 (BID_UINT128 x _RND_MODE_PARAM
+	 BID_EXTERN_API BID_UINT32 bid128_to_bid32(BID_UINT128 x _RND_MODE_PARAM
                                     _EXC_FLAGS_PARAM
                                     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C BID_UINT64 bid128_to_bid64 (BID_UINT128 x _RND_MODE_PARAM
+	 BID_EXTERN_API BID_UINT64 bid128_to_bid64(BID_UINT128 x _RND_MODE_PARAM
                                     _EXC_FLAGS_PARAM
                                     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C void bid32_to_string (char *ps, BID_UINT32 x
+     BID_EXTERN_API void bid32_to_string (char *ps, BID_UINT32 x
                                   _EXC_FLAGS_PARAM
                                   _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C BID_UINT32 bid32_from_string (char *ps
+     BID_EXTERN_API BID_UINT32 bid32_from_string (char *ps
                                       _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                       _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid64_to_string (char *ps, BID_UINT64 x
+     BID_EXTERN_API void bid64_to_string (char *ps, BID_UINT64 x
                                   _EXC_FLAGS_PARAM
                                   _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C BID_UINT64 bid64_from_string (char *ps
+     BID_EXTERN_API BID_UINT64 bid64_from_string (char *ps
                                       _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                       _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C void bid128_to_string (char *str, BID_UINT128 x
+     BID_EXTERN_API void bid128_to_string (char *str, BID_UINT128 x
                                    _EXC_FLAGS_PARAM
                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C BID_UINT128 bid128_from_string (char *ps
+     BID_EXTERN_API BID_UINT128 bid128_from_string (char *ps
                                         _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                         _EXC_MASKS_PARAM
                                         _EXC_INFO_PARAM);
@@ -4852,17 +4852,17 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
                                          _EXC_MASKS_PARAM
                                          _EXC_INFO_PARAM);
 
-     BID_EXTERN_C BID_UINT32 binary64_to_bid32 (double x
+     BID_EXTERN_API BID_UINT32 binary64_to_bid32 (double x
                                       _RND_MODE_PARAM
                                       _EXC_FLAGS_PARAM
                                       _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C BID_UINT64 binary64_to_bid64 (double x
+     BID_EXTERN_API BID_UINT64 binary64_to_bid64 (double x
                                       _RND_MODE_PARAM
                                       _EXC_FLAGS_PARAM
                                       _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C BID_UINT128 binary64_to_bid128 (double x
+     BID_EXTERN_API BID_UINT128 binary64_to_bid128 (double x
                                         _RND_MODE_PARAM
                                         _EXC_FLAGS_PARAM
                                         _EXC_MASKS_PARAM
@@ -4884,27 +4884,27 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
                                         _EXC_MASKS_PARAM
                                         _EXC_INFO_PARAM);
 
-     BID_EXTERN_C BID_UINT32 binary32_to_bid32 (float x
+     BID_EXTERN_API BID_UINT32 binary32_to_bid32 (float x
                                       _RND_MODE_PARAM
                                       _EXC_FLAGS_PARAM
                                       _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C BID_UINT64 binary32_to_bid64 (float x
+     BID_EXTERN_API BID_UINT64 binary32_to_bid64 (float x
                                       _RND_MODE_PARAM
                                       _EXC_FLAGS_PARAM
                                       _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C BID_UINT128 binary32_to_bid128 (float x
+     BID_EXTERN_API BID_UINT128 binary32_to_bid128 (float x
                                         _RND_MODE_PARAM
                                         _EXC_FLAGS_PARAM
                                         _EXC_MASKS_PARAM
                                         _EXC_INFO_PARAM);
 
-     BID_EXTERN_C float bid128_to_binary32 (BID_UINT128 x
+     BID_EXTERN_API float bid128_to_binary32 (BID_UINT128 x
                                       _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                       _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C double bid128_to_binary64 (BID_UINT128 x
+     BID_EXTERN_API double bid128_to_binary64 (BID_UINT128 x
                                        _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                        _EXC_MASKS_PARAM
                                        _EXC_INFO_PARAM);
@@ -4921,11 +4921,11 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
                                            _EXC_MASKS_PARAM
                                            _EXC_INFO_PARAM);
 
-     BID_EXTERN_C float bid64_to_binary32 (BID_UINT64 x
+     BID_EXTERN_API float bid64_to_binary32 (BID_UINT64 x
                                      _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C double bid64_to_binary64 (BID_UINT64 x
+     BID_EXTERN_API double bid64_to_binary64 (BID_UINT64 x
                                       _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                       _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
@@ -4941,11 +4941,11 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
                                           _EXC_MASKS_PARAM
                                           _EXC_INFO_PARAM);
 
-     BID_EXTERN_C float bid32_to_binary32 (BID_UINT32 x
+     BID_EXTERN_API float bid32_to_binary32 (BID_UINT32 x
                                      _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C double bid32_to_binary64 (BID_UINT32 x
+     BID_EXTERN_API double bid32_to_binary64 (BID_UINT32 x
                                       _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                       _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
@@ -4996,16 +4996,16 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
      BID_EXTERN_C void bid_setDecimalRoundingDirection (_IDEC_round rounding_mode);
 #endif
 
-     BID_EXTERN_C BID_UINT32 bid32_add (BID_UINT32 x, BID_UINT32 y
+     BID_EXTERN_API BID_UINT32 bid32_add (BID_UINT32 x, BID_UINT32 y
                               _RND_MODE_PARAM _EXC_FLAGS_PARAM
                               _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C BID_UINT32 bid32_sub (BID_UINT32 x, BID_UINT32 y
+     BID_EXTERN_API BID_UINT32 bid32_sub (BID_UINT32 x, BID_UINT32 y
                               _RND_MODE_PARAM _EXC_FLAGS_PARAM
                               _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C BID_UINT32 bid32_mul (BID_UINT32 x, BID_UINT32 y
+     BID_EXTERN_API BID_UINT32 bid32_mul (BID_UINT32 x, BID_UINT32 y
                               _RND_MODE_PARAM _EXC_FLAGS_PARAM
                               _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_C BID_UINT32 bid32_div (BID_UINT32 x, BID_UINT32 y
+     BID_EXTERN_API BID_UINT32 bid32_div (BID_UINT32 x, BID_UINT32 y
                               _RND_MODE_PARAM _EXC_FLAGS_PARAM
                               _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_C BID_UINT32 bid32_fma (BID_UINT32 x, BID_UINT32 y, BID_UINT32 z

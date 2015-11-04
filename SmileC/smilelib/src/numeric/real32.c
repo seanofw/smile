@@ -16,32 +16,7 @@
 //---------------------------------------------------------------------------------------
 
 #include <smile/numeric/real32.h>
-#include <smile/numeric/real64.h>
-#include <smile/numeric/real128.h>
 
 SMILE_API Real32 Real32_Zero = { 0x00000000 };
 SMILE_API Real32 Real32_One = { 1 };
-
-SMILE_API Real32 Real32_FromInt32(Int32 int32)
-{
-	UNUSED(int32);
-	return Real32_Zero;
-}
-
-SMILE_API Real32 Real32_FromInt64(Int64 int64)
-{
-	UNUSED(int64);
-	return Real32_Zero;
-}
-
-SMILE_API Real64 Real32_ToReal64(Real32 real32)
-{
-	UNUSED(real32);
-	return Real64_Zero;
-}
-
-SMILE_API Real128 Real32_ToReal128(Real32 real32)
-{
-	UNUSED(real32);
-	return Real128_Zero;
-}
+SMILE_API Real32 Real32_NegOne = { 1 };

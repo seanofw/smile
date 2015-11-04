@@ -899,6 +899,12 @@
     <ClInclude Include="include\smile\numeric\real128.h">
       <Filter>include\numeric</Filter>
     </ClInclude>
+    <ClInclude Include="include\smile\numeric\real.h">
+      <Filter>include\numeric</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\numeric\realshared.h">
+      <Filter>include\numeric</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\smile\array.h">

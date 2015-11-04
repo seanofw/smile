@@ -15,8 +15,7 @@
 //  limitations under the License.
 //---------------------------------------------------------------------------------------
 
-#include <smile/numeric/real64.h>
-#include <smile/numeric/real128.h>
+#include <smile/numeric/real.h>
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/text/smilesymbol.h>
