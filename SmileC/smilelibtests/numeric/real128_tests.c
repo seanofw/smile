@@ -225,6 +225,18 @@ START_TEST(CanParseReal128)
 
 	ASSERT(Real128_Parse(String_FromC("-inf"), &result));
 	ASSERT(Eq(result, Real128_NegInf));
+
+	ASSERT(Real128_Parse(String_FromC("+nan"), &result));
+	ASSERT(Real128_IsNaN(result));
+	ASSERT(!Real128_IsNeg(result));
+
+	ASSERT(Real128_Parse(String_FromC("nan"), &result));
+	ASSERT(Real128_IsNaN(result));
+	ASSERT(!Real128_IsNeg(result));
+
+	ASSERT(Real128_Parse(String_FromC("-nan"), &result));
+	ASSERT(Real128_IsNaN(result));
+	ASSERT(Real128_IsNeg(result));
 }
 END_TEST
 

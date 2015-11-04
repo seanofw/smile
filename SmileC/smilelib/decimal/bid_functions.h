@@ -4706,23 +4706,23 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
                                      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_C int bid64_radix (BID_UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
-     BID_EXTERN_C int bid128_isSigned (BID_UINT128 x _EXC_MASKS_PARAM
+     BID_EXTERN_API int bid128_isSigned (BID_UINT128 x _EXC_MASKS_PARAM
                                  _EXC_INFO_PARAM);
-     BID_EXTERN_C int bid128_isNormal (BID_UINT128 x _EXC_MASKS_PARAM
+     BID_EXTERN_API int bid128_isNormal (BID_UINT128 x _EXC_MASKS_PARAM
                                  _EXC_INFO_PARAM);
      BID_EXTERN_C int bid128_isSubnormal (BID_UINT128 x _EXC_MASKS_PARAM
                                     _EXC_INFO_PARAM);
-     BID_EXTERN_C int bid128_isFinite (BID_UINT128 x _EXC_MASKS_PARAM
+     BID_EXTERN_API int bid128_isFinite (BID_UINT128 x _EXC_MASKS_PARAM
                                  _EXC_INFO_PARAM);
-     BID_EXTERN_C int bid128_isZero (BID_UINT128 x _EXC_MASKS_PARAM
+     BID_EXTERN_API int bid128_isZero (BID_UINT128 x _EXC_MASKS_PARAM
                                _EXC_INFO_PARAM);
-     BID_EXTERN_C int bid128_isInf (BID_UINT128 x _EXC_MASKS_PARAM
+     BID_EXTERN_API int bid128_isInf (BID_UINT128 x _EXC_MASKS_PARAM
                               _EXC_INFO_PARAM);
      BID_EXTERN_C int bid128_isSignaling (BID_UINT128 x _EXC_MASKS_PARAM
                                     _EXC_INFO_PARAM);
      BID_EXTERN_C int bid128_isCanonical (BID_UINT128 x _EXC_MASKS_PARAM
                                     _EXC_INFO_PARAM);
-     BID_EXTERN_C int bid128_isNaN (BID_UINT128 x _EXC_MASKS_PARAM
+     BID_EXTERN_API int bid128_isNaN (BID_UINT128 x _EXC_MASKS_PARAM
                               _EXC_INFO_PARAM);
      BID_EXTERN_C BID_UINT128 bid128_copy (BID_UINT128 x _EXC_MASKS_PARAM
                                  _EXC_INFO_PARAM);
