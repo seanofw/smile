@@ -248,16 +248,16 @@ bid128_to_string (char *str, BID_UINT128 x
       str[k++] = bid_char_table3[ind + 2];
     } else { // 0 <= exp <= 999 => d0 = 0
       if (d123 < 10) { // 0 <= exp <= 9 => 1 digit to return
-	str[k++] = d123 + 0x30;// ASCII
+		str[k++] = d123 + 0x30;// ASCII
       } else if (d123 < 100) { // 10 <= exp <= 99 => 2 digits to return
-	ind = 2 * (d123 - 10);
-	str[k++] = bid_char_table2[ind];
-	str[k++] = bid_char_table2[ind + 1];
+		ind = 2 * (d123 - 10);
+		str[k++] = bid_char_table2[ind];
+		str[k++] = bid_char_table2[ind + 1];
       } else { // 100 <= exp <= 999 => 3 digits to return
-	ind = 3 * d123;
-	str[k++] = bid_char_table3[ind];
-	str[k++] = bid_char_table3[ind + 1];
-	str[k++] = bid_char_table3[ind + 2];
+		ind = 3 * d123;
+		str[k++] = bid_char_table3[ind];
+		str[k++] = bid_char_table3[ind + 1];
+		str[k++] = bid_char_table3[ind + 2];
       }
     }
     str[k] = '\0';

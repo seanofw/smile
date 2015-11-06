@@ -206,10 +206,26 @@ SMILE_API String String_ConvertKnownCodePageToUtf8Range(const String str, Int st
 /// </summary>
 /// <param name="__name__">The name of the static string instance to declare.</param>
 /// <param name="__text__">A C-style string that contains the static text.</param>
-/// <param name="__textLength__">The number of bytes in the C-style string, not including the terminating nul character.</param>
 #define STATIC_STRING(__name__, __text__) \
 	static struct StringInt __name__##Struct = { (Byte *)(__text__), (sizeof(__text__) - 1) }; \
 	static String __name__ = (String)(&__name__##Struct)
+
+/// <summary>
+/// Declare a local variable that quickly and efficiently wraps a C-style string.
+/// </summary>
+/// <param name="__name__">The name of the string instance to declare.</param>
+#define DECLARE_TEMP_C_STRING(__name__) \
+	struct StringInt __name__##Struct; \
+	String __name__ = (String)(&__name__##Struct)
+
+/// <summary>
+/// Initialize a local variable that quickly and efficiently wraps a C-style string.
+/// </summary>
+/// <param name="__name__">The name of the string instance to wrap.</param>
+/// <param name="__text__">A C-style string that contains the text.</param>
+#define INIT_TEMP_C_STRING(__name__, __text__) \
+	(__name__##Struct.text = (Byte *)(__text__), \
+	 __name__##Struct.length = StrLen((const char *)__text__))
 
 /// <summary>
 /// Retrieve a byte from the string at the given index.  The index must

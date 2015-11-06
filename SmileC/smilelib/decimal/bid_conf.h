@@ -198,6 +198,7 @@
 #define bid32_scalbn      __bid32_scalbn
 #define bid32_ldexp       __bid32_ldexp
 #define bid32_to_string   Real32_ToRawCString
+#define bid32_decompose_to_string   Real32_Decompose
 #define bid32_from_string Real32_FromRawCString
 #define bid32_quantize    __bid32_quantize
 #define bid32_nextup      __bid32_nextup
@@ -391,6 +392,7 @@
 #define bid_short_recip_scale __bid_short_recip_scale
 #define bid64_from_string Real64_FromRawCString
 #define bid64_to_string Real64_ToRawCString
+#define bid64_decompose_to_string Real64_Decompose
 #define bid_Inv_Tento9 __bid_Inv_Tento9
 #define bid_midi_tbl __bid_midi_tbl
 #define bid_Tento3 __bid_Tento3
@@ -537,6 +539,7 @@
 #define bid32_to_bid64 Real32_ToReal64
 #define bid64_to_bid32 Real64_ToReal32
 #define bid128_to_string Real128_ToRawCString
+#define bid128_decompose_to_string Real128_Decompose
 #define mod10_18_tbl __bid_mod10_18_tbl
 #define bid128_to_bid32 Real128_ToReal32
 #define bid32_to_bid128 Real32_ToReal128

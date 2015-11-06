@@ -15,8 +15,15 @@
 //  limitations under the License.
 //---------------------------------------------------------------------------------------
 
+#include <smile/numeric/realshared.h>
 #include <smile/numeric/real128.h>
 #include <smile/stringbuilder.h>
+
+extern String Real_ToFixedString(Byte *buffer, Int len, Int exp, Int kind, Int minIntDigits, Int minFracDigits, Bool forceSign);
+extern String Real_ToExpString(Byte *buffer, Int len, Int exp, Int kind, Int minFracDigits, Bool forceSign);
+
+extern SMILE_THREAD_LOCAL UInt32 Real_RoundingMode;
+extern SMILE_THREAD_LOCAL UInt32 Real_Flags;
 
 extern Real128 Real128_FromRawCString(const char *str);
 
@@ -33,9 +40,6 @@ SMILE_API Real128 Real128_Ten =		{ { 0x000000000000000AULL, 0x3040000000000000UL
 SMILE_API Real128 Real128_Sixteen = { { 0x0000000000000010ULL, 0x3040000000000000ULL } };
 SMILE_API Real128 Real128_Inf =     { { 0x0000000000000000ULL, 0x7800000000000000ULL } };
 SMILE_API Real128 Real128_NaN =     { { 0x0000000000000000ULL, 0x7C00000000000000ULL } };
-
-extern SMILE_THREAD_LOCAL UInt32 Real_RoundingMode;
-extern SMILE_THREAD_LOCAL UInt32 Real_Flags;
 
 SMILE_API UInt32 Real_GetRoundingMode(void)
 {
@@ -57,7 +61,7 @@ SMILE_API void Real_SetFlags(UInt32 flags)
 	Real_Flags = flags;
 }
 
-SMILE_API Bool Real128_Parse(String str, Real128 *result)
+SMILE_API Bool Real128_TryParse(String str, Real128 *result)
 {
 	DECLARE_INLINE_STRINGBUILDER(cleanString, 256);
 	const Byte *src, *end, *start;
@@ -212,4 +216,24 @@ SMILE_API Bool Real128_Parse(String str, Real128 *result)
 	// anything at all on the heap, which is great for performance.
 	*result = Real128_FromRawCString(StringBuilder_GetBytes(cleanString));
 	return !Real128_IsNaN(*result);
+}
+
+String Real128_ToFixedString(Real128 real128, Int minIntDigits, Int minFracDigits, Bool forceSign)
+{
+	Byte buffer[64];
+	Int32 buflen, exp, kind;
+	
+	buflen = Real128_Decompose(buffer, &exp, &kind, real128);
+
+	return Real_ToFixedString(buffer, buflen, exp, kind, minIntDigits, minFracDigits, forceSign);
+}
+
+String Real128_ToExpString(Real128 real128, Int minFracDigits, Bool forceSign)
+{
+	Byte buffer[64];
+	Int32 buflen, exp, kind;
+
+	buflen = Real128_Decompose(buffer, &exp, &kind, real128);
+
+	return Real_ToExpString(buffer, buflen, exp, kind, minFracDigits, forceSign);
 }

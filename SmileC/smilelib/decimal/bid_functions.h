@@ -147,6 +147,18 @@ typedef BID_UINT128 _Quad;
 #define BID_IEEE_FLAGS          0x0000003d
 #define BID_EXACT_STATUS            0x00000000
 
+// kind flags for decompose_to_string
+#define BID_KIND_POS_ZERO		0
+#define BID_KIND_NEG_ZERO		(0x80 | BID_KIND_POS_ZERO)
+#define BID_KIND_POS_NUM		1
+#define BID_KIND_NEG_NUM		(0x80 | BID_KIND_POS_NUM)
+#define BID_KIND_POS_INF		2
+#define BID_KIND_NEG_INF		(0x80 | BID_KIND_POS_INF)
+#define BID_KIND_POS_QNAN		3
+#define BID_KIND_NEG_QNAN		(0x80 | BID_KIND_POS_QNAN)
+#define BID_KIND_POS_SNAN		4
+#define BID_KIND_NEG_SNAN		(0x80 | BID_KIND_POS_SNAN)
+
 ///////////////////////////////////////////////////////
 //  This section may move to fenv_support.h
 
@@ -2631,16 +2643,25 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
      BID_EXTERN_API void bid32_to_string (char *ps, BID_UINT32 * px
                                   _EXC_FLAGS_PARAM
                                   _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     BID_EXTERN_API int bid32_decompose_to_string (char *ps, int *rexp, int *kind, BID_UINT32 * px
+                                  _EXC_FLAGS_PARAM
+                                  _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_API void bid64_from_string (BID_UINT64 * pres, char *ps
                                     _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_API void bid64_to_string (char *ps, BID_UINT64 * px
                                   _EXC_FLAGS_PARAM
                                   _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     BID_EXTERN_API int bid64_decompose_to_string (char *ps, int *rexp, int *kind, BID_UINT64 * px
+                                  _EXC_FLAGS_PARAM
+                                  _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_API void bid128_from_string (BID_UINT128 * pres, char *ps
                                      _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_API void bid128_to_string (char *str, BID_UINT128 * px
+                                   _EXC_FLAGS_PARAM
+                                   _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     BID_EXTERN_API int bid128_decompose_to_string (char *str, int *rexp, int *kind, BID_UINT128 * px
                                    _EXC_FLAGS_PARAM
                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 
@@ -4803,18 +4824,27 @@ BID_EXTERN_C _IDEC_round _IDEC_glbround; // initialized to BID_ROUNDING_TO_NEARE
      BID_EXTERN_API void bid32_to_string (char *ps, BID_UINT32 x
                                   _EXC_FLAGS_PARAM
                                   _EXC_MASKS_PARAM _EXC_INFO_PARAM);
-     BID_EXTERN_API BID_UINT32 bid32_from_string (char *ps
+	 BID_EXTERN_API int bid32_decompose_to_string(char *str, int *rexp, int *kind, BID_UINT32 x
+								 _EXC_FLAGS_PARAM
+								 _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+	 BID_EXTERN_API BID_UINT32 bid32_from_string(char *ps
                                       _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                       _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_API void bid64_to_string (char *ps, BID_UINT64 x
                                   _EXC_FLAGS_PARAM
                                   _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+	 BID_EXTERN_API int bid64_decompose_to_string(char *str, int *rexp, int *kind, BID_UINT64 x
+								 _EXC_FLAGS_PARAM
+								 _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_API BID_UINT64 bid64_from_string (char *ps
                                       _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                       _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_API void bid128_to_string (char *str, BID_UINT128 x
                                    _EXC_FLAGS_PARAM
                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+	 BID_EXTERN_API int bid128_decompose_to_string(char *str, int *rexp, int *kind, BID_UINT128 x
+								 _EXC_FLAGS_PARAM
+								 _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      BID_EXTERN_API BID_UINT128 bid128_from_string (char *ps
                                         _RND_MODE_PARAM _EXC_FLAGS_PARAM
                                         _EXC_MASKS_PARAM

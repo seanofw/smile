@@ -253,6 +253,9 @@
     <ClCompile Include="decimal\bid128_string.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
+    <ClCompile Include="decimal\bid_string_decompose.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
     <ClCompile Include="decimal\bid128_to_int16.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
@@ -736,6 +739,7 @@
     <ClCompile Include="src\numeric\real128.c" />
     <ClCompile Include="src\numeric\real32.c" />
     <ClCompile Include="src\numeric\real64.c" />
+    <ClCompile Include="src\numeric\realshared.c" />
     <ClCompile Include="src\parsing\lexer\identtable.c" />
     <ClCompile Include="src\parsing\lexer\lexer.c" />
     <ClCompile Include="src\parsing\lexer\lexerextra.c" />

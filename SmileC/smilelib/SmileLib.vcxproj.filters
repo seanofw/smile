@@ -660,6 +660,12 @@
     <ClCompile Include="src\string\string_parsereal.c">
       <Filter>src\string</Filter>
     </ClCompile>
+    <ClCompile Include="decimal\bid_string_decompose.c">
+      <Filter>decimal\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\numeric\realshared.c">
+      <Filter>src\numeric</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">

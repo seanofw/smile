@@ -18,6 +18,17 @@
 #define REAL_FLAG_UNDERFLOW   0x10
 #define REAL_FLAG_INEXACT     0x20
 
+#define REAL_KIND_POS_ZERO		0
+#define REAL_KIND_NEG_ZERO		(0x80 | REAL_KIND_POS_ZERO)
+#define REAL_KIND_POS_NUM		1
+#define REAL_KIND_NEG_NUM		(0x80 | REAL_KIND_POS_NUM)
+#define REAL_KIND_POS_INF		2
+#define REAL_KIND_NEG_INF		(0x80 | REAL_KIND_POS_INF)
+#define REAL_KIND_POS_QNAN		3
+#define REAL_KIND_NEG_QNAN		(0x80 | REAL_KIND_POS_QNAN)
+#define REAL_KIND_POS_SNAN		4
+#define REAL_KIND_NEG_SNAN		(0x80 | REAL_KIND_POS_SNAN)
+
 SMILE_API UInt32 Real_GetRoundingMode(void);
 SMILE_API void Real_SetRoundingMode(UInt32 mode);
 SMILE_API UInt32 Real_GetFlags(void);

@@ -111,6 +111,7 @@ static const Real128 _int64Min = { { 0x8000000000000000ULL, 0xB040000000000000UL
 // Miscellaneous integers.
 static const Real128 _three = { { 3ULL, 0x3040000000000000ULL } };
 static const Real128 _fiveSevenNine = { { 579ULL, 0x3040000000000000ULL } };
+static const Real128 _fiveSevenNineOhOh = { { 57900ULL, 0x303C000000000000ULL } };
 static const Real128 _shortBigPi = { { 314159265ULL, 0x3040000000000000ULL } };
 static const Real128 _longBigPi = { { 314159265358979323ULL, 0x3040000000000000ULL } };
 static const Real128 _longMediumPi = { { 314159265358979323ULL, 0x302E000000000000ULL } };
@@ -178,65 +179,107 @@ START_TEST(CanParseReal128)
 {
 	Real128 result;
 
-	ASSERT(Real128_Parse(String_FromC("579"), &result));
+	ASSERT(Real128_TryParse(String_FromC("579"), &result));
 	ASSERT(Eq(result, _fiveSevenNine));
 
-	ASSERT(Real128_Parse(String_FromC("314159265358979323"), &result));
+	ASSERT(Real128_TryParse(String_FromC("579.00"), &result));
+	ASSERT(Eq(result, _fiveSevenNineOhOh));
+
+	ASSERT(Real128_TryParse(String_FromC("314159265358979323"), &result));
 	ASSERT(Eq(result, _longBigPi));
 
-	ASSERT(Real128_Parse(String_FromC("314_159_265_358_979_323"), &result));
+	ASSERT(Real128_TryParse(String_FromC("314_159_265_358_979_323"), &result));
 	ASSERT(Eq(result, _longBigPi));
 
-	ASSERT(Real128_Parse(String_FromC("314'159'265'358'979'323"), &result));
+	ASSERT(Real128_TryParse(String_FromC("314'159'265'358'979'323"), &result));
 	ASSERT(Eq(result, _longBigPi));
 
-	ASSERT(Real128_Parse(String_FromC("314'159\"265'358\"979'323"), &result));
+	ASSERT(Real128_TryParse(String_FromC("314'159\"265'358\"979'323"), &result));
 	ASSERT(Eq(result, _longBigPi));
 
-	ASSERT(Real128_Parse(String_FromC("-314'159'265.358'979'323"), &result));
+	ASSERT(Real128_TryParse(String_FromC("-314'159'265.358'979'323"), &result));
 	ASSERT(Eq(result, _longNegMediumPi));
 
-	ASSERT(Real128_Parse(String_FromC("3.14159'26535'89793'23"), &result));
+	ASSERT(Real128_TryParse(String_FromC("3.14159'26535'89793'23"), &result));
 	ASSERT(Eq(result, _pi));
 
-	ASSERT(Real128_Parse(String_FromC("-3.14159'26535'89793'23"), &result));
+	ASSERT(Real128_TryParse(String_FromC("-3.14159'26535'89793'23"), &result));
 	ASSERT(Eq(result, _negPi));
 
-	ASSERT(Real128_Parse(String_FromC("+3.14159'26535'89793'23"), &result));
+	ASSERT(Real128_TryParse(String_FromC("+3.14159'26535'89793'23"), &result));
 	ASSERT(Eq(result, _pi));
 
-	ASSERT(Real128_Parse(String_FromC("+3.14159'26535'89793'23E+8"), &result));
+	ASSERT(Real128_TryParse(String_FromC("+3.14159'26535'89793'23E+8"), &result));
 	ASSERT(Eq(result, _longMediumPi));
 
-	ASSERT(Real128_Parse(String_FromC("-3.14159'26535'89793'23E+8"), &result));
+	ASSERT(Real128_TryParse(String_FromC("-3.14159'26535'89793'23E+8"), &result));
 	ASSERT(Eq(result, _longNegMediumPi));
 
-	ASSERT(Real128_Parse(String_FromC("+314'159'265.358'979'323E-8"), &result));
+	ASSERT(Real128_TryParse(String_FromC("+314'159'265.358'979'323E-8"), &result));
 	ASSERT(Eq(result, _pi));
 
-	ASSERT(Real128_Parse(String_FromC("-314'159'265.358'979'323E-8"), &result));
+	ASSERT(Real128_TryParse(String_FromC("-314'159'265.358'979'323E-8"), &result));
 	ASSERT(Eq(result, _negPi));
 
-	ASSERT(Real128_Parse(String_FromC("+inf"), &result));
+	ASSERT(Real128_TryParse(String_FromC("+inf"), &result));
 	ASSERT(Eq(result, Real128_Inf));
 
-	ASSERT(Real128_Parse(String_FromC("inf"), &result));
+	ASSERT(Real128_TryParse(String_FromC("inf"), &result));
 	ASSERT(Eq(result, Real128_Inf));
 
-	ASSERT(Real128_Parse(String_FromC("-inf"), &result));
+	ASSERT(Real128_TryParse(String_FromC("-inf"), &result));
 	ASSERT(Eq(result, Real128_NegInf));
 
-	ASSERT(Real128_Parse(String_FromC("+nan"), &result));
+	ASSERT(Real128_TryParse(String_FromC("+nan"), &result));
 	ASSERT(Real128_IsNaN(result));
 	ASSERT(!Real128_IsNeg(result));
 
-	ASSERT(Real128_Parse(String_FromC("nan"), &result));
+	ASSERT(Real128_TryParse(String_FromC("nan"), &result));
 	ASSERT(Real128_IsNaN(result));
 	ASSERT(!Real128_IsNeg(result));
 
-	ASSERT(Real128_Parse(String_FromC("-nan"), &result));
+	ASSERT(Real128_TryParse(String_FromC("-nan"), &result));
 	ASSERT(Real128_IsNaN(result));
 	ASSERT(Real128_IsNeg(result));
+}
+END_TEST
+
+START_TEST(CanStringifyReal128InExponentialForm)
+{
+	ASSERT_STRING(Real128_ToExpString(_pi, 1, False), "3.14159265358979323e+0", 22);
+	ASSERT_STRING(Real128_ToExpString(_pi, 1, True), "+3.14159265358979323e+0", 23);
+	ASSERT_STRING(Real128_ToExpString(_negPi, 1, False), "-3.14159265358979323e+0", 23);
+
+	ASSERT_STRING(Real128_ToExpString(_longMediumPi, 1, False), "3.14159265358979323e+8", 22);
+	ASSERT_STRING(Real128_ToExpString(_longNegMediumPi, 1, False), "-3.14159265358979323e+8", 23);
+
+	ASSERT_STRING(Real128_ToExpString(RD(12345000000), 1, False), "1.2345000000e+10", 16);
+	ASSERT_STRING(Real128_ToExpString(RD(-12345000000), 1, False), "-1.2345000000e+10", 17);
+
+	ASSERT_STRING(Real128_ToExpString(RD(12345000000), 10, False), "1.2345000000e+10", 16);
+	ASSERT_STRING(Real128_ToExpString(RD(-12345000000), 10, False), "-1.2345000000e+10", 17);
+
+	ASSERT_STRING(Real128_ToExpString(Real128_ParseC("12345000000"), 10, False), "1.2345000000e+10", 16);
+	ASSERT_STRING(Real128_ToExpString(Real128_ParseC("-12345000000"), 10, False), "-1.2345000000e+10", 17);
+
+	ASSERT_STRING(Real128_ToExpString(Real128_ParseC("1.2345E+10"), 10, False), "1.2345000000e+10", 16);
+	ASSERT_STRING(Real128_ToExpString(Real128_ParseC("-1.2345E+10"), 10, False), "-1.2345000000e+10", 17);
+
+	ASSERT_STRING(Real128_ToExpString(Real128_ParseC("1.2345E+10"), 1, False), "1.2345e+10", 10);
+	ASSERT_STRING(Real128_ToExpString(Real128_ParseC("-1.2345E+10"), 1, False), "-1.2345e+10", 11);
+
+	ASSERT_STRING(Real128_ToExpString(RD(0.125), 1, False), "1.25e-1", 7);
+	ASSERT_STRING(Real128_ToExpString(RD(-0.125), 1, False), "-1.25e-1", 8);
+
+	ASSERT_STRING(Real128_ToExpString(Real128_ParseC("0.125000"), 1, False), "1.25000e-1", 10);
+	ASSERT_STRING(Real128_ToExpString(Real128_ParseC("-0.125000"), 1, False), "-1.25000e-1", 11);
+
+	ASSERT_STRING(Real128_ToExpString(_fiveSevenNineOhOh, 1, False), "5.7900e+2", 9);
+	ASSERT_STRING(Real128_ToExpString(_fiveSevenNineOhOh, 2, False), "5.7900e+2", 9);
+	ASSERT_STRING(Real128_ToExpString(_fiveSevenNineOhOh, 3, False), "5.7900e+2", 9);
+	ASSERT_STRING(Real128_ToExpString(_fiveSevenNineOhOh, 4, False), "5.7900e+2", 9);
+	ASSERT_STRING(Real128_ToExpString(_fiveSevenNineOhOh, 5, False), "5.79000e+2", 10);
+	ASSERT_STRING(Real128_ToExpString(_fiveSevenNineOhOh, 6, False), "5.790000e+2", 11);
 }
 END_TEST
 

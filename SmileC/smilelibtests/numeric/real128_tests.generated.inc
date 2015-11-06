@@ -5,6 +5,7 @@ START_TEST_SUITE(Real128Tests)
 	CanConvertInt32ToReal128,
 	CanConvertInt64ToReal128,
 	CanParseReal128,
+	CanStringifyReal128InExponentialForm,
 	CanAddReal128,
 }
 END_TEST_SUITE(Real128Tests)
