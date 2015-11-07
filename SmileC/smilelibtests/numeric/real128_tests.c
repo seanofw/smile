@@ -226,6 +226,10 @@ START_TEST(CanParseReal128)
 
 	ASSERT(Real128_TryParse(String_FromC("inf"), &result));
 	ASSERT(Eq(result, Real128_Inf));
+	ASSERT(Real128_TryParse(String_FromC("INF"), &result));
+	ASSERT(Eq(result, Real128_Inf));
+	ASSERT(Real128_TryParse(String_FromC("Inf"), &result));
+	ASSERT(Eq(result, Real128_Inf));
 
 	ASSERT(Real128_TryParse(String_FromC("-inf"), &result));
 	ASSERT(Eq(result, Real128_NegInf));
@@ -237,6 +241,12 @@ START_TEST(CanParseReal128)
 	ASSERT(Real128_TryParse(String_FromC("nan"), &result));
 	ASSERT(Real128_IsNaN(result));
 	ASSERT(!Real128_IsNeg(result));
+	ASSERT(Real128_TryParse(String_FromC("NAN"), &result));
+	ASSERT(Real128_IsNaN(result));
+	ASSERT(!Real128_IsNeg(result));
+	ASSERT(Real128_TryParse(String_FromC("NaN"), &result));
+	ASSERT(Real128_IsNaN(result));
+	ASSERT(!Real128_IsNeg(result));
 
 	ASSERT(Real128_TryParse(String_FromC("-nan"), &result));
 	ASSERT(Real128_IsNaN(result));
@@ -244,7 +254,7 @@ START_TEST(CanParseReal128)
 }
 END_TEST
 
-START_TEST(CanStringifyReal128InExponentialForm)
+START_TEST(CanStringifyReal128NumbersInExponentialForm)
 {
 	ASSERT_STRING(Real128_ToExpString(_pi, 1, False), "3.14159265358979323e+0", 22);
 	ASSERT_STRING(Real128_ToExpString(_pi, 1, True), "+3.14159265358979323e+0", 23);
@@ -280,6 +290,125 @@ START_TEST(CanStringifyReal128InExponentialForm)
 	ASSERT_STRING(Real128_ToExpString(_fiveSevenNineOhOh, 4, False), "5.7900e+2", 9);
 	ASSERT_STRING(Real128_ToExpString(_fiveSevenNineOhOh, 5, False), "5.79000e+2", 10);
 	ASSERT_STRING(Real128_ToExpString(_fiveSevenNineOhOh, 6, False), "5.790000e+2", 11);
+}
+END_TEST
+
+START_TEST(CanStringifySpecialReal128ValuesInExponentialForm)
+{
+	ASSERT_STRING(Real128_ToExpString(Real128_Zero, 0, False), "0", 1);
+	ASSERT_STRING(Real128_ToExpString(Real128_Zero, 0, True), "+0", 2);
+	ASSERT_STRING(Real128_ToExpString(Real128_Zero, 5, False), "0.00000", 7);
+	ASSERT_STRING(Real128_ToExpString(Real128_Zero, 5, True), "+0.00000", 8);
+
+	ASSERT_STRING(Real128_ToExpString(Real128_One, 0, False), "1e+0", 4);
+	ASSERT_STRING(Real128_ToExpString(Real128_One, 0, True), "+1e+0", 5);
+	ASSERT_STRING(Real128_ToExpString(Real128_One, 5, False), "1.00000e+0", 10);
+	ASSERT_STRING(Real128_ToExpString(Real128_One, 5, True), "+1.00000e+0", 11);
+
+	ASSERT_STRING(Real128_ToExpString(Real128_Inf, 1, False), "inf", 3);
+	ASSERT_STRING(Real128_ToExpString(Real128_Inf, 1, True), "+inf", 4);
+	ASSERT_STRING(Real128_ToExpString(Real128_NegInf, 1, False), "-inf", 4);
+
+	ASSERT_STRING(Real128_ToExpString(Real128_NaN, 1, False), "NaN", 3);
+	ASSERT_STRING(Real128_ToExpString(Real128_NaN, 1, True), "+NaN", 4);
+	ASSERT_STRING(Real128_ToExpString(Real128_NegNaN, 1, False), "-NaN", 4);
+}
+END_TEST
+
+START_TEST(CanStringifyReal128NumbersInFixedForm)
+{
+	// Things split across the decimal point.
+	ASSERT_STRING(Real128_ToFixedString(_pi, 1, 1, False), "3.14159265358979323", 19);
+	ASSERT_STRING(Real128_ToFixedString(_pi, 1, 1, True), "+3.14159265358979323", 20);
+	ASSERT_STRING(Real128_ToFixedString(_negPi, 1, 1, False), "-3.14159265358979323", 20);
+
+	ASSERT_STRING(Real128_ToFixedString(_longMediumPi, 1, 1, False), "314159265.358979323", 19);
+	ASSERT_STRING(Real128_ToFixedString(_longMediumPi, 1, 1, True), "+314159265.358979323", 20);
+	ASSERT_STRING(Real128_ToFixedString(_longNegMediumPi, 1, 1, False), "-314159265.358979323", 20);
+
+	// Things that only exist after the decimal point.
+	ASSERT_STRING(Real128_ToFixedString(Real128_ParseC("0.125000"), 1, 1, False), "0.125000", 8);
+	ASSERT_STRING(Real128_ToFixedString(Real128_ParseC("-0.125000"), 1, 1, False), "-0.125000", 9);
+	ASSERT_STRING(Real128_ToFixedString(Real128_ParseC("125e-5"), 1, 1, False), "0.00125", 7);
+	ASSERT_STRING(Real128_ToFixedString(Real128_ParseC("-125e-5"), 1, 1, False), "-0.00125", 8);
+	ASSERT_STRING(Real128_ToFixedString(Real128_ParseC("125e-5"), 0, 0, False), ".00125", 6);
+	ASSERT_STRING(Real128_ToFixedString(Real128_ParseC("-125e-5"), 0, 0, False), "-.00125", 7);
+	ASSERT_STRING(Real128_ToFixedString(Real128_ParseC("125e-5"), 3, 7, False), "000.0012500", 11);
+	ASSERT_STRING(Real128_ToFixedString(Real128_ParseC("-125e-5"), 3, 7, False), "-000.0012500", 12);
+
+	// Things that only exist before the decimal point.
+	ASSERT_STRING(Real128_ToFixedString(Real128_ParseC("125000"), 1, 1, False), "125000.0", 8);
+	ASSERT_STRING(Real128_ToFixedString(Real128_ParseC("-125000"), 1, 1, False), "-125000.0", 9);
+	ASSERT_STRING(Real128_ToFixedString(Real128_ParseC("125e+3"), 1, 1, False), "125000.0", 8);
+	ASSERT_STRING(Real128_ToFixedString(Real128_ParseC("-125e+3"), 1, 1, False), "-125000.0", 9);
+	ASSERT_STRING(Real128_ToFixedString(Real128_ParseC("125e+3"), 0, 0, False), "125000", 6);
+	ASSERT_STRING(Real128_ToFixedString(Real128_ParseC("-125e+3"), 0, 0, False), "-125000", 7);
+	ASSERT_STRING(Real128_ToFixedString(Real128_ParseC("125e+3"), 10, 3, False), "0000125000.000", 14);
+	ASSERT_STRING(Real128_ToFixedString(Real128_ParseC("-125e+3"), 10, 3, False), "-0000125000.000", 15);
+}
+END_TEST
+
+START_TEST(CanStringifySpecialReal128ValuesInFixedForm)
+{
+	ASSERT_STRING(Real128_ToFixedString(Real128_Zero, 0, 0, False), "0", 1);
+	ASSERT_STRING(Real128_ToFixedString(Real128_Zero, 0, 0, True), "+0", 2);
+	ASSERT_STRING(Real128_ToFixedString(Real128_Zero, 5, 5, False), "00000.00000", 11);
+	ASSERT_STRING(Real128_ToFixedString(Real128_Zero, 5, 5, True), "+00000.00000", 12);
+
+	ASSERT_STRING(Real128_ToFixedString(Real128_One, 0, 0, False), "1", 1);
+	ASSERT_STRING(Real128_ToFixedString(Real128_One, 0, 0, True), "+1", 2);
+	ASSERT_STRING(Real128_ToFixedString(Real128_One, 5, 5, False), "00001.00000", 11);
+	ASSERT_STRING(Real128_ToFixedString(Real128_One, 5, 5, True), "+00001.00000", 12);
+
+	ASSERT_STRING(Real128_ToFixedString(Real128_Inf, 0, 0, False), "inf", 3);
+	ASSERT_STRING(Real128_ToFixedString(Real128_Inf, 0, 0, True), "+inf", 4);
+	ASSERT_STRING(Real128_ToFixedString(Real128_NegInf, 0, 0, False), "-inf", 4);
+
+	ASSERT_STRING(Real128_ToFixedString(Real128_NaN, 0, 0, False), "NaN", 3);
+	ASSERT_STRING(Real128_ToFixedString(Real128_NaN, 0, 0, True), "+NaN", 4);
+	ASSERT_STRING(Real128_ToFixedString(Real128_NegNaN, 0, 0, False), "-NaN", 4);
+}
+END_TEST
+
+START_TEST(CanStringifyReal128NumbersGenerically)
+{
+	// Things split across the decimal point.
+	ASSERT_STRING(Real128_ToString(_pi), "3.14159265358979323", 19);
+	ASSERT_STRING(Real128_ToString(_negPi), "-3.14159265358979323", 20);
+
+	ASSERT_STRING(Real128_ToString(_longMediumPi), "314159265.358979323", 19);
+	ASSERT_STRING(Real128_ToString(_longNegMediumPi), "-314159265.358979323", 20);
+
+	// Things that only exist after the decimal point.
+	ASSERT_STRING(Real128_ToString(Real128_ParseC("0.125000")), ".125000", 7);
+	ASSERT_STRING(Real128_ToString(Real128_ParseC("-0.125000")), "-.125000", 8);
+	ASSERT_STRING(Real128_ToString(Real128_ParseC("125e-5")), ".00125", 6);
+	ASSERT_STRING(Real128_ToString(Real128_ParseC("-125e-5")), "-.00125", 7);
+	ASSERT_STRING(Real128_ToString(Real128_ParseC("125e-10")), "1.25e-8", 7);
+	ASSERT_STRING(Real128_ToString(Real128_ParseC("-125e-10")), "-1.25e-8", 8);
+	ASSERT_STRING(Real128_ToString(Real128_ParseC("1250e-11")), "1.250e-8", 8);
+	ASSERT_STRING(Real128_ToString(Real128_ParseC("-1250e-11")), "-1.250e-8", 9);
+
+	// Things that only exist before the decimal point.
+	ASSERT_STRING(Real128_ToString(Real128_ParseC("125000")), "125000", 6);
+	ASSERT_STRING(Real128_ToString(Real128_ParseC("-125000")), "-125000", 7);
+	ASSERT_STRING(Real128_ToString(Real128_ParseC("125e+3")), "125000", 6);
+	ASSERT_STRING(Real128_ToString(Real128_ParseC("-125e+3")), "-125000", 7);
+	ASSERT_STRING(Real128_ToString(Real128_ParseC("125e+10")), "1.25e+12", 8);
+	ASSERT_STRING(Real128_ToString(Real128_ParseC("-125e+10")), "-1.25e+12", 9);
+}
+END_TEST
+
+START_TEST(CanStringifySpecialReal128ValuesGenerically)
+{
+	ASSERT_STRING(Real128_ToString(Real128_Zero), "0", 1);
+	ASSERT_STRING(Real128_ToString(Real128_One), "1", 1);
+
+	ASSERT_STRING(Real128_ToString(Real128_Inf), "inf", 3);
+	ASSERT_STRING(Real128_ToString(Real128_NegInf), "-inf", 4);
+
+	ASSERT_STRING(Real128_ToString(Real128_NaN), "NaN", 3);
+	ASSERT_STRING(Real128_ToString(Real128_NegNaN), "-NaN", 4);
 }
 END_TEST
 

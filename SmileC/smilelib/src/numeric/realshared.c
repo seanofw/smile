@@ -41,10 +41,6 @@ String Real_ToFixedString(Byte *buffer, Int len, Int exp, Int kind, Int minIntDi
 	INIT_INLINE_STRINGBUILDER(numBuilder);
 
 	switch (kind) {
-	case REAL_KIND_POS_ZERO:
-		return forceSign ? Real_String_PosZero : Real_String_Zero;
-	case REAL_KIND_NEG_ZERO:
-		return forceSign ? Real_String_NegZero : Real_String_Zero;
 	case REAL_KIND_POS_INF:
 		return forceSign ? Real_String_PosInf : Real_String_Inf;
 	case REAL_KIND_NEG_INF:
@@ -57,23 +53,87 @@ String Real_ToFixedString(Byte *buffer, Int len, Int exp, Int kind, Int minIntDi
 		return forceSign ? Real_String_PosSNaN : Real_String_SNaN;
 	case REAL_KIND_NEG_SNAN:
 		return Real_String_NegSNaN;
+	case REAL_KIND_POS_ZERO:
 	case REAL_KIND_POS_NUM:
 		if (forceSign) {
 			StringBuilder_AppendByte(numBuilder, '+');
 		}
 		break;
+	case REAL_KIND_NEG_ZERO:
 	case REAL_KIND_NEG_NUM:
 		StringBuilder_AppendByte(numBuilder, '-');
 		break;
 	}
 
-	UNUSED(buffer);
-	UNUSED(len);
-	UNUSED(exp);
-	UNUSED(kind);
-	UNUSED(minIntDigits);
-	UNUSED(minFracDigits);
-	UNUSED(forceSign);
+	if (exp >= 0) {
+
+		// All digits are integer; none are fractional.
+		if (len + exp < minIntDigits) {
+			// Need to prepend initial zeros.
+			StringBuilder_AppendRepeat(numBuilder, '0', minIntDigits - (len + exp));
+		}
+
+		// Copy all the integer digits.
+		StringBuilder_Append(numBuilder, buffer, 0, len);
+
+		if (exp > 0) {
+			// Emit trailing zeros.
+			StringBuilder_AppendRepeat(numBuilder, '0', exp);
+		}
+
+		if (minFracDigits > 0) {
+			// Need to append trailing fractional zeros.
+			StringBuilder_AppendByte(numBuilder, '.');
+			StringBuilder_AppendRepeat(numBuilder, '0', minFracDigits);
+		}
+	}
+	else if (-exp >= len) {
+
+		// All digits are fractional; none are integer.
+		if (minIntDigits > 0) {
+			// Need to prepend initial zeros.
+			StringBuilder_AppendRepeat(numBuilder, '0', minIntDigits);
+		}
+
+		// Emit the decimal point.
+		StringBuilder_AppendByte(numBuilder, '.');
+
+		if (-exp - len > 0) {
+			// Emit leading zeros.
+			StringBuilder_AppendRepeat(numBuilder, '0', -exp - len);
+		}
+
+		// Copy the fractional digits.
+		StringBuilder_Append(numBuilder, buffer, 0, len);
+
+		if (minFracDigits > -exp) {
+			// Emit trailing zeros.
+			StringBuilder_AppendRepeat(numBuilder, '0', minFracDigits - -exp);
+		}
+	}
+	else {
+		// Negative exponent, and split across the decimal point: Some integer, some fractional digits.
+		Int numIntDigits = len - -exp, numFracDigits = -exp;
+
+		if (numIntDigits < minIntDigits) {
+			// Need to prepend initial zeros.
+			StringBuilder_AppendRepeat(numBuilder, '0', minIntDigits - numIntDigits);
+		}
+
+		// Copy all the integer digits.
+		StringBuilder_Append(numBuilder, buffer, 0, numIntDigits);
+
+		// Emit the decimal point.
+		StringBuilder_AppendByte(numBuilder, '.');
+
+		// Copy the fractional digits.
+		StringBuilder_Append(numBuilder, buffer, numIntDigits, numFracDigits);
+
+		if (numFracDigits < minFracDigits) {
+			// Need to append trailing zeros.
+			StringBuilder_AppendRepeat(numBuilder, '0', minFracDigits - numFracDigits);
+		}
+	}
 
 	return StringBuilder_ToString(numBuilder);
 }
@@ -86,10 +146,6 @@ String Real_ToExpString(Byte *buffer, Int len, Int exp, Int kind, Int minFracDig
 	INIT_INLINE_STRINGBUILDER(numBuilder);
 
 	switch (kind) {
-	case REAL_KIND_POS_ZERO:
-		return forceSign ? Real_String_PosZero : Real_String_Zero;
-	case REAL_KIND_NEG_ZERO:
-		return forceSign ? Real_String_NegZero : Real_String_Zero;
 	case REAL_KIND_POS_INF:
 		return forceSign ? Real_String_PosInf : Real_String_Inf;
 	case REAL_KIND_NEG_INF:
@@ -102,11 +158,13 @@ String Real_ToExpString(Byte *buffer, Int len, Int exp, Int kind, Int minFracDig
 		return forceSign ? Real_String_PosSNaN : Real_String_SNaN;
 	case REAL_KIND_NEG_SNAN:
 		return Real_String_NegSNaN;
+	case REAL_KIND_POS_ZERO:
 	case REAL_KIND_POS_NUM:
 		if (forceSign) {
 			StringBuilder_AppendByte(numBuilder, '+');
 		}
 		break;
+	case REAL_KIND_NEG_ZERO:
 	case REAL_KIND_NEG_NUM:
 		StringBuilder_AppendByte(numBuilder, '-');
 		break;
@@ -115,8 +173,10 @@ String Real_ToExpString(Byte *buffer, Int len, Int exp, Int kind, Int minFracDig
 	// Output the digits.
 	StringBuilder_AppendByte(numBuilder, buffer[0]);
 	numFracDigits = len - 1;
-	if (numFracDigits > 0) {
+	if (numFracDigits > 0 || numFracDigits < minFracDigits) {
 		StringBuilder_AppendByte(numBuilder, '.');
+	}
+	if (numFracDigits > 0) {
 		StringBuilder_Append(numBuilder, buffer, 1, numFracDigits);
 	}
 	exp += numFracDigits;
@@ -131,9 +191,12 @@ String Real_ToExpString(Byte *buffer, Int len, Int exp, Int kind, Int minFracDig
 		numFracDigits += (minFracDigits - numFracDigits);
 	}
 
-	// Output the exponent, always including 'e+' or 'e-' before it.
-	StringBuilder_Append(numBuilder, exp < 0 ? "e-" : "e+", 0, 2);
-	StringBuilder_AppendFormat(numBuilder, "%d", exp < 0 ? -exp : exp);
+	// Output the exponent, always including 'e+' or 'e-' before it.  The only exception
+	// to this is if we're outputting a zero.
+	if (kind != REAL_KIND_POS_ZERO && kind != REAL_KIND_NEG_ZERO) {
+		StringBuilder_Append(numBuilder, exp < 0 ? "e-" : "e+", 0, 2);
+		StringBuilder_AppendFormat(numBuilder, "%d", exp < 0 ? -exp : exp);
+	}
 
 	// And we're done!
 	return StringBuilder_ToString(numBuilder);

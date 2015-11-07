@@ -237,3 +237,21 @@ String Real128_ToExpString(Real128 real128, Int minFracDigits, Bool forceSign)
 
 	return Real_ToExpString(buffer, buflen, exp, kind, minFracDigits, forceSign);
 }
+
+String Real128_ToStringEx(Real128 real128, Int minIntDigits, Int minFracDigits, Bool forceSign)
+{
+	Byte buffer[64];
+	Int32 buflen, exp, kind;
+
+	buflen = Real128_Decompose(buffer, &exp, &kind, real128);
+
+	if (exp + buflen - 1 > 9 || exp + buflen - 1 < -6) {
+		// Very large (1'000'000'000 or larger), or very small (smaller than 0.00001), so
+		// print in exponential notation.
+		return Real_ToExpString(buffer, buflen, exp, kind, minFracDigits, forceSign);
+	}
+	else {
+		// Moderate range:  In (1'000'000'000, 0.00001], so print it as a traditional decimal string.
+		return Real_ToFixedString(buffer, buflen, exp, kind, minIntDigits, minFracDigits, forceSign);
+	}
+}

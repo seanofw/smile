@@ -45,6 +45,7 @@ SMILE_API Real64 Real128_ToReal64(Real128 real128);
 SMILE_API Bool Real128_TryParse(String str, Real128 *result);
 SMILE_API String Real128_ToFixedString(Real128 real128, Int minIntDigits, Int minFracDigits, Bool forceSign);
 SMILE_API String Real128_ToExpString(Real128 real128, Int minFracDigits, Bool forceSign);
+SMILE_API String Real128_ToStringEx(Real128 real128, Int minIntDigits, Int minFracDigits, Bool forceSign);
 SMILE_API Int32 Real128_Decompose(Byte *str, Int32 *exp, Int32 *kind, Real128 real128);
 
 SMILE_API Real128 Real128_Add(Real128 a, Real128 b);
@@ -85,6 +86,11 @@ Inline Real128 Real128_ParseC(const char *str)
 	Real128 result;
 	Real128_TryParse(string, &result);
 	return result;
+}
+
+Inline String Real128_ToString(Real128 real128)
+{
+	return Real128_ToStringEx(real128, 0, 0, False);
 }
 
 #endif
