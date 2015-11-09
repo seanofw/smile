@@ -33,6 +33,7 @@ SMILE_API Real128 Real128_NegSixteen = { { 0x0000000000000010ULL, 0xB04000000000
 SMILE_API Real128 Real128_NegTen =	{ { 0x000000000000000AULL, 0xB040000000000000ULL } };
 SMILE_API Real128 Real128_NegTwo =	{ { 0x0000000000000002ULL, 0xB040000000000000ULL } };
 SMILE_API Real128 Real128_NegOne =	{ { 0x0000000000000001ULL, 0xB040000000000000ULL } };
+SMILE_API Real128 Real128_NegZero =	{ { 0x0000000000000000ULL, 0xB040000000000000ULL } };
 SMILE_API Real128 Real128_Zero =	{ { 0x0000000000000000ULL, 0x3040000000000000ULL } };
 SMILE_API Real128 Real128_One =		{ { 0x0000000000000001ULL, 0x3040000000000000ULL } };
 SMILE_API Real128 Real128_Two =		{ { 0x0000000000000002ULL, 0x3040000000000000ULL } };
@@ -253,5 +254,103 @@ String Real128_ToStringEx(Real128 real128, Int minIntDigits, Int minFracDigits, 
 	else {
 		// Moderate range:  In (1'000'000'000, 0.00001], so print it as a traditional decimal string.
 		return Real_ToFixedString(buffer, buflen, exp, kind, minIntDigits, minFracDigits, forceSign);
+	}
+}
+
+SMILE_API Real128 Real128_Mod(Real128 a, Real128 b)
+{
+	// Compute the remainder (whose sign will match a, the dividend).
+	Real128 mod = Real128_Rem(a, b);
+
+	// Correct the sign of the modulus to match that of b (the divisor).
+	if ((b.value[1] ^ mod.value[1]) & 0x8000000000000000ULL)
+		mod.value[1] ^= 0x8000000000000000ULL;
+
+	return mod;
+}
+
+// Possible fast classifications for the sort-comparison code below.
+#define POS 0
+#define NEG 1
+#define PINF 2
+#define NINF 3
+#define PNAN 4
+#define NNAN 5
+
+static SByte _comparisonTable[6][6] = {
+	/*+X  -X  +I  -I  +N  -N */
+	{  0, +1, -1, +1, -1, +1 },	// +Num
+	{ -1,  0, -1, +1, -1, +1 },	// -Num
+	{ +1, +1,  2, +1, -1, +1 },	// +Inf
+	{ -1, -1, -1,  3, -1, +1 },	// -Inf
+	{ +1, +1, +1, +1,  2, +1 },	// +NaN
+	{ -1, -1, -1, -1, -1,  3 },	// -NaN
+};
+
+static Byte _classifyTable[64] = {
+	POS, POS, POS, POS, POS, POS, POS, POS,
+	POS, POS, POS, POS, POS, POS, POS, POS,
+	POS, POS, POS, POS, POS, POS, POS, POS,
+	POS, POS, POS, POS, POS, POS, PINF, PNAN,
+	NEG, NEG, NEG, NEG, NEG, NEG, NEG, NEG,
+	NEG, NEG, NEG, NEG, NEG, NEG, NEG, NEG,
+	NEG, NEG, NEG, NEG, NEG, NEG, NEG, NEG,
+	NEG, NEG, NEG, NEG, NEG, NEG, NINF, NNAN,
+};
+
+#define CLASSIFY(__number__) \
+	(_classifyTable[(Int)(((__number__).value[1] & 0xFC00000000000000ULL) >> (64 - 6))])
+
+/// <summary>
+/// Compare 'a' and 'b' for sorting purposes.  This returns 0 if 'a' and 'b' are equal,
+/// and returns -1 if 'a' is less than 'b', and +1 if 'a' is greater than 'b'.  For sorting
+/// purposes, NaNs are considered to be orderable values beyond Infinity, and NaNs or
+/// Infinities of the same class with the same sign and coeffients are considered equal.
+/// (SNaNs are also considered to be beyond QNaNs.)  Note also that for sorting purposes,
+/// -0 equals +0.
+/// </summary>
+/// <param name="a">The first value to compare.</param>
+/// <param name="b">The second value to compare.</param>
+/// <returns>+1 if a > b; -1 if a < b; and 0 if a == b.</returns>
+SMILE_API Int Real128_Compare(Real128 a, Real128 b)
+{
+	Byte aClass = CLASSIFY(a);
+	Byte bClass = CLASSIFY(b);
+
+	switch (_comparisonTable[aClass][bClass]) {
+
+		case +1:
+			// A is definitely a larger class than B.
+			return +1;
+
+		case -1:
+			// A is definitely a smaller class than B.
+			return -1;
+
+		case 2:
+			// Same non-finite positive type, so just compare coefficient bits.
+			if (a.value[1] != b.value[1])
+				return a.value[1] > b.value[1] ? +1 : -1;
+			if (a.value[0] != b.value[0])
+				return a.value[0] > b.value[0] ? +1 : -1;
+			return 0;
+
+		case 3:
+			// Same non-finite negative type, so just compare coefficient bits.
+			if (a.value[1] != b.value[1])
+				return a.value[1] > b.value[1] ? -1 : +1;
+			if (a.value[0] != b.value[0])
+				return a.value[0] > b.value[0] ? -1 : +1;
+			return 0;
+
+		case 0:
+			// Both are finite values, so compare for real.
+			if (Real128_Eq(a, b)) return 0;		// Equality is a slightly faster test, so it goes first.
+			if (Real128_Lt(a, b)) return -1;
+			return +1;
+
+		default:
+			// Shouldn't ever get here.
+			return 0;
 	}
 }

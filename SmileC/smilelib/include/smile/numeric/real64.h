@@ -4,10 +4,34 @@
 #ifndef __SMILE_TYPES_H__
 #include <smile/types.h>
 #endif
+#ifndef __SMILE_STRING_H__
+#include <smile/string.h>
+#endif
 
+//-------------------------------------------------------------------------------------------------
+// Predefined constants.
+//
+// Note that the NaN constants are only one of many possible NaNs of each sign; these NaNs
+// are not the only NaNs that can exist.  (Also note that these are Quiet NaNs, not Signaling
+// NaNs; Smile does not support Signaling NaNs).
+
+SMILE_API Real64 Real64_NegNaN;
+SMILE_API Real64 Real64_NegInf;
+SMILE_API Real64 Real64_NegSixteen;
+SMILE_API Real64 Real64_NegTen;
+SMILE_API Real64 Real64_NegTwo;
+SMILE_API Real64 Real64_NegOne;
+SMILE_API Real64 Real64_NegZero;
 SMILE_API Real64 Real64_Zero;
 SMILE_API Real64 Real64_One;
-SMILE_API Real64 Real64_NegOne;
+SMILE_API Real64 Real64_Two;
+SMILE_API Real64 Real64_Ten;
+SMILE_API Real64 Real64_Sixteen;
+SMILE_API Real64 Real64_Inf;
+SMILE_API Real64 Real64_NaN;
+
+//-------------------------------------------------------------------------------------------------
+// External functions.
 
 SMILE_API Real64 Real64_FromInt32(Int32 int32);
 SMILE_API Real64 Real64_FromInt64(Int64 int64);
@@ -19,13 +43,93 @@ SMILE_API Real128 Real64_ToReal128(Real64 real64);
 SMILE_API Float32 Real64_ToFloat32(Real64 real64);
 SMILE_API Float64 Real64_ToFloat64(Real64 real64);
 
+SMILE_API Bool Real64_TryParse(String str, Real64 *result);
+SMILE_API String Real64_ToFixedString(Real64 real64, Int minIntDigits, Int minFracDigits, Bool forceSign);
+SMILE_API String Real64_ToExpString(Real64 real64, Int minFracDigits, Bool forceSign);
+SMILE_API String Real64_ToStringEx(Real64 real64, Int minIntDigits, Int minFracDigits, Bool forceSign);
+SMILE_API Int32 Real64_Decompose(Byte *str, Int32 *exp, Int32 *kind, Real64 real64);
+
 SMILE_API Real64 Real64_Add(Real64 a, Real64 b);
 SMILE_API Real64 Real64_Sub(Real64 a, Real64 b);
 SMILE_API Real64 Real64_Mul(Real64 a, Real64 b);
 SMILE_API Real64 Real64_Div(Real64 a, Real64 b);
+SMILE_API Real64 Real64_Mod(Real64 a, Real64 b);
 SMILE_API Real64 Real64_Rem(Real64 a, Real64 b);
+SMILE_API Real64 Real64_IeeeRem(Real64 a, Real64 b);
 
 SMILE_API Real64 Real64_Neg(Real64 real64);
 SMILE_API Real64 Real64_Abs(Real64 real64);
+
+SMILE_API Real64 Real64_Ceil(Real64 real64);
+SMILE_API Real64 Real64_Floor(Real64 real64);
+SMILE_API Real64 Real64_Trunc(Real64 real64);
+SMILE_API Real64 Real64_Modf(Real64 real64, Real64 *intPart);
+SMILE_API Real64 Real64_Round(Real64 real64);
+SMILE_API Real64 Real64_BankRound(Real64 real64);
+
+SMILE_API Real64 Real64_Sqrt(Real64 real64);
+
+SMILE_API Bool Real64_IsInf(Real64 real64);
+SMILE_API Bool Real64_IsNaN(Real64 real64);
+SMILE_API Bool Real64_IsNeg(Real64 real64);
+SMILE_API Bool Real64_IsZero(Real64 real64);
+SMILE_API Bool Real64_IsFinite(Real64 real64);
+SMILE_API Bool Real64_IsOrderable(Real64 a, Real64 b);
+
+SMILE_API Int Real64_Compare(Real64 a, Real64 b);
+
+SMILE_API Bool Real64_Eq(Real64 a, Real64 b);
+SMILE_API Bool Real64_Ne(Real64 a, Real64 b);
+SMILE_API Bool Real64_Lt(Real64 a, Real64 b);
+SMILE_API Bool Real64_Gt(Real64 a, Real64 b);
+SMILE_API Bool Real64_Le(Real64 a, Real64 b);
+SMILE_API Bool Real64_Ge(Real64 a, Real64 b);
+
+//-------------------------------------------------------------------------------------------------
+// Inline functions.
+
+Inline Real64 Real64_Sign(Real64 x)
+{
+	return Real64_IsZero(x) ? Real64_Zero
+		: Real64_IsNeg(x) ? Real64_NegOne
+		: Real64_One;
+}
+
+Inline Int Real64_IntSign(Real64 x)
+{
+	return Real64_IsZero(x) ? 0
+		: Real64_IsNeg(x) ? -1
+		: +1;
+}
+
+Inline Real64 Real64_Parse(String str)
+{
+	Real64 result;
+	Real64_TryParse(str, &result);
+	return result;
+}
+
+Inline Bool Real64_TryParseC(const char *str, Real64 *result)
+{
+	DECLARE_TEMP_C_STRING(string);
+	INIT_TEMP_C_STRING(string, str);
+
+	return Real64_TryParse(string, result);
+}
+
+Inline Real64 Real64_ParseC(const char *str)
+{
+	DECLARE_TEMP_C_STRING(string);
+	INIT_TEMP_C_STRING(string, str);
+
+	Real64 result;
+	Real64_TryParse(string, &result);
+	return result;
+}
+
+Inline String Real64_ToString(Real64 real64)
+{
+	return Real64_ToStringEx(real64, 0, 0, False);
+}
 
 #endif

@@ -354,9 +354,6 @@
     <ClCompile Include="decimal\bid32_noncomp.c">
       <Filter>decimal\src</Filter>
     </ClCompile>
-    <ClCompile Include="decimal\bid32_pow.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
     <ClCompile Include="decimal\bid32_quantexpd.c">
       <Filter>decimal\src</Filter>
     </ClCompile>

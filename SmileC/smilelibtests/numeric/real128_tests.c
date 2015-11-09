@@ -19,9 +19,6 @@
 
 TEST_SUITE(Real128Tests)
 
-// A note about the tests in this file:  These are ported (with slight mutations) from the
-// very exhaustive test suite Intel provides with its BID library.
-
 //-------------------------------------------------------------------------------------------------
 //  Helper functions and macros.
 
@@ -93,15 +90,6 @@ Inline Eq(Real128 a, Real128 b)
 //-------------------------------------------------------------------------------------------------
 //  Static constants.
 
-// Small things involving fractions.
-static const Real128 _onePointFive = { { 15ULL, 0x303E000000000000ULL } };
-static const Real128 _negOnePointFive = { { 15ULL, 0xB03E000000000000ULL } };
-static const Real128 _ohPointFive = { { 50ULL, 0x303C000000000000ULL } };
-static const Real128 _ohPointTwoFive = { { 25ULL, 0x303C000000000000ULL } };
-static const Real128 _ohPointSevenFive = { { 75ULL, 0x303C000000000000ULL } };
-static const Real128 _ohPointOneTwoFive = { { 125ULL, 0x303A000000000000ULL } };
-static const Real128 _onePointSixTwoFive = { { 1625ULL, 0x303A000000000000ULL } };
-
 // Common limits.
 static const Real128 _int32Max = { { 0x7FFFFFFFULL, 0x3040000000000000ULL } };
 static const Real128 _int32Min = { { 0x80000000ULL, 0xB040000000000000ULL } };
@@ -109,7 +97,6 @@ static const Real128 _int64Max = { { 0x7FFFFFFFFFFFFFFFULL, 0x3040000000000000UL
 static const Real128 _int64Min = { { 0x8000000000000000ULL, 0xB040000000000000ULL } };
 
 // Miscellaneous integers.
-static const Real128 _three = { { 3ULL, 0x3040000000000000ULL } };
 static const Real128 _fiveSevenNine = { { 579ULL, 0x3040000000000000ULL } };
 static const Real128 _fiveSevenNineOhOh = { { 57900ULL, 0x303C000000000000ULL } };
 static const Real128 _shortBigPi = { { 314159265ULL, 0x3040000000000000ULL } };
@@ -121,6 +108,8 @@ static const Real128 _negPi = { { 314159265358979323ULL, 0xB01E000000000000ULL }
 
 //-------------------------------------------------------------------------------------------------
 //  Type-Conversion Tests.
+//
+//  Some of these are ganked straight from Intel's tests included with their BID library.
 
 START_TEST(CanConvertInt32ToReal128)
 {
@@ -253,6 +242,9 @@ START_TEST(CanParseReal128)
 	ASSERT(Real128_IsNeg(result));
 }
 END_TEST
+
+//-------------------------------------------------------------------------------------------------
+//  Stringification Tests.
 
 START_TEST(CanStringifyReal128NumbersInExponentialForm)
 {
@@ -417,9 +409,632 @@ END_TEST
 
 START_TEST(CanAddReal128)
 {
-	ASSERT(Eq(Real128_Add(RI(123), RI(456)), _fiveSevenNine));
-	ASSERT(Eq(Real128_Add(RD(1.5), RD(0.125)), _onePointSixTwoFive));
-	ASSERT(Eq(Real128_Add(RD(1.5), RD(-3.0)), _negOnePointFive));
+	ASSERT(Eq(Real128_Add(RI(123), RI(456)), RI(579)));
+	ASSERT(Eq(Real128_Add(RD(1.5), RD(0.125)), RD(1.625)));
+	ASSERT(Eq(Real128_Add(RD(1.5), RD(-3.0)), RD(-1.5)));
+}
+END_TEST
+
+START_TEST(CanMultiplyReal128)
+{
+	ASSERT(Eq(Real128_Mul(RI(123), RI(456)), RI(56088)));
+	ASSERT(Eq(Real128_Mul(RD(1.5), RD(0.125)), RD(0.1875)));
+	ASSERT(Eq(Real128_Mul(RD(1.5), RD(-3.0)), RD(-4.5)));
+}
+END_TEST
+
+START_TEST(CanSubtractReal128)
+{
+	ASSERT(Eq(Real128_Sub(RI(123), RI(456)), RI(-333)));
+	ASSERT(Eq(Real128_Sub(RD(1.5), RD(0.125)), RD(1.375)));
+	ASSERT(Eq(Real128_Sub(RD(1.5), RD(-3.0)), RD(4.5)));
+}
+END_TEST
+
+START_TEST(CanDivideReal128)
+{
+	ASSERT(Eq(Real128_Div(RI(123), RI(456)), Real128_ParseC(".2697368421052631578947368421052632")));
+	ASSERT(Eq(Real128_Div(RD(1.5), RD(0.125)), RI(12)));
+	ASSERT(Eq(Real128_Div(RD(1.5), RD(-3.0)), RD(-0.5)));
+}
+END_TEST
+
+START_TEST(CanModulusReal128)
+{
+	ASSERT(Eq(Real128_Mod(RI(456), RI(123)), RI(87)));
+	ASSERT(Eq(Real128_Mod(RD(5), RD(1.5)), RD(0.5)));
+
+	ASSERT(Eq(Real128_Mod(RI(456), RI(123)), RI(87)));
+	ASSERT(Eq(Real128_Mod(RI(-456), RI(123)), RI(87)));
+	ASSERT(Eq(Real128_Mod(RI(456), RI(-123)), RI(-87)));
+	ASSERT(Eq(Real128_Mod(RI(-456), RI(-123)), RI(-87)));
+}
+END_TEST
+
+START_TEST(CanRemainderReal128)
+{
+	ASSERT(Eq(Real128_Rem(RI(456), RI(123)), RI(87)));
+	ASSERT(Eq(Real128_Rem(RD(5), RD(1.5)), RD(0.5)));
+
+	ASSERT(Eq(Real128_Rem(RI(456), RI(123)), RI(87)));
+	ASSERT(Eq(Real128_Rem(RI(-456), RI(123)), RI(-87)));
+	ASSERT(Eq(Real128_Rem(RI(456), RI(-123)), RI(87)));
+	ASSERT(Eq(Real128_Rem(RI(-456), RI(-123)), RI(-87)));
+}
+END_TEST
+
+START_TEST(CanIeeeRemainderReal128)
+{
+	ASSERT(Eq(Real128_IeeeRem(RI(456), RI(123)), RI(-36)));
+	ASSERT(Eq(Real128_IeeeRem(RD(5), RD(1.5)), RD(0.5)));
+
+	ASSERT(Eq(Real128_IeeeRem(RI(456), RI(123)), RI(-36)));
+	ASSERT(Eq(Real128_IeeeRem(RI(-456), RI(123)), RI(36)));
+	ASSERT(Eq(Real128_IeeeRem(RI(456), RI(-123)), RI(-36)));
+	ASSERT(Eq(Real128_IeeeRem(RI(-456), RI(-123)), RI(36)));
+}
+END_TEST
+
+START_TEST(CanNegateReal128)
+{
+	ASSERT(Eq(Real128_Neg(RI(123)), RI(-123)));
+	ASSERT(Eq(Real128_Neg(RI(-123)), RI(123)));
+
+	ASSERT(Eq(Real128_Neg(Real128_Zero), Real128_NegZero));
+	ASSERT(Eq(Real128_Neg(Real128_NegZero), Real128_Zero));
+
+	ASSERT(Eq(Real128_Neg(Real128_Inf), Real128_NegInf));
+	ASSERT(Eq(Real128_Neg(Real128_NegInf), Real128_Inf));
+}
+END_TEST
+
+START_TEST(CanAbsoluteReal128)
+{
+	ASSERT(Eq(Real128_Abs(RI(123)), RI(123)));
+	ASSERT(Eq(Real128_Abs(RI(-123)), RI(123)));
+
+	ASSERT(Eq(Real128_Abs(Real128_Zero), Real128_Zero));
+	ASSERT(Eq(Real128_Abs(Real128_NegZero), Real128_Zero));
+
+	ASSERT(Eq(Real128_Abs(Real128_Inf), Real128_Inf));
+	ASSERT(Eq(Real128_Abs(Real128_NegInf), Real128_Inf));
+}
+END_TEST
+
+//-------------------------------------------------------------------------------------------------
+//  Powers and logarithms.
+
+START_TEST(CanSqrtReal128)
+{
+	ASSERT(Eq(Real128_Sqrt(Real128_Zero), Real128_Zero));
+	ASSERT(Eq(Real128_Sqrt(Real128_NegZero), Real128_NegZero));		// Weird, but correct.
+	ASSERT(Eq(Real128_Sqrt(Real128_One), Real128_One));
+	ASSERT(Eq(Real128_Sqrt(Real128_Inf), Real128_Inf));
+
+	ASSERT(Eq(Real128_Sqrt(RI(256)), RI(16)));
+	ASSERT(Eq(Real128_Sqrt(RI(25)), RI(5)));
+	ASSERT(Eq(Real128_Sqrt(Real128_ParseC("18'446'744'065'119'617'025")), Real128_ParseC("4'294'967'295")));
+	ASSERT(Eq(Real128_Sqrt(RI(123)), Real128_ParseC("11.09053'65064'09417'16205'16001'02609'93")));
+
+	ASSERT(Eq(Real128_Sqrt(Real128_NegOne), Real128_NaN));
+	ASSERT(Eq(Real128_Sqrt(RI(-123)), Real128_NaN));
+	ASSERT(Eq(Real128_Sqrt(Real128_NegInf), Real128_NaN));
+}
+END_TEST
+
+//-------------------------------------------------------------------------------------------------
+//  Rounding Tests.
+
+START_TEST(CanFloorReal128)
+{
+	ASSERT(Eq(Real128_Floor(RI(123)), RI(123)));
+	ASSERT(Eq(Real128_Floor(RI(-123)), RI(-123)));
+
+	ASSERT(Eq(Real128_Floor(RD(0.0)), RD(0.0)));
+	ASSERT(Eq(Real128_Floor(RD(1.0)), RD(1.0)));
+	ASSERT(Eq(Real128_Floor(RD(-1.0)), RD(-1.0)));
+	ASSERT(Eq(Real128_Floor(RD(1.2)), RD(1.0)));
+	ASSERT(Eq(Real128_Floor(RD(-1.2)), RD(-2.0)));
+	ASSERT(Eq(Real128_Floor(RD(1.8)), RD(1.0)));
+	ASSERT(Eq(Real128_Floor(RD(-1.8)), RD(-2.0)));
+	ASSERT(Eq(Real128_Floor(RD(2.0)), RD(2.0)));
+	ASSERT(Eq(Real128_Floor(RD(-2.0)), RD(-2.0)));
+}
+END_TEST
+
+START_TEST(CanCeilReal128)
+{
+	ASSERT(Eq(Real128_Ceil(RI(123)), RI(123)));
+	ASSERT(Eq(Real128_Ceil(RI(-123)), RI(-123)));
+
+	ASSERT(Eq(Real128_Ceil(RD(0.0)), RD(0.0)));
+	ASSERT(Eq(Real128_Ceil(RD(1.0)), RD(1.0)));
+	ASSERT(Eq(Real128_Ceil(RD(-1.0)), RD(-1.0)));
+	ASSERT(Eq(Real128_Ceil(RD(1.2)), RD(2.0)));
+	ASSERT(Eq(Real128_Ceil(RD(-1.2)), RD(-1.0)));
+	ASSERT(Eq(Real128_Ceil(RD(1.8)), RD(2.0)));
+	ASSERT(Eq(Real128_Ceil(RD(-1.8)), RD(-1.0)));
+	ASSERT(Eq(Real128_Ceil(RD(2.0)), RD(2.0)));
+	ASSERT(Eq(Real128_Ceil(RD(-2.0)), RD(-2.0)));
+}
+END_TEST
+
+START_TEST(CanTruncReal128)
+{
+	ASSERT(Eq(Real128_Trunc(RI(123)), RI(123)));
+	ASSERT(Eq(Real128_Trunc(RI(-123)), RI(-123)));
+
+	ASSERT(Eq(Real128_Trunc(RD(0.0)), RD(0.0)));
+	ASSERT(Eq(Real128_Trunc(RD(1.0)), RD(1.0)));
+	ASSERT(Eq(Real128_Trunc(RD(-1.0)), RD(-1.0)));
+	ASSERT(Eq(Real128_Trunc(RD(1.2)), RD(1.0)));
+	ASSERT(Eq(Real128_Trunc(RD(-1.2)), RD(-1.0)));
+	ASSERT(Eq(Real128_Trunc(RD(1.8)), RD(1.0)));
+	ASSERT(Eq(Real128_Trunc(RD(-1.8)), RD(-1.0)));
+	ASSERT(Eq(Real128_Trunc(RD(2.0)), RD(2.0)));
+	ASSERT(Eq(Real128_Trunc(RD(-2.0)), RD(-2.0)));
+}
+END_TEST
+
+START_TEST(CanSplitReal128WithModf)
+{
+	Real128 intPart;
+
+	ASSERT(Eq(Real128_Modf(RI(123), &intPart), Real128_Zero));
+	ASSERT(Eq(intPart, RI(123)));
+	ASSERT(Eq(Real128_Modf(RI(-123), &intPart), Real128_NegZero));
+	ASSERT(Eq(intPart, RI(-123)));
+
+	ASSERT(Eq(Real128_Modf(RD(0.0), &intPart), Real128_Zero));
+	ASSERT(Eq(intPart, RI(0)));
+	ASSERT(Eq(Real128_Modf(RD(1.0), &intPart), Real128_Zero));
+	ASSERT(Eq(intPart, RI(1)));
+	ASSERT(Eq(Real128_Modf(RD(-1.0), &intPart), Real128_NegZero));
+	ASSERT(Eq(intPart, RI(-1)));
+	ASSERT(Eq(Real128_Modf(Real128_ParseC("1.2"), &intPart), Real128_ParseC(".2")));
+	ASSERT(Eq(intPart, RI(1)));
+	ASSERT(Eq(Real128_Modf(Real128_ParseC("-1.2"), &intPart), Real128_ParseC("-.2")));
+	ASSERT(Eq(intPart, RI(-1)));
+	ASSERT(Eq(Real128_Modf(Real128_ParseC("1.8"), &intPart), Real128_ParseC(".8")));
+	ASSERT(Eq(intPart, RI(1)));
+	ASSERT(Eq(Real128_Modf(Real128_ParseC("-1.8"), &intPart), Real128_ParseC("-.8")));
+	ASSERT(Eq(intPart, RI(-1)));
+	ASSERT(Eq(Real128_Modf(RD(2.0), &intPart), Real128_Zero));
+	ASSERT(Eq(intPart, RI(2)));
+	ASSERT(Eq(Real128_Modf(RD(-2.0), &intPart), Real128_NegZero));
+	ASSERT(Eq(intPart, RI(-2)));
+}
+END_TEST
+
+START_TEST(CanRoundReal128)
+{
+	ASSERT(Eq(Real128_Round(RI(123)), RI(123)));
+	ASSERT(Eq(Real128_Round(RI(-123)), RI(-123)));
+
+	ASSERT(Eq(Real128_Round(RD(0.0)), RD(0.0)));
+	ASSERT(Eq(Real128_Round(RD(1.0)), RD(1.0)));
+	ASSERT(Eq(Real128_Round(RD(-1.0)), RD(-1.0)));
+	ASSERT(Eq(Real128_Round(RD(1.2)), RD(1.0)));
+	ASSERT(Eq(Real128_Round(RD(-1.2)), RD(-1.0)));
+	ASSERT(Eq(Real128_Round(RD(1.5)), RD(2.0)));
+	ASSERT(Eq(Real128_Round(RD(-1.5)), RD(-2.0)));
+	ASSERT(Eq(Real128_Round(RD(1.8)), RD(2.0)));
+	ASSERT(Eq(Real128_Round(RD(-1.8)), RD(-2.0)));
+	ASSERT(Eq(Real128_Round(RD(2.0)), RD(2.0)));
+	ASSERT(Eq(Real128_Round(RD(-2.0)), RD(-2.0)));
+
+	ASSERT(Eq(Real128_Round(RD(4.5)), RD(5.0)));
+	ASSERT(Eq(Real128_Round(RD(4.0)), RD(4.0)));
+	ASSERT(Eq(Real128_Round(RD(3.5)), RD(4.0)));
+	ASSERT(Eq(Real128_Round(RD(3.0)), RD(3.0)));
+	ASSERT(Eq(Real128_Round(RD(2.5)), RD(3.0)));
+	ASSERT(Eq(Real128_Round(RD(2.0)), RD(2.0)));
+	ASSERT(Eq(Real128_Round(RD(1.5)), RD(2.0)));
+	ASSERT(Eq(Real128_Round(RD(1.0)), RD(1.0)));
+	ASSERT(Eq(Real128_Round(RD(0.5)), RD(1.0)));
+	ASSERT(Eq(Real128_Round(RD(0.0)), RD(0.0)));
+	ASSERT(Eq(Real128_Round(RD(-0.5)), RD(-1.0)));
+	ASSERT(Eq(Real128_Round(RD(-1.0)), RD(-1.0)));
+	ASSERT(Eq(Real128_Round(RD(-1.5)), RD(-2.0)));
+	ASSERT(Eq(Real128_Round(RD(-2.0)), RD(-2.0)));
+	ASSERT(Eq(Real128_Round(RD(-2.5)), RD(-3.0)));
+	ASSERT(Eq(Real128_Round(RD(-3.0)), RD(-3.0)));
+	ASSERT(Eq(Real128_Round(RD(-3.5)), RD(-4.0)));
+	ASSERT(Eq(Real128_Round(RD(-4.0)), RD(-4.0)));
+	ASSERT(Eq(Real128_Round(RD(-4.5)), RD(-5.0)));
+}
+END_TEST
+
+START_TEST(CanBankRoundReal128)
+{
+	ASSERT(Eq(Real128_BankRound(RD(4.5)), RD(4.0)));
+	ASSERT(Eq(Real128_BankRound(RD(4.0)), RD(4.0)));
+	ASSERT(Eq(Real128_BankRound(RD(3.5)), RD(4.0)));
+	ASSERT(Eq(Real128_BankRound(RD(3.0)), RD(3.0)));
+	ASSERT(Eq(Real128_BankRound(RD(2.5)), RD(2.0)));
+	ASSERT(Eq(Real128_BankRound(RD(2.0)), RD(2.0)));
+	ASSERT(Eq(Real128_BankRound(RD(1.5)), RD(2.0)));
+	ASSERT(Eq(Real128_BankRound(RD(1.0)), RD(1.0)));
+	ASSERT(Eq(Real128_BankRound(RD(0.5)), RD(0.0)));
+	ASSERT(Eq(Real128_BankRound(RD(0.0)), RD(0.0)));
+	ASSERT(Eq(Real128_BankRound(RD(-0.5)), Real128_NegZero));
+	ASSERT(Eq(Real128_BankRound(RD(-1.0)), RD(-1.0)));
+	ASSERT(Eq(Real128_BankRound(RD(-1.5)), RD(-2.0)));
+	ASSERT(Eq(Real128_BankRound(RD(-2.0)), RD(-2.0)));
+	ASSERT(Eq(Real128_BankRound(RD(-2.5)), RD(-2.0)));
+	ASSERT(Eq(Real128_BankRound(RD(-3.0)), RD(-3.0)));
+	ASSERT(Eq(Real128_BankRound(RD(-3.5)), RD(-4.0)));
+	ASSERT(Eq(Real128_BankRound(RD(-4.0)), RD(-4.0)));
+	ASSERT(Eq(Real128_BankRound(RD(-4.5)), RD(-4.0)));
+}
+END_TEST
+
+//-------------------------------------------------------------------------------------------------
+//  Test-Function Tests.
+
+START_TEST(CanTestForInfinityReal128)
+{
+	ASSERT(!Real128_IsInf(Real128_NegNaN));
+	ASSERT( Real128_IsInf(Real128_NegInf));
+	ASSERT(!Real128_IsInf(Real128_NegSixteen));
+	ASSERT(!Real128_IsInf(Real128_NegTen));
+	ASSERT(!Real128_IsInf(Real128_NegTwo));
+	ASSERT(!Real128_IsInf(Real128_NegOne));
+	ASSERT(!Real128_IsInf(Real128_NegZero));
+	ASSERT(!Real128_IsInf(Real128_Zero));
+	ASSERT(!Real128_IsInf(Real128_One));
+	ASSERT(!Real128_IsInf(Real128_Two));
+	ASSERT(!Real128_IsInf(Real128_Ten));
+	ASSERT(!Real128_IsInf(Real128_Sixteen));
+	ASSERT( Real128_IsInf(Real128_Inf));
+	ASSERT(!Real128_IsInf(Real128_NaN));
+}
+END_TEST
+
+START_TEST(CanTestForNaNReal128)
+{
+	ASSERT( Real128_IsNaN(Real128_NegNaN));
+	ASSERT(!Real128_IsNaN(Real128_NegInf));
+	ASSERT(!Real128_IsNaN(Real128_NegSixteen));
+	ASSERT(!Real128_IsNaN(Real128_NegTen));
+	ASSERT(!Real128_IsNaN(Real128_NegTwo));
+	ASSERT(!Real128_IsNaN(Real128_NegOne));
+	ASSERT(!Real128_IsNaN(Real128_NegZero));
+	ASSERT(!Real128_IsNaN(Real128_Zero));
+	ASSERT(!Real128_IsNaN(Real128_One));
+	ASSERT(!Real128_IsNaN(Real128_Two));
+	ASSERT(!Real128_IsNaN(Real128_Ten));
+	ASSERT(!Real128_IsNaN(Real128_Sixteen));
+	ASSERT(!Real128_IsNaN(Real128_Inf));
+	ASSERT( Real128_IsNaN(Real128_NaN));
+}
+END_TEST
+
+START_TEST(CanTestForNegativeReal128)
+{
+	ASSERT( Real128_IsNeg(Real128_NegNaN));
+	ASSERT( Real128_IsNeg(Real128_NegInf));
+	ASSERT( Real128_IsNeg(Real128_NegSixteen));
+	ASSERT( Real128_IsNeg(Real128_NegTen));
+	ASSERT( Real128_IsNeg(Real128_NegTwo));
+	ASSERT( Real128_IsNeg(Real128_NegOne));
+	ASSERT( Real128_IsNeg(Real128_NegZero));
+	ASSERT(!Real128_IsNeg(Real128_Zero));
+	ASSERT(!Real128_IsNeg(Real128_One));
+	ASSERT(!Real128_IsNeg(Real128_Two));
+	ASSERT(!Real128_IsNeg(Real128_Ten));
+	ASSERT(!Real128_IsNeg(Real128_Sixteen));
+	ASSERT(!Real128_IsNeg(Real128_Inf));
+	ASSERT(!Real128_IsNeg(Real128_NaN));
+}
+END_TEST
+
+START_TEST(CanTestForZeroReal128)
+{
+	ASSERT(!Real128_IsZero(Real128_NegNaN));
+	ASSERT(!Real128_IsZero(Real128_NegInf));
+	ASSERT(!Real128_IsZero(Real128_NegSixteen));
+	ASSERT(!Real128_IsZero(Real128_NegTen));
+	ASSERT(!Real128_IsZero(Real128_NegTwo));
+	ASSERT(!Real128_IsZero(Real128_NegOne));
+	ASSERT( Real128_IsZero(Real128_NegZero));
+	ASSERT( Real128_IsZero(Real128_Zero));
+	ASSERT(!Real128_IsZero(Real128_One));
+	ASSERT(!Real128_IsZero(Real128_Two));
+	ASSERT(!Real128_IsZero(Real128_Ten));
+	ASSERT(!Real128_IsZero(Real128_Sixteen));
+	ASSERT(!Real128_IsZero(Real128_Inf));
+	ASSERT(!Real128_IsZero(Real128_NaN));
+}
+END_TEST
+
+START_TEST(CanTestForFiniteReal128)
+{
+	ASSERT(!Real128_IsFinite(Real128_NegNaN));
+	ASSERT(!Real128_IsFinite(Real128_NegInf));
+	ASSERT( Real128_IsFinite(Real128_NegSixteen));
+	ASSERT( Real128_IsFinite(Real128_NegTen));
+	ASSERT( Real128_IsFinite(Real128_NegTwo));
+	ASSERT( Real128_IsFinite(Real128_NegOne));
+	ASSERT( Real128_IsFinite(Real128_NegZero));
+	ASSERT( Real128_IsFinite(Real128_Zero));
+	ASSERT( Real128_IsFinite(Real128_One));
+	ASSERT( Real128_IsFinite(Real128_Two));
+	ASSERT( Real128_IsFinite(Real128_Ten));
+	ASSERT( Real128_IsFinite(Real128_Sixteen));
+	ASSERT(!Real128_IsFinite(Real128_Inf));
+	ASSERT(!Real128_IsFinite(Real128_NaN));
+}
+END_TEST
+
+//-------------------------------------------------------------------------------------------------
+//  Comparison Tests.
+
+START_TEST(CanCompareEqualReal128)
+{
+	ASSERT(!Real128_Eq(Real128_NegNaN, Real128_NegNaN));
+	ASSERT(!Real128_Eq(Real128_NaN, Real128_NaN));
+	ASSERT(!Real128_Eq(Real128_NegNaN, Real128_NaN));
+	ASSERT(!Real128_Eq(Real128_NaN, Real128_NegNaN));
+
+	ASSERT(Real128_Eq(Real128_NegZero, Real128_NegZero));
+	ASSERT(Real128_Eq(Real128_Zero, Real128_Zero));
+	ASSERT(Real128_Eq(Real128_NegZero, Real128_Zero));
+	ASSERT(Real128_Eq(Real128_Zero, Real128_NegZero));
+
+	ASSERT(Real128_Eq(Real128_NegInf, Real128_NegInf));
+	ASSERT(Real128_Eq(Real128_NegOne, Real128_NegOne));
+	ASSERT(Real128_Eq(Real128_One, Real128_One));
+	ASSERT(Real128_Eq(Real128_Inf, Real128_Inf));
+
+	ASSERT(!Real128_Eq(Real128_NegInf, Real128_Inf));
+	ASSERT(!Real128_Eq(Real128_NegOne, Real128_One));
+	ASSERT(!Real128_Eq(Real128_One, Real128_Two));
+	ASSERT(!Real128_Eq(Real128_Inf, Real128_NegInf));
+}
+END_TEST
+
+START_TEST(CanCompareNotEqualReal128)
+{
+	ASSERT(Real128_Ne(Real128_NegNaN, Real128_NegNaN));
+	ASSERT(Real128_Ne(Real128_NaN, Real128_NaN));
+	ASSERT(Real128_Ne(Real128_NegNaN, Real128_NaN));
+	ASSERT(Real128_Ne(Real128_NaN, Real128_NegNaN));
+
+	ASSERT(!Real128_Ne(Real128_NegZero, Real128_NegZero));
+	ASSERT(!Real128_Ne(Real128_Zero, Real128_Zero));
+	ASSERT(!Real128_Ne(Real128_NegZero, Real128_Zero));
+	ASSERT(!Real128_Ne(Real128_Zero, Real128_NegZero));
+
+	ASSERT(!Real128_Ne(Real128_NegInf, Real128_NegInf));
+	ASSERT(!Real128_Ne(Real128_NegOne, Real128_NegOne));
+	ASSERT(!Real128_Ne(Real128_One, Real128_One));
+	ASSERT(!Real128_Ne(Real128_Inf, Real128_Inf));
+
+	ASSERT(Real128_Ne(Real128_NegInf, Real128_Inf));
+	ASSERT(Real128_Ne(Real128_NegOne, Real128_One));
+	ASSERT(Real128_Ne(Real128_One, Real128_Two));
+	ASSERT(Real128_Ne(Real128_Inf, Real128_NegInf));
+}
+END_TEST
+
+START_TEST(CanCompareLessThanReal128)
+{
+	ASSERT(!Real128_Lt(Real128_NegNaN, Real128_NegNaN));
+	ASSERT(!Real128_Lt(Real128_NaN, Real128_NaN));
+	ASSERT(!Real128_Lt(Real128_NegNaN, Real128_NaN));
+	ASSERT(!Real128_Lt(Real128_NaN, Real128_NegNaN));
+	ASSERT(!Real128_Lt(Real128_One, Real128_NaN));
+	ASSERT(!Real128_Lt(Real128_NaN, Real128_One));
+
+	ASSERT(!Real128_Lt(Real128_NegZero, Real128_NegZero));
+	ASSERT(!Real128_Lt(Real128_Zero, Real128_Zero));
+	ASSERT(!Real128_Lt(Real128_NegZero, Real128_Zero));
+	ASSERT(!Real128_Lt(Real128_Zero, Real128_NegZero));
+
+	ASSERT(!Real128_Lt(Real128_NegInf, Real128_NegInf));
+	ASSERT(!Real128_Lt(Real128_NegOne, Real128_NegOne));
+	ASSERT(!Real128_Lt(Real128_One, Real128_One));
+	ASSERT(!Real128_Lt(Real128_Inf, Real128_Inf));
+
+	ASSERT(Real128_Lt(Real128_NegInf, Real128_Inf));
+	ASSERT(!Real128_Lt(Real128_Inf, Real128_NegInf));
+	ASSERT(Real128_Lt(Real128_NegOne, Real128_One));
+	ASSERT(!Real128_Lt(Real128_One, Real128_NegOne));
+	ASSERT(Real128_Lt(Real128_One, Real128_Two));
+	ASSERT(!Real128_Lt(Real128_Two, Real128_One));
+	ASSERT(Real128_Lt(Real128_Zero, Real128_Inf));
+	ASSERT(!Real128_Lt(Real128_Inf, Real128_Zero));
+	ASSERT(Real128_Lt(Real128_NegInf, Real128_Zero));
+	ASSERT(!Real128_Lt(Real128_Zero, Real128_NegInf));
+}
+END_TEST
+
+START_TEST(CanCompareGreaterThanReal128)
+{
+	ASSERT(!Real128_Gt(Real128_NegNaN, Real128_NegNaN));
+	ASSERT(!Real128_Gt(Real128_NaN, Real128_NaN));
+	ASSERT(!Real128_Gt(Real128_NegNaN, Real128_NaN));
+	ASSERT(!Real128_Gt(Real128_NaN, Real128_NegNaN));
+	ASSERT(!Real128_Gt(Real128_One, Real128_NaN));
+	ASSERT(!Real128_Gt(Real128_NaN, Real128_One));
+
+	ASSERT(!Real128_Gt(Real128_NegZero, Real128_NegZero));
+	ASSERT(!Real128_Gt(Real128_Zero, Real128_Zero));
+	ASSERT(!Real128_Gt(Real128_NegZero, Real128_Zero));
+	ASSERT(!Real128_Gt(Real128_Zero, Real128_NegZero));
+
+	ASSERT(!Real128_Gt(Real128_NegInf, Real128_NegInf));
+	ASSERT(!Real128_Gt(Real128_NegOne, Real128_NegOne));
+	ASSERT(!Real128_Gt(Real128_One, Real128_One));
+	ASSERT(!Real128_Gt(Real128_Inf, Real128_Inf));
+
+	ASSERT(!Real128_Gt(Real128_NegInf, Real128_Inf));
+	ASSERT(Real128_Gt(Real128_Inf, Real128_NegInf));
+	ASSERT(!Real128_Gt(Real128_NegOne, Real128_One));
+	ASSERT(Real128_Gt(Real128_One, Real128_NegOne));
+	ASSERT(!Real128_Gt(Real128_One, Real128_Two));
+	ASSERT(Real128_Gt(Real128_Two, Real128_One));
+	ASSERT(!Real128_Gt(Real128_Zero, Real128_Inf));
+	ASSERT(Real128_Gt(Real128_Inf, Real128_Zero));
+	ASSERT(!Real128_Gt(Real128_NegInf, Real128_Zero));
+	ASSERT(Real128_Gt(Real128_Zero, Real128_NegInf));
+}
+END_TEST
+
+START_TEST(CanCompareLessThanOrEqualReal128)
+{
+	ASSERT(!Real128_Le(Real128_NegNaN, Real128_NegNaN));
+	ASSERT(!Real128_Le(Real128_NaN, Real128_NaN));
+	ASSERT(!Real128_Le(Real128_NegNaN, Real128_NaN));
+	ASSERT(!Real128_Le(Real128_NaN, Real128_NegNaN));
+	ASSERT(!Real128_Le(Real128_One, Real128_NaN));
+	ASSERT(!Real128_Le(Real128_NaN, Real128_One));
+
+	ASSERT(Real128_Le(Real128_NegZero, Real128_NegZero));
+	ASSERT(Real128_Le(Real128_Zero, Real128_Zero));
+	ASSERT(Real128_Le(Real128_NegZero, Real128_Zero));
+	ASSERT(Real128_Le(Real128_Zero, Real128_NegZero));
+
+	ASSERT(Real128_Le(Real128_NegInf, Real128_NegInf));
+	ASSERT(Real128_Le(Real128_NegOne, Real128_NegOne));
+	ASSERT(Real128_Le(Real128_One, Real128_One));
+	ASSERT(Real128_Le(Real128_Inf, Real128_Inf));
+
+	ASSERT(Real128_Le(Real128_NegInf, Real128_Inf));
+	ASSERT(!Real128_Le(Real128_Inf, Real128_NegInf));
+	ASSERT(Real128_Le(Real128_NegOne, Real128_One));
+	ASSERT(!Real128_Le(Real128_One, Real128_NegOne));
+	ASSERT(Real128_Le(Real128_One, Real128_Two));
+	ASSERT(!Real128_Le(Real128_Two, Real128_One));
+	ASSERT(Real128_Le(Real128_Zero, Real128_Inf));
+	ASSERT(!Real128_Le(Real128_Inf, Real128_Zero));
+	ASSERT(Real128_Le(Real128_NegInf, Real128_Zero));
+	ASSERT(!Real128_Le(Real128_Zero, Real128_NegInf));
+}
+END_TEST
+
+START_TEST(CanCompareGreaterThanOrEqualReal128)
+{
+	ASSERT(!Real128_Ge(Real128_NegNaN, Real128_NegNaN));
+	ASSERT(!Real128_Ge(Real128_NaN, Real128_NaN));
+	ASSERT(!Real128_Ge(Real128_NegNaN, Real128_NaN));
+	ASSERT(!Real128_Ge(Real128_NaN, Real128_NegNaN));
+	ASSERT(!Real128_Ge(Real128_One, Real128_NaN));
+	ASSERT(!Real128_Ge(Real128_NaN, Real128_One));
+
+	ASSERT(Real128_Ge(Real128_NegZero, Real128_NegZero));
+	ASSERT(Real128_Ge(Real128_Zero, Real128_Zero));
+	ASSERT(Real128_Ge(Real128_NegZero, Real128_Zero));
+	ASSERT(Real128_Ge(Real128_Zero, Real128_NegZero));
+
+	ASSERT(Real128_Ge(Real128_NegInf, Real128_NegInf));
+	ASSERT(Real128_Ge(Real128_NegOne, Real128_NegOne));
+	ASSERT(Real128_Ge(Real128_One, Real128_One));
+	ASSERT(Real128_Ge(Real128_Inf, Real128_Inf));
+
+	ASSERT(!Real128_Ge(Real128_NegInf, Real128_Inf));
+	ASSERT(Real128_Ge(Real128_Inf, Real128_NegInf));
+	ASSERT(!Real128_Ge(Real128_NegOne, Real128_One));
+	ASSERT(Real128_Ge(Real128_One, Real128_NegOne));
+	ASSERT(!Real128_Ge(Real128_One, Real128_Two));
+	ASSERT(Real128_Ge(Real128_Two, Real128_One));
+	ASSERT(!Real128_Ge(Real128_Zero, Real128_Inf));
+	ASSERT(Real128_Ge(Real128_Inf, Real128_Zero));
+	ASSERT(!Real128_Ge(Real128_NegInf, Real128_Zero));
+	ASSERT(Real128_Ge(Real128_Zero, Real128_NegInf));
+}
+END_TEST
+
+START_TEST(CanCompareOrderedReal128)
+{
+	ASSERT(Real128_Compare(Real128_NegNaN, Real128_NegNaN) == 0);
+	ASSERT(Real128_Compare(Real128_NegNaN, Real128_NegInf) < 0);
+	ASSERT(Real128_Compare(Real128_NegNaN, Real128_NegOne) < 0);
+	ASSERT(Real128_Compare(Real128_NegNaN, Real128_Zero) < 0);
+	ASSERT(Real128_Compare(Real128_NegNaN, Real128_One) < 0);
+	ASSERT(Real128_Compare(Real128_NegNaN, Real128_Inf) < 0);
+	ASSERT(Real128_Compare(Real128_NegNaN, Real128_NaN) < 0);
+
+	ASSERT(Real128_Compare(Real128_NegInf, Real128_NegNaN) > 0);
+	ASSERT(Real128_Compare(Real128_NegInf, Real128_NegInf) == 0);
+	ASSERT(Real128_Compare(Real128_NegInf, Real128_NegOne) < 0);
+	ASSERT(Real128_Compare(Real128_NegInf, Real128_Zero) < 0);
+	ASSERT(Real128_Compare(Real128_NegInf, Real128_One) < 0);
+	ASSERT(Real128_Compare(Real128_NegInf, Real128_Inf) < 0);
+	ASSERT(Real128_Compare(Real128_NegInf, Real128_NaN) < 0);
+
+	ASSERT(Real128_Compare(Real128_NegOne, Real128_NegNaN) > 0);
+	ASSERT(Real128_Compare(Real128_NegOne, Real128_NegInf) > 0);
+	ASSERT(Real128_Compare(Real128_NegOne, Real128_NegOne) == 0);
+	ASSERT(Real128_Compare(Real128_NegOne, Real128_Zero) < 0);
+	ASSERT(Real128_Compare(Real128_NegOne, Real128_One) < 0);
+	ASSERT(Real128_Compare(Real128_NegOne, Real128_Inf) < 0);
+	ASSERT(Real128_Compare(Real128_NegOne, Real128_NaN) < 0);
+
+	ASSERT(Real128_Compare(Real128_Zero, Real128_NegNaN) > 0);
+	ASSERT(Real128_Compare(Real128_Zero, Real128_NegInf) > 0);
+	ASSERT(Real128_Compare(Real128_Zero, Real128_NegOne) > 0);
+	ASSERT(Real128_Compare(Real128_Zero, Real128_Zero) == 0);
+	ASSERT(Real128_Compare(Real128_Zero, Real128_One) < 0);
+	ASSERT(Real128_Compare(Real128_Zero, Real128_Inf) < 0);
+	ASSERT(Real128_Compare(Real128_Zero, Real128_NaN) < 0);
+
+	ASSERT(Real128_Compare(Real128_One, Real128_NegNaN) > 0);
+	ASSERT(Real128_Compare(Real128_One, Real128_NegInf) > 0);
+	ASSERT(Real128_Compare(Real128_One, Real128_NegOne) > 0);
+	ASSERT(Real128_Compare(Real128_One, Real128_Zero) > 0);
+	ASSERT(Real128_Compare(Real128_One, Real128_One) == 0);
+	ASSERT(Real128_Compare(Real128_One, Real128_Inf) < 0);
+	ASSERT(Real128_Compare(Real128_One, Real128_NaN) < 0);
+
+	ASSERT(Real128_Compare(Real128_Inf, Real128_NegNaN) > 0);
+	ASSERT(Real128_Compare(Real128_Inf, Real128_NegInf) > 0);
+	ASSERT(Real128_Compare(Real128_Inf, Real128_NegOne) > 0);
+	ASSERT(Real128_Compare(Real128_Inf, Real128_Zero) > 0);
+	ASSERT(Real128_Compare(Real128_Inf, Real128_One) > 0);
+	ASSERT(Real128_Compare(Real128_Inf, Real128_Inf) == 0);
+	ASSERT(Real128_Compare(Real128_Inf, Real128_NaN) < 0);
+
+	ASSERT(Real128_Compare(Real128_NaN, Real128_NegNaN) > 0);
+	ASSERT(Real128_Compare(Real128_NaN, Real128_NegInf) > 0);
+	ASSERT(Real128_Compare(Real128_NaN, Real128_NegOne) > 0);
+	ASSERT(Real128_Compare(Real128_NaN, Real128_Zero) > 0);
+	ASSERT(Real128_Compare(Real128_NaN, Real128_One) > 0);
+	ASSERT(Real128_Compare(Real128_NaN, Real128_Inf) > 0);
+	ASSERT(Real128_Compare(Real128_NaN, Real128_NaN) == 0);
+}
+END_TEST
+
+START_TEST(CanDetermineOrderabilityReal128)
+{
+	ASSERT(!Real128_IsOrderable(Real128_NegNaN, Real128_NegNaN));
+	ASSERT(!Real128_IsOrderable(Real128_NaN, Real128_NaN));
+	ASSERT(!Real128_IsOrderable(Real128_NegNaN, Real128_NaN));
+	ASSERT(!Real128_IsOrderable(Real128_NaN, Real128_NegNaN));
+	ASSERT(!Real128_IsOrderable(Real128_One, Real128_NaN));
+	ASSERT(!Real128_IsOrderable(Real128_NaN, Real128_One));
+
+	ASSERT(Real128_IsOrderable(Real128_NegZero, Real128_NegZero));
+	ASSERT(Real128_IsOrderable(Real128_Zero, Real128_Zero));
+	ASSERT(Real128_IsOrderable(Real128_NegZero, Real128_Zero));
+	ASSERT(Real128_IsOrderable(Real128_Zero, Real128_NegZero));
+
+	ASSERT(Real128_IsOrderable(Real128_NegInf, Real128_NegInf));
+	ASSERT(Real128_IsOrderable(Real128_NegOne, Real128_NegOne));
+	ASSERT(Real128_IsOrderable(Real128_One, Real128_One));
+	ASSERT(Real128_IsOrderable(Real128_Inf, Real128_Inf));
+
+	ASSERT(Real128_IsOrderable(Real128_NegInf, Real128_Inf));
+	ASSERT(Real128_IsOrderable(Real128_Inf, Real128_NegInf));
+	ASSERT(Real128_IsOrderable(Real128_NegOne, Real128_One));
+	ASSERT(Real128_IsOrderable(Real128_One, Real128_NegOne));
+	ASSERT(Real128_IsOrderable(Real128_One, Real128_Two));
+	ASSERT(Real128_IsOrderable(Real128_Two, Real128_One));
+	ASSERT(Real128_IsOrderable(Real128_Zero, Real128_Inf));
+	ASSERT(Real128_IsOrderable(Real128_Inf, Real128_Zero));
+	ASSERT(Real128_IsOrderable(Real128_NegInf, Real128_Zero));
+	ASSERT(Real128_IsOrderable(Real128_Zero, Real128_NegInf));
 }
 END_TEST
 
