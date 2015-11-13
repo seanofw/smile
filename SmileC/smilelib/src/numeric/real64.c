@@ -248,3 +248,85 @@ SMILE_API Real64 Real64_Mod(Real64 a, Real64 b)
 
 	return mod;
 }
+
+// Possible fast classifications for the sort-comparison code below.
+#define POS 0
+#define NEG 1
+#define PINF 2
+#define NINF 3
+#define PNAN 4
+#define NNAN 5
+
+static SByte _comparisonTable[6][6] = {
+	/*+X  -X  +I  -I  +N  -N */
+	{ 0, +1, -1, +1, -1, +1 },	// +Num
+	{ -1, 0, -1, +1, -1, +1 },	// -Num
+	{ +1, +1, 2, +1, -1, +1 },	// +Inf
+	{ -1, -1, -1, 3, -1, +1 },	// -Inf
+	{ +1, +1, +1, +1, 2, +1 },	// +NaN
+	{ -1, -1, -1, -1, -1, 3 },	// -NaN
+};
+
+static Byte _classifyTable[64] = {
+	POS, POS, POS, POS, POS, POS, POS, POS,
+	POS, POS, POS, POS, POS, POS, POS, POS,
+	POS, POS, POS, POS, POS, POS, POS, POS,
+	POS, POS, POS, POS, POS, POS, PINF, PNAN,
+	NEG, NEG, NEG, NEG, NEG, NEG, NEG, NEG,
+	NEG, NEG, NEG, NEG, NEG, NEG, NEG, NEG,
+	NEG, NEG, NEG, NEG, NEG, NEG, NEG, NEG,
+	NEG, NEG, NEG, NEG, NEG, NEG, NINF, NNAN,
+};
+
+#define CLASSIFY(__number__) \
+	(_classifyTable[(Int)(((__number__).value & 0xFC00000000000000ULL) >> (64 - 6))])
+
+/// <summary>
+/// Compare 'a' and 'b' for sorting purposes.  This returns 0 if 'a' and 'b' are equal,
+/// and returns -1 if 'a' is less than 'b', and +1 if 'a' is greater than 'b'.  For sorting
+/// purposes, NaNs are considered to be orderable values beyond Infinity, and NaNs or
+/// Infinities of the same class with the same sign and coeffients are considered equal.
+/// (SNaNs are also considered to be beyond QNaNs.)  Note also that for sorting purposes,
+/// -0 equals +0.
+/// </summary>
+/// <param name="a">The first value to compare.</param>
+/// <param name="b">The second value to compare.</param>
+/// <returns>+1 if a > b; -1 if a < b; and 0 if a == b.</returns>
+SMILE_API Int Real64_Compare(Real64 a, Real64 b)
+{
+	Byte aClass = CLASSIFY(a);
+	Byte bClass = CLASSIFY(b);
+
+	switch (_comparisonTable[aClass][bClass]) {
+
+	case +1:
+		// A is definitely a larger class than B.
+		return +1;
+
+	case -1:
+		// A is definitely a smaller class than B.
+		return -1;
+
+	case 2:
+		// Same non-finite positive type, so just compare coefficient bits.
+		if (a.value != b.value)
+			return a.value > b.value ? +1 : -1;
+		return 0;
+
+	case 3:
+		// Same non-finite negative type, so just compare coefficient bits.
+		if (a.value != b.value)
+			return a.value > b.value ? +1 : -1;
+		return 0;
+
+	case 0:
+		// Both are finite values, so compare for real.
+		if (Real64_Eq(a, b)) return 0;		// Equality is a slightly faster test, so it goes first.
+		if (Real64_Lt(a, b)) return -1;
+		return +1;
+
+	default:
+		// Shouldn't ever get here.
+		return 0;
+	}
+}

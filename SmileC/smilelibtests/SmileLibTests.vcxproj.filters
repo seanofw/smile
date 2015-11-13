@@ -38,6 +38,9 @@
     <ClCompile Include="numeric\real128_tests.c">
       <Filter>numeric</Filter>
     </ClCompile>
+    <ClCompile Include="numeric\real64_tests.c">
+      <Filter>numeric</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
