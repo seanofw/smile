@@ -91,7 +91,7 @@ void WaitForAnyKey(void);
 /// <param name="expectedString">The expected contents of that string.</param>
 /// <param name="expectedLength">The expected length of that string.</param>
 #define ASSERT_STRING(__str__, __expectedString__, __expectedLength__) \
-	AssertStringInternal(__str__, __expectedString__, __expectedLength__, #__str__ " is not correct (line " TOSTRING_AT_COMPILE_TIME(__LINE__) "):")
+	AssertStringInternal(__str__, __expectedString__, __expectedLength__, #__str__ " is not correct (line " TOSTRING_AT_COMPILE_TIME(__LINE__) ")")
 
 /// <summary>
 /// Immediately pass (as good) the current unit test.  This stops the test's

@@ -129,7 +129,7 @@ static void PrintTestFailure(const char *message, const char *file, int line)
 		"    \x1B[1;31m________________________________________________________________\x1B[0;1;31m\n"
 		"\n"
 		"    \x1B[31mFailed assertion was:\n"
-		"      \x1B[33m%s\n\x1B[0m"
+		"      \x1B[33m%s\x1B[0m\n"
 		"\n"
 		"\x1B[0;1;31m    at %s%s: %d\n"
 		"    \x1B[1;31m________________________________________________________________\x1B[0m\n"
@@ -191,8 +191,14 @@ int RunTestInternal(const char *name, const char *file, int line, TestFuncIntern
 /// <returns>Never returns.</returns>
 int FailTestInternal(const char *message)
 {
-	// Save the message so the test runner can find it.
-	TestFailureMessage = message;
+	char *safeMessage;
+
+	// Save the message so the test runner can find it (and save it in case it gets stomped on).
+	safeMessage = GC_MALLOC_ATOMIC(strlen(message) + 1);
+	if (safeMessage == NULL)
+		Smile_Abort_OutOfMemory();
+	strcpy(safeMessage, message);
+	TestFailureMessage = safeMessage;
 
 	// Long-jump back to abort the test.  We pass '1', which is what will be returned by the
 	// original setjmp() call.
