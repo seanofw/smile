@@ -115,6 +115,7 @@
     <ClCompile Include="env\symboltable_tests.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="numeric\real128_tests.c" />
+    <ClCompile Include="numeric\real32_tests.c" />
     <ClCompile Include="numeric\real64_tests.c" />
     <ClCompile Include="stdafx.c" />
     <ClCompile Include="string\stringcore_tests.c" />
