@@ -139,17 +139,10 @@ Int Lexer_ParseHyphenOrEquals(Lexer lexer, Int initialChar, Bool isFirstContentO
 /// <returns>The next token that was found in the input.</returns>
 Int Lexer_ParseDot(Lexer lexer, Bool isFirstContentOnLine)
 {
-/*
-	DECLARE_INLINE_STRINGBUILDER(builder, 256);
-	Int exponent;
-	String suffix;
-*/
 	const Byte *src = lexer->src;
 	const Byte *end = lexer->end;
 	Token token = lexer->token;
 	Byte ch;
-
-//	INIT_INLINE_STRINGBUILDER(builder);
 
 	if (src >= end)
 		return SIMPLE_TOKEN(src - 1, TOKEN_DOT);
@@ -167,17 +160,8 @@ Int Lexer_ParseDot(Lexer lexer, Bool isFirstContentOnLine)
 
 	if (ch >= '0' && ch <= '9') {
 		// We got numeric digits after the dot, so this is actually a real value, not a dot operator.
-		START_TOKEN(src - 1);
-		lexer->token->text = String_FromC("Real and float values are not yet supported.");
-		return END_TOKEN(TOKEN_ERROR);
-
-		/*
-		Int exponent = RealValueParser.CollectRealValueAfterDecimalPoint(builder);
-		suffix = CollectAlphanumericSuffix();
-		EnsureEndOfNumber();
-		double realValue = RealValueParser.ParseReal(String_Empty, StringBuilder_ToString(builder), exponent);
-		return ProcessRealValue(realValue, (Utf8String)realValue.ToString(), suffix);
-		*/
+		lexer->src--;
+		return Lexer_ParseReal(lexer, isFirstContentOnLine);
 	}
 
 	return SIMPLE_TOKEN(src - 1, TOKEN_DOT);

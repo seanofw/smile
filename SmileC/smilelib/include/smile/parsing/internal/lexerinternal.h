@@ -18,6 +18,7 @@ extern Int Lexer_ParseDynamicString(Lexer lexer, Bool isFirstContentOnLine);
 
 extern Int Lexer_ParseZero(Lexer lexer, Bool isFirstContentOnLine);
 extern Int Lexer_ParseDigit(Lexer lexer, Bool isFirstContentOnLine);
+extern Int Lexer_ParseReal(Lexer lexer, Bool isFirstContentOnLine);
 
 extern Int Lexer_ParseLoanword(Lexer lexer, Bool isFirstContentOnLine);
 
