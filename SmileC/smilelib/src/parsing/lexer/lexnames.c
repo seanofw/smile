@@ -27,19 +27,15 @@
 
 static String ParseNameRaw(Lexer lexer, Bool *hasEscapes)
 {
-	DECLARE_INLINE_STRINGBUILDER(escapebuf, 64);
 	DECLARE_INLINE_STRINGBUILDER(namebuf, 64);
 	const Byte *src = lexer->src;
 	const Byte *end = lexer->end;
 	const Byte *start = lexer->src;
-	const Byte *nameBytes, *escapeBytes;
 	Byte ch;
 	Int code;
 	UInt identifierCharacterKind;
-	Int nameLen;
 
 	INIT_INLINE_STRINGBUILDER(namebuf);
-	INIT_INLINE_STRINGBUILDER(escapebuf);
 
 	*hasEscapes = False;
 
@@ -50,11 +46,9 @@ readMoreName:
 		case '\\':
 			if (src - 1 > start) {
 				StringBuilder_Append(namebuf, start, 0, src - 1 - start);
-				StringBuilder_AppendRepeat(escapebuf, 'a', src - 1 - start);
 			}
 			code = Lexer_DecodeEscapeCode(&src, end, True);
 			StringBuilder_AppendUnicode(namebuf, code < 0 ? 0xFFFD : code);
-			StringBuilder_AppendByte(escapebuf, '\\');
 			*hasEscapes = True;
 			start = src;
 			goto readMoreName;
@@ -87,7 +81,6 @@ readMoreName:
 		default:
 			if (src - 1 > start) {
 				StringBuilder_Append(namebuf, start, 0, src - 1 - start);
-				StringBuilder_AppendRepeat(escapebuf, 'a', src - 1 - start);
 			}
 			if (ch >= 128) {
 				src--;
@@ -95,7 +88,6 @@ readMoreName:
 				identifierCharacterKind = SmileIdentifierKind(code);
 				if ((identifierCharacterKind & (IDENTKIND_MIDDLELETTER | IDENTKIND_STARTLETTER | IDENTKIND_PUNCTUATION))) {
 					StringBuilder_AppendUnicode(namebuf, code);
-					StringBuilder_AppendByte(escapebuf, 'a');
 					start = src;
 					goto readMoreName;
 				}
@@ -105,18 +97,6 @@ readMoreName:
 			break;
 		}
 	}
-
-	// Remove any trailing hyphens by ungetting, but we can only unget non-escaped (i.e., legitimate)
-	// '-' characters.
-	nameBytes = StringBuilder_GetBytes(namebuf);
-	escapeBytes = StringBuilder_GetBytes(escapebuf);
-	nameLen = StringBuilder_GetLength(namebuf);
-	while (nameLen > 0 && nameBytes[nameLen - 1] == '-' && escapeBytes[nameLen - 1] != '\\') {
-		nameLen--;
-		src--;
-	}
-	StringBuilder_SetLength(namebuf, nameLen);
-	StringBuilder_SetLength(escapebuf, nameLen);
 
 	// Convert whatever's left to the resulting identifier name.
 	lexer->src = src;
