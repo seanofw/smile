@@ -15,6 +15,15 @@
 //  limitations under the License.
 //---------------------------------------------------------------------------------------
 
+#include <stdlib.h>		// For strtod().
+
+// TODO: Ideally shouldn't rely on the (possibly-buggy) native implementation of
+// strtod() and instead should use our own infinite-precision conversion routine
+// to ensure consistency across platforms.  strtod() is fine on newer versions of
+// GCC/Linux, but has at least a one-ULP inaccuracy on just about every other
+// compiler/OS (and is notably inconsistent between different versions of VC++).
+
+#include <smile/numeric/real.h>
 #include <smile/parsing/lexer.h>
 #include <smile/parsing/tokenkind.h>
 #include <smile/parsing/identkind.h>
@@ -31,6 +40,7 @@ STATIC_STRING(IllegalNumericSizeMessage, "Number is too large for its %s type (d
 STATIC_STRING(IllegalDecimalIntegerMessage, "Number not a valid decimal integer");
 STATIC_STRING(IllegalOctalIntegerMessage, "Number not a valid octal integer");
 STATIC_STRING(IllegalHexadecimalIntegerMessage, "Number not a valid hexadecimal integer");
+STATIC_STRING(IllegalRealValueMessage, "Number not a valid real or float value");
 
 STATIC_STRING(ZeroString, "0");
 STATIC_STRING(LowercaseXString, "x");
@@ -296,14 +306,151 @@ done:
 
 Int Lexer_ParseReal(Lexer lexer, Bool isFirstContentOnLine)
 {
+	DECLARE_INLINE_STRINGBUILDER(digitBuilder, 256);	// 256 is plenty for most numbers, but it can grow if necessary.
 	const Byte *src = lexer->src;
+	const Byte *end = lexer->end;
+	const Byte *start;
+	Byte ch;
 	Token token = lexer->token;
+	Int integerDigitCount = 0;
+	Int fractionalDigitCount = 0;
+	const Byte *digits;
+	String digitString, suffix;
+	const Byte *suffixText;
+	Float64 float64;
 
-	UNUSED(lexer);
 	UNUSED(isFirstContentOnLine);
 
+	INIT_INLINE_STRINGBUILDER(digitBuilder);
+
 	START_TOKEN(src);
-	lexer->token->text = String_FromC("Real and Float values are not yet supported.");
+
+	// Collect integer digits.
+	start = src;
+	while (src < end && (ch = *src) >= '0' && ch <= '9') {
+		src++;
+		if (src + 1 < end
+			&& ((ch = *src) == '\'' || ch == '\"' || ch == '_')
+			&& src[1] >= '0' && src[1] <= '9') {
+			if (src > start) {
+				StringBuilder_Append(digitBuilder, start, 0, src - start);
+			}
+			src++;
+			start = src;
+		}
+	}
+
+	// Copy into the digitBuilder whatever integers are left.
+	if (src > start) {
+		StringBuilder_Append(digitBuilder, start, 0, src - start);
+	}
+
+	integerDigitCount = StringBuilder_GetLength(digitBuilder);
+
+	// Collect the decimal point.
+	if (src < end && *src == '.') {
+		src++;
+
+		// Collect fractional digits.
+		while (src < end && (ch = *src) >= '0' && ch <= '9') {
+			src++;
+			if (src + 1 < end
+				&& ((ch = *src) == '\'' || ch == '\"' || ch == '_')
+				&& src[1] >= '0' && src[1] <= '9') {
+				if (src > start) {
+					StringBuilder_Append(digitBuilder, start, 0, src - start);
+				}
+				src++;
+				start = src;
+			}
+		}
+
+		fractionalDigitCount = StringBuilder_GetLength(digitBuilder) - 1 - integerDigitCount;
+	}
+
+	// Finally copy into the digitBuilder whatever's left.
+	if (src > start) {
+		StringBuilder_Append(digitBuilder, start, 0, src - start);
+	}
+	lexer->src = src;
+
+	// Make the result C-friendly.
+	StringBuilder_AppendByte(digitBuilder, '\0');
+
+	// Extract out the raw text of the number.
+	digitString = StringBuilder_ToString(digitBuilder);
+	digits = String_GetBytes(digitString);
+
+	// Get any trailing type identifiers.
+	suffix = CollectAlphanumericSuffix(lexer);
+
+	// And make sure the result is clean.
+	if (!EnsureEndOfNumber(lexer)) {
+		token->text = IllegalRealValueMessage;
+		return END_TOKEN(TOKEN_ERROR);
+	}
+
+	suffixText = String_GetBytes(suffix);
+	if (suffixText[0] == '\0') {
+		// Real64.
+		if (!Real64_TryParse(digitString, &token->data.real64)) {
+			token->text = IllegalRealValueMessage;
+			return END_TOKEN(TOKEN_ERROR);
+		}
+		token->text = digitString;
+		return END_TOKEN(TOKEN_REAL64);
+	}
+	else if (suffixText[0] == 'F' || suffixText[0] == 'f') {
+		if (suffixText[1] == '\0') {
+			// Float64.
+			float64 = strtod(digits, NULL);
+			token->data.float64 = float64;
+			token->text = digitString;
+			return END_TOKEN(TOKEN_FLOAT64);
+		}
+		else goto badSuffix;
+	}
+	else if (suffixText[0] == 'L' || suffixText[0] == 'l') {
+		// 128-bit something-or-other.
+		if (suffixText[1] == '\0') {
+			// Real128.
+			if (!Real128_TryParse(digitString, &token->data.real128)) {
+				token->text = IllegalRealValueMessage;
+				return END_TOKEN(TOKEN_ERROR);
+			}
+			token->text = String_Concat(digitString, suffix);
+			return END_TOKEN(TOKEN_REAL128);
+		}
+		else if ((suffixText[1] == 'F' || suffixText[1] == 'f') && suffixText[2] == '\0') {
+			// Float128 (not yet supported).
+			goto badSuffix;
+		}
+		else goto badSuffix;
+	}
+	else if (suffixText[0] == 'H' || suffixText[0] == 'h') {
+		// 32-bit something-or-other.
+		if (suffixText[1] == '\0') {
+			// Real32.
+			if (!Real32_TryParse(digitString, &token->data.real32)) {
+				token->text = IllegalRealValueMessage;
+				return END_TOKEN(TOKEN_ERROR);
+			}
+			token->text = String_Concat(digitString, suffix);
+			return END_TOKEN(TOKEN_REAL32);
+		}
+		else if ((suffixText[1] == 'F' || suffixText[1] == 'f') && suffixText[2] == '\0') {
+			// Float32.
+			float64 = strtod(digits, NULL);
+			token->data.float32 = (Float32)float64;
+			token->text = digitString;
+			return END_TOKEN(TOKEN_FLOAT32);
+		}
+		else goto badSuffix;
+	}
+	else goto badSuffix;
+
+badSuffix:
+	token->text = String_FormatString(IllegalNumericSuffixMessage, suffix);
 	return END_TOKEN(TOKEN_ERROR);
 }
 

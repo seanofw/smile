@@ -51,6 +51,11 @@ typedef struct TokenStruct {
 		Symbol symbol;						// The symbol for this token (for identifiers).
 		Int32 i;							// The integer value of this token (char/byte/int16/int32).
 		Int64 int64;						// A 64-bit integer value for this token.
+		Float32 float32;					// A 32-bit float value for this token.
+		Float64 float64;					// A 64-bit float value for this token.
+		Real32 real32;						// A 32-bit real value for this token.
+		Real64 real64;						// A 64-bit real value for this token.
+		Real128 real128;					// A 128-bit real value for this token.
 	} data;
 
 } *Token;
