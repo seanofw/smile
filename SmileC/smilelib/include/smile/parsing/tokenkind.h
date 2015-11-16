@@ -89,8 +89,6 @@ enum TokenKind {
 	TOKEN_LOANWORD_JSON,
 	TOKEN_LOANWORD_BRK,
 	TOKEN_LOANWORD_SYNTAX,
-	TOKEN_LOANWORD_MACRO,
-	TOKEN_LOANWORD_UNDEFINE,
 
 	// These kinds are required by the parser, but are not directly returned by the lexer.
 	TOKEN_KNOWNNAME,
