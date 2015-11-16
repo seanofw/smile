@@ -76,7 +76,12 @@ readMoreName:
 		case '0': case '1': case '2': case '3':
 		case '4': case '5': case '6': case '7':
 		case '8': case '9':
-		case '-': case '_': case '\'': case '\"': case '$': case '!': case '?':
+		case '_': case '\'': case '\"':
+		case '~': case '!': case '?': case '$':
+		case '@': case '%': case '^': case '&':
+		case '*': case '+': case '<':
+		case '>': case '/': case '-':
+			// Notable omission: '=' is not a valid trailing character.
 			goto readMoreName;
 
 		default:
@@ -88,7 +93,7 @@ readMoreName:
 				src--;
 				code = String_ExtractUnicodeCharacterInternal(&src, end);
 				identifierCharacterKind = SmileIdentifierKind(code);
-				if ((identifierCharacterKind & (IDENTKIND_MIDDLELETTER | IDENTKIND_STARTLETTER))) {
+				if ((identifierCharacterKind & (IDENTKIND_MIDDLELETTER | IDENTKIND_STARTLETTER | IDENTKIND_PUNCTUATION))) {
 					StringBuilder_AppendUnicode(namebuf, code);
 					StringBuilder_AppendByte(escapebuf, 'a');
 					start = src;
