@@ -30,23 +30,29 @@ Whitespace Conventions
 
 The Smile Interpreter's source code:
 
-1. Must use tabs, not spaces, for indentation.  (*Tabs are more efficient
-	for storage; they help prevent accidents in indentation; and they
-	are of viewer-customizable size.*)
+1. Must use tabs, not spaces, for indentation.
+
+	(*Tabs are more efficient for storage; they help prevent accidents
+	in indentation; and they are of viewer-customizable size.*)
 
 2. Must place open curly braces for `for`, `if`, `else`, `while`,
 	and `do` statements on the same line as the statement, not on
-	the next line.  (*Don't waste lines; write `if (x) {`*)
+	the next line.
+
+	(*Don't waste lines; write* `if (x) {`)
 
 3. Must place closing curly braces for all statements on a line by
-	themselves.  (*Don't write `} else {`*)
+	themselves.
+
+	(*Don't write* `} else {` *; put the* `else` *on the next line.*)
 
 4. Must place the open curly brace for a function on a line by itself
 	below the function, unindented.
 
 5. Must indent a closing curly brace of a statement to the same depth as
-	the start of its opening curly brace.  The following example
-	shows correct indentation of curly braces:
+	the start of its opening curly brace.
+
+	(*The following example shows correct indentation of curly braces:*)
 
 	```c
 	if (x) {
@@ -63,16 +69,20 @@ The Smile Interpreter's source code:
 	```
 
 6. Must not contain more than one blank line in sequence in a source file.
-	(i.e., don't leave long gaps of unnecessary blank lines.)
+
+	(*Don't leave long gaps of unnecessary blank lines in source code.*)
 
 7. Must not contain a blank line before a closing `}`.
 
-8. Must contain a blank line after every function body.  (i.e., put blank
-	lines between your functions.)
+8. Must contain a blank line after every function body.
+
+	(*Put blank lines between your functions.*)
 
 9. Must "collapse" a function declaration to a single line, wrapped
 	to successive lines at no more than 100 characters; and successive
-	lines of the function declaration must be indented.  For example, do not write this:
+	lines of the function declaration must be indented.
+
+	(*For example, do not write this:*)
 
 	```c
 	void
@@ -84,7 +94,7 @@ The Smile Interpreter's source code:
 
 	}```
 
-	Write this instead:
+	(*Write this instead:*)
 
 	```c
 	void f(int x, int y)
@@ -93,13 +103,15 @@ The Smile Interpreter's source code:
 	}```
 
 10. Should contain whitespace to the left and right of every binary operator.
-	(i.e., do not write `1+2`; write `1 + 2`.)
-	This rule is very nearly a "must" rule; you may only violate it
-	for certain short operations like subscripting, like `str[x+1]`.
+
+	(*Don't write* `1+2` *; write* `1 + 2` *.*
+	*This rule is very nearly a "must" rule; you may only violate it*
+	*for certain short operations like subscripting, like* `str[x+1]` *.*)
 
 11. Must not contain whitespace after a prefix unary operator or before a
-	postfix unary operator.  (i.e., do not write `x ++` or `++ x`; write
-	`x++` and `++x`.)
+	postfix unary operator.
+
+	(*Don't write* `x ++` *or* `++ x` *; write* `x++` *and* `++x` *.*)
 
 12. Must have a single space character after the keywords `if`, `else`,
 	`while`, `do`, `for`, and `return`.
@@ -110,13 +122,16 @@ The Smile Interpreter's source code:
 	or newline) on both sides of a `{` or a `}`.
 
 15. Variable declarations for pointer types must use whitespace that shows
-	C's associativity rules.  (i.e., write `Byte *ptr` and not `Byte* ptr`
-	because the `*` in C belongs to the variable-name part of the
-	declaration, not to the type-name part.)
+	C's associativity rules.
+
+	(*Write* `Byte *ptr` *and not* `Byte* ptr`
+	*because the* `*` *in C belongs to the variable-name part of the*
+	*declaration, not to the type-name part.*)
 
 16. Must not contain an extra space between the name of a function and
-	its `(`, either when declaring the function or calling it.  (i.e.,
-	don't write `f (x)`; write `f(x)`.)
+	its `(`, either when declaring the function or calling it.
+
+	(*Don't write* `f (x)` *; write* `f(x)` *.*)
 
 17. Must indent all code within `(...)` or `[...]` or `{...}` by one
 	tabstop relative to its parent indentation wherever that code
@@ -136,7 +151,8 @@ The Smile Interpreter's source code:
 18. When breaking long lines, must break either before a binary operator
 	or after a comma.
 
-	Correct example:
+	(*Correct example:*)
+	
 	```c
 	if (x < y && y < z && IsValid(z)
 	    || x < y && y < z && !IsValid(z)
@@ -152,12 +168,13 @@ Naming Conventions
 
 Names in the Smile Interpreter's source code:
 
-1. Must use `CamelCase` for all functions.  (i.e., all function names must start with
-	a capital letter, and should not contain underscores, except when
-	following rule #2 below.)
+1. Must use `CamelCase` for all functions.
+
+	(*All function names must start with a capital letter, and should
+	not contain underscores, except when following rule #2 below.*)
 
 2. Should not contain `_` characters except for private/static data names,
-	and for separating "namespaces" (as in rule #3 below).
+	and for separating "namespaces" (*as in rule #3 below*).
 
 3. Must use `Xxx_CamelCase` for functions specific to a particular
 	data type, where the `Xxx` is identical to the type name.
@@ -183,8 +200,9 @@ Names in the Smile Interpreter's source code:
 
 9. Should contain the word `Struct` or `Int` (internal) in `struct` or
 	`union` names, reserving "bare" names for use by `typedef`.
-	(For example, `struct StringInt { };` is internal, while `typedef struct StringInt String;` is public.)
 
+	(*For example,* `struct StringInt { };` *is internal, while*
+	`typedef struct StringInt String;` *is public.*)
 
 _______________________________________________________________________________
 
@@ -203,8 +221,10 @@ The Smile Interpreter's source code:
 	function.
 
 4. Should put every comment on its own line, except when documenting
-	a member of a `struct`.  (i.e., don't add "comment tags" at the
-	end of a line unless you have a good reason.)
+	a member of a `struct`.
+
+	(*Don't add "comment tags" at the end of a line unless you have a*
+	*good reason.*)
 
 5. Should prefix dangerous or complex code sequences with a `// TODO:` or
 	`// WARNING:` comment.
@@ -220,10 +240,14 @@ Language Conventions
 
 The Smile Interpreter's source code:
 
-1. Must be written in C.  (*Not* in C++.)
+1. Must be written in C.
+
+	(*__Not__ in C++!*)
 
 2. Must conform to the C89 standard, except for the usage of `//`-style
-	comments.  (*Not* the C99 standard, or C1x standard.)
+	comments, and for code within the `types.h` portability layer.
+
+	(*__Not__ the C99 standard, or C1x standard.*)
 
 3. Should avoid using `void*` wherever possible.  Prefer stronger pointer
 	types.
@@ -241,9 +265,10 @@ The Smile Interpreter's source code:
 	or `UInt`, whose size is always at least 32 bits but may vary
 	to match the processor's native register size.
 
-7. Must use `PtrInt` when casting a pointer to an integer type.  (*Do
-	not cast pointers to `Int` or `Int32` or `Int64` and expect it to be
-	the correct size.*)
+7. Must use `PtrInt` when casting a pointer to an integer type.
+
+	(*Do not cast pointers to `Int` or `Int32` or `Int64` and expect
+	those to be the correct size.*)
 
 8. Should avoid using `enum` to declare constants.  Prefer `#define`
 	constants, which are accessible by the C preprocessor.
@@ -262,33 +287,39 @@ The Smile Interpreter's source code:
 	error-handling code.
 
 13. Should avoid `return` in the middle of a function except when its
-	purpose is early exit (i.e., to avoid deeply nesting most of a
-	function inside an `else` clause, it is acceptable to use `return`
-	to "early out" of a function, but `return` should otherwise be
-	avoided).
+	purpose is early exit.
+
+	(*To avoid deeply nesting most of a function inside an* `else` *clause,*
+	*it is acceptable to use* `return` *to "early out" of a function, but* `return`
+	*should otherwise be avoided*).
 
 14. Must not use a bare `return;` at the end of a `void` function.
 
 15. Must place constant values on the *right* side of comparison operators.
-	(i.e., do not write `1 == x`; write `x == 1`.)
+
+	(*Don't write* `1 == x` *; write* `x == 1` *.*)
 
 16. Must not contain unnecessary parentheses, except when performing an
 	assignment in an `if` statement, or around the `?:` operator, or
 	when mixing arithmetic and bitwise operators, or to show correct
-	precedence between `&`/`|`/`^` or between `&&`/`||`.
-	(i.e., don't write `if ((x < y) && (y < z))`;
-	write `if (x < y && y < z)`.  You may write `if ((x = f(y)))` to
-	help defuse compilers that would erroneously warn about the `=` not
-	being an `==` operator.  And you may write `x = (w ? y : z)` to
-	show that the nested operation is conceptually isolated from the
-	assignment.  You may also write `if ((x < y && y < z) || (z < y &&
-	y < x))`, even though the parentheses are unnecessary, to better
-	represent the precedence of the and-vs-or operators.)
+	precedence between `&` and `|` and `^` or between `&&` and `||`.
+
+	(*Don't write* `if ((x < y) && (y < z))` *; write* `if (x < y && y < z)` *.*
+	
+	*You may write* `if ((x = f(y)))` *to help defuse compilers that would*
+	*erroneously warn about* `=` *not being a* `==` *operator.*
+	
+	*You may write* `x = (w ? y : z)` *to show that the nested operation*
+	*is conceptually isolated from the assignment.*
+	
+	*You may write* `if ((x < y && y < z) || (z < y && y < x))` *, even though*
+	*the parentheses are unnecessary, to better visually represent the precedence*
+	*of the and-vs-or operators, which can be unclear in C.*)
 
 17. Must not contain sets of integers that are all binary powers of two;
 	instead, use bit-shifting:
 
-	Wrong:
+	(*Don't do this:*)
 	```c
 	#define FOO 1
 	#define BAR 2
@@ -297,7 +328,7 @@ The Smile Interpreter's source code:
 	#define GUM 16
 	```
 
-	Right:
+	(*Do this instead:*)
 	```c
 	#define FOO (1 << 0)
 	#define BAR (1 << 1)
@@ -336,14 +367,19 @@ code base.  That said, some libraries are unavoidable.
 For those libraries that are unavoidable and required for the interpreter
 to function, these requirements must be observed:
 
-1. The library code must be compiled as part of the Smile build process (i.e.,
-	it must not be included in pre-compiled binary form).
+1. The library code must be compiled as part of the Smile build process.
 
-2. The library must be written in C. (The library must *not* be written in C++.)
+	(*It must not be included in pre-compiled binary form, or as an*
+	*external dependency that must be downloaded*.)
 
-3. The library's headers must not be exposed outside `smilelib` itself (i.e.,
-	users of `smilelib` must not be able to `#include` any `.h` files
-	from the third-party library directly or indirectly).
+2. The library must be written in C.
+
+	(*The library must __not__ be written in C++.*)
+
+3. The library's headers must not be exposed outside `smilelib` itself.
+
+	(*Users of* `smilelib` *must not be able to* `#include` *any* `.h` *files*
+	*from the third-party library directly or indirectly*.)
 
 4. The library's code must be isolated within a folder (directory) in the
 	Smile source tree; an individual library must not span multiple
@@ -357,7 +393,7 @@ to function, these requirements must be observed:
 
 6. Third-party libraries should contain unit tests to demonstrate the library's
 	correctness.  These tests must run as part of the standard Smile
-	unit-test suite (see unit testing, above).
+	unit-test suite.
 
 7. All third-party libraries must function correctly when compiled for 32-bit
 	or for 64-bit processors.
@@ -367,8 +403,7 @@ to function, these requirements must be observed:
 	"shim" required functionality that an OS does not natively support.
 
 9. Third-party libraries should contain no dependencies on other third-party
-	libraries or on unusual OS components (i.e., the Smile Interpreter
-	should be able to build easily on a "vanilla" OS install with no
-	unusual OS components required).
+	libraries or on unusual OS components.
 
-
+	(*The Smile Interpreter should be able to build easily on a "vanilla"*
+	*OS install with no unusual components required*).
