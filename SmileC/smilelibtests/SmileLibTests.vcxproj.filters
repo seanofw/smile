@@ -96,5 +96,20 @@
     <None Include="dict\stringintdict_tests.generated.inc">
       <Filter>dict</Filter>
     </None>
+    <None Include="numeric\real32_tests.generated.inc">
+      <Filter>numeric</Filter>
+    </None>
+    <None Include="numeric\real64_tests.generated.inc">
+      <Filter>numeric</Filter>
+    </None>
+    <None Include="numeric\real128_tests.generated.inc">
+      <Filter>numeric</Filter>
+    </None>
+    <None Include="env\symboltable_tests.generated.inc">
+      <Filter>env</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="..\smilelib\bin\$(Platform)-$(Configuration)\SmileLib.dll" />
   </ItemGroup>
 </Project>

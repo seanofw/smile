@@ -127,9 +127,17 @@
     <ClCompile Include="testlib.c" />
   </ItemGroup>
   <ItemGroup>
+    <Media Include="..\smilelib\bin\$(Platform)-$(Configuration)\SmileLib.dll">
+      <ExcludedFromBuild>false</ExcludedFromBuild>
+      <FileType>Document</FileType>
+    </Media>
     <None Include="dict\int32dict_tests.generated.inc" />
     <None Include="dict\stringdict_tests.generated.inc" />
     <None Include="dict\stringintdict_tests.generated.inc" />
+    <None Include="env\symboltable_tests.generated.inc" />
+    <None Include="numeric\real128_tests.generated.inc" />
+    <None Include="numeric\real32_tests.generated.inc" />
+    <None Include="numeric\real64_tests.generated.inc" />
     <None Include="string\stringcore_tests.generated.inc" />
     <None Include="string\stringextra_tests.generated.inc" />
     <None Include="string\stringformat_tests.generated.inc" />
