@@ -123,6 +123,21 @@ Int Lexer_ParseName(Lexer lexer, Bool isFirstContentOnLine)
 //---------------------------------------------------------------------------
 //  Punctuative name parsing.
 
+// Common known punctuation forms.
+STATIC_STRING(Lexer_NameEq, "=");
+STATIC_STRING(Lexer_NameEqual, "==");
+STATIC_STRING(Lexer_NameSuperEq, "===");
+STATIC_STRING(Lexer_NameNe, "!=");
+STATIC_STRING(Lexer_NameSuperNe, "!==");
+STATIC_STRING(Lexer_NameLt, "<");
+STATIC_STRING(Lexer_NameLe, "<=");
+STATIC_STRING(Lexer_NameGt, ">");
+STATIC_STRING(Lexer_NameGe, ">=");
+STATIC_STRING(Lexer_NamePlus, "+");
+STATIC_STRING(Lexer_NameMinus, "-");
+STATIC_STRING(Lexer_NameStar, "*");
+STATIC_STRING(Lexer_NameSlash, "/");
+
 static String ParsePunctuationRaw(Lexer lexer, Bool *hasEscapes, Int *tokenKind)
 {
 	DECLARE_INLINE_STRINGBUILDER(escapebuf, 64);
@@ -197,17 +212,17 @@ readMorePunctuation:
 			if (nameLen == 1) {				// "="
 				lexer->src = src;
 				*tokenKind = TOKEN_EQUAL;
-				return StringBuilder_ToString(namebuf);
+				return Lexer_NameEqual;
 			}
 			else if (nameLen == 2 && nameBytes[1] == '=') {			// "=="
 				lexer->src = src;
 				*tokenKind = TOKEN_EQ;
-				return StringBuilder_ToString(namebuf);
+				return Lexer_NameEq;
 			}
 			else if (nameLen == 3 && nameBytes[1] == '=' && nameBytes[2] == '=') {			// "==="
 				lexer->src = src;
 				*tokenKind = TOKEN_SUPEREQ;
-				return StringBuilder_ToString(namebuf);
+				return Lexer_NameSuperEq;
 			}
 			break;
 
@@ -215,12 +230,12 @@ readMorePunctuation:
 			if (nameLen == 2 && nameBytes[1] == '=') {			// "!="
 				lexer->src = src;
 				*tokenKind = TOKEN_NE;
-				return StringBuilder_ToString(namebuf);
+				return Lexer_NameNe;
 			}
 			else if (nameLen == 3 && nameBytes[1] == '=' && nameBytes[2] == '=') {			// "!=="
 				lexer->src = src;
 				*tokenKind = TOKEN_SUPERNE;
-				return StringBuilder_ToString(namebuf);
+				return Lexer_NameSuperNe;
 			}
 			break;
 
@@ -228,12 +243,12 @@ readMorePunctuation:
 			if (nameLen == 1) {				// "<"
 				lexer->src = src;
 				*tokenKind = TOKEN_LT;
-				return StringBuilder_ToString(namebuf);
+				return Lexer_NameLt;
 			}
 			else if (nameLen == 2 && nameBytes[1] == '=') {			// "<="
 				lexer->src = src;
 				*tokenKind = TOKEN_LE;
-				return StringBuilder_ToString(namebuf);
+				return Lexer_NameLe;
 			}
 			break;
 
@@ -241,12 +256,12 @@ readMorePunctuation:
 			if (nameLen == 1) {				// ">"
 				lexer->src = src;
 				*tokenKind = TOKEN_GT;
-				return StringBuilder_ToString(namebuf);
+				return Lexer_NameGt;
 			}
 			else if (nameLen == 2 && nameBytes[1] == '=') {			// ">="
 				lexer->src = src;
 				*tokenKind = TOKEN_GE;
-				return StringBuilder_ToString(namebuf);
+				return Lexer_NameGe;
 			}
 			break;
 
@@ -254,7 +269,7 @@ readMorePunctuation:
 			if (nameLen == 1) {				// "+"
 				lexer->src = src;
 				*tokenKind = TOKEN_PLUS;
-				return StringBuilder_ToString(namebuf);
+				return Lexer_NamePlus;
 			}
 			break;
 
@@ -262,7 +277,7 @@ readMorePunctuation:
 			if (nameLen == 1) {				// "-"
 				lexer->src = src;
 				*tokenKind = TOKEN_MINUS;
-				return StringBuilder_ToString(namebuf);
+				return Lexer_NameMinus;
 			}
 			break;
 
@@ -270,7 +285,7 @@ readMorePunctuation:
 			if (nameLen == 1) {				// "*"
 				lexer->src = src;
 				*tokenKind = TOKEN_STAR;
-				return StringBuilder_ToString(namebuf);
+				return Lexer_NameStar;
 			}
 			break;
 
@@ -278,7 +293,7 @@ readMorePunctuation:
 			if (nameLen == 1) {				// "/"
 				lexer->src = src;
 				*tokenKind = TOKEN_SLASH;
-				return StringBuilder_ToString(namebuf);
+				return Lexer_NameSlash;
 			}
 			break;
 	}
@@ -309,7 +324,7 @@ Int Lexer_ParsePunctuation(Lexer lexer, Bool isFirstContentOnLine)
 	Bool hasEscapes;
 	Int tokenKind;
 
-	START_TOKEN(lexer->src);
+	START_TOKEN(--lexer->src);
 
 	text = ParsePunctuationRaw(lexer, &hasEscapes, &tokenKind);
 	symbol = lexer->symbolTable != NULL ? SymbolTable_GetSymbol(lexer->symbolTable, text) : 0;

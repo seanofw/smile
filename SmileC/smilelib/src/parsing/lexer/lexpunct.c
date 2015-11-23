@@ -80,11 +80,12 @@ Int Lexer_ParseSlash(Lexer lexer, Bool isFirstContentOnLine)
 				}
 			}
 
+			lexer->src = src;
 			return TOKEN_NONE;
 
 		default:
 			// Not a comment: General punctuation.
-			src--;
+			lexer->src = --src;
 			return Lexer_ParsePunctuation(lexer, isFirstContentOnLine);
 	}
 }

@@ -82,7 +82,7 @@ Int Lexer_Next(Lexer lexer)
 	Bool hasPrecedingWhitespace;
 	Byte ch;
 	Int code;
-	const Byte *src = lexer->src;
+	const Byte *src;
 	const Byte *end = lexer->end;
 	Token token;
 	Int tokenKind;
@@ -103,6 +103,8 @@ Int Lexer_Next(Lexer lexer)
 
 	// Loop (using gotos!) until we either get a valid token or run out of input.
 retry:
+	src = lexer->src;
+retryAtSrc:
 	if (src >= end)
 		return SIMPLE_TOKEN(src, TOKEN_EOI);
 
@@ -135,7 +137,7 @@ retry:
 		case ' ':
 			// Simple whitespace characters.
 			hasPrecedingWhitespace = True;
-			goto retry;
+			goto retryAtSrc;
 
 		case '\n':
 			// Unix-style newlines, and inverted Windows newlines.
@@ -145,9 +147,9 @@ retry:
 			lexer->lineStart = src;
 			isFirstContentOnLine = True;
 			hasPrecedingWhitespace = True;
-			goto retry;
+			goto retryAtSrc;
 
-		case (int)'\r':
+		case '\r':
 			// Windows-style newlines, and old Mac newlines.
 			if (src < end && (ch = *src) == '\n')
 				src++;
@@ -155,7 +157,7 @@ retry:
 			lexer->lineStart = src;
 			isFirstContentOnLine = True;
 			hasPrecedingWhitespace = True;
-			goto retry;
+			goto retryAtSrc;
 
 		//--------------------------------------------------------------------------
 		//  Operators and complex punctuation things (like comments) that start like operators.
@@ -188,6 +190,7 @@ retry:
 		case '%': case '^': case '&': case '*':
 		case '+': case '<': case '>':
 			// General punctuation and operator name forms:  [~!?@%^&*=+<>/-]+
+			lexer->src = src;
 			return Lexer_ParsePunctuation(lexer, isFirstContentOnLine);
 
 		case '.':
@@ -217,12 +220,14 @@ retry:
 
 		case '0':
 			// Octal, hexadecimal, and real values.
+			lexer->src = src;
 			return Lexer_ParseZero(lexer, isFirstContentOnLine);
 
 		case '1': case '2': case '3': case '4':
 		case '5': case '6': case '7': case '8':
 		case '9':
 			// Decimal integer, or possibly a real value (if we find a '.').
+			lexer->src = src;
 			return Lexer_ParseDigit(lexer, isFirstContentOnLine);
 
 		//--------------------------------------------------------------------------
@@ -374,20 +379,24 @@ retry:
 		case 'Y': case 'Z':
 		case '_': case '$':
 
-		parseAsName:
+		parseAsName :
 			// General identifier form.
+			lexer->src = src;
 			return Lexer_ParseName(lexer, isFirstContentOnLine);
 
 		//--------------------------------------------------------------------------
 		//  Strings and characters.
 
 		case '\"':
+			lexer->src = src;
 			return Lexer_ParseDynamicString(lexer, isFirstContentOnLine);
 
 		case '\'':
+			lexer->src = src;
 			return Lexer_ParseRawString(lexer, isFirstContentOnLine);
 
 		case '#':
+			lexer->src = src;
 			tokenKind = Lexer_ParseLoanword(lexer, isFirstContentOnLine);
 			if (!tokenKind) {
 				hasPrecedingWhitespace = True;
@@ -402,10 +411,12 @@ retry:
 			identifierCharacterKind = SmileIdentifierKind(code);
 			if (identifierCharacterKind & IDENTKIND_STARTLETTER) {
 				// General identifier form.
+				lexer->src = src;
 				return Lexer_ParseName(lexer, isFirstContentOnLine);
 			}
 			else if (identifierCharacterKind & IDENTKIND_PUNCTUATION) {
 				// General punctuation and operator name forms:  [~!?@%^&*=+<>/-]+
+				lexer->src = src;
 				return Lexer_ParsePunctuation(lexer, isFirstContentOnLine);
 			}
 

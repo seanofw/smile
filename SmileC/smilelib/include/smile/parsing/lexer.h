@@ -16,6 +16,9 @@
 #ifndef __SMILE_SMILETYPES_OBJECT_H__
 #include <smile/smiletypes/smileobject.h>
 #endif
+#ifndef __SMILE_PARSING_TOKENKIND_H__
+#include <smile/parsing/tokenkind.h>
+#endif
 
 //-------------------------------------------------------------------------------------------------
 //  Public type declarations

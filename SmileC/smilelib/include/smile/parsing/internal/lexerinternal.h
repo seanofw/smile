@@ -34,8 +34,7 @@ extern Int Lexer_ParseHyphenOrEquals(Lexer lexer, Int initialChar, Bool isFirstC
 	((token->position.filename = lexer->filename), \
 	 (token->position.line = lexer->line), \
 	 (token->position.lineStart = lexer->lineStart - lexer->input), \
-	 (token->position.column = (__startPtr__) - lexer->lineStart), \
-	 (lexer->tokenStart = (__startPtr__)), \
+	 (token->position.column = (lexer->tokenStart = (__startPtr__)) - lexer->lineStart), \
 	 (token->isFirstContentOnLine = isFirstContentOnLine))
 
 // End the current token as the given kind.
