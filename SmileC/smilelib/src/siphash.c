@@ -47,8 +47,10 @@ Tweaked slightly for the needs of Smile in 2015 by Sean Werkema.
 		v2 += v1; v1=ROTL(v1,17); v1 ^= v2; v2=ROTL(v2,32); \
     }
 
-UInt64 Smile_SipHash(const Byte *in, Int inlen, UInt64 secret1, UInt64 secret2)
+UInt64 Smile_SipHash(const void *buffer, Int inlen, UInt64 secret1, UInt64 secret2)
 {
+	const Byte *in = (const Byte *)buffer;
+
 	/* "somepseudorandomlygeneratedbytes" */
 	UInt64 v0 = 0x736f6d6570736575ULL;
 	UInt64 v1 = 0x646f72616e646f6dULL;

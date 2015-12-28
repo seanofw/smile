@@ -61,6 +61,7 @@ BID_THREAD _IDEC_flags _IDEC_glbflags = BID_EXACT_STATUS;
 	#define FE_INVALID		0x10
 	#define FE_ALL_EXCEPT	(FE_DIVBYZERO | FE_INEXACT | FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW)
 #else
+	#define fexcept_t __fexcept_t_NO_CONFLICT__
 	#include <fenv.h>
 #endif
 

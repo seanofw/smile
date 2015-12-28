@@ -155,8 +155,20 @@ typedef unsigned char Bool;
 	#define SMILE_HAS_THREAD_LOCAL True
 	#define SMILE_THREAD_LOCAL __thread
 
-	// How to export public functions outside SmileLib.
-	#define SMILE_API extern
+	// How to export public functions and data outside SmileLib.
+	#ifdef __CYGWIN__
+		#ifdef SMILELIB_BUILD
+			#define SMILE_API __declspec(dllexport)
+		#else
+			#define SMILE_API extern __declspec(dllimport)
+		#endif
+	#else
+		#ifdef SMILELIB_BUILD
+			#define SMILE_API
+		#else
+			#define SMILE_API extern
+		#endif
+	#endif
 
 	// Macros for performing bit-rotation on an integer.
 	#define Smile_RotateLeft8(__n__, __m__) ((((UInt8)__n__) << (__m__)) | (((UInt8)__n__) >> (8 - (__m__))))

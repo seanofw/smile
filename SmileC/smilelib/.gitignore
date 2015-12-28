@@ -2,3 +2,6 @@
 *.old
 bin
 obj
+Makefile.allsrc
+Makefile.dep
+Makefile.src

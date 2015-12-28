@@ -24,7 +24,11 @@
 
 #include <smile/internal/unicode.h>
 
-extern const Int32 _decompositionTableExtendedValues[];
+#ifdef _MSC_VER
+	extern const Int32 _decompositionTableExtendedValues[];
+#else
+	static const Int32 _decompositionTableExtendedValues[];
+#endif
 
 static const Int32 _d0[] =
 {

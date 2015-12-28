@@ -14,11 +14,11 @@ struct KnownObjectsStruct {
 	SmileBool TrueObj;
 	SmileBool FalseObj;
 
-	SmileInteger32 SmallInt32s[200];
+	SmileInteger32 SmallInt32s[201];
 	SmileInteger32 ZeroInt32;
 	SmileInteger32 OneInt32;
 
-	SmileInteger64 SmallInt64s[200];
+	SmileInteger64 SmallInt64s[201];
 	SmileInteger64 ZeroInt64;
 	SmileInteger64 OneInt64;
 };

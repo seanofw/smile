@@ -28,7 +28,9 @@
 ******************************************************************************/
 
 #if !defined (_MSC_VER) || defined (__INTEL_COMPILER)
-#include <fenv.h>
+	#define fexcept_t __fexcept_t_NO_CONFLICT__
+	#include <fenv.h>
+	#undef fexcept_t
 #endif
 #include "bid_internal.h"
 

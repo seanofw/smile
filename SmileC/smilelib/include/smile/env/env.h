@@ -36,11 +36,19 @@
 //-------------------------------------------------------------------------------------------------
 //  The core Smile implementation
 
-SMILE_API SymbolTable Smile_SymbolTable;
-SMILE_API struct KnownSymbolsStruct Smile_KnownSymbols;
-SMILE_API struct KnownStringsStruct Smile_KnownStrings;
-SMILE_API struct KnownObjectsStruct Smile_KnownObjects;
-SMILE_API struct KnownBasesStruct Smile_KnownBases;
+#ifdef _MSC_VER
+	SMILE_API SymbolTable Smile_SymbolTable;
+	SMILE_API struct KnownSymbolsStruct Smile_KnownSymbols;
+	SMILE_API struct KnownStringsStruct Smile_KnownStrings;
+	SMILE_API struct KnownObjectsStruct Smile_KnownObjects;
+	SMILE_API struct KnownBasesStruct Smile_KnownBases;
+#else
+	SMILE_API extern SymbolTable Smile_SymbolTable;
+	SMILE_API extern struct KnownSymbolsStruct Smile_KnownSymbols;
+	SMILE_API extern struct KnownStringsStruct Smile_KnownStrings;
+	SMILE_API extern struct KnownObjectsStruct Smile_KnownObjects;
+	SMILE_API extern struct KnownBasesStruct Smile_KnownBases;
+#endif
 
 SMILE_API void Smile_ThrowException(Symbol exceptionKind, String message);
 

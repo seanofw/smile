@@ -163,22 +163,22 @@ typedef BID_UINT128 _Quad;
 //  This section may move to fenv_support.h
 
 #if !defined(__FENV_H_INCLUDED) && !defined (_FENV_H) && !defined(_FENV_INCLUDED)          /* Otherwise we already defined fexcept_t type */
-#if defined(__ECL) || defined(__ECC)            /* Intel(R) Itanium(R) architecture */
-/* Default 64-bit Floating Point Status Register   */
-#if defined(__linux__)
-typedef unsigned    long fexcept_t;
-#else
-typedef unsigned bid__int64 fexcept_t;
-#endif
-#else
-#ifdef __QNX__
-#include <fenv.h>
-#elif defined(_WIN32)
-typedef unsigned long fexcept_t;
-#else
-typedef unsigned short int fexcept_t;
-#endif
-#endif
+	#if defined(__ECL) || defined(__ECC)            /* Intel(R) Itanium(R) architecture */
+	/* Default 64-bit Floating Point Status Register   */
+		#if defined(__linux__)
+			typedef unsigned    long fexcept_t;
+		#else
+			typedef unsigned bid__int64 fexcept_t;
+		#endif
+	#else
+		#ifdef __QNX__
+			#include <fenv.h>
+		#elif defined(_WIN32)
+			typedef unsigned long fexcept_t;
+		#else
+			typedef unsigned short int fexcept_t;
+		#endif
+	#endif
 #endif
 
 #define DEC_FE_INVALID      0x01

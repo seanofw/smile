@@ -22,10 +22,10 @@
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/text/smilestring.h>
 
-static SmileVTable SmileUserObject_VTable_ReadOnly;
-static SmileVTable SmileUserObject_VTable_ReadWrite;
-static SmileVTable SmileUserObject_VTable_ReadAppend;
-static SmileVTable SmileUserObject_VTable_ReadWriteAppend;
+extern SmileVTable SmileUserObject_VTable_ReadOnly;
+extern SmileVTable SmileUserObject_VTable_ReadWrite;
+extern SmileVTable SmileUserObject_VTable_ReadAppend;
+extern SmileVTable SmileUserObject_VTable_ReadWriteAppend;
 
 SmileUserObject SmileUserObject_CreateWithSize(SmileObject base, Int initialSize)
 {

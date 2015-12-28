@@ -24,7 +24,11 @@
 
 #include <smile/internal/unicode.h>
 
-extern const Int32 _caseFoldingTableExtendedValues[];
+#ifdef _MSC_VER
+	extern const Int32 _caseFoldingTableExtendedValues[];
+#else
+	static const Int32 _caseFoldingTableExtendedValues[];
+#endif
 
 static const Int32 _c0[] =
 {

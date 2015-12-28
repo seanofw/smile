@@ -208,8 +208,8 @@ void StringBuilder_AppendFormatInternal(StringBuilder stringBuilder, const Byte 
 
 			case 'c':
 				{
-					// 8-bit character.
-					char ch = va_arg(v, char);
+					// 8-bit character.  Because of the vagaries of C, this is 'int', not 'char'.
+					char ch = (char)va_arg(v, int);
 					StringBuilder_AppendByte(stringBuilder, ch);
 				}
 				break;

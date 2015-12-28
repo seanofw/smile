@@ -24,7 +24,11 @@
 
 #include <smile/internal/unicode.h>
 
-extern const Int32 _uppercaseTableExtendedValues[];
+#ifdef _MSC_VER
+	extern const Int32 _uppercaseTableExtendedValues[];
+#else
+	static const Int32 _uppercaseTableExtendedValues[];
+#endif
 
 static const Int32 _u0[] =
 {
