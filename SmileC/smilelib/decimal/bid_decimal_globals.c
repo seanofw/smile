@@ -50,7 +50,19 @@ __dfp_get_round (void) {
 BID_THREAD _IDEC_flags _IDEC_glbflags = BID_EXACT_STATUS;
 
 #if DECIMAL_GLOBAL_EXCEPTION_FLAGS_ACCESS_FUNCTIONS
-#include <fenv.h>
+
+#if defined(_MSC_VER) && _MSC_VER <= 1700
+	// We don't actually need the FPU functions; we just need the flags to match Windows' flags,
+	// so we can define them here.
+	#define FE_INEXACT		0x01
+	#define FE_UNDERFLOW	0x02
+	#define FE_OVERFLOW		0x04
+	#define FE_DIVBYZERO	0x08
+	#define FE_INVALID		0x10
+	#define FE_ALL_EXCEPT	(FE_DIVBYZERO | FE_INEXACT | FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW)
+#else
+	#include <fenv.h>
+#endif
 
 void
 __dfp_clear_except (void) {

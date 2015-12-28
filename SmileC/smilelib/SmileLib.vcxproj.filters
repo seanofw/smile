@@ -300,9 +300,6 @@
     <ClCompile Include="decimal\bid32_add.c">
       <Filter>decimal\src</Filter>
     </ClCompile>
-    <ClCompile Include="decimal\bid32_cbrt.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
     <ClCompile Include="decimal\bid32_compare.c">
       <Filter>decimal\src</Filter>
     </ClCompile>

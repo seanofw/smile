@@ -119,10 +119,10 @@ Inline Bool Real128_TryParseC(const char *str, Real128 *result)
 
 Inline Real128 Real128_ParseC(const char *str)
 {
+	Real128 result;
 	DECLARE_TEMP_C_STRING(string);
 	INIT_TEMP_C_STRING(string, str);
 
-	Real128 result;
 	Real128_TryParse(string, &result);
 	return result;
 }

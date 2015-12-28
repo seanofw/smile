@@ -119,10 +119,10 @@ Inline Bool Real32_TryParseC(const char *str, Real32 *result)
 
 Inline Real32 Real32_ParseC(const char *str)
 {
+	Real32 result;
 	DECLARE_TEMP_C_STRING(string);
 	INIT_TEMP_C_STRING(string, str);
 
-	Real32 result;
 	Real32_TryParse(string, &result);
 	return result;
 }

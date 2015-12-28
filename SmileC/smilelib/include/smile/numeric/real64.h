@@ -119,10 +119,10 @@ Inline Bool Real64_TryParseC(const char *str, Real64 *result)
 
 Inline Real64 Real64_ParseC(const char *str)
 {
+	Real64 result;
 	DECLARE_TEMP_C_STRING(string);
 	INIT_TEMP_C_STRING(string, str);
 
-	Real64 result;
 	Real64_TryParse(string, &result);
 	return result;
 }
