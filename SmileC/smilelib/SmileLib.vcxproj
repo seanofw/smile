@@ -141,6 +141,13 @@
     <ClInclude Include="include\smile\parsing\internal\lexerinternal.h" />
     <ClInclude Include="include\smile\parsing\lexer.h" />
     <ClInclude Include="include\smile\parsing\tokenkind.h" />
+    <ClInclude Include="include\smile\platform\cygwin-gcc-x64\platform.h" />
+    <ClInclude Include="include\smile\platform\cygwin-gcc-x86\platform.h" />
+    <ClInclude Include="include\smile\platform\linux-gcc-x64\platform.h" />
+    <ClInclude Include="include\smile\platform\linux-gcc-x86\platform.h" />
+    <ClInclude Include="include\smile\platform\platform.h" />
+    <ClInclude Include="include\smile\platform\windows-msvc-x64\platform.h" />
+    <ClInclude Include="include\smile\platform\windows-msvc-x86\platform.h" />
     <ClInclude Include="include\smile\simplestats.h" />
     <ClInclude Include="include\smile\smiletypes\smilebool.h" />
     <ClInclude Include="include\smile\smiletypes\smilelist.h" />

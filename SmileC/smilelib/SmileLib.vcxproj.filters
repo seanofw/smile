@@ -88,6 +88,27 @@
     <Filter Include="src\numeric">
       <UniqueIdentifier>{a28b1148-a1be-460f-887d-00f394800e9d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\platform">
+      <UniqueIdentifier>{663406b8-6935-47e0-84d9-9c824b9ae239}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\platform\windows-msvc-x86">
+      <UniqueIdentifier>{3ce43d55-e2ab-4615-93ae-2fc63625891a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\platform\windows-msvc-x64">
+      <UniqueIdentifier>{e55aca09-f8c7-40a8-9185-66f64a8d43e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\platform\linux-gcc-x64">
+      <UniqueIdentifier>{b52c2675-b164-4087-871d-cb52b354345b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\platform\cygwin-gcc-x64">
+      <UniqueIdentifier>{d921a597-2ceb-4465-9eec-b608ce012fd9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\platform\cygwin-gcc-x86">
+      <UniqueIdentifier>{090809d9-d818-4a01-864f-517c69f93dd3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\platform\linux-gcc-x86">
+      <UniqueIdentifier>{15fff788-ea95-4fbf-88eb-18d91f95f79d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gc\src\allchblk.c">
@@ -904,6 +925,27 @@
     </ClInclude>
     <ClInclude Include="include\smile\numeric\realshared.h">
       <Filter>include\numeric</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\platform\cygwin-gcc-x86\platform.h">
+      <Filter>include\platform\cygwin-gcc-x86</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\platform\linux-gcc-x64\platform.h">
+      <Filter>include\platform\linux-gcc-x64</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\platform\windows-msvc-x64\platform.h">
+      <Filter>include\platform\windows-msvc-x64</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\platform\windows-msvc-x86\platform.h">
+      <Filter>include\platform\windows-msvc-x86</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\platform\platform.h">
+      <Filter>include\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\platform\linux-gcc-x86\platform.h">
+      <Filter>include\platform\linux-gcc-x86</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\platform\cygwin-gcc-x64\platform.h">
+      <Filter>include\platform\cygwin-gcc-x64</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

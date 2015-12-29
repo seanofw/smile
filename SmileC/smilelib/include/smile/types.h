@@ -18,221 +18,39 @@ typedef unsigned char Bool;
 // A macro to mark unused parameters as unused to avoid compiler warnings.
 #define UNUSED(__x__) ((void)(__x__))
 
-//------------------------------------------------------------------------------------------------
-//  Platform-specific type declarations.
+// Macros for performing bit-rotation on an integer (defined early to allow for optimized compiler substitutes).
+#define Smile_RotateLeft8(__n__, __m__) ((((UInt8)__n__) << (__m__)) | (((UInt8)__n__) >> (8 - (__m__))))
+#define Smile_RotateRight8(__n__, __m__) ((((UInt8)__n__) >> (__m__)) | (((UInt8)__n__) << (8 - (__m__))))
 
-#if defined(_MSC_VER)
+#define Smile_RotateLeft16(__n__, __m__) ((((UInt16)__n__) << (__m__)) | (((UInt16)__n__) >> (16 - (__m__))))
+#define Smile_RotateRight16(__n__, __m__) ((((UInt16)__n__) >> (__m__)) | (((UInt16)__n__) << (16 - (__m__))))
 
-	//------------------------------------------------------------------------------------------------
-	//  Microsoft Visual C.
+#define Smile_RotateLeft32(__n__, __m__) ((((UInt32)__n__) << (__m__)) | (((UInt32)__n__) >> (32 - (__m__))))
+#define Smile_RotateRight32(__n__, __m__) ((((UInt32)__n__) >> (__m__)) | (((UInt32)__n__) << (32 - (__m__))))
 
-	// Portable fixed-size and fixed-sign types.
-	typedef char SByte;
-	typedef unsigned char Byte;
-	typedef char Int8;
-	typedef unsigned char UInt8;
-	typedef short Int16;
-	typedef unsigned short UInt16;
-	typedef long Int32;
-	typedef unsigned long UInt32;
-	typedef __int64 Int64;
-	typedef unsigned __int64 UInt64;
+#define Smile_RotateLeft64(__n__, __m__) ((((UInt64)__n__) << (__m__)) | (((UInt64)__n__) >> (64 - (__m__))))
+#define Smile_RotateRight64(__n__, __m__) ((((UInt64)__n__) >> (__m__)) | (((UInt64)__n__) << (64 - (__m__))))
 
-	// Portable binary floating-point types.
-	typedef float Float32;
-	typedef double Float64;
-	typedef struct { UInt64 value[2]; } Float128;
+// Compatibility macros.
+#define SMILE_DECLARATION_STATIC_PROTOTYPE extern
+#define SMILE_DECLARATION_EXTERN_OF_UNKNOWN_SIZE
 
-	// Portable decimal floating-point types.
-	typedef struct { UInt32 value; } Real32;
-	typedef struct { UInt64 value; } Real64;
-	typedef struct { UInt64 value[2]; } Real128;
-
-	// How to make functions behave as 'inline' in this compiler.
-	#define Inline static __inline
-
-	// How to declare thread-local data.
-	#define SMILE_HAS_THREAD_LOCAL True
-	#define SMILE_THREAD_LOCAL __declspec(thread)
-
-	// How to export public functions outside SmileLib.
-	#ifdef SMILELIB_BUILD
-		#define SMILE_API extern __declspec(dllexport)
-	#else
-		#define SMILE_API extern __declspec(dllimport)
-	#endif
-
-	// Macros for performing bit-rotation on an integer.
-	#define Smile_RotateLeft8(__n__, __m__) ((((UInt8)__n__) << (__m__)) | (((UInt8)__n__) >> (8 - (__m__))))
-	#define Smile_RotateRight8(__n__, __m__) ((((UInt8)__n__) >> (__m__)) | (((UInt8)__n__) << (8 - (__m__))))
-
-	#define Smile_RotateLeft16(__n__, __m__) ((((UInt16)__n__) << (__m__)) | (((UInt16)__n__) >> (16 - (__m__))))
-	#define Smile_RotateRight16(__n__, __m__) ((((UInt16)__n__) >> (__m__)) | (((UInt16)__n__) << (16 - (__m__))))
-
-	#define Smile_RotateLeft32(__n__, __m__) ((((UInt32)__n__) << (__m__)) | (((UInt32)__n__) >> (32 - (__m__))))
-	#define Smile_RotateRight32(__n__, __m__) ((((UInt32)__n__) >> (__m__)) | (((UInt32)__n__) << (32 - (__m__))))
-
-	#define Smile_RotateLeft64(__n__, __m__) ((((UInt64)__n__) << (__m__)) | (((UInt64)__n__) >> (64 - (__m__))))
-	#define Smile_RotateRight64(__n__, __m__) ((((UInt64)__n__) >> (__m__)) | (((UInt64)__n__) << (64 - (__m__))))
-
-	#if defined(_M_IX86)
-
-		typedef UInt32 PtrInt;		// An unsigned integer type that is the same size as a pointer.
-		typedef Int32 Int;			// A signed integer type that matches the native platform's "best" register size.
-		typedef UInt32 UInt;		// An unsigned integer type that matches the native platform's "best" register size.
-
-		#define SizeofPtrInt 4
-		#define SizeofInt 4
-
-		// Get a reasonable degree of entropy from wherever this platform keeps it, as quickly as possible.
-		// This doesn't need to be crypto-secure; it just needs to be suitably semi-random.
-        Inline UInt64 GetBaselineEntropy(void)
-        {
-            UInt64 tsc;
-            __asm {
-                cpuid
-                rdtsc
-                mov dword ptr [tsc+0], eax
-                mov dword ptr [tsc+4], edx
-            }
-            return tsc;
-        }
-
-	#elif defined(_M_X64)
-
-		typedef UInt64 PtrInt;		// An unsigned integer type that is the same size as a pointer.
-		typedef Int64 Int;			// A signed integer type that matches the native platform's "best" register size.
-		typedef UInt64 UInt;		// An unsigned integer type that matches the native platform's "best" register size.
-
-		#define SizeofPtrInt 8
-		#define SizeofInt 8
-
-		extern UInt64 __rdtsc(void);
-        #pragma intrinsic(__rdtsc)
-
-		// Get a reasonable degree of entropy from wherever this platform keeps it, as quickly as possible.
-		// This doesn't need to be crypto-secure; it just needs to be suitably semi-random.
-        Inline UInt64 GetBaselineEntropy(void)
-        {
-            return __rdtsc();
-        }
-
-	#else
-		#error Unknown Microsoft Visual C environment; please configure "types.h" for your environment.
-	#endif
-
-#elif defined(__GNUC__)
-
-	//------------------------------------------------------------------------------------------------
-	//  GCC
-
-	// Portable fixed-size and fixed-sign types.
-	typedef char SByte;
-	typedef unsigned char Byte;
-	typedef char Int8;
-	typedef unsigned char UInt8;
-	typedef short Int16;
-	typedef unsigned short UInt16;
-	typedef long Int32;
-	typedef unsigned long UInt32;
-	typedef long long Int64;
-	typedef unsigned long long UInt64;
-
-	// Portable binary floating-point types.
-	typedef float Float32;
-	typedef double Float64;
-	typedef struct __attribute__((aligned(16))) { UInt64 value[2]; } Float128;
-
-	// Portable decimal floating-point types.
-	typedef struct { UInt32 value; } Real32;
-	typedef struct { UInt64 value; } Real64;
-	typedef struct __attribute__((aligned(16))) { UInt64 value[2]; } Real128;
-
-	// How to make functions behave as 'inline' in this compiler.
-	#define Inline static __inline__
-
-	// How to declare thread-local data.
-	#define SMILE_HAS_THREAD_LOCAL True
-	#define SMILE_THREAD_LOCAL __thread
-
-	// How to export public functions and data outside SmileLib.
-	#ifdef __CYGWIN__
-		#ifdef SMILELIB_BUILD
-			#define SMILE_API __declspec(dllexport)
-		#else
-			#define SMILE_API extern __declspec(dllimport)
-		#endif
-	#else
-		#ifdef SMILELIB_BUILD
-			#define SMILE_API
-		#else
-			#define SMILE_API extern
-		#endif
-	#endif
-
-	// Macros for performing bit-rotation on an integer.
-	#define Smile_RotateLeft8(__n__, __m__) ((((UInt8)__n__) << (__m__)) | (((UInt8)__n__) >> (8 - (__m__))))
-	#define Smile_RotateRight8(__n__, __m__) ((((UInt8)__n__) >> (__m__)) | (((UInt8)__n__) << (8 - (__m__))))
-
-	#define Smile_RotateLeft16(__n__, __m__) ((((UInt16)__n__) << (__m__)) | (((UInt16)__n__) >> (16 - (__m__))))
-	#define Smile_RotateRight16(__n__, __m__) ((((UInt16)__n__) >> (__m__)) | (((UInt16)__n__) << (16 - (__m__))))
-
-	#define Smile_RotateLeft32(__n__, __m__) ((((UInt32)__n__) << (__m__)) | (((UInt32)__n__) >> (32 - (__m__))))
-	#define Smile_RotateRight32(__n__, __m__) ((((UInt32)__n__) >> (__m__)) | (((UInt32)__n__) << (32 - (__m__))))
-
-	#define Smile_RotateLeft64(__n__, __m__) ((((UInt64)__n__) << (__m__)) | (((UInt64)__n__) >> (64 - (__m__))))
-	#define Smile_RotateRight64(__n__, __m__) ((((UInt64)__n__) >> (__m__)) | (((UInt64)__n__) << (64 - (__m__))))
-
-	#if defined(__i386__)
-
-		typedef UInt32 PtrInt;		// An unsigned integer type that is the same size as a pointer.
-		typedef Int32 Int;			// A signed integer type that matches the native platform's "best" register size.
-		typedef UInt32 UInt;		// An unsigned integer type that matches the native platform's "best" register size.
-
-		#define SizeofPtrInt 4
-		#define SizeofInt 4
-
-		// Get a reasonable degree of entropy from wherever this platform keeps it, as quickly as possible.
-		// This doesn't need to be crypto-secure; it just needs to be suitably semi-random.
-		Inline UInt64 GetBaselineEntropy(void)
-		{
-			UInt64 x;
-			__asm__ __volatile__ (".byte 0x0f, 0x31" : "=A" (x));
-			return x;
-		}
-
-	#elif defined(__x86_64__)
-
-		typedef UInt64 PtrInt;		// An unsigned integer type that is the same size as a pointer.
-		typedef Int64 Int;			// A signed integer type that matches the native platform's "best" register size.
-		typedef UInt64 UInt;		// An unsigned integer type that matches the native platform's "best" register size.
-
-		#define SizeofPtrInt 8
-		#define SizeofInt 8
-
-		// Get a reasonable degree of entropy from wherever this platform keeps it, as quickly as possible.
-		// This doesn't need to be crypto-secure; it just needs to be suitably semi-random.
-		Inline UInt64 GetBaselineEntropy(void)
-		{
-			UInt32 hi, lo;
-			__asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
-			return ((UInt64)lo) | (((UInt64)hi) << 32);
-		}
-
-	#else
-
-		#error Unknown GCC platform; please configure "types.h" for your platform.
-
-	#endif
-
+// How to export API functions and data.
+#ifdef SMILELIB_BUILD
+	#define SMILE_API
 #else
-
-	//------------------------------------------------------------------------------------------------
-	//  Unknown platforms.
-
-	#error Unknown compiler; please configure "types.h" for your compiler and environment.
-
+	#define SMILE_API extern
 #endif
+
+// How to make functions behave as 'inline', or as close to it as possible.
+#define Inline static
+
+//------------------------------------------------------------------------------------------------
+//  Platform-specific type declarations and overrides.
+
+#include "platform/platform.h"
+
+//------------------------------------------------------------------------------------------------
 
 // Minima for the signed integer types.
 #define Int8Min ((Int8)(((UInt8)1) << 7))
@@ -283,7 +101,7 @@ SMILE_API UInt64 Smile_TicksToMicroseconds(UInt64 ticks);
 	/// same value for the same sequence of bytes within the current process, and approximates
 	/// a random distribution for that sequence (quickly!).<br />
 	/// <br />
-	/// <strong>NOTE:  NOT CRYPTOGRAPHICALLY SECURE.</strong>  If you need crypto-safe hashes, use a SHA-2 hash.
+	/// <strong>NOTE:  NOT CRYPTOGRAPHICALLY SECURE.</strong>  If you need crypto-safe hashes, use a SHA-2 or SHA-3 hash.
 	/// </summary>
 	/// <param name="buffer">Start of buffer to hash.</param>
 	/// <param name="length">Length of buffer in bytes.</param>
@@ -298,7 +116,7 @@ SMILE_API UInt64 Smile_TicksToMicroseconds(UInt64 ticks);
 	/// same value for the same sequence of bytes within the current process, and approximates
 	/// a random distribution for that sequence (quickly!).<br />
 	/// <br />
-	/// <strong>NOTE:  NOT CRYPTOGRAPHICALLY SECURE.</strong>  If you need crypto-safe hashes, use a SHA-2 hash.
+	/// <strong>NOTE:  NOT CRYPTOGRAPHICALLY SECURE.</strong>  If you need crypto-safe hashes, use a SHA-2 or SHA-3 hash.
 	/// </summary>
 	/// <param name="buffer">Start of buffer to hash.</param>
 	/// <param name="length">Length of buffer in bytes.</param>
