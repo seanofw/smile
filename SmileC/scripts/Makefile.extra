@@ -1,0 +1,23 @@
+
+#----------------------------------------------------------------------------
+# Extra-variable configuration file for Make-based builds.
+
+# Get the OS configuration variables.
+include $(dir $(lastword $(MAKEFILE_LIST)))Makefile.os
+
+# Reset any weird or wrong or nonstandard defaults.
+SHELL = /bin/sh
+.SUFFIXES:
+
+# Linux needs '-fPIC' for position-independent code.
+ifeq '$(OS_LINUX)' 'true'
+  PICFLAG = -fPIC
+else
+  PICFLAG =
+endif
+
+# Aggregate options.
+ALL_CFLAGS = $(CFLAGS) $(PICFLAG)
+ALL_LINKFLAGS = $(LINKFLAGS) $(PICFLAG)
+ALL_LINKSOFLAGS = $(LINKSOFLAGS) $(PICFLAG)
+

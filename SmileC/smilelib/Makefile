@@ -1,7 +1,19 @@
 
+#---------------------------------------------------------------------------
+#  Primary Makefile for SmileLib.
+#
+#  This is not designed to be user-edited.
+
+#---------------------------------------------------------------------------
+#  Includes.
+
 include ../Makefile.conf
+include ../scripts/Makefile.extra
 
 -include Makefile.src
+
+#---------------------------------------------------------------------------
+#  Definitions.
 
 INCLUDES = -Iinclude
 
@@ -19,42 +31,72 @@ SMILE_DEFS = -DGC_BUILD -DSMILELIB_BUILD
 
 SMILELIB = bin/$(PLATFORM_NAME)/libsmile.so
 
+#---------------------------------------------------------------------------
+#  Compile rules.
+
 all: $(SMILELIB)
-	@echo -e "\nDone."
 
-$(SMILELIB): setup_obj_dirs $(ALL_OBJS)
-	$(LINK) $(LINKFLAGS) -shared -o $@ $(ALL_OBJS)
+$(SMILELIB): $(ALL_OBJS)
+	@$(MKDIR_P) $(dir $@)
 
-setup_obj_dirs:
-	mkdir -p obj/$(PLATFORM_NAME) bin/$(PLATFORM_NAME)
+	# Use a directory-change trick to shorten the command line before linking.
+	cd obj/$(PLATFORM_NAME) ; \
+	$(LINKSO) $(ALL_LINKSOFLAGS) -o ../../$@ $(subst obj/$(PLATFORM_NAME)/,,$(ALL_OBJS)) ; \
+	cd ../..
 
 obj/$(PLATFORM_NAME)/gc/%.o : gc/src/%.c
-	@mkdir -p $(dir $@)
-	$(CC) $(CCFLAGS) $(GC_DEFS) $(INCLUDES) -Igc/include -c $< -o $@
+	@$(MKDIR_P) $(dir $@)
+	$(CC) $(ALL_CFLAGS) $(GC_DEFS) $(INCLUDES) -Igc/include -c $< -o $@
 
 obj/$(PLATFORM_NAME)/decimal/%.o : decimal/%.c
-	@mkdir -p $(dir $@)
-	$(CC) $(CCFLAGS) $(DECIMAL_DEFS) $(INCLUDES) -c $< -o $@
+	@$(MKDIR_P) $(dir $@)
+	$(CC) $(ALL_CFLAGS) $(DECIMAL_DEFS) $(INCLUDES) -c $< -o $@
 
 obj/$(PLATFORM_NAME)/smile/%.o : src/%.c
-	@mkdir -p $(dir $@)
-	$(CC) $(CCFLAGS) $(SMILE_DEFS) $(INCLUDES) -c $< -o $@
+	@$(MKDIR_P) $(dir $@)
+	$(CC) $(ALL_CFLAGS) $(SMILE_DEFS) $(INCLUDES) -c $< -o $@
+
+#---------------------------------------------------------------------------
+#  Source-file and dependency-tracking.  The .vcxproj is treated
+#  as the canonical reference for which files belong as part of the
+#  library; we use a script to extract them into a make-friendly list
+#  in Makefile.src.
 
 dep:
-	@echo "Generating source list from SmileLib.vcxproj."
-	../scripts/makesrc.sh > Makefile.src
-	@echo -e "\nGenerating dependencies in Makefile.dep."
+	@$(PRINTF) 'Generating source list from SmileLib.vcxproj.\n'
+	$(SHELL) ../scripts/makesrc.sh > Makefile.src
+	@$(PRINTF) '\nGenerating dependencies in Makefile.dep.\n'
 	@$(MAKE) dep2
-	@echo -e "\nDone."
 
 dep2:
-	$(CC) $(CCFLAGS) $(GC_DEFS) $(INCLUDES) -Igc/include -MM $(GC_SRCS) > Makefile.dep
-	$(CC) $(CCFLAGS) $(DECIMAL_DEFS) $(INCLUDES) -MM $(DECIMAL_SRCS) >> Makefile.dep
-	$(CC) $(CCFLAGS) $(SMILE_DEFS) $(INCLUDES) -MM $(SMILE_SRCS) >> Makefile.dep
+	$(RM) Makefile.dep
+	$(foreach SRC,$(GC_SRCS), \
+		$(CC) $(ALL_CFLAGS) $(GC_DEFS) $(INCLUDES) -Igc/include $(DEPFLAGS) $(SRC) -MT 'obj/$(PLATFORM_NAME)/gc/$(basename $(notdir $(SRC))).o'  >> Makefile.dep;)
+	$(foreach SRC,$(DECIMAL_SRCS), \
+		$(CC) $(ALL_CFLAGS) $(DECIMAL_DEFS) $(INCLUDES) $(DEPFLAGS) $(SRC) -MT 'obj/$(PLATFORM_NAME)/decimal/$(basename $(notdir $(SRC))).o' >> Makefile.dep;)
+	$(foreach SRC,$(SMILE_SRCS), \
+		$(CC) $(ALL_CFLAGS) $(SMILE_DEFS) $(INCLUDES) $(DEPFLAGS) $(SRC) -MT 'obj/$(PLATFORM_NAME)/smile/$(basename $(subst src/,,$(SRC))).o' >> Makefile.dep;)
+
+#---------------------------------------------------------------------------
+#  Unit tests (not here).
+
+check:
+
+#---------------------------------------------------------------------------
+#  Installation.
+
+install:
+
+install-strip:
+
+uninstall:
+
+#---------------------------------------------------------------------------
+#  Cleanup.
 
 clean:
-	$(RM) -r obj/$(PLATFORM_NAME) bin/$(PLATFORM_NAME)
+	$(RM_R) obj/$(PLATFORM_NAME) bin/$(PLATFORM_NAME)
 
 distclean: clean
-	$(RM) Makefile.dep Makefile.src Makefile.allsrc
+	$(RM) Makefile.dep Makefile.src
 

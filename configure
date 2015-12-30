@@ -1,0 +1,17 @@
+#!/bin/sh
+
+echo "This isn't a GNU package.  There is no './configure' script."
+echo ""
+echo "Quick build instructions:"
+echo ""
+echo "Go into SmileC/ and run these four commands, in order:"
+echo ""
+echo "    make dep            (analyze dependencies)"
+echo "    make                (build Smile)"
+echo "    make check          (run the unit tests)"
+echo "    make install        (install it)"
+echo ""
+echo "More documentation, including configuration and installation"
+echo "options, can be found in 'Readme.md'."
+echo ""
+

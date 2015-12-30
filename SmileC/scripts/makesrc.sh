@@ -1,28 +1,32 @@
-#!/usr/bin/sh
+#!/bin/sh
 
 VCXPROJ=SmileLib.vcxproj
+
+ALLSRC=`mktemp`
 
 grep '<ClCompile Include' $VCXPROJ \
 	| sed -e 's/^\s*<ClCompile Include=\"//; s/\"\s*\/\?>\s*$//; s/\\/\//g' \
 	| sort \
-	> Makefile.allsrc
+	> $ALLSRC
 
-echo -e "# This file is generated.  Do not edit!"
+printf '# This file is generated.  Do not edit!'
 
-echo -e "\nGC_SRCS = \\"
+printf '\nGC_SRCS = \\\n'
 
-egrep '^gc\/' Makefile.allsrc \
+egrep '^gc\/' $ALLSRC \
 	| sed -e 's/^\(.*\)$/\t\1 \\/; $s/\\//;'
 
-echo -e "\nDECIMAL_SRCS = \\"
+printf '\nDECIMAL_SRCS = \\\n'
 
-egrep '^decimal\/' Makefile.allsrc \
+egrep '^decimal\/' $ALLSRC \
 	| sed -e 's/^\(.*\)$/\t\1 \\/; $s/\\//;'
 
-echo -e "\nSMILE_SRCS = \\"
+printf '\nSMILE_SRCS = \\\n'
 
-egrep '^src\/' Makefile.allsrc \
+egrep '^src\/' $ALLSRC \
 	| sed -e 's/^\(.*\)$/\t\1 \\/; $s/\\//;'
 
-echo -e "\n# End of generated file."
+printf '\n# End of generated file.\n'
+
+rm -f $ALLSRC
 
