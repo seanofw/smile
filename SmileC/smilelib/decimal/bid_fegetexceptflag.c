@@ -27,10 +27,12 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
 
-#if !defined (_MSC_VER) || defined (__INTEL_COMPILER)
+#if defined(__CYGWIN__) || defined(__INTEL_COMPILER)
 	#define fexcept_t __fexcept_t_NO_CONFLICT__
 	#include <fenv.h>
 	#undef fexcept_t
+#elif defined(__linux__)
+	#include <fenv.h>
 #endif
 #include "bid_internal.h"
 

@@ -1466,8 +1466,6 @@ union {\
 #   include <math.h>    // needed for MS build of some BID32 transcendentals (hypot)
 #endif
 
-
-
 #if defined (UNCHANGED_BINARY_STATUS_FLAGS) && defined (BID_FUNCTION_SETS_BINARY_FLAGS)
 #   if defined( BID_MS_FLAGS )
 
