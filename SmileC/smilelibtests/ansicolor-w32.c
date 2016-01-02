@@ -296,7 +296,7 @@ retry:
       ptr++;
     }
   }
-  return ptr - buf;
+  return (int)(ptr - buf);
 }
 
 int

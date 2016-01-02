@@ -45,6 +45,9 @@ typedef unsigned char Bool;
 #endif
 
 // How to align data structures in memory.
+//
+// WARNING:  Due to bugs in MSVC, using this can be dangerous, often resulting in spurious
+//   'error C2719' output.  Use with caution, and test on MSVC 32-bit AND 64-bit to be sure.
 #define SMILE_ALIGN(__n__)
 
 // How to make functions behave as 'inline', or as close to it as possible.

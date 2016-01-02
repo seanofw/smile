@@ -56,7 +56,7 @@ END_TEST
 
 START_TEST(CanHandleForcedHashCollisionsDuringAddition)
 {
-	Int i;
+	Int32 i;
 	PtrInt value;
 
 	Int32Dict dict = Int32Dict_Create();
@@ -263,7 +263,7 @@ END_TEST
 
 START_TEST(CanHandleForcedHashCollisionsDuringRemoval)
 {
-	Int i;
+	Int32 i;
 	PtrInt value;
 
 	Int32Dict dict = Int32Dict_Create();
@@ -299,7 +299,7 @@ END_TEST
 
 START_TEST(CanHandleRepeatedForcedHashCollisions)
 {
-	Int i, retry;
+	Int32 i, retry;
 	void *ptr;
 	Bool found;
 

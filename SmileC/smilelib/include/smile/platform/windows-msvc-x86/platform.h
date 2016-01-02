@@ -36,12 +36,12 @@ typedef UInt32 UInt;		// An unsigned integer type that matches the native platfo
 // Portable binary floating-point types.
 typedef float Float32;
 typedef double Float64;
-typedef struct __declspec(align(16)) { UInt64 value[2]; } Float128;
+typedef struct { UInt64 value[2]; } Float128;
 
 // Portable decimal floating-point types.
-typedef struct __declspec(align(4)) { UInt32 value; } Real32;
-typedef struct __declspec(align(8)) { UInt64 value; } Real64;
-typedef struct __declspec(align(16)) { UInt64 value[2]; } Real128;
+typedef struct { UInt32 value; } Real32;
+typedef struct { UInt64 value; } Real64;
+typedef struct { UInt64 value[2]; } Real128;
 
 //------------------------------------------------------------------------------------------------
 //  Declaration prefixes.
