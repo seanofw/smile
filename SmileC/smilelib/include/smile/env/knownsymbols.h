@@ -95,6 +95,6 @@ typedef struct KnownSymbolsStruct {
 	Symbol post_condition_assertion, pre_condition_assertion, property_error, syntax_error, system_exception, type_assertion, user_exception;
 } *KnownSymbols;
 
-SMILE_API void KnownSymbols_PreloadSymbolTable(SymbolTable symbolTable, KnownSymbols knownSymbols);
+SMILE_API_FUNC void KnownSymbols_PreloadSymbolTable(SymbolTable symbolTable, KnownSymbols knownSymbols);
 
 #endif

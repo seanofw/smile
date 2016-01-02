@@ -27,22 +27,22 @@ extern SMILE_THREAD_LOCAL UInt32 Real_Flags;
 
 extern Real32 Real32_FromRawCString(const char *str);
 
-SMILE_API Real32 Real32_NegNaN =	{ 0xFC000000U };
-SMILE_API Real32 Real32_NegInf =	{ 0xF8000000U };
-SMILE_API Real32 Real32_NegSixteen = { 0xB2800010U };
-SMILE_API Real32 Real32_NegTen =	{ 0xB280000AU };
-SMILE_API Real32 Real32_NegTwo =	{ 0xB2800002U };
-SMILE_API Real32 Real32_NegOne =	{ 0xB2800001U };
-SMILE_API Real32 Real32_NegZero =	{ 0xB2800000U };
-SMILE_API Real32 Real32_Zero =		{ 0x32800000U };
-SMILE_API Real32 Real32_One =		{ 0x32800001U };
-SMILE_API Real32 Real32_Two =		{ 0x32800002U };
-SMILE_API Real32 Real32_Ten =		{ 0x3280000AU };
-SMILE_API Real32 Real32_Sixteen =	{ 0x32800010U };
-SMILE_API Real32 Real32_Inf =		{ 0x78000000U };
-SMILE_API Real32 Real32_NaN =		{ 0x7C000000U };
+Real32 Real32_NegNaN =		{ 0xFC000000U };
+Real32 Real32_NegInf =		{ 0xF8000000U };
+Real32 Real32_NegSixteen =	{ 0xB2800010U };
+Real32 Real32_NegTen =		{ 0xB280000AU };
+Real32 Real32_NegTwo =		{ 0xB2800002U };
+Real32 Real32_NegOne =		{ 0xB2800001U };
+Real32 Real32_NegZero =		{ 0xB2800000U };
+Real32 Real32_Zero =		{ 0x32800000U };
+Real32 Real32_One =			{ 0x32800001U };
+Real32 Real32_Two =			{ 0x32800002U };
+Real32 Real32_Ten =			{ 0x3280000AU };
+Real32 Real32_Sixteen =		{ 0x32800010U };
+Real32 Real32_Inf =			{ 0x78000000U };
+Real32 Real32_NaN =			{ 0x7C000000U };
 
-SMILE_API Bool Real32_TryParse(String str, Real32 *result)
+SMILE_API_FUNC Bool Real32_TryParse(String str, Real32 *result)
 {
 	DECLARE_INLINE_STRINGBUILDER(cleanString, 256);
 	const Byte *src, *end, *start;
@@ -237,7 +237,7 @@ String Real32_ToStringEx(Real32 real32, Int minIntDigits, Int minFracDigits, Boo
 	}
 }
 
-SMILE_API Real32 Real32_Mod(Real32 a, Real32 b)
+SMILE_API_FUNC Real32 Real32_Mod(Real32 a, Real32 b)
 {
 	// Compute the remainder (whose sign will match a, the dividend).
 	Real32 mod = Real32_Rem(a, b);
@@ -292,7 +292,7 @@ static Byte _classifyTable[64] = {
 /// <param name="a">The first value to compare.</param>
 /// <param name="b">The second value to compare.</param>
 /// <returns>+1 if a > b; -1 if a < b; and 0 if a == b.</returns>
-SMILE_API Int Real32_Compare(Real32 a, Real32 b)
+SMILE_API_FUNC Int Real32_Compare(Real32 a, Real32 b)
 {
 	Byte aClass = CLASSIFY(a);
 	Byte bClass = CLASSIFY(b);

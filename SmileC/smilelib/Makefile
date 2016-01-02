@@ -65,7 +65,7 @@ obj/$(PLATFORM_NAME)/smile/%.o : src/%.c
 dep:
 	@$(PRINTF) 'Generating source list from SmileLib.vcxproj.\n'
 	$(SHELL) ../scripts/makesrc.sh > Makefile.src
-	@$(PRINTF) '\nGenerating dependencies in Makefile.dep.\n'
+	@$(PRINTF) '\nGenerating dependencies in Makefile.dep (this may take a moment).\n'
 	@$(MAKE) dep2
 
 dep2:

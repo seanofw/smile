@@ -190,7 +190,7 @@ Int Lexer_ParseChar(Lexer lexer, Bool isFirstContentOnLine)
 	}
 	src++;
 
-	lexer->token->data.i = value;
+	lexer->token->data.i = (Int32)value;
 	return END_TOKEN(TOKEN_CHAR);
 }
 

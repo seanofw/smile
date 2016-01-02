@@ -48,7 +48,7 @@ readMoreName:
 				StringBuilder_Append(namebuf, start, 0, src - 1 - start);
 			}
 			code = Lexer_DecodeEscapeCode(&src, end, True);
-			StringBuilder_AppendUnicode(namebuf, code < 0 ? 0xFFFD : code);
+			StringBuilder_AppendUnicode(namebuf, code < 0 ? 0xFFFD : (UInt32)code);
 			*hasEscapes = True;
 			start = src;
 			goto readMoreName;
@@ -87,7 +87,7 @@ readMoreName:
 				code = String_ExtractUnicodeCharacterInternal(&src, end);
 				identifierCharacterKind = SmileIdentifierKind(code);
 				if ((identifierCharacterKind & (IDENTKIND_MIDDLELETTER | IDENTKIND_STARTLETTER | IDENTKIND_PUNCTUATION))) {
-					StringBuilder_AppendUnicode(namebuf, code);
+					StringBuilder_AppendUnicode(namebuf, (UInt32)code);
 					start = src;
 					goto readMoreName;
 				}
@@ -166,7 +166,7 @@ readMorePunctuation:
 				StringBuilder_AppendRepeat(escapebuf, 'a', src - 1 - start);
 			}
 			code = Lexer_DecodeEscapeCode(&src, end, True);
-			StringBuilder_AppendUnicode(namebuf, code < 0 ? 0xFFFD : code);
+			StringBuilder_AppendUnicode(namebuf, code < 0 ? 0xFFFD : (UInt32)code);
 			StringBuilder_AppendByte(escapebuf, '\\');
 			*hasEscapes = True;
 			start = src;
@@ -188,7 +188,7 @@ readMorePunctuation:
 				code = String_ExtractUnicodeCharacterInternal(&src, end);
 				identifierCharacterKind = SmileIdentifierKind(code);
 				if ((identifierCharacterKind & (IDENTKIND_MIDDLELETTER | IDENTKIND_PUNCTUATION))) {
-					StringBuilder_AppendUnicode(namebuf, code);
+					StringBuilder_AppendUnicode(namebuf, (UInt32)code);
 					StringBuilder_AppendByte(escapebuf, 'a');
 					start = src;
 					goto readMorePunctuation;

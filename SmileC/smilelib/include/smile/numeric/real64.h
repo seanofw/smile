@@ -15,75 +15,75 @@
 // are not the only NaNs that can exist.  (Also note that these are Quiet NaNs, not Signaling
 // NaNs; Smile does not support Signaling NaNs).
 
-SMILE_API Real64 Real64_NegNaN;
-SMILE_API Real64 Real64_NegInf;
-SMILE_API Real64 Real64_NegSixteen;
-SMILE_API Real64 Real64_NegTen;
-SMILE_API Real64 Real64_NegTwo;
-SMILE_API Real64 Real64_NegOne;
-SMILE_API Real64 Real64_NegZero;
-SMILE_API Real64 Real64_Zero;
-SMILE_API Real64 Real64_One;
-SMILE_API Real64 Real64_Two;
-SMILE_API Real64 Real64_Ten;
-SMILE_API Real64 Real64_Sixteen;
-SMILE_API Real64 Real64_Inf;
-SMILE_API Real64 Real64_NaN;
+SMILE_API_DATA Real64 Real64_NegNaN;
+SMILE_API_DATA Real64 Real64_NegInf;
+SMILE_API_DATA Real64 Real64_NegSixteen;
+SMILE_API_DATA Real64 Real64_NegTen;
+SMILE_API_DATA Real64 Real64_NegTwo;
+SMILE_API_DATA Real64 Real64_NegOne;
+SMILE_API_DATA Real64 Real64_NegZero;
+SMILE_API_DATA Real64 Real64_Zero;
+SMILE_API_DATA Real64 Real64_One;
+SMILE_API_DATA Real64 Real64_Two;
+SMILE_API_DATA Real64 Real64_Ten;
+SMILE_API_DATA Real64 Real64_Sixteen;
+SMILE_API_DATA Real64 Real64_Inf;
+SMILE_API_DATA Real64 Real64_NaN;
 
 //-------------------------------------------------------------------------------------------------
 // External functions.
 
-SMILE_API Real64 Real64_FromInt32(Int32 int32);
-SMILE_API Real64 Real64_FromInt64(Int64 int64);
-SMILE_API Real64 Real64_FromFloat32(Float32 float32);
-SMILE_API Real64 Real64_FromFloat64(Float64 float64);
+SMILE_API_FUNC Real64 Real64_FromInt32(Int32 int32);
+SMILE_API_FUNC Real64 Real64_FromInt64(Int64 int64);
+SMILE_API_FUNC Real64 Real64_FromFloat32(Float32 float32);
+SMILE_API_FUNC Real64 Real64_FromFloat64(Float64 float64);
 
-SMILE_API Real32 Real64_ToReal32(Real64 real64);
-SMILE_API Real128 Real64_ToReal128(Real64 real64);
-SMILE_API Float32 Real64_ToFloat32(Real64 real64);
-SMILE_API Float64 Real64_ToFloat64(Real64 real64);
+SMILE_API_FUNC Real32 Real64_ToReal32(Real64 real64);
+SMILE_API_FUNC Real128 Real64_ToReal128(Real64 real64);
+SMILE_API_FUNC Float32 Real64_ToFloat32(Real64 real64);
+SMILE_API_FUNC Float64 Real64_ToFloat64(Real64 real64);
 
-SMILE_API Bool Real64_TryParse(String str, Real64 *result);
-SMILE_API String Real64_ToFixedString(Real64 real64, Int minIntDigits, Int minFracDigits, Bool forceSign);
-SMILE_API String Real64_ToExpString(Real64 real64, Int minFracDigits, Bool forceSign);
-SMILE_API String Real64_ToStringEx(Real64 real64, Int minIntDigits, Int minFracDigits, Bool forceSign);
-SMILE_API Int32 Real64_Decompose(Byte *str, Int32 *exp, Int32 *kind, Real64 real64);
+SMILE_API_FUNC Bool Real64_TryParse(String str, Real64 *result);
+SMILE_API_FUNC String Real64_ToFixedString(Real64 real64, Int minIntDigits, Int minFracDigits, Bool forceSign);
+SMILE_API_FUNC String Real64_ToExpString(Real64 real64, Int minFracDigits, Bool forceSign);
+SMILE_API_FUNC String Real64_ToStringEx(Real64 real64, Int minIntDigits, Int minFracDigits, Bool forceSign);
+SMILE_API_FUNC Int32 Real64_Decompose(Byte *str, Int32 *exp, Int32 *kind, Real64 real64);
 
-SMILE_API Real64 Real64_Add(Real64 a, Real64 b);
-SMILE_API Real64 Real64_Sub(Real64 a, Real64 b);
-SMILE_API Real64 Real64_Mul(Real64 a, Real64 b);
-SMILE_API Real64 Real64_Div(Real64 a, Real64 b);
-SMILE_API Real64 Real64_Mod(Real64 a, Real64 b);
-SMILE_API Real64 Real64_Rem(Real64 a, Real64 b);
-SMILE_API Real64 Real64_IeeeRem(Real64 a, Real64 b);
+SMILE_API_FUNC Real64 Real64_Add(Real64 a, Real64 b);
+SMILE_API_FUNC Real64 Real64_Sub(Real64 a, Real64 b);
+SMILE_API_FUNC Real64 Real64_Mul(Real64 a, Real64 b);
+SMILE_API_FUNC Real64 Real64_Div(Real64 a, Real64 b);
+SMILE_API_FUNC Real64 Real64_Mod(Real64 a, Real64 b);
+SMILE_API_FUNC Real64 Real64_Rem(Real64 a, Real64 b);
+SMILE_API_FUNC Real64 Real64_IeeeRem(Real64 a, Real64 b);
 
-SMILE_API Real64 Real64_Neg(Real64 real64);
-SMILE_API Real64 Real64_Abs(Real64 real64);
+SMILE_API_FUNC Real64 Real64_Neg(Real64 real64);
+SMILE_API_FUNC Real64 Real64_Abs(Real64 real64);
 
-SMILE_API Real64 Real64_Ceil(Real64 real64);
-SMILE_API Real64 Real64_Floor(Real64 real64);
-SMILE_API Real64 Real64_Trunc(Real64 real64);
-SMILE_API Real64 Real64_Modf(Real64 real64, Real64 *intPart);
-SMILE_API Real64 Real64_Round(Real64 real64);
-SMILE_API Real64 Real64_BankRound(Real64 real64);
+SMILE_API_FUNC Real64 Real64_Ceil(Real64 real64);
+SMILE_API_FUNC Real64 Real64_Floor(Real64 real64);
+SMILE_API_FUNC Real64 Real64_Trunc(Real64 real64);
+SMILE_API_FUNC Real64 Real64_Modf(Real64 real64, Real64 *intPart);
+SMILE_API_FUNC Real64 Real64_Round(Real64 real64);
+SMILE_API_FUNC Real64 Real64_BankRound(Real64 real64);
 
-SMILE_API Real64 Real64_Sqrt(Real64 real64);
+SMILE_API_FUNC Real64 Real64_Sqrt(Real64 real64);
 
-SMILE_API Bool Real64_IsInf(Real64 real64);
-SMILE_API Bool Real64_IsNaN(Real64 real64);
-SMILE_API Bool Real64_IsNeg(Real64 real64);
-SMILE_API Bool Real64_IsZero(Real64 real64);
-SMILE_API Bool Real64_IsFinite(Real64 real64);
-SMILE_API Bool Real64_IsOrderable(Real64 a, Real64 b);
+SMILE_API_FUNC Bool Real64_IsInf(Real64 real64);
+SMILE_API_FUNC Bool Real64_IsNaN(Real64 real64);
+SMILE_API_FUNC Bool Real64_IsNeg(Real64 real64);
+SMILE_API_FUNC Bool Real64_IsZero(Real64 real64);
+SMILE_API_FUNC Bool Real64_IsFinite(Real64 real64);
+SMILE_API_FUNC Bool Real64_IsOrderable(Real64 a, Real64 b);
 
-SMILE_API Int Real64_Compare(Real64 a, Real64 b);
+SMILE_API_FUNC Int Real64_Compare(Real64 a, Real64 b);
 
-SMILE_API Bool Real64_Eq(Real64 a, Real64 b);
-SMILE_API Bool Real64_Ne(Real64 a, Real64 b);
-SMILE_API Bool Real64_Lt(Real64 a, Real64 b);
-SMILE_API Bool Real64_Gt(Real64 a, Real64 b);
-SMILE_API Bool Real64_Le(Real64 a, Real64 b);
-SMILE_API Bool Real64_Ge(Real64 a, Real64 b);
+SMILE_API_FUNC Bool Real64_Eq(Real64 a, Real64 b);
+SMILE_API_FUNC Bool Real64_Ne(Real64 a, Real64 b);
+SMILE_API_FUNC Bool Real64_Lt(Real64 a, Real64 b);
+SMILE_API_FUNC Bool Real64_Gt(Real64 a, Real64 b);
+SMILE_API_FUNC Bool Real64_Le(Real64 a, Real64 b);
+SMILE_API_FUNC Bool Real64_Ge(Real64 a, Real64 b);
 
 //-------------------------------------------------------------------------------------------------
 // Inline functions.

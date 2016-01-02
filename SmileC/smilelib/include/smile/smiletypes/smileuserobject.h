@@ -22,20 +22,20 @@ struct SmileUserObjectInt {
 //-------------------------------------------------------------------------------------------------
 //  Public interface
 
-SMILE_API SmileUserObject SmileUserObject_CreateWithSize(SmileObject base, Int initialSize);
+SMILE_API_FUNC SmileUserObject SmileUserObject_CreateWithSize(SmileObject base, Int initialSize);
 
-SMILE_API Bool SmileUserObject_CompareEqual(SmileUserObject self, SmileObject other);
-SMILE_API UInt32 SmileUserObject_Hash(SmileUserObject self);
-SMILE_API void SmileUserObject_SetSecurity(SmileUserObject self, Int security, SmileObject securityKey);
-SMILE_API Int SmileUserObject_GetSecurity(SmileUserObject self);
-SMILE_API SmileObject SmileUserObject_GetProperty(SmileUserObject self, Symbol propertyName);
-SMILE_API void SmileUserObject_SetProperty(SmileUserObject self, Symbol propertyName, SmileObject value);
-SMILE_API Bool SmileUserObject_HasProperty(SmileUserObject self, Symbol propertyName);
-SMILE_API SmileList SmileUserObject_GetPropertyNames(SmileUserObject self);
-SMILE_API Bool SmileUserObject_ToBool(SmileUserObject self);
-SMILE_API Int32 SmileUserObject_ToInteger32(SmileUserObject self);
-SMILE_API Real64 SmileUserObject_ToReal64(SmileUserObject self);
-SMILE_API String SmileUserObject_ToString(SmileUserObject self);
+SMILE_API_FUNC Bool SmileUserObject_CompareEqual(SmileUserObject self, SmileObject other);
+SMILE_API_FUNC UInt32 SmileUserObject_Hash(SmileUserObject self);
+SMILE_API_FUNC void SmileUserObject_SetSecurity(SmileUserObject self, Int security, SmileObject securityKey);
+SMILE_API_FUNC Int SmileUserObject_GetSecurity(SmileUserObject self);
+SMILE_API_FUNC SmileObject SmileUserObject_GetProperty(SmileUserObject self, Symbol propertyName);
+SMILE_API_FUNC void SmileUserObject_SetProperty(SmileUserObject self, Symbol propertyName, SmileObject value);
+SMILE_API_FUNC Bool SmileUserObject_HasProperty(SmileUserObject self, Symbol propertyName);
+SMILE_API_FUNC SmileList SmileUserObject_GetPropertyNames(SmileUserObject self);
+SMILE_API_FUNC Bool SmileUserObject_ToBool(SmileUserObject self);
+SMILE_API_FUNC Int32 SmileUserObject_ToInteger32(SmileUserObject self);
+SMILE_API_FUNC Real64 SmileUserObject_ToReal64(SmileUserObject self);
+SMILE_API_FUNC String SmileUserObject_ToString(SmileUserObject self);
 
 Inline SmileUserObject SmileUserObject_Create(SmileObject base)
 {

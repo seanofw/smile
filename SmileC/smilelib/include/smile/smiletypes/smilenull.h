@@ -21,7 +21,7 @@
 //-------------------------------------------------------------------------------------------------
 //  Public interface (Null is just a special List)
 
-SMILE_API SmileVTable SmileNull_VTable;
+SMILE_API_DATA SmileVTable SmileNull_VTable;
 
 extern SmileNull SmileNull_Create(void);
 

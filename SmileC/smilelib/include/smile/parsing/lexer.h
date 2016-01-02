@@ -93,9 +93,9 @@ typedef struct LexerStruct {
 //-------------------------------------------------------------------------------------------------
 //  External parts of the implementation
 
-SMILE_API Lexer Lexer_Create(String input, Int start, Int length, String filename, Int firstLine, Int firstColumn);
-SMILE_API Int Lexer_Next(Lexer lexer);
-SMILE_API Int Lexer_DecodeEscapeCode(const Byte **input, const Byte *end, Bool allowUnknowns);
+SMILE_API_FUNC Lexer Lexer_Create(String input, Int start, Int length, String filename, Int firstLine, Int firstColumn);
+SMILE_API_FUNC Int Lexer_Next(Lexer lexer);
+SMILE_API_FUNC Int Lexer_DecodeEscapeCode(const Byte **input, const Byte *end, Bool allowUnknowns);
 
 //-------------------------------------------------------------------------------------------------
 //  Inline parts of the implementation

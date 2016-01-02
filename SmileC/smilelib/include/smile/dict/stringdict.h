@@ -59,16 +59,16 @@ typedef struct {
 //-------------------------------------------------------------------------------------------------
 //  External parts of the implementation
 
-SMILE_API Int StringDictInt_Append(struct StringDictInt *stringDict, String key, Int32 keyHash, const void *value);
+SMILE_API_FUNC Int StringDictInt_Append(struct StringDictInt *stringDict, String key, Int32 keyHash, const void *value);
 
-SMILE_API String *StringDict_GetKeys(StringDict stringDict);
-SMILE_API void **StringDict_GetValues(StringDict stringDict);
-SMILE_API StringDictKeyValuePair *StringDict_GetAll(StringDict stringDict);
+SMILE_API_FUNC String *StringDict_GetKeys(StringDict stringDict);
+SMILE_API_FUNC void **StringDict_GetValues(StringDict stringDict);
+SMILE_API_FUNC StringDictKeyValuePair *StringDict_GetAll(StringDict stringDict);
 
-SMILE_API void StringDict_ClearWithSize(StringDict stringDict, Int newSize);
-SMILE_API Bool StringDict_Remove(StringDict stringDict, String key);
+SMILE_API_FUNC void StringDict_ClearWithSize(StringDict stringDict, Int newSize);
+SMILE_API_FUNC Bool StringDict_Remove(StringDict stringDict, String key);
 
-SMILE_API DictStats StringDict_ComputeStats(StringDict stringDict);
+SMILE_API_FUNC DictStats StringDict_ComputeStats(StringDict stringDict);
 
 //-------------------------------------------------------------------------------------------------
 //  Inline parts of the implementation

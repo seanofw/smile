@@ -27,22 +27,22 @@ extern SMILE_THREAD_LOCAL UInt32 Real_Flags;
 
 extern Real64 Real64_FromRawCString(const char *str);
 
-SMILE_API Real64 Real64_NegNaN =	{ 0xFC00000000000000ULL };
-SMILE_API Real64 Real64_NegInf =	{ 0xF800000000000000ULL };
-SMILE_API Real64 Real64_NegSixteen = { 0xB1C0000000000010ULL };
-SMILE_API Real64 Real64_NegTen =	{ 0xB1C000000000000AULL };
-SMILE_API Real64 Real64_NegTwo =	{ 0xB1C0000000000002ULL };
-SMILE_API Real64 Real64_NegOne =	{ 0xB1C0000000000001ULL };
-SMILE_API Real64 Real64_NegZero =	{ 0xB1C0000000000000ULL };
-SMILE_API Real64 Real64_Zero =		{ 0x31C0000000000000ULL };
-SMILE_API Real64 Real64_One =		{ 0x31C0000000000001ULL };
-SMILE_API Real64 Real64_Two =		{ 0x31C0000000000002ULL };
-SMILE_API Real64 Real64_Ten =		{ 0x31C000000000000AULL };
-SMILE_API Real64 Real64_Sixteen =	{ 0x31C0000000000010ULL };
-SMILE_API Real64 Real64_Inf =		{ 0x7800000000000000ULL };
-SMILE_API Real64 Real64_NaN =		{ 0x7C00000000000000ULL };
+Real64 Real64_NegNaN =		{ 0xFC00000000000000ULL };
+Real64 Real64_NegInf =		{ 0xF800000000000000ULL };
+Real64 Real64_NegSixteen =	{ 0xB1C0000000000010ULL };
+Real64 Real64_NegTen =		{ 0xB1C000000000000AULL };
+Real64 Real64_NegTwo =		{ 0xB1C0000000000002ULL };
+Real64 Real64_NegOne =		{ 0xB1C0000000000001ULL };
+Real64 Real64_NegZero =		{ 0xB1C0000000000000ULL };
+Real64 Real64_Zero =		{ 0x31C0000000000000ULL };
+Real64 Real64_One =			{ 0x31C0000000000001ULL };
+Real64 Real64_Two =			{ 0x31C0000000000002ULL };
+Real64 Real64_Ten =			{ 0x31C000000000000AULL };
+Real64 Real64_Sixteen =		{ 0x31C0000000000010ULL };
+Real64 Real64_Inf =			{ 0x7800000000000000ULL };
+Real64 Real64_NaN =			{ 0x7C00000000000000ULL };
 
-SMILE_API Bool Real64_TryParse(String str, Real64 *result)
+SMILE_API_FUNC Bool Real64_TryParse(String str, Real64 *result)
 {
 	DECLARE_INLINE_STRINGBUILDER(cleanString, 256);
 	const Byte *src, *end, *start;
@@ -237,7 +237,7 @@ String Real64_ToStringEx(Real64 real64, Int minIntDigits, Int minFracDigits, Boo
 	}
 }
 
-SMILE_API Real64 Real64_Mod(Real64 a, Real64 b)
+SMILE_API_FUNC Real64 Real64_Mod(Real64 a, Real64 b)
 {
 	// Compute the remainder (whose sign will match a, the dividend).
 	Real64 mod = Real64_Rem(a, b);
@@ -292,7 +292,7 @@ static Byte _classifyTable[64] = {
 /// <param name="a">The first value to compare.</param>
 /// <param name="b">The second value to compare.</param>
 /// <returns>+1 if a > b; -1 if a < b; and 0 if a == b.</returns>
-SMILE_API Int Real64_Compare(Real64 a, Real64 b)
+SMILE_API_FUNC Int Real64_Compare(Real64 a, Real64 b)
 {
 	Byte aClass = CLASSIFY(a);
 	Byte bClass = CLASSIFY(b);

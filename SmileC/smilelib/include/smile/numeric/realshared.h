@@ -29,9 +29,9 @@
 #define REAL_KIND_POS_SNAN		4
 #define REAL_KIND_NEG_SNAN		(0x80 | REAL_KIND_POS_SNAN)
 
-SMILE_API UInt32 Real_GetRoundingMode(void);
-SMILE_API void Real_SetRoundingMode(UInt32 mode);
-SMILE_API UInt32 Real_GetFlags(void);
-SMILE_API void Real_SetFlags(UInt32 flags);
+SMILE_API_FUNC UInt32 Real_GetRoundingMode(void);
+SMILE_API_FUNC void Real_SetRoundingMode(UInt32 mode);
+SMILE_API_FUNC UInt32 Real_GetFlags(void);
+SMILE_API_FUNC void Real_SetFlags(UInt32 flags);
 
 #endif

@@ -73,7 +73,7 @@ Inline Int HexValue(Byte ch)
 /// <param name="allowUnknowns">Whether to allow unknown escape characters as legitimate input that
 /// yield themselves (True), or whether to reject unknown escape codes as garbage (False).</param>
 /// <returns>Returns a decoded character.</returns>
-SMILE_API Int Lexer_DecodeEscapeCode(const Byte **input, const Byte *end, Bool allowUnknowns)
+SMILE_API_FUNC Int Lexer_DecodeEscapeCode(const Byte **input, const Byte *end, Bool allowUnknowns)
 {
 	const Byte *src = *input;
 	Byte ch;

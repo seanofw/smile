@@ -30,12 +30,12 @@ extern SmileVTable SmileUserObject_VTable_ReadWriteAppend;
 SmileUserObject SmileUserObject_CreateWithSize(SmileObject base, Int initialSize)
 {
 	SmileUserObject userObject = GC_MALLOC_STRUCT(struct SmileUserObjectInt);
-	if (userObject == NULL) Smile_Abort_OutOfMemory();
+	if (userObject == NULL || initialSize >= Int32Max) Smile_Abort_OutOfMemory();
 	userObject->base = base;
 	userObject->kind = SMILE_KIND_USEROBJECT | SMILE_SECURITY_READWRITEAPPEND;
 	userObject->vtable = SmileUserObject_VTable_ReadWriteAppend;
 	userObject->securityKey = (SmileObject)Smile_KnownObjects.Null;
-	Int32Dict_ClearWithSize((Int32Dict)&userObject->dict, initialSize);
+	Int32Dict_ClearWithSize((Int32Dict)&userObject->dict, (Int32)initialSize);
 	return userObject;
 }
 

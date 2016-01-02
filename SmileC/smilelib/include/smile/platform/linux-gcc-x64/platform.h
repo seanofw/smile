@@ -39,8 +39,8 @@ typedef double Float64;
 typedef struct __attribute__((aligned(16))) { UInt64 value[2]; } Float128;
 
 // Portable decimal floating-point types.
-typedef struct { UInt32 value; } Real32;
-typedef struct { UInt64 value; } Real64;
+typedef struct __attribute__((aligned(4))) { UInt32 value; } Real32;
+typedef struct __attribute__((aligned(8))) { UInt64 value; } Real64;
 typedef struct __attribute__((aligned(16))) { UInt64 value[2]; } Real128;
 
 //------------------------------------------------------------------------------------------------
@@ -53,6 +53,10 @@ typedef struct __attribute__((aligned(16))) { UInt64 value[2]; } Real128;
 // How to declare thread-local data.
 #define SMILE_HAS_THREAD_LOCAL True
 #define SMILE_THREAD_LOCAL __thread
+
+// How to align data structures in memory.
+#undef SMILE_ALIGN
+#define SMILE_ALIGN(__n__) __attribute__((aligned(n)))
 
 //------------------------------------------------------------------------------------------------
 //  Entropy.

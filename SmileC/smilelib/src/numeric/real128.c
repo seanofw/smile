@@ -27,42 +27,42 @@ extern SMILE_THREAD_LOCAL UInt32 Real_Flags;
 
 extern Real128 Real128_FromRawCString(const char *str);
 
-SMILE_API Real128 Real128_NegNaN =  { { 0x0000000000000000ULL, 0xFC00000000000000ULL } };
-SMILE_API Real128 Real128_NegInf =  { { 0x0000000000000000ULL, 0xF800000000000000ULL } };
-SMILE_API Real128 Real128_NegSixteen = { { 0x0000000000000010ULL, 0xB040000000000000ULL } };
-SMILE_API Real128 Real128_NegTen =	{ { 0x000000000000000AULL, 0xB040000000000000ULL } };
-SMILE_API Real128 Real128_NegTwo =	{ { 0x0000000000000002ULL, 0xB040000000000000ULL } };
-SMILE_API Real128 Real128_NegOne =	{ { 0x0000000000000001ULL, 0xB040000000000000ULL } };
-SMILE_API Real128 Real128_NegZero =	{ { 0x0000000000000000ULL, 0xB040000000000000ULL } };
-SMILE_API Real128 Real128_Zero =	{ { 0x0000000000000000ULL, 0x3040000000000000ULL } };
-SMILE_API Real128 Real128_One =		{ { 0x0000000000000001ULL, 0x3040000000000000ULL } };
-SMILE_API Real128 Real128_Two =		{ { 0x0000000000000002ULL, 0x3040000000000000ULL } };
-SMILE_API Real128 Real128_Ten =		{ { 0x000000000000000AULL, 0x3040000000000000ULL } };
-SMILE_API Real128 Real128_Sixteen = { { 0x0000000000000010ULL, 0x3040000000000000ULL } };
-SMILE_API Real128 Real128_Inf =     { { 0x0000000000000000ULL, 0x7800000000000000ULL } };
-SMILE_API Real128 Real128_NaN =     { { 0x0000000000000000ULL, 0x7C00000000000000ULL } };
+Real128 Real128_NegNaN =		{ { 0x0000000000000000ULL, 0xFC00000000000000ULL } };
+Real128 Real128_NegInf =		{ { 0x0000000000000000ULL, 0xF800000000000000ULL } };
+Real128 Real128_NegSixteen =	{ { 0x0000000000000010ULL, 0xB040000000000000ULL } };
+Real128 Real128_NegTen =		{ { 0x000000000000000AULL, 0xB040000000000000ULL } };
+Real128 Real128_NegTwo =		{ { 0x0000000000000002ULL, 0xB040000000000000ULL } };
+Real128 Real128_NegOne =		{ { 0x0000000000000001ULL, 0xB040000000000000ULL } };
+Real128 Real128_NegZero =		{ { 0x0000000000000000ULL, 0xB040000000000000ULL } };
+Real128 Real128_Zero =			{ { 0x0000000000000000ULL, 0x3040000000000000ULL } };
+Real128 Real128_One =			{ { 0x0000000000000001ULL, 0x3040000000000000ULL } };
+Real128 Real128_Two =			{ { 0x0000000000000002ULL, 0x3040000000000000ULL } };
+Real128 Real128_Ten =			{ { 0x000000000000000AULL, 0x3040000000000000ULL } };
+Real128 Real128_Sixteen =		{ { 0x0000000000000010ULL, 0x3040000000000000ULL } };
+Real128 Real128_Inf =			{ { 0x0000000000000000ULL, 0x7800000000000000ULL } };
+Real128 Real128_NaN =			{ { 0x0000000000000000ULL, 0x7C00000000000000ULL } };
 
-SMILE_API UInt32 Real_GetRoundingMode(void)
+SMILE_API_FUNC UInt32 Real_GetRoundingMode(void)
 {
 	return Real_RoundingMode;
 }
 
-SMILE_API void Real_SetRoundingMode(UInt32 mode)
+SMILE_API_FUNC void Real_SetRoundingMode(UInt32 mode)
 {
 	Real_RoundingMode = mode;
 }
 
-SMILE_API UInt32 Real_GetFlags(void)
+SMILE_API_FUNC UInt32 Real_GetFlags(void)
 {
 	return Real_Flags;
 }
 
-SMILE_API void Real_SetFlags(UInt32 flags)
+SMILE_API_FUNC void Real_SetFlags(UInt32 flags)
 {
 	Real_Flags = flags;
 }
 
-SMILE_API Bool Real128_TryParse(String str, Real128 *result)
+SMILE_API_FUNC Bool Real128_TryParse(String str, Real128 *result)
 {
 	DECLARE_INLINE_STRINGBUILDER(cleanString, 256);
 	const Byte *src, *end, *start;
@@ -257,7 +257,7 @@ String Real128_ToStringEx(Real128 real128, Int minIntDigits, Int minFracDigits, 
 	}
 }
 
-SMILE_API Real128 Real128_Mod(Real128 a, Real128 b)
+SMILE_API_FUNC Real128 Real128_Mod(Real128 a, Real128 b)
 {
 	// Compute the remainder (whose sign will match a, the dividend).
 	Real128 mod = Real128_Rem(a, b);
@@ -312,7 +312,7 @@ static Byte _classifyTable[64] = {
 /// <param name="a">The first value to compare.</param>
 /// <param name="b">The second value to compare.</param>
 /// <returns>+1 if a > b; -1 if a < b; and 0 if a == b.</returns>
-SMILE_API Int Real128_Compare(Real128 a, Real128 b)
+SMILE_API_FUNC Int Real128_Compare(Real128 a, Real128 b)
 {
 	Byte aClass = CLASSIFY(a);
 	Byte bClass = CLASSIFY(b);

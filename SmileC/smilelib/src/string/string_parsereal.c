@@ -21,7 +21,7 @@
 #include <smile/string.h>
 #include <smile/stringbuilder.h>
 
-SMILE_API Bool String_ParseReal(const String str, Int numericBase, Real128 *result)
+SMILE_API_FUNC Bool String_ParseReal(const String str, Int numericBase, Real128 *result)
 {
 	UNUSED(str);
 	UNUSED(numericBase);

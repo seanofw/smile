@@ -43,18 +43,18 @@ typedef struct StringBuilderStruct {
 //-------------------------------------------------------------------------------------------------
 //  External parts of the implementation
 
-SMILE_API void StringBuilder_InitWithSize(StringBuilder stringBuilder, Int initialSize);
-SMILE_API StringBuilder StringBuilder_CreateFromBytes(const Byte *text, Int start, Int length);
+SMILE_API_FUNC void StringBuilder_InitWithSize(StringBuilder stringBuilder, Int initialSize);
+SMILE_API_FUNC StringBuilder StringBuilder_CreateFromBytes(const Byte *text, Int start, Int length);
 
-SMILE_API void StringBuilder_Append(StringBuilder stringBuilder, const Byte *text, Int start, Int length);
-SMILE_API void StringBuilder_AppendByte(StringBuilder stringBuilder, Byte ch);
-SMILE_API void StringBuilder_AppendRepeat(StringBuilder stringBuilder, Byte ch, Int length);
-SMILE_API void StringBuilder_AppendUnicode(StringBuilder stringBuilder, UInt32 value);
+SMILE_API_FUNC void StringBuilder_Append(StringBuilder stringBuilder, const Byte *text, Int start, Int length);
+SMILE_API_FUNC void StringBuilder_AppendByte(StringBuilder stringBuilder, Byte ch);
+SMILE_API_FUNC void StringBuilder_AppendRepeat(StringBuilder stringBuilder, Byte ch, Int length);
+SMILE_API_FUNC void StringBuilder_AppendUnicode(StringBuilder stringBuilder, UInt32 value);
 
-SMILE_API void StringBuilder_AppendFormat(StringBuilder stringBuilder, const char *format, ...);
-SMILE_API void StringBuilder_AppendFormatv(StringBuilder stringBuilder, const char *format, va_list v);
-SMILE_API void StringBuilder_AppendFormatString(StringBuilder stringBuilder, const String format, ...);
-SMILE_API void StringBuilder_AppendFormatStringv(StringBuilder stringBuilder, const String format, va_list v);
+SMILE_API_FUNC void StringBuilder_AppendFormat(StringBuilder stringBuilder, const char *format, ...);
+SMILE_API_FUNC void StringBuilder_AppendFormatv(StringBuilder stringBuilder, const char *format, va_list v);
+SMILE_API_FUNC void StringBuilder_AppendFormatString(StringBuilder stringBuilder, const String format, ...);
+SMILE_API_FUNC void StringBuilder_AppendFormatStringv(StringBuilder stringBuilder, const String format, va_list v);
 
 //-------------------------------------------------------------------------------------------------
 //  Inline parts of the implementation

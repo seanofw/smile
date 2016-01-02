@@ -32,15 +32,15 @@ extern Int Lexer_ParseHyphenOrEquals(Lexer lexer, Int initialChar, Bool isFirstC
 // Begin a token at the given start pointer.
 #define START_TOKEN(__startPtr__) \
 	((token->position.filename = lexer->filename), \
-	 (token->position.line = lexer->line), \
-	 (token->position.lineStart = lexer->lineStart - lexer->input), \
-	 (token->position.column = (lexer->tokenStart = (__startPtr__)) - lexer->lineStart), \
+	 (token->position.line = (Int32)lexer->line), \
+	 (token->position.lineStart = (Int32)(lexer->lineStart - lexer->input)), \
+	 (token->position.column = (Int32)((lexer->tokenStart = (__startPtr__)) - lexer->lineStart)), \
 	 (token->isFirstContentOnLine = isFirstContentOnLine))
 
 // End the current token as the given kind.
 #define END_TOKEN(__kind__) \
 	((lexer->src = src), \
-	 (token->position.length = src - lexer->tokenStart), \
+	 (token->position.length = (Int32)(src - lexer->tokenStart)), \
 	 (token->kind = (__kind__)))
 
 // Construct a simple token, a token with no meaningful properties except its kind and position.

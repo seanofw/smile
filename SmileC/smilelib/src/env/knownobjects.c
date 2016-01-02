@@ -26,7 +26,7 @@
 
 void KnownObjects_Preload(struct KnownObjectsStruct *knownObjects)
 {
-	Int i;
+	Int32 i;
 
 	knownObjects->Object = SmileObject_Create();
 	knownObjects->Null = SmileNull_Create();

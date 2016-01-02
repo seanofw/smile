@@ -43,12 +43,12 @@ typedef struct SymbolTableStruct {
 //-------------------------------------------------------------------------------------------------
 //  External parts of the implementation.
 
-SMILE_API SymbolTable SymbolTable_Create(void);
-SMILE_API Symbol SymbolTable_GetSymbol(SymbolTable symbolTable, String name);
-SMILE_API Symbol SymbolTable_GetSymbolC(SymbolTable symbolTable, const char *name);
-SMILE_API Symbol SymbolTable_GetSymbolNoCreate(SymbolTable symbolTable, String name);
-SMILE_API Symbol SymbolTable_GetSymbolNoCreateC(SymbolTable symbolTable, const char *name);
-SMILE_API String SymbolTable_GetName(SymbolTable symbolTable, Symbol symbol);
+SMILE_API_FUNC SymbolTable SymbolTable_Create(void);
+SMILE_API_FUNC Symbol SymbolTable_GetSymbol(SymbolTable symbolTable, String name);
+SMILE_API_FUNC Symbol SymbolTable_GetSymbolC(SymbolTable symbolTable, const char *name);
+SMILE_API_FUNC Symbol SymbolTable_GetSymbolNoCreate(SymbolTable symbolTable, String name);
+SMILE_API_FUNC Symbol SymbolTable_GetSymbolNoCreateC(SymbolTable symbolTable, const char *name);
+SMILE_API_FUNC String SymbolTable_GetName(SymbolTable symbolTable, Symbol symbol);
 
 //-------------------------------------------------------------------------------------------------
 //  Inline parts of the implementation.

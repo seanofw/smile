@@ -39,9 +39,13 @@ typedef double Float64;
 typedef struct __attribute__((aligned(16))) { UInt64 value[2]; } Float128;
 
 // Portable decimal floating-point types.
-typedef struct { UInt32 value; } Real32;
-typedef struct { UInt64 value; } Real64;
+typedef struct __attribute__((aligned(4))) { UInt32 value; } Real32;
+typedef struct __attribute__((aligned(8))) { UInt64 value; } Real64;
 typedef struct __attribute__((aligned(16))) { UInt64 value[2]; } Real128;
+
+// How to align data structures in memory.
+#undef SMILE_ALIGN
+#define SMILE_ALIGN(__n__) __attribute__((aligned(n)))
 
 //------------------------------------------------------------------------------------------------
 //  Declaration prefixes.
@@ -55,11 +59,14 @@ typedef struct __attribute__((aligned(16))) { UInt64 value[2]; } Real128;
 #define SMILE_THREAD_LOCAL __thread
 
 // How to export public functions and data outside SmileLib.
-#undef SMILE_API
+#undef SMILE_API_FUNC
+#undef SMILE_API_DATA
 #ifdef SMILELIB_BUILD
-	#define SMILE_API __declspec(dllexport)
+	#define SMILE_API_FUNC extern __declspec(dllexport)
+	#define SMILE_API_DATA extern __declspec(dllexport)
 #else
-	#define SMILE_API extern __declspec(dllimport)
+	#define SMILE_API_FUNC extern __declspec(dllimport)
+	#define SMILE_API_DATA extern __declspec(dllimport)
 #endif
 
 //------------------------------------------------------------------------------------------------

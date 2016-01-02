@@ -30,7 +30,7 @@
 
 /*****************************************************************************/
 #include "../include/smile/types.h"
-#define BID_EXTERN_API SMILE_API
+#define BID_EXTERN_API SMILE_API_FUNC
 
 #define DECIMAL_CALL_BY_REFERENCE 0
 #define DECIMAL_GLOBAL_ROUNDING 1

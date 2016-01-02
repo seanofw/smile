@@ -55,16 +55,16 @@ typedef struct Int32DictKeyValuePairStruct {
 //-------------------------------------------------------------------------------------------------
 //  External parts of the implementation
 
-SMILE_API Int32 Int32DictInt_Append(struct Int32DictInt *intDict, Int32 key, const void *value);
+SMILE_API_FUNC Int32 Int32DictInt_Append(struct Int32DictInt *intDict, Int32 key, const void *value);
 
-SMILE_API Int32 *Int32Dict_GetKeys(Int32Dict intDict);
-SMILE_API void **Int32Dict_GetValues(Int32Dict intDict);
-SMILE_API Int32DictKeyValuePair *Int32Dict_GetAll(Int32Dict intDict);
+SMILE_API_FUNC Int32 *Int32Dict_GetKeys(Int32Dict intDict);
+SMILE_API_FUNC void **Int32Dict_GetValues(Int32Dict intDict);
+SMILE_API_FUNC Int32DictKeyValuePair *Int32Dict_GetAll(Int32Dict intDict);
 
-SMILE_API void Int32Dict_ClearWithSize(Int32Dict intDict, Int32 newSize);
-SMILE_API Bool Int32Dict_Remove(Int32Dict intDict, Int32 key);
+SMILE_API_FUNC void Int32Dict_ClearWithSize(Int32Dict intDict, Int32 newSize);
+SMILE_API_FUNC Bool Int32Dict_Remove(Int32Dict intDict, Int32 key);
 
-SMILE_API DictStats Int32Dict_ComputeStats(Int32Dict intDict);
+SMILE_API_FUNC DictStats Int32Dict_ComputeStats(Int32Dict intDict);
 
 //-------------------------------------------------------------------------------------------------
 //  Inline parts of the implementation

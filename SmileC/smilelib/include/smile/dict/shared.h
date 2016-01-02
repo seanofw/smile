@@ -20,7 +20,7 @@ typedef struct DictStatsStruct {
 	SimpleStats keyStats;		// Statistics on key lengths.
 } *DictStats;
 
-SMILE_API String DictStats_ToString(DictStats stats);
+SMILE_API_FUNC String DictStats_ToString(DictStats stats);
 
 /// <summary>
 /// Perform a search through a dictionary (hash table with internal linked lists) construct

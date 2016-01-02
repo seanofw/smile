@@ -258,7 +258,11 @@ void StringDict_ClearWithSize(StringDict stringDict, Int newSize)
 	if (newSize < 0x10) newSize = 0x10;
 	if (newSize > 0x1000000) newSize = 0x1000000;
 
-	newSize = NextPowerOfTwo32(newSize);
+	#if SizeofInt <= 4
+		newSize = NextPowerOfTwo32(newSize);
+	#else
+		newSize = NextPowerOfTwo64(newSize);
+	#endif
 
 	self = (struct StringDictInt *)stringDict;
 
@@ -344,7 +348,7 @@ Bool StringDict_Remove(StringDict stringDict, String key)
 /// Compute statistics on this dictionary.
 /// </summary>
 /// <param name="intDict">A pointer to the dictionary.</param>
-SMILE_API DictStats StringDict_ComputeStats(StringDict stringDict)
+SMILE_API_FUNC DictStats StringDict_ComputeStats(StringDict stringDict)
 {
 	struct StringDictInt *self;
 	struct StringDictNode *heap;
@@ -369,9 +373,9 @@ SMILE_API DictStats StringDict_ComputeStats(StringDict stringDict)
 		numInThisBucket = 0;
 		for (nodeIndex = buckets[bucketIndex]; nodeIndex >= 0; nodeIndex = heap[nodeIndex].next) {
 			numInThisBucket++;
-			SimpleStats_Add(stats->keyStats, String_Length(heap[nodeIndex].key));
+			SimpleStats_Add(stats->keyStats, (Float64)String_Length(heap[nodeIndex].key));
 		}
-		SimpleStats_Add(stats->bucketStats, numInThisBucket);
+		SimpleStats_Add(stats->bucketStats, (Float64)numInThisBucket);
 	}
 
 	return stats;

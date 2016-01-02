@@ -37,10 +37,15 @@ typedef unsigned char Bool;
 
 // How to export API functions and data.
 #ifdef SMILELIB_BUILD
-	#define SMILE_API
+	#define SMILE_API_FUNC
+	#define SMILE_API_DATA extern
 #else
-	#define SMILE_API extern
+	#define SMILE_API_FUNC extern
+	#define SMILE_API_DATA extern
 #endif
+
+// How to align data structures in memory.
+#define SMILE_ALIGN(__n__)
 
 // How to make functions behave as 'inline', or as close to it as possible.
 #define Inline static
@@ -74,20 +79,20 @@ typedef unsigned char Bool;
 #define UIntMax (~(UInt)0)
 
 // Global functions for the core runtime.
-SMILE_API void Smile_Init(void);
-SMILE_API void Smile_End(void);
-SMILE_API void Smile_Abort_OutOfMemory(void);
-SMILE_API void Smile_Abort_FatalError(const char *message);
+SMILE_API_FUNC void Smile_Init(void);
+SMILE_API_FUNC void Smile_End(void);
+SMILE_API_FUNC void Smile_Abort_OutOfMemory(void);
+SMILE_API_FUNC void Smile_Abort_FatalError(const char *message);
 
-SMILE_API UInt32 Smile_HashOracle;
-SMILE_API UInt32 Smile_FnvHash(const void *buffer, Int length);
-SMILE_API UInt64 Smile_SipHash(const void *buffer, Int length, UInt64 secret1, UInt64 secret2);
+SMILE_API_DATA UInt32 Smile_HashOracle;
+SMILE_API_FUNC UInt32 Smile_FnvHash(const void *buffer, Int length);
+SMILE_API_FUNC UInt64 Smile_SipHash(const void *buffer, Int length, UInt64 secret1, UInt64 secret2);
 
-SMILE_API UInt64 Smile_StartTicks;
-SMILE_API UInt64 Smile_GetTicks(void);
-SMILE_API double Smile_TicksToSeconds(UInt64 ticks);
-SMILE_API UInt64 Smile_TicksToMilliseconds(UInt64 ticks);
-SMILE_API UInt64 Smile_TicksToMicroseconds(UInt64 ticks);
+SMILE_API_DATA UInt64 Smile_StartTicks;
+SMILE_API_FUNC UInt64 Smile_GetTicks(void);
+SMILE_API_FUNC double Smile_TicksToSeconds(UInt64 ticks);
+SMILE_API_FUNC UInt64 Smile_TicksToMilliseconds(UInt64 ticks);
+SMILE_API_FUNC UInt64 Smile_TicksToMicroseconds(UInt64 ticks);
 
 /// <summary>
 /// Convert a numeric value to its string representation at compile time.

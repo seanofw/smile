@@ -55,100 +55,100 @@ enum StringWildcardOptions {
 //-------------------------------------------------------------------------------------------------
 //  External parts of the implementation (core)
 
-SMILE_API String String_Empty;
+SMILE_API_DATA String String_Empty;
 
-SMILE_API String String_Create(const Byte *text, Int length);
-SMILE_API String String_CreateInternal(Int length);
-SMILE_API String String_CreateRepeat(Byte b, Int repeatCount);
+SMILE_API_FUNC String String_Create(const Byte *text, Int length);
+SMILE_API_FUNC String String_CreateInternal(Int length);
+SMILE_API_FUNC String String_CreateRepeat(Byte b, Int repeatCount);
 
-SMILE_API String String_ConcatMany(const String *strs, Int numStrs);
-SMILE_API String String_Join(const String glue, const String *strs, Int numStrs);
-SMILE_API String String_SlashAppend(const String *strs, Int numStrs);
+SMILE_API_FUNC String String_ConcatMany(const String *strs, Int numStrs);
+SMILE_API_FUNC String String_Join(const String glue, const String *strs, Int numStrs);
+SMILE_API_FUNC String String_SlashAppend(const String *strs, Int numStrs);
 
-SMILE_API Bool String_Equals(const String str, const String other);
-SMILE_API Int String_Compare(const String a, const String b);
-SMILE_API Int String_CompareRange(const String a, Int astart, Int alength, const String b, Int bstart, Int blength);
+SMILE_API_FUNC Bool String_Equals(const String str, const String other);
+SMILE_API_FUNC Int String_Compare(const String a, const String b);
+SMILE_API_FUNC Int String_CompareRange(const String a, Int astart, Int alength, const String b, Int bstart, Int blength);
 
-SMILE_API String String_SubstringAt(const String str, Int start);
-SMILE_API String String_Substring(const String str, Int start, Int length);
-SMILE_API String String_Concat(const String str, const String other);
-SMILE_API String String_ConcatByte(const String str, Byte ch);
+SMILE_API_FUNC String String_SubstringAt(const String str, Int start);
+SMILE_API_FUNC String String_Substring(const String str, Int start, Int length);
+SMILE_API_FUNC String String_Concat(const String str, const String other);
+SMILE_API_FUNC String String_ConcatByte(const String str, Byte ch);
 
-SMILE_API Int String_IndexOf(const String str, const String pattern, Int start);
-SMILE_API Int String_LastIndexOf(const String str, const String pattern, Int start);
-SMILE_API Bool String_StartsWith(const String str, const String pattern);
-SMILE_API Bool String_EndsWith(const String str, const String pattern);
-SMILE_API Int String_IndexOfChar(const String str, Byte ch, Int start);
-SMILE_API Int String_LastIndexOfChar(const String str, Byte ch, Int start);
-SMILE_API Int String_IndexOfAnyChar(const String str, const Byte *chars, Int numChars, Int start);
-SMILE_API String String_Replace(const String str, const String pattern, const String replacement);
-SMILE_API String String_ReplaceChar(const String str, Byte pattern, Byte replacement);
+SMILE_API_FUNC Int String_IndexOf(const String str, const String pattern, Int start);
+SMILE_API_FUNC Int String_LastIndexOf(const String str, const String pattern, Int start);
+SMILE_API_FUNC Bool String_StartsWith(const String str, const String pattern);
+SMILE_API_FUNC Bool String_EndsWith(const String str, const String pattern);
+SMILE_API_FUNC Int String_IndexOfChar(const String str, Byte ch, Int start);
+SMILE_API_FUNC Int String_LastIndexOfChar(const String str, Byte ch, Int start);
+SMILE_API_FUNC Int String_IndexOfAnyChar(const String str, const Byte *chars, Int numChars, Int start);
+SMILE_API_FUNC String String_Replace(const String str, const String pattern, const String replacement);
+SMILE_API_FUNC String String_ReplaceChar(const String str, Byte pattern, Byte replacement);
 
-SMILE_API String String_Format(const char *format, ...);
-SMILE_API String String_FormatV(const char *format, va_list v);
-SMILE_API String String_FormatString(const String format, ...);
-SMILE_API String String_FormatStringV(const String format, va_list v);
+SMILE_API_FUNC String String_Format(const char *format, ...);
+SMILE_API_FUNC String String_FormatV(const char *format, va_list v);
+SMILE_API_FUNC String String_FormatString(const String format, ...);
+SMILE_API_FUNC String String_FormatStringV(const String format, va_list v);
 
 //-------------------------------------------------------------------------------------------------
 //  External parts of the implementation (Extra)
 
-SMILE_API Int String_SplitWithOptions(const String str, const String pattern, Int limit, Int options, String **pieces);
+SMILE_API_FUNC Int String_SplitWithOptions(const String str, const String pattern, Int limit, Int options, String **pieces);
 
-SMILE_API String String_RawReverse(const String str);
-SMILE_API String String_Reverse(const String str);
-SMILE_API String String_Repeat(const String str, Int count);
-SMILE_API String String_PadStart(const String str, Int minLength, Byte padChar);
-SMILE_API String String_PadEnd(const String str, Int minLength, Byte padChar);
-SMILE_API String String_TrimWhitespace(const String str, Bool trimStart, Bool trimEnd);
-SMILE_API String String_CompactWhitespace(const String str);
-SMILE_API String String_AddCSlashes(const String str);
-SMILE_API String String_StripCSlashes(const String str);
-SMILE_API String String_Rot13(const String str);
-SMILE_API String String_RegexEscape(const String str);
-SMILE_API Bool String_WildcardMatch(const String pattern, const String text, Int wildcardOptions);
-SMILE_API String String_JoinEnglishNames(const String *items, Int numItems, const String conjunction);
+SMILE_API_FUNC String String_RawReverse(const String str);
+SMILE_API_FUNC String String_Reverse(const String str);
+SMILE_API_FUNC String String_Repeat(const String str, Int count);
+SMILE_API_FUNC String String_PadStart(const String str, Int minLength, Byte padChar);
+SMILE_API_FUNC String String_PadEnd(const String str, Int minLength, Byte padChar);
+SMILE_API_FUNC String String_TrimWhitespace(const String str, Bool trimStart, Bool trimEnd);
+SMILE_API_FUNC String String_CompactWhitespace(const String str);
+SMILE_API_FUNC String String_AddCSlashes(const String str);
+SMILE_API_FUNC String String_StripCSlashes(const String str);
+SMILE_API_FUNC String String_Rot13(const String str);
+SMILE_API_FUNC String String_RegexEscape(const String str);
+SMILE_API_FUNC Bool String_WildcardMatch(const String pattern, const String text, Int wildcardOptions);
+SMILE_API_FUNC String String_JoinEnglishNames(const String *items, Int numItems, const String conjunction);
 
 //-------------------------------------------------------------------------------------------------
 //  External parts of the implementation (HTML-specific transformations)
 
-SMILE_API String String_HtmlEncode(const String str);
-SMILE_API String String_HtmlEncodeToAscii(const String str);
-SMILE_API String String_HtmlDecode(const String str);
-SMILE_API String String_UrlEncode(const String str);
-SMILE_API String String_UrlQueryEncode(const String str);
-SMILE_API String String_UrlDecode(const String str);
+SMILE_API_FUNC String String_HtmlEncode(const String str);
+SMILE_API_FUNC String String_HtmlEncodeToAscii(const String str);
+SMILE_API_FUNC String String_HtmlDecode(const String str);
+SMILE_API_FUNC String String_UrlEncode(const String str);
+SMILE_API_FUNC String String_UrlQueryEncode(const String str);
+SMILE_API_FUNC String String_UrlDecode(const String str);
 
 //-------------------------------------------------------------------------------------------------
 //  External parts of the implementation (Parsing of other types)
 
-SMILE_API Bool String_ParseBool(const String str, Bool *result);
-SMILE_API Bool String_ParseInteger(const String str, Int numericBase, Int64 *result);
-SMILE_API Bool String_ParseReal(const String str, Int numericBase, Real128 *result);
-SMILE_API Bool String_ParseFloat(const String str, Int numericBase, Float64 *result);
+SMILE_API_FUNC Bool String_ParseBool(const String str, Bool *result);
+SMILE_API_FUNC Bool String_ParseInteger(const String str, Int numericBase, Int64 *result);
+SMILE_API_FUNC Bool String_ParseReal(const String str, Int numericBase, Real128 *result);
+SMILE_API_FUNC Bool String_ParseFloat(const String str, Int numericBase, Float64 *result);
 
 //-------------------------------------------------------------------------------------------------
 //  External parts of the implementation (Unicode support)
 
-SMILE_API Int String_CompareRangeI(const String a, Int astart, Int alength, const String b, Int bstart, Int blength, Bool *usedSlowConversion);
-SMILE_API Int String_IndexOfI(const String str, const String pattern, Int start);
-SMILE_API Int String_LastIndexOfI(const String str, const String pattern, Int start);
-SMILE_API Bool String_ContainsI(const String str, const String pattern);
-SMILE_API Bool String_StartsWithI(const String str, const String pattern);
-SMILE_API Bool String_EndsWithI(const String str, const String pattern);
+SMILE_API_FUNC Int String_CompareRangeI(const String a, Int astart, Int alength, const String b, Int bstart, Int blength, Bool *usedSlowConversion);
+SMILE_API_FUNC Int String_IndexOfI(const String str, const String pattern, Int start);
+SMILE_API_FUNC Int String_LastIndexOfI(const String str, const String pattern, Int start);
+SMILE_API_FUNC Bool String_ContainsI(const String str, const String pattern);
+SMILE_API_FUNC Bool String_StartsWithI(const String str, const String pattern);
+SMILE_API_FUNC Bool String_EndsWithI(const String str, const String pattern);
 
-SMILE_API String String_ToLowerRange(const String str, Int start, Int length);
-SMILE_API String String_ToTitleRange(const String str, Int start, Int length);
-SMILE_API String String_ToUpperRange(const String str, Int start, Int length);
-SMILE_API String String_CaseFoldRange(const String str, Int start, Int length);
-SMILE_API String String_DecomposeRange(const String str, Int start, Int length);
-SMILE_API String String_ComposeRange(const String str, Int start, Int length);
-SMILE_API String String_NormalizeRange(const String str, Int start, Int length);
+SMILE_API_FUNC String String_ToLowerRange(const String str, Int start, Int length);
+SMILE_API_FUNC String String_ToTitleRange(const String str, Int start, Int length);
+SMILE_API_FUNC String String_ToUpperRange(const String str, Int start, Int length);
+SMILE_API_FUNC String String_CaseFoldRange(const String str, Int start, Int length);
+SMILE_API_FUNC String String_DecomposeRange(const String str, Int start, Int length);
+SMILE_API_FUNC String String_ComposeRange(const String str, Int start, Int length);
+SMILE_API_FUNC String String_NormalizeRange(const String str, Int start, Int length);
 
-SMILE_API Int32 String_ExtractUnicodeCharacter(const String str, Int *index);
-SMILE_API Int32 String_ExtractUnicodeCharacterInternal(const Byte **start, const Byte *end);
+SMILE_API_FUNC Int32 String_ExtractUnicodeCharacter(const String str, Int *index);
+SMILE_API_FUNC Int32 String_ExtractUnicodeCharacterInternal(const Byte **start, const Byte *end);
 
-SMILE_API String String_ConvertUtf8ToCodePageRange(const String str, Int start, Int length, const Byte **utf8ToCodePageTables, Int numTables);
-SMILE_API String String_ConvertCodePageToUtf8Range(const String str, Int start, Int length, const UInt16 *codePageToUtf8Table);
+SMILE_API_FUNC String String_ConvertUtf8ToCodePageRange(const String str, Int start, Int length, const Byte **utf8ToCodePageTables, Int numTables);
+SMILE_API_FUNC String String_ConvertCodePageToUtf8Range(const String str, Int start, Int length, const UInt16 *codePageToUtf8Table);
 
 //-------------------------------------------------------------------------------------------------
 //  Known (supported) legacy code pages.
@@ -184,8 +184,8 @@ enum {
 	LEGACY_CODE_PAGE_WIN1258 = 1258,
 };
 
-SMILE_API String String_ConvertUtf8ToKnownCodePageRange(const String str, Int start, Int length, Int legacyCodePageID);
-SMILE_API String String_ConvertKnownCodePageToUtf8Range(const String str, Int start, Int length, Int legacyCodePageID);
+SMILE_API_FUNC String String_ConvertUtf8ToKnownCodePageRange(const String str, Int start, Int length, Int legacyCodePageID);
+SMILE_API_FUNC String String_ConvertKnownCodePageToUtf8Range(const String str, Int start, Int length, Int legacyCodePageID);
 
 //-------------------------------------------------------------------------------------------------
 //  Inline parts of the implementation

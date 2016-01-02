@@ -331,7 +331,7 @@ Bool Int32Dict_Remove(Int32Dict intDict, Int32 key)
 /// Compute statistics on this dictionary.
 /// </summary>
 /// <param name="intDict">A pointer to the dictionary.</param>
-SMILE_API DictStats Int32Dict_ComputeStats(Int32Dict intDict)
+SMILE_API_FUNC DictStats Int32Dict_ComputeStats(Int32Dict intDict)
 {
 	struct Int32DictInt *self;
 	struct Int32DictNode *heap;

@@ -81,7 +81,12 @@ Int SmileString_GetSecurity(SmileString self)
 SmileObject SmileString_GetProperty(SmileString self, Symbol propertyName)
 {
 	if (propertyName == Smile_KnownSymbols.length) {
-		return (SmileObject)SmileInteger32_Create(self->string.length);
+		#if SizeofInt <= 4
+			return (SmileObject)SmileInteger32_Create(self->string.length);
+		#else
+			Int length = self->string.length;
+			return (SmileObject)SmileInteger32_Create(length < Int32Max ? (Int32)length : Int32Max);
+		#endif
 	}
 	return self->base->vtable->getProperty((SmileObject)self, propertyName);
 }
