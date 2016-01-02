@@ -25,11 +25,11 @@ ALL_SRCS = $(GC_SRCS) $(DECIMAL_SRCS) $(SMILE_SRCS)
 
 ALL_OBJS = $(GC_OBJS) $(DECIMAL_OBJS) $(SMILE_OBJS)
 
-GC_DEFS = -DGC_BUILD -DSMILELIB_BUILD
+GC_DEFS = -DGC_BUILD -DGC_DLL -DSMILELIB_BUILD
 DECIMAL_DEFS = -DSMILELIB_BUILD
 SMILE_DEFS = -DGC_BUILD -DSMILELIB_BUILD
 
-SMILELIB = bin/$(PLATFORM_NAME)/libsmile.so
+SMILELIB = bin/$(PLATFORM_NAME)/libsmile$(SO_EXT)
 
 #---------------------------------------------------------------------------
 #  Compile rules.

@@ -9,6 +9,15 @@ include $(dir $(lastword $(MAKEFILE_LIST)))Makefile.os
 SHELL = /bin/sh
 .SUFFIXES:
 
+# Cygwin needs output suffixes for Windows.
+ifeq '$(OS_CYGWIN)' 'true'
+  BIN_EXT = .exe
+  SO_EXT = .dll
+else
+  BIN_EXT =
+  SO_EXT =
+endif
+
 # Linux needs '-fPIC' for position-independent code.
 ifeq '$(OS_LINUX)' 'true'
   PICFLAG = -fPIC

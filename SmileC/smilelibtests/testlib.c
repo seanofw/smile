@@ -257,7 +257,7 @@ void WaitForAnyKey(void)
 	#ifdef _WIN32
 		getch();
 	#else
-		struct termios oldInfo;
+		struct termios oldInfo, info;
 
 		// Get the current terminal behavior.
 		tcgetattr(0, &oldInfo);
