@@ -1,4 +1,6 @@
 *.user
 *.old
-obj
 bin
+obj
+Makefile.dep
+Makefile.src

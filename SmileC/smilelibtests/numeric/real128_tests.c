@@ -82,7 +82,7 @@ static Real128 RR(const char *str)
 	return u.real;
 }
 
-Inline Eq(Real128 a, Real128 b)
+Inline Bool Eq(Real128 a, Real128 b)
 {
 	return a.value[0] == b.value[0] && a.value[1] == b.value[1];
 }

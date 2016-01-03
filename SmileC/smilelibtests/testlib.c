@@ -57,12 +57,12 @@ void AssertStringInternal(String str, const char *expectedString, Int expectedLe
 	}
 
 	if (String_Length(str) != expectedLength) {
-		sprintf(buffer, "%s: actual string length is %d", message, String_Length(str));
+		sprintf(buffer, "%s: actual string length is %d", message, (int)String_Length(str));
 		FailTestInternal(buffer);
 	}
 
 	if (String_GetBytes(str)[expectedLength] != '\0') {
-		sprintf(buffer, "%s: actual string is missing '\0' after end", message);
+		sprintf(buffer, "%s: actual string is missing '\\0' after end", message);
 		FailTestInternal(buffer);
 	}
 

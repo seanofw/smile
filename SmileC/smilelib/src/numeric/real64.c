@@ -19,8 +19,8 @@
 #include <smile/numeric/real64.h>
 #include <smile/stringbuilder.h>
 
-extern String Real_ToFixedString(Byte *buffer, Int len, Int exp, Int kind, Int minIntDigits, Int minFracDigits, Bool forceSign);
-extern String Real_ToExpString(Byte *buffer, Int len, Int exp, Int kind, Int minFracDigits, Bool forceSign);
+extern String Real_ToFixedString(Byte *buffer, Int32 len, Int32 exp, Int32 kind, Int minIntDigits, Int minFracDigits, Bool forceSign);
+extern String Real_ToExpString(Byte *buffer, Int32 len, Int32 exp, Int32 kind, Int minFracDigits, Bool forceSign);
 
 extern SMILE_THREAD_LOCAL UInt32 Real_RoundingMode;
 extern SMILE_THREAD_LOCAL UInt32 Real_Flags;

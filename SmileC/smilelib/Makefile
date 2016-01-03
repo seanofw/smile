@@ -82,14 +82,14 @@ dep2:
 #---------------------------------------------------------------------------
 #  Unit tests (not here).
 
-check:
+check: $(SMILELIB)
 
 #---------------------------------------------------------------------------
 #  Installation.
 
-install:
+install: $(SMILELIB)
 
-install-strip:
+install-strip: $(SMILELIB)
 
 uninstall:
 
