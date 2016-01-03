@@ -25,7 +25,7 @@ DEFS =
 
 LIBPATHS = $(SMILELIBDIR)/bin/$(PLATFORM_NAME)
 
-LIBS = -lsmile
+LIBS = -lsmile -lm
 
 TESTBIN = bin/$(PLATFORM_NAME)/smilelibtests$(BIN_EXT)
 

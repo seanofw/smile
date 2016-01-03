@@ -31,6 +31,8 @@ SMILE_DEFS = -DGC_BUILD -DSMILELIB_BUILD
 
 SMILELIB = bin/$(PLATFORM_NAME)/libsmile$(SO_EXT)
 
+LIBS = -lm
+
 #---------------------------------------------------------------------------
 #  Compile rules.
 
@@ -41,7 +43,7 @@ $(SMILELIB): $(ALL_OBJS)
 
 	# Use a directory-change trick to shorten the command line before linking.
 	cd obj/$(PLATFORM_NAME) ; \
-	$(LINKSO) $(ALL_LINKSOFLAGS) -o ../../$@ $(subst obj/$(PLATFORM_NAME)/,,$(ALL_OBJS)) ; \
+	$(LINKSO) $(ALL_LINKSOFLAGS) -o ../../$@ $(LIBS) $(subst obj/$(PLATFORM_NAME)/,,$(ALL_OBJS)) ; \
 	cd ../..
 
 obj/$(PLATFORM_NAME)/gc/%.o : gc/src/%.c

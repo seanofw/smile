@@ -15,7 +15,7 @@ ifeq '$(OS_CYGWIN)' 'true'
   SO_EXT = .dll
 else
   BIN_EXT =
-  SO_EXT =
+  SO_EXT = .so
 endif
 
 # Linux needs '-fPIC' for position-independent code.
