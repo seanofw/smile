@@ -34,7 +34,7 @@ STATIC_STRING(Real_String_SNaN, "SNaN");
 STATIC_STRING(Real_String_PosSNaN, "+SNaN");
 STATIC_STRING(Real_String_NegSNaN, "-SNaN");
 
-String Real_ToFixedString(Byte *buffer, Int32 len, Int32 exp, Int32 kind, Int minIntDigits, Int minFracDigits, Bool forceSign)
+String Real_ToFixedString(Byte *buffer, Int32 len, Int32 exp, Int32 kind, Int32 minIntDigits, Int32 minFracDigits, Bool forceSign)
 {
 	DECLARE_INLINE_STRINGBUILDER(numBuilder, 256);
 
@@ -113,7 +113,7 @@ String Real_ToFixedString(Byte *buffer, Int32 len, Int32 exp, Int32 kind, Int mi
 	}
 	else {
 		// Negative exponent, and split across the decimal point: Some integer, some fractional digits.
-		Int numIntDigits = len - -exp, numFracDigits = -exp;
+		Int32 numIntDigits = len - -exp, numFracDigits = -exp;
 
 		if (numIntDigits < minIntDigits) {
 			// Need to prepend initial zeros.
@@ -138,10 +138,10 @@ String Real_ToFixedString(Byte *buffer, Int32 len, Int32 exp, Int32 kind, Int mi
 	return StringBuilder_ToString(numBuilder);
 }
 
-String Real_ToExpString(Byte *buffer, Int32 len, Int32 exp, Int32 kind, Int minFracDigits, Bool forceSign)
+String Real_ToExpString(Byte *buffer, Int32 len, Int32 exp, Int32 kind, Int32 minFracDigits, Bool forceSign)
 {
 	DECLARE_INLINE_STRINGBUILDER(numBuilder, 256);
-	Int numFracDigits;
+	Int32 numFracDigits;
 
 	INIT_INLINE_STRINGBUILDER(numBuilder);
 

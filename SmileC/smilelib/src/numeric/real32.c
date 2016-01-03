@@ -195,7 +195,7 @@ SMILE_API_FUNC Bool Real32_TryParse(String str, Real32 *result)
 	// We read the content right out of the StringBuilder:  If the content is short
 	// enough, all of the data will be on the stack, so we can avoid ever allocating
 	// anything at all on the heap, which is great for performance.
-	*result = Real32_FromRawCString(StringBuilder_GetBytes(cleanString));
+	*result = Real32_FromRawCString((const char *)StringBuilder_GetBytes(cleanString));
 	return !Real32_IsNaN(*result);
 }
 
@@ -206,7 +206,7 @@ String Real32_ToFixedString(Real32 real32, Int minIntDigits, Int minFracDigits, 
 
 	buflen = Real32_Decompose(buffer, &exp, &kind, real32);
 
-	return Real_ToFixedString(buffer, buflen, exp, kind, minIntDigits, minFracDigits, forceSign);
+	return Real_ToFixedString(buffer, buflen, exp, kind, (Int32)minIntDigits, (Int32)minFracDigits, forceSign);
 }
 
 String Real32_ToExpString(Real32 real32, Int minFracDigits, Bool forceSign)
@@ -216,7 +216,7 @@ String Real32_ToExpString(Real32 real32, Int minFracDigits, Bool forceSign)
 
 	buflen = Real32_Decompose(buffer, &exp, &kind, real32);
 
-	return Real_ToExpString(buffer, buflen, exp, kind, minFracDigits, forceSign);
+	return Real_ToExpString(buffer, buflen, exp, kind, (Int32)minFracDigits, forceSign);
 }
 
 String Real32_ToStringEx(Real32 real32, Int minIntDigits, Int minFracDigits, Bool forceSign)
@@ -229,11 +229,11 @@ String Real32_ToStringEx(Real32 real32, Int minIntDigits, Int minFracDigits, Boo
 	if (exp + buflen - 1 > 9 || exp + buflen - 1 < -6) {
 		// Very large (1'000'000'000 or larger), or very small (smaller than 0.00001), so
 		// print in exponential notation.
-		return Real_ToExpString(buffer, buflen, exp, kind, minFracDigits, forceSign);
+		return Real_ToExpString(buffer, buflen, exp, kind, (Int32)minFracDigits, forceSign);
 	}
 	else {
 		// Moderate range:  In (1'000'000'000, 0.00001], so print it as a traditional decimal string.
-		return Real_ToFixedString(buffer, buflen, exp, kind, minIntDigits, minFracDigits, forceSign);
+		return Real_ToFixedString(buffer, buflen, exp, kind, (Int32)minIntDigits, (Int32)minFracDigits, forceSign);
 	}
 }
 
