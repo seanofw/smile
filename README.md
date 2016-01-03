@@ -1,6 +1,6 @@
 # Smile Programming Language Interpreter
 
-**Copyright &copy; 2004-2015 Sean Werkema**
+**Copyright &copy; 2004-2016 Sean Werkema**
 
 <hr />
 
