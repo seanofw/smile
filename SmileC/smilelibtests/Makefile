@@ -67,7 +67,7 @@ dep2:
 #  Unit tests.
 
 check: $(TESTBIN)
-	@LD_LIBRARY_PATH=$(LIBPATHS); $(TESTBIN)
+	@LD_LIBRARY_PATH=$(LIBPATHS); PATH=$$PATH:$(LIBPATHS); $(TESTBIN)
 
 #---------------------------------------------------------------------------
 #  Installation.
