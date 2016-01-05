@@ -2,31 +2,33 @@
 #----------------------------------------------------------------------------
 # Extra-variable configuration file for Make-based builds.
 
+MAKEFILE_EXTRA_DIR := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
+
 # Get the OS configuration variables.
-include $(dir $(lastword $(MAKEFILE_LIST)))Makefile.os
+include $(MAKEFILE_EXTRA_DIR)Makefile.os
 
 # Reset any weird or wrong or nonstandard defaults.
-SHELL = /bin/sh
+SHELL := /bin/sh
 .SUFFIXES:
 
 # Cygwin needs output suffixes for Windows.
 ifeq '$(OS_CYGWIN)' 'true'
-  BIN_EXT = .exe
-  SO_EXT = .dll
+  BIN_EXT := .exe
+  SO_EXT := .dll
 else
-  BIN_EXT =
-  SO_EXT = .so
+  BIN_EXT :=
+  SO_EXT := .so
 endif
 
 # Linux needs '-fPIC' for position-independent code.
 ifeq '$(OS_LINUX)' 'true'
-  PICFLAG = -fPIC
+  PICFLAG := -fPIC
 else
-  PICFLAG =
+  PICFLAG :=
 endif
 
 # Aggregate options.
-ALL_CFLAGS = $(CFLAGS) $(PICFLAG)
-ALL_LINKFLAGS = $(LINKFLAGS) $(PICFLAG)
-ALL_LINKSOFLAGS = $(LINKSOFLAGS) $(PICFLAG)
+ALL_CFLAGS := $(CFLAGS) $(PICFLAG)
+ALL_LINKFLAGS := $(LINKFLAGS) $(PICFLAG)
+ALL_LINKSOFLAGS := $(LINKSOFLAGS) $(PICFLAG)
 

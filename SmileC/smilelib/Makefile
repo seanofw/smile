@@ -7,31 +7,33 @@
 #---------------------------------------------------------------------------
 #  Includes.
 
-include ../Makefile.conf
-include ../scripts/Makefile.extra
+MAKEFILE_DIR := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 
--include Makefile.src
+include $(MAKEFILE_DIR)../Makefile.conf
+include $(MAKEFILE_DIR)../scripts/Makefile.extra
+
+-include $(MAKEFILE_DIR)Makefile.src
 
 #---------------------------------------------------------------------------
 #  Definitions.
 
-INCLUDES = -Iinclude
+INCLUDES := -Iinclude
 
-GC_OBJS = $(addprefix obj/$(PLATFORM_NAME)/gc/,$(notdir $(GC_SRCS:.c=.o)))
-DECIMAL_OBJS = $(addprefix obj/$(PLATFORM_NAME)/decimal/,$(notdir $(DECIMAL_SRCS:.c=.o)))
-SMILE_OBJS = $(subst src/,obj/$(PLATFORM_NAME)/smile/,$(SMILE_SRCS:.c=.o))
+GC_OBJS := $(addprefix obj/$(PLATFORM_NAME)/gc/,$(notdir $(GC_SRCS:.c=.o)))
+DECIMAL_OBJS := $(addprefix obj/$(PLATFORM_NAME)/decimal/,$(notdir $(DECIMAL_SRCS:.c=.o)))
+SMILE_OBJS := $(subst src/,obj/$(PLATFORM_NAME)/smile/,$(SMILE_SRCS:.c=.o))
 
-ALL_SRCS = $(GC_SRCS) $(DECIMAL_SRCS) $(SMILE_SRCS)
+ALL_SRCS := $(GC_SRCS) $(DECIMAL_SRCS) $(SMILE_SRCS)
 
-ALL_OBJS = $(GC_OBJS) $(DECIMAL_OBJS) $(SMILE_OBJS)
+ALL_OBJS := $(GC_OBJS) $(DECIMAL_OBJS) $(SMILE_OBJS)
 
-GC_DEFS = -DGC_BUILD -DGC_DLL -DSMILELIB_BUILD
-DECIMAL_DEFS = -DSMILELIB_BUILD
-SMILE_DEFS = -DGC_BUILD -DSMILELIB_BUILD
+GC_DEFS := -DGC_BUILD -DGC_DLL -DSMILELIB_BUILD
+DECIMAL_DEFS := -DSMILELIB_BUILD
+SMILE_DEFS := -DGC_BUILD -DSMILELIB_BUILD
 
-SMILELIB = bin/$(PLATFORM_NAME)/libsmile$(SO_EXT)
+SMILELIB := bin/$(PLATFORM_NAME)/libsmile$(SO_EXT)
 
-LIBS = -lm
+LIBS := -lm
 
 #---------------------------------------------------------------------------
 #  Compile rules.

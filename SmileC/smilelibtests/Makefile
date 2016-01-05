@@ -7,27 +7,29 @@
 #---------------------------------------------------------------------------
 #  Includes.
 
-include ../Makefile.conf
-include ../scripts/Makefile.extra
+MAKEFILE_DIR := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 
--include Makefile.src
+include $(MAKEFILE_DIR)../Makefile.conf
+include $(MAKEFILE_DIR)../scripts/Makefile.extra
+
+-include $(MAKEFILE_DIR)Makefile.src
 
 #---------------------------------------------------------------------------
 #  Definitions.
 
-SMILELIBDIR = ../smilelib
+SMILELIBDIR := ../smilelib
 
-INCLUDES = -I$(SMILELIBDIR)/include
+INCLUDES := -I$(SMILELIBDIR)/include
 
-OBJS = $(addprefix obj/$(PLATFORM_NAME)/,$(SRCS:.c=.o))
+OBJS := $(addprefix obj/$(PLATFORM_NAME)/,$(SRCS:.c=.o))
 
-DEFS = 
+DEFS := 
 
-LIBPATHS = $(SMILELIBDIR)/bin/$(PLATFORM_NAME)
+LIBPATHS := $(SMILELIBDIR)/bin/$(PLATFORM_NAME)
 
-LIBS = -lsmile -lm
+LIBS := -lsmile -lm
 
-TESTBIN = bin/$(PLATFORM_NAME)/smilelibtests$(BIN_EXT)
+TESTBIN := bin/$(PLATFORM_NAME)/smilelibtests$(BIN_EXT)
 
 #---------------------------------------------------------------------------
 #  Compile rules.
