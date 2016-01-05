@@ -1,39 +1,38 @@
 #!/bin/sh
 
-RAWMACHINE=`uname -m`
-LOWERMACHINE=`echo "$RAWMACHINE" | sed -e 'y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/;'`
+MACHINE=`uname -m`
 
 PROC='Unknown'
 
-if [[ $LOWERMACHINE =~ ^[ix][3456]?86[-_]?64 ]]; then
+if echo "$MACHINE" | egrep -q -i '^[ix][3456]?86[-_]?64'; then
 	PROC='x64'
-elif [[ $LOWERMACHINE =~ ^[ix]64 ]]; then
+elif echo "$MACHINE" | egrep -q -i '^[ix]64'; then
 	PROC='x64'
-elif [[ $LOWERMACHINE =~ ^amd64 ]]; then
+elif echo "$MACHINE" | egrep -q -i '^amd64'; then
 	PROC='x64'
-elif [[ $LOWERMACHINE =~ ^[ix][3456]?86 ]]; then
+elif echo "$MACHINE" | egrep -q -i '^[ix][3456]?86'; then
 	PROC='x86'
-elif [[ $LOWERMACHINE =~ ^ia64 ]]; then
+elif echo "$MACHINE" | egrep -q -i '^ia64'; then
 	PROC='IA64'
-elif [[ $LOWERMACHINE =~ ^armv?6 ]]; then
+elif echo "$MACHINE" | egrep -q -i '^armv?6'; then
 	PROC='ARM6'
-elif [[ $LOWERMACHINE =~ ^armv?7 ]]; then
+elif echo "$MACHINE" | egrep -q -i '^armv?7'; then
 	PROC='ARM7'
-elif [[ $LOWERMACHINE =~ ^armv?8 ]]; then
+elif echo "$MACHINE" | egrep -q -i '^armv?8'; then
 	PROC='ARM8'
-elif [[ $LOWERMACHINE =~ ^arm ]]; then
+elif echo "$MACHINE" | egrep -q -i '^arm'; then
 	PROC='ARM'
-elif [[ $LOWERMACHINE =~ ^sparc64 ]]; then
+elif echo "$MACHINE" | egrep -q -i '^sparc64'; then
 	PROC='SPARC64'
-elif [[ $LOWERMACHINE =~ ^sparc ]]; then
+elif echo "$MACHINE" | egrep -q -i '^sparc'; then
 	PROC='SPARC'
-elif [[ $LOWERMACHINE =~ ^sun4u ]]; then
+elif echo "$MACHINE" | egrep -q -i '^sun4u'; then
 	PROC='SPARC'
-elif [[ $LOWERMACHINE =~ ^p(ower)?pc64 ]]; then
-	PROC='PowerPC64'
-elif [[ $LOWERMACHINE =~ ^p(ower)?pc ]]; then
-	PROC='PowerPC'
-elif [[ $LOWERMACHINE =~ ^mips ]]; then
+elif echo "$MACHINE" | egrep -q -i '^p(ower)?pc64'; then
+	PROC='PPC64'
+elif echo "$MACHINE" | egrep -q -i '^p(ower)?pc'; then
+	PROC='PPC'
+elif echo "$MACHINE" | egrep -q -i '^mips'; then
 	PROC='MIPS'
 fi
 

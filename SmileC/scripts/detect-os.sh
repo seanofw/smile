@@ -1,35 +1,34 @@
 #!/bin/sh
 
-RAWNAME=`uname -s`
-LOWERNAME=`echo "$RAWNAME" | sed -e 'y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/;'`
+NAME=`uname -s`
 
 OS='Unknown'
 
-if [[ $LOWERNAME =~ ^linux ]]; then
+if echo "$NAME" | egrep -q -i '^linux'; then
 	OS='Linux'
-elif [[ $LOWERNAME =~ ^cygwin ]]; then
+elif echo "$NAME" | egrep -q -i '^cygwin'; then
 	OS='Cygwin'
-elif [[ $LOWERNAME =~ ^mingw ]]; then
+elif echo "$NAME" | egrep -q -i '^mingw'; then
 	OS='MinGW'
-elif [[ $LOWERNAME =~ ^qnx ]]; then
+elif echo "$NAME" | egrep -q -i '^qnx'; then
 	OS='QNX'
-elif [[ $LOWERNAME =~ ^darwin ]]; then
+elif echo "$NAME" | egrep -q -i '^darwin'; then
 	OS='Darwin'
-elif [[ $LOWERNAME =~ ^freebsd ]]; then
+elif echo "$NAME" | egrep -q -i '^freebsd'; then
 	OS='FreeBSD'
-elif [[ $LOWERNAME =~ ^gnu ]]; then
+elif echo "$NAME" | egrep -q -i '^gnu'; then
 	OS='GNU'
-elif [[ $LOWERNAME =~ ^hp-ux ]]; then
+elif echo "$NAME" | egrep -q -i '^hp-ux'; then
 	OS='HPUX'
-elif [[ $LOWERNAME =~ ^aix ]]; then
+elif echo "$NAME" | egrep -q -i '^aix'; then
 	OS='AIX'
-elif [[ $LOWERNAME =~ ^irix ]]; then
+elif echo "$NAME" | egrep -q -i '^irix'; then
 	OS='IRIX'
-elif [[ $LOWERNAME =~ ^sunos ]]; then
+elif echo "$NAME" | egrep -q -i '^sunos'; then
 	OS='SunOS'
-elif [[ $LOWERNAME =~ ^ultrix ]]; then
+elif echo "$NAME" | egrep -q -i '^ultrix'; then
 	OS='Ultrix'
-elif [[ $LOWERNAME =~ ^bsd ]]; then
+elif echo "$NAME" | egrep -q -i '^bsd'; then
 	OS='BSD'
 else
 	OS='Unknown'
