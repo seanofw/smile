@@ -9,6 +9,18 @@ START_TEST_SUITE(LexerCoreTests)
 	SingleLineCommentsShouldBeSkipped2,
 	MultiLineCommentsShouldBeSkipped,
 	MultiLineCommentsShouldBeSkipped2,
+	HyphenSeparatorCommentsShouldBeSkipped,
+	EqualSeparatorCommentsShouldBeSkipped,
+	ShouldRecognizePrimitiveSingleCharacterTokens,
+	ShouldRecognizeSpecialSingleCharacterTokens,
+	ShouldRecognizeSingleCharacterAlphaIdents,
+	ShouldRecognizeSingleCharacterPunctIdents,
+	ShouldRecognizeSpecialCompoundPunctuation,
+	ShouldRecognizeGeneralPunctuativeForms,
+	ShouldHandleWeirdPunctuationCornerCases,
+	ShouldRecognizeSimpleAlphaIdentifiers,
+	ShouldRecognizeAlphaIdentsWithEmbeddedPunct,
+	ShouldRecognizeAlphaOpEqualsForms,
 }
 END_TEST_SUITE(LexerCoreTests)
 

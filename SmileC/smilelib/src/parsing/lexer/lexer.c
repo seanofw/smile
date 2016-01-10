@@ -381,7 +381,7 @@ retryAtSrc:
 
 		parseAsName :
 			// General identifier form.
-			lexer->src = src;
+			lexer->src = src-1;
 			return Lexer_ParseName(lexer, isFirstContentOnLine);
 
 		//--------------------------------------------------------------------------

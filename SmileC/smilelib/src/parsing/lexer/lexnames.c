@@ -41,12 +41,13 @@ static String ParseNameRaw(Lexer lexer, Bool *hasEscapes)
 
 readMoreName:
 	if (src < end) {
-		switch (ch = *src++) {
+		switch (ch = *src) {
 
 		case '\\':
-			if (src - 1 > start) {
-				StringBuilder_Append(namebuf, start, 0, src - 1 - start);
+			if (src > start) {
+				StringBuilder_Append(namebuf, start, 0, src - start);
 			}
+			src++;
 			code = Lexer_DecodeEscapeCode(&src, end, True);
 			StringBuilder_AppendUnicode(namebuf, code < 0 ? 0xFFFD : (UInt32)code);
 			*hasEscapes = True;
@@ -76,14 +77,14 @@ readMoreName:
 		case '*': case '+': case '<':
 		case '>': case '/': case '-':
 			// Notable omission: '=' is not a valid trailing character.
+			src++;
 			goto readMoreName;
 
 		default:
-			if (src - 1 > start) {
-				StringBuilder_Append(namebuf, start, 0, src - 1 - start);
+			if (src > start) {
+				StringBuilder_Append(namebuf, start, 0, src - start);
 			}
 			if (ch >= 128) {
-				src--;
 				code = String_ExtractUnicodeCharacterInternal(&src, end);
 				identifierCharacterKind = SmileIdentifierKind(code);
 				if ((identifierCharacterKind & (IDENTKIND_MIDDLELETTER | IDENTKIND_STARTLETTER | IDENTKIND_PUNCTUATION))) {
@@ -92,10 +93,13 @@ readMoreName:
 					goto readMoreName;
 				}
 			}
-			src--;
 			start = src;
 			break;
 		}
+	}
+
+	if (src > start) {
+		StringBuilder_Append(namebuf, start, 0, src - start);
 	}
 
 	// Convert whatever's left to the resulting identifier name.
@@ -116,6 +120,9 @@ Int Lexer_ParseName(Lexer lexer, Bool isFirstContentOnLine)
 	text = ParseNameRaw(lexer, &hasEscapes);
 	symbol = lexer->symbolTable != NULL ? SymbolTable_GetSymbol(lexer->symbolTable, text) : 0;
 	src = lexer->src;
+
+	token->text = text;
+	token->data.symbol = symbol;
 
 	return END_TOKEN(TOKEN_ALPHANAME);
 }
@@ -158,13 +165,14 @@ static String ParsePunctuationRaw(Lexer lexer, Bool *hasEscapes, Int *tokenKind)
 
 readMorePunctuation:
 	if (src < end) {
-		switch (ch = *src++) {
+		switch (ch = *src) {
 
 		case '\\':
-			if (src - 1 > start) {
-				StringBuilder_Append(namebuf, start, 0, src - 1 - start);
-				StringBuilder_AppendRepeat(escapebuf, 'a', src - 1 - start);
+			if (src > start) {
+				StringBuilder_Append(namebuf, start, 0, src - start);
+				StringBuilder_AppendRepeat(escapebuf, 'a', src - start);
 			}
+			src++;
 			code = Lexer_DecodeEscapeCode(&src, end, True);
 			StringBuilder_AppendUnicode(namebuf, code < 0 ? 0xFFFD : (UInt32)code);
 			StringBuilder_AppendByte(escapebuf, '\\');
@@ -176,15 +184,15 @@ readMorePunctuation:
 		case '@': case '%': case '^': case '&':
 		case '*': case '=': case '+': case '<':
 		case '>': case '/': case '-':
+			src++;
 			goto readMorePunctuation;
 
 		default:
-			if (src - 1 > start) {
-				StringBuilder_Append(namebuf, start, 0, src - 1 - start);
-				StringBuilder_AppendRepeat(escapebuf, 'a', src - 1 - start);
+			if (src > start) {
+				StringBuilder_Append(namebuf, start, 0, src - start);
+				StringBuilder_AppendRepeat(escapebuf, 'a', src - start);
 			}
 			if (ch >= 128) {
-				src--;
 				code = String_ExtractUnicodeCharacterInternal(&src, end);
 				identifierCharacterKind = SmileIdentifierKind(code);
 				if ((identifierCharacterKind & (IDENTKIND_MIDDLELETTER | IDENTKIND_PUNCTUATION))) {
@@ -194,10 +202,14 @@ readMorePunctuation:
 					goto readMorePunctuation;
 				}
 			}
-			src--;
 			start = src;
 			break;
 		}
+	}
+
+	if (src > start) {
+		StringBuilder_Append(namebuf, start, 0, src - start);
+		StringBuilder_AppendRepeat(escapebuf, 'a', src - start);
 	}
 
 	// Pull out whatever we collected.
@@ -205,7 +217,7 @@ readMorePunctuation:
 	escapeBytes = StringBuilder_GetBytes(escapebuf);
 	nameLen = StringBuilder_GetLength(namebuf);
 
-	// Recognize special forms upfront.
+	// Recognize certain special trailing-equals forms upfront.
 	switch (*nameBytes) {
 
 		case '=':
@@ -240,12 +252,7 @@ readMorePunctuation:
 			break;
 
 		case '<':
-			if (nameLen == 1) {				// "<"
-				lexer->src = src;
-				*tokenKind = TOKEN_LT;
-				return Lexer_NameLt;
-			}
-			else if (nameLen == 2 && nameBytes[1] == '=') {			// "<="
+			if (nameLen == 2 && nameBytes[1] == '=') {			// "<="
 				lexer->src = src;
 				*tokenKind = TOKEN_LE;
 				return Lexer_NameLe;
@@ -253,47 +260,10 @@ readMorePunctuation:
 			break;
 
 		case '>':
-			if (nameLen == 1) {				// ">"
-				lexer->src = src;
-				*tokenKind = TOKEN_GT;
-				return Lexer_NameGt;
-			}
-			else if (nameLen == 2 && nameBytes[1] == '=') {			// ">="
+			if (nameLen == 2 && nameBytes[1] == '=') {			// ">="
 				lexer->src = src;
 				*tokenKind = TOKEN_GE;
 				return Lexer_NameGe;
-			}
-			break;
-
-		case '+':
-			if (nameLen == 1) {				// "+"
-				lexer->src = src;
-				*tokenKind = TOKEN_PLUS;
-				return Lexer_NamePlus;
-			}
-			break;
-
-		case '-':
-			if (nameLen == 1) {				// "-"
-				lexer->src = src;
-				*tokenKind = TOKEN_MINUS;
-				return Lexer_NameMinus;
-			}
-			break;
-
-		case '*':
-			if (nameLen == 1) {				// "*"
-				lexer->src = src;
-				*tokenKind = TOKEN_STAR;
-				return Lexer_NameStar;
-			}
-			break;
-
-		case '/':
-			if (nameLen == 1) {				// "/"
-				lexer->src = src;
-				*tokenKind = TOKEN_SLASH;
-				return Lexer_NameSlash;
 			}
 			break;
 	}
@@ -311,6 +281,31 @@ readMorePunctuation:
 
 	// Convert whatever's left to the resulting identifier name.
 	lexer->src = src;
+
+	// Recognize certain special punctuation forms.
+	if (nameLen == 1) {
+		switch (*nameBytes) {
+		case '<':
+			*tokenKind = TOKEN_LT;
+			return Lexer_NameLt;
+		case '>':
+			*tokenKind = TOKEN_GT;
+			return Lexer_NameGt;
+		case '+':
+			*tokenKind = TOKEN_PLUS;
+			return Lexer_NamePlus;
+		case '-':
+			*tokenKind = TOKEN_MINUS;
+			return Lexer_NameMinus;
+		case '*':
+			*tokenKind = TOKEN_STAR;
+			return Lexer_NameStar;
+		case '/':
+			*tokenKind = TOKEN_SLASH;
+			return Lexer_NameSlash;
+		}
+	}
+
 	*tokenKind = TOKEN_PUNCTNAME;
 	return StringBuilder_ToString(namebuf);
 }
@@ -329,6 +324,9 @@ Int Lexer_ParsePunctuation(Lexer lexer, Bool isFirstContentOnLine)
 	text = ParsePunctuationRaw(lexer, &hasEscapes, &tokenKind);
 	symbol = lexer->symbolTable != NULL ? SymbolTable_GetSymbol(lexer->symbolTable, text) : 0;
 	src = lexer->src;
+
+	token->text = text;
+	token->data.symbol = symbol;
 
 	return END_TOKEN(tokenKind);
 }
