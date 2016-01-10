@@ -52,6 +52,11 @@ typedef struct {
 //-------------------------------------------------------------------------------------------------
 //  External parts of the implementation
 
+extern const char **RequestedTests;
+extern int NumRequestedTests;
+extern Bool QuietMode;
+extern Bool InteractiveMode;
+
 int RunTestInternal(const char *name, const char *file, int line, TestFuncInternal testFuncInternal);
 int FailTestInternal(const char *message);
 void AssertStringInternal(String str, const char *expectedString, Int expectedLength, const char *message);

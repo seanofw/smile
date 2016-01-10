@@ -27,6 +27,11 @@
 
 #include "testlib.h"
 
+const char **RequestedTests = NULL;
+int NumRequestedTests = 0;
+Bool QuietMode = False;
+Bool InteractiveMode = False;
+
 /// <summary>
 /// This jump-buffer is used to abort failed tests by unwinding the stack to the point
 /// before the test ran.
@@ -155,22 +160,35 @@ int RunTestInternal(const char *name, const char *file, int line, TestFuncIntern
 {
 	UInt64 startTicks, endTicks;
 
-	// First, print the name of the test we're about to run.
-	if (strlen(name) > 58) {
-		printf("  %.15s...%.40s: ", name, name + strlen(name) - 40);
-	}
-	else {
-		printf("  %s: ", name);
-	}
+	if (!QuietMode) {
+		// First, print the name of the test we're about to run.
+		if (strlen(name) > 58) {
+			printf("  %.15s...%.40s: ", name, name + strlen(name) - 40);
+		}
+		else {
+			printf("  %s: ", name);
+		}
 
-	// Flush it to the output, which ensures that it gets seen even if this test fails.
-	fflush(stdout);
+		// Flush it to the output, which ensures that it gets seen even if this test fails.
+		fflush(stdout);
+	}
 
 	// Set a marker so we can get back to this if-statement if the test fails.
 	if (setjmp(TestJmpBuf)) {
 
+		if (QuietMode)
+			printf("%s: ", name);
+
 		// Test failed, so print the message, and return that it failed.
 		PrintTestFailure(TestFailureMessage, file, line);
+
+		if (InteractiveMode) {
+			printf("Press any key to continue testing...");
+			fflush(stdout);
+			WaitForAnyKey();
+			printf("\n");
+		}
+
 		return 0;
 	}
 
@@ -180,7 +198,9 @@ int RunTestInternal(const char *name, const char *file, int line, TestFuncIntern
 	endTicks = Smile_GetTicks();
 
 	// Test succeeded, so print "OK", and return that it succeeded.
-	PrintTestSuccess(endTicks - startTicks);
+	if (!QuietMode)
+		PrintTestSuccess(endTicks - startTicks);
+
 	return 1;
 }
 
@@ -208,6 +228,25 @@ int FailTestInternal(const char *message)
 }
 
 /// <summary>
+/// Determine if this test suite is one we should be running or not.
+/// </summary>
+/// <param name="name">The name of a test suite.</param>
+/// <returns>True if that test suite is in the set of requested tests, False if it should be skipped.</returns>
+static Bool IsTestSuiteRequested(const char *name)
+{
+	int i;
+
+	if (NumRequestedTests <= 0) return True;
+
+	for (i = 0; i < NumRequestedTests; i++) {
+		if (!stricmp(name, RequestedTests[i]))
+			return True;
+	}
+
+	return False;
+}
+
+/// <summary>
 /// Run all the tests in the given test suite, and return a new collection of results for it.
 /// </summary>
 /// <param name="name">The name of the test suite.</param>
@@ -219,8 +258,18 @@ TestSuiteResults *RunTestSuiteInternal(const char *name, TestFunc *funcs, int nu
 	int numSuccesses, numFailures, succeeded, i;
 	TestSuiteResults *results;
 
-	printf("\x1B[0;1;37m Test suite %s: \x1B[0m\n", name);
-	fflush(stdout);
+	if (!IsTestSuiteRequested(name)) {
+		results = GC_MALLOC_STRUCT(TestSuiteResults);
+		if (results == NULL) Smile_Abort_OutOfMemory();
+		results->numFailures = 0;
+		results->numSuccesses = 0;
+		return results;
+	}
+
+	if (!QuietMode) {
+		printf("\x1B[0;1;37m Test suite %s: \x1B[0m\n", name);
+		fflush(stdout);
+	}
 
 	numSuccesses = 0, numFailures = 0;
 	for (i = 0; i < numFuncs; i++, funcs++) {
@@ -229,7 +278,8 @@ TestSuiteResults *RunTestSuiteInternal(const char *name, TestFunc *funcs, int nu
 		else numFailures++;
 	}
 
-	printf("\n");
+	if (!QuietMode)
+		printf("\n");
 
 	results = GC_MALLOC_STRUCT(TestSuiteResults);
 	if (results == NULL) Smile_Abort_OutOfMemory();
@@ -244,9 +294,11 @@ TestSuiteResults *RunTestSuiteInternal(const char *name, TestFunc *funcs, int nu
 /// <param name="results">The results to print.</param>
 void DisplayTestSuiteResults(TestSuiteResults *results)
 {
-	printf("\x1B[0;1;37m Test suite results:  \x1B[32m%d\x1B[37m tests succeeded,%s %d\x1B[37m tests failed. \x1B[0m\n\n",
-		results->numSuccesses, results->numFailures > 0 ? " \x1B[1;33;41m" : "\x1B[1;32m", results->numFailures);
-	fflush(stdout);
+	if (!QuietMode || results->numFailures > 0) {
+		printf("\x1B[0;1;37m Test suite results:  \x1B[32m%d\x1B[37m tests succeeded,%s %d\x1B[37m tests failed. \x1B[0m\n\n",
+			results->numSuccesses, results->numFailures > 0 ? " \x1B[1;33;41m" : "\x1B[1;32m", results->numFailures);
+		fflush(stdout);
+	}
 }
 
 /// <summary>

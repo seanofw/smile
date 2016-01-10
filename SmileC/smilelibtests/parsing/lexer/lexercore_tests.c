@@ -19,7 +19,7 @@
 
 #include <smile/parsing/lexer.h>
 
-TEST_SUITE(_LexerCoreTests)
+TEST_SUITE(LexerCoreTests)
 
 STATIC_STRING(TestFilename, "test.sm");
 

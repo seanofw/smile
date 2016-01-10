@@ -73,18 +73,32 @@ foreach $testsuite (@testsuites) {
 }
 
 print DEST "\r\n"
-			. "void RunAllTests()\r\n"
-			. "{\r\n"
-			. "\tTestSuiteResults *results = CreateEmptyTestSuiteResults();\r\n"
-			. "\r\n";
+	. "void RunAllTests()\r\n"
+	. "{\r\n"
+	. "\tTestSuiteResults *results = CreateEmptyTestSuiteResults();\r\n"
+	. "\r\n";
 
 foreach $testsuite (@testsuites) {
 	print DEST "\tRUN_TEST_SUITE(results, $testsuite);\r\n";
 }
 
 print DEST "\r\n"
-			. "\tDisplayTestSuiteResults(results);\r\n"
-			. "}\r\n"
-			. "\r\n";
+	. "\tDisplayTestSuiteResults(results);\r\n"
+	. "}\r\n"
+	. "\r\n";
+
+print DEST "\r\n"
+	. "const char *TestSuiteNames[] = {\r\n";
+
+foreach $testsuite (@testsuites) {
+	print DEST "\t\"$testsuite\",\r\n";
+}
+
+print DEST "};\r\n"
+	. "\r\n";
+
+print DEST "\r\n"
+	. "int NumTestSuites = " . @testsuites . ";\r\n"
+	. "\r\n";
 
 close DEST;

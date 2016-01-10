@@ -46,6 +46,7 @@ Inline Array Array_Create(UInt16 itemSize, Int max, Bool isAtomic)
 	Array array = (Array)GC_MALLOC_STRUCT(struct ArrayInt);
 	if (array == NULL) Smile_Abort_OutOfMemory();
 	Array_Init(array, itemSize, max, isAtomic);
+	return array;
 }
 
 Inline void Array_Resize(Array array, Int newMax)
@@ -61,6 +62,11 @@ Inline void Array_Resize(Array array, Int newMax)
 Inline void *Array_At(Array array, Int index)
 {
 	return ((Byte *)array->data) + index * array->itemSize;
+}
+
+Inline Int Array_Length(Array array)
+{
+	return array->length;
 }
 
 Inline void *Array_Push(Array array)

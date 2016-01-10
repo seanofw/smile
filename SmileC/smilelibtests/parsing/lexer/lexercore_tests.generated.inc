@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 
-START_TEST_SUITE(_LexerCoreTests)
+START_TEST_SUITE(LexerCoreTests)
 {
 	EmptyInputResultsInEoi,
 	EoiShouldStayEoiOnceYouReachIt,
@@ -10,5 +10,5 @@ START_TEST_SUITE(_LexerCoreTests)
 	MultiLineCommentsShouldBeSkipped,
 	MultiLineCommentsShouldBeSkipped2,
 }
-END_TEST_SUITE(_LexerCoreTests)
+END_TEST_SUITE(LexerCoreTests)
 

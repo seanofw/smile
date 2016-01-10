@@ -19,17 +19,94 @@
 
 extern void RunAllTests();
 
-int main()
+extern const char *TestSuiteNames[];
+extern int NumTestSuites;
+
+static void PrintHelp()
 {
-	printf(" Initializing the Smile runtime environment.\n");
+	int i;
+
+	printf(
+		"Usage: smilelibtests [options] test1 test2 test3\n"
+		"\n"
+		"Options:\n"
+		"  -h --help         You're looking at it.\n"
+		"  -q --quiet        Don't display successful tests; only show errors.\n"
+		"  -i --interactive  Wait for user input when a test fails or after a run.\n"
+		"\n"
+		"Test fixture names:\n"
+	);
+
+	for (i = 0; i < NumTestSuites; i++) {
+		printf("  %s\n", TestSuiteNames[i]);
+	}
+
+	printf(
+		"\n"
+		"If no tests are explicitly named, all tests will be run.\n"
+		"\n"
+	);
+}
+
+static Bool ParseCommandLine(int argc, const char **argv)
+{
+	int i;
+	Array array = NULL;
+
+	for (i = 1; i < argc; i++) {
+		if (argv[i][0] == '-') {
+			if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help") || !strcmp(argv[i], "-?")) {
+				PrintHelp();
+				return False;
+			}
+			else if (!strcmp(argv[i], "-q") || !strcmp(argv[i], "--quiet")) {
+				QuietMode = True;
+			}
+			else if (!strcmp(argv[i], "-i") || !strcmp(argv[i], "--interactive")) {
+				InteractiveMode = True;
+			}
+			else {
+				fprintf(stderr, "Unknown command-line argument \"%s\".\n", argv[i]);
+			}
+		}
+		else {
+			if (array == NULL)
+				array = Array_Create(sizeof(const char *), 16, False);
+			*(const char **)Array_Push(array) = argv[i];
+		}
+	}
+
+	if (array != NULL) {
+		RequestedTests = (const char **)array->data;
+		NumRequestedTests = (int)array->length;
+	}
+	else {
+		RequestedTests = NULL;
+		NumRequestedTests = 0;
+	}
+
+	return True;
+}
+
+int main(int argc, const char **argv)
+{
+	if (!ParseCommandLine(argc, argv))
+		return -1;
+
+	if (!QuietMode)
+		printf(" Initializing the Smile runtime environment.\n");
 
 	Smile_Init();
 
-	printf(" Running all unit tests...\n\n");
+	if (!QuietMode)
+		printf(" Running all unit tests...\n\n");
+
 	RunAllTests();
 
-	printf(" Press any key to exit the test runner. ");
-	WaitForAnyKey();
+	if (InteractiveMode) {
+		printf(" Press any key to exit the test runner. ");
+		WaitForAnyKey();
+	}
 
 	Smile_End();
 
