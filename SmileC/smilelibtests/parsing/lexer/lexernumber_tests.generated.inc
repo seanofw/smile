@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 2b3515a603a58ef060568a8397becd4f
+// SourceHash: 23f8e0f487b09e3fbc4e361f2afc04a1
 
 START_TEST_SUITE(LexerNumberTests)
 {
@@ -8,6 +8,10 @@ START_TEST_SUITE(LexerNumberTests)
 	ShouldRecognizeHexZero,
 	ShouldRecognizeFloatZero,
 	ShouldRecognizeRealZero,
+	ShouldRecognizeSingleDigits,
+	ShouldRecognizeSingleHexDigits,
+	ShouldRecognizeSingleFloatDigits,
+	ShouldRecognizeSingleRealDigits,
 }
 END_TEST_SUITE(LexerNumberTests)
 

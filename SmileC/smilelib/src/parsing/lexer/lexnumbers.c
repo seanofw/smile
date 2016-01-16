@@ -219,6 +219,7 @@ static Bool ParseDecimalInteger(Lexer lexer, UInt64 *result)
 		}
 
 		value += digit;
+		src++;
 	}
 
 	*result = value;
@@ -543,6 +544,7 @@ Int Lexer_ParseDigit(Lexer lexer, Bool isFirstContentOnLine)
 	start = src - 1;
 
 	// Decimal integer, or possibly a real value (if we find a '.').
+	lexer->src = start;
 	if (!ParseDecimalInteger(lexer, &value)) {
 		lexer->token->text = IllegalDecimalIntegerMessage;
 		return END_TOKEN(TOKEN_ERROR);
