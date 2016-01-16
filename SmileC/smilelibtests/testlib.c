@@ -45,6 +45,18 @@ static jmp_buf TestJmpBuf;
 static const char *TestFailureMessage = NULL;
 
 /// <summary>
+/// This exists to temporarily hold the test-failure file across the long-jump that
+/// unwinds the stack.
+/// </summary>
+static const char *TestFailureFile = NULL;
+
+/// <summary>
+/// This exists to temporarily hold the test-failure line across the long-jump that
+/// unwinds the stack.
+/// </summary>
+static int TestFailureLine = 0;
+
+/// <summary>
 /// Assert that the given string is a valid string and matches the given text and length.
 /// This will fail the current unit test if this string does not match.
 /// </summary>
@@ -54,33 +66,48 @@ static const char *TestFailureMessage = NULL;
 /// <param name="message">A message to display to the user to explain why the test failed.</param>
 void AssertStringInternal(String str, const char *expectedString, Int expectedLength, const char *message)
 {
+	AssertStringWithLineInternal(str, expectedString, expectedLength, message, NULL, 0);
+}
+
+/// <summary>
+/// Assert that the given string is a valid string and matches the given text and length.
+/// This will fail the current unit test if this string does not match.
+/// </summary>
+/// <param name="str">The string to validate.</param>
+/// <param name="expectedString">The expected contents of that string.</param>
+/// <param name="expectedLength">The expected length of that string.</param>
+/// <param name="message">A message to display to the user to explain why the test failed.</param>
+/// <param name="file">The file in which a failure would be considered to have occured.</param>
+/// <param name="line">The line at which a failure would be considered to have occured.</param>
+void AssertStringWithLineInternal(String str, const char *expectedString, Int expectedLength, const char *message, const char *file, int line)
+{
 	char buffer[1024];
 
 	if (str == NULL) {
 		sprintf(buffer, "%s: actual string is a NULL pointer", message);
-		FailTestInternal(buffer);
+		FailTestWithLineInternal(buffer, file, line);
 	}
 
 	if (String_Length(str) != expectedLength) {
 		sprintf(buffer, "%s: actual string length is %d", message, (int)String_Length(str));
-		FailTestInternal(buffer);
+		FailTestWithLineInternal(buffer, file, line);
 	}
 
 	if (String_GetBytes(str)[expectedLength] != '\0') {
 		sprintf(buffer, "%s: actual string is missing '\\0' after end", message);
-		FailTestInternal(buffer);
+		FailTestWithLineInternal(buffer, file, line);
 	}
 
 	if (expectedLength > 0) {
 		if (MemCmp(String_GetBytes(str), expectedString, expectedLength)) {
 			sprintf(buffer, "%s: actual string bytes do not match", message);
-			FailTestInternal(buffer);
+			FailTestWithLineInternal(buffer, file, line);
 		}
 	}
 	else {
 		if (str != String_Empty) {
 			sprintf(buffer, "%s: actual string is not the String_Empty singleton", message);
-			FailTestInternal(buffer);
+			FailTestWithLineInternal(buffer, file, line);
 		}
 	}
 }
@@ -180,7 +207,9 @@ int RunTestInternal(const char *name, const char *file, int line, TestFuncIntern
 			printf("%s: ", name);
 
 		// Test failed, so print the message, and return that it failed.
-		PrintTestFailure(TestFailureMessage, file, line);
+		PrintTestFailure(TestFailureMessage,
+			TestFailureFile != NULL ? TestFailureFile : file,
+			TestFailureFile != NULL ? TestFailureLine : line);
 
 		if (InteractiveMode) {
 			printf("Press any key to continue testing...");
@@ -211,6 +240,18 @@ int RunTestInternal(const char *name, const char *file, int line, TestFuncIntern
 /// <returns>Never returns.</returns>
 int FailTestInternal(const char *message)
 {
+	return FailTestWithLineInternal(message, NULL, 0);
+}
+
+/// <summary>
+/// Cause the current test to fail, aborting all successive execution.
+/// </summary>
+/// <param name="message">The message to display to the user explaining why this test failed.</param>
+/// <param name="file">The file in which the failure occurred.</param>
+/// <param name="line">The line at which the failure occurred.</param>
+/// <returns>Never returns.</returns>
+int FailTestWithLineInternal(const char *message, const char *file, int line)
+{
 	char *safeMessage;
 
 	// Save the message so the test runner can find it (and save it in case it gets stomped on).
@@ -219,6 +260,8 @@ int FailTestInternal(const char *message)
 		Smile_Abort_OutOfMemory();
 	strcpy(safeMessage, message);
 	TestFailureMessage = safeMessage;
+	TestFailureFile = file;
+	TestFailureLine = line;
 
 	// Long-jump back to abort the test.  We pass '1', which is what will be returned by the
 	// original setjmp() call.

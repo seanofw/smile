@@ -59,7 +59,9 @@ extern Bool InteractiveMode;
 
 int RunTestInternal(const char *name, const char *file, int line, TestFuncInternal testFuncInternal);
 int FailTestInternal(const char *message);
+int FailTestWithLineInternal(const char *message, const char *file, int line);
 void AssertStringInternal(String str, const char *expectedString, Int expectedLength, const char *message);
+void AssertStringWithLineInternal(String str, const char *expectedString, Int expectedLength, const char *message, const char *file, int line);
 TestSuiteResults *RunTestSuiteInternal(const char *name, TestFunc *funcs, int numFuncs);
 void DisplayTestSuiteResults(TestSuiteResults *results);
 void WaitForAnyKey(void);
@@ -86,7 +88,7 @@ void WaitForAnyKey(void);
 /// <param name="__n__">The invariant to assert.  If this results in zero or NULL,
 /// the test will be aborted as a failure.</param>
 #define ASSERT(__n__) \
-	((!(__n__)) ? FailTestInternal(#__n__) : 0)
+	((!(__n__)) ? FailTestWithLineInternal(#__n__, __FILE__, __LINE__) : 0)
 
 /// <summary>
 /// Assert that the given string is a valid string and matches the given text and length.
@@ -96,7 +98,7 @@ void WaitForAnyKey(void);
 /// <param name="expectedString">The expected contents of that string.</param>
 /// <param name="expectedLength">The expected length of that string.</param>
 #define ASSERT_STRING(__str__, __expectedString__, __expectedLength__) \
-	AssertStringInternal(__str__, __expectedString__, __expectedLength__, #__str__ " is not correct (line " TOSTRING_AT_COMPILE_TIME(__LINE__) ")")
+	AssertStringWithLineInternal(__str__, __expectedString__, __expectedLength__, #__str__ " is not correct (line " TOSTRING_AT_COMPILE_TIME(__LINE__) ")", __FILE__, __LINE__)
 
 /// <summary>
 /// Immediately pass (as good) the current unit test.  This stops the test's
@@ -111,7 +113,7 @@ void WaitForAnyKey(void);
 /// </summary>
 /// <param name="__message__" type="const char *">A message string to display to the user as to why the test failed.</param>
 #define FAIL_TEST(__message__) \
-		FailTestInternal(__message__)
+		FailTestWithLineInternal(__message__, __FILE__, __LINE__)
 
 /// <summary>
 /// Declare the end the current unit test.
