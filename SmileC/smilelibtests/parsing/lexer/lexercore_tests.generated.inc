@@ -1,4 +1,6 @@
 // This file was auto-generated.  Do not edit!
+//
+// SourceHash: 841abb0c1e9a3b3e3d175d65cac1d343
 
 START_TEST_SUITE(LexerCoreTests)
 {
@@ -11,24 +13,6 @@ START_TEST_SUITE(LexerCoreTests)
 	MultiLineCommentsShouldBeSkipped2,
 	HyphenSeparatorCommentsShouldBeSkipped,
 	EqualSeparatorCommentsShouldBeSkipped,
-	ShouldRecognizePrimitiveSingleCharacterTokens,
-	ShouldRecognizeSpecialSingleCharacterTokens,
-	ShouldRecognizeSingleCharacterPunctIdents,
-	ShouldRecognizeSpecialCompoundPunctuation,
-	ShouldRecognizeGeneralPunctuativeForms,
-	ShouldHandleWeirdPunctuationCornerCases,
-	ShouldRecognizeSingleCharacterAlphaIdents,
-	ShouldRecognizeSimpleAlphaIdentifiers,
-	ShouldRecognizeAlphaIdentsWithEmbeddedPunct,
-	ShouldRecognizeAlphaOpEqualsForms,
-	ShouldRecognizeKeywords,
-	ShouldNotRecognizeEmbeddedKeywords,
-	ShouldRecognizeCharacters,
-	ShouldRecognizeSingleLineRawStrings,
-	ShouldRecognizeMultiLineRawStrings,
-	ShouldRecognizeTheEmptyString,
-	ShouldRecognizeSingleLineDynamicStrings,
-	ShouldRecognizeMultiLineDynamicStrings,
 }
 END_TEST_SUITE(LexerCoreTests)
 

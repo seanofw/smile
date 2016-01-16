@@ -1,4 +1,6 @@
 // This file was auto-generated.  Do not edit!
+//
+// SourceHash: 36911d83b4fa7476e787bb6ee68ae9c3
 
 START_TEST_SUITE(StringHtmlTests)
 {

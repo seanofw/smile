@@ -118,6 +118,11 @@
     <ClCompile Include="numeric\real32_tests.c" />
     <ClCompile Include="numeric\real64_tests.c" />
     <ClCompile Include="parsing\lexer\lexercore_tests.c" />
+    <ClCompile Include="parsing\lexer\lexeridentifier_tests.c" />
+    <ClCompile Include="parsing\lexer\lexernumber_tests.c" />
+    <ClCompile Include="parsing\lexer\lexerpunctuation_tests.c" />
+    <ClCompile Include="parsing\lexer\lexerstring_tests.c" />
+    <ClCompile Include="parsing\lexer\lexerunicode_tests.c" />
     <ClCompile Include="stdafx.c" />
     <ClCompile Include="string\stringcore_tests.c" />
     <ClCompile Include="string\stringextra_tests.c" />
@@ -140,6 +145,11 @@
     <None Include="numeric\real32_tests.generated.inc" />
     <None Include="numeric\real64_tests.generated.inc" />
     <None Include="parsing\lexer\lexercore_tests.generated.inc" />
+    <None Include="parsing\lexer\lexeridentifier_tests.generated.inc" />
+    <None Include="parsing\lexer\lexernumber_tests.generated.inc" />
+    <None Include="parsing\lexer\lexerpunctuation_tests.generated.inc" />
+    <None Include="parsing\lexer\lexerstring_tests.generated.inc" />
+    <None Include="parsing\lexer\lexerunicode_tests.generated.inc" />
     <None Include="string\stringcore_tests.generated.inc" />
     <None Include="string\stringextra_tests.generated.inc" />
     <None Include="string\stringformat_tests.generated.inc" />

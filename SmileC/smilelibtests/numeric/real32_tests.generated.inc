@@ -1,4 +1,6 @@
 // This file was auto-generated.  Do not edit!
+//
+// SourceHash: 66327809a475d21bee3944c039066c56
 
 START_TEST_SUITE(Real32Tests)
 {

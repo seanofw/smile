@@ -1,4 +1,6 @@
 // This file was auto-generated.  Do not edit!
+//
+// SourceHash: 487bbece88f9867ea696a932e0f89d2c
 
 START_TEST_SUITE(StringUnicodeTests)
 {

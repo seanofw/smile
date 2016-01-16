@@ -1,4 +1,6 @@
 // This file was auto-generated.  Do not edit!
+//
+// SourceHash: 54044127e8a1e799571812f61ae60bff
 
 START_TEST_SUITE(StringIntDictTests)
 {

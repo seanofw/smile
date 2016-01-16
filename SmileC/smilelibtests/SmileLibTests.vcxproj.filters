@@ -47,6 +47,17 @@
     <ClCompile Include="parsing\lexer\lexercore_tests.c">
       <Filter>parsing\lexer</Filter>
     </ClCompile>
+    <ClCompile Include="parsing\lexer\lexeridentifier_tests.c">
+      <Filter>parsing\lexer</Filter>
+    </ClCompile>
+    <ClCompile Include="parsing\lexer\lexerpunctuation_tests.c">
+      <Filter>parsing\lexer</Filter>
+    </ClCompile>
+    <ClCompile Include="parsing\lexer\lexerstring_tests.c">
+      <Filter>parsing\lexer</Filter>
+    </ClCompile>
+    <ClCompile Include="parsing\lexer\lexernumber_tests.c" />
+    <ClCompile Include="parsing\lexer\lexerunicode_tests.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -120,6 +131,11 @@
     <None Include="env\symboltable_tests.generated.inc">
       <Filter>env</Filter>
     </None>
+    <None Include="parsing\lexer\lexeridentifier_tests.generated.inc" />
+    <None Include="parsing\lexer\lexernumber_tests.generated.inc" />
+    <None Include="parsing\lexer\lexerpunctuation_tests.generated.inc" />
+    <None Include="parsing\lexer\lexerstring_tests.generated.inc" />
+    <None Include="parsing\lexer\lexerunicode_tests.generated.inc" />
   </ItemGroup>
   <ItemGroup>
     <Media Include="..\smilelib\bin\$(Platform)-$(Configuration)\SmileLib.dll" />
