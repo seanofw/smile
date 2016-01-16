@@ -632,18 +632,18 @@ Int String_LastIndexOfChar(const String str, Byte ch, Int start)
 Int String_IndexOfAnyChar(const String str, const Byte *chars, Int numChars, Int start)
 {
 	const struct StringInt *s;
-	Byte *text;
+	const Byte *text;
 	Byte ch;
 	Int end, i;
+
+	if (start < 0) start = 0;
 
 	s = (const struct StringInt *)str;
 	text = s->text;
 
-	for (end = s->length; start < end; start++)
-	{
+	for (end = s->length; start < end; start++) {
 		ch = text[start];
-		for (i = 0; i < numChars; i++)
-		{
+		for (i = 0; i < numChars; i++) {
 			if (ch == chars[i])
 				return start;
 		}

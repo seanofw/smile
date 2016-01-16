@@ -13,14 +13,22 @@ START_TEST_SUITE(LexerCoreTests)
 	EqualSeparatorCommentsShouldBeSkipped,
 	ShouldRecognizePrimitiveSingleCharacterTokens,
 	ShouldRecognizeSpecialSingleCharacterTokens,
-	ShouldRecognizeSingleCharacterAlphaIdents,
 	ShouldRecognizeSingleCharacterPunctIdents,
 	ShouldRecognizeSpecialCompoundPunctuation,
 	ShouldRecognizeGeneralPunctuativeForms,
 	ShouldHandleWeirdPunctuationCornerCases,
+	ShouldRecognizeSingleCharacterAlphaIdents,
 	ShouldRecognizeSimpleAlphaIdentifiers,
 	ShouldRecognizeAlphaIdentsWithEmbeddedPunct,
 	ShouldRecognizeAlphaOpEqualsForms,
+	ShouldRecognizeKeywords,
+	ShouldNotRecognizeEmbeddedKeywords,
+	ShouldRecognizeCharacters,
+	ShouldRecognizeSingleLineRawStrings,
+	ShouldRecognizeMultiLineRawStrings,
+	ShouldRecognizeTheEmptyString,
+	ShouldRecognizeSingleLineDynamicStrings,
+	ShouldRecognizeMultiLineDynamicStrings,
 }
 END_TEST_SUITE(LexerCoreTests)
 

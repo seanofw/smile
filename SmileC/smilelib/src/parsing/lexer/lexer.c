@@ -27,6 +27,26 @@
 
 STATIC_STRING(IllegalCharacterMessage, "Unknown or invalid character (character code \"%S\")");
 
+STATIC_STRING(KeywordAnd, "and");
+STATIC_STRING(KeywordCatch, "catch");
+STATIC_STRING(KeywordDo, "do");
+STATIC_STRING(KeywordElse, "else");
+STATIC_STRING(KeywordIf, "if");
+STATIC_STRING(KeywordIs, "is");
+STATIC_STRING(KeywordNew, "new");
+STATIC_STRING(KeywordNot, "not");
+STATIC_STRING(KeywordOr, "or");
+STATIC_STRING(KeywordReturn, "return");
+STATIC_STRING(KeywordThen, "then");
+STATIC_STRING(KeywordTill, "till");
+STATIC_STRING(KeywordTry, "try");
+STATIC_STRING(KeywordTypeof, "typeof");
+STATIC_STRING(KeywordUnless, "unless");
+STATIC_STRING(KeywordUntil, "until");
+STATIC_STRING(KeywordVar, "var");
+STATIC_STRING(KeywordWhen, "when");
+STATIC_STRING(KeywordWhile, "while");
+
 /// <summary>
 /// Create a new instance of a lexical analyzer for the given input text.
 /// </summary>
@@ -124,7 +144,7 @@ retryAtSrc:
 		case 0xFEFF:
 			// Unicode byte-order mark (zero-width non-breaking space).
 			hasPrecedingWhitespace = True;
-			goto retry;
+			goto retryAtSrc;
 
 		case '\x00': case '\x01': case '\x02': case '\x03':
 		case '\x04': case '\x05': case '\x06': case '\x07':
@@ -236,6 +256,7 @@ retryAtSrc:
 		case 'a':
 			if (IS_KEYWORD_CHAR(0, 'n') && IS_KEYWORD_CHAR(1, 'd') && IS_KEYWORD_END(2)) {
 				src += 2;
+				token->text = KeywordAnd;
 				return SIMPLE_TOKEN(src - 3, TOKEN_AND);
 			}
 			goto parseAsName;
@@ -244,6 +265,7 @@ retryAtSrc:
 			if (IS_KEYWORD_CHAR(0, 'a') && IS_KEYWORD_CHAR(1, 't') && IS_KEYWORD_CHAR(2, 'c')
 				&& IS_KEYWORD_CHAR(3, 'h') && IS_KEYWORD_END(4)) {
 				src += 4;
+				token->text = KeywordCatch;
 				return SIMPLE_TOKEN(src - 5, TOKEN_CATCH);
 			}
 			goto parseAsName;
@@ -251,6 +273,7 @@ retryAtSrc:
 		case 'd':
 			if (IS_KEYWORD_CHAR(0, 'o') && IS_KEYWORD_END(1)) {
 				src += 1;
+				token->text = KeywordDo;
 				return SIMPLE_TOKEN(src - 2, TOKEN_DO);
 			}
 			goto parseAsName;
@@ -258,6 +281,7 @@ retryAtSrc:
 		case 'e':
 			if (IS_KEYWORD_CHAR(0, 'l') && IS_KEYWORD_CHAR(1, 's') && IS_KEYWORD_CHAR(2, 'e') && IS_KEYWORD_END(3)) {
 				src += 3;
+				token->text = KeywordElse;
 				return SIMPLE_TOKEN(src - 4, TOKEN_ELSE);
 			}
 			goto parseAsName;
@@ -265,10 +289,12 @@ retryAtSrc:
 		case 'i':
 			if (IS_KEYWORD_CHAR(0, 'f') && IS_KEYWORD_END(1)) {
 				src += 1;
+				token->text = KeywordIf;
 				return SIMPLE_TOKEN(src - 2, TOKEN_IF);
 			}
 			else if (IS_KEYWORD_CHAR(0, 's') && IS_KEYWORD_END(1)) {
 				src += 1;
+				token->text = KeywordIs;
 				return SIMPLE_TOKEN(src - 2, TOKEN_IS);
 			}
 			goto parseAsName;
@@ -276,10 +302,12 @@ retryAtSrc:
 		case 'n':
 			if (IS_KEYWORD_CHAR(0, 'e') && IS_KEYWORD_CHAR(1, 'w') && IS_KEYWORD_END(2)) {
 				src += 2;
+				token->text = KeywordNew;
 				return SIMPLE_TOKEN(src - 3, TOKEN_NEW);
 			}
 			else if (IS_KEYWORD_CHAR(0, 'o') && IS_KEYWORD_CHAR(1, 't') && IS_KEYWORD_END(2)) {
 				src += 2;
+				token->text = KeywordNot;
 				return SIMPLE_TOKEN(src - 3, TOKEN_NOT);
 			}
 			goto parseAsName;
@@ -287,6 +315,7 @@ retryAtSrc:
 		case 'o':
 			if (IS_KEYWORD_CHAR(0, 'r') && IS_KEYWORD_END(1)) {
 				src += 1;
+				token->text = KeywordOr;
 				return SIMPLE_TOKEN(src - 2, TOKEN_OR);
 			}
 			goto parseAsName;
@@ -295,6 +324,7 @@ retryAtSrc:
 			if (IS_KEYWORD_CHAR(0, 'e') && IS_KEYWORD_CHAR(1, 't') && IS_KEYWORD_CHAR(2, 'u')
 				&& IS_KEYWORD_CHAR(3, 'r') && IS_KEYWORD_CHAR(4, 'n') && IS_KEYWORD_END(5)) {
 				src += 5;
+				token->text = KeywordReturn;
 				return SIMPLE_TOKEN(src - 6, TOKEN_RETURN);
 			}
 			goto parseAsName;
@@ -307,18 +337,21 @@ retryAtSrc:
 				case 'h':
 					if (IS_KEYWORD_CHAR(1, 'e') && IS_KEYWORD_CHAR(2, 'n') && IS_KEYWORD_END(3)) {
 						src += 3;
+						token->text = KeywordThen;
 						return SIMPLE_TOKEN(src - 4, TOKEN_THEN);
 					}
 					goto parseAsName;
 				case 'i':
 					if (IS_KEYWORD_CHAR(1, 'l') && IS_KEYWORD_CHAR(2, 'l') && IS_KEYWORD_END(3)) {
 						src += 3;
+						token->text = KeywordTill;
 						return SIMPLE_TOKEN(src - 4, TOKEN_TILL);
 					}
 					goto parseAsName;
 				case 'r':
 					if (IS_KEYWORD_CHAR(1, 'y') && IS_KEYWORD_END(2)) {
 						src += 2;
+						token->text = KeywordTry;
 						return SIMPLE_TOKEN(src - 3, TOKEN_TRY);
 					}
 					goto parseAsName;
@@ -326,6 +359,7 @@ retryAtSrc:
 					if (IS_KEYWORD_CHAR(1, 'p') && IS_KEYWORD_CHAR(2, 'e') && IS_KEYWORD_CHAR(3, 'o')
 						&& IS_KEYWORD_CHAR(4, 'f') && IS_KEYWORD_END(5)) {
 						src += 5;
+						token->text = KeywordTypeof;
 						return SIMPLE_TOKEN(src - 6, TOKEN_TYPEOF);
 					}
 					goto parseAsName;
@@ -338,11 +372,13 @@ retryAtSrc:
 				if (IS_KEYWORD_CHAR(1, 't') && IS_KEYWORD_CHAR(2, 'i')
 					&& IS_KEYWORD_CHAR(3, 'l') && IS_KEYWORD_END(4)) {
 					src += 4;
+					token->text = KeywordUntil;
 					return SIMPLE_TOKEN(src - 5, TOKEN_UNTIL);
 				}
 				else if (IS_KEYWORD_CHAR(1, 'l') && IS_KEYWORD_CHAR(2, 'e')
 					&& IS_KEYWORD_CHAR(3, 's') && IS_KEYWORD_CHAR(4, 's') && IS_KEYWORD_END(5)) {
 					src += 5;
+					token->text = KeywordUnless;
 					return SIMPLE_TOKEN(src - 6, TOKEN_UNLESS);
 				}
 			}
@@ -351,6 +387,7 @@ retryAtSrc:
 		case 'v':
 			if (IS_KEYWORD_CHAR(0, 'a') && IS_KEYWORD_CHAR(1, 'r') && IS_KEYWORD_END(2)) {
 				src += 2;
+				token->text = KeywordVar;
 				return SIMPLE_TOKEN(src - 3, TOKEN_VAR);
 			}
 			goto parseAsName;
@@ -359,10 +396,12 @@ retryAtSrc:
 			if (IS_KEYWORD_CHAR(0, 'h')) {
 				if (IS_KEYWORD_CHAR(1, 'i') && IS_KEYWORD_CHAR(2, 'l') && IS_KEYWORD_CHAR(3, 'e') && IS_KEYWORD_END(4)) {
 					src += 4;
+					token->text = KeywordWhile;
 					return SIMPLE_TOKEN(src - 5, TOKEN_WHILE);
 				}
 				else if (IS_KEYWORD_CHAR(1, 'e') && IS_KEYWORD_CHAR(2, 'n') && IS_KEYWORD_END(3)) {
-						src += 3;
+					src += 3;
+					token->text = KeywordWhen;
 					return SIMPLE_TOKEN(src - 4, TOKEN_WHEN);
 				}
 			}
