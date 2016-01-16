@@ -44,11 +44,113 @@ static Lexer Setup(const char *string)
 }
 
 //-------------------------------------------------------------------------------------------------
-//  Numeric forms.
+//  Integer forms.
 
 START_TEST(ShouldRecognizeZero)
 {
 	Lexer lexer = Setup("  \t  0  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER32);
+	ASSERT(lexer->token->data.i == 0);
+
+	lexer = Setup("  \t  0l  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
+	ASSERT(lexer->token->data.int64 == 0);
+
+	lexer = Setup("  \t  0L  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
+	ASSERT(lexer->token->data.int64 == 0);
+
+	lexer = Setup("  \t  0h  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER16);
+	ASSERT(lexer->token->data.i == 0);
+
+	lexer = Setup("  \t  0H  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER16);
+	ASSERT(lexer->token->data.i == 0);
+
+	lexer = Setup("  \t  0x  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_BYTE);
+	ASSERT(lexer->token->data.i == 0);
+
+	lexer = Setup("  \t  0X  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_BYTE);
+	ASSERT(lexer->token->data.i == 0);
+}
+END_TEST
+
+START_TEST(ShouldRecognizeHexZero)
+{
+	Lexer lexer = Setup("  \t  0x0  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER32);
+	ASSERT(lexer->token->data.i == 0);
+
+	lexer = Setup("  \t  0x0l  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
+	ASSERT(lexer->token->data.int64 == 0);
+
+	lexer = Setup("  \t  0x0L  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
+	ASSERT(lexer->token->data.int64 == 0);
+
+	lexer = Setup("  \t  0x0h  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER16);
+	ASSERT(lexer->token->data.i == 0);
+
+	lexer = Setup("  \t  0x0H  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER16);
+	ASSERT(lexer->token->data.i == 0);
+
+	lexer = Setup("  \t  0x0x  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_BYTE);
+	ASSERT(lexer->token->data.i == 0);
+
+	lexer = Setup("  \t  0x0X  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_BYTE);
+	ASSERT(lexer->token->data.i == 0);
+}
+END_TEST
+
+START_TEST(ShouldRecognizeFloatZero)
+{
+	Lexer lexer = Setup("  \t  0.0f  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_FLOAT64);
+	ASSERT(lexer->token->data.float64 == 0.0);
+
+	lexer = Setup("  \t  0.0F  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_FLOAT64);
+	ASSERT(lexer->token->data.float64 == 0.0);
+
+	lexer = Setup("  \t  0.0hf  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_FLOAT32);
+	ASSERT(lexer->token->data.float32 == 0.0f);
+
+	lexer = Setup("  \t  0.0HF  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_FLOAT32);
+	ASSERT(lexer->token->data.float32 == 0.0f);
+}
+END_TEST
+
+START_TEST(ShouldRecognizeRealZero)
+{
+	Lexer lexer = Setup("  \t  0.0  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_REAL64);
+	ASSERT(Real64_Eq(lexer->token->data.real64, Real64_Zero));
+
+	lexer = Setup("  \t  0.0l  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_REAL128);
+	ASSERT(Real128_Eq(lexer->token->data.real128, Real128_Zero));
+
+	lexer = Setup("  \t  0.0L  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_REAL128);
+	ASSERT(Real128_Eq(lexer->token->data.real128, Real128_Zero));
+
+	lexer = Setup("  \t  0.0h  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_REAL32);
+	ASSERT(Real32_Eq(lexer->token->data.real32, Real32_Zero));
+
+	lexer = Setup("  \t  0.0H  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_REAL32);
+	ASSERT(Real32_Eq(lexer->token->data.real32, Real32_Zero));
 }
 END_TEST
 

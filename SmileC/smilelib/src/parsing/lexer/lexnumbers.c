@@ -122,13 +122,14 @@ static String CollectAlphanumericSuffix(Lexer lexer)
 		StringBuilder_AppendByte(stringBuilder, ch);
 	} while (src < end && IsAlphanumeric(ch = *src));
 
+	lexer->src = src;
 	return StringBuilder_ToString(stringBuilder);
 }
 
 Inline Int ProcessIntegerValue(Lexer lexer, UInt64 value, String text, String suffix)
 {
-	const Byte *suffixText = String_GetBytes(suffix);
-	Int suffixLength = String_Length(suffix);
+	const Byte *suffixText;
+	Int suffixLength;
 
 	if (String_IsNullOrEmpty(suffix)) {
 		if (value >= (1ULL << 32)) {
@@ -141,6 +142,9 @@ Inline Int ProcessIntegerValue(Lexer lexer, UInt64 value, String text, String su
 			return (lexer->token->kind = TOKEN_INTEGER32);
 		}
 	}
+
+	suffixText = String_GetBytes(suffix);
+	suffixLength = String_Length(suffix);
 
 	switch (suffixText[0]) {
 
@@ -250,6 +254,8 @@ static Bool ParseOctalInteger(Lexer lexer, UInt64 *result)
 		}
 
 		value |= digit;
+
+		src++;
 	}
 
 	*result = value;
@@ -350,8 +356,10 @@ Int Lexer_ParseReal(Lexer lexer, Bool isFirstContentOnLine)
 	// Collect the decimal point.
 	if (src < end && *src == '.') {
 		src++;
+		StringBuilder_AppendByte(digitBuilder, '.');
 
 		// Collect fractional digits.
+		start = src;
 		while (src < end && (ch = *src) >= '0' && ch <= '9') {
 			src++;
 			if (src + 1 < end
@@ -364,14 +372,13 @@ Int Lexer_ParseReal(Lexer lexer, Bool isFirstContentOnLine)
 				start = src;
 			}
 		}
+		if (src > start) {
+			StringBuilder_Append(digitBuilder, start, 0, src - start);
+		}
 
 		fractionalDigitCount = StringBuilder_GetLength(digitBuilder) - 1 - integerDigitCount;
 	}
 
-	// Finally copy into the digitBuilder whatever's left.
-	if (src > start) {
-		StringBuilder_Append(digitBuilder, start, 0, src - start);
-	}
 	lexer->src = src;
 
 	// Make the result C-friendly.
@@ -390,7 +397,7 @@ Int Lexer_ParseReal(Lexer lexer, Bool isFirstContentOnLine)
 		return END_TOKEN(TOKEN_ERROR);
 	}
 
-	suffixText = String_GetBytes(suffix);
+	suffixText = suffix != NULL ? String_GetBytes(suffix) : "";
 	if (suffixText[0] == '\0') {
 		// Real64.
 		if (!Real64_TryParse(digitString, &token->data.real64)) {
@@ -500,6 +507,7 @@ Int Lexer_ParseZero(Lexer lexer, Bool isFirstContentOnLine)
 	}
 	else {
 		// Octal integer, or possibly a real value (if we find a '.').
+		lexer->src = start;
 		if (!ParseOctalInteger(lexer, &value)) {
 			lexer->token->text = IllegalOctalIntegerMessage;
 			return END_TOKEN(TOKEN_ERROR);
