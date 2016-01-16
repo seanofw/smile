@@ -155,7 +155,9 @@ retryAtSrc:
 		case '\x18': case '\x19': case '\x1A': case '\x1B':
 		case '\x1C': case '\x1D': case '\x1E': case '\x1F':
 		case ' ':
-			// Simple whitespace characters.
+			// Simple whitespace characters.  We consume as much whitespace as possible for better
+			// performance, since whitespace tends to come in clumps in code.
+			while (src < end && (ch = *src) >= '\x00' && ch <= '\x20' && ch != '\n' && ch != '\r') src++;
 			hasPrecedingWhitespace = True;
 			goto retryAtSrc;
 
