@@ -42,16 +42,16 @@ String String_HtmlEncode(const String str)
 		ch = text[i];
 		switch (ch) {
 			case '&':
-				StringBuilder_Append(stringBuilder, "&amp;", 0, 5);
+				StringBuilder_AppendC(stringBuilder, "&amp;", 0, 5);
 				break;
 			case '<':
-				StringBuilder_Append(stringBuilder, "&lt;", 0, 4);
+				StringBuilder_AppendC(stringBuilder, "&lt;", 0, 4);
 				break;
 			case '>':
-				StringBuilder_Append(stringBuilder, "&gt;", 0, 4);
+				StringBuilder_AppendC(stringBuilder, "&gt;", 0, 4);
 				break;
 			case '\"':
-				StringBuilder_Append(stringBuilder, "&quot;", 0, 6);
+				StringBuilder_AppendC(stringBuilder, "&quot;", 0, 6);
 				break;
 			default:
 				StringBuilder_AppendByte(stringBuilder, ch);
@@ -91,16 +91,16 @@ String String_HtmlEncodeToAscii(const String str)
 		if (ch < 128) {
 			switch (ch) {
 			case '&':
-				StringBuilder_Append(stringBuilder, "&amp;", 0, 5);
+				StringBuilder_AppendC(stringBuilder, "&amp;", 0, 5);
 				break;
 			case '<':
-				StringBuilder_Append(stringBuilder, "&lt;", 0, 4);
+				StringBuilder_AppendC(stringBuilder, "&lt;", 0, 4);
 				break;
 			case '>':
-				StringBuilder_Append(stringBuilder, "&gt;", 0, 4);
+				StringBuilder_AppendC(stringBuilder, "&gt;", 0, 4);
 				break;
 			case '\"':
-				StringBuilder_Append(stringBuilder, "&quot;", 0, 6);
+				StringBuilder_AppendC(stringBuilder, "&quot;", 0, 6);
 				break;
 			default:
 				StringBuilder_AppendByte(stringBuilder, ch);

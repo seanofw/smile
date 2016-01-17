@@ -137,10 +137,8 @@ Inline void StringBuilder_Clear(StringBuilder stringBuilder)
 	StringBuilder_SetLength(stringBuilder, 0);
 }
 
-Inline void StringBuilder_AppendCString(StringBuilder stringBuilder, const char *text)
-{
-	StringBuilder_Append(stringBuilder, (const Byte *)text, 0, StrLen(text));
-}
+#define StringBuilder_AppendC(__stringBuilder__, __text__, __start__, __length__) \
+	(StringBuilder_Append((__stringBuilder__), ((const Byte *)(__text__)), (__start__), (__length__)))
 
 Inline void StringBuilder_AppendString(StringBuilder stringBuilder, const String str)
 {

@@ -477,13 +477,13 @@ String String_AddCSlashes(const String str)
 		{
 			switch (ch)
 			{
-				case 7: StringBuilder_Append(stringBuilder, "\\a", 0, 2); break;
-				case 8: StringBuilder_Append(stringBuilder, "\\b", 0, 2); break;
-				case 9: StringBuilder_Append(stringBuilder, "\\t", 0, 2); break;
-				case 10: StringBuilder_Append(stringBuilder, "\\n", 0, 2); break;
-				case 11: StringBuilder_Append(stringBuilder, "\\v", 0, 2); break;
-				case 12: StringBuilder_Append(stringBuilder, "\\f", 0, 2); break;
-				case 13: StringBuilder_Append(stringBuilder, "\\r", 0, 2); break;
+				case 7: StringBuilder_AppendC(stringBuilder, "\\a", 0, 2); break;
+				case 8: StringBuilder_AppendC(stringBuilder, "\\b", 0, 2); break;
+				case 9: StringBuilder_AppendC(stringBuilder, "\\t", 0, 2); break;
+				case 10: StringBuilder_AppendC(stringBuilder, "\\n", 0, 2); break;
+				case 11: StringBuilder_AppendC(stringBuilder, "\\v", 0, 2); break;
+				case 12: StringBuilder_AppendC(stringBuilder, "\\f", 0, 2); break;
+				case 13: StringBuilder_AppendC(stringBuilder, "\\r", 0, 2); break;
 				default:
 					StringBuilder_AppendFormat(stringBuilder, "\\x%02X", (UInt)ch);
 					break;
@@ -689,13 +689,13 @@ String String_RegexEscape(const String str)
 	{
 		switch (ch = src[i])
 		{
-			case 7: StringBuilder_Append(stringBuilder, "\\a", 0, 2); break;
-			case 8: StringBuilder_Append(stringBuilder, "\\b", 0, 2); break;
-			case 9: StringBuilder_Append(stringBuilder, "\\t", 0, 2); break;
-			case 10: StringBuilder_Append(stringBuilder, "\\n", 0, 2); break;
-			case 11: StringBuilder_Append(stringBuilder, "\\v", 0, 2); break;
-			case 12: StringBuilder_Append(stringBuilder, "\\f", 0, 2); break;
-			case 13: StringBuilder_Append(stringBuilder, "\\r", 0, 2); break;
+			case 7: StringBuilder_AppendC(stringBuilder, "\\a", 0, 2); break;
+			case 8: StringBuilder_AppendC(stringBuilder, "\\b", 0, 2); break;
+			case 9: StringBuilder_AppendC(stringBuilder, "\\t", 0, 2); break;
+			case 10: StringBuilder_AppendC(stringBuilder, "\\n", 0, 2); break;
+			case 11: StringBuilder_AppendC(stringBuilder, "\\v", 0, 2); break;
+			case 12: StringBuilder_AppendC(stringBuilder, "\\f", 0, 2); break;
+			case 13: StringBuilder_AppendC(stringBuilder, "\\r", 0, 2); break;
 
 			case 0: case 1: case 2: case 3: case 4: case 5: case 6:
 			case 14: case 15: case 16: case 17: case 18: case 19: case 20:

@@ -218,7 +218,7 @@ void StringBuilder_AppendFormatInternal(StringBuilder stringBuilder, const Byte 
 				{
 					// C-style nul-terminated 8-bit string.
 					const char *src = va_arg(v, const char *);
-					StringBuilder_AppendCString(stringBuilder, src);
+					StringBuilder_AppendC(stringBuilder, src, 0, StrLen(src));
 				}
 				break;
 
@@ -377,12 +377,12 @@ void StringBuilder_AppendFormatInternal(StringBuilder stringBuilder, const Byte 
 				d = va_arg(v, double);
 
 				if (isnan(d)) {
-					StringBuilder_Append(stringBuilder, "NaN", 0, 3);
+					StringBuilder_AppendC(stringBuilder, "NaN", 0, 3);
 					break;
 				}
 				if (isinf(d)) {
 					if (d < 0.0) StringBuilder_AppendByte(stringBuilder, '-');
-					StringBuilder_Append(stringBuilder, "inf", 0, 3);
+					StringBuilder_AppendC(stringBuilder, "inf", 0, 3);
 					break;
 				}
 

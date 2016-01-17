@@ -183,18 +183,18 @@ String Real_ToExpString(Byte *buffer, Int32 len, Int32 exp, Int32 kind, Int32 mi
 
 	// Pad any missing trailing zeros.  This is unrolled for speed.
 	while (numFracDigits + 16 <= minFracDigits) {
-		StringBuilder_Append(numBuilder, "0000000000000000", 0, 16);
+		StringBuilder_AppendC(numBuilder, "0000000000000000", 0, 16);
 		numFracDigits += 16;
 	}
 	if (numFracDigits <= minFracDigits) {
-		StringBuilder_Append(numBuilder, "0000000000000000", 0, minFracDigits - numFracDigits);
+		StringBuilder_AppendC(numBuilder, "0000000000000000", 0, minFracDigits - numFracDigits);
 		numFracDigits += (minFracDigits - numFracDigits);
 	}
 
 	// Output the exponent, always including 'e+' or 'e-' before it.  The only exception
 	// to this is if we're outputting a zero.
 	if (kind != REAL_KIND_POS_ZERO && kind != REAL_KIND_NEG_ZERO) {
-		StringBuilder_Append(numBuilder, exp < 0 ? "e-" : "e+", 0, 2);
+		StringBuilder_AppendC(numBuilder, exp < 0 ? "e-" : "e+", 0, 2);
 		StringBuilder_AppendFormat(numBuilder, "%d", exp < 0 ? -exp : exp);
 	}
 
