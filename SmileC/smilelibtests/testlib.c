@@ -271,6 +271,30 @@ int FailTestWithLineInternal(const char *message, const char *file, int line)
 }
 
 /// <summary>
+/// Determine if two strings match, case-insensitive.  This isn't intended for
+/// super-fast or flexible needs, but it works.
+/// </summary>
+/// <param name="a">The first string to compare.</param>
+/// <param name="b">The second string to compare.</param>
+/// <returns>True if the strings match, false if they do not.</returns>
+static Bool CompareStringsInsensitive(const char *a, const char *b)
+{
+	char ac, bc;
+
+	while (*a) {
+		ac = *a++;
+		bc = *b++;
+
+		if (ac >= 'A' && ac <= 'Z') ac += 'a' - 'A';
+		if (bc >= 'A' && bc <= 'Z') bc += 'a' - 'A';
+
+		if (ac != bc) return False;
+	}
+
+	return !*b;
+}
+
+/// <summary>
 /// Determine if this test suite is one we should be running or not.
 /// </summary>
 /// <param name="name">The name of a test suite.</param>
@@ -282,7 +306,7 @@ static Bool IsTestSuiteRequested(const char *name)
 	if (NumRequestedTests <= 0) return True;
 
 	for (i = 0; i < NumRequestedTests; i++) {
-		if (!stricmp(name, RequestedTests[i]))
+		if (CompareStringsInsensitive(name, RequestedTests[i]))
 			return True;
 	}
 
