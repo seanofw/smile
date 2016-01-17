@@ -51,14 +51,24 @@ Supported, tested build environments use the GNU build chain
   - Linux x64 (GCC 5.x)
   - Cygwin x86 (GCC 4.x)
 
-Anything not on that list isn't guaranteed, but might work.
+Anything not on that list isn't guaranteed, but might work.  Note that
+Cygwin x64 seems to have problems compiling the GC right now.
 
 Many configuration options are available in ''SmileC/Makefile.conf'',
 if you have customization requirements for the buildor installation.
 
 ### On MacOS X
 
-Pending... :-)
+Test builds have been made on MacOS X x86 64-bit.  In theory, it follows
+the same sequence as Un*x above:
+
+  - ''make dep''
+  - ''make''
+
+It will build, which should produce no errors, but Clang currently generates
+a number of warnings (we're working on that).  Once built, you can verify
+the build by running ''make check'', which runs the thorough unit-test suite,
+and which should output no errors.
 
 ### Other Un*x Support
 
