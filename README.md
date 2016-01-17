@@ -56,6 +56,10 @@ Anything not on that list isn't guaranteed, but might work.
 Many configuration options are available in ''SmileC/Makefile.conf'',
 if you have customization requirements for the buildor installation.
 
+### On MacOS X
+
+Pending... :-)
+
 ### Other Un*x Support
 
 If you want to add an unsupported exotic Un*x-like platform,
@@ -85,3 +89,5 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
+
