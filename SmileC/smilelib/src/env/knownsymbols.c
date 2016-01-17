@@ -138,7 +138,7 @@ STATIC_STRING(Closure, "Closure");
 STATIC_STRING(Enumerable_, "Enumerable");
 STATIC_STRING(Exception_, "Exception");
 STATIC_STRING(Facade_, "Facade");
-STATIC_STRING(FacadeProper_, "Façade");
+STATIC_STRING(FacadeProper_, "Fa" "\xC3\xA7" "ade");
 STATIC_STRING(_Fn_, "Fn");
 STATIC_STRING(Handle_, "Handle");
 STATIC_STRING(IntegerArrayBase_, "IntegerArrayBase");
