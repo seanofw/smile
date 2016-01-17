@@ -24,6 +24,19 @@
 #elif defined(__linux__) && defined(__GNUC__) && defined(__x86_64__)
 	#include "linux-gcc-x64/platform.h"
 
+#elif defined(__APPLE__) && defined(__MACH__) && defined(__ppc__)
+	#error OSX PPC support hasn't been implemented yet.  If you want to implement it, we'd love to have it.
+
+#elif defined(__APPLE__) && defined(__MACH__) && defined(__ppc64__)
+        #error OSX PPC support hasn't been implemented yet.  If you want to implement it, we'd
+ love to have it.
+
+#elif defined(__APPLE__) && defined(__MACH__) && defined(__i386__)
+	#error We haven't started i386 OSX support yet... 
+
+#elif defined(__APPLE__) && defined(__MACH__) && defined(__x86_64__)
+	#include "macosx-clang-x64/platform.h"
+	
 #else
 	#error Unsupported OS/compiler/architecture; please configure <smile/platform/platform.h> for your environment.
 
