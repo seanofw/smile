@@ -84,9 +84,11 @@ collector, file I/O, text I/O, and decimal-number libraries:
 
   - Text I/O is done using a simple wrapper library around ncurses, which should support most Un*xen, but curses/ncurses are famously finicky and may require tweaks for more exotic OSes.
 
-  - Decimal-number support is courtesy the Intel Decimal Floating-Point Math Library, which is IEEE 754-2008-compatible.  This library has been customized a little for Smile, and works correctly on Windows and Linux x86/x64 systems, but 
+  - Decimal-number support is courtesy the Intel Decimal Floating-Point Math Library, which is IEEE 754-2008-compatible.  This library has been customized a little for Smile, and works correctly on Windows and Linux and MacOS x86/x64 systems, but may not behave nicely on others.
 
 <hr />
+
+## License
 
 **Licensed under the Apache License, Version 2.0 (the "License")**;
 you may not use this software except in compliance with the License.
@@ -100,4 +102,26 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
+_(A copy of the Apache license is also included in the source repository,
+in the file ''LICENSE''.)_
+
+_(**Short short version:** It's free as in speech and free as in beer.
+You can use it any way you want, but you can't claim you wrote it,
+and since it's free, you can't complain if it doesn't work for you.)_
+
+<hr />
+
+## Third-Party Software
+
+Smile uses third-party software libraries for some functionality:
+
+  - The Boehm mostly-conservative garbage collector.  http://www.hboehm.info/gc/
+  - The Intel Decimal Floating-Point Math Library.  https://software.intel.com/en-us/articles/intel-decimal-floating-point-math-library
+
+These software libraries are covered under their own licenses, but all use forms of
+non-restrictive open-source licenses (in the cases above, the MIT and BSD licenses,
+respectively).
+
+Smile does not contain commercially-licensed third-party software.
+Smile also does not contain GPL- or LGPL-licensed third-party software.
 
