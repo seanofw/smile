@@ -200,26 +200,32 @@ static Bool ParseDecimalInteger(Lexer lexer, UInt64 *result)
 	UInt digit;
 	Byte ch;
 
-	while (src < end && (ch = *src) >= '0' && ch <= '9') {
+	while (src < end) {
 
-		digit = ch - '0';
+		if ((ch = *src) >= '0' && ch <= '9') {
+			digit = ch - '0';
 
-		if (value > 0x1999999999999999ULL) {
-			*result = 0;
-			lexer->src = src;
-			return False;
+			if (value > 0x1999999999999999ULL) {
+				*result = 0;
+				lexer->src = src;
+				return False;
+			}
+
+			value *= 10;
+
+			if (0xFFFFFFFFFFFFFFFFULL - digit < value) {
+				*result = 0;
+				lexer->src = src;
+				return False;
+			}
+
+			value += digit;
+			src++;
 		}
-
-		value *= 10;
-
-		if (0xFFFFFFFFFFFFFFFFULL - digit < value) {
-			*result = 0;
-			lexer->src = src;
-			return False;
+		else if (ch == '_' || ch == '\'' || ch == '\"') {
+			src++;
 		}
-
-		value += digit;
-		src++;
+		else break;
 	}
 
 	*result = value;
@@ -236,27 +242,32 @@ static Bool ParseOctalInteger(Lexer lexer, UInt64 *result)
 	UInt digit;
 	Byte ch;
 
-	while (src < end && (ch = *src) >= '0' && ch <= '7') {
+	while (src < end) {
 
-		digit = ch - '0';
+		if ((ch = *src) >= '0' && ch <= '7') {
+			digit = ch - '0';
 
-		if (value > 0x1FFFFFFFFFFFFFFFULL) {
-			*result = 0;
-			lexer->src = src;
-			return False;
+			if (value > 0x1FFFFFFFFFFFFFFFULL) {
+				*result = 0;
+				lexer->src = src;
+				return False;
+			}
+
+			value <<= 3;
+
+			if (0xFFFFFFFFFFFFFFFFULL - digit < value) {
+				*result = 0;
+				lexer->src = src;
+				return False;
+			}
+
+			value |= digit;
+			src++;
 		}
-
-		value <<= 3;
-
-		if (0xFFFFFFFFFFFFFFFFULL - digit < value) {
-			*result = 0;
-			lexer->src = src;
-			return False;
+		else if (ch == '_' || ch == '\'' || ch == '\"') {
+			src++;
 		}
-
-		value |= digit;
-
-		src++;
+		else break;
 	}
 
 	*result = value;
@@ -291,6 +302,9 @@ static Bool ParseHexadecimalInteger(Lexer lexer, UInt64 *result)
 			case 'd': case 'D': digit = 13; break;
 			case 'e': case 'E': digit = 14; break;
 			case 'f': case 'F': digit = 15; break;
+
+			case '_': case '\'': case '\"': continue;
+
 			default:
 				src--;
 				goto done;
