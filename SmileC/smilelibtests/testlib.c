@@ -295,6 +295,88 @@ static Bool CompareStringsInsensitive(const char *a, const char *b)
 }
 
 /// <summary>
+/// Given an ASCII character, perform simplistic case-folding on it by converting
+/// uppercase characters to their lowercase equivalent.
+/// </summary>
+/// <param name="ch">The character to case-fold.</param>
+/// <returns>The case-folded character, the same if it was not uppercase, or the lowercase
+/// equivalent if it was uppercase.<returns>
+Inline Byte CaseFold(Byte ch)
+{
+	if (ch >= 'A' && ch <= 'Z')
+		return ch + 'a' - 'A';
+	else
+		return ch;
+}
+
+/// <summary>
+/// Determine if a string matches a pattern containing wildcard characters, case-insensitive.
+/// </summary>
+/// <param name="pattern">The pattern to compare against.</param>
+/// <param name="patternEnd">The end of the pattern to compare against (one past the last character; the
+/// address of the '\0' if you're using NUL-terminated strings).</param>
+/// <param name="text">The text string to test.</param>
+/// <param name="textEnd">The end of the text string to test (one past the last character; the
+/// address of the '\0' if you're using NUL-terminated strings).</param>
+/// <returns>True if the string matches the pattern, false if it does not.</returns>
+static Bool WildcardMatch(const Byte *pattern, const Byte *patternEnd, const Byte *text, const Byte *textEnd)
+{
+	Byte patternChar, textChar, nextPatternChar;
+
+	while (pattern < patternEnd) {
+		switch (patternChar = CaseFold(*pattern++)) {
+		case '?':
+			// If we ran out of characters, this is a fail.
+			if (text == textEnd)
+				return False;
+			textChar = CaseFold(*text++);
+			break;
+
+		case '*':
+			// Consume trailing '*' and '?' characters, since they don't mean much (except '?',
+			// which adds mandatory filler space).
+			while (pattern < patternEnd && ((patternChar = CaseFold(*pattern)) == '?' || patternChar == '*')) {
+				if (patternChar == '?' && text == textEnd)
+					return False;
+				pattern++;
+				text++;
+			}
+
+			// If we ran out of characters in the pattern, then this is a successful match,
+			// since this star can consume everything after it in the text.
+			if (pattern == patternEnd)
+				return True;
+
+			// Determine the next character in the text that we're searching for.
+			nextPatternChar = patternChar;
+
+			// Skim forward in the text looking for that next character, and then recursively
+			// perform a pattern-match on the remainders of the pattern and text from there.
+			// We use that next character to optimize the recursion, so that we don't recurse
+			// if we know there won't be a match.
+			while (text < textEnd) {
+				textChar = CaseFold(*text);
+				if (textChar == nextPatternChar && WildcardMatch(pattern, patternEnd, text, textEnd))
+					return True;
+				text++;
+			}
+
+			// None of the recursive searches matched, so this is a fail.
+			return False;
+
+		default:
+			if (text == textEnd)
+				return False;	// Ran out of characters.
+			if (patternChar != CaseFold(*text++))
+				return False;	// No match.
+			break;
+		}
+	}
+
+	return text == textEnd;
+}
+
+/// <summary>
 /// Determine if this test suite is one we should be running or not.
 /// </summary>
 /// <param name="name">The name of a test suite.</param>
@@ -306,7 +388,7 @@ static Bool IsTestSuiteRequested(const char *name)
 	if (NumRequestedTests <= 0) return True;
 
 	for (i = 0; i < NumRequestedTests; i++) {
-		if (CompareStringsInsensitive(name, RequestedTests[i]))
+		if (WildcardMatch(RequestedTests[i], RequestedTests[i] + strlen(RequestedTests[i]), name, name + strlen(name)))
 			return True;
 	}
 

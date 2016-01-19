@@ -43,6 +43,7 @@ static void PrintHelp()
 
 	printf(
 		"\n"
+		"Tests may be specified with a wildcard (for example, \"string*\").\n"
 		"If no tests are explicitly named, all tests will be run.\n"
 		"\n"
 	);
