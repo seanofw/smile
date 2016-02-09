@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 7678515dbb636315d310cd392c9955fb
+// SourceHash: 0ddf79f188ea2a062f6875721bb3aa0b
 
 START_TEST_SUITE(LexerNumberTests)
 {
@@ -15,6 +15,11 @@ START_TEST_SUITE(LexerNumberTests)
 	ShouldRecognizeDecimalIntegers,
 	ShouldRecognizeOctalIntegers,
 	ShouldRecognizeHexIntegers,
+	ShouldRecognizeFloat32s,
+	ShouldRecognizeFloat64s,
+	ShouldRecognizeReal32s,
+	ShouldRecognizeReal64s,
+	ShouldRecognizeReal128s,
 }
 END_TEST_SUITE(LexerNumberTests)
 

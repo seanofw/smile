@@ -448,7 +448,7 @@ START_TEST(ShouldRecognizeSingleRealDigits)
 END_TEST
 
 //-------------------------------------------------------------------------------------------------
-//  Multi-digit forms.
+//  Multi-digit integer forms.
 
 static const char *_8BitDecimalIntegers[] = {
 	"10", "16", "64", "95", "127",
@@ -673,6 +673,121 @@ START_TEST(ShouldRecognizeHexIntegers)
 		lexer = SetupString(String_Format("  \t  0x%s1234567L  \r\n", _31BitHexIntegers[i]));
 		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
 		ASSERT(lexer->token->data.int64 == (Int64)AToIHex(_31BitHexIntegers[i]) * 0x10000000 + 0x1234567);
+	}
+}
+END_TEST
+
+//-------------------------------------------------------------------------------------------------
+//  Multi-digit real and float forms.
+
+static const char *_testReal32Values[] = {
+	"1.0", "1.",
+	"125.0", "125.", ".125", "0.125", "125.125",
+	"3.141_59", "31_415.8",
+};
+
+static const Float32 _testFloat32Values[] = {
+	1.0f, 1.0f,
+	125.0f, 125.0f, 0.125f, 0.125f, 125.125f,
+	3.14159f, 31415.8f,
+};
+
+static const char *_testReal64Values[] = {
+	"1.0", "1.",
+	"125.0", "125.", ".125", "0.125", "125.125",
+	"3.141_59", "31_415.8",
+	"3.141_592_653_589", "3_141_592_653_589.0",
+	"314_159.26_53_58_9",
+};
+
+static const Float64 _testFloat64Values[] = {
+	1.0, 1.0,
+	125.0, 125.0, 0.125, 0.125, 125.125,
+	3.14159, 31415.8,
+	3.141592653589, 3141592653589.0,
+	314159.2653589,
+};
+
+START_TEST(ShouldRecognizeFloat32s)
+{
+	Lexer lexer;
+	int i;
+
+	for (i = 0; i < sizeof(_testReal32Values) / sizeof(const char *); i++) {
+		lexer = SetupString(String_Format("  \t  %shf  \r\n", _testReal32Values[i]));
+		ASSERT(Lexer_Next(lexer) == TOKEN_FLOAT32);
+		ASSERT(lexer->token->data.float32 == _testFloat32Values[i]);
+
+		lexer = SetupString(String_Format("  \t  %sHF  \r\n", _testReal32Values[i]));
+		ASSERT(Lexer_Next(lexer) == TOKEN_FLOAT32);
+		ASSERT(lexer->token->data.float32 == _testFloat32Values[i]);
+	}
+}
+END_TEST
+
+START_TEST(ShouldRecognizeFloat64s)
+{
+	Lexer lexer;
+	int i;
+
+	for (i = 0; i < sizeof(_testReal64Values) / sizeof(const char *); i++) {
+		lexer = SetupString(String_Format("  \t  %sf  \r\n", _testReal64Values[i]));
+		ASSERT(Lexer_Next(lexer) == TOKEN_FLOAT64);
+		ASSERT(lexer->token->data.float64 == _testFloat64Values[i]);
+
+		lexer = SetupString(String_Format("  \t  %sF  \r\n", _testReal64Values[i]));
+		ASSERT(Lexer_Next(lexer) == TOKEN_FLOAT64);
+		ASSERT(lexer->token->data.float64 == _testFloat64Values[i]);
+	}
+}
+END_TEST
+
+START_TEST(ShouldRecognizeReal32s)
+{
+	Lexer lexer;
+	int i;
+
+	for (i = 0; i < sizeof(_testReal32Values) / sizeof(const char *); i++) {
+		lexer = SetupString(String_Format("  \t  %sh  \r\n", _testReal32Values[i]));
+		ASSERT(Lexer_Next(lexer) == TOKEN_REAL32);
+		ASSERT(Real32_Eq(lexer->token->data.real32, Real32_FromFloat32(_testFloat32Values[i])));
+
+		lexer = SetupString(String_Format("  \t  %sH  \r\n", _testReal32Values[i]));
+		ASSERT(Lexer_Next(lexer) == TOKEN_REAL32);
+		ASSERT(Real32_Eq(lexer->token->data.real32, Real32_FromFloat32(_testFloat32Values[i])));
+	}
+}
+END_TEST
+
+START_TEST(ShouldRecognizeReal64s)
+{
+	Lexer lexer;
+	int i;
+
+	for (i = 0; i < sizeof(_testReal64Values) / sizeof(const char *); i++) {
+		lexer = SetupString(String_Format("  \t  %s  \r\n", _testReal64Values[i]));
+		ASSERT(Lexer_Next(lexer) == TOKEN_REAL64);
+		ASSERT(Real64_Eq(lexer->token->data.real64, Real64_FromFloat64(_testFloat64Values[i])));
+	}
+}
+END_TEST
+
+START_TEST(ShouldRecognizeReal128s)
+{
+	Lexer lexer;
+	int i;
+	Real128 expectedValue;
+
+	for (i = 0; i < sizeof(_testReal64Values) / sizeof(const char *); i++) {
+		lexer = SetupString(String_Format("  \t  %sl  \r\n", _testReal64Values[i]));
+		ASSERT(Lexer_Next(lexer) == TOKEN_REAL128);
+		expectedValue = Real64_ToReal128(Real64_FromFloat64(_testFloat64Values[i]));
+		ASSERT(Real128_Eq(lexer->token->data.real128, expectedValue));
+
+		lexer = SetupString(String_Format("  \t  %sL  \r\n", _testReal64Values[i]));
+		ASSERT(Lexer_Next(lexer) == TOKEN_REAL128);
+		expectedValue = Real64_ToReal128(Real64_FromFloat64(_testFloat64Values[i]));
+		ASSERT(Real128_Eq(lexer->token->data.real128, expectedValue));
 	}
 }
 END_TEST
