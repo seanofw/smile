@@ -178,6 +178,41 @@ END_TEST
 //-------------------------------------------------------------------------------------------------
 //  Unicode Cyrillic forms.
 
+START_TEST(ShouldRecognizeCyrillicNames)
+{
+	// Try "человек" and "год" as names (Russian "man" and "year").
+	Lexer lexer = Setup("  \t \xD1\x87\xD0\xB5\xD0\xBB\xD0\xBE\xD0\xB2\xD0\xB5\xD0\xBA  \xD0\xB3\xD0\xBE\xD0\xB4  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "\xD1\x87\xD0\xB5\xD0\xBB\xD0\xBE\xD0\xB2\xD0\xB5\xD0\xBA", 14);
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "\xD0\xB3\xD0\xBE\xD0\xB4", 6);
+	ASSERT(Lexer_Next(lexer) == TOKEN_EOI);
+}
+END_TEST
+
+START_TEST(ShouldRecognizeCyrillicNamesWithPunctuationSuffixes)
+{
+	// Try "человек'" and "год'" as names (Russian with trailing prime).
+	Lexer lexer = Setup("  \t \xD1\x87\xD0\xB5\xD0\xBB\xD0\xBE\xD0\xB2\xD0\xB5\xD0\xBA'  \xD0\xB3\xD0\xBE\xD0\xB4'  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "\xD1\x87\xD0\xB5\xD0\xBB\xD0\xBE\xD0\xB2\xD0\xB5\xD0\xBA'", 15);
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "\xD0\xB3\xD0\xBE\xD0\xB4'", 7);
+	ASSERT(Lexer_Next(lexer) == TOKEN_EOI);
+}
+END_TEST
+
+START_TEST(ShouldDisallowMixingRussianAndLatinInAName)
+{
+	// Try "годabc" and "abcгод" as names.
+	Lexer lexer = Setup("  \t \xD0\xB3\xD0\xBE\xD0\xB4\x61\x62\x63  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_ERROR);
+
+	lexer = Setup("  \t abc\xD0\xB3\xD0\xBE\xD0\xB4  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_ERROR);
+}
+END_TEST
+
 //-------------------------------------------------------------------------------------------------
 //  Unicode Armenian forms.
 
