@@ -22,6 +22,8 @@
 
 #include <smile/parsing/internal/lexerinternal.h>
 
+STATIC_STRING(IllegalNameMessage, "Names must not mix characters from different language families");
+
 //---------------------------------------------------------------------------
 //  Alphabetic name parsing.
 
@@ -33,6 +35,7 @@ static String ParseNameRaw(Lexer lexer, Bool *hasEscapes)
 	const Byte *start = lexer->src;
 	Byte ch;
 	Int code;
+	UInt64 charsets = 0;
 	UInt identifierCharacterKind;
 
 	INIT_INLINE_STRINGBUILDER(namebuf);
@@ -68,6 +71,10 @@ readMoreName:
 		case 'Q': case 'R': case 'S': case 'T':
 		case 'U': case 'V': case 'W': case 'X':
 		case 'Y': case 'Z':
+			charsets |= ((UInt64)1) << (IDENTKIND_CHARSET_LATIN >> 4);
+			src++;
+			goto readMoreName;
+
 		case '0': case '1': case '2': case '3':
 		case '4': case '5': case '6': case '7':
 		case '8': case '9':
@@ -87,6 +94,7 @@ readMoreName:
 			if (ch >= 128) {
 				code = String_ExtractUnicodeCharacterInternal(&src, end);
 				identifierCharacterKind = SmileIdentifierKind(code);
+				charsets |= ((UInt64)1) << ((identifierCharacterKind & IDENTKIND_CHARSET_MASK) >> 4);
 				if ((identifierCharacterKind & (IDENTKIND_MIDDLELETTER | IDENTKIND_STARTLETTER | IDENTKIND_PUNCTUATION))) {
 					StringBuilder_AppendUnicode(namebuf, (UInt32)code);
 					start = src;
@@ -100,6 +108,16 @@ readMoreName:
 
 	if (src > start) {
 		StringBuilder_Append(namebuf, start, 0, src - start);
+	}
+
+	charsets &= ~1;		// Strip the meaningless low bit, if it got set by a Unicode middle character.
+
+	if (charsets && (charsets & (charsets - 1))) {
+		// More than one bit is set, as determined by some clever bit twiddling.
+		// This is bad, because exactly one bit should always be set, indicating
+		// exactly one character set was used in the name.
+		lexer->src = src;
+		return NULL;
 	}
 
 	// Convert whatever's left to the resulting identifier name.
@@ -118,6 +136,12 @@ Int Lexer_ParseName(Lexer lexer, Bool isFirstContentOnLine)
 	START_TOKEN(lexer->src);
 
 	text = ParseNameRaw(lexer, &hasEscapes);
+	if (text == NULL) {
+		src = lexer->src;
+		token->text = IllegalNameMessage;
+		return END_TOKEN(TOKEN_ERROR);
+	}
+
 	symbol = lexer->symbolTable != NULL ? SymbolTable_GetSymbol(lexer->symbolTable, text) : 0;
 	src = lexer->src;
 

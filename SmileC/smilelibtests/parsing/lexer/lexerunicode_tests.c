@@ -44,7 +44,7 @@ static Lexer Setup(const char *string)
 }
 
 //-------------------------------------------------------------------------------------------------
-//  Unicode punctuation and identifiers.
+//  Unicode Latin identifiers.
 
 START_TEST(ShouldRecognizeUnicodeFromTheLatinSupplementSet)
 {
@@ -77,6 +77,9 @@ START_TEST(ShouldRecognizeUnicodeFromTheLatinExtendedSets)
 	ASSERT(Lexer_Next(lexer) == TOKEN_EOI);
 }
 END_TEST
+
+//-------------------------------------------------------------------------------------------------
+//  Unicode punctuation forms.
 
 START_TEST(ShouldRecognizeUnicodeSuffixes)
 {
@@ -131,6 +134,45 @@ START_TEST(ShouldRecognizeUnicodePunctuationForms)
 	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
 	ASSERT_STRING(lexer->token->text, "\xE2\x86\x92>!", 5);
 	ASSERT(Lexer_Next(lexer) == TOKEN_EOI);
+}
+END_TEST
+
+//-------------------------------------------------------------------------------------------------
+//  Unicode Hebrew forms.
+
+START_TEST(ShouldRecognizeHebrewNames)
+{
+	// Try "אבא" and "סדין" as names (Hebrew "aba," or "father," and "sadin," or "sheet").
+	Lexer lexer = Setup("  \t  \xD7\x90\xD7\x91\xD7\x90  \xD7\xA1\xD7\x93\xD7\x99\xD7\x9F  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "\xD7\x90\xD7\x91\xD7\x90", 6);
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "\xD7\xA1\xD7\x93\xD7\x99\xD7\x9F", 8);
+	ASSERT(Lexer_Next(lexer) == TOKEN_EOI);
+}
+END_TEST
+
+START_TEST(ShouldRecognizeHebrewNamesWithPunctuationSuffixes)
+{
+	// Try "אבא'" and "סדין'" as names (Hebrew words with trailing ' characters).
+	Lexer lexer = Setup("  \t  \xD7\x90\xD7\x91\xD7\x90'  \xD7\xA1\xD7\x93\xD7\x99\xD7\x9F'  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "\xD7\x90\xD7\x91\xD7\x90'", 7);
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "\xD7\xA1\xD7\x93\xD7\x99\xD7\x9F'", 9);
+	ASSERT(Lexer_Next(lexer) == TOKEN_EOI);
+}
+END_TEST
+
+START_TEST(ShouldDisallowMixingHebrewAndLatinInAName)
+{
+	// Try "אבאaba" as a name.
+	Lexer lexer = Setup("  \t  \xD7\x90\xD7\x91\xD7\x90\x61\x62\x61  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_ERROR);
+
+	// Try "abaאבא" as a name.
+	lexer = Setup("  \t  aba\xD7\x90\xD7\x91\xD7\x90  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_ERROR);
 }
 END_TEST
 
