@@ -216,6 +216,41 @@ END_TEST
 //-------------------------------------------------------------------------------------------------
 //  Unicode Armenian forms.
 
+START_TEST(ShouldRecognizeArmenianNames)
+{
+	// Try "Խնդրեմ" and "մերսի" as names (Armenian "please" and "thank you").
+	Lexer lexer = Setup("  \t \xD4\xBD\xD5\xB6\xD5\xA4\xD6\x80\xD5\xA5\xD5\xB4  \xD5\xB4\xD5\xA5\xD6\x80\xD5\xBD\xD5\xAB  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "\xD4\xBD\xD5\xB6\xD5\xA4\xD6\x80\xD5\xA5\xD5\xB4", 12);
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "\xD5\xB4\xD5\xA5\xD6\x80\xD5\xBD\xD5\xAB", 10);
+	ASSERT(Lexer_Next(lexer) == TOKEN_EOI);
+}
+END_TEST
+
+START_TEST(ShouldRecognizeArmenianNamesWithPunctuationSuffixes)
+{
+	// Try "Խնդրեմ" and "մերսի" as names (Armenian with prime suffixes).
+	Lexer lexer = Setup("  \t \xD4\xBD\xD5\xB6\xD5\xA4\xD6\x80\xD5\xA5\xD5\xB4'  \xD5\xB4\xD5\xA5\xD6\x80\xD5\xBD\xD5\xAB'  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "\xD4\xBD\xD5\xB6\xD5\xA4\xD6\x80\xD5\xA5\xD5\xB4'", 13);
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "\xD5\xB4\xD5\xA5\xD6\x80\xD5\xBD\xD5\xAB'", 11);
+	ASSERT(Lexer_Next(lexer) == TOKEN_EOI);
+}
+END_TEST
+
+START_TEST(ShouldDisallowMixingArmenianAndLatinInAName)
+{
+	// Try "մերսիabc" and "abcմերսի" as names.
+	Lexer lexer = Setup("  \t \xD5\xB4\xD5\xA5\xD6\x80\xD5\xBD\xD5\xAB\x61\x62\x63  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_ERROR);
+
+	lexer = Setup("  \t abc\xD5\xB4\xD5\xA5\xD6\x80\xD5\xBD\xD5\xAB  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_ERROR);
+}
+END_TEST
+
 //-------------------------------------------------------------------------------------------------
 //  Unicode Hebrew forms.
 
