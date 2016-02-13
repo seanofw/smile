@@ -138,6 +138,50 @@ START_TEST(ShouldRecognizeUnicodePunctuationForms)
 END_TEST
 
 //-------------------------------------------------------------------------------------------------
+//  Unicode Greek forms.
+
+START_TEST(ShouldRecognizeGreekNames)
+{
+	// Try "έτος" and "μικρός" as names (Greek "year" and "small").
+	Lexer lexer = Setup("  \t \xCE\xAD\xCF\x84\xCE\xBF\xCF\x82  \xCE\xBC\xCE\xB9\xCE\xBA\xCF\x81\xCF\x8C\xCF\x82  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "\xCE\xAD\xCF\x84\xCE\xBF\xCF\x82", 8);
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "\xCE\xBC\xCE\xB9\xCE\xBA\xCF\x81\xCF\x8C\xCF\x82", 12);
+	ASSERT(Lexer_Next(lexer) == TOKEN_EOI);
+}
+END_TEST
+
+START_TEST(ShouldRecognizeGreekNamesWithPunctuationSuffixes)
+{
+	// Try "έτος'" and "μικρός'" as names (Greek with trailing prime).
+	Lexer lexer = Setup("  \t \xCE\xAD\xCF\x84\xCE\xBF\xCF\x82'  \xCE\xBC\xCE\xB9\xCE\xBA\xCF\x81\xCF\x8C\xCF\x82'  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "\xCE\xAD\xCF\x84\xCE\xBF\xCF\x82'", 9);
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "\xCE\xBC\xCE\xB9\xCE\xBA\xCF\x81\xCF\x8C\xCF\x82'", 13);
+	ASSERT(Lexer_Next(lexer) == TOKEN_EOI);
+}
+END_TEST
+
+START_TEST(ShouldDisallowMixingGreekAndLatinInAName)
+{
+	// Try "έτοςabc" and "abcέτος" as names.
+	Lexer lexer = Setup("  \t \xCE\xAD\xCF\x84\xCE\xBF\xCF\x82\x61\x62\x63  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_ERROR);
+
+	lexer = Setup("  \t abc\xCE\xAD\xCF\x84\xCE\xBF\xCF\x82  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_ERROR);
+}
+END_TEST
+
+//-------------------------------------------------------------------------------------------------
+//  Unicode Cyrillic forms.
+
+//-------------------------------------------------------------------------------------------------
+//  Unicode Armenian forms.
+
+//-------------------------------------------------------------------------------------------------
 //  Unicode Hebrew forms.
 
 START_TEST(ShouldRecognizeHebrewNames)

@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 7295dbf88447453b1b763c6c8528d5a2
+// SourceHash: 200f894c83925fc2dcc08153d8dcb9cd
 
 START_TEST_SUITE(LexerUnicodeTests)
 {
@@ -8,6 +8,9 @@ START_TEST_SUITE(LexerUnicodeTests)
 	ShouldRecognizeUnicodeFromTheLatinExtendedSets,
 	ShouldRecognizeUnicodeSuffixes,
 	ShouldRecognizeUnicodePunctuationForms,
+	ShouldRecognizeGreekNames,
+	ShouldRecognizeGreekNamesWithPunctuationSuffixes,
+	ShouldDisallowMixingGreekAndLatinInAName,
 	ShouldRecognizeHebrewNames,
 	ShouldRecognizeHebrewNamesWithPunctuationSuffixes,
 	ShouldDisallowMixingHebrewAndLatinInAName,
