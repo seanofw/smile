@@ -102,7 +102,7 @@ Int Lexer_Next(Lexer lexer)
 	Bool hasPrecedingWhitespace;
 	Byte ch;
 	Int code;
-	const Byte *src;
+	const Byte *src, *start;
 	const Byte *end = lexer->end;
 	Token token;
 	Int tokenKind;
@@ -128,23 +128,10 @@ retryAtSrc:
 	if (src >= end)
 		return SIMPLE_TOKEN(src, TOKEN_EOI);
 
-	// Read the next Unicode code point.
-	if ((ch = *src++) < 128)
-		code = ch;
-	else {
-		src--;
-		code = String_ExtractUnicodeCharacterInternal(&src, end);
-	}
-
-	switch (code) {
+	switch (ch = *src++) {
 
 		//--------------------------------------------------------------------------
 		//  Whitespace and newlines.
-
-		case 0xFEFF:
-			// Unicode byte-order mark (zero-width non-breaking space).
-			hasPrecedingWhitespace = True;
-			goto retryAtSrc;
 
 		case '\x00': case '\x01': case '\x02': case '\x03':
 		case '\x04': case '\x05': case '\x06': case '\x07':
@@ -157,7 +144,7 @@ retryAtSrc:
 		case ' ':
 			// Simple whitespace characters.  We consume as much whitespace as possible for better
 			// performance, since whitespace tends to come in clumps in code.
-			while (src < end && (ch = *src) >= '\x00' && ch <= '\x20' && ch != '\n' && ch != '\r') src++;
+			while (src < end && (ch = *src) <= '\x20' && ch != '\n' && ch != '\r') src++;
 			hasPrecedingWhitespace = True;
 			goto retryAtSrc;
 
@@ -194,7 +181,7 @@ retryAtSrc:
 
 		case '-':
 			// Subtraction, but also separator lines.
-			lexer->src = src;
+			lexer->src = src - 1;
 			if ((tokenKind = Lexer_ParseHyphenOrEquals(lexer, ch, isFirstContentOnLine, hasPrecedingWhitespace)) != TOKEN_NONE)
 				return tokenKind;
 			hasPrecedingWhitespace = True;
@@ -202,7 +189,7 @@ retryAtSrc:
 
 		case '=':
 			// Equate forms, but also separator lines.
-			lexer->src = src;
+			lexer->src = src - 1;
 			if ((tokenKind = Lexer_ParseHyphenOrEquals(lexer, ch, isFirstContentOnLine, hasPrecedingWhitespace)) != TOKEN_NONE)
 				return tokenKind;
 			hasPrecedingWhitespace = True;
@@ -212,7 +199,7 @@ retryAtSrc:
 		case '%': case '^': case '&': case '*':
 		case '+': case '<': case '>':
 			// General punctuation and operator name forms:  [~!?@%^&*=+<>/-]+
-			lexer->src = src;
+			lexer->src = src - 1;
 			return Lexer_ParsePunctuation(lexer, isFirstContentOnLine);
 
 		case '.':
@@ -446,25 +433,32 @@ retryAtSrc:
 			return tokenKind;
 
 		default:
-			//----------------------------------------------------------------------
-			//  Unicode identifiers.
-			
+			// Since it isn't a well-known character in the ASCII range, try reading it as a Unicode code point.
+			start = --src;
+			code = String_ExtractUnicodeCharacterInternal(&src, end);
+
+			// Unicode byte-order mark (zero-width non-breaking space).
+			if (code == 0xFEFF)
+			{
+				hasPrecedingWhitespace = True;
+				goto retryAtSrc;
+			}
+
+			// Try Unicode identifiers.			
 			identifierCharacterKind = SmileIdentifierKind(code);
 			if (identifierCharacterKind & IDENTKIND_STARTLETTER) {
 				// General identifier form.
-				lexer->src = src;
+				lexer->src = start;
 				return Lexer_ParseName(lexer, isFirstContentOnLine);
 			}
 			else if (identifierCharacterKind & IDENTKIND_PUNCTUATION) {
 				// General punctuation and operator name forms:  [~!?@%^&*=+<>/-]+
-				lexer->src = src;
+				lexer->src = start;
 				return Lexer_ParsePunctuation(lexer, isFirstContentOnLine);
 			}
 
-			//----------------------------------------------------------------------
-			//  Everything else is an error.
-
-			START_TOKEN(src-1);
+			// Everything else is an error at this point.
+			START_TOKEN(start);
 			lexer->token->text = IllegalCharacterMessage;
 			return END_TOKEN(TOKEN_ERROR);
 	}

@@ -1,10 +1,13 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: a2b394d31cdbe3a42d73e68cc3c4dbde
+// SourceHash: b8102e411d43aa05427bf722b0219e8f
 
 START_TEST_SUITE(LexerUnicodeTests)
 {
-	ShouldRecognizeUnicodeAlphaIdents,
+	ShouldRecognizeUnicodeFromTheLatinSupplementSet,
+	ShouldRecognizeUnicodeFromTheLatinExtendedSets,
+	ShouldRecognizeUnicodeSuffixes,
+	ShouldRecognizeUnicodePunctuationForms,
 }
 END_TEST_SUITE(LexerUnicodeTests)
 

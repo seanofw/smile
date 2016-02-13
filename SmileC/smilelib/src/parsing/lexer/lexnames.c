@@ -319,7 +319,7 @@ Int Lexer_ParsePunctuation(Lexer lexer, Bool isFirstContentOnLine)
 	Bool hasEscapes;
 	Int tokenKind;
 
-	START_TOKEN(--lexer->src);
+	START_TOKEN(lexer->src);
 
 	text = ParsePunctuationRaw(lexer, &hasEscapes, &tokenKind);
 	symbol = lexer->symbolTable != NULL ? SymbolTable_GetSymbol(lexer->symbolTable, text) : 0;

@@ -66,8 +66,8 @@ static const UInt16 _identTable00[] = {
 
 	  _,   _,   _,   _,   _,   _,   _,   _,   _,   _,   _,   _,   _,   _,   _,   _,		// 80 - 8F
 	  _,   _,   _,   _,   _,   _,   _,   _,   _,   _,   _,   _,   _,   _,   _,   _,		// 90 - 9F
-	  _,   P,   A,   A,   A,   A,   _,   A,   _,   A, L|M,   P,   P,   _,   A,   _,		// A0 - AF
-	  M,   P,   M,   M,   _, L|A, L|A,   P,   _,   M, L|M,   P,   _,   _,   _,   P,		// B0 - BF
+	  _,   A,   A,   A,   A,   A,   _,   A,   _,   A, L|M,   P,   P,   _,   A,   _,		// A0 - AF
+	  M,   P,   M,   M,   _, L|A, L|A,   P,   _,   M, L|M,   P,   _,   _,   _,   A,		// B0 - BF
 
 	L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A,		// C0 - CF
 	L|A, L|A, L|A, L|A, L|A, L|A, L|A,   _, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A,		// D0 - DF
@@ -188,6 +188,28 @@ static const UInt16 _identTable05[] = {
 	_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,		// F0 - FF
 };
 
+static const UInt16 _identTable1E[] = {
+	L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A,		// 00 - 0F
+	L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A,		// 10 - 1F
+	L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A,		// 20 - 2F
+	L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A,		// 30 - 3F
+
+	L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A,		// 40 - 4F
+	L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A,		// 50 - 5F
+	L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A,		// 60 - 6F
+	L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A,		// 70 - 7F
+
+	L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A,		// 80 - 8F
+	L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A,		// 90 - 9F
+	L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A,		// A0 - AF
+	L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A,		// B0 - BF
+
+	L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A,		// C0 - CF
+	L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A,		// D0 - DF
+	L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A,		// E0 - EF
+	L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A, L|A,		// F0 - FF
+};
+
 static const UInt16 _identTable20[] = {
 	_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,			// 00 - 0F
 	_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,			// 10 - 1F
@@ -259,7 +281,7 @@ const UInt16 *SmileIdentifierTable[] = {
 	_disallowed, _disallowed, _disallowed, _disallowed, _disallowed, _disallowed, _disallowed, _disallowed,
 
 	_disallowed, _disallowed, _disallowed, _disallowed, _disallowed, _disallowed, _disallowed, _disallowed,
-	_disallowed, _disallowed, _disallowed, _disallowed, _disallowed, _disallowed, _disallowed, _disallowed,
+	_disallowed, _disallowed, _disallowed, _disallowed, _disallowed, _disallowed, _identTable1E, _disallowed,
 
 	_identTable20, _identTable21, _identTable22,
 };

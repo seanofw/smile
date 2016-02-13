@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter (Unit Tests)
 //  Copyright 2004-2016 Sean Werkema
 //
@@ -46,9 +46,91 @@ static Lexer Setup(const char *string)
 //-------------------------------------------------------------------------------------------------
 //  Unicode punctuation and identifiers.
 
-START_TEST(ShouldRecognizeUnicodeAlphaIdents)
+START_TEST(ShouldRecognizeUnicodeFromTheLatinSupplementSet)
 {
-	Lexer lexer = Setup("\n");
+	// Try "Façade" as a name (alpha unicode character in a middle position).
+	Lexer lexer = Setup("  \t  Fa\xC3\xA7\x61\x64\x65  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "Fa\xC3\xA7\x61\x64\x65", 7);
+	ASSERT(Lexer_Next(lexer) == TOKEN_EOI);
+
+	// Try "être" as a name (alpha unicode character in an initial position).
+	lexer = Setup("  \t  \xC3\xAAtre  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "\xC3\xAAtre", 5);
+	ASSERT(Lexer_Next(lexer) == TOKEN_EOI);
+
+	// Try "trouvé" as a name (alpha unicode character in a final position).
+	lexer = Setup("  \t  trouv\xC3\xA9  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "trouv\xC3\xA9", 7);
+	ASSERT(Lexer_Next(lexer) == TOKEN_EOI);
+}
+END_TEST
+
+START_TEST(ShouldRecognizeUnicodeFromTheLatinExtendedSets)
+{
+	// Try "ȓɂœķĦƕɏḜṻỿⱾ" as a name (alpha unicode characters from the Extended-A, Extended-B, and Extended Additional sets).
+	Lexer lexer = Setup("  \t  \xC8\x93\xC9\x82\xC5\x93\xC4\xB7\xC4\xA6\xC6\x95\xC9\x8F\xE1\xB8\x9C\xE1\xB9\xBB\xE1\xBB\xBF  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "\xC8\x93\xC9\x82\xC5\x93\xC4\xB7\xC4\xA6\xC6\x95\xC9\x8F\xE1\xB8\x9C\xE1\xB9\xBB\xE1\xBB\xBF", 23);
+	ASSERT(Lexer_Next(lexer) == TOKEN_EOI);
+}
+END_TEST
+
+START_TEST(ShouldRecognizeUnicodeSuffixes)
+{
+	// Try "Façade°" as a name (Latin Unicode suffix character).
+	Lexer lexer = Setup("  \t  Fa\xC3\xA7\x61\x64\x65\xC2\xB0  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "Fa\xC3\xA7\x61\x64\x65\xC2\xB0", 9);
+	ASSERT(Lexer_Next(lexer) == TOKEN_EOI);
+
+	// Try "Façade†" as a name (Unicode Punctuation suffix character).
+	lexer = Setup("  \t  Fa\xC3\xA7\x61\x64\x65\xE2\x80\xA0  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "Fa\xC3\xA7\x61\x64\x65\xE2\x80\xA0", 10);
+	ASSERT(Lexer_Next(lexer) == TOKEN_EOI);
+
+	// Try "¡español!" and "¿español?" as a name (Unicode punctuation-like character as an alphabetic character).
+	lexer = Setup("  \t  \xC2\xA1\x65spa\xC3\xB1ol!  \xC2\xBF\x65spa\xC3\xB1ol?  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "\xC2\xA1\x65spa\xC3\xB1ol!", 11);
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "\xC2\xBF\x65spa\xC3\xB1ol?", 11);
+	ASSERT(Lexer_Next(lexer) == TOKEN_EOI);
+}
+END_TEST
+
+START_TEST(ShouldRecognizeUnicodePunctuationForms)
+{
+	// Try "∀" and "∃" and "∀∃∑∫" as operators (Unicode math symbols).
+	Lexer lexer = Setup("  \t  \xE2\x88\x80  \xE2\x88\x83 \t \xE2\x88\x80\xE2\x88\x83\xE2\x88\x91\xE2\x88\xAB  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT_STRING(lexer->token->text, "\xE2\x88\x80", 3);
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT_STRING(lexer->token->text, "\xE2\x88\x83", 3);
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT_STRING(lexer->token->text, "\xE2\x88\x80\xE2\x88\x83\xE2\x88\x91\xE2\x88\xAB", 12);
+	ASSERT(Lexer_Next(lexer) == TOKEN_EOI);
+
+	// Try "→" and "↠" and "→↠⇒⇛" as operators (Unicode arrows).
+	lexer = Setup("  \t  \xE2\x86\x92  \xE2\x86\xA0 \t \xE2\x86\x92\xE2\x86\xA0\xE2\x87\x92\xE2\x87\x9B  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT_STRING(lexer->token->text, "\xE2\x86\x92", 3);
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT_STRING(lexer->token->text, "\xE2\x86\xA0", 3);
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT_STRING(lexer->token->text, "\xE2\x86\x92\xE2\x86\xA0\xE2\x87\x92\xE2\x87\x9B", 12);
+	ASSERT(Lexer_Next(lexer) == TOKEN_EOI);
+
+	// Try "!>→" and "→>!" as operators (mix Unicode and ASCII punctuation).
+	lexer = Setup("  \t  !>\xE2\x86\x92  \xE2\x86\x92>!  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT_STRING(lexer->token->text, "!>\xE2\x86\x92", 5);
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT_STRING(lexer->token->text, "\xE2\x86\x92>!", 5);
+	ASSERT(Lexer_Next(lexer) == TOKEN_EOI);
 }
 END_TEST
 

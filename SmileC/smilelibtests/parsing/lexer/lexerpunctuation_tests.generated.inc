@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: db95ed174122799fe5e2047ca79f63ce
+// SourceHash: 3bfa36b812a849b69d9926fe5c9241c8
 
 START_TEST_SUITE(LexerPunctuationTests)
 {

@@ -138,8 +138,8 @@ END_TEST
 START_TEST(ShouldRecognizeGeneralPunctuativeForms)
 {
 	Lexer lexer = Setup(
-		"&& ^^ ** ++ -- +>> <<+ << >> <+> <-> <--> *~*\n"
-		"&&= ^^= **= ++= --= +>>= <<+= <<= >>= <+>= <->= <-->= *~*=\n"
+		"&& ^^ ** ++ -- +>> <<+ << >> <+> <-> <--> *~* /-/\n"
+		"&&= ^^= **= ++= --= +>>= <<+= <<= >>= <+>= <->= <-->= *~*= /-/=\n"
 		);
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
@@ -168,6 +168,8 @@ START_TEST(ShouldRecognizeGeneralPunctuativeForms)
 	ASSERT_STRING(lexer->token->text, "<-->", 4);
 	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
 	ASSERT_STRING(lexer->token->text, "*~*", 3);
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT_STRING(lexer->token->text, "/-/", 3);
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
 	ASSERT_STRING(lexer->token->text, "&&", 2);
@@ -207,6 +209,9 @@ START_TEST(ShouldRecognizeGeneralPunctuativeForms)
 	ASSERT(Lexer_Next(lexer) == TOKEN_EQUALWITHOUTWHITESPACE);
 	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
 	ASSERT_STRING(lexer->token->text, "*~*", 3);
+	ASSERT(Lexer_Next(lexer) == TOKEN_EQUALWITHOUTWHITESPACE);
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT_STRING(lexer->token->text, "/-/", 3);
 	ASSERT(Lexer_Next(lexer) == TOKEN_EQUALWITHOUTWHITESPACE);
 }
 END_TEST

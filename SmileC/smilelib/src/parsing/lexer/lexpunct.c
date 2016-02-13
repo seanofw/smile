@@ -85,7 +85,7 @@ Int Lexer_ParseSlash(Lexer lexer, Bool isFirstContentOnLine)
 
 		default:
 			// Not a comment: General punctuation.
-			lexer->src = --src;
+			lexer->src = src - 2;
 			return Lexer_ParsePunctuation(lexer, isFirstContentOnLine);
 	}
 }
@@ -107,7 +107,7 @@ Int Lexer_ParseHyphenOrEquals(Lexer lexer, Int initialChar, Bool isFirstContentO
 	Int tokenKind;
 
 	// Read hyphens/equals until we run out of them.
-	charCount = 1;
+	charCount = 0;
 	while (src < end && (ch = *src) == initialChar) {
 		charCount++;
 		src++;
