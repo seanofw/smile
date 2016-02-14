@@ -119,6 +119,7 @@
     <ClCompile Include="numeric\real64_tests.c" />
     <ClCompile Include="parsing\lexer\lexercore_tests.c" />
     <ClCompile Include="parsing\lexer\lexeridentifier_tests.c" />
+    <ClCompile Include="parsing\lexer\lexerloanword_tests.c" />
     <ClCompile Include="parsing\lexer\lexernumber_tests.c" />
     <ClCompile Include="parsing\lexer\lexerpunctuation_tests.c" />
     <ClCompile Include="parsing\lexer\lexerstring_tests.c" />

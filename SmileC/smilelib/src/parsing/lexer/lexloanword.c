@@ -40,7 +40,7 @@ Int Lexer_ParseLoanword(Lexer lexer, Bool isFirstContentOnLine)
 	Int nameLength;
 	Byte ch;
 
-	START_TOKEN(src - 1);
+	START_TOKEN(src++);
 
 	startLine = lexer->line;
 
@@ -84,18 +84,16 @@ Int Lexer_ParseLoanword(Lexer lexer, Bool isFirstContentOnLine)
 			// A named loanword.
 
 			// Get the name first.
+			lexer->src = src - 1;
 			if (Lexer_ParseName(lexer, isFirstContentOnLine) == TOKEN_ERROR)
 				return TOKEN_ERROR;
 
 			// Make sure whitespace follows the name.
 			src = lexer->src;
-			if (src < end) {
-				if (*src >= ' ') {
-					lexer->src = src;
-					lexer->token->text = String_FormatString(IllegalLoanwordMessage, String_Concat(String_FromC("#"), lexer->token->text));
-					return END_TOKEN(TOKEN_ERROR);
-				}
-				src++;
+			if (src < end && *src > ' ') {
+				lexer->src = src;
+				lexer->token->text = String_FormatString(IllegalLoanwordMessage, String_Concat(String_FromC("#"), lexer->token->text));
+				return END_TOKEN(TOKEN_ERROR);
 			}
 
 			nameText = String_GetBytes(lexer->token->text);

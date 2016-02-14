@@ -424,9 +424,9 @@ retryAtSrc:
 			return Lexer_ParseRawString(lexer, isFirstContentOnLine);
 
 		case '#':
-			lexer->src = src;
+			lexer->src = src - 1;
 			tokenKind = Lexer_ParseLoanword(lexer, isFirstContentOnLine);
-			if (!tokenKind) {
+			if (tokenKind == TOKEN_NONE) {
 				hasPrecedingWhitespace = True;
 				goto retry;
 			}

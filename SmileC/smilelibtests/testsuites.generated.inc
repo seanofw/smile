@@ -3,6 +3,7 @@
 EXTERN_TEST_SUITE(Int32DictTests);
 EXTERN_TEST_SUITE(LexerCoreTests);
 EXTERN_TEST_SUITE(LexerIdentifierTests);
+EXTERN_TEST_SUITE(LexerLoanwordTests);
 EXTERN_TEST_SUITE(LexerNumberTests);
 EXTERN_TEST_SUITE(LexerPunctuationTests);
 EXTERN_TEST_SUITE(LexerStringTests);
@@ -27,6 +28,7 @@ void RunAllTests()
 	RUN_TEST_SUITE(results, Int32DictTests);
 	RUN_TEST_SUITE(results, LexerCoreTests);
 	RUN_TEST_SUITE(results, LexerIdentifierTests);
+	RUN_TEST_SUITE(results, LexerLoanwordTests);
 	RUN_TEST_SUITE(results, LexerNumberTests);
 	RUN_TEST_SUITE(results, LexerPunctuationTests);
 	RUN_TEST_SUITE(results, LexerStringTests);
@@ -52,6 +54,7 @@ const char *TestSuiteNames[] = {
 	"Int32DictTests",
 	"LexerCoreTests",
 	"LexerIdentifierTests",
+	"LexerLoanwordTests",
 	"LexerNumberTests",
 	"LexerPunctuationTests",
 	"LexerStringTests",
@@ -71,5 +74,5 @@ const char *TestSuiteNames[] = {
 };
 
 
-int NumTestSuites = 19;
+int NumTestSuites = 20;
 
