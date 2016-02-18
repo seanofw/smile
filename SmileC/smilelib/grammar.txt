@@ -1,0 +1,204 @@
+
+Grammar for Smile, 13.24
+========================
+
+This grammar is something like LR(3), with common shift-reduce conflicts resolved in
+favor of shift (usually), tokenizer communication required to support variable declarations
+properly, a special set of tokenization rules for nonbreak_expr, and a few productions that
+require explicit precedence handling.  A PEG form of this would likely be cleaner.
+
+Special not-easily-expressed parsing rule:  Binary operators cannot be matched as binary
+operators if they are the first non-whitespace on a line.  This behavior is enabled inside
+{curly braces} and [square brackets], and disabled inside (parentheses) and inside the
+condition of 'if' or 'while-do'.  All other productions inherit their parent's line-break rule.
+
+In short, this is quite parseable, but it ain't YACC-friendly.  We use a recursive-descent
+parser in the standard Smile implementation.
+
+---------------------------------------------------------------------------------------------------
+
+Tokens:
+	LBRACE RBRACE LPAREN RPAREN LBRACKET RBRACKET
+	BAR EQUAL EQUAL_NOSPACE BACKTICK DOT DOUBLEHASH COLON COMMA
+	IF UNLESS THEN ELSE WHILE UNTIL DO TILL WHEN RETURN VAR AUTO CONST TRY CATCH NEW IS TYPEOF AND OR NOT
+	VAR_NAME UNKNOWN_ALPHA_NAME UNKNOWN_PUNCT_NAME TILL_NAME
+	EQ NE LE GE GT LT SUPEREQ SUPERNE
+	PLUS MINUS STAR SLASH
+	CHAR STRING BYTE INT32 INT64 REAL32 REAL64
+	INSERT_INCLUDE INSERT_BRK INSERT_SYNTAX
+
+---------------------------------------------------------------------------------------------------
+
+program ::= exprs_opt
+
+scope ::= LBRACE exprs_opt RBRACE			// See note above about binary operators (no breaking allowed in 'exprs_opt').
+
+exprs_opt ::= exprs |
+exprs ::= expr | exprs expr
+
+expr ::= arith
+		| if_then
+		| while_do
+		| do_while
+		| till_do
+		| try_catch
+		| var_decl
+		| const_decl
+		| auto_decl
+		| scope
+		| return
+		| INSERT_INCLUDE string
+        | INSERT_BRK base_expr
+        | INSERT_SYNTAX syntax_expr
+
+if_then ::= IF arith THEN expr				// See note above about binary operators (breaking allowed in 'arith').
+		| IF arith THEN expr ELSE expr		// See note above about binary operators (breaking allowed in 'arith').
+		| UNLESS arith THEN expr			// See note above about binary operators (breaking allowed in 'arith').
+		| UNLESS arith THEN expr ELSE expr	// See note above about binary operators (breaking allowed in 'arith').
+
+while_do ::= WHILE arith DO expr			// See note above about binary operators (breaking allowed in 'arith').
+		| UNTIL arith DO expr				// See note above about binary operators (breaking allowed in 'arith').
+do_while ::= DO expr WHILE arith
+		| DO expr UNTIL arith
+
+try_catch ::= TRY expr CATCH func
+
+till_do ::= TILL till_names DO expr whens_opt
+till_names ::= name | name COMMA till_names
+whens_opt ::= whens |
+whens ::= when whens | when
+when ::= WHEN name expr
+
+return ::= RETURN arith
+
+var_decl ::= VAR decls
+decls ::= decl | decls COMMA decl
+decl ::= name | name EQUAL arith | name EQUAL_NOSPACE arith
+
+auto_decl ::= AUTO adecls
+const_decl ::= CONST adecls
+adecls ::= adecl | adecls COMMA adecl
+adecl ::= name EQUAL arith | name EQUAL_NOSPACE arith
+
+any_name ::= name | EQ | NE | LE | GE | LT | GT | SUPEREQ | SUPERNE | PLUS | MINUS | STAR | SLASH
+		| IF | THEN | ELSE | WHILE | UNTIL | DO | TILL | WHEN | RETURN | VAR | CATCH | NEW
+		| OR | AND | NOT
+name ::= ALPHA_NAME | PUNCT_NAME | unknown_name
+unknown_name ::= UNKNOWN_ALPHA_NAME | UNKNOWN_PUNCT_NAME
+
+arith ::= lvalue unknown_name EQUAL_NOSPACE arith | assign		// There may not be a space between the operator name and the equal sign.
+        | INSERT_BRK arith
+
+assign ::= lvalue EQUAL assign
+		| lvalue EQUAL_NOSPACE assign
+        | unknown_name EQUAL assign
+        | unknown_name EQUAL_NOSPACE assign
+        | or
+
+lvalue ::= colon COLON unary | dot DOT name | VAR_NAME
+		| LPAREN lvalue RPAREN				// See note above about binary operators (breaking allowed in 'lvalue').
+
+or ::= or OR and | and
+and ::= and AND not | not
+not ::= NOT not | cmp
+
+cmp ::= addsub LT cmp | addsub GT cmp | addsub LE cmp | addsub GE cmp
+		| addsub EQ cmp | addsub NE cmp | addsub SUPEREQ cmp | addsub SUPERNE cmp
+        | addsub IS cmp
+		| addsub
+
+addsub ::= muldiv PLUS addsub | muldiv MINUS addsub | muldiv
+muldiv ::= binary STAR muldiv | binary SLASH muldiv | binary
+
+binary ::= binary UNKNOWN_PUNCT_NAME binary_args	// See note above about binary operators.
+		| binary UNKNOWN_ALPHA_NAME binary_args		// See note above about binary operators.
+		| range
+binary_args ::= binary_args COMMA range | range
+
+colon ::= colon COLON range | range
+
+range ::= unary RANGE unary | unary
+
+unary ::= UNKNOWN_PUNCT_NAME unary | UNKNOWN_ALPHA_NAME unary
+		| AND unary | OR unary
+		| EQ unary | NE unary
+		| SUPER_EQ unary | SUPER_NE unary
+		| LE unary | GE unary
+		| LT unary | GT unary
+		| PLUS unary | MINUS unary
+		| STAR unary | SLASH unary
+        | TYPEOF unary
+		| COLON unary
+		| new
+
+new ::= NEW LBRACE members_opt RBRACE				// See note above about binary operators (no breaking allowed in 'members_opt').
+		| NEW dot LBRACE members_opt RBRACE			// See note above about binary operators (no breaking allowed in 'members_opt').
+		| doublehash
+
+doublehash ::= dot DOUBLEHASH doublehash | dot
+
+dot ::= dot DOT any_name | term
+
+term ::= LPAREN expr RPAREN							// See note above about binary operators (breaking allowed in 'expr').
+       | scope
+       | func
+       | LBRACKET exprs_opt RBRACKET				// See note above about binary operators (no breaking allowed in 'exprs_opt').
+       | BACKTICK LPAREN expr RPAREN
+       | BACKTICK scope
+       | BACKTICK raw_list_term
+       | ALPHA_NAME
+       | PUNCT_NAME
+       | RAWSTRING
+       | DYNSTRING
+       | CHAR
+       | BYTE | INT32 | INT64 | REAL32 | REAL64
+       | INSERT
+
+string ::= RAWSTRING | DYNSTRING
+
+func ::= BAR params_opt pre_post_assertions_opt BAR expr semi_opt		// See note above about binary operators (no breaking allowed in 'exprs').
+
+semi_opt ::= SEMICOLON |
+
+members_opt ::= members |
+members ::= members member | member
+member ::= name COLON expr
+
+params_opt ::= params |
+params ::= params param | param
+param ::= name | BACKTICK name | param_type COLON name
+param_type ::= param_type_dot
+param_type_dot ::= param_type_dot DOT param_type_term | param_type_term
+param_type_term ::= ALPHA_NAME* | PUNCT_NAME
+   * Note:  Parameter type names may not use the special names "pre" or "post"
+
+pre_post_assertions_opt ::= pre_post_assertions |
+pre_post_assertions ::= pre_post_assertions pre_post_assertion | pre_post_assertion
+pre_post_assertion ::= PRE COLON or | POST COLON or
+
+raw_list_item ::= raw_list_doublehash
+raw_list_doublehash ::= raw_list_dot DOUBLEHASH raw_list_doublehash | raw_list_dot
+raw_list_dot ::= raw_list_dot DOT any_name | raw_list_term
+raw_list_term ::= raw_list | any_name
+       | CHAR | RAWSTRING
+       | BYTE | INT32 | INT64 | REAL32 | REAL64
+       | BACKTICK raw_list_term
+       | nonraw_term
+nonraw_term ::= LPAREN expr RPAREN
+       | scope
+       | func
+       | BACKTICK LPAREN expr RPAREN
+       | BACKTICK scope
+       | BACKTICK raw_list_term
+       | DYNSTRING
+       | INSERT
+       | NEW LBRACE members_opt RBRACE
+
+raw_list ::= LBRACKET raw_list_items_opt RBRACKET
+raw_list_items_opt ::= raw_list_items |
+raw_list_items ::= raw_list_items raw_list_item | raw_list_item
+
+syntax_expr ::= syntax_level LBRACKET syntax_elements RBRACKET expr
+syntax_level ::= STMT | EXPR | LVALUE | ARITH | BINARY | UNARY | TERM
+syntax_elements ::= syntax_element syntax_elements | syntax_element
+syntax_element ::= any_name | LBRACKET syntax_level any_name RBRACKET

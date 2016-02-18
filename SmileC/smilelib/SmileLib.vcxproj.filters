@@ -681,6 +681,12 @@
     <ClCompile Include="src\numeric\realshared.c">
       <Filter>src\numeric</Filter>
     </ClCompile>
+    <ClCompile Include="src\parsing\parser\parsercore.c">
+      <Filter>src\parsing\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parsing\parser\parsescope.c">
+      <Filter>src\parsing\parser</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">
@@ -947,6 +953,18 @@
     <ClInclude Include="include\smile\platform\cygwin-gcc-x64\platform.h">
       <Filter>include\platform\cygwin-gcc-x64</Filter>
     </ClInclude>
+    <ClInclude Include="include\smile\parsing\parser.h">
+      <Filter>include\parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\parsing\internal\parserinternal.h">
+      <Filter>include\parsing\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\parsing\internal\parsescope.h">
+      <Filter>include\parsing\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\parsing\internal\parsedecl.h">
+      <Filter>include\parsing\internal</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\smile\array.h">
@@ -999,5 +1017,8 @@
     <None Include="src\string\string_parsefloat.generated.inc">
       <Filter>src\string</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="grammar.txt" />
   </ItemGroup>
 </Project>

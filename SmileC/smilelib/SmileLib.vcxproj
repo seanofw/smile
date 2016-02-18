@@ -139,7 +139,11 @@
     <ClInclude Include="include\smile\numeric\realshared.h" />
     <ClInclude Include="include\smile\parsing\identkind.h" />
     <ClInclude Include="include\smile\parsing\internal\lexerinternal.h" />
+    <ClInclude Include="include\smile\parsing\internal\parsedecl.h" />
+    <ClInclude Include="include\smile\parsing\internal\parserinternal.h" />
+    <ClInclude Include="include\smile\parsing\internal\parsescope.h" />
     <ClInclude Include="include\smile\parsing\lexer.h" />
+    <ClInclude Include="include\smile\parsing\parser.h" />
     <ClInclude Include="include\smile\parsing\tokenkind.h" />
     <ClInclude Include="include\smile\platform\cygwin-gcc-x64\platform.h" />
     <ClInclude Include="include\smile\platform\cygwin-gcc-x86\platform.h" />
@@ -749,6 +753,8 @@
     <ClCompile Include="src\parsing\lexer\lexnumbers.c" />
     <ClCompile Include="src\parsing\lexer\lexpunct.c" />
     <ClCompile Include="src\parsing\lexer\lexstrings.c" />
+    <ClCompile Include="src\parsing\parser\parsercore.c" />
+    <ClCompile Include="src\parsing\parser\parsescope.c" />
     <ClCompile Include="src\siphash.c" />
     <ClCompile Include="src\smiletypes\numeric\smileinteger32.c" />
     <ClCompile Include="src\smiletypes\numeric\smileinteger64.c" />
@@ -787,6 +793,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="src\string\string_parsefloat.generated.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="grammar.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
