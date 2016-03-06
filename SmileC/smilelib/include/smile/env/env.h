@@ -46,4 +46,8 @@ SMILE_API_FUNC void Smile_ThrowException(Symbol exceptionKind, String message);
 
 SMILE_API_FUNC void Smile_ResetEnvironment(void);
 
+#define Null (Smile_KnownObjects.NullInstance)
+#define NullList ((SmileList)Smile_KnownObjects.NullInstance)
+#define NullObject ((SmileObject)Smile_KnownObjects.NullInstance)
+
 #endif

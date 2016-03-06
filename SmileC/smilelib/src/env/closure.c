@@ -104,7 +104,7 @@ SmileObject Closure_Get(Closure closure, Symbol name)
 	}
 
 	// Didn't find it, so it's treated as a Smile Null.
-	return (SmileObject)Smile_KnownObjects.Null;
+	return NullObject;
 }
 
 /// <summary>
@@ -128,7 +128,7 @@ Bool Closure_TryGet(Closure closure, Symbol name, SmileObject *value)
 	}
 
 	// Didn't find it, so it's treated as a Smile Null.
-	*value = (SmileObject)Smile_KnownObjects.Null;
+	*value = NullObject;
 	return False;
 }
 

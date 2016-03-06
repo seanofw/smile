@@ -92,7 +92,7 @@ Bool SmileBool_HasProperty(SmileBool self, Symbol propertyName)
 SmileList SmileBool_GetPropertyNames(SmileBool self)
 {
 	UNUSED(self);
-	return Smile_KnownObjects.Null;
+	return NullList;
 }
 
 Bool SmileBool_ToBool(SmileBool self)

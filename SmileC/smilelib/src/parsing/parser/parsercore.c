@@ -24,5 +24,59 @@ Parser Parser_Create(void)
 {
 	Parser parser = GC_MALLOC_STRUCT(struct ParserStruct);
 	parser->lexer = NULL;
+	parser->currentScope = NULL;
+	parser->firstError = parser->lastError = NullList;
 	return parser;
+}
+
+static Token NextToken(void)
+{
+	return NULL;
+}
+
+static void AddErrorv(LexerPosition position, const char *message, va_list v)
+{
+	String string = String_FormatV(message, v);
+	UNUSED(position);
+	UNUSED(string);
+}
+
+static void AddError(LexerPosition position, const char *message, ...)
+{
+	va_list v;
+	va_start(v, message);
+	AddErrorv(position, message, v);
+	va_end(v);
+}
+
+static SmileObject ParseExprsOpt(Int binaryLineBreaks);
+
+// program ::= . exprs_opt
+SmileObject Parse(Parser parser, Lexer lexer, ParseScope scope)
+{
+	SmileList head, tail;
+	ParseScope parentScope;
+	Lexer oldLexer;
+	Token token;
+	
+	head = tail = NullList;
+	parentScope = parser->currentScope;
+	oldLexer = parser->lexer;
+	
+	parser->currentScope = scope;
+	parser->lexer = lexer;
+
+	ParseExprsOpt(BINARYLINEBREAKS_DISALLOWED);
+
+	if ((token = NextToken())->kind != TOKEN_EOI) {
+		AddError(&token->position, "Unexpected content at end of file.");
+	}
+
+	return NULL;
+}
+
+static SmileObject ParseExprsOpt(Int binaryLineBreaks)
+{
+	UNUSED(binaryLineBreaks);
+	return NULL;
 }

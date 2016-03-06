@@ -65,7 +65,7 @@ SmileObject SmileObject_GetProperty(SmileObject self, Symbol propertyName)
 {
 	UNUSED(self);
 	UNUSED(propertyName);
-	return (SmileObject)Smile_KnownObjects.Null;
+	return NullObject;
 }
 
 void SmileObject_SetProperty(SmileObject self, Symbol propertyName, SmileObject value)
@@ -87,7 +87,7 @@ Bool SmileObject_HasProperty(SmileObject self, Symbol propertyName)
 SmileList SmileObject_GetPropertyNames(SmileObject self)
 {
 	UNUSED(self);
-	return Smile_KnownObjects.Null;
+	return NullList;
 }
 
 Bool SmileObject_ToBool(SmileObject self)

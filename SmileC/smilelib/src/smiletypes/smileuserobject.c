@@ -34,7 +34,7 @@ SmileUserObject SmileUserObject_CreateWithSize(SmileObject base, Int initialSize
 	userObject->base = base;
 	userObject->kind = SMILE_KIND_USEROBJECT | SMILE_SECURITY_READWRITEAPPEND;
 	userObject->vtable = SmileUserObject_VTable_ReadWriteAppend;
-	userObject->securityKey = (SmileObject)Smile_KnownObjects.Null;
+	userObject->securityKey = NullObject;
 	Int32Dict_ClearWithSize((Int32Dict)&userObject->dict, (Int32)initialSize);
 	return userObject;
 }

@@ -50,7 +50,7 @@ SMILE_API_FUNC String SmileList_ToString(SmileList self);
 Inline SmileList SmileList_Rest(SmileList list)
 {
 	SmileObject d = list->d;
-	return ((d->kind & ~SMILE_KIND_LIST) == SMILE_KIND_NULL) ? (SmileList)d : (SmileList)Smile_KnownObjects.Null;
+	return ((d->kind & ~SMILE_KIND_LIST) == SMILE_KIND_NULL) ? (SmileList)d : NullList;
 }
 
 Inline SmileObject SmileList_First(SmileList list)
@@ -70,7 +70,7 @@ Inline SmileObject SmileList_First(SmileList list)
 //  List builders
 
 #define DECLARE_LIST_BUILDER(__name__) \
-	SmileList __name__##Null = Smile_KnownObjects.Null, \
+	SmileList __name__##Null = NullList, \
 		__name__##Head = __name__##Null, \
 		*__name__##Tail = &(__name__##Head), \
 		__name__##Temp

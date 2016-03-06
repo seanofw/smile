@@ -78,7 +78,7 @@ SmileObject SmileList_GetProperty(SmileList self, Symbol propertyName)
 	else if (propertyName == Smile_KnownSymbols.d)
 		return self->d;
 	else
-		return (SmileObject)Smile_KnownObjects.Null;
+		return NullObject;
 }
 
 void SmileList_SetProperty(SmileList self, Symbol propertyName, SmileObject value)

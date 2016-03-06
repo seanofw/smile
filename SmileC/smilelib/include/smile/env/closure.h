@@ -70,8 +70,7 @@ SMILE_API_FUNC Bool Closure_Has(Closure closure, Symbol name);
 /// <summary>
 /// Create a dynamic-size closure.  The variables associated with this will be allocated
 /// in a separate array.  Note that the variables will *not* be initialized to any specific
-/// value; in particular, if you want them set to KnownObjects.Null, you'll have to set
-/// them yourself.
+/// value; in particular, if you want them set to Null, you'll have to set them yourself.
 /// </summary>
 /// <param name="parent">The parent closure, if any.</param>
 /// <param name="closureInfo">The ClosureInfo that describes how this closure will be created.</param>
@@ -88,8 +87,8 @@ Inline Closure Closure_CreateDynamic(Closure parent, ClosureInfo closureInfo)
 /// <summary>
 /// Create a fixed-size closure.  The variables associated with this will be allocated
 /// at the end of the closure struct.  Note that the variables will *not* be initialized
-/// to any specific value; in particular, if you want them set to KnownObjects.Null,
-/// you'll have to set them yourself.
+/// to any specific value; in particular, if you want them set to Null, you'll have to
+/// set them yourself.
 /// </summary>
 /// <param name="parent">The parent closure, if any.</param>
 /// <param name="closureInfo">The ClosureInfo that describes how this closure will be created.</param>
@@ -190,7 +189,7 @@ Inline SmileObject Closure_GetHereByName(Closure closure, Symbol name)
 {
 	Int32 index;
 	if (!Int32Int32Dict_TryGetValue(closure->closureInfo->symbolDictionary, name, &index))
-		return (SmileObject)Smile_KnownObjects.Null;
+		return (SmileObject)Null;
 	return closure->variables[index];
 }
 

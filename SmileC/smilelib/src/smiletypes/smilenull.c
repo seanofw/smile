@@ -93,7 +93,7 @@ Bool SmileNull_HasProperty(SmileNull self, Symbol propertyName)
 SmileList SmileNull_GetPropertyNames(SmileNull self)
 {
 	UNUSED(self);
-	return (SmileList)(Smile_KnownObjects.Null);
+	return NullList;
 }
 
 Bool SmileNull_ToBool(SmileNull self)

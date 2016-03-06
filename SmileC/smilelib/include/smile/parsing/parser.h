@@ -22,6 +22,9 @@
 #ifndef __SMILE_PARSING_LEXER_H__
 #include <smile/parsing/lexer.h>
 #endif
+#ifndef __SMILE_PARSING_INTERNAL_PARSESCOPE_H__
+#include <smile/parsing/internal/parsescope.h>
+#endif
 #ifndef __SMILE_ENV_ENV_H__
 #include <smile/env/env.h>
 #endif
@@ -34,7 +37,11 @@
 /// </summary>
 typedef struct ParserStruct {
 
-	Lexer lexer;			// The lexer, which provides the source token stream.
+	Lexer lexer;						// The lexer, which provides the source token stream.
+
+	ParseScope currentScope;			// The current parsing scope.
+
+	SmileList firstError, lastError;	// A list of errors generated during the parse.
 
 } *Parser;
 
@@ -42,6 +49,7 @@ typedef struct ParserStruct {
 //  External parts of the implementation
 
 SMILE_API_FUNC Parser Parser_Create(void);
+SMILE_API_FUNC SmileObject Parse(Parser parser, Lexer lexer, ParseScope scope);
 
 //-------------------------------------------------------------------------------------------------
 //  Inline parts of the implementation

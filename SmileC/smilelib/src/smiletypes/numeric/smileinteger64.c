@@ -93,7 +93,7 @@ Bool SmileInteger64_HasProperty(SmileInteger64 self, Symbol propertyName)
 SmileList SmileInteger64_GetPropertyNames(SmileInteger64 self)
 {
 	UNUSED(self);
-	return Smile_KnownObjects.Null;
+	return NullList;
 }
 
 Bool SmileInteger64_ToBool(SmileInteger64 self)

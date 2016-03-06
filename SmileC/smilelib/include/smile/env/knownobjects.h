@@ -9,7 +9,7 @@
 struct KnownObjectsStruct {
 
 	SmileObject Object;
-	SmileNull Null;
+	SmileNull NullInstance;
 
 	SmileBool TrueObj;
 	SmileBool FalseObj;

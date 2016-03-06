@@ -20,6 +20,8 @@
 #include <smile/parsing/internal/parsedecl.h>
 #include <smile/parsing/internal/parsescope.h>
 
+#include <smile/numeric/real64.h>
+
 static void ParseScope_DeclareGlobalOperators(ParseScope parseScope);
 
 /// <summary>

@@ -29,7 +29,7 @@ void KnownObjects_Preload(struct KnownObjectsStruct *knownObjects)
 	Int32 i;
 
 	knownObjects->Object = SmileObject_Create();
-	knownObjects->Null = SmileNull_Create();
+	knownObjects->NullInstance = SmileNull_Create();
 
 	for (i = -100; i <= 100; i++) {
 		knownObjects->SmallInt32s[i + 100] = SmileInteger32_CreateInternal(i);

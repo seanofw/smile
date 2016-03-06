@@ -32,11 +32,13 @@
 /// </summary>
 typedef struct ParseDeclStruct {
 
+	DECLARE_BASE_OBJECT_PROPERTIES;
+
 	// The symbol that has been declared.
 	Symbol symbol;
 
 	// What kind of declaration this is (see PARSEDECL_*).
-	Int kind;
+	Int declKind;
 
 	// The index of this declaration in the current scope (order in which it was declared).
 	Int scopeIndex;
@@ -46,18 +48,25 @@ typedef struct ParseDeclStruct {
 
 } *ParseDecl;
 
+SMILE_API_DATA SmileVTable ParseDecl_VTable;
+
 //-------------------------------------------------------------------------------------------------
 //  Functions.
 
 /// <summary>
 /// Simple helper function to create ParseDecl structs.
 /// </summary>
-Inline ParseDecl ParseDecl_Create(Symbol symbol, Int kind, Int scopeIndex, SmileObject initialAssignment)
+Inline ParseDecl ParseDecl_Create(Symbol symbol, Int declKind, Int scopeIndex, SmileObject initialAssignment)
 {
 	ParseDecl parseDecl = GC_MALLOC_STRUCT(struct ParseDeclStruct);
 
+	parseDecl->kind = SMILE_KIND_HANDLE;
+	parseDecl->base = Smile_KnownObjects.Object;
+	parseDecl->vtable = ParseDecl_VTable;
+	parseDecl->assignedSymbol = 0;
+
 	parseDecl->symbol = symbol;
-	parseDecl->kind = kind;
+	parseDecl->declKind = declKind;
 	parseDecl->scopeIndex = scopeIndex;
 	parseDecl->initialAssignment = initialAssignment;
 
