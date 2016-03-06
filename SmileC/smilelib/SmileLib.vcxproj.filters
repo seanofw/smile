@@ -687,6 +687,12 @@
     <ClCompile Include="src\parsing\parser\parsescope.c">
       <Filter>src\parsing\parser</Filter>
     </ClCompile>
+    <ClCompile Include="src\dict\int32int32dict.c">
+      <Filter>src\dict</Filter>
+    </ClCompile>
+    <ClCompile Include="src\env\closure.c">
+      <Filter>src\env</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">
@@ -964,6 +970,12 @@
     </ClInclude>
     <ClInclude Include="include\smile\parsing\internal\parsedecl.h">
       <Filter>include\parsing\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\env\closure.h">
+      <Filter>include\env</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\dict\int32int32dict.h">
+      <Filter>include\dict</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

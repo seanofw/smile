@@ -125,6 +125,8 @@
     <ClInclude Include="include\smile.h" />
     <ClInclude Include="include\smile\array.h" />
     <ClInclude Include="include\smile\bittwiddling.h" />
+    <ClInclude Include="include\smile\dict\int32int32dict.h" />
+    <ClInclude Include="include\smile\env\closure.h" />
     <ClInclude Include="include\smile\env\env.h" />
     <ClInclude Include="include\smile\env\knownbases.h" />
     <ClInclude Include="include\smile\env\knownobjects.h" />
@@ -729,6 +731,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\dict\dictstats.c" />
+    <ClCompile Include="src\dict\int32int32dict.c" />
+    <ClCompile Include="src\env\closure.c" />
     <ClCompile Include="src\env\env.c" />
     <ClCompile Include="src\env\knownbases.c" />
     <ClCompile Include="src\env\knownobjects.c" />
