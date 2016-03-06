@@ -32,9 +32,7 @@ ParseScope ParseScope_CreateRoot(void)
 
 	parseScope->kind = PARSESCOPE_OUTERMOST;
 	parseScope->parentScope = NULL;
-	parseScope->symbols = Int32Dict_Create();
-	parseScope->firstDeclaration = Smile_KnownObjects.Null;
-	parseScope->lastDeclaration = Smile_KnownObjects.Null;
+	parseScope->closure = Closure_CreateDynamic(NULL, ClosureInfo_Create(NULL));
 
 	ParseScope_DeclareGlobalOperators(parseScope);
 
@@ -76,47 +74,9 @@ ParseScope ParseScope_CreateChild(ParseScope parentScope, Int kind)
 
 	parseScope->kind = kind;
 	parseScope->parentScope = parentScope;
-	parseScope->symbols = Int32Dict_Create();
-	parseScope->firstDeclaration = Smile_KnownObjects.Null;
-	parseScope->lastDeclaration = Smile_KnownObjects.Null;
+	parseScope->closure = Closure_CreateDynamic(parentScope->closure, ClosureInfo_Create(parentScope->closure->closureInfo));
 
 	return parseScope;
-}
-
-/// <summary>
-/// Determine whether the given symbol was declared within the given scope
-/// or in any parent scopes, and return its declaration.
-/// </summary>
-/// <param name="scope">The scope to check for the given symbol.</param>
-/// <param name="symbol">The symbol to check for.</param>
-/// <returns>The declaration if the symbol was declared in this scope or any parent scope, NULL if it was not.</returns>
-ParseDecl ParseScope_FindDeclaration(ParseScope scope, Symbol symbol)
-{
-	void *value;
-	for (; scope != NULL; scope = scope->parentScope) {
-		if (Int32Dict_TryGetValue(scope->symbols, symbol, &value))
-			return (ParseDecl)value;
-	}
-	return NULL;
-}
-
-/// <summary>
-/// Declare or redeclare a name in the most appropriate current scope for declaring names.
-/// </summary>
-/// <param name="scope">The current scope.  This isn't necessarily where the declaration
-/// will occur; it's simply where to start searching for the right place to put the
-/// declaration.</param>
-/// <param name="symbol">The name to declare.</param>
-/// <param name="kind">What kind of thing to declare that name as (one of the PARSEDECL_* values,
-/// like ARGUMENT or VARIABLE or CONST).</param>
-/// <returns>The new declaration, if a declaration was created.  If this declaration attempt
-/// resulted in a conflict with an existing declaration, this will return NULL.</returns>
-ParseDecl ParseScope_Declare(ParseScope scope, Symbol symbol, Int kind)
-{
-	while (ParseScope_IsPseudoScope(scope)) {
-		scope = scope->parentScope;
-	}
-	return ParseScope_DeclareHere(scope, symbol, kind);
 }
 
 /// <summary>
@@ -130,19 +90,12 @@ ParseDecl ParseScope_Declare(ParseScope scope, Symbol symbol, Int kind)
 /// resulted in a conflict with an existing declaration, this will return NULL.</returns>
 ParseDecl ParseScope_DeclareHere(ParseScope scope, Symbol symbol, Int kind)
 {
-	SmileList declList;
-	Int symbolIndex;
 	ParseDecl parseDecl;
 
-	// Get the unique index of this symbol within the scope.
-	symbolIndex = Int32Dict_Count(scope->symbols);
-
 	// Construct the base declaration object for this name.
-	parseDecl = ParseDecl_Create(symbol, kind, symbolIndex, NULL);
+	parseDecl = ParseDecl_Create(symbol, kind, scope->closure->closureInfo->numVariables, NULL);
 
-	// Add it to the set of declared names, if it doesn't already exist there.
-	if (!Int32Dict_Add(scope->symbols, symbol, parseDecl)) {
-
+	if (Closure_HasHere(scope->closure, symbol)) {
 		// Already declared.  This isn't necessarily an error, but it depends on what
 		// kind of thing is being declared and how it relates to what was already declared.
 
@@ -150,16 +103,8 @@ ParseDecl ParseScope_DeclareHere(ParseScope scope, Symbol symbol, Int kind)
 		return NULL;
 	}
 
-	// It's a valid new declaration, so add the symbol to the list of declared symbols.
-	declList = SmileList_Cons((SmileObject)SmileSymbol_Create(symbol), (SmileObject)Smile_KnownObjects.Null);
-	if (scope->firstDeclaration == Smile_KnownObjects.Null) {
-		scope->firstDeclaration = declList;
-	}
-	else {
-		scope->lastDeclaration->d = (SmileObject)declList;
-	}
-	scope->lastDeclaration = declList;
+	Closure_Let(scope->closure, symbol, (SmileObject)parseDecl);
 
-	// Finally, return the declaration object itself.
+	// Last, return the declaration object itself.
 	return parseDecl;
 }

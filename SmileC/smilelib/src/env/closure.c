@@ -108,6 +108,31 @@ SmileObject Closure_Get(Closure closure, Symbol name)
 }
 
 /// <summary>
+/// Get the value of a variable in the provided closure chain, by its name.
+/// This function is roughly equivalent to getting a variable's value in Smile code.
+/// </summary>
+/// <param name="closure">The closure in which the variable can be found.  The
+/// variable will be retrieved from the nearest closure in which it is defined.</param>
+/// <param name="name">The name of the variable to retrieve.</param>
+/// <param name="value">The current value of that variable.</param>
+/// <returns>True if the variable was found, False if it was not.</returns>
+Bool Closure_TryGet(Closure closure, Symbol name, SmileObject *value)
+{
+	// Walk up the tree of closures searching for one that contains this name.
+	Int32 index;
+	for (; closure != NULL; closure = closure->parent) {
+		if (Int32Int32Dict_TryGetValue(closure->closureInfo->symbolDictionary, name, &index)) {
+			*value = closure->variables[index];
+			return True;
+		}
+	}
+
+	// Didn't find it, so it's treated as a Smile Null.
+	*value = (SmileObject)Smile_KnownObjects.Null;
+	return False;
+}
+
+/// <summary>
 /// Set the value of a variable in the provided closure chain, by its name.
 /// This function is roughly equivalent to setting a variable's value in Smile code.
 /// </summary>
@@ -146,4 +171,24 @@ Closure Closure_Set(Closure closure, Symbol name, SmileObject value)
 	// Didn't find a matching closure, so attempt to perform a Let in the original
 	// closure to create it.
 	return Closure_Let(closure, name, value) ? closure : NULL;
+}
+
+/// <summary>
+/// Determine if the variable exists in the provided closure chain, by its name.
+/// </summary>
+/// <param name="closure">The closure in which the variable can be found.  The
+/// variable will be retrieved from the nearest closure in which it is defined.</param>
+/// <param name="name">The name of the variable to retrieve.</param>
+/// <returns>True if that variable exists somewhere in the closure chain, or False
+/// if it has not been assigned.</returns>
+Bool Closure_Has(Closure closure, Symbol name)
+{
+	// Walk up the tree of closures searching for one that contains this name.
+	for (; closure != NULL; closure = closure->parent) {
+		if (Int32Int32Dict_ContainsKey(closure->closureInfo->symbolDictionary, name))
+			return True;
+	}
+
+	// Didn't find it.
+	return False;
 }

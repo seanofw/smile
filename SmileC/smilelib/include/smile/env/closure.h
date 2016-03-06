@@ -59,8 +59,10 @@ SMILE_API_FUNC ClosureInfo ClosureInfo_Create(ClosureInfo parent);
 
 SMILE_API_FUNC Bool Closure_Let(Closure closure, Symbol name, SmileObject value);
 
-SMILE_API_FUNC Closure Closure_Set(Closure closure, Symbol name, SmileObject value);
 SMILE_API_FUNC SmileObject Closure_Get(Closure closure, Symbol name);
+SMILE_API_FUNC Bool Closure_TryGet(Closure closure, Symbol name, SmileObject *value);
+SMILE_API_FUNC Closure Closure_Set(Closure closure, Symbol name, SmileObject value);
+SMILE_API_FUNC Bool Closure_Has(Closure closure, Symbol name);
 
 //-------------------------------------------------------------------------------------------------
 // Inline Functions.
@@ -158,6 +160,22 @@ Inline Bool Closure_SetHereByName(Closure closure, Symbol name, SmileObject valu
 Inline SmileObject Closure_GetHereByIndex(Closure closure, Int index)
 {
 	return closure->variables[index];
+}
+
+/// <summary>
+/// Get the index of a variable in the provided closure, by its name.
+/// </summary>
+/// <param name="closure">The closure in which the variable can be found.  The
+/// variable will be retrieved *here*, and not in any parent closure, even if there are
+/// overlapping names.</param>
+/// <param name="name">The name of the variable index to retrieve.</param>
+/// <returns>The index of that variable, if it exists, or -1 if it does not exist.</returns>
+Inline Int Closure_GetNameIndex(Closure closure, Symbol name)
+{
+	Int32 index;
+	if (!Int32Int32Dict_TryGetValue(closure->closureInfo->symbolDictionary, name, &index))
+		return -1;
+	return index;
 }
 
 /// <summary>

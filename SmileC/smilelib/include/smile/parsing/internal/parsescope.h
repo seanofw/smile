@@ -20,6 +20,9 @@
 #ifndef __SMILE_PARSING_INTERNAL_PARSEDECL_H__
 #include <smile/parsing/internal/parsedecl.h>
 #endif
+#ifndef __SMILE_ENV_CLOSURE_H__
+#include <smile/env/closure.h>
+#endif
 
 //-------------------------------------------------------------------------------------------------
 //  Parsing scope kinds.
@@ -43,17 +46,14 @@ typedef struct ParseScopeStruct {
 	// Every scope (except for the global scope) has a lexical parent.
 	struct ParseScopeStruct *parentScope;
 
-	// This is the collection of symbols that were in some way declared within this scope.
-	// It is a dictionary mapping of Symbol IDs --> ParseDecl objects.
-	Int32Dict symbols;
-
 	// What kind of scope this is, of the PARSESCOPE_* values.
 	Int kind;
 
-	// A list of all the declarations in this scope, in declaration order
-	// (but just a sequence of SmileSymbol objects are stored in this list).
-	SmileList firstDeclaration;
-	SmileList lastDeclaration;
+	// This is the collection of symbols that were in some way declared within this scope.
+	// Each assignment within this closure is a mapping to a ParseDecl object, not to a real
+	// SmileObject.  Because there's only one set of variables per scope, we're a member of
+	// the Lisp-1 family.
+	Closure closure;
 
 } *ParseScope;
 
@@ -62,8 +62,6 @@ typedef struct ParseScopeStruct {
 
 ParseScope ParseScope_CreateRoot(void);
 ParseScope ParseScope_CreateChild(ParseScope parentScope, Int kind);
-ParseDecl ParseScope_FindDeclaration(ParseScope scope, Symbol symbol);
-ParseDecl ParseScope_Declare(ParseScope scope, Symbol symbol, Int kind);
 ParseDecl ParseScope_DeclareHere(ParseScope scope, Symbol symbol, Int kind);
 
 //-------------------------------------------------------------------------------------------------
@@ -79,8 +77,8 @@ ParseDecl ParseScope_DeclareHere(ParseScope scope, Symbol symbol, Int kind);
 /// <returns>The declaration if the symbol was explicitly declared in this scope, NULL if it was not.</returns>
 Inline ParseDecl ParseScope_FindDeclarationHere(ParseScope scope, Symbol symbol)
 {
-	void *value;
-	return Int32Dict_TryGetValue(scope->symbols, symbol, &value) ? (ParseDecl)value : NULL;
+	Int index = Closure_GetNameIndex(scope->closure, symbol);
+	return index >= 0 ? (ParseDecl)scope->closure->variables[index] : NULL;
 }
 
 /// <summary>
@@ -91,7 +89,7 @@ Inline ParseDecl ParseScope_FindDeclarationHere(ParseScope scope, Symbol symbol)
 /// <returns>True if that symbol has been declared in this scope chain, false if it has not.</returns>
 Inline Bool ParseScope_IsDeclared(ParseScope scope, Symbol symbol)
 {
-	return ParseScope_FindDeclaration(scope, symbol) != NULL;
+	return Closure_Has(scope->closure, symbol);
 }
 
 /// <summary>
@@ -102,7 +100,7 @@ Inline Bool ParseScope_IsDeclared(ParseScope scope, Symbol symbol)
 /// <returns>True if that symbol has been declared in this scope, false if it has not.</returns>
 Inline Bool ParseScope_IsDeclaredHere(ParseScope scope, Symbol symbol)
 {
-	return ParseScope_FindDeclarationHere(scope, symbol) != NULL;
+	return Closure_HasHere(scope->closure, symbol);
 }
 
 /// <summary>
@@ -113,7 +111,7 @@ Inline Bool ParseScope_IsDeclaredHere(ParseScope scope, Symbol symbol)
 /// <returns>The number of names declared within that scope.</returns>
 Inline Int ParseScope_GetDeclarationCount(ParseScope scope)
 {
-	return Int32Dict_Count(scope->symbols);
+	return scope->closure->closureInfo->numVariables;
 }
 
 /// <summary>
@@ -126,6 +124,38 @@ Inline Bool ParseScope_IsPseudoScope(ParseScope parseScope)
 	return (parseScope->kind == PARSESCOPE_FUNCTION
 		|| parseScope->kind == PARSESCOPE_POSTCONDITION
 		|| parseScope->kind == PARSESCOPE_TILLDO);
+}
+
+/// <summary>
+/// Determine whether the given symbol was declared within the given scope
+/// or in any parent scopes, and return its declaration.
+/// </summary>
+/// <param name="scope">The scope to check for the given symbol.</param>
+/// <param name="symbol">The symbol to check for.</param>
+/// <returns>The declaration if the symbol was declared in this scope or any parent scope, NULL if it was not.</returns>
+Inline ParseDecl ParseScope_FindDeclaration(ParseScope scope, Symbol symbol)
+{
+	ParseDecl decl;
+	return Closure_TryGet(scope->closure, symbol, (SmileObject *)&decl) ? decl : NULL;
+}
+
+/// <summary>
+/// Declare or redeclare a name in the most appropriate current scope for declaring names.
+/// </summary>
+/// <param name="scope">The current scope.  This isn't necessarily where the declaration
+/// will occur; it's simply where to start searching for the right place to put the
+/// declaration.</param>
+/// <param name="symbol">The name to declare.</param>
+/// <param name="kind">What kind of thing to declare that name as (one of the PARSEDECL_* values,
+/// like ARGUMENT or VARIABLE or CONST).</param>
+/// <returns>The new declaration, if a declaration was created.  If this declaration attempt
+/// resulted in a conflict with an existing declaration, this will return NULL.</returns>
+Inline ParseDecl ParseScope_Declare(ParseScope scope, Symbol symbol, Int kind)
+{
+	while (ParseScope_IsPseudoScope(scope)) {
+		scope = scope->parentScope;
+	}
+	return ParseScope_DeclareHere(scope, symbol, kind);
 }
 
 #endif
