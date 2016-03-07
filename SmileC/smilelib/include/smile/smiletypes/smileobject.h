@@ -65,6 +65,8 @@ struct SmileObjectInt {
 	\
 	static struct __name__##Int __name__##Data =
 
+#define SMILE_KIND(obj) ((obj)->kind & SMILE_KIND_MASK)
+
 #define SMILE_VCALL(__obj__, __method__) \
 	((__obj__)->vtable->__method__((SmileObject)(__obj__)))
 
@@ -96,7 +98,7 @@ SMILE_API_FUNC SmileObject SmileObject_Create(void);
 
 Inline Bool SmileObject_IsList(SmileObject self)
 {
-	register UInt32 kind = self->kind;
+	register UInt32 kind = SMILE_KIND(self);
 	return kind == SMILE_KIND_LIST || kind == SMILE_KIND_NULL;
 }
 

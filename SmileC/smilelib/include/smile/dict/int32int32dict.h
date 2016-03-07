@@ -247,11 +247,11 @@ Inline Bool Int32Int32Dict_TryAddValue(Int32Int32Dict intDict, Int32 key, Int32 
 		intDict, key, node->key == key,
 		{
 			*result = node->value = value;
-			return True;
+			return False;
 		},
 		{
 			Int32Int32DictInt_Append((struct Int32Int32DictInt *)intDict, key, *result = value);
-			return False;
+			return True;
 		})
 }
 

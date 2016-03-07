@@ -37,7 +37,7 @@ SmileNull SmileNull_Create(void)
 Bool SmileNull_CompareEqual(SmileNull self, SmileObject other)
 {
 	UNUSED(self);
-	return (other->kind == SMILE_KIND_NULL);
+	return (SMILE_KIND(other) == SMILE_KIND_NULL);
 }
 
 UInt32 SmileNull_Hash(SmileNull self)

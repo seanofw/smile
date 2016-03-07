@@ -156,4 +156,23 @@ Inline Int Lexer_Peek(Lexer lexer)
 	return kind;
 }
 
+/// <summary>
+/// Compare two lexer positions to see if they are identical/equivalent.
+/// </summary>
+/// <param name="a">The first position to compare.</param>
+/// <param name="b">The first position to compare.</param>
+/// <returns>True if they are identical positions, False if they are not identical.</returns>
+Inline Bool LexerPosition_Equals(LexerPosition a, LexerPosition b)
+{
+	if (a == NULL) return (b == NULL);
+	else if (b == NULL) return False;
+
+	return (a == b
+		|| a->line == b->line
+			&& a->column == b->column
+			&& a->lineStart == b->lineStart
+			&& a->length == b->length
+			&& String_Equals(a->filename, b->filename));
+}
+
 #endif

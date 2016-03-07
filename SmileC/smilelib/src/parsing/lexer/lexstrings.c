@@ -186,7 +186,7 @@ Int Lexer_ParseChar(Lexer lexer, Bool isFirstContentOnLine)
 		// Too much content for a char, so treat this as an unterminated char.
 		lexer->src = src;
 		lexer->token->text = String_FormatString(UnterminatedCharMessage, startLine);
-		END_TOKEN(TOKEN_ERROR);
+		return END_TOKEN(TOKEN_ERROR);
 	}
 	src++;
 

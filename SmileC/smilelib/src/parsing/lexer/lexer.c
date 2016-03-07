@@ -28,7 +28,9 @@
 STATIC_STRING(IllegalCharacterMessage, "Unknown or invalid character (character code \"%S\")");
 
 STATIC_STRING(KeywordAnd, "and");
+STATIC_STRING(KeywordAuto, "auto");
 STATIC_STRING(KeywordCatch, "catch");
+STATIC_STRING(KeywordConst, "const");
 STATIC_STRING(KeywordDo, "do");
 STATIC_STRING(KeywordElse, "else");
 STATIC_STRING(KeywordIf, "if");
@@ -248,6 +250,11 @@ retryAtSrc:
 				token->text = KeywordAnd;
 				return SIMPLE_TOKEN(src - 3, TOKEN_AND);
 			}
+			if (IS_KEYWORD_CHAR(0, 'u') && IS_KEYWORD_CHAR(1, 't') && IS_KEYWORD_CHAR(2, 'o') && IS_KEYWORD_END(3)) {
+				src += 3;
+				token->text = KeywordAuto;
+				return SIMPLE_TOKEN(src - 4, TOKEN_AUTO);
+			}
 			goto parseAsName;
 
 		case 'c':
@@ -256,6 +263,12 @@ retryAtSrc:
 				src += 4;
 				token->text = KeywordCatch;
 				return SIMPLE_TOKEN(src - 5, TOKEN_CATCH);
+			}
+			else if (IS_KEYWORD_CHAR(0, 'o') && IS_KEYWORD_CHAR(1, 'n') && IS_KEYWORD_CHAR(2, 's')
+				&& IS_KEYWORD_CHAR(3, 't') && IS_KEYWORD_END(4)) {
+				src += 4;
+				token->text = KeywordConst;
+				return SIMPLE_TOKEN(src - 5, TOKEN_CONST);
 			}
 			goto parseAsName;
 

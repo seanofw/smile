@@ -56,6 +56,12 @@
 #define SMILE_KIND_RANGEOF				0x40
 #define SMILE_KIND_MAPOF				0x60
 
+// Internal types used during parsing.
+#define SMILE_KIND_PARSEDECL			0xFE
+#define SMILE_KIND_PARSEMESSAGE			0xFF
+
+#define SMILE_KIND_MASK					0xFF
+
 //-----------------------------------------------------------------------------
 // Object security bits.
 

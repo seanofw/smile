@@ -150,7 +150,4 @@ START_TEST(EqualSeparatorCommentsShouldBeSkipped)
 }
 END_TEST
 
-//-------------------------------------------------------------------------------------------------
-//  Number forms.
-
 #include "lexercore_tests.generated.inc"

@@ -146,6 +146,7 @@
     <ClInclude Include="include\smile\parsing\internal\parserinternal.h" />
     <ClInclude Include="include\smile\parsing\internal\parsescope.h" />
     <ClInclude Include="include\smile\parsing\lexer.h" />
+    <ClInclude Include="include\smile\parsing\parsemessage.h" />
     <ClInclude Include="include\smile\parsing\parser.h" />
     <ClInclude Include="include\smile\parsing\tokenkind.h" />
     <ClInclude Include="include\smile\platform\cygwin-gcc-x64\platform.h" />
@@ -760,7 +761,10 @@
     <ClCompile Include="src\parsing\lexer\lexnumbers.c" />
     <ClCompile Include="src\parsing\lexer\lexpunct.c" />
     <ClCompile Include="src\parsing\lexer\lexstrings.c" />
+    <ClCompile Include="src\parsing\lexer\tokenkind.c" />
+    <ClCompile Include="src\parsing\parser\parsemessage.c" />
     <ClCompile Include="src\parsing\parser\parsercore.c" />
+    <ClCompile Include="src\parsing\parser\parserhelpers.c" />
     <ClCompile Include="src\parsing\parser\parsescope.c" />
     <ClCompile Include="src\siphash.c" />
     <ClCompile Include="src\smiletypes\numeric\smileinteger32.c" />

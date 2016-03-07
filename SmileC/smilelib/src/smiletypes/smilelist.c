@@ -34,14 +34,79 @@ SmileList SmileList_Cons(SmileObject a, SmileObject d)
 	return smileList;
 }
 
+SmileList SmileList_ConsWithSource(SmileObject a, SmileObject d, LexerPosition position)
+{
+	struct SmileListWithSourceInt *smileList = GC_MALLOC_STRUCT(struct SmileListWithSourceInt);
+	if (smileList == NULL) Smile_Abort_OutOfMemory();
+	smileList->base = Smile_KnownObjects.Object;
+	smileList->kind = SMILE_KIND_LIST | SMILE_FLAG_LISTWITHSOURCE | SMILE_SECURITY_WRITABLE;
+	smileList->vtable = SmileList_VTable;
+	smileList->a = a;
+	smileList->d = d;
+	smileList->position = position;
+	return (SmileList)smileList;
+}
+
+SmileList SmileList_CreateListFromArray(SmileObject *objects, Int numObjects)
+{
+	SmileList head, tail;
+
+	LIST_INIT(head, tail);
+
+	while (numObjects-- > 0) {
+		LIST_APPEND(head, tail, *objects++);
+	}
+
+	return head;
+}
+
+SmileList SmileList_CreateList(SmileObject firstObject, ...)
+{
+	SmileList result;
+	va_list v;
+
+	va_start(v, firstObject);
+	result = SmileList_CreateListv(firstObject, v);
+	va_end(v);
+
+	return result;
+}
+
+SmileList SmileList_CreateListv(SmileObject firstObject, va_list v)
+{
+	SmileList head, tail;
+	SmileObject obj;
+
+	LIST_INIT(head, tail);
+	LIST_APPEND(head, tail, firstObject);
+
+	while ((obj = va_arg(v, SmileObject)) != NULL) {
+		LIST_APPEND(head, tail, obj);
+	}
+
+	return head;
+}
+
 Bool SmileList_CompareEqual(SmileList self, SmileObject other)
 {
 	SmileList otherList;
 
-	if (other->kind != SMILE_KIND_LIST) return False;
-	otherList = (SmileList)other;
+	do {
+		if (!SmileObject_IsList(other)) return False;
+		otherList = (SmileList)other;
 
-	return self->a == otherList->a && self->d == otherList->d;
+		// Compare this list element.
+		if (!SMILE_VCALL1(self->a, compareEqual, otherList->a))
+			return False;
+
+		self = (SmileList)self->d;
+		other = otherList->d;
+
+		// We use a loop to unroll the ->d recursion, where possible.
+	} while (SMILE_KIND(self) == SMILE_KIND_LIST);
+
+	// Compare the last ->d objects, whatever they are.
+	return SMILE_VCALL1((SmileObject)self, compareEqual, other);
 }
 
 UInt32 SmileList_Hash(SmileList self)

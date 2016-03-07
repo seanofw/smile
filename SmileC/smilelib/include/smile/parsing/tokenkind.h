@@ -69,6 +69,8 @@ enum TokenKind {
 	TOKEN_DO,
 	TOKEN_RETURN,
 	TOKEN_VAR,
+	TOKEN_AUTO,
+	TOKEN_CONST,
 	TOKEN_TRY,
 	TOKEN_CATCH,
 	TOKEN_TILL,
@@ -95,5 +97,7 @@ enum TokenKind {
 	TOKEN_UNKNOWNALPHANAME,
 	TOKEN_UNKNOWNPUNCTNAME,
 };
+
+SMILE_API_FUNC String TokenKind_ToString(Int tokenKind);
 
 #endif

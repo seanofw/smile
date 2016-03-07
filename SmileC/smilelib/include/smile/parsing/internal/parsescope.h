@@ -60,9 +60,9 @@ typedef struct ParseScopeStruct {
 //-------------------------------------------------------------------------------------------------
 //  External implementation.
 
-ParseScope ParseScope_CreateRoot(void);
-ParseScope ParseScope_CreateChild(ParseScope parentScope, Int kind);
-ParseDecl ParseScope_DeclareHere(ParseScope scope, Symbol symbol, Int kind);
+SMILE_API_FUNC ParseScope ParseScope_CreateRoot(void);
+SMILE_API_FUNC ParseScope ParseScope_CreateChild(ParseScope parentScope, Int kind);
+SMILE_API_FUNC ParseDecl ParseScope_DeclareHere(ParseScope scope, Symbol symbol, Int kind);
 
 //-------------------------------------------------------------------------------------------------
 //  Inline functions.

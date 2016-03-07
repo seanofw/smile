@@ -63,6 +63,7 @@
       <Filter>parsing\lexer</Filter>
     </ClCompile>
     <ClCompile Include="parsing\lexer\lexerloanword_tests.c" />
+    <ClCompile Include="parsing\parser\parsercore_tests.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />

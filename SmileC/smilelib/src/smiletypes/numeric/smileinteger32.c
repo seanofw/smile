@@ -35,7 +35,7 @@ Bool SmileInteger32_CompareEqual(SmileInteger32 self, SmileObject other)
 {
 	SmileInteger32 otherInt;
 
-	if (other->kind != SMILE_KIND_INTEGER32) return False;
+	if (SMILE_KIND(other) != SMILE_KIND_INTEGER32) return False;
 	otherInt = (SmileInteger32)other;
 
 	return self->value == otherInt->value;

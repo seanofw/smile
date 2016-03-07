@@ -39,7 +39,7 @@ Bool SmileString_CompareEqual(SmileString self, SmileObject other)
 	SmileString otherString;
 	Int length;
 
-	if (other->kind != SMILE_KIND_STRING) return False;
+	if (SMILE_KIND(other) != SMILE_KIND_STRING) return False;
 	otherString = (SmileString)other;
 
 	if (otherString == self) return True;

@@ -35,7 +35,7 @@ Bool SmileSymbol_CompareEqual(SmileSymbol self, SmileObject other)
 {
 	SmileSymbol otherInt;
 
-	if (other->kind != SMILE_KIND_SYMBOL) return False;
+	if (SMILE_KIND(other) != SMILE_KIND_SYMBOL) return False;
 	otherInt = (SmileSymbol)other;
 
 	return self->symbol == otherInt->symbol;

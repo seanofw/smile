@@ -60,7 +60,7 @@ Inline ParseDecl ParseDecl_Create(Symbol symbol, Int declKind, Int scopeIndex, S
 {
 	ParseDecl parseDecl = GC_MALLOC_STRUCT(struct ParseDeclStruct);
 
-	parseDecl->kind = SMILE_KIND_HANDLE;
+	parseDecl->kind = SMILE_KIND_PARSEDECL;
 	parseDecl->base = Smile_KnownObjects.Object;
 	parseDecl->vtable = ParseDecl_VTable;
 	parseDecl->assignedSymbol = 0;

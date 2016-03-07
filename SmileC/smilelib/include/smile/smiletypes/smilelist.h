@@ -14,6 +14,10 @@
 #include <smile/smiletypes/smileobject.h>
 #endif
 
+#ifndef __SMILE_PARSING_LEXER_H__
+#include <smile/parsing/lexer.h>
+#endif
+
 //-------------------------------------------------------------------------------------------------
 //  Type declarations
 
@@ -23,13 +27,23 @@ struct SmileListInt {
 	SmileObject d;
 };
 
+struct SmileListWithSourceInt {
+	DECLARE_BASE_OBJECT_PROPERTIES;
+	SmileObject a;
+	SmileObject d;
+	LexerPosition position;
+};
+
 //-------------------------------------------------------------------------------------------------
 //  Public interface
 
 SMILE_API_DATA SmileVTable SmileList_VTable;
 
 SMILE_API_FUNC SmileList SmileList_Cons(SmileObject a, SmileObject d);
-SMILE_API_FUNC SmileList SmileList_CreateList(SmileObject *objects, Int numObjects);
+SMILE_API_FUNC SmileList SmileList_ConsWithSource(SmileObject a, SmileObject d, LexerPosition position);
+SMILE_API_FUNC SmileList SmileList_CreateListFromArray(SmileObject *objects, Int numObjects);
+SMILE_API_FUNC SmileList SmileList_CreateList(SmileObject firstObject, ...);
+SMILE_API_FUNC SmileList SmileList_CreateListv(SmileObject firstObject, va_list v);
 
 SMILE_API_FUNC Bool SmileList_CompareEqual(SmileList self, SmileObject other);
 SMILE_API_FUNC UInt32 SmileList_Hash(SmileList self);
@@ -65,6 +79,19 @@ Inline SmileObject SmileList_First(SmileList list)
 #define LIST_THIRD(__list__) LIST_FIRST(LIST_REST(LIST_REST(__list__)))
 #define LIST_FOURTH(__list__) LIST_FIRST(LIST_REST(LIST_REST(LIST_REST(__list__))))
 #define LIST_FIFTH(__list__) LIST_FIRST(LIST_REST(LIST_REST(LIST_REST(LIST_REST(__list__)))))
+
+#define LIST_INIT(__head__, __tail__) \
+	((__tail__) = (__head__) = NullList)
+
+#define LIST_APPEND(__head__, __tail__, __newElement__) \
+	((__tail__) = ((__head__) == NullList) \
+		? ((__head__) = SmileList_Cons((SmileObject)(__newElement__), NullObject)) \
+		: (SmileList)(((__tail__)->d = (SmileObject)SmileList_Cons((SmileObject)(__newElement__), NullObject))))
+
+#define LIST_APPEND_WITH_SOURCE(__head__, __tail__, __newElement__, __position__) \
+	((__tail__) = ((__head__) == NullList) \
+		? ((__head__) = SmileList_ConsWithSource((SmileObject)(__newElement__), NullObject, (__position__))) \
+		: (SmileList)(((__tail__)->d = (SmileObject)SmileList_ConsWithSource((SmileObject)(__newElement__), NullObject, (__position__)))))
 
 //-------------------------------------------------------------------------------------------------
 //  List builders

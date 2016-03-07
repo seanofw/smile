@@ -66,13 +66,23 @@ Bool Closure_Let(Closure closure, Symbol name, SmileObject value)
 			// We're adding a new symbol, so make sure we have space for it.
 			if (index >= (maxVariables = closureInfo->maxVariables)) {
 
-				// No space, so reallocate the closure's storage array.
-				newMax = maxVariables * 2;
-				variables = GC_MALLOC_STRUCT_ARRAY(SmileObject, newMax);
-				MemCpy(variables, closure->variables, sizeof(SmileObject) * maxVariables);
+				if (maxVariables <= 0) {
+					// No space at all, so let's start with room for four variables (16 bytes on 32-bit, 32 bytes on 64-bit).
+					newMax = 4;
+					variables = GC_MALLOC_STRUCT_ARRAY(SmileObject, newMax);
+				}
+				else {
+					// Not enough space, so reallocate the closure's storage array.
+					newMax = maxVariables * 2;
+					variables = GC_MALLOC_STRUCT_ARRAY(SmileObject, newMax);
+					MemCpy(variables, closure->variables, sizeof(SmileObject) * maxVariables);
+				}
 				closure->variables = variables;
 				closureInfo->maxVariables = newMax;
 			}
+
+			// The closure now gets bigger...
+			closureInfo->numVariables++;
 		}
 	}
 	else {

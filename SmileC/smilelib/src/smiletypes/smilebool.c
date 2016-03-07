@@ -35,7 +35,7 @@ Bool SmileBool_CompareEqual(SmileBool self, SmileObject other)
 {
 	SmileBool otherBool;
 
-	if (other->kind != SMILE_KIND_BOOL) return False;
+	if (SMILE_KIND(other) != SMILE_KIND_BOOL) return False;
 	otherBool = (SmileBool)other;
 
 	return self->value == otherBool->value;

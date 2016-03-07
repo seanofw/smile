@@ -8,6 +8,7 @@ EXTERN_TEST_SUITE(LexerNumberTests);
 EXTERN_TEST_SUITE(LexerPunctuationTests);
 EXTERN_TEST_SUITE(LexerStringTests);
 EXTERN_TEST_SUITE(LexerUnicodeTests);
+EXTERN_TEST_SUITE(ParserCoreTests);
 EXTERN_TEST_SUITE(Real128Tests);
 EXTERN_TEST_SUITE(Real32Tests);
 EXTERN_TEST_SUITE(Real64Tests);
@@ -33,6 +34,7 @@ void RunAllTests()
 	RUN_TEST_SUITE(results, LexerPunctuationTests);
 	RUN_TEST_SUITE(results, LexerStringTests);
 	RUN_TEST_SUITE(results, LexerUnicodeTests);
+	RUN_TEST_SUITE(results, ParserCoreTests);
 	RUN_TEST_SUITE(results, Real128Tests);
 	RUN_TEST_SUITE(results, Real32Tests);
 	RUN_TEST_SUITE(results, Real64Tests);
@@ -59,6 +61,7 @@ const char *TestSuiteNames[] = {
 	"LexerPunctuationTests",
 	"LexerStringTests",
 	"LexerUnicodeTests",
+	"ParserCoreTests",
 	"Real128Tests",
 	"Real32Tests",
 	"Real64Tests",
@@ -74,5 +77,5 @@ const char *TestSuiteNames[] = {
 };
 
 
-int NumTestSuites = 20;
+int NumTestSuites = 21;
 
