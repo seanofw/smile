@@ -201,5 +201,97 @@
 		</Expand>
 	</Type>
 
+	<!-- SmileObject -->
+	<Type Name="SmileObjectInt">
+
+		<DisplayString Condition="(kind &amp; 0xFF) == 0">Object (Null)</DisplayString>
+		<DisplayString Condition="(kind &amp; 0xFF) == 1">Object (List) ({((struct SmileListInt *)this)-&gt;a-&gt;kind &amp; 0xFF},{((struct SmileListInt *)this)-&gt;d-&gt;kind &amp; 0xFF})</DisplayString>
+		<DisplayString Condition="(kind &amp; 0xFF) == 2">Object (Bool)</DisplayString>
+		<DisplayString Condition="(kind &amp; 0xFF) == 3">Object (Symbol)</DisplayString>
+		<DisplayString Condition="(kind &amp; 0xFF) == 4">Object (Char)</DisplayString>
+		<DisplayString Condition="(kind &amp; 0xFF) == 5">Object (UChar)</DisplayString>
+		<DisplayString Condition="(kind &amp; 0xFF) == 6">Object (String) (text={((struct SmileStringInt *)this)->string.text,s})</DisplayString>
+		<DisplayString Condition="(kind &amp; 0xFF) == 7">Object (Root)</DisplayString>
+		<DisplayString Condition="(kind &amp; 0xFF) == 8">Object (UserObject)</DisplayString>
+		<DisplayString Condition="(kind &amp; 0xFF) == 9">Object (Pair)</DisplayString>
+		<DisplayString Condition="(kind &amp; 0xFF) == 0x11">Object (Integer32) (value={((struct SmileInteger32Int *)this)->value})</DisplayString>
+		<DisplayString Condition="(kind &amp; 0xFF) == 0x12">Object (Integer64) (value={((struct SmileInteger64Int *)this)->value})</DisplayString>
+		<DisplayString Condition="(kind &amp; 0xFF) == 0xFF">Object (ParseMessage) (value={((struct ParseMessageStruct *)this)->message->_opaque.text,s})</DisplayString>
+		<DisplayString>Object (kind={(char)kind &amp; 0xFF,X})</DisplayString>
+
+		<Expand>
+			<Item Name="as List" Condition="(kind &amp; 0xFF) == 0 || (kind &amp; 0xFF) == 1">(struct SmileListInt *)this</Item>
+			<!--<Item Name="as Symbol" Condition="(kind &amp; 0xFF) == 3">(struct SmileSymbolInt *)this</Item>-->
+			<Item Name="as String" Condition="(kind &amp; 0xFF) == 6">(struct SmileStringInt *)this</Item>
+			<Item Name="as Integer32" Condition="(kind &amp; 0xFF) == 0x11">(struct SmileInteger32Int *)this</Item>
+			<Item Name="as Integer64" Condition="(kind &amp; 0xFF) == 0x12">(struct SmileInteger64Int *)this</Item>
+			<Item Name="as ParseMessage" Condition="(kind &amp; 0xFF) == 0xFF">(struct ParseMessageStruct *)this</Item>
+
+			<Item Name="[kind]">kind &amp; 0xFF</Item>
+			<Item Name="[flags]">kind &amp; ~0xFF</Item>
+			<Item Name="[assignedSymbol]">assignedSymbol</Item>
+			<Item Name="[vtable]">vtable</Item>
+			<Item Name="[base]">base</Item>
+		</Expand>
+	</Type>
+
+	<!-- SmileString -->
+	<Type Name="SmileStringInt">
+		<DisplayString>String: {string->text,s}</DisplayString>
+	</Type>
+
+	<!-- SmileSymbol -->
+	<Type Name="SmileSymbolInt">
+		<DisplayString>Symbol: {symbol}</DisplayString>
+	</Type>
+
+	<!-- SmileInteger32 -->
+	<Type Name="SmileInteger32Int">
+		<DisplayString>Integer32: {value}</DisplayString>
+	</Type>
+
+	<!-- SmileInteger64 -->
+	<Type Name="SmileInteger64Int">
+		<DisplayString>Integer64: {value}</DisplayString>
+	</Type>
+
+	<!-- ParseMessage -->
+	<Type Name="ParseMessageStruct">
+		<DisplayString Condition="kind == 0">Info: line {position-&gt;line}: {message->_opaque.text,s}</DisplayString>
+		<DisplayString Condition="kind == 1">Warning: line {position-&gt;line}: {message->_opaque.text,s}</DisplayString>
+		<DisplayString Condition="kind == 2">Error: line {position-&gt;line}: {message->_opaque.text,s}</DisplayString>
+		<DisplayString Condition="kind == 3">Fatal: line {position-&gt;line}: {message->_opaque.text,s}</DisplayString>
+		<DisplayString>ParseMessage: line {position-&gt;line}: {message->_opaque.text,s}</DisplayString>
+	</Type>
+
+	<!-- LexerPosition -->
+	<Type Name="LexerPositionStruct">
+		<DisplayString>LexerPosition: {filename->_opaque.text, s}: line {line}, column {column}; lineStart={lineStart}, length={length} </DisplayString>
+	</Type>
+
+	<!-- SmileList -->
+	<Type Name="SmileListInt">
+		<DisplayString Condition="(kind &amp; 0xFF) == 1">List ({((struct SmileListInt *)this)-&gt;a-&gt;kind &amp; 0xFF},{((struct SmileListInt *)this)-&gt;d-&gt;kind &amp; 0xFF})</DisplayString>
+		<DisplayString Condition="(kind &amp; 0xFF) == 0">Null</DisplayString>
+		<DisplayString>List (kind={(char)kind &amp; 0xFF,02X})</DisplayString>
+		<Expand>
+			<Item Name="[a]" Condition="(a-&gt;kind &amp; 0xFF) &gt; 1">a</Item>
+			<Item Name="[d]" Condition="(d-&gt;kind &amp; 0xFF) &gt; 1">d</Item>
+			<Item Name="[a]" Condition="(a-&gt;kind &amp; 0xFF) &lt;= 1">(struct SmileListInt *)a</Item>
+			<Item Name="[d]" Condition="(d-&gt;kind &amp; 0xFF) &lt;= 1">(struct SmileListInt *)d</Item>
+
+			<Item Name="[flags]">kind &amp; ~0xFF</Item>
+			<Item Name="[assignedSymbol]">assignedSymbol</Item>
+			<Item Name="[vtable]">vtable</Item>
+			<Item Name="[base]">base</Item>
+
+			<LinkedListItems>
+				<HeadPointer>this</HeadPointer>
+				<NextPointer>(d-&gt;kind &amp; 0xFF) == 1 ? (struct SmileListInt *)d : 0</NextPointer>
+				<ValueNode>a</ValueNode>
+			</LinkedListItems>
+		</Expand>
+	</Type>
+
 </AutoVisualizer>
 
