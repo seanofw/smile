@@ -17,14 +17,17 @@
 
 #include <smile/env/env.h>
 #include <smile/env/knownobjects.h>
+#include <smile/env/knownsymbols.h>
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/smilenull.h>
 #include <smile/smiletypes/smilebool.h>
+#include <smile/smiletypes/text/smilestring.h>
+#include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
 
-void KnownObjects_Preload(struct KnownObjectsStruct *knownObjects)
+void KnownObjects_Preload(struct KnownObjectsStruct *knownObjects, struct KnownSymbolsStruct *knownSymbols)
 {
 	Int32 i;
 
@@ -45,4 +48,8 @@ void KnownObjects_Preload(struct KnownObjectsStruct *knownObjects)
 
 	knownObjects->TrueObj = SmileBool_Create(True);
 	knownObjects->FalseObj = SmileBool_Create(False);
+
+	knownObjects->ListSymbol = SmileSymbol_Create(knownSymbols->List_);
+	knownObjects->joinSymbol = SmileSymbol_Create(knownSymbols->join);
+	knownObjects->ofSymbol = SmileSymbol_Create(knownSymbols->of);
 }

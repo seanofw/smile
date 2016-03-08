@@ -146,4 +146,24 @@ START_TEST(ParenthesesHaveNoMeaningInASequenceOfTerms)
 }
 END_TEST
 
+START_TEST(CanParseAPseudoDynamicString)
+{
+	SmileList expectedResult = SmileList_CreateList(
+		(SmileObject)SmileString_Create(String_FromC("This is a test.")),
+		NULL
+	);
+
+	Lexer lexer = Setup("  \"This is a test.\"  ");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	Bool equal;
+
+	ASSERT(result != NULL && result != NullList);
+
+	equal = SMILE_VCALL1(result, compareEqual, (SmileObject)expectedResult);
+	ASSERT(equal);
+}
+END_TEST
+
 #include "parsercore_tests.generated.inc"

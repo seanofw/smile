@@ -21,8 +21,11 @@ struct KnownObjectsStruct {
 	SmileInteger64 SmallInt64s[201];
 	SmileInteger64 ZeroInt64;
 	SmileInteger64 OneInt64;
+
+	SmileSymbol ListSymbol;
+	SmileSymbol joinSymbol, ofSymbol;
 };
 
-extern void KnownObjects_Preload(struct KnownObjectsStruct *knownObjects);
+extern void KnownObjects_Preload(struct KnownObjectsStruct *knownObjects, struct KnownSymbolsStruct *knownSymbols);
 
 #endif

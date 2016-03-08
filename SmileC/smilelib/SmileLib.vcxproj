@@ -169,6 +169,7 @@
     <ClInclude Include="include\smile\smiletypes\smileobject.h" />
     <ClInclude Include="include\smile\smiletypes\kind.h" />
     <ClInclude Include="include\smile\smiletypes\predecl.h" />
+    <ClInclude Include="include\smile\smiletypes\smilepair.h" />
     <ClInclude Include="include\smile\smiletypes\text\smilestring.h" />
     <ClInclude Include="include\smile\smiletypes\text\smilesymbol.h" />
     <ClInclude Include="include\smile\smiletypes\smileuserobject.h" />
@@ -764,6 +765,8 @@
     <ClCompile Include="src\parsing\lexer\tokenkind.c" />
     <ClCompile Include="src\parsing\parser\parsemessage.c" />
     <ClCompile Include="src\parsing\parser\parsercore.c" />
+    <ClCompile Include="src\parsing\parser\parserdynstrings.c" />
+    <ClCompile Include="src\parsing\parser\parsererrors.c" />
     <ClCompile Include="src\parsing\parser\parserhelpers.c" />
     <ClCompile Include="src\parsing\parser\parsescope.c" />
     <ClCompile Include="src\siphash.c" />
@@ -773,6 +776,7 @@
     <ClCompile Include="src\smiletypes\smilelist.c" />
     <ClCompile Include="src\smiletypes\smilenull.c" />
     <ClCompile Include="src\smiletypes\smileobject.c" />
+    <ClCompile Include="src\smiletypes\smilepair.c" />
     <ClCompile Include="src\smiletypes\smileuserobject.c" />
     <ClCompile Include="src\smiletypes\text\smilestring.c" />
     <ClCompile Include="src\smiletypes\text\smilesymbol.c" />

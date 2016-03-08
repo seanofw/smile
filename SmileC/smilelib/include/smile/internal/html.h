@@ -13,10 +13,10 @@ typedef struct {
 	UInt value;
 } HtmlEntity;
 
-extern const HtmlEntity HtmlEntityTable[];
-extern const Int HtmlEntityTableLength;
+SMILE_INTERNAL_DATA extern const HtmlEntity HtmlEntityTable[];
+SMILE_INTERNAL_DATA extern const Int HtmlEntityTableLength;
 
-String HtmlEntityValueToName(Int32 value);
-Int32 HtmlEntityNameToValue(String name);
+SMILE_INTERNAL_FUNC String HtmlEntityValueToName(Int32 value);
+SMILE_INTERNAL_FUNC Int32 HtmlEntityNameToValue(String name);
 
 #endif

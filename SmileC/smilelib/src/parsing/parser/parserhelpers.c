@@ -15,143 +15,98 @@
 //  limitations under the License.
 //---------------------------------------------------------------------------------------
 
+#include <smile/types.h>
+#include <smile/smiletypes/smileobject.h>
 #include <smile/parsing/parser.h>
+#include <smile/parsing/internal/parserinternal.h>
+#include <smile/parsing/internal/parsedecl.h>
+#include <smile/parsing/internal/parsescope.h>
+
+//-------------------------------------------------------------------------------------------------
+// Recovery modes
+
+Int Parser_BracesBracketsParenthesesBar_Recovery[] = {
+	TOKEN_LEFTBRACE, TOKEN_LEFTBRACKET, TOKEN_LEFTPARENTHESIS,
+	TOKEN_RIGHTBRACE, TOKEN_RIGHTBRACKET, TOKEN_RIGHTPARENTHESIS,
+	TOKEN_BAR
+};
+Int Parser_BracesBracketsParenthesesBar_Count = sizeof(Parser_BracesBracketsParenthesesBar_Recovery) / sizeof(Int);
+
+Int Parser_RightBracesBracketsParentheses_Recovery[] = {
+	TOKEN_RIGHTBRACE, TOKEN_RIGHTBRACKET, TOKEN_RIGHTPARENTHESIS
+};
+Int Parser_RightBracesBracketsParentheses_Count = sizeof(Parser_RightBracesBracketsParentheses_Recovery) / sizeof(Int);
+
+//-------------------------------------------------------------------------------------------------
+// Helper methods
 
 /// <summary>
-/// When the parser generates errors/warnings/information, this is called to record that
-/// information in the parser's message collection.
+/// When an error occurs, skip through the input until one of the given targets is found.
+/// Does not consume the target token, and returns it.
 /// </summary>
 /// <param name="parser">The parser instance.</param>
-/// <param name="message">The message to record.</param>
-SMILE_API_FUNC void Parser_AddMessage(Parser parser, ParseMessage message)
+/// <param name="tokenKinds">The tokens to search for.</param>
+/// <param name="numTokenKinds">The number of tokens in the set of tokens to search for.</param>
+Token Parser_Recover(Parser parser, Int *tokenKinds, Int numTokenKinds)
 {
-	LIST_APPEND(parser->firstMessage, parser->lastMessage, message);
+	Token token;
+
+	while ((token = Parser_NextToken(parser))->kind != TOKEN_EOI
+		&& !IntArrayContains(token->kind, tokenKinds, numTokenKinds));
+
+	Lexer_Unget(parser->lexer);
+
+	return token;
 }
 
 /// <summary>
-/// When the parser generates supplementary information, this is called to record that
-/// information in the parser's message collection.
+/// Determine if the next token in the input is one of the two forms of '=', without consuming the input.
 /// </summary>
 /// <param name="parser">The parser instance.</param>
-/// <param name="position">The position in the input stream where the info was generated.</param>
-/// <param name="message">A String_Format()-style format string that contains the message
-/// of the info, and is followed by any optional format arguments.</param>
-void Parser_AddInfo(Parser parser, LexerPosition position, const char *message, ...)
+/// <returns>True if the next token is one of the two forms of '=', False if it's
+// anything else or nonexistent.</returns>
+Bool Parser_HasEqualLookahead(Parser parser)
 {
-	va_list v;
-	va_start(v, message);
-	Parser_AddInfov(parser, position, message, v);
-	va_end(v);
+	Token token = Parser_NextToken(parser);
+	Lexer_Unget(parser->lexer);
+	return (token->kind == TOKEN_EQUAL || token->kind == TOKEN_EQUALWITHOUTWHITESPACE);
 }
 
 /// <summary>
-/// When the parser generates supplementary information, this is called to record that
-/// information in the parser's message collection.
+/// Determine if the next token in the input is one of the two forms of '=' or a ':', without consuming the input.
 /// </summary>
 /// <param name="parser">The parser instance.</param>
-/// <param name="position">The position in the input stream where the info was generated.</param>
-/// <param name="message">A String_Formatv()-style format string that contains the message
-/// of the info.</param>
-/// <param name="v">Any optional format arguments for the format string.</param>
-void Parser_AddInfov(Parser parser, LexerPosition position, const char *message, va_list v)
+/// <returns>True if the next token is one of the two forms of '=' or a ':', False if it's
+// anything else or nonexistent.</returns>
+Bool Parser_HasEqualOrColonLookahead(Parser parser)
 {
-	String string = String_FormatV(message, v);
-	ParseMessage parseMessage = ParseMessage_Create(PARSEMESSAGE_INFO, position, string);
-	LIST_APPEND(parser->firstMessage, parser->lastMessage, parseMessage);
+	Token token = Parser_NextToken(parser);
+	Lexer_Unget(parser->lexer);
+	return (token->kind == TOKEN_EQUAL || token->kind == TOKEN_EQUALWITHOUTWHITESPACE || token->kind == TOKEN_COLON);
 }
 
 /// <summary>
-/// When the parser encounters a info, this is called to record that info's detail
-/// in the parser's message collection.
+/// Determine if the next token in the input is the given token kind, without consuming the input.
 /// </summary>
 /// <param name="parser">The parser instance.</param>
-/// <param name="position">The position in the input stream where the info was found.</param>
-/// <param name="message">A String_Format()-style format string that contains the message
-/// of the info, and is followed by any optional format arguments.</param>
-void Parser_AddWarning(Parser parser, LexerPosition position, const char *message, ...)
+/// <returns>True if the next token is the named token kind, False if it's anything else or nonexistent.</returns>
+Bool Parser_HasLookahead(Parser parser, Int tokenKind)
 {
-	va_list v;
-	va_start(v, message);
-	Parser_AddWarningv(parser, position, message, v);
-	va_end(v);
+	Token token = Parser_NextToken(parser);
+	Lexer_Unget(parser->lexer);
+	return (token->kind == tokenKind);
 }
 
 /// <summary>
-/// When the parser encounters a warning, this is called to record that warning's detail
-/// in the parser's message collection.
+/// Determine if the next two token in the input are the given token kinds, without consuming the input.
 /// </summary>
 /// <param name="parser">The parser instance.</param>
-/// <param name="position">The position in the input stream where the warning was found.</param>
-/// <param name="message">A String_Formatv()-style format string that contains the message
-/// of the warning.</param>
-/// <param name="v">Any optional format arguments for the format string.</param>
-void Parser_AddWarningv(Parser parser, LexerPosition position, const char *message, va_list v)
+/// <returns>True if the next two tokens are the named token kinds, False if they're anything else or nonexistent.</returns>
+Bool Parser_Has2Lookahead(Parser parser, Int tokenKind1, Int tokenKind2)
 {
-	String string = String_FormatV(message, v);
-	ParseMessage parseMessage = ParseMessage_Create(PARSEMESSAGE_WARNING, position, string);
-	LIST_APPEND(parser->firstMessage, parser->lastMessage, parseMessage);
-}
-
-/// <summary>
-/// When the parser encounters an error, this is called to record that error's detail
-/// in the parser's message collection.
-/// </summary>
-/// <param name="parser">The parser instance.</param>
-/// <param name="position">The position in the input stream where the error was found.</param>
-/// <param name="message">A String_Format()-style format string that contains the message
-/// of the error, and is followed by any optional format arguments.</param>
-void Parser_AddError(Parser parser, LexerPosition position, const char *message, ...)
-{
-	va_list v;
-	va_start(v, message);
-	Parser_AddErrorv(parser, position, message, v);
-	va_end(v);
-}
-
-/// <summary>
-/// When the parser encounters an error, this is called to record that error's detail
-/// in the parser's message collection.
-/// </summary>
-/// <param name="parser">The parser instance.</param>
-/// <param name="position">The position in the input stream where the error was found.</param>
-/// <param name="message">A String_Formatv()-style format string that contains the message
-/// of the error.</param>
-/// <param name="v">Any optional format arguments for the format string.</param>
-void Parser_AddErrorv(Parser parser, LexerPosition position, const char *message, va_list v)
-{
-	String string = String_FormatV(message, v);
-	ParseMessage parseMessage = ParseMessage_Create(PARSEMESSAGE_ERROR, position, string);
-	LIST_APPEND(parser->firstMessage, parser->lastMessage, parseMessage);
-}
-
-/// <summary>
-/// When the parser encounters a fatal error, this is called to record that fatal error's detail
-/// in the parser's message collection.
-/// </summary>
-/// <param name="parser">The parser instance.</param>
-/// <param name="position">The position in the input stream where the fatal error was encountered.</param>
-/// <param name="message">A String_Format()-style format string that contains the message
-/// of the fatal error, and is followed by any optional format arguments.</param>
-void Parser_AddFatalError(Parser parser, LexerPosition position, const char *message, ...)
-{
-	va_list v;
-	va_start(v, message);
-	Parser_AddFatalErrorv(parser, position, message, v);
-	va_end(v);
-}
-
-/// <summary>
-/// When the parser encounters a fatal error, this is called to record that fatal error's detail
-/// in the parser's message collection.
-/// </summary>
-/// <param name="parser">The parser instance.</param>
-/// <param name="position">The position in the input stream where the fatal error was encountered.</param>
-/// <param name="message">A String_Formatv()-style format string that contains the message
-/// of the fatal error.</param>
-/// <param name="v">Any optional format arguments for the format string.</param>
-void Parser_AddFatalErrorv(Parser parser, LexerPosition position, const char *message, va_list v)
-{
-	String string = String_FormatV(message, v);
-	ParseMessage parseMessage = ParseMessage_Create(PARSEMESSAGE_FATAL, position, string);
-	LIST_APPEND(parser->firstMessage, parser->lastMessage, parseMessage);
+	Token token1 = Parser_NextToken(parser);
+	Token token2 = Parser_NextToken(parser);
+	Lexer_Unget(parser->lexer);
+	Lexer_Unget(parser->lexer);
+	return (token1->kind == tokenKind1 && token2->kind == tokenKind2);
 }

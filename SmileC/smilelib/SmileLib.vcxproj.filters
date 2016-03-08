@@ -699,11 +699,20 @@
     <ClCompile Include="src\parsing\parser\parsemessage.c">
       <Filter>src\parsing\parser</Filter>
     </ClCompile>
+    <ClCompile Include="src\parsing\lexer\tokenkind.c">
+      <Filter>src\parsing\lexer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parsing\parser\parserdynstrings.c">
+      <Filter>src\parsing\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parsing\parser\parsererrors.c">
+      <Filter>src\parsing\parser</Filter>
+    </ClCompile>
     <ClCompile Include="src\parsing\parser\parserhelpers.c">
       <Filter>src\parsing\parser</Filter>
     </ClCompile>
-    <ClCompile Include="src\parsing\lexer\tokenkind.c">
-      <Filter>src\parsing\lexer</Filter>
+    <ClCompile Include="src\smiletypes\smilepair.c">
+      <Filter>src\smiletypes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -994,6 +1003,9 @@
     </ClInclude>
     <ClInclude Include="include\smile\parsing\parsemessage.h">
       <Filter>include\parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\smilepair.h">
+      <Filter>include\smiletypes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

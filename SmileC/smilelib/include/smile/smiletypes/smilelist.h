@@ -45,19 +45,6 @@ SMILE_API_FUNC SmileList SmileList_CreateListFromArray(SmileObject *objects, Int
 SMILE_API_FUNC SmileList SmileList_CreateList(SmileObject firstObject, ...);
 SMILE_API_FUNC SmileList SmileList_CreateListv(SmileObject firstObject, va_list v);
 
-SMILE_API_FUNC Bool SmileList_CompareEqual(SmileList self, SmileObject other);
-SMILE_API_FUNC UInt32 SmileList_Hash(SmileList self);
-SMILE_API_FUNC void SmileList_SetSecurity(SmileList self, Int security, SmileObject securityKey);
-SMILE_API_FUNC Int SmileList_GetSecurity(SmileList self);
-SMILE_API_FUNC SmileObject SmileList_GetProperty(SmileList self, Symbol propertyName);
-SMILE_API_FUNC void SmileList_SetProperty(SmileList self, Symbol propertyName, SmileObject value);
-SMILE_API_FUNC Bool SmileList_HasProperty(SmileList self, Symbol propertyName);
-SMILE_API_FUNC SmileList SmileList_GetPropertyNames(SmileList self);
-SMILE_API_FUNC Bool SmileList_ToBool(SmileList self);
-SMILE_API_FUNC Int32 SmileList_ToInteger32(SmileList self);
-SMILE_API_FUNC Real64 SmileList_ToReal64(SmileList self);
-SMILE_API_FUNC String SmileList_ToString(SmileList self);
-
 //-------------------------------------------------------------------------------------------------
 //  Inline operations
 

@@ -75,6 +75,6 @@
 //-----------------------------------------------------------------------------
 // Miscellaneous flags.
 
-#define SMILE_FLAG_LISTWITHSOURCE		(1 << 11)
+#define SMILE_FLAG_WITHSOURCE			(1 << 11)
 
 #endif

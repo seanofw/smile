@@ -18,9 +18,15 @@
 #include <smile/types.h>
 #include <smile/numeric/real64.h>
 #include <smile/smiletypes/smileobject.h>
+#include <smile/smiletypes/easyobject.h>
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/text/smilestring.h>
+
+SMILE_EASY_OBJECT_VTABLE(SmileList);
+
+SMILE_EASY_OBJECT_NO_SECURITY(SmileList);
+SMILE_EASY_OBJECT_NO_REALS(SmileList);
 
 SmileList SmileList_Cons(SmileObject a, SmileObject d)
 {
@@ -39,7 +45,7 @@ SmileList SmileList_ConsWithSource(SmileObject a, SmileObject d, LexerPosition p
 	struct SmileListWithSourceInt *smileList = GC_MALLOC_STRUCT(struct SmileListWithSourceInt);
 	if (smileList == NULL) Smile_Abort_OutOfMemory();
 	smileList->base = Smile_KnownObjects.Object;
-	smileList->kind = SMILE_KIND_LIST | SMILE_FLAG_LISTWITHSOURCE | SMILE_SECURITY_WRITABLE;
+	smileList->kind = SMILE_KIND_LIST | SMILE_FLAG_WITHSOURCE | SMILE_SECURITY_WRITABLE;
 	smileList->vtable = SmileList_VTable;
 	smileList->a = a;
 	smileList->d = d;
@@ -87,7 +93,7 @@ SmileList SmileList_CreateListv(SmileObject firstObject, va_list v)
 	return head;
 }
 
-Bool SmileList_CompareEqual(SmileList self, SmileObject other)
+static Bool SmileList_CompareEqual(SmileList self, SmileObject other)
 {
 	SmileList otherList;
 
@@ -109,34 +115,12 @@ Bool SmileList_CompareEqual(SmileList self, SmileObject other)
 	return SMILE_VCALL1((SmileObject)self, compareEqual, other);
 }
 
-UInt32 SmileList_Hash(SmileList self)
+static UInt32 SmileList_Hash(SmileList self)
 {
 	return (UInt32)(PtrInt)self;
 }
 
-void SmileList_SetSecurityKey(SmileList self, SmileObject newSecurityKey, SmileObject oldSecurityKey)
-{
-	UNUSED(self);
-	UNUSED(newSecurityKey);
-	UNUSED(oldSecurityKey);
-	Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
-}
-
-void SmileList_SetSecurity(SmileList self, Int security, SmileObject securityKey)
-{
-	UNUSED(self);
-	UNUSED(security);
-	UNUSED(securityKey);
-	Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
-}
-
-Int SmileList_GetSecurity(SmileList self)
-{
-	UNUSED(self);
-	return SMILE_SECURITY_WRITABLE;
-}
-
-SmileObject SmileList_GetProperty(SmileList self, Symbol propertyName)
+static SmileObject SmileList_GetProperty(SmileList self, Symbol propertyName)
 {
 	if (propertyName == Smile_KnownSymbols.a)
 		return self->a;
@@ -146,7 +130,7 @@ SmileObject SmileList_GetProperty(SmileList self, Symbol propertyName)
 		return NullObject;
 }
 
-void SmileList_SetProperty(SmileList self, Symbol propertyName, SmileObject value)
+static void SmileList_SetProperty(SmileList self, Symbol propertyName, SmileObject value)
 {
 	if (propertyName == Smile_KnownSymbols.a)
 		self->a = value;
@@ -159,13 +143,13 @@ void SmileList_SetProperty(SmileList self, Symbol propertyName, SmileObject valu
 	}
 }
 
-Bool SmileList_HasProperty(SmileList self, Symbol propertyName)
+static Bool SmileList_HasProperty(SmileList self, Symbol propertyName)
 {
 	UNUSED(self);
 	return (propertyName == Smile_KnownSymbols.a || propertyName == Smile_KnownSymbols.d);
 }
 
-SmileList SmileList_GetPropertyNames(SmileList self)
+static SmileList SmileList_GetPropertyNames(SmileList self)
 {
 	DECLARE_LIST_BUILDER(listBuilder);
 
@@ -177,53 +161,20 @@ SmileList SmileList_GetPropertyNames(SmileList self)
 	return LIST_BUILDER_HEAD(listBuilder);
 }
 
-Bool SmileList_ToBool(SmileList self)
+static Bool SmileList_ToBool(SmileList self)
 {
 	UNUSED(self);
 	return True;
 }
 
-Int32 SmileList_ToInteger32(SmileList self)
+static Int32 SmileList_ToInteger32(SmileList self)
 {
 	UNUSED(self);
 	return 1;
 }
 
-Float64 SmileList_ToFloat64(SmileList self)
-{
-	UNUSED(self);
-	return 1.0;
-}
-
-Real64 SmileList_ToReal64(SmileList self)
-{
-	UNUSED(self);
-	return Real64_One;
-}
-
-String SmileList_ToString(SmileList self)
+static String SmileList_ToString(SmileList self)
 {
 	UNUSED(self);
 	return String_Format("List");
 }
-
-SMILE_VTABLE(SmileList_VTable, SmileList)
-{
-	SmileList_CompareEqual,
-	SmileList_Hash,
-
-	SmileList_SetSecurityKey,
-	SmileList_SetSecurity,
-	SmileList_GetSecurity,
-
-	SmileList_GetProperty,
-	SmileList_SetProperty,
-	SmileList_HasProperty,
-	SmileList_GetPropertyNames,
-
-	SmileList_ToBool,
-	SmileList_ToInteger32,
-	SmileList_ToFloat64,
-	SmileList_ToReal64,
-	SmileList_ToString,
-};

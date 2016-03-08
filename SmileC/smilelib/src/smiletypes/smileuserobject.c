@@ -121,7 +121,7 @@ void SmileUserObject_SetProperty_ReadWrite(SmileUserObject self, Symbol property
 
 void SmileUserObject_SetProperty_ReadAppend(SmileUserObject self, Symbol propertyName, SmileObject value)
 {
-	if (SMILE_KIND(value) == SMILE_KIND_NULL) {
+	if (SmileObject_IsNull(value)) {
 		if (Int32Dict_ContainsKey((Int32Dict)&self->dict, (Int32)propertyName)) {
 			Smile_ThrowException(Smile_KnownSymbols.property_error,
 				String_Format("Cannot set property \"%S\" on this object; this object can only be appended to.",
@@ -141,7 +141,7 @@ void SmileUserObject_SetProperty_ReadAppend(SmileUserObject self, Symbol propert
 
 void SmileUserObject_SetProperty_ReadWriteAppend(SmileUserObject self, Symbol propertyName, SmileObject value)
 {
-	if (SMILE_KIND(value) == SMILE_KIND_NULL) {
+	if (SmileObject_IsNull(value)) {
 		Int32Dict_Remove((Int32Dict)&self->dict, (Int32)propertyName);
 	}
 	else {

@@ -58,6 +58,18 @@ typedef struct __attribute__((aligned(16))) { UInt64 value[2]; } Real128;
 #undef SMILE_ALIGN
 #define SMILE_ALIGN(__n__) __attribute__((aligned(n)))
 
+#if __GNUC__ >= 4
+	#undef SMILE_API_FUNC
+	#define SMILE_API_FUNC __attribute__ ((visibility ("default")))
+	#undef SMILE_API_DATA
+	#define SMILE_API_DATA __attribute__ ((visibility ("default")))
+
+	#undef SMILE_INTERNAL_FUNC
+	#define SMILE_INTERNAL_FUNC __attribute__ ((visibility ("hidden")))
+	#undef SMILE_INTERNAL_DATA
+	#define SMILE_INTERNAL_DATA __attribute__ ((visibility ("hidden")))
+#endif
+
 //------------------------------------------------------------------------------------------------
 //  Entropy.
 

@@ -75,7 +75,7 @@ void Smile_ResetEnvironment(void)
 	KnownStrings_Preload(&Smile_KnownStrings);
 
 	// Preload the known objects into this environment.
-	KnownObjects_Preload(&Smile_KnownObjects);
+	KnownObjects_Preload(&Smile_KnownObjects, &Smile_KnownSymbols);
 
 	// Preload the known bases into this environment.
 	KnownBases_Preload(&Smile_KnownBases, Smile_KnownObjects.Object);

@@ -39,9 +39,13 @@ typedef unsigned char Bool;
 #ifdef SMILELIB_BUILD
 	#define SMILE_API_FUNC
 	#define SMILE_API_DATA extern
+	#define SMILE_INTERNAL_FUNC
+	#define SMILE_INTERNAL_DATA
 #else
 	#define SMILE_API_FUNC extern
 	#define SMILE_API_DATA extern
+	#define SMILE_INTERNAL_FUNC
+	#define SMILE_INTERNAL_DATA
 #endif
 
 // How to align data structures in memory.

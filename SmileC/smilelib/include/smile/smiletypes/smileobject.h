@@ -104,7 +104,27 @@ Inline Bool SmileObject_IsList(SmileObject self)
 
 Inline Bool SmileObject_IsListWithSource(SmileObject self)
 {
-	return SmileObject_IsList(self) && (self->kind & SMILE_FLAG_LISTWITHSOURCE);
+	return SmileObject_IsList(self) && (self->kind & SMILE_FLAG_WITHSOURCE);
+}
+
+Inline Bool SmileObject_IsPair(SmileObject self)
+{
+	return SMILE_KIND(self) == SMILE_KIND_PAIR;
+}
+
+Inline Bool SmileObject_IsPairWithSource(SmileObject self)
+{
+	return SmileObject_IsPair(self) && (self->kind & SMILE_FLAG_WITHSOURCE);
+}
+
+Inline Bool SmileObject_IsSymbol(SmileObject self)
+{
+	return SMILE_KIND(self) == SMILE_KIND_SYMBOL;
+}
+
+Inline Bool SmileObject_IsNull(SmileObject self)
+{
+	return SMILE_KIND(self) == SMILE_KIND_NULL;
 }
 
 #endif

@@ -44,7 +44,7 @@ typedef struct TokenStruct {
 
 	enum TokenKind kind;					// What kind of token this is (see tokenkind.h)
 
-	struct LexerPositionStruct position;	// The position where the start of this token was found.
+	struct LexerPositionStruct _position;	// The position where the start of this token was found.
 	Bool isFirstContentOnLine;				// Whether this token is the first content on the line.
 
 	String text;							// The text of this token (for strings/numbers/#loanwords).
@@ -99,6 +99,28 @@ SMILE_API_FUNC Int Lexer_DecodeEscapeCode(const Byte **input, const Byte *end, B
 
 //-------------------------------------------------------------------------------------------------
 //  Inline parts of the implementation
+
+/// <summary>
+/// Make a safe clone of a position on the heap.
+/// </summary>
+/// <param name="position">The position to clone.</param>
+/// <returns>A copy of the provided position, located on the GC heap.</returns>
+Inline LexerPosition LexerPosition_Clone(LexerPosition position)
+{
+	LexerPosition newPosition = GC_MALLOC_STRUCT(struct LexerPositionStruct);
+	MemCpy(newPosition, position, sizeof(struct LexerPositionStruct));
+	return newPosition;
+}
+
+/// <summary>
+/// Create a position object for a token that describes that token's found location.
+/// </summary>
+/// <param name="token">The token to create a position for.</param>
+/// <returns>The position of that token in the input stream (but with the data located on the GC heap).</returns>
+Inline LexerPosition Token_GetPosition(Token token)
+{
+	return LexerPosition_Clone(&token->_position);
+}
 
 /// <summary>
 /// Make a safe clone of a token on the heap.

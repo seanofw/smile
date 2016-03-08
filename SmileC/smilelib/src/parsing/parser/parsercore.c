@@ -26,71 +26,6 @@
 #include <smile/parsing/internal/parsedecl.h>
 #include <smile/parsing/internal/parsescope.h>
 
-static void Parser_ParseExprsOpt(Parser parser, SmileList *head, SmileList *tail, Int binaryLineBreaks);
-static ParseError Parser_ParseExpr(Parser parser, SmileObject *expr, Int binaryLineBreaks);
-static ParseError Parser_ParseBaseExpr(Parser parser, SmileObject *expr, Int binaryLineBreaks);
-static ParseError Parser_ParseTerm(Parser parser, SmileObject *expr, Int binaryLineBreaks, Token firstUnaryTokenForErrorReporting);
-
-static Token Parser_Recover(Parser parser, Int *tokenKinds, Int numTokenKinds);
-static Bool Parser_HasEqualLookahead(Parser parser);
-static Bool Parser_HasEqualOrColonLookahead(Parser parser);
-static Bool Parser_HasLookahead(Parser parser, Int tokenKind);
-static Bool Parser_Has2Lookahead(Parser parser, Int tokenKind1, Int tokenKind2);
-
-static Int Parser_BracesBracketsParenthesesBar_Recovery[] = {
-	TOKEN_LEFTBRACE, TOKEN_LEFTBRACKET, TOKEN_LEFTPARENTHESIS,
-	TOKEN_RIGHTBRACE, TOKEN_RIGHTBRACKET, TOKEN_RIGHTPARENTHESIS,
-	TOKEN_BAR
-};
-
-static Int Parser_RightBracesBracketsParentheses_Recovery[] = {
-	TOKEN_RIGHTBRACE, TOKEN_RIGHTBRACKET, TOKEN_RIGHTPARENTHESIS
-};
-
-//-------------------------------------------------------------------------------------------------
-// Inline helper methods
-
-/// <summary>
-/// Determine if the given haystack of integers contains the given needle.
-/// </summary>
-/// <param name="needle">The integer to search for.</param>
-/// <param name="haystack">The base pointer of the haystack that may or may not contain the
-/// needle.</param>
-/// <param name="count">The number of items in the haystack to test.</param>
-/// <returns>True if the given needle can be found in the haystack; False if the haystack does
-/// not contain the needle.</returns>
-Inline Bool IntArrayContains(Int needle, Int *haystack, Int count)
-{
-	while (count--) {
-		if (*haystack++ == needle)
-			return True;
-	}
-	return False;
-}
-
-/// <summary>
-/// Read the next token from the input stream.  If the token is an identifier, correctly map
-/// it to its declaration (or lack thereof) in the current scope.
-/// </summary>
-/// <param name="parser">The parser instance.</param>
-/// <returns>The next token in the input stream.</returns>
-Inline Token Parser_NextToken(Parser parser)
-{
-	Token token;
-	
-	Lexer_Next(parser->lexer);
-	token = parser->lexer->token;
-
-	if (token->kind == TOKEN_ALPHANAME) {
-		token->kind = ParseScope_IsDeclared(parser->currentScope, token->data.symbol) ? TOKEN_ALPHANAME : TOKEN_UNKNOWNALPHANAME;
-	}
-	else if (token->kind == TOKEN_PUNCTNAME) {
-		token->kind = ParseScope_IsDeclared(parser->currentScope, token->data.symbol) ? TOKEN_PUNCTNAME : TOKEN_UNKNOWNPUNCTNAME;
-	}
-
-	return token;
-}
-
 //-------------------------------------------------------------------------------------------------
 // Parser Construction
 
@@ -124,7 +59,7 @@ SmileList Parser_Parse(Parser parser, Lexer lexer, ParseScope scope)
 	Parser_ParseExprsOpt(parser, &head, &tail, BINARYLINEBREAKS_DISALLOWED);
 
 	if ((token = Parser_NextToken(parser))->kind != TOKEN_EOI) {
-		Parser_AddError(parser, &token->position, "Unexpected content at end of file.");
+		Parser_AddError(parser, Token_GetPosition(token), "Unexpected content at end of file.");
 	}
 
 	parser->currentScope = parentScope;
@@ -146,7 +81,7 @@ static void Parser_ParseExprsOpt(Parser parser, SmileList *head, SmileList *tail
 	while ((token = Parser_NextToken(parser))->kind != TOKEN_EOI
 		&& token->kind != TOKEN_RIGHTBRACE && token->kind != TOKEN_RIGHTBRACKET && token->kind != TOKEN_RIGHTPARENTHESIS) {
 
-		lexerPosition = &token->position;
+		lexerPosition = Token_GetPosition(token);
 		Lexer_Unget(parser->lexer);
 
 		// Parse the next expression.
@@ -164,8 +99,7 @@ static void Parser_ParseExprsOpt(Parser parser, SmileList *head, SmileList *tail
 
 			// If that expression was garbage, perform simple error-recovery by skipping to the
 			// next '{' '}' '[' ']' '(' ')' or '|'.
-			token = Parser_Recover(parser, Parser_BracesBracketsParenthesesBar_Recovery,
-				sizeof(Parser_BracesBracketsParenthesesBar_Recovery) / sizeof(Int));
+			token = Parser_Recover(parser, Parser_BracesBracketsParenthesesBar_Recovery, Parser_BracesBracketsParenthesesBar_Count);
 
 			// Reached a terminating '}' or ']' or ')', so presume we're done consuming expressions for now.
 			if (token->kind == TOKEN_RIGHTBRACE || token->kind == TOKEN_RIGHTBRACKET || token->kind == TOKEN_RIGHTPARENTHESIS)
@@ -176,6 +110,37 @@ static void Parser_ParseExprsOpt(Parser parser, SmileList *head, SmileList *tail
 	}
 
 	Lexer_Unget(parser->lexer);
+}
+
+//-------------------------------------------------------------------------------------------------
+// Includes and sub-parsing
+
+ParseError Parser_ParseOneExpressionFromText(Parser parser, SmileObject *expr, String string, LexerPosition startPosition)
+{
+	Lexer oldLexer;
+	ParseError parseError;
+	Token token;
+
+	oldLexer = parser->lexer;
+	parser->lexer = Lexer_Create(string, 0, String_Length(string), startPosition->filename, startPosition->line, startPosition->column);
+
+	parseError = Parser_ParseExpr(parser, expr, BINARYLINEBREAKS_DISALLOWED);
+	if (parseError != NULL) {
+		parser->lexer = oldLexer;
+		*expr = NULL;
+		return parseError;
+	}
+
+	if ((token = Parser_NextToken(parser))->kind != TOKEN_EOI) {
+		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
+			String_Format("Unexpected \"%S\" at end of dynamic string expression.", TokenKind_ToString(token->kind)));
+		parser->lexer = oldLexer;
+		*expr = NULL;
+		return parseError;
+	}
+
+	parser->lexer = oldLexer;
+	return NULL;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -211,7 +176,7 @@ static ParseError Parser_ParseExpr(Parser parser, SmileObject *expr, Int binaryL
 static ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int binaryLineBreaks, Token firstUnaryTokenForErrorReporting)
 {
 	Token token = Parser_NextToken(parser);
-	Token startToken;
+	LexerPosition startPosition;
 	ParseError error;
 
 	UNUSED(binaryLineBreaks);
@@ -219,7 +184,7 @@ static ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int binar
 	switch (token->kind) {
 
 		case TOKEN_LEFTPARENTHESIS:
-			startToken = token;
+			startPosition = Token_GetPosition(token);
 
 			// Parse the inside of the '(...)' block as an expression, with binary line-breaks allowed.
 			error = Parser_ParseExpr(parser, result, BINARYLINEBREAKS_ALLOWED);
@@ -228,8 +193,7 @@ static ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int binar
 				// Handle any errors generated inside the expression parse by recovering here, and then
 				// telling the caller everything was successful so that it continues trying the parse.
 				Parser_AddMessage(parser, error);
-				Parser_Recover(parser, Parser_RightBracesBracketsParentheses_Recovery,
-					sizeof(Parser_RightBracesBracketsParentheses_Recovery) / sizeof(Int));
+				Parser_Recover(parser, Parser_RightBracesBracketsParentheses_Recovery, Parser_RightBracesBracketsParentheses_Count);
 				*result = NullObject;
 				return NULL;
 			}
@@ -237,8 +201,8 @@ static ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int binar
 			// Make sure there's a matching ')' following the opening '('.
 			if (!Parser_HasLookahead(parser, TOKEN_RIGHTPARENTHESIS)) {
 				error = ParseMessage_Create(PARSEMESSAGE_ERROR,
-					&(firstUnaryTokenForErrorReporting != NULL ? firstUnaryTokenForErrorReporting : token)->position,
-					String_Format("Missing ')' after expression starting on line %d.", startToken->position.line));
+					Token_GetPosition(firstUnaryTokenForErrorReporting != NULL ? firstUnaryTokenForErrorReporting : token),
+					String_Format("Missing ')' after expression starting on line %d.", startPosition->line));
 				*result = NullObject;
 				return error;
 			}
@@ -256,6 +220,9 @@ static ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int binar
 			*result = (SmileObject)SmileString_Create(token->text);
 			return NULL;
 
+		case TOKEN_DYNSTRING:
+			return Parser_ParseDynamicString(parser, result, binaryLineBreaks, token->text, Token_GetPosition(token));
+
 		case TOKEN_INTEGER32:
 			*result = (SmileObject)SmileInteger32_Create(token->data.i);
 			return NULL;
@@ -268,7 +235,7 @@ static ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int binar
 		case TOKEN_UNKNOWNPUNCTNAME:
 			// If we get an operator name instead of a variable name, we can't use it as a term.
 			error = ParseMessage_Create(PARSEMESSAGE_ERROR,
-				&(firstUnaryTokenForErrorReporting != NULL ? firstUnaryTokenForErrorReporting : token)->position,
+				Token_GetPosition(firstUnaryTokenForErrorReporting != NULL ? firstUnaryTokenForErrorReporting : token),
 				String_Format("\"%S\" is not a known variable name", token->text));
 			return error;
 
@@ -277,98 +244,24 @@ static ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int binar
 			// an error message, but we do our best to specialize that message according to the most
 			// common mistakes people make.
 			if (firstUnaryTokenForErrorReporting != NULL) {
-				error = ParseMessage_Create(PARSEMESSAGE_ERROR, &firstUnaryTokenForErrorReporting->position,
+				error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(firstUnaryTokenForErrorReporting),
 					String_Format("\"%S\" is not a known variable name", firstUnaryTokenForErrorReporting->text));
 			}
 			else if (token->kind == TOKEN_SEMICOLON) {
-				error = ParseMessage_Create(PARSEMESSAGE_ERROR, &token->position,
+				error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
 					String_FromC("Expected a variable or number or other legal expression term, not a semicolon (remember, semicolons don't terminate statements in Smile!)"));
 			}
 			else if (token->kind == TOKEN_COMMA) {
-				error = ParseMessage_Create(PARSEMESSAGE_ERROR, &token->position,
+				error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
 					String_FromC("Expected a variable or number or other legal expression term, not a comma (did you mistakenly put commas in a list?)"));
 			}
 			else if (token->kind == TOKEN_ERROR) {
-				error = ParseMessage_Create(PARSEMESSAGE_ERROR, &token->position, token->text);
+				error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), token->text);
 			}
 			else {
-				error = ParseMessage_Create(PARSEMESSAGE_ERROR, &token->position,
+				error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
 					String_Format("Expected a variable or number or other legal expression term, not \"%S\".", TokenKind_ToString(token->kind)));
 			}
 			return error;
 	}
-}
-
-//-------------------------------------------------------------------------------------------------
-// Helper methods
-
-/// <summary>
-/// When an error occurs, skip through the input until one of the given targets is found.
-/// Does not consume the target token, and returns it.
-/// </summary>
-/// <param name="parser">The parser instance.</param>
-/// <param name="tokenKinds">The tokens to search for.</param>
-/// <param name="numTokenKinds">The number of tokens in the set of tokens to search for.</param>
-static Token Parser_Recover(Parser parser, Int *tokenKinds, Int numTokenKinds)
-{
-	Token token;
-
-	while ((token = Parser_NextToken(parser))->kind != TOKEN_EOI
-		&& !IntArrayContains(token->kind, tokenKinds, numTokenKinds));
-
-	Lexer_Unget(parser->lexer);
-
-	return token;
-}
-
-/// <summary>
-/// Determine if the next token in the input is one of the two forms of '=', without consuming the input.
-/// </summary>
-/// <param name="parser">The parser instance.</param>
-/// <returns>True if the next token is one of the two forms of '=', False if it's
-// anything else or nonexistent.</returns>
-static Bool Parser_HasEqualLookahead(Parser parser)
-{
-	Token token = Parser_NextToken(parser);
-	Lexer_Unget(parser->lexer);
-	return (token->kind == TOKEN_EQUAL || token->kind == TOKEN_EQUALWITHOUTWHITESPACE);
-}
-
-/// <summary>
-/// Determine if the next token in the input is one of the two forms of '=' or a ':', without consuming the input.
-/// </summary>
-/// <param name="parser">The parser instance.</param>
-/// <returns>True if the next token is one of the two forms of '=' or a ':', False if it's
-// anything else or nonexistent.</returns>
-static Bool Parser_HasEqualOrColonLookahead(Parser parser)
-{
-	Token token = Parser_NextToken(parser);
-	Lexer_Unget(parser->lexer);
-	return (token->kind == TOKEN_EQUAL || token->kind == TOKEN_EQUALWITHOUTWHITESPACE || token->kind == TOKEN_COLON);
-}
-
-/// <summary>
-/// Determine if the next token in the input is the given token kind, without consuming the input.
-/// </summary>
-/// <param name="parser">The parser instance.</param>
-/// <returns>True if the next token is the named token kind, False if it's anything else or nonexistent.</returns>
-static Bool Parser_HasLookahead(Parser parser, Int tokenKind)
-{
-	Token token = Parser_NextToken(parser);
-	Lexer_Unget(parser->lexer);
-	return (token->kind == tokenKind);
-}
-
-/// <summary>
-/// Determine if the next two token in the input are the given token kinds, without consuming the input.
-/// </summary>
-/// <param name="parser">The parser instance.</param>
-/// <returns>True if the next two tokens are the named token kinds, False if they're anything else or nonexistent.</returns>
-static Bool Parser_Has2Lookahead(Parser parser, Int tokenKind1, Int tokenKind2)
-{
-	Token token1 = Parser_NextToken(parser);
-	Token token2 = Parser_NextToken(parser);
-	Lexer_Unget(parser->lexer);
-	Lexer_Unget(parser->lexer);
-	return (token1->kind == tokenKind1 && token2->kind == tokenKind2);
 }
