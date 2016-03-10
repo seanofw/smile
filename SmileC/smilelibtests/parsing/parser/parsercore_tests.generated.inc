@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 184dc32bf53073184a289cb59a98066b
+// SourceHash: 1e51871e5fa2548b454a0d15916bada6
 
 START_TEST_SUITE(ParserCoreTests)
 {
@@ -10,6 +10,7 @@ START_TEST_SUITE(ParserCoreTests)
 	CanParseASequenceOfTerms,
 	ParenthesesHaveNoMeaningInASequenceOfTerms,
 	CanParseAPseudoDynamicString,
+	CanParseADynamicString,
 }
 END_TEST_SUITE(ParserCoreTests)
 

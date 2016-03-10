@@ -218,6 +218,7 @@ void StringBuilder_AppendFormatInternal(StringBuilder stringBuilder, const Byte 
 				{
 					// C-style nul-terminated 8-bit string.
 					const char *src = va_arg(v, const char *);
+					if (src == NULL) continue;
 					StringBuilder_AppendC(stringBuilder, src, 0, StrLen(src));
 				}
 				break;
@@ -226,6 +227,7 @@ void StringBuilder_AppendFormatInternal(StringBuilder stringBuilder, const Byte 
 				{
 					// String object.
 					const String src = va_arg(v, const String);
+					if (src == NULL) continue;
 					StringBuilder_AppendString(stringBuilder, src);
 				}
 				break;

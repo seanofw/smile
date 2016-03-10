@@ -117,16 +117,6 @@ ParseError Parser_ParseDynamicString(Parser parser, SmileObject *expr, Int binar
 	return NULL;
 }
 
-/*
-static ParseError Parser_SplitDynamicString(Lexer lexer, DynamicStringPiece **dynamicStringPieces, Int *numDynamicStringPieces, LexerPosition startPosition)
-{
-UNUSED(lexer);
-UNUSED(dynamicStringPieces);
-UNUSED(numDynamicStringPieces);
-return NULL;
-}
-*/
-
 #define MAKE_POSITION() \
 	(position = GC_MALLOC_STRUCT(struct LexerPositionStruct), \
 	 position->filename = lexer->filename, \
@@ -249,7 +239,7 @@ static ParseError Parser_SplitDynamicString(Lexer lexer, DynamicStringPiece **dy
 				inParsedContent = False;
 				dest = (DynamicStringPiece *)Array_Push(pieces);
 				MAKE_POSITION();
-				*dest = DynamicStringPiece_Create(StringBuilder_ToString(builder), position, False);
+				*dest = DynamicStringPiece_Create(StringBuilder_ToString(builder), position, True);
 				StringBuilder_SetLength(builder, 0);
 				startPosition = position;
 			}

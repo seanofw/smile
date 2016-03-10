@@ -70,15 +70,34 @@ Inline Bool IntArrayContains(Int needle, Int *haystack, Int count)
 Inline Token Parser_NextToken(Parser parser)
 {
 	Token token;
+	Symbol symbol;
 
 	Lexer_Next(parser->lexer);
 	token = parser->lexer->token;
 
-	if (token->kind == TOKEN_ALPHANAME) {
-		token->kind = ParseScope_IsDeclared(parser->currentScope, token->data.symbol) ? TOKEN_ALPHANAME : TOKEN_UNKNOWNALPHANAME;
-	}
-	else if (token->kind == TOKEN_PUNCTNAME) {
-		token->kind = ParseScope_IsDeclared(parser->currentScope, token->data.symbol) ? TOKEN_PUNCTNAME : TOKEN_UNKNOWNPUNCTNAME;
+	switch (token->kind) {
+
+		case TOKEN_ALPHANAME:
+		case TOKEN_UNKNOWNALPHANAME:
+			if (token->data.symbol == 0) {
+				token->data.symbol = symbol = SymbolTable_GetSymbol(Smile_SymbolTable, token->text);
+			}
+			else {
+				symbol = token->data.symbol;
+			}
+			token->kind = ParseScope_IsDeclared(parser->currentScope, token->data.symbol) ? TOKEN_ALPHANAME : TOKEN_UNKNOWNALPHANAME;
+			break;
+
+		case TOKEN_PUNCTNAME:
+		case TOKEN_UNKNOWNPUNCTNAME:
+			if (token->data.symbol == 0) {
+				token->data.symbol = symbol = SymbolTable_GetSymbol(Smile_SymbolTable, token->text);
+			}
+			else {
+				symbol = token->data.symbol;
+			}
+			token->kind = ParseScope_IsDeclared(parser->currentScope, token->data.symbol) ? TOKEN_PUNCTNAME : TOKEN_UNKNOWNPUNCTNAME;
+			break;
 	}
 
 	return token;

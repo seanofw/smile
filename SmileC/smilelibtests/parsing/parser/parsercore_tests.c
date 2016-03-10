@@ -21,6 +21,7 @@
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/text/smilestring.h>
+#include <smile/smiletypes/smilepair.h>
 
 TEST_SUITE(ParserCoreTests)
 
@@ -158,6 +159,56 @@ START_TEST(CanParseAPseudoDynamicString)
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 	Bool equal;
+
+	ASSERT(result != NULL && result != NullList);
+
+	equal = SMILE_VCALL1(result, compareEqual, (SmileObject)expectedResult);
+	ASSERT(equal);
+}
+END_TEST
+
+START_TEST(CanParseADynamicString)
+{
+	Lexer lexer;
+	Parser parser;
+	SmileList expectedResult;
+	ParseScope parseScope;
+	SmileList result;
+	Bool equal;
+	String expectedString;
+	String resultString;
+
+	lexer = Setup("  \"This {x}is a {y}test.\"  ");
+
+	expectedResult = SmileList_Cons(
+		(SmileObject)SmileList_Cons(
+			(SmileObject)SmilePair_Create(
+				(SmileObject)SmileList_CreateList(
+					(SmileObject)SmilePair_Create(
+						(SmileObject)Smile_KnownObjects.ListSymbol,
+						(SmileObject)Smile_KnownObjects.ofSymbol
+					),
+					(SmileObject)SmileString_Create(String_FromC("This ")),
+					(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, "x")),
+					(SmileObject)SmileString_Create(String_FromC("is a ")),
+					(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, "y")),
+					(SmileObject)SmileString_Create(String_FromC("test.")),
+					NULL
+				),
+				(SmileObject)Smile_KnownObjects.joinSymbol
+			),
+			NullObject
+		),
+		NullObject
+	);
+
+	parser = Parser_Create();
+	parseScope = ParseScope_CreateRoot();
+	ParseScope_Declare(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "x"), PARSEDECL_VARIABLE);
+	ParseScope_Declare(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "y"), PARSEDECL_VARIABLE);
+	result = Parser_Parse(parser, lexer, parseScope);
+	expectedString = SMILE_VCALL(expectedResult, toString);
+	resultString = SMILE_VCALL(result, toString);
 
 	ASSERT(result != NULL && result != NullList);
 

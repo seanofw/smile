@@ -132,6 +132,11 @@ static Int32 SmilePair_ToInteger32(SmilePair self)
 
 static String SmilePair_ToString(SmilePair self)
 {
-	UNUSED(self);
-	return String_Format("Pair");
+	if (self->right->kind == SMILE_KIND_SYMBOL
+		&& self->left->kind <= SMILE_KIND_FUNCTION) {
+		return String_Format("%S.%S", SMILE_VCALL(self->left, toString), SMILE_VCALL(self->right, toString));
+	}
+	else {
+		return String_Format("(%S . %S)", SMILE_VCALL(self->left, toString), SMILE_VCALL(self->right, toString));
+	}
 }

@@ -22,6 +22,7 @@
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/text/smilestring.h>
+#include <smile/stringbuilder.h>
 
 SMILE_EASY_OBJECT_VTABLE(SmileList);
 
@@ -173,8 +174,71 @@ static Int32 SmileList_ToInteger32(SmileList self)
 	return 1;
 }
 
+static Bool IsNormallyStructuredList(SmileList list)
+{
+	while (SMILE_KIND(list) == SMILE_KIND_LIST) {
+		list = (SmileList)list->d;
+	}
+
+	return SMILE_KIND(list) == SMILE_KIND_NULL;
+}
+
+static int _indent = 0;
+
+STATIC_STRING(BacktickString, "`");
+
 static String SmileList_ToString(SmileList self)
 {
-	UNUSED(self);
-	return String_Format("List");
+	Bool useIndents;
+	Bool isFirst;
+	SmileList list;
+	DECLARE_INLINE_STRINGBUILDER(stringBuilder, 256);
+
+	if (!IsNormallyStructuredList(self))
+		return String_Format("(%S ## %S)", SMILE_VCALL(self->a, toString), SMILE_VCALL(self->d, toString));
+
+	if (SMILE_KIND(self->a) == SMILE_KIND_SYMBOL
+		&& ((SmileSymbol)self->a)->symbol == Smile_KnownSymbols.quote_
+		&& SMILE_KIND(LIST_REST(LIST_REST(self))) == SMILE_KIND_NULL)
+	{
+		SmileObject quotedItem = LIST_FIRST(LIST_REST(self));
+		if (SMILE_KIND(quotedItem) == SMILE_KIND_LIST || SMILE_KIND(quotedItem) == SMILE_KIND_SYMBOL) {
+			return String_Concat(BacktickString, SMILE_VCALL(quotedItem, toString));
+		}
+	}
+
+	INIT_INLINE_STRINGBUILDER(stringBuilder);
+	StringBuilder_AppendByte(stringBuilder, '[');
+
+	useIndents = (SMILE_KIND(self->a) == SMILE_KIND_SYMBOL &&
+		(((SmileSymbol)self->a)->symbol == Smile_KnownSymbols.scope_
+		|| ((SmileSymbol)self->a)->symbol == Smile_KnownSymbols.progn_));
+
+	if (useIndents) _indent++;
+
+	isFirst = True;
+	for (list = self; SMILE_KIND(list) != SMILE_KIND_NULL; list = (SmileList)list->d) {
+		if (useIndents && !isFirst) {
+			StringBuilder_AppendRepeat(stringBuilder, '\t', _indent);
+		}
+		StringBuilder_AppendString(stringBuilder, SMILE_VCALL(list->a, toString));
+		if (!useIndents) {
+			if (SMILE_KIND(list->d) != SMILE_KIND_NULL) {
+				StringBuilder_AppendByte(stringBuilder, ' ');
+			}
+		}
+		else {
+			StringBuilder_Append(stringBuilder, "\r\n", 0, 2);
+		}
+		isFirst = False;
+	}
+
+	if (useIndents) {
+		_indent--;
+		StringBuilder_AppendRepeat(stringBuilder, '\t', _indent);
+	}
+
+	StringBuilder_AppendByte(stringBuilder, ']');
+
+	return StringBuilder_ToString(stringBuilder);
 }

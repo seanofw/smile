@@ -52,7 +52,7 @@ Inline SmileString SmileString_CreateC(const char *text)
 
 Inline String SmileString_ToString(SmileString str)
 {
-	return (String)&(str->string);
+	return String_Format("\"%S\"", String_AddCSlashes((String)&(str->string)));
 }
 
 Inline const char *SmileString_ToC(SmileString str)
