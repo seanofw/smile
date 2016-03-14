@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 1e51871e5fa2548b454a0d15916bada6
+// SourceHash: ba4cc52405ead8a832532f07d394be77
 
 START_TEST_SUITE(ParserCoreTests)
 {

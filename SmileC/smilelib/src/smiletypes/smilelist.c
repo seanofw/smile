@@ -152,14 +152,15 @@ static Bool SmileList_HasProperty(SmileList self, Symbol propertyName)
 
 static SmileList SmileList_GetPropertyNames(SmileList self)
 {
-	DECLARE_LIST_BUILDER(listBuilder);
+	SmileList head, tail;
 
 	UNUSED(self);
 
-	LIST_BUILDER_APPEND(listBuilder, SmileSymbol_Create(Smile_KnownSymbols.a));
-	LIST_BUILDER_APPEND(listBuilder, SmileSymbol_Create(Smile_KnownSymbols.d));
+	LIST_INIT(head, tail);
+	LIST_APPEND(head, tail, SmileSymbol_Create(Smile_KnownSymbols.a));
+	LIST_APPEND(head, tail, SmileSymbol_Create(Smile_KnownSymbols.d));
 
-	return LIST_BUILDER_HEAD(listBuilder);
+	return head;
 }
 
 static Bool SmileList_ToBool(SmileList self)

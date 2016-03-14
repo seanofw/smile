@@ -156,18 +156,19 @@ Bool SmileUserObject_HasProperty(SmileUserObject self, Symbol propertyName)
 
 SmileList SmileUserObject_GetPropertyNames(SmileUserObject self)
 {
-	DECLARE_LIST_BUILDER(result);
+	SmileList head, tail;
 	Symbol *keys;
 	Int i, numKeys;
 
 	keys = (Symbol *)Int32Dict_GetKeys((Int32Dict)&self->dict);
 	numKeys = Int32Dict_Count((Int32Dict)&self->dict);
 
+	LIST_INIT(head, tail);
 	for (i = 0; i < numKeys; i++) {
-		LIST_BUILDER_APPEND(result, SmileSymbol_Create(keys[i]));
+		LIST_APPEND(head, tail, SmileSymbol_Create(keys[i]));
 	}
 
-	return LIST_BUILDER_HEAD(result);
+	return head;
 }
 
 Bool SmileUserObject_ToBool(SmileUserObject self)

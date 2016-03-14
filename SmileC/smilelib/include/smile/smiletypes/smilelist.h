@@ -71,35 +71,13 @@ Inline SmileObject SmileList_First(SmileList list)
 	((__tail__) = (__head__) = NullList)
 
 #define LIST_APPEND(__head__, __tail__, __newElement__) \
-	((__tail__) = ((__head__) == NullList) \
+	((__tail__) = (SMILE_KIND(__head__) == SMILE_KIND_NULL) \
 		? ((__head__) = SmileList_Cons((SmileObject)(__newElement__), NullObject)) \
 		: (SmileList)(((__tail__)->d = (SmileObject)SmileList_Cons((SmileObject)(__newElement__), NullObject))))
 
 #define LIST_APPEND_WITH_SOURCE(__head__, __tail__, __newElement__, __position__) \
-	((__tail__) = ((__head__) == NullList) \
+	((__tail__) = (SMILE_KIND(__head__) == SMILE_KIND_NULL) \
 		? ((__head__) = SmileList_ConsWithSource((SmileObject)(__newElement__), NullObject, (__position__))) \
 		: (SmileList)(((__tail__)->d = (SmileObject)SmileList_ConsWithSource((SmileObject)(__newElement__), NullObject, (__position__)))))
-
-//-------------------------------------------------------------------------------------------------
-//  List builders
-
-#define DECLARE_LIST_BUILDER(__name__) \
-	SmileList __name__##Null = NullList, \
-		__name__##Head = __name__##Null, \
-		*__name__##Tail = &(__name__##Head), \
-		__name__##Temp
-#define LIST_BUILDER_APPEND(__name__, __item__) \
-	( \
-		__name__##Temp = SmileList_Cons((SmileObject)__item__, (SmileObject)__name__##Null), \
-		*__name__##Tail = (__name__##Temp), \
-		__name__##Tail = (SmileList *)&((__name__##Temp)->d) \
-	)
-#define LIST_BUILDER_INSERT(__name__, __item__) \
-	( \
-		__name__##Head = SmileList_Cons((SmileObject)__item__, (SmileObject)__name__##Head), \
-		__name__##Tail = (__name__##Tail == &(__name__##Head) ? &((SmileList *)(__name__##Head)->d) : (__name__##Tail)) \
-	)
-#define LIST_BUILDER_HEAD(__name__) \
-	(__name__##Head)
 
 #endif

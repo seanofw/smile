@@ -1,6 +1,6 @@
 
-Grammar for Smile, 13.24
-========================
+Grammar for Smile, 14.0
+=======================
 
 This grammar is something like LR(3), with common shift-reduce conflicts resolved in
 favor of shift (usually), tokenizer communication required to support variable declarations
@@ -11,6 +11,9 @@ Special not-easily-expressed parsing rule:  Binary operators cannot be matched a
 operators if they are the first non-whitespace on a line.  This behavior is enabled inside
 {curly braces} and [square brackets], and disabled inside (parentheses) and inside the
 condition of 'if' or 'while-do'.  All other productions inherit their parent's line-break rule.
+
+Even more difficult to express:  #syntax declarations add to one of the eight allowed
+production rules.
 
 In short, this is quite parseable, but it ain't YACC-friendly.  We use a recursive-descent
 parser in the standard Smile implementation.
@@ -47,9 +50,13 @@ expr ::= arith
 		| auto_decl
 		| scope
 		| return
-		| INSERT_INCLUDE string
+		| INSERT_INCLUDE include_expr
         | INSERT_BRK base_expr
         | INSERT_SYNTAX syntax_expr
+
+include_expr ::= STRING
+		| STRING COLON include_names
+include_names ::= anyname | include_names COMMA anyname
 
 if_then ::= IF arith THEN expr				// See note above about binary operators (breaking allowed in 'arith').
 		| IF arith THEN expr ELSE expr		// See note above about binary operators (breaking allowed in 'arith').
@@ -64,7 +71,7 @@ do_while ::= DO expr WHILE arith
 try_catch ::= TRY expr CATCH func
 
 till_do ::= TILL till_names DO expr whens_opt
-till_names ::= name | name COMMA till_names
+till_names ::= anyname | till_names COMMA anyname
 whens_opt ::= whens |
 whens ::= when whens | when
 when ::= WHEN name expr
@@ -151,7 +158,7 @@ term ::= LPAREN expr RPAREN							// See note above about binary operators (brea
        | RAWSTRING
        | DYNSTRING
        | CHAR
-       | BYTE | INT32 | INT64 | REAL32 | REAL64
+       | BYTE | INT16 | INT32 | INT64 | REAL32 | REAL64 | REAL128 | FLOAT32 | FLOAT64
        | INSERT
 
 string ::= RAWSTRING | DYNSTRING
@@ -181,7 +188,7 @@ raw_list_doublehash ::= raw_list_dot DOUBLEHASH raw_list_doublehash | raw_list_d
 raw_list_dot ::= raw_list_dot DOT any_name | raw_list_term
 raw_list_term ::= raw_list | any_name
        | CHAR | RAWSTRING
-       | BYTE | INT32 | INT64 | REAL32 | REAL64
+       | BYTE | INT16 | INT32 | INT64 | REAL32 | REAL64 | REAL128 | FLOAT32 | FLOAT64
        | BACKTICK raw_list_term
        | nonraw_term
 nonraw_term ::= LPAREN expr RPAREN
@@ -198,7 +205,18 @@ raw_list ::= LBRACKET raw_list_items_opt RBRACKET
 raw_list_items_opt ::= raw_list_items |
 raw_list_items ::= raw_list_items raw_list_item | raw_list_item
 
-syntax_expr ::= syntax_level LBRACKET syntax_elements RBRACKET expr
-syntax_level ::= STMT | EXPR | LVALUE | ARITH | BINARY | UNARY | TERM
+syntax_expr ::= syntax_level COLON LBRACKET syntax_elements RBRACKET IMPLIES expr
+syntax_level ::= STMT | EXPR | CMP | ADDSUB | MULDIV | BINARY | UNARY | POSTFIX | TERM
 syntax_elements ::= syntax_element syntax_elements | syntax_element
-syntax_element ::= any_name | LBRACKET syntax_level any_name RBRACKET
+syntax_element ::= any_name | COLON | SEMICOLON | LPAREN syntax_elements RPAREN | LBRACE syntax_elements RBRACE
+	| LBRACKET syntax_nonterm any_name RBRACKET
+syntax_nonterm ::= syntax_level | LVALUE | FN | VAR | OPER | STRING | SYMBOL | CHAR | NUMBER | INT32 | REAL64 | RAWLIST | MEMBERS | SCOPE
+	| EXPRS | LVALUES | SYMBOLS | VARS | NUMBERS | STRINGS | INT32S | REAL64S
+
+/*
+	#syntax UNARY: [array ( [EXPRS n] )] => [Array.of ## n]
+
+	Stdout print a(1, 2, x + 3, 4, 5)
+
+	--> [Stdout.print [Array.of 1 2 [x.+ 3] 4 5]]
+*/

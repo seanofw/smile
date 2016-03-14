@@ -714,6 +714,18 @@
     <ClCompile Include="src\smiletypes\smilepair.c">
       <Filter>src\smiletypes</Filter>
     </ClCompile>
+    <ClCompile Include="src\parsing\parser\parseterm.c">
+      <Filter>src\parsing\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parsing\parser\parsestmt.c">
+      <Filter>src\parsing\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parsing\parser\parseexpr.c">
+      <Filter>src\parsing\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parsing\parser\parseassign.c">
+      <Filter>src\parsing\parser</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">

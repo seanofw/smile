@@ -52,4 +52,8 @@ void KnownObjects_Preload(struct KnownObjectsStruct *knownObjects, struct KnownS
 	knownObjects->ListSymbol = SmileSymbol_Create(knownSymbols->List_);
 	knownObjects->joinSymbol = SmileSymbol_Create(knownSymbols->join);
 	knownObjects->ofSymbol = SmileSymbol_Create(knownSymbols->of);
+	knownObjects->prognSymbol = SmileSymbol_Create(knownSymbols->progn_);
+	knownObjects->scopeSymbol = SmileSymbol_Create(knownSymbols->scope_);
+	knownObjects->opEqualsSymbol = SmileSymbol_Create(knownSymbols->op_equals_);
+	knownObjects->equalsSymbol = SmileSymbol_Create(knownSymbols->equals_);
 }

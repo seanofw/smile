@@ -108,13 +108,15 @@ Bool SmileString_HasProperty(SmileString self, Symbol propertyName)
 
 SmileList SmileString_GetPropertyNames(SmileString self)
 {
-	DECLARE_LIST_BUILDER(listBuilder);
+	SmileList head, tail;
+
+	LIST_INIT(head, tail);
 
 	UNUSED(self);
 
-	LIST_BUILDER_APPEND(listBuilder, SmileSymbol_Create(Smile_KnownSymbols.length));
+	LIST_APPEND(head, tail, SmileSymbol_Create(Smile_KnownSymbols.length));
 
-	return LIST_BUILDER_HEAD(listBuilder);
+	return head;
 }
 
 Bool SmileString_ToBool(SmileString self)

@@ -24,6 +24,9 @@ struct KnownObjectsStruct {
 
 	SmileSymbol ListSymbol;
 	SmileSymbol joinSymbol, ofSymbol;
+	SmileSymbol prognSymbol, scopeSymbol;
+	SmileSymbol opEqualsSymbol;
+	SmileSymbol equalsSymbol;
 };
 
 extern void KnownObjects_Preload(struct KnownObjectsStruct *knownObjects, struct KnownSymbolsStruct *knownSymbols);

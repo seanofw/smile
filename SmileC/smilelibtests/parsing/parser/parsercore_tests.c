@@ -204,8 +204,8 @@ START_TEST(CanParseADynamicString)
 
 	parser = Parser_Create();
 	parseScope = ParseScope_CreateRoot();
-	ParseScope_Declare(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "x"), PARSEDECL_VARIABLE);
-	ParseScope_Declare(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "y"), PARSEDECL_VARIABLE);
+	ParseScope_Declare(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "x"), PARSEDECL_VARIABLE, NULL, NULL);
+	ParseScope_Declare(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "y"), PARSEDECL_VARIABLE, NULL, NULL);
 	result = Parser_Parse(parser, lexer, parseScope);
 	expectedString = SMILE_VCALL(expectedResult, toString);
 	resultString = SMILE_VCALL(result, toString);

@@ -1,4 +1,3 @@
-
 #ifndef __SMILE_PARSING_INTERNAL_PARSERINTERNAL_H__
 #define __SMILE_PARSING_INTERNAL_PARSERINTERNAL_H__
 
@@ -23,17 +22,28 @@
 //-------------------------------------------------------------------------------------------------
 // Parser-internal methods
 
+SMILE_INTERNAL_FUNC ParseError Parser_ParseScope(Parser parser, SmileObject *expr, Int binaryLineBreaks);
 SMILE_INTERNAL_FUNC void Parser_ParseExprsOpt(Parser parser, SmileList *head, SmileList *tail, Int binaryLineBreaks);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseExpr(Parser parser, SmileObject *expr, Int binaryLineBreaks);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseBaseExpr(Parser parser, SmileObject *expr, Int binaryLineBreaks);
+
+SMILE_INTERNAL_FUNC ParseError Parser_ParseVarDecls(Parser parser, SmileObject *expr, Int binaryLineBreaks, Int declKind);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseDecl(Parser parser, SmileObject *expr, Int binaryLineBreaks, Int declKind);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseOpEquals(Parser parser, SmileObject *expr, Int binaryLineBreaks, Int commaMode);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseEquals(Parser parser, SmileObject *expr, Int binaryLineBreaks, Int commaMode);
+
+SMILE_INTERNAL_FUNC ParseError Parser_ParseOr(Parser parser, SmileObject *expr, Int binaryLineBreaks, Int commaMode);
+
 SMILE_INTERNAL_FUNC ParseError Parser_ParseTerm(Parser parser, SmileObject *expr, Int binaryLineBreaks, Token firstUnaryTokenForErrorReporting);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseDynamicString(Parser parser, SmileObject *expr, Int binaryLineBreaks, String text, LexerPosition startPosition);
 
 SMILE_INTERNAL_FUNC Token Parser_Recover(Parser parser, Int *tokenKinds, Int numTokenKinds);
+SMILE_INTERNAL_FUNC Bool Parser_IsLValue(SmileObject obj);
 SMILE_INTERNAL_FUNC Bool Parser_HasEqualLookahead(Parser parser);
 SMILE_INTERNAL_FUNC Bool Parser_HasEqualOrColonLookahead(Parser parser);
 SMILE_INTERNAL_FUNC Bool Parser_HasLookahead(Parser parser, Int tokenKind);
 SMILE_INTERNAL_FUNC Bool Parser_Has2Lookahead(Parser parser, Int tokenKind1, Int tokenKind2);
+SMILE_INTERNAL_FUNC Bool Parser_Peek2(Parser parser, Token *token1, Token *token2);
 
 SMILE_INTERNAL_DATA Int Parser_BracesBracketsParenthesesBar_Recovery[];
 SMILE_INTERNAL_DATA Int Parser_BracesBracketsParenthesesBar_Count;

@@ -17,9 +17,6 @@
 
 #include <smile/types.h>
 #include <smile/smiletypes/smileobject.h>
-#include <smile/smiletypes/numeric/smileinteger32.h>
-#include <smile/smiletypes/numeric/smileinteger64.h>
-#include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/parsing/parser.h>
 #include <smile/parsing/internal/parserinternal.h>
@@ -68,9 +65,64 @@ SmileList Parser_Parse(Parser parser, Lexer lexer, ParseScope scope)
 	return head;
 }
 
+STATIC_STRING(ExpectedOpenBraceError, "Expected { ... to begin a scope");
+STATIC_STRING(ExpectedCloseBraceError, "Expected ... } to end the scope");
+
+//  scope ::= . LBRACE exprs_opt RBRACE
+ParseError Parser_ParseScope(Parser parser, SmileObject *expr, Int binaryLineBreaks)
+{
+	ParseError parseError;
+	ParseScope parentScope, newScope;
+	Token token;
+	LexerPosition startPosition;
+	int i, numVariables;
+	Symbol *symbolNames;
+	SmileList head, tail;
+	SmileList declHead, declTail;
+
+	UNUSED(binaryLineBreaks);
+
+	if ((token = Parser_NextToken(parser))->kind != TOKEN_LEFTBRACE) {
+		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), ExpectedOpenBraceError);
+		return parseError;
+	}
+	startPosition = Token_GetPosition(token);
+
+	parentScope = parser->currentScope;
+	newScope = ParseScope_CreateChild(parentScope, PARSESCOPE_FUNCTION);
+	parser->currentScope = newScope;
+
+	LIST_INIT(head, tail);
+	Parser_ParseExprsOpt(parser, &head, &tail, BINARYLINEBREAKS_DISALLOWED);
+
+	parser->currentScope = parentScope;
+
+	if ((token = Parser_NextToken(parser))->kind != TOKEN_RIGHTBRACE) {
+		*expr = NULL;
+		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), ExpectedCloseBraceError);
+		return parseError;
+	}
+
+	if (newScope->closure->closureInfo->numVariables == 0) {
+		*expr = (SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects.prognSymbol, (SmileObject)head, startPosition);
+		return NULL;
+	}
+	else {
+		numVariables = newScope->closure->closureInfo->numVariables;
+		symbolNames = (Symbol *)Int32Int32Dict_GetKeys(newScope->closure->closureInfo->symbolDictionary);
+		LIST_INIT(declHead, declTail);
+		for (i = 0; i < numVariables; i++) {
+			LIST_APPEND(declHead, declTail, SmileSymbol_Create(symbolNames[i]));
+		}
+		*expr = (SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects.scopeSymbol,
+			(SmileObject)SmileList_ConsWithSource((SmileObject)declHead, (SmileObject)head, startPosition), startPosition);
+		return NULL;
+	}
+}
+
 //  exprs_opt ::= . exprs | .
 //  exprs ::= . expr | . exprs expr
-static void Parser_ParseExprsOpt(Parser parser, SmileList *head, SmileList *tail, Int binaryLineBreaks)
+void Parser_ParseExprsOpt(Parser parser, SmileList *head, SmileList *tail, Int binaryLineBreaks)
 {
 	Token token;
 	LexerPosition lexerPosition;
@@ -141,127 +193,4 @@ ParseError Parser_ParseOneExpressionFromText(Parser parser, SmileObject *expr, S
 
 	parser->lexer = oldLexer;
 	return NULL;
-}
-
-//-------------------------------------------------------------------------------------------------
-// Base expression parsing
-
-//  nonbreak_expr ::= . expr    // Explicitly in a nonbreak_expr, binary operators cannot be matched
-//									if they are the first non-whitespace on a line.  This behavior is
-//									disabled at the end of the nonbreak_expr, whenever any [], (), or {}
-//									grouping is entered, or whenever we are parsing inside the first
-//									expr/arith of an if_then or a do-while.
-//
-//  expr ::= . base_expr
-static ParseError Parser_ParseExpr(Parser parser, SmileObject *expr, Int binaryLineBreaks)
-{
-	return Parser_ParseTerm(parser, expr, binaryLineBreaks, NULL);
-}
-
-//-------------------------------------------------------------------------------------------------
-// Terms
-
-//  term ::= . LPAREN expr RPAREN
-//         | . scope
-//         | . func
-//         | . LBRACKET exprs_opt RBRACKET
-//         | . BACKTICK raw_list_term
-//         | . BACKTICK LPAREN expr RPAREN
-//         | . VAR_NAME
-//         | . RAWSTRING
-//         | . DYNSTRING
-//         | . CHAR
-//         | . INTEGER
-//         | . REAL
-static ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int binaryLineBreaks, Token firstUnaryTokenForErrorReporting)
-{
-	Token token = Parser_NextToken(parser);
-	LexerPosition startPosition;
-	ParseError error;
-
-	UNUSED(binaryLineBreaks);
-
-	switch (token->kind) {
-
-		case TOKEN_LEFTPARENTHESIS:
-			startPosition = Token_GetPosition(token);
-
-			// Parse the inside of the '(...)' block as an expression, with binary line-breaks allowed.
-			error = Parser_ParseExpr(parser, result, BINARYLINEBREAKS_ALLOWED);
-
-			if (error != NULL) {
-				// Handle any errors generated inside the expression parse by recovering here, and then
-				// telling the caller everything was successful so that it continues trying the parse.
-				Parser_AddMessage(parser, error);
-				Parser_Recover(parser, Parser_RightBracesBracketsParentheses_Recovery, Parser_RightBracesBracketsParentheses_Count);
-				*result = NullObject;
-				return NULL;
-			}
-
-			// Make sure there's a matching ')' following the opening '('.
-			if (!Parser_HasLookahead(parser, TOKEN_RIGHTPARENTHESIS)) {
-				error = ParseMessage_Create(PARSEMESSAGE_ERROR,
-					Token_GetPosition(firstUnaryTokenForErrorReporting != NULL ? firstUnaryTokenForErrorReporting : token),
-					String_Format("Missing ')' after expression starting on line %d.", startPosition->line));
-				*result = NullObject;
-				return error;
-			}
-			Parser_NextToken(parser);
-
-			// No errors, yay!
-			return NULL;
-
-		case TOKEN_ALPHANAME:
-		case TOKEN_PUNCTNAME:
-			*result = (SmileObject)SmileSymbol_Create(token->data.symbol);
-			return NULL;
-
-		case TOKEN_RAWSTRING:
-			*result = (SmileObject)SmileString_Create(token->text);
-			return NULL;
-
-		case TOKEN_DYNSTRING:
-			return Parser_ParseDynamicString(parser, result, binaryLineBreaks, token->text, Token_GetPosition(token));
-
-		case TOKEN_INTEGER32:
-			*result = (SmileObject)SmileInteger32_Create(token->data.i);
-			return NULL;
-
-		case TOKEN_INTEGER64:
-			*result = (SmileObject)SmileInteger64_Create(token->data.int64);
-			return NULL;
-
-		case TOKEN_UNKNOWNALPHANAME:
-		case TOKEN_UNKNOWNPUNCTNAME:
-			// If we get an operator name instead of a variable name, we can't use it as a term.
-			error = ParseMessage_Create(PARSEMESSAGE_ERROR,
-				Token_GetPosition(firstUnaryTokenForErrorReporting != NULL ? firstUnaryTokenForErrorReporting : token),
-				String_Format("\"%S\" is not a known variable name", token->text));
-			return error;
-
-		default:
-			// We got an unknown token that can't be turned into a term.  So we're going to generate
-			// an error message, but we do our best to specialize that message according to the most
-			// common mistakes people make.
-			if (firstUnaryTokenForErrorReporting != NULL) {
-				error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(firstUnaryTokenForErrorReporting),
-					String_Format("\"%S\" is not a known variable name", firstUnaryTokenForErrorReporting->text));
-			}
-			else if (token->kind == TOKEN_SEMICOLON) {
-				error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
-					String_FromC("Expected a variable or number or other legal expression term, not a semicolon (remember, semicolons don't terminate statements in Smile!)"));
-			}
-			else if (token->kind == TOKEN_COMMA) {
-				error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
-					String_FromC("Expected a variable or number or other legal expression term, not a comma (did you mistakenly put commas in a list?)"));
-			}
-			else if (token->kind == TOKEN_ERROR) {
-				error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), token->text);
-			}
-			else {
-				error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
-					String_Format("Expected a variable or number or other legal expression term, not \"%S\".", TokenKind_ToString(token->kind)));
-			}
-			return error;
-	}
 }
