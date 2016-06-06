@@ -11,31 +11,57 @@
 //-------------------------------------------------------------------------------------------------
 // Types and constants
 
-// Binary line-break modes.
-#define BINARYLINEBREAKS_ALLOWED 1			// Declare that line breaks are allowed before a binary operator, allowing the expression to cross line breaks.
-#define BINARYLINEBREAKS_DISALLOWED 0		// Declare that line breaks are disallowed before a binary operator, causing the start of a new expression.
+// Mode flags.
 
-// Comma-parsing modes.
-#define COMMAMODE_NORMAL 0					// Declare that commas delineate successive operands in N-ary operations.
-#define COMMAMODE_VARIABLEDECLARATION 1		// Declare that commas are being used to separate successive variable declarations.
+#define BINARYLINEBREAKS_DISALLOWED		0			// Declare that line breaks are disallowed before a binary operator, causing the start of a new expression.
+#define BINARYLINEBREAKS_ALLOWED		(1 << 0)	// Declare that line breaks are allowed before a binary operator, allowing the expression to cross line breaks.
+#define BINARYLINEBREAKS_MASK			(1 << 0)
+
+#define COMMAMODE_NORMAL				0			// Declare that commas delineate successive operands in N-ary operations.
+#define COMMAMODE_VARIABLEDECLARATION	(1 << 1)	// Declare that commas are being used to separate successive variable declarations.
+#define COMMAMODE_MASK					(1 << 1)
+
+#define COLONMODE_MEMBERACCESS			0			// Declare that colons are used for member-retrieval.
+#define COLONMODE_MEMBERDECL			(1 << 2)	// Declare that colons are used for member-declaration.
+#define COLONMODE_MASK					(1 << 2)
 
 //-------------------------------------------------------------------------------------------------
 // Parser-internal methods
 
-SMILE_INTERNAL_FUNC ParseError Parser_ParseScope(Parser parser, SmileObject *expr, Int binaryLineBreaks);
-SMILE_INTERNAL_FUNC void Parser_ParseExprsOpt(Parser parser, SmileList *head, SmileList *tail, Int binaryLineBreaks);
-SMILE_INTERNAL_FUNC ParseError Parser_ParseExpr(Parser parser, SmileObject *expr, Int binaryLineBreaks);
-SMILE_INTERNAL_FUNC ParseError Parser_ParseBaseExpr(Parser parser, SmileObject *expr, Int binaryLineBreaks);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseScope(Parser parser, SmileObject *expr);
+SMILE_INTERNAL_FUNC void Parser_ParseExprsOpt(Parser parser, SmileList *head, SmileList *tail, Int modeFlags);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseExpr(Parser parser, SmileObject *expr, Int modeFlags);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseBaseExpr(Parser parser, SmileObject *expr, Int modeFlags);
 
-SMILE_INTERNAL_FUNC ParseError Parser_ParseVarDecls(Parser parser, SmileObject *expr, Int binaryLineBreaks, Int declKind);
-SMILE_INTERNAL_FUNC ParseError Parser_ParseDecl(Parser parser, SmileObject *expr, Int binaryLineBreaks, Int declKind);
-SMILE_INTERNAL_FUNC ParseError Parser_ParseOpEquals(Parser parser, SmileObject *expr, Int binaryLineBreaks, Int commaMode);
-SMILE_INTERNAL_FUNC ParseError Parser_ParseEquals(Parser parser, SmileObject *expr, Int binaryLineBreaks, Int commaMode);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseVarDecls(Parser parser, SmileObject *expr, Int modeFlags, Int declKind);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseDecl(Parser parser, SmileObject *expr, Int modeFlags, Int declKind);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseOpEquals(Parser parser, SmileObject *expr, Int modeFlags);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseEquals(Parser parser, SmileObject *expr, Int modeFlags);
 
-SMILE_INTERNAL_FUNC ParseError Parser_ParseOr(Parser parser, SmileObject *expr, Int binaryLineBreaks, Int commaMode);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseOr(Parser parser, SmileObject *expr, Int modeFlags);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseAnd(Parser parser, SmileObject *expr, Int modeFlags);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseNot(Parser parser, SmileObject *expr, Int modeFlags);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseCmp(Parser parser, SmileObject *expr, Int modeFlags);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseAddSub(Parser parser, SmileObject *expr, Int modeFlags);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseMulDiv(Parser parser, SmileObject *expr, Int modeFlags);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseBinary(Parser parser, SmileObject *expr, Int modeFlags);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseColon(Parser parser, SmileObject *expr, Int modeFlags);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseRange(Parser parser, SmileObject *expr, Int modeFlags);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseUnary(Parser parser, SmileObject *expr, Int modeFlags);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseNew(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting);
+SMILE_INTERNAL_FUNC Bool Parser_ParseMembers(Parser parser, SmileObject *expr);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseDoubleHash(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseDot(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseTerm(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting);
 
-SMILE_INTERNAL_FUNC ParseError Parser_ParseTerm(Parser parser, SmileObject *expr, Int binaryLineBreaks, Token firstUnaryTokenForErrorReporting);
-SMILE_INTERNAL_FUNC ParseError Parser_ParseDynamicString(Parser parser, SmileObject *expr, Int binaryLineBreaks, String text, LexerPosition startPosition);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseDynamicString(Parser parser, SmileObject *expr, String text, LexerPosition startPosition);
+
+SMILE_INTERNAL_FUNC ParseError Parser_ParseFunc(Parser parser, SmileObject *expr, Int modeFlags);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseParamsOpt(Parser parser, SmileList *params);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseParam(Parser parser, SmileObject *param, LexerPosition *position);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseParamType(Parser parser, SmileObject *type);
+
+SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *expr, Int modeFlags);
 
 SMILE_INTERNAL_FUNC Token Parser_Recover(Parser parser, Int *tokenKinds, Int numTokenKinds);
 SMILE_INTERNAL_FUNC Bool Parser_IsLValue(SmileObject obj);

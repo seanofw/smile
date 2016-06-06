@@ -17,10 +17,13 @@
 
 #include <smile/types.h>
 #include <smile/smiletypes/smileobject.h>
+#include <smile/smiletypes/numeric/smilebyte.h>
+#include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/text/smilesymbol.h>
+#include <smile/smiletypes/text/smilechar.h>
 #include <smile/parsing/parser.h>
 #include <smile/parsing/internal/parserinternal.h>
 #include <smile/parsing/internal/parsedecl.h>
@@ -40,14 +43,13 @@
 //         | . DYNSTRING
 //         | . CHAR
 //         | . INTEGER
+//         | . FLOAT
 //         | . REAL
-ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int binaryLineBreaks, Token firstUnaryTokenForErrorReporting)
+ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, Token firstUnaryTokenForErrorReporting)
 {
 	Token token = Parser_NextToken(parser);
 	LexerPosition startPosition;
 	ParseError error;
-
-	UNUSED(binaryLineBreaks);
 
 	switch (token->kind) {
 
@@ -55,7 +57,7 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int binaryLineBr
 		startPosition = Token_GetPosition(token);
 
 		// Parse the inside of the '(...)' block as an expression, with binary line-breaks allowed.
-		error = Parser_ParseExpr(parser, result, BINARYLINEBREAKS_ALLOWED);
+		error = Parser_ParseExpr(parser, result, BINARYLINEBREAKS_ALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
 
 		if (error != NULL) {
 			// Handle any errors generated inside the expression parse by recovering here, and then
@@ -79,9 +81,40 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int binaryLineBr
 		// No errors, yay!
 		return NULL;
 
+	case TOKEN_LEFTBRACKET:
+		{
+			SmileList head = NullList, tail = NullList;
+
+			startPosition = Token_GetPosition(token);
+
+			Parser_ParseExprsOpt(parser, &head, &tail, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
+
+			if (!Parser_HasLookahead(parser, TOKEN_RIGHTBRACKET)) {
+				error = ParseMessage_Create(PARSEMESSAGE_ERROR,
+					Token_GetPosition(firstUnaryTokenForErrorReporting != NULL ? firstUnaryTokenForErrorReporting : token),
+					String_Format("Missing ']' in list starting on line %d.", startPosition->line));
+				*result = NullObject;
+				return error;
+			}
+			Parser_NextToken(parser);
+
+			*result = (SmileObject)head;
+			return NULL;
+		}
+
+	case TOKEN_BAR:
+		error = Parser_ParseFunc(parser, result, modeFlags);
+		return error;
+
+	case TOKEN_BACKTICK:
+		error = ParseMessage_Create(PARSEMESSAGE_ERROR,
+			Token_GetPosition(firstUnaryTokenForErrorReporting != NULL ? firstUnaryTokenForErrorReporting : token),
+			String_Format("Backtick is not yet supported.  Sorry!"));
+		return error;
+
 	case TOKEN_LEFTBRACE:
 		Lexer_Unget(parser->lexer);
-		error = Parser_ParseScope(parser, result, BINARYLINEBREAKS_DISALLOWED);
+		error = Parser_ParseScope(parser, result);
 		return error;
 
 	case TOKEN_ALPHANAME:
@@ -94,7 +127,19 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int binaryLineBr
 		return NULL;
 
 	case TOKEN_DYNSTRING:
-		return Parser_ParseDynamicString(parser, result, binaryLineBreaks, token->text, Token_GetPosition(token));
+		return Parser_ParseDynamicString(parser, result, token->text, Token_GetPosition(token));
+
+	case TOKEN_CHAR:
+		*result = (SmileObject)SmileChar_Create((Byte)token->data.i);
+		return NULL;
+
+	case TOKEN_BYTE:
+		*result = (SmileObject)SmileByte_Create((Byte)token->data.i);
+		return NULL;
+
+	case TOKEN_INTEGER16:
+		*result = (SmileObject)SmileInteger16_Create((Int16)token->data.i);
+		return NULL;
 
 	case TOKEN_INTEGER32:
 		*result = (SmileObject)SmileInteger32_Create(token->data.i);
@@ -111,6 +156,9 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int binaryLineBr
 			Token_GetPosition(firstUnaryTokenForErrorReporting != NULL ? firstUnaryTokenForErrorReporting : token),
 			String_Format("\"%S\" is not a known variable name", token->text));
 		return error;
+
+	case TOKEN_LOANWORD_SYNTAX:
+		return Parser_ParseSyntax(parser, result, modeFlags);
 
 	default:
 		// We got an unknown token that can't be turned into a term.  So we're going to generate

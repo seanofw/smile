@@ -52,6 +52,16 @@ typedef struct Int32DictKeyValuePairStruct {
 	void *value;				// The value for this pair.
 } Int32DictKeyValuePair;
 
+/// <summary>
+/// A "cloner" function for values in an Int32Dict, that is, a function that can make a perfect
+/// deep copy of a value in the dictionary.
+/// </summary>
+/// <param name="key">The key for the value that is to be cloned.</param>
+/// <param name="value">The value that is to be cloned.</param>
+/// <param name="param">A custom user-provided parameter that may help with the cloning.</param>
+/// <returns>The cloned value.</returns>
+typedef void *(*Int32Dict_ValueCloner)(Int32 key, void *value, void *param);
+
 //-------------------------------------------------------------------------------------------------
 //  External parts of the implementation
 
@@ -60,9 +70,11 @@ SMILE_API_FUNC Int32 Int32DictInt_Append(struct Int32DictInt *intDict, Int32 key
 SMILE_API_FUNC Int32 *Int32Dict_GetKeys(Int32Dict intDict);
 SMILE_API_FUNC void **Int32Dict_GetValues(Int32Dict intDict);
 SMILE_API_FUNC Int32DictKeyValuePair *Int32Dict_GetAll(Int32Dict intDict);
+SMILE_API_FUNC Int32DictKeyValuePair Int32Dict_GetFirst(Int32Dict intDict);
 
 SMILE_API_FUNC void Int32Dict_ClearWithSize(Int32Dict intDict, Int32 newSize);
 SMILE_API_FUNC Bool Int32Dict_Remove(Int32Dict intDict, Int32 key);
+SMILE_API_FUNC Int32Dict Int32Dict_Clone(Int32Dict intDict, Int32Dict_ValueCloner valueCloner, void *param);
 
 SMILE_API_FUNC DictStats Int32Dict_ComputeStats(Int32Dict intDict);
 

@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: bcc6c3b2c820291e37971d6c41618a7a
+// SourceHash: 223191298e733f4f211ed8265adad13f
 
 START_TEST_SUITE(LexerIdentifierTests)
 {
@@ -8,8 +8,6 @@ START_TEST_SUITE(LexerIdentifierTests)
 	ShouldRecognizeSimpleAlphaIdentifiers,
 	ShouldRecognizeAlphaIdentsWithEmbeddedPunct,
 	ShouldRecognizeAlphaOpEqualsForms,
-	ShouldRecognizeKeywords,
-	ShouldNotRecognizeEmbeddedKeywords,
 }
 END_TEST_SUITE(LexerIdentifierTests)
 

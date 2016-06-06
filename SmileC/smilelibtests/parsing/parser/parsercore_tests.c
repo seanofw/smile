@@ -18,80 +18,28 @@
 #include "../../stdafx.h"
 
 #include <smile/parsing/parser.h>
-#include <smile/smiletypes/numeric/smileinteger32.h>
-#include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/text/smilestring.h>
+#include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/smilepair.h>
+#include <smile/env/env.h>
+
+#include "testhelpers.h"
 
 TEST_SUITE(ParserCoreTests)
 
 STATIC_STRING(TestFilename, "test.sm");
 
 //-------------------------------------------------------------------------------------------------
-//  Setup helpers.
-
-static Lexer SetupString(String source)
-{
-	Lexer lexer;
-
-	Smile_ResetEnvironment();
-
-	lexer = Lexer_Create(source, 0, String_Length(source), TestFilename, 1, 1);
-	lexer->symbolTable = Smile_SymbolTable;
-
-	return lexer;
-}
-
-static Lexer Setup(const char *string)
-{
-	return SetupString(String_FromC(string));
-}
-
-//-------------------------------------------------------------------------------------------------
-//  Primitive term tests.
+//  Primitive list tests.
 
 START_TEST(EmptyInputResultsInEmptyParse)
 {
-	Lexer lexer = Setup("");
+	Lexer lexer = SetupLexer("");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
 	ASSERT(result == NullList);
-}
-END_TEST
-
-START_TEST(CanParseASingleInteger32)
-{
-	Lexer lexer = Setup("12345");
-	Parser parser = Parser_Create();
-	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
-
-	ASSERT(result != NULL && result != NullList);
-
-	ASSERT(result->a != NULL && result->a != NullObject);
-	ASSERT(result->d == NullObject);
-
-	ASSERT(SMILE_KIND(result->a) == SMILE_KIND_INTEGER32);
-	ASSERT(((SmileInteger32)result->a)->value == 12345);
-}
-END_TEST
-
-START_TEST(CanParseASingleInteger64)
-{
-	Lexer lexer = Setup("12345L");
-	Parser parser = Parser_Create();
-	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
-
-	ASSERT(result != NULL && result != NullList);
-
-	ASSERT(result->a != NULL && result->a != NullObject);
-	ASSERT(result->d == NullObject);
-
-	ASSERT(SMILE_KIND(result->a) == SMILE_KIND_INTEGER64);
-	ASSERT(((SmileInteger64)result->a)->value == 12345LL);
 }
 END_TEST
 
@@ -108,16 +56,12 @@ START_TEST(CanParseASequenceOfTerms)
 		NULL
 	);
 
-	Lexer lexer = Setup("12 12345 45 0x10 0x2B ''or not'' 0x2B");
+	Lexer lexer = SetupLexer("12 12345 45 0x10 0x2B ''or not'' 0x2B");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
-	Bool equal;
 
-	ASSERT(result != NULL && result != NullList);
-
-	equal = SMILE_VCALL1(result, compareEqual, (SmileObject)expectedResult);
-	ASSERT(equal);
+	ASSERT(RecursiveEquals((SmileObject)result, (SmileObject)expectedResult));
 }
 END_TEST
 
@@ -132,88 +76,428 @@ START_TEST(ParenthesesHaveNoMeaningInASequenceOfTerms)
 		SmileString_Create(String_FromC("or not")),
 		SmileInteger32_Create(0x2B),
 		NULL
+	);
+
+	Lexer lexer = SetupLexer("12 ((12345)) (45) 0x10 0x2B (''or not'') 0x2B");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(RecursiveEquals((SmileObject)result, (SmileObject)expectedResult));
+}
+END_TEST
+
+START_TEST(ParenthesesShouldOnlyAllowOneContainedElement)
+{
+	Lexer lexer = SetupLexer("12 (12345 45 0x10) 0x2B (''or not'') 0x2B");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(Parser_GetErrorCount(parser) > 0);
+}
+END_TEST
+
+//-------------------------------------------------------------------------------------------------
+//  Core expression grammar tests.
+
+START_TEST(CanParseAnd)
+{
+	Lexer lexer = SetupLexer("\t true and false and true and gronk\n");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	ParseError parseDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "gronk"), PARSEDECL_VARIABLE, NULL, NULL);
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedResult = SimpleParse("[and true false true gronk]");
+
+	ASSERT(RecursiveEquals((SmileObject)result->a, (SmileObject)expectedResult));
+}
+END_TEST
+
+START_TEST(CanParseOr)
+{
+	Lexer lexer = SetupLexer("\t true or false or true or gronk\n");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	ParseError parseDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "gronk"), PARSEDECL_VARIABLE, NULL, NULL);
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedResult = SimpleParse("[or true false true gronk]");
+
+	ASSERT(RecursiveEquals((SmileObject)result->a, (SmileObject)expectedResult));
+}
+END_TEST
+
+START_TEST(CanParseAMixOfAndAndOrAndNot)
+{
+	Lexer lexer = SetupLexer("\t true or not false and true and foo or not not gronk\n");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	ParseError parseDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "gronk"), PARSEDECL_VARIABLE, NULL, NULL);
+	ParseError parseDeclError2 = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "foo"), PARSEDECL_VARIABLE, NULL, NULL);
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedResult = SimpleParse("[or true [and [not false] true foo] [not [not gronk]]]");
+
+	ASSERT(RecursiveEquals((SmileObject)result->a, (SmileObject)expectedResult));
+}
+END_TEST
+
+START_TEST(CanParseAMixOfAndAndOrAndNotWithParentheses)
+{
+	Lexer lexer = SetupLexer("\t (true or not false) and true and (foo or not not gronk)\n");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	ParseError parseDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "gronk"), PARSEDECL_VARIABLE, NULL, NULL);
+	ParseError parseDeclError2 = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "foo"), PARSEDECL_VARIABLE, NULL, NULL);
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedResult = SimpleParse("[and [or true [not false]] true [or foo [not [not gronk]]]]");
+
+	ASSERT(RecursiveEquals((SmileObject)result->a, (SmileObject)expectedResult));
+}
+END_TEST
+
+START_TEST(CanParseComparisons)
+{
+	Lexer lexer = SetupLexer("\t 1 < 10 and 0 == 0 and 15 >= 8 and 23 > 7 and 99 < 100 and 1 != 2\n");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedResult = SimpleParse("[and [(1 . <) 10] [(0 . ==) 0] [(15 . >=) 8] [(23 . >) 7] [(99 . <) 100] [(1 . !=) 2]]");
+
+	ASSERT(RecursiveEquals((SmileObject)result->a, (SmileObject)expectedResult));
+}
+END_TEST
+
+START_TEST(CanParseSpecialComparisons)
+{
+	Lexer lexer = SetupLexer("\t 1 !== 10 and 0 === 0 and 15 is Number\n");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	Symbol numberSymbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "Number");
+	ParseError declError = ParseScope_DeclareHere(parseScope, numberSymbol, PARSEDECL_VARIABLE, NULL, NULL);
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedResult = SimpleParse("[and [!== 1 10] [=== 0 0] [is 15 Number]]");
+
+	ASSERT(RecursiveEquals((SmileObject)result->a, (SmileObject)expectedResult));
+}
+END_TEST
+
+START_TEST(CanParsePlusAndMinus)
+{
+	Lexer lexer = SetupLexer("\t 12 + 34 \n 56 - 78 + 90");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedResult = SimpleParse("[ [(12 . +) 34] [([(56 . -) 78] . +) 90] ]");
+
+	ASSERT(RecursiveEquals((SmileObject)result, (SmileObject)expectedResult));
+}
+END_TEST
+
+START_TEST(CanParseStarAndSlash)
+{
+	Lexer lexer = SetupLexer("\t 12 * 34 \n 56 / 78 * 90");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedResult = SimpleParse("[ [(12 . *) 34] [([(56 . /) 78] . *) 90] ]");
+
+	ASSERT(RecursiveEquals((SmileObject)result, (SmileObject)expectedResult));
+}
+END_TEST
+
+START_TEST(PlusAndMinusHaveLowerPrecedenceThanStarAndSlash)
+{
+	Lexer lexer = SetupLexer(
+		"56 + 78 * 90 \n 56 * 78 + 90 \n"
+		"56 - 78 * 90 \n 56 * 78 - 90 \n"
+		"56 + 78 / 90 \n 56 / 78 + 90 \n"
+		"56 - 78 / 90 \n 56 / 78 - 90 \n"
 		);
-
-	Lexer lexer = Setup("12 ((12345)) (45) 0x10 0x2B (''or not'') 0x2B");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
-	Bool equal;
 
-	ASSERT(result != NULL && result != NullList);
+	SmileObject expectedResult = SimpleParse("["
+		" [(56 . +) [(78 . *) 90]]"
+		" [([(56 . *) 78] . +) 90]"
+		" [(56 . -) [(78 . *) 90]]"
+		" [([(56 . *) 78] . -) 90]"
+		" [(56 . +) [(78 . /) 90]]"
+		" [([(56 . /) 78] . +) 90]"
+		" [(56 . -) [(78 . /) 90]]"
+		" [([(56 . /) 78] . -) 90]"
+		"]");
 
-	equal = SMILE_VCALL1(result, compareEqual, (SmileObject)expectedResult);
-	ASSERT(equal);
+	ASSERT(RecursiveEquals((SmileObject)result, (SmileObject)expectedResult));
 }
 END_TEST
 
-START_TEST(CanParseAPseudoDynamicString)
+START_TEST(PlusAndMinusHaveGreaterPrecedenceThanComparisons)
 {
-	SmileList expectedResult = SmileList_CreateList(
-		(SmileObject)SmileString_Create(String_FromC("This is a test.")),
-		NULL
+	Lexer lexer = SetupLexer(
+		"56 + 78 < 90 * 10 \n"
+		"56 - 55 == 90 / 90 \n"
+		"56 - 55 != 90 * 10 \n"
+		"1 + 2 * 3 > 3 + 2 * 1 \n"
 	);
-
-	Lexer lexer = Setup("  \"This is a test.\"  ");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
-	Bool equal;
 
-	ASSERT(result != NULL && result != NullList);
+	SmileObject expectedResult = SimpleParse("["
+		" [([(56 . +) 78] . <) [(90 . *) 10]]"
+		" [([(56 . -) 55] . ==) [(90 . /) 90]]"
+		" [([(56 . -) 55] . !=) [(90 . *) 10]]"
+		" [([(1 . +) [(2 . *) 3]] . >) [(3 . +) [(2 . *) 1]]]"
+		"]");
 
-	equal = SMILE_VCALL1(result, compareEqual, (SmileObject)expectedResult);
-	ASSERT(equal);
+	ASSERT(RecursiveEquals((SmileObject)result, (SmileObject)expectedResult));
 }
 END_TEST
 
-START_TEST(CanParseADynamicString)
+START_TEST(CanParseArbitraryBinaryOperators)
 {
-	Lexer lexer;
-	Parser parser;
-	SmileList expectedResult;
-	ParseScope parseScope;
-	SmileList result;
-	Bool equal;
-	String expectedString;
-	String resultString;
+	Lexer lexer = SetupLexer("\t 12 plus 34 \n ''foo'' with ''bar'' \n 56 minus 78 minus 90");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
-	lexer = Setup("  \"This {x}is a {y}test.\"  ");
+	SmileObject expectedResult = SimpleParse("[ [(12 . plus) 34] [(''foo'' . with) ''bar''] [([(56 . minus) 78] . minus) 90] ]");
 
-	expectedResult = SmileList_Cons(
-		(SmileObject)SmileList_Cons(
-			(SmileObject)SmilePair_Create(
-				(SmileObject)SmileList_CreateList(
-					(SmileObject)SmilePair_Create(
-						(SmileObject)Smile_KnownObjects.ListSymbol,
-						(SmileObject)Smile_KnownObjects.ofSymbol
-					),
-					(SmileObject)SmileString_Create(String_FromC("This ")),
-					(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, "x")),
-					(SmileObject)SmileString_Create(String_FromC("is a ")),
-					(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, "y")),
-					(SmileObject)SmileString_Create(String_FromC("test.")),
-					NULL
-				),
-				(SmileObject)Smile_KnownObjects.joinSymbol
-			),
-			NullObject
-		),
-		NullObject
-	);
+	ASSERT(RecursiveEquals((SmileObject)result, (SmileObject)expectedResult));
+}
+END_TEST
 
+START_TEST(CanParseArbitraryUnaryOperators)
+{
+	Lexer lexer = SetupLexer("\t minus 34 \n count html-encode reverse ''foo'' \n");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedResult = SimpleParse("[ [(34 . minus)] [([([(''foo'' . reverse)] . html-encode)] . count)] ]");
+
+	ASSERT(RecursiveEquals((SmileObject)result, (SmileObject)expectedResult));
+}
+END_TEST
+
+START_TEST(SpecialBinaryOperatorsCanBeArbitraryUnaryOperators)
+{
+	Lexer lexer = SetupLexer("\t -34 \n + * / ''foo'' \n");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedResult = SimpleParse("[ [(34 . -)] [([([(''foo'' . /)] . *)] . +)] ]");
+
+	ASSERT(RecursiveEquals((SmileObject)result, (SmileObject)expectedResult));
+}
+END_TEST
+
+START_TEST(CanParseAMixOfBinaryAndUnaryOperators)
+{
+	Lexer lexer = SetupLexer("\t negative 34 times negative 97 plus 14 \n");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedResult = SimpleParse("[([ ([(34 . negative)] . times) [(97 . negative)] ] . plus) 14]");
+
+	ASSERT(RecursiveEquals((SmileObject)result->a, (SmileObject)expectedResult));
+}
+END_TEST
+
+START_TEST(CanParseAMixOfSpecialBinaryAndArbitraryUnaryOperators)
+{
+	Lexer lexer = SetupLexer("\t sin -314 * cos +314 \n");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedResult = SimpleParse("[ ([([(314 . -)] . sin)] . *) [([(314 . +)] . cos)] ]");
+
+	ASSERT(RecursiveEquals((SmileObject)result->a, (SmileObject)expectedResult));
+}
+END_TEST
+
+START_TEST(BinaryOperatorsDontWrapLines)
+{
+	Lexer lexer = SetupLexer("\t sin -314 * cos +314 \n * tan 123 \t");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedResult = SimpleParse("[\n"
+		"[ ([([(314 . -)] . sin)] . *) [([(314 . +)] . cos)] ]\n"
+		"[ ([(123 . tan)] . *) ]\n"
+		"]");
+
+	ASSERT(RecursiveEquals((SmileObject)result, (SmileObject)expectedResult));
+}
+END_TEST
+
+START_TEST(BinaryOperatorsCanWrapLinesInParentheses)
+{
+	Lexer lexer = SetupLexer("\t (sin -314 * cos +314 \n * tan 123) \t");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedResult = SimpleParse("[\n"
+		"[([([([(314 . -)] . sin)] . *) [([(314 . +)] . cos)]] . *) [(123 . tan)]]\n"
+		"]");
+
+	ASSERT(RecursiveEquals((SmileObject)result, (SmileObject)expectedResult));
+}
+END_TEST
+
+START_TEST(BinaryOperatorWrappingPropagatesIntoFunctions1)
+{
+	Lexer lexer = SetupLexer("\t |x| sin -x * cos +x \n * tan 123 \t");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedResult = SimpleParse("[\n"
+		"[fn [x] [ ([([(x . -)] . sin)] . *) [([(x . +)] . cos)] ]]\n"
+		"[ ([(123 . tan)] . *) ]\n"
+		"]");
+
+	ASSERT(RecursiveEquals((SmileObject)result, (SmileObject)expectedResult));
+}
+END_TEST
+
+START_TEST(BinaryOperatorWrappingPropagatesIntoFunctions2)
+{
+	Lexer lexer = SetupLexer("\t (|x| sin -x * cos +x \n * tan 123) \t");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedResult = SimpleParse("[\n"
+		"[fn [x] [([([([(x . -)] . sin)] . *) [([(x . +)] . cos)]] . *) [(123 . tan)]]]\n"
+		"]");
+
+	ASSERT(RecursiveEquals((SmileObject)result, (SmileObject)expectedResult));
+}
+END_TEST
+
+START_TEST(CanParseTheDotOperator)
+{
+	Lexer lexer = SetupLexer("\t [true.string] [Stdout.print true.string.args.count] \n");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	Symbol stdoutSymbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "Stdout");
+	ParseError declError = ParseScope_DeclareHere(parseScope, stdoutSymbol, PARSEDECL_VARIABLE, NULL, NULL);
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedResult = SimpleParse("[ [(true . string)] [(Stdout . print) (((true . string) . args) . count)] ]");
+
+	ASSERT(RecursiveEquals((SmileObject)result, (SmileObject)expectedResult));
+}
+END_TEST
+
+START_TEST(CanParseTheColonOperator)
+{
+	Lexer lexer = SetupLexer("\t x:1 \n y:-5 \n");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	Symbol xSymbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "x");
+	Symbol ySymbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "y");
+	ParseError declError = ParseScope_DeclareHere(parseScope, xSymbol, PARSEDECL_VARIABLE, NULL, NULL);
+	ParseError declError2 = ParseScope_DeclareHere(parseScope, ySymbol, PARSEDECL_VARIABLE, NULL, NULL);
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedResult = SimpleParse("[ [(x . get-member) 1] [(y . get-member) [(5 . -)]] ]");
+
+	ASSERT(RecursiveEquals((SmileObject)result, (SmileObject)expectedResult));
+}
+END_TEST
+
+START_TEST(CanParseTheRangeOperator)
+{
+	Lexer lexer = SetupLexer("\t 1..10 \n -5..+5 \n");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedResult = SimpleParse("[ [(Range . of) 1 10] [(Range . of) [(5 . -)] [(5 . +)]] ]");
+
+	ASSERT(RecursiveEquals((SmileObject)result, (SmileObject)expectedResult));
+}
+END_TEST
+
+START_TEST(CanParseTheSpecialDoubleHashOperator)
+{
+	Lexer lexer = SetupLexer("\t 1 ## 2 \n");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedResult =
+		(SmileObject)SmileList_Cons((SmileObject)SmileInteger32_Create(1), (SmileObject)SmileInteger32_Create(2));
+
+	ASSERT(RecursiveEquals((SmileObject)result->a, (SmileObject)expectedResult));
+
+	lexer = SetupLexer("\t 1 ## 2 ## 3 ## 4 \n");
 	parser = Parser_Create();
 	parseScope = ParseScope_CreateRoot();
-	ParseScope_Declare(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "x"), PARSEDECL_VARIABLE, NULL, NULL);
-	ParseScope_Declare(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "y"), PARSEDECL_VARIABLE, NULL, NULL);
 	result = Parser_Parse(parser, lexer, parseScope);
-	expectedString = SMILE_VCALL(expectedResult, toString);
-	resultString = SMILE_VCALL(result, toString);
 
-	ASSERT(result != NULL && result != NullList);
+	expectedResult =
+		(SmileObject)SmileList_Cons((SmileObject)SmileInteger32_Create(1),
+			(SmileObject)SmileList_Cons((SmileObject)SmileInteger32_Create(2),
+				(SmileObject)SmileList_Cons((SmileObject)SmileInteger32_Create(3), (SmileObject)SmileInteger32_Create(4))));
 
-	equal = SMILE_VCALL1(result, compareEqual, (SmileObject)expectedResult);
-	ASSERT(equal);
+	ASSERT(RecursiveEquals((SmileObject)result->a, (SmileObject)expectedResult));
+
+	lexer = SetupLexer("\t 1 ## 2 ## 3 ## 4 ## [] \n");
+	parser = Parser_Create();
+	parseScope = ParseScope_CreateRoot();
+	result = Parser_Parse(parser, lexer, parseScope);
+
+	expectedResult =
+		(SmileObject)SmileList_Cons((SmileObject)SmileInteger32_Create(1),
+			(SmileObject)SmileList_Cons((SmileObject)SmileInteger32_Create(2),
+				(SmileObject)SmileList_Cons((SmileObject)SmileInteger32_Create(3),
+					(SmileObject)SmileList_Cons((SmileObject)SmileInteger32_Create(4), NullObject))));
+
+	ASSERT(RecursiveEquals((SmileObject)result->a, (SmileObject)expectedResult));
+
+	lexer = SetupLexer("\t 1 ## [] ## 3 ## [] ## 5 ## [] \n");
+	parser = Parser_Create();
+	parseScope = ParseScope_CreateRoot();
+	result = Parser_Parse(parser, lexer, parseScope);
+
+	expectedResult =
+		(SmileObject)SmileList_Cons((SmileObject)SmileInteger32_Create(1),
+			(SmileObject)SmileList_Cons(NullObject,
+				(SmileObject)SmileList_Cons((SmileObject)SmileInteger32_Create(3),
+					(SmileObject)SmileList_Cons(NullObject,
+						(SmileObject)SmileList_Cons((SmileObject)SmileInteger32_Create(5), NullObject)))));
+
+	ASSERT(RecursiveEquals((SmileObject)result->a, (SmileObject)expectedResult));
+
+	lexer = SetupLexer("\t 1 ## ([] ## 3) ## [] ## (5 ## []) \n");
+	parser = Parser_Create();
+	parseScope = ParseScope_CreateRoot();
+	result = Parser_Parse(parser, lexer, parseScope);
+
+	expectedResult =
+		(SmileObject)SmileList_Cons((SmileObject)SmileInteger32_Create(1),
+			(SmileObject)SmileList_Cons((SmileObject)SmileList_Cons(NullObject, (SmileObject)SmileInteger32_Create(3)),
+				(SmileObject)SmileList_Cons(NullObject,
+					(SmileObject)SmileList_Cons((SmileObject)SmileInteger32_Create(5), NullObject))));
+
+	ASSERT(RecursiveEquals((SmileObject)result->a, (SmileObject)expectedResult));
 }
 END_TEST
 

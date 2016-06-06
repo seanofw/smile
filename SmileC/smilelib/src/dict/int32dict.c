@@ -130,6 +130,116 @@ Int32 Int32DictInt_Append(struct Int32DictInt *self, Int32 key, const void *valu
 //  Public interface
 
 /// <summary>
+/// Make a perfect clone of this dictionary.
+/// </summary>
+/// <param name="intDict">The dictionary to make a clone of.</param>
+/// <param name="valueCloner">An optional "cloner" function that can correctly duplicate each value.
+/// This method will be passed the key, the original value, and a custom parameter, and should
+/// return the new value for that key.  If this function is a NULL pointer, the value will be shallow-copied as-is.</param>
+/// <param name="param">A custom parameter to pass to the "cloner" function.  If the "cloner" function
+/// is NULL, this should also be NULL.</param>
+/// <returns>The cloned dictionary.</returns>
+Int32Dict Int32Dict_Clone(Int32Dict intDict, Int32Dict_ValueCloner valueCloner, void *param)
+{
+	struct Int32DictInt *newIntDict;
+	struct Int32DictInt *oldIntDict = (struct Int32DictInt *)intDict;
+	Int32 newSize, bucket, nodeIndex, nextNodeIndex, key;
+	Int32 *buckets;
+	struct Int32DictNode *oldHeap, *newHeap;
+
+	newIntDict = GC_MALLOC_STRUCT(struct Int32DictInt);
+	if (newIntDict == NULL) Smile_Abort_OutOfMemory();
+
+	newSize = oldIntDict->mask + 1;
+
+	newIntDict->count = oldIntDict->count;
+	newIntDict->firstFree = oldIntDict->firstFree;
+	newIntDict->mask = oldIntDict->mask;
+
+	newIntDict->buckets = buckets = (Int32 *)GC_MALLOC_ATOMIC(sizeof(Int32) * newSize);
+	if (buckets == NULL) Smile_Abort_OutOfMemory();
+
+	MemCpy(buckets, oldIntDict->buckets, sizeof(Int32) * newSize);
+
+	newIntDict->heap = newHeap = GC_MALLOC_STRUCT_ARRAY(struct Int32DictNode, newSize);
+	if (newHeap == NULL) Smile_Abort_OutOfMemory();
+
+	oldHeap = oldIntDict->heap;
+
+	if (valueCloner != NULL) {
+		for (bucket = 0; bucket <= oldIntDict->mask; bucket++) {
+			nodeIndex = buckets[bucket];
+			while (nodeIndex >= 0) {
+				newHeap[nodeIndex].key = key = oldHeap[nodeIndex].key;
+				newHeap[nodeIndex].value = valueCloner(key, oldHeap[nodeIndex].value, param);
+				newHeap[nodeIndex].next = nextNodeIndex = oldHeap[nodeIndex].next;
+				nodeIndex = nextNodeIndex;
+			}
+		}
+	}
+	else {
+		for (bucket = 0; bucket <= oldIntDict->mask; bucket++) {
+			nodeIndex = buckets[bucket];
+			while (nodeIndex >= 0) {
+				newHeap[nodeIndex].key = oldHeap[nodeIndex].key;
+				newHeap[nodeIndex].value = oldHeap[nodeIndex].value;
+				newHeap[nodeIndex].next = nextNodeIndex = oldHeap[nodeIndex].next;
+				nodeIndex = nextNodeIndex;
+			}
+		}
+	}
+
+	nodeIndex = oldIntDict->firstFree;
+
+	while (nodeIndex >= 0) {
+		newHeap[nodeIndex].key = oldHeap[nodeIndex].key;
+		newHeap[nodeIndex].value = oldHeap[nodeIndex].value;
+		newHeap[nodeIndex].next = nextNodeIndex = oldHeap[nodeIndex].next;
+		nodeIndex = nextNodeIndex;
+	}
+
+	return (Int32Dict)newIntDict;
+}
+
+/// <summary>
+/// Get the "first" key/value pair from the dictionary.  As dictionaries are UNORDERED,
+/// this function is really only useful if you have a dictionary that you know contains
+/// one item.  This will run in AMORTIZED O(1) time, and does not allocate heap memory.
+/// </summary>
+/// <param name="intDict">A pointer to the dictionary.</param>
+/// <returns>The "first" key/value pairs in the dictionary.  If the dictionary contains
+/// more than one key/value pair, this will be a randomly-chosen entry.  If the dictionary
+/// is empty, this will contain "0" and "NULL" for the key and value, respectively.</returns>
+Int32DictKeyValuePair Int32Dict_GetFirst(Int32Dict intDict)
+{
+	struct Int32DictInt *self;
+	Int32 bucket, nodeIndex;
+	Int32 *buckets;
+	Int32DictKeyValuePair result;
+	struct Int32DictNode *heap, *node;
+
+	self = (struct Int32DictInt *)intDict;
+
+	buckets = self->buckets;
+	heap = self->heap;
+
+	for (bucket = 0; bucket <= self->mask; bucket++) {
+		nodeIndex = buckets[bucket];
+		while (nodeIndex >= 0) {
+			node = heap + nodeIndex;
+
+			result.key = node->key;
+			result.value = node->value;
+			return result;
+		}
+	}
+
+	result.key = 0;
+	result.value = NULL;
+	return result;
+}
+
+/// <summary>
 /// Get all key/value pairs from the dictionary.
 /// </summary>
 /// <param name="intDict">A pointer to the dictionary.</param>

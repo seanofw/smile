@@ -63,12 +63,35 @@
       <Filter>parsing\lexer</Filter>
     </ClCompile>
     <ClCompile Include="parsing\lexer\lexerloanword_tests.c" />
-    <ClCompile Include="parsing\parser\parsercore_tests.c" />
+    <ClCompile Include="parsing\parser\parsercore_tests.c">
+      <Filter>parsing\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="parsing\parser\parsersyntax_tests.c">
+      <Filter>parsing\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="parsing\parser\testhelpers.c">
+      <Filter>parsing\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="parsing\parser\parserfunc_tests.c">
+      <Filter>parsing\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="parsing\parser\parserstring_tests.c">
+      <Filter>parsing\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="parsing\parser\parserterm_tests.c">
+      <Filter>parsing\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="parsing\parser\parsernew_tests.c">
+      <Filter>parsing\parser</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="testlib.h" />
     <ClInclude Include="ansicolor-w32.h" />
+    <ClInclude Include="parsing\parser\testhelpers.h">
+      <Filter>parsing\parser</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="string">
@@ -91,6 +114,9 @@
     </Filter>
     <Filter Include="parsing\lexer">
       <UniqueIdentifier>{f101e52c-e706-46ce-9f7e-254ada3681bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="parsing\parser">
+      <UniqueIdentifier>{4d97c7e2-7173-4b41-9393-b4c9361937b1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -90,10 +90,10 @@ START_TEST(SingleLineCommentsShouldBeSkipped2)
 		"// This is a comment on the next line.\r\n"
 		".\r\n"
 		"// This is another comment.\r\n"
-		"+\r\n");
+		"foo\r\n");
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_DOT);
-	ASSERT(Lexer_Next(lexer) == TOKEN_PLUS);
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
 	ASSERT(Lexer_Next(lexer) == TOKEN_EOI);
 }
 END_TEST
@@ -116,10 +116,10 @@ START_TEST(MultiLineCommentsShouldBeSkipped2)
 		"This is a comment on the next line.*/\r\n"
 		".\r\n"
 		"/* This is another comment. */\r\n"
-		"+\r\n");
+		"foo\r\n");
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_DOT);
-	ASSERT(Lexer_Next(lexer) == TOKEN_PLUS);
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
 	ASSERT(Lexer_Next(lexer) == TOKEN_EOI);
 }
 END_TEST
@@ -129,10 +129,10 @@ START_TEST(HyphenSeparatorCommentsShouldBeSkipped)
 	Lexer lexer = Setup("----------\r\n"
 		".\r\n"
 		"-----\r\n"
-		"+\r\n");
+		"foo\r\n");
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_DOT);
-	ASSERT(Lexer_Next(lexer) == TOKEN_PLUS);
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
 	ASSERT(Lexer_Next(lexer) == TOKEN_EOI);
 }
 END_TEST
@@ -142,10 +142,10 @@ START_TEST(EqualSeparatorCommentsShouldBeSkipped)
 	Lexer lexer = Setup("==========\r\n"
 		".\r\n"
 		"=====\r\n"
-		"+\r\n");
+		"foo\r\n");
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_DOT);
-	ASSERT(Lexer_Next(lexer) == TOKEN_PLUS);
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
 	ASSERT(Lexer_Next(lexer) == TOKEN_EOI);
 }
 END_TEST

@@ -62,7 +62,7 @@ static DynamicStringPiece DynamicStringPiece_Create(String text, LexerPosition f
 //-------------------------------------------------------------------------------------------------
 //  Dynamic string parsing.
 
-ParseError Parser_ParseDynamicString(Parser parser, SmileObject *expr, Int binaryLineBreaks, String text, LexerPosition startPosition)
+ParseError Parser_ParseDynamicString(Parser parser, SmileObject *expr, String text, LexerPosition startPosition)
 {
 	Lexer stringLexer;
 	DynamicStringPiece *dynamicStringPieces, piece;
@@ -71,8 +71,6 @@ ParseError Parser_ParseDynamicString(Parser parser, SmileObject *expr, Int binar
 	SmileList head, tail;
 	SmileObject parsedContent;
 	Int i;
-
-	UNUSED(binaryLineBreaks);
 
 	stringLexer = Lexer_Create(text, 0, String_Length(text), startPosition->filename, startPosition->line, startPosition->column);
 

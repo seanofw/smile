@@ -51,7 +51,7 @@ SMILE_API_FUNC SmileList SmileList_CreateListv(SmileObject firstObject, va_list 
 Inline SmileList SmileList_Rest(SmileList list)
 {
 	SmileObject d = list->d;
-	return ((d->kind & ~SMILE_KIND_LIST) == SMILE_KIND_NULL) ? (SmileList)d : NullList;
+	return SMILE_KIND(d) == SMILE_KIND_LIST ? (SmileList)d : NullList;
 }
 
 Inline SmileObject SmileList_First(SmileList list)

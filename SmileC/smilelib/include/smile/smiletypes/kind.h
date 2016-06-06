@@ -17,13 +17,13 @@
 // Other aggregations of data.
 #define SMILE_KIND_USEROBJECT			0x08
 #define SMILE_KIND_PAIR					0x09
-#define SMILE_KIND_WEAKREF				0x0A		// Not yet supported.
 
 // Opaque handles.
-#define SMILE_KIND_HANDLE				0x0B
+#define SMILE_KIND_HANDLE				0x0A
+#define SMILE_KIND_BYTE					0x0B
 #define SMILE_KIND_CLOSURE				0x0C
 #define SMILE_KIND_FACADE				0x0D
-#define SMILE_KIND_MACRO				0x0E		// Not yet supported.
+#define SMILE_KIND_MACRO				0x0E
 #define SMILE_KIND_FUNCTION				0x0F
 
 // Integer numeric types.
@@ -48,13 +48,16 @@
 #define SMILE_KIND_BIGINT				0x1C		// Not yet supported.
 #define SMILE_KIND_BIGFLOAT				0x1D		// Not yet supported.
 #define SMILE_KIND_BIGREAL				0x1E		// Not yet supported.
-#define SMILE_KIND_BYTE					0x1F
 
 // Custom aggregate forms of the atomic types.
 #define SMILE_KIND_ATOMIC				0x00
 #define SMILE_KIND_ARRAYOF				0x20
 #define SMILE_KIND_RANGEOF				0x40
 #define SMILE_KIND_MAPOF				0x60
+
+// Types used for parsing.
+#define SMILE_KIND_SYNTAX				0xE0
+#define SMILE_KIND_NONTERMINAL			0xE1
 
 // Internal types used during parsing.
 #define SMILE_KIND_PARSEDECL			0xFE

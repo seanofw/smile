@@ -726,6 +726,33 @@
     <ClCompile Include="src\parsing\parser\parseassign.c">
       <Filter>src\parsing\parser</Filter>
     </ClCompile>
+    <ClCompile Include="src\parsing\parser\parsesyntax.c">
+      <Filter>src\parsing\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\smilesyntax.c">
+      <Filter>src\smiletypes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\smilenonterminal.c">
+      <Filter>src\smiletypes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parsing\parser\parsersyntaxtable.c">
+      <Filter>src\parsing\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\numeric\smilebyte.c">
+      <Filter>src\smiletypes\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\numeric\smileinteger16.c">
+      <Filter>src\smiletypes\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\text\smileuchar.c">
+      <Filter>src\smiletypes\text</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\text\smilechar.c">
+      <Filter>src\smiletypes\text</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parsing\parser\parsefunc.c">
+      <Filter>src\parsing\parser</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">
@@ -1018,6 +1045,21 @@
     </ClInclude>
     <ClInclude Include="include\smile\smiletypes\smilepair.h">
       <Filter>include\smiletypes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\smilemacro.h">
+      <Filter>include\smiletypes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\smilesyntax.h">
+      <Filter>include\smiletypes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\parsing\internal\parsesyntax.h">
+      <Filter>include\parsing\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\text\smilechar.h">
+      <Filter>include\smiletypes\text</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\text\smileuchar.h">
+      <Filter>include\smiletypes\text</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

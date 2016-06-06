@@ -792,4 +792,39 @@ START_TEST(ShouldRecognizeReal128s)
 }
 END_TEST
 
+START_TEST(ShouldConsumeNumericSuffixes)
+{
+	Lexer lexer = SetupString(String_FromC("  \t  127x  64.0f  32.0L  16H  8L  0x2BH  0777H  0x  0L  \r\n"));
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_BYTE);
+	ASSERT(lexer->token->data.i == 127);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_FLOAT64);
+	ASSERT(lexer->token->data.float64 == 64);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_REAL128);
+	ASSERT(Real128_Eq(lexer->token->data.real128, Real128_FromInt32(32)));
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER16);
+	ASSERT(lexer->token->data.i == 16);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
+	ASSERT(lexer->token->data.int64 == 8);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER16);
+	ASSERT(lexer->token->data.i == 0x2B);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER16);
+	ASSERT(lexer->token->data.i == 0777);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_BYTE);
+	ASSERT(lexer->token->data.i == 0);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
+	ASSERT(lexer->token->data.int64 == 0);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_EOI);
+}
+END_TEST
+
 #include "lexernumber_tests.generated.inc"

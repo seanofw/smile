@@ -34,7 +34,7 @@ STATIC_STRING(InternalErrorMessage, "Internal error while parsing variable decla
 
 //  var_decl ::= VAR . decls
 //  decls ::= decl | decls COMMA decl
-ParseError Parser_ParseVarDecls(Parser parser, SmileObject *expr, Int binaryLineBreaks, Int declKind)
+ParseError Parser_ParseVarDecls(Parser parser, SmileObject *expr, Int modeFlags, Int declKind)
 {
 	SmileObject decl;
 	ParseError error;
@@ -42,7 +42,7 @@ ParseError Parser_ParseVarDecls(Parser parser, SmileObject *expr, Int binaryLine
 	Token token;
 
 	// Parse the first declaration, which will result in either 'null' or a list like [\= x 5].
-	error = Parser_ParseDecl(parser, &decl, binaryLineBreaks, declKind);
+	error = Parser_ParseDecl(parser, &decl, modeFlags, declKind);
 	if (error != NULL) return error;
 
 	// Wrap it in a list of itself, so it becomes [[\ = x 5]].
@@ -55,7 +55,7 @@ ParseError Parser_ParseVarDecls(Parser parser, SmileObject *expr, Int binaryLine
 	// is any form of assignment:  [[\= x 5] [\= y 8] [\= z 10] ...]
 	while ((token = Parser_NextToken(parser))->kind == TOKEN_COMMA) {
 
-		error = Parser_ParseDecl(parser, &decl, binaryLineBreaks, declKind);
+		error = Parser_ParseDecl(parser, &decl, modeFlags, declKind);
 		if (error != NULL) return error;
 
 		if (decl->kind != SMILE_KIND_NULL) {
@@ -76,7 +76,7 @@ ParseError Parser_ParseVarDecls(Parser parser, SmileObject *expr, Int binaryLine
 }
 
 //  decl ::= . name | . name EQUAL arith | . name EQUAL_NOSPACE arith
-ParseError Parser_ParseDecl(Parser parser, SmileObject *expr, Int binaryLineBreaks, Int declKind)
+ParseError Parser_ParseDecl(Parser parser, SmileObject *expr, Int modeFlags, Int declKind)
 {
 	Token token;
 	ParseError error;
@@ -112,7 +112,7 @@ ParseError Parser_ParseDecl(Parser parser, SmileObject *expr, Int binaryLineBrea
 	if (token->kind == TOKEN_EQUAL || token->kind == TOKEN_EQUALWITHOUTWHITESPACE) {
 
 		// This is an assignment, so collect up the assignment value.
-		error = Parser_ParseOpEquals(parser, &rvalue, binaryLineBreaks, COMMAMODE_VARIABLEDECLARATION);
+		error = Parser_ParseOpEquals(parser, &rvalue, (modeFlags & ~COMMAMODE_MASK) | COMMAMODE_VARIABLEDECLARATION);
 		if (error != NULL) return error;
 
 		// Build the result, which is a list shaped like [= symbol rvalue]
@@ -148,14 +148,14 @@ ParseError Parser_ParseDecl(Parser parser, SmileObject *expr, Int binaryLineBrea
 }
 
 //  arith ::= . lvalue unknown_name EQUAL_NOSPACE arith | . assign
-ParseError Parser_ParseOpEquals(Parser parser, SmileObject *expr, Int binaryLineBreaks, Int commaMode)
+ParseError Parser_ParseOpEquals(Parser parser, SmileObject *expr, Int modeFlags)
 {
 	ParseError error;
 	Token opToken;
 	SmileObject lvalue, rvalue;
 	LexerPosition lexerPosition;
 
-	error = Parser_ParseEquals(parser, &lvalue, binaryLineBreaks, commaMode);
+	error = Parser_ParseEquals(parser, &lvalue, modeFlags);
 	if (error != NULL) {
 		*expr = NULL;
 		return error;
@@ -176,7 +176,7 @@ ParseError Parser_ParseOpEquals(Parser parser, SmileObject *expr, Int binaryLine
 	Parser_NextToken(parser);				// Consume the TOKEN_EQUALWITHOUTWHITESPACE.
 
 	// Collect the rvalue.
-	error = Parser_ParseOpEquals(parser, &rvalue, binaryLineBreaks, commaMode);
+	error = Parser_ParseOpEquals(parser, &rvalue, modeFlags);
 	if (error != NULL) return error;
 
 	// Build the result, which is a list shaped like [op= operator lvalue rvalue]
@@ -199,7 +199,7 @@ ParseError Parser_ParseOpEquals(Parser parser, SmileObject *expr, Int binaryLine
 //          | . unknown_name EQUAL assign
 //          | . unknown_name EQUAL_NOSPACE assign
 //          | . or
-ParseError Parser_ParseEquals(Parser parser, SmileObject *expr, Int binaryLineBreaks, Int commaMode)
+ParseError Parser_ParseEquals(Parser parser, SmileObject *expr, Int modeFlags)
 {
 	Token token, token2;
 	LexerPosition position, position2;
@@ -231,7 +231,7 @@ ParseError Parser_ParseEquals(Parser parser, SmileObject *expr, Int binaryLineBr
 		// seen 'x'.  Thus in a new scope, the second 'x' in 'x = x + 1' must behave as a
 		// logical error (a read from an unassigned variable), not as a reference to an 'x'
 		// variable from an outside scope.
-		error = Parser_ParseEquals(parser, &rvalue, binaryLineBreaks, commaMode);
+		error = Parser_ParseEquals(parser, &rvalue, modeFlags);
 		if (error != NULL) return error;
 
 		// Construct the resulting list, which will look like [\= name rvalue], but invisibly
@@ -250,7 +250,7 @@ ParseError Parser_ParseEquals(Parser parser, SmileObject *expr, Int binaryLineBr
 		//   assign ::= . lvalue EQUAL assign | . lvalue EQUAL_NOSPACE assign | . or
 
 		// Try reading an 'or'-level nonterminal, whatever it might turn out to be.
-		error = Parser_ParseOr(parser, &lvalue, binaryLineBreaks, commaMode);
+		error = Parser_ParseOr(parser, &lvalue, modeFlags);
 		if (error != NULL) return error;
 
 		// See if it's actually an lvalue followed by an equal sign.
@@ -261,7 +261,7 @@ ParseError Parser_ParseEquals(Parser parser, SmileObject *expr, Int binaryLineBr
 			position2 = Token_GetPosition(token2);
 
 			// Collect the rvalue, recursively.
-			error = Parser_ParseEquals(parser, &rvalue, binaryLineBreaks, commaMode);
+			error = Parser_ParseEquals(parser, &rvalue, modeFlags);
 
 			// Construct the resulting list, which will look like [\= lvalue rvalue], but invisibly
 			// annotated with source locations.

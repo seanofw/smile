@@ -155,8 +155,8 @@ Int Lexer_ParseName(Lexer lexer, Bool isFirstContentOnLine)
 //  Punctuative name parsing.
 
 // Common known punctuation forms.
-STATIC_STRING(Lexer_NameEq, "=");
-STATIC_STRING(Lexer_NameEqual, "==");
+STATIC_STRING(Lexer_NameEqual, "=");
+STATIC_STRING(Lexer_NameEq, "==");
 STATIC_STRING(Lexer_NameSuperEq, "===");
 STATIC_STRING(Lexer_NameNe, "!=");
 STATIC_STRING(Lexer_NameSuperNe, "!==");
@@ -252,12 +252,12 @@ readMorePunctuation:
 			}
 			else if (nameLen == 2 && nameBytes[1] == '=') {			// "=="
 				lexer->src = src;
-				*tokenKind = TOKEN_EQ;
+				*tokenKind = TOKEN_PUNCTNAME;
 				return Lexer_NameEq;
 			}
 			else if (nameLen == 3 && nameBytes[1] == '=' && nameBytes[2] == '=') {			// "==="
 				lexer->src = src;
-				*tokenKind = TOKEN_SUPEREQ;
+				*tokenKind = TOKEN_PUNCTNAME;
 				return Lexer_NameSuperEq;
 			}
 			break;
@@ -265,12 +265,12 @@ readMorePunctuation:
 		case '!':
 			if (nameLen == 2 && nameBytes[1] == '=') {			// "!="
 				lexer->src = src;
-				*tokenKind = TOKEN_NE;
+				*tokenKind = TOKEN_PUNCTNAME;
 				return Lexer_NameNe;
 			}
 			else if (nameLen == 3 && nameBytes[1] == '=' && nameBytes[2] == '=') {			// "!=="
 				lexer->src = src;
-				*tokenKind = TOKEN_SUPERNE;
+				*tokenKind = TOKEN_PUNCTNAME;
 				return Lexer_NameSuperNe;
 			}
 			break;
@@ -278,7 +278,7 @@ readMorePunctuation:
 		case '<':
 			if (nameLen == 2 && nameBytes[1] == '=') {			// "<="
 				lexer->src = src;
-				*tokenKind = TOKEN_LE;
+				*tokenKind = TOKEN_PUNCTNAME;
 				return Lexer_NameLe;
 			}
 			break;
@@ -286,7 +286,7 @@ readMorePunctuation:
 		case '>':
 			if (nameLen == 2 && nameBytes[1] == '=') {			// ">="
 				lexer->src = src;
-				*tokenKind = TOKEN_GE;
+				*tokenKind = TOKEN_PUNCTNAME;
 				return Lexer_NameGe;
 			}
 			break;
@@ -306,26 +306,26 @@ readMorePunctuation:
 	// Convert whatever's left to the resulting identifier name.
 	lexer->src = src;
 
-	// Recognize certain special punctuation forms.
+	// Recognize certain special punctuation forms faster (performance optimization).
 	if (nameLen == 1) {
 		switch (*nameBytes) {
 		case '<':
-			*tokenKind = TOKEN_LT;
+			*tokenKind = TOKEN_PUNCTNAME;
 			return Lexer_NameLt;
 		case '>':
-			*tokenKind = TOKEN_GT;
+			*tokenKind = TOKEN_PUNCTNAME;
 			return Lexer_NameGt;
 		case '+':
-			*tokenKind = TOKEN_PLUS;
+			*tokenKind = TOKEN_PUNCTNAME;
 			return Lexer_NamePlus;
 		case '-':
-			*tokenKind = TOKEN_MINUS;
+			*tokenKind = TOKEN_PUNCTNAME;
 			return Lexer_NameMinus;
 		case '*':
-			*tokenKind = TOKEN_STAR;
+			*tokenKind = TOKEN_PUNCTNAME;
 			return Lexer_NameStar;
 		case '/':
-			*tokenKind = TOKEN_SLASH;
+			*tokenKind = TOKEN_PUNCTNAME;
 			return Lexer_NameSlash;
 		}
 	}

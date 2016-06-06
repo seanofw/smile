@@ -1,5 +1,5 @@
 
-Grammar for Smile, 14.0
+Grammar for Smile, 14.1
 =======================
 
 This grammar is something like LR(3), with common shift-reduce conflicts resolved in
@@ -13,7 +13,7 @@ operators if they are the first non-whitespace on a line.  This behavior is enab
 condition of 'if' or 'while-do'.  All other productions inherit their parent's line-break rule.
 
 Even more difficult to express:  #syntax declarations add to one of the eight allowed
-production rules.
+production rules, and, most importantly, can create new production rules.
 
 In short, this is quite parseable, but it ain't YACC-friendly.  We use a recursive-descent
 parser in the standard Smile implementation.
@@ -28,7 +28,7 @@ Tokens:
 	EQ NE LE GE GT LT SUPEREQ SUPERNE
 	PLUS MINUS STAR SLASH
 	CHAR STRING BYTE INT32 INT64 REAL32 REAL64
-	INSERT_INCLUDE INSERT_BRK INSERT_SYNTAX
+	LOANWORD_INCLUDE LOANWORD_BRK LOANWORD_SYNTAX
 
 ---------------------------------------------------------------------------------------------------
 
@@ -50,9 +50,8 @@ expr ::= arith
 		| auto_decl
 		| scope
 		| return
-		| INSERT_INCLUDE include_expr
-        | INSERT_BRK base_expr
-        | INSERT_SYNTAX syntax_expr
+		| LOANWORD_INCLUDE include_expr
+        | LOANWORD_BRK base_expr
 
 include_expr ::= STRING
 		| STRING COLON include_names
@@ -109,18 +108,18 @@ or ::= or OR and | and
 and ::= and AND not | not
 not ::= NOT not | cmp
 
-cmp ::= addsub LT cmp | addsub GT cmp | addsub LE cmp | addsub GE cmp
-		| addsub EQ cmp | addsub NE cmp | addsub SUPEREQ cmp | addsub SUPERNE cmp
-        | addsub IS cmp
+cmp ::= cmp LT addsub | cmp GT addsub | cmp LE addsub | cmp GE addsub
+		| cmp EQ addsub | cmp NE addsub | cmp SUPEREQ addsub | cmp SUPERNE addsub
+        | cmp IS addsub
 		| addsub
 
-addsub ::= muldiv PLUS addsub | muldiv MINUS addsub | muldiv
-muldiv ::= binary STAR muldiv | binary SLASH muldiv | binary
+addsub ::= addsub PLUS muldiv | addsub MINUS muldiv | muldiv
+muldiv ::= muldiv STAR binary | muldiv SLASH binary | binary
 
 binary ::= binary UNKNOWN_PUNCT_NAME binary_args	// See note above about binary operators.
 		| binary UNKNOWN_ALPHA_NAME binary_args		// See note above about binary operators.
 		| range
-binary_args ::= binary_args COMMA range | range
+binary_args ::= binary_args COMMA colon | colon
 
 colon ::= colon COLON range | range
 
@@ -135,7 +134,6 @@ unary ::= UNKNOWN_PUNCT_NAME unary | UNKNOWN_ALPHA_NAME unary
 		| PLUS unary | MINUS unary
 		| STAR unary | SLASH unary
         | TYPEOF unary
-		| COLON unary
 		| new
 
 new ::= NEW LBRACE members_opt RBRACE				// See note above about binary operators (no breaking allowed in 'members_opt').
@@ -159,11 +157,12 @@ term ::= LPAREN expr RPAREN							// See note above about binary operators (brea
        | DYNSTRING
        | CHAR
        | BYTE | INT16 | INT32 | INT64 | REAL32 | REAL64 | REAL128 | FLOAT32 | FLOAT64
-       | INSERT
+       | LOANWORD
+       | LOANWORD_SYNTAX syntax_expr
 
 string ::= RAWSTRING | DYNSTRING
 
-func ::= BAR params_opt pre_post_assertions_opt BAR expr semi_opt		// See note above about binary operators (no breaking allowed in 'exprs').
+func ::= BAR params_opt BAR expr semi_opt		// See note above about binary operators (no breaking allowed in 'exprs').
 
 semi_opt ::= SEMICOLON |
 
@@ -172,16 +171,11 @@ members ::= members member | member
 member ::= name COLON expr
 
 params_opt ::= params |
-params ::= params param | param
-param ::= name | BACKTICK name | param_type COLON name
+params ::= params param | params ',' param | param
+param ::= name | param_type COLON name
 param_type ::= param_type_dot
 param_type_dot ::= param_type_dot DOT param_type_term | param_type_term
-param_type_term ::= ALPHA_NAME* | PUNCT_NAME
-   * Note:  Parameter type names may not use the special names "pre" or "post"
-
-pre_post_assertions_opt ::= pre_post_assertions |
-pre_post_assertions ::= pre_post_assertions pre_post_assertion | pre_post_assertion
-pre_post_assertion ::= PRE COLON or | POST COLON or
+param_type_term ::= ALPHA_NAME | PUNCT_NAME
 
 raw_list_item ::= raw_list_doublehash
 raw_list_doublehash ::= raw_list_dot DOUBLEHASH raw_list_doublehash | raw_list_dot
@@ -205,18 +199,18 @@ raw_list ::= LBRACKET raw_list_items_opt RBRACKET
 raw_list_items_opt ::= raw_list_items |
 raw_list_items ::= raw_list_items raw_list_item | raw_list_item
 
-syntax_expr ::= syntax_level COLON LBRACKET syntax_elements RBRACKET IMPLIES expr
-syntax_level ::= STMT | EXPR | CMP | ADDSUB | MULDIV | BINARY | UNARY | POSTFIX | TERM
-syntax_elements ::= syntax_element syntax_elements | syntax_element
-syntax_element ::= any_name | COLON | SEMICOLON | LPAREN syntax_elements RPAREN | LBRACE syntax_elements RBRACE
-	| LBRACKET syntax_nonterm any_name RBRACKET
-syntax_nonterm ::= syntax_level | LVALUE | FN | VAR | OPER | STRING | SYMBOL | CHAR | NUMBER | INT32 | REAL64 | RAWLIST | MEMBERS | SCOPE
-	| EXPRS | LVALUES | SYMBOLS | VARS | NUMBERS | STRINGS | INT32S | REAL64S
+syntax_expr ::= syntax_level COLON LBRACKET syntax_pattern RBRACKET IMPLIES expr
+syntax_level ::= any_name
+syntax_pattern ::= syntax_element | syntax_element syntax_pattern
+syntax_element ::= syntax_term | syntax_nonterm
+syntax_term ::= any_name | COMMA | SEMICOLON | COLON | LPAREN syntax_pattern RPAREN | LBRACE syntax_pattern RBRACE
+syntax_nonterm ::= LBRACKET any_name any_name syntax_sep_opt RBRACKET
+syntax_sep_opt ::= COMMA | SEMICOLON |
 
 /*
-	#syntax UNARY: [array ( [EXPRS n] )] => [Array.of ## n]
+	#syntax UNARY [array ( [EXPR* n ,] )] => [Array.of ## n]
 
-	Stdout print a(1, 2, x + 3, 4, 5)
+	Stdout print array(1, 2, x + 3, 4, 5)
 
 	--> [Stdout.print [Array.of 1 2 [x.+ 3] 4 5]]
 */

@@ -41,7 +41,7 @@ SmilePair SmilePair_Create(SmileObject left, SmileObject right)
 	return smilePair;
 }
 
-SmilePair SmilePair_CreateSource(SmileObject left, SmileObject right, LexerPosition position)
+SmilePair SmilePair_CreateWithSource(SmileObject left, SmileObject right, LexerPosition position)
 {
 	struct SmilePairWithSourceInt *smilePair = GC_MALLOC_STRUCT(struct SmilePairWithSourceInt);
 	if (smilePair == NULL) Smile_Abort_OutOfMemory();

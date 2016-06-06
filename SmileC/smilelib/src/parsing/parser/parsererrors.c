@@ -93,6 +93,23 @@ void Parser_AddWarningv(Parser parser, LexerPosition position, const char *messa
 }
 
 /// <summary>
+/// Retrieve the current count of warnings in the parser.
+/// </summary>
+/// <param name="parser">The parser instance.</param>
+/// <returns>The number of warnings in the input that the parser has found so far.</returns>
+Int Parser_GetWarningCount(Parser parser)
+{
+	Int count = 0;
+
+	for (SmileList list = parser->firstMessage; SMILE_KIND(list) != SMILE_KIND_NULL; list = LIST_REST(list)) {
+		if (((ParseMessage)list->a)->messageKind == PARSEMESSAGE_WARNING)
+			count++;
+	}
+
+	return count;
+}
+
+/// <summary>
 /// When the parser encounters an error, this is called to record that error's detail
 /// in the parser's message collection.
 /// </summary>
@@ -125,6 +142,23 @@ void Parser_AddErrorv(Parser parser, LexerPosition position, const char *message
 }
 
 /// <summary>
+/// Retrieve the current count of errors in the parser.
+/// </summary>
+/// <param name="parser">The parser instance.</param>
+/// <returns>The number of errors in the input that the parser has found so far.</returns>
+Int Parser_GetErrorCount(Parser parser)
+{
+	Int count = 0;
+
+	for (SmileList list = parser->firstMessage; SMILE_KIND(list) != SMILE_KIND_NULL; list = LIST_REST(list)) {
+		if (((ParseMessage)list->a)->messageKind == PARSEMESSAGE_ERROR)
+			count++;
+	}
+
+	return count;
+}
+
+/// <summary>
 /// When the parser encounters a fatal error, this is called to record that fatal error's detail
 /// in the parser's message collection.
 /// </summary>
@@ -154,4 +188,21 @@ void Parser_AddFatalErrorv(Parser parser, LexerPosition position, const char *me
 	String string = String_FormatV(message, v);
 	ParseMessage parseMessage = ParseMessage_Create(PARSEMESSAGE_FATAL, position, string);
 	LIST_APPEND(parser->firstMessage, parser->lastMessage, parseMessage);
+}
+
+/// <summary>
+/// Retrieve the current count of fatal errors in the parser.
+/// </summary>
+/// <param name="parser">The parser instance.</param>
+/// <returns>The number of fatal errors in the parser itself that the parser has found so far.</returns>
+Int Parser_GetFatalErrorCount(Parser parser)
+{
+	Int count = 0;
+
+	for (SmileList list = parser->firstMessage; SMILE_KIND(list) != SMILE_KIND_NULL; list = LIST_REST(list)) {
+		if (((ParseMessage)list->a)->messageKind == PARSEMESSAGE_FATAL)
+			count++;
+	}
+
+	return count;
 }

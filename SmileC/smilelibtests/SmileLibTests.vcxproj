@@ -106,6 +106,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ansicolor-w32.h" />
+    <ClInclude Include="parsing\parser\testhelpers.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="testlib.h" />
   </ItemGroup>
@@ -127,6 +128,12 @@
     <ClCompile Include="parsing\lexer\lexerstring_tests.c" />
     <ClCompile Include="parsing\lexer\lexerunicode_tests.c" />
     <ClCompile Include="parsing\parser\parsercore_tests.c" />
+    <ClCompile Include="parsing\parser\parserfunc_tests.c" />
+    <ClCompile Include="parsing\parser\parsernew_tests.c" />
+    <ClCompile Include="parsing\parser\parserstring_tests.c" />
+    <ClCompile Include="parsing\parser\parsersyntax_tests.c" />
+    <ClCompile Include="parsing\parser\parserterm_tests.c" />
+    <ClCompile Include="parsing\parser\testhelpers.c" />
     <ClCompile Include="stdafx.c" />
     <ClCompile Include="string\stringcore_tests.c" />
     <ClCompile Include="string\stringextra_tests.c" />

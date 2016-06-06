@@ -75,27 +75,15 @@ STATIC_STRING(TokenString_Gt, ">");
 STATIC_STRING(TokenString_Le, "<=");
 STATIC_STRING(TokenString_Ge, ">=");
 
-STATIC_STRING(TokenString_If, "if");
-STATIC_STRING(TokenString_Unless, "unless");
-STATIC_STRING(TokenString_Then, "then");
-STATIC_STRING(TokenString_Else, "else");
-STATIC_STRING(TokenString_While, "while");
-STATIC_STRING(TokenString_Until, "until");
-STATIC_STRING(TokenString_Do, "do");
-STATIC_STRING(TokenString_Return, "return");
 STATIC_STRING(TokenString_Var, "var");
 STATIC_STRING(TokenString_Auto, "auto");
 STATIC_STRING(TokenString_Const, "const");
-STATIC_STRING(TokenString_Try, "try");
-STATIC_STRING(TokenString_Catch, "catch");
-STATIC_STRING(TokenString_Till, "till");
-STATIC_STRING(TokenString_When, "when");
-STATIC_STRING(TokenString_New, "new");
 
 STATIC_STRING(TokenString_And, "and");
 STATIC_STRING(TokenString_Or, "or");
 STATIC_STRING(TokenString_Not, "not");
 
+STATIC_STRING(TokenString_New, "new");
 STATIC_STRING(TokenString_Is, "is");
 STATIC_STRING(TokenString_TypeOf, "typeof");
 
@@ -156,44 +144,6 @@ SMILE_API_FUNC String TokenKind_ToString(Int tokenKind)
 		case TOKEN_COLON: return TokenString_Colon;
 		case TOKEN_COMMA: return TokenString_Comma;
 		case TOKEN_SEMICOLON: return TokenString_SemiColon;
-
-		case TOKEN_PLUS: return TokenString_Plus;
-		case TOKEN_MINUS: return TokenString_Minus;
-		case TOKEN_STAR: return TokenString_Star;
-		case TOKEN_SLASH: return TokenString_Slash;
-
-		case TOKEN_SUPEREQ: return TokenString_SuperEq;
-		case TOKEN_SUPERNE: return TokenString_SuperNe;
-		case TOKEN_EQ: return TokenString_Eq;
-		case TOKEN_NE: return TokenString_Ne;
-		case TOKEN_LT: return TokenString_Lt;
-		case TOKEN_GT: return TokenString_Gt;
-		case TOKEN_LE: return TokenString_Le;
-		case TOKEN_GE: return TokenString_Ge;
-
-		case TOKEN_IF: return TokenString_If;
-		case TOKEN_UNLESS: return TokenString_Unless;
-		case TOKEN_THEN: return TokenString_Then;
-		case TOKEN_ELSE: return TokenString_Else;
-		case TOKEN_WHILE: return TokenString_While;
-		case TOKEN_UNTIL: return TokenString_Until;
-		case TOKEN_DO: return TokenString_Do;
-		case TOKEN_RETURN: return TokenString_Return;
-		case TOKEN_VAR: return TokenString_Var;
-		case TOKEN_AUTO: return TokenString_Auto;
-		case TOKEN_CONST: return TokenString_Const;
-		case TOKEN_TRY: return TokenString_Try;
-		case TOKEN_CATCH: return TokenString_Catch;
-		case TOKEN_TILL: return TokenString_Till;
-		case TOKEN_WHEN: return TokenString_When;
-		case TOKEN_NEW: return TokenString_New;
-
-		case TOKEN_AND: return TokenString_And;
-		case TOKEN_OR: return TokenString_Or;
-		case TOKEN_NOT: return TokenString_Not;
-
-		case TOKEN_IS: return TokenString_Is;
-		case TOKEN_TYPEOF: return TokenString_TypeOf;
 
 		case TOKEN_LOANWORD_INCLUDE: return TokenString_LoanWord_Include;
 		case TOKEN_LOANWORD_REGEX: return TokenString_LoanWord_Regex;

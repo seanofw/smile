@@ -24,26 +24,46 @@ STATIC_STRING(Equals_, "=");
 STATIC_STRING(Op_Equals_, "op=");
 
 STATIC_STRING(If_, "if");
+STATIC_STRING(Unless_, "unless");
 STATIC_STRING(While_, "while");
+STATIC_STRING(Until_, "until");
 STATIC_STRING(Till_, "till");
+
 STATIC_STRING(Var_, "var");
+STATIC_STRING(Const_, "const");
+STATIC_STRING(Auto_, "auto");
+
+STATIC_STRING(Try_, "try");
 STATIC_STRING(Catch_, "catch");
+
 STATIC_STRING(Fn_, "fn");
-STATIC_STRING(Scope_, "scope");
 STATIC_STRING(Quote_, "quote");
+STATIC_STRING(Scope_, "scope");
 STATIC_STRING(Prog1_, "prog1");
 STATIC_STRING(Progn_, "progn");
-STATIC_STRING(New_, "new");
 STATIC_STRING(Return_, "return");
 
 STATIC_STRING(Not_, "not");
 STATIC_STRING(Or_, "or");
 STATIC_STRING(And_, "and");
 
+STATIC_STRING(New_, "new");
 STATIC_STRING(Is_, "is");
 STATIC_STRING(Typeof_, "typeof");
 STATIC_STRING(SuperEq_, "===");
 STATIC_STRING(SuperNe_, "!==");
+
+STATIC_STRING(Eq_, "==");
+STATIC_STRING(Ne_, "!=");
+STATIC_STRING(Lt_, "<");
+STATIC_STRING(Gt_, ">");
+STATIC_STRING(Le_, "<=");
+STATIC_STRING(Ge_, ">=");
+
+STATIC_STRING(Plus_, "+");
+STATIC_STRING(Minus_, "-");
+STATIC_STRING(Star_, "*");
+STATIC_STRING(Slash_, "/");
 
 STATIC_STRING(Brk_, "brk");
 
@@ -53,26 +73,46 @@ static void KnownSymbolsInt_PreloadSpecials(SymbolTable symbolTable, KnownSymbol
 	knownSymbols->op_equals_ = SymbolTableInt_AddFast(symbolTable, Op_Equals_);
 
 	knownSymbols->if_ = SymbolTableInt_AddFast(symbolTable, If_);
+	knownSymbols->unless_ = SymbolTableInt_AddFast(symbolTable, Unless_);
 	knownSymbols->while_ = SymbolTableInt_AddFast(symbolTable, While_);
+	knownSymbols->until_ = SymbolTableInt_AddFast(symbolTable, Until_);
 	knownSymbols->till_ = SymbolTableInt_AddFast(symbolTable, Till_);
+
 	knownSymbols->var_ = SymbolTableInt_AddFast(symbolTable, Var_);
+	knownSymbols->const_ = SymbolTableInt_AddFast(symbolTable, Const_);
+	knownSymbols->auto_ = SymbolTableInt_AddFast(symbolTable, Auto_);
+
+	knownSymbols->try_ = SymbolTableInt_AddFast(symbolTable, Try_);
 	knownSymbols->catch_ = SymbolTableInt_AddFast(symbolTable, Catch_);
+
 	knownSymbols->fn_ = SymbolTableInt_AddFast(symbolTable, Fn_);
-	knownSymbols->scope_ = SymbolTableInt_AddFast(symbolTable, Scope_);
 	knownSymbols->quote_ = SymbolTableInt_AddFast(symbolTable, Quote_);
+	knownSymbols->scope_ = SymbolTableInt_AddFast(symbolTable, Scope_);
 	knownSymbols->prog1_ = SymbolTableInt_AddFast(symbolTable, Prog1_);
 	knownSymbols->progn_ = SymbolTableInt_AddFast(symbolTable, Progn_);
-	knownSymbols->new_ = SymbolTableInt_AddFast(symbolTable, New_);
 	knownSymbols->return_ = SymbolTableInt_AddFast(symbolTable, Return_);
 
 	knownSymbols->not_ = SymbolTableInt_AddFast(symbolTable, Not_);
 	knownSymbols->or_ = SymbolTableInt_AddFast(symbolTable, Or_);
 	knownSymbols->and_ = SymbolTableInt_AddFast(symbolTable, And_);
 
+	knownSymbols->new_ = SymbolTableInt_AddFast(symbolTable, New_);
 	knownSymbols->is_ = SymbolTableInt_AddFast(symbolTable, Is_);
 	knownSymbols->typeof_ = SymbolTableInt_AddFast(symbolTable, Typeof_);
 	knownSymbols->supereq_ = SymbolTableInt_AddFast(symbolTable, SuperEq_);
 	knownSymbols->superne_ = SymbolTableInt_AddFast(symbolTable, SuperNe_);
+
+	knownSymbols->eq = SymbolTableInt_AddFast(symbolTable, Eq_);
+	knownSymbols->ne = SymbolTableInt_AddFast(symbolTable, Ne_);
+	knownSymbols->lt = SymbolTableInt_AddFast(symbolTable, Lt_);
+	knownSymbols->gt = SymbolTableInt_AddFast(symbolTable, Gt_);
+	knownSymbols->le = SymbolTableInt_AddFast(symbolTable, Le_);
+	knownSymbols->ge = SymbolTableInt_AddFast(symbolTable, Ge_);
+
+	knownSymbols->plus = SymbolTableInt_AddFast(symbolTable, Plus_);
+	knownSymbols->minus = SymbolTableInt_AddFast(symbolTable, Minus_);
+	knownSymbols->star = SymbolTableInt_AddFast(symbolTable, Star_);
+	knownSymbols->slash = SymbolTableInt_AddFast(symbolTable, Slash_);
 
 	knownSymbols->brk_ = SymbolTableInt_AddFast(symbolTable, Brk_);
 }
@@ -80,10 +120,6 @@ static void KnownSymbolsInt_PreloadSpecials(SymbolTable symbolTable, KnownSymbol
 //-------------------------------------------------------------------------------------------------
 //  Common operator symbols.
 
-STATIC_STRING(Plus_, "+");
-STATIC_STRING(Minus_, "-");
-STATIC_STRING(Star_, "*");
-STATIC_STRING(Slash_, "/");
 STATIC_STRING(Caret_, "^");
 
 STATIC_STRING(Shift_Left_, "<<<");
@@ -93,19 +129,22 @@ STATIC_STRING(Arithmetic_Shift_Right_, ">>");
 STATIC_STRING(Rotate_Left_, "<<+");
 STATIC_STRING(Rotate_Right_, "+>>");
 
-STATIC_STRING(Eq_, "==");
-STATIC_STRING(Ne_, "!=");
-STATIC_STRING(Lt_, "<");
-STATIC_STRING(Gt_, ">");
-STATIC_STRING(Le_, "<=");
-STATIC_STRING(Ge_, ">=");
+STATIC_STRING(Comma, ",");
+STATIC_STRING(Semicolon, ";");
+STATIC_STRING(Colon, ":");
+STATIC_STRING(QuestionMark, "?");
+
+STATIC_STRING(LeftParenthesis, "(");
+STATIC_STRING(RightParenthesis, ")");
+STATIC_STRING(LeftBracket, "[");
+STATIC_STRING(RightBracket, "]");
+STATIC_STRING(LeftBrace, "{");
+STATIC_STRING(RightBrace, "}");
+
+STATIC_STRING(Implies, "=>");
 
 static void KnownSymbolsInt_PreloadCommonOperators(SymbolTable symbolTable, KnownSymbols knownSymbols)
 {
-	knownSymbols->plus = SymbolTableInt_AddFast(symbolTable, Plus_);
-	knownSymbols->minus = SymbolTableInt_AddFast(symbolTable, Minus_);
-	knownSymbols->star = SymbolTableInt_AddFast(symbolTable, Star_);
-	knownSymbols->slash = SymbolTableInt_AddFast(symbolTable, Slash_);
 	knownSymbols->caret = SymbolTableInt_AddFast(symbolTable, Caret_);
 
 	knownSymbols->shift_left = SymbolTableInt_AddFast(symbolTable, Shift_Left_);
@@ -115,12 +154,19 @@ static void KnownSymbolsInt_PreloadCommonOperators(SymbolTable symbolTable, Know
 	knownSymbols->rotate_left = SymbolTableInt_AddFast(symbolTable, Rotate_Left_);
 	knownSymbols->rotate_right = SymbolTableInt_AddFast(symbolTable, Rotate_Right_);
 
-	knownSymbols->eq = SymbolTableInt_AddFast(symbolTable, Eq_);
-	knownSymbols->ne = SymbolTableInt_AddFast(symbolTable, Ne_);
-	knownSymbols->lt = SymbolTableInt_AddFast(symbolTable, Lt_);
-	knownSymbols->gt = SymbolTableInt_AddFast(symbolTable, Gt_);
-	knownSymbols->le = SymbolTableInt_AddFast(symbolTable, Le_);
-	knownSymbols->ge = SymbolTableInt_AddFast(symbolTable, Ge_);
+	knownSymbols->comma = SymbolTableInt_AddFast(symbolTable, Comma);
+	knownSymbols->semicolon = SymbolTableInt_AddFast(symbolTable, Semicolon);
+	knownSymbols->colon = SymbolTableInt_AddFast(symbolTable, Colon);
+	knownSymbols->question_mark = SymbolTableInt_AddFast(symbolTable, QuestionMark);
+
+	knownSymbols->left_parenthesis = SymbolTableInt_AddFast(symbolTable, LeftParenthesis);
+	knownSymbols->right_parenthesis = SymbolTableInt_AddFast(symbolTable, RightParenthesis);
+	knownSymbols->left_bracket = SymbolTableInt_AddFast(symbolTable, LeftBracket);
+	knownSymbols->right_bracket = SymbolTableInt_AddFast(symbolTable, RightBracket);
+	knownSymbols->left_brace = SymbolTableInt_AddFast(symbolTable, LeftBrace);
+	knownSymbols->right_brace = SymbolTableInt_AddFast(symbolTable, RightBrace);
+
+	knownSymbols->implies = SymbolTableInt_AddFast(symbolTable, Implies);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -337,7 +383,6 @@ STATIC_STRING(false_, "false");
 STATIC_STRING(filename_mode, "filename-mode");
 STATIC_STRING(first, "first");
 STATIC_STRING(floor_, "floor");
-STATIC_STRING(fn, "fn");
 STATIC_STRING(fold, "fold");
 STATIC_STRING(from_seed, "from-seed");
 STATIC_STRING(get_member, "get-member");
@@ -402,6 +447,7 @@ STATIC_STRING(neg_q, "neg?");
 STATIC_STRING(newline_q, "newline?");
 STATIC_STRING(next_pow2, "next-pow2");
 STATIC_STRING(normalize_diacritics, "normalize-diacritics");
+STATIC_STRING(nonterminal, "nonterminal");
 STATIC_STRING(nth, "nth");
 STATIC_STRING(nth_cell, "nth-cell");
 STATIC_STRING(null_, "null");
@@ -425,6 +471,7 @@ STATIC_STRING(other_surrogate, "other-surrogate");
 STATIC_STRING(parity, "parity");
 STATIC_STRING(parse, "parse");
 STATIC_STRING(parse_and_eval, "parse-and-eval");
+STATIC_STRING(pattern, "pattern");
 STATIC_STRING(pos_q, "pos?");
 STATIC_STRING(post, "post");
 STATIC_STRING(pow2_q, "pow2?");
@@ -451,7 +498,9 @@ STATIC_STRING(real_, "real");
 STATIC_STRING(real32_, "real32");
 STATIC_STRING(real64_, "real64");
 STATIC_STRING(rem, "rem");
+STATIC_STRING(repeat, "repeat");
 STATIC_STRING(replace, "replace");
+STATIC_STRING(replacement, "replacement");
 STATIC_STRING(resize, "resize");
 STATIC_STRING(rest, "rest");
 STATIC_STRING(reverse, "reverse");
@@ -610,7 +659,6 @@ static void KnownSymbolsInt_PreloadGeneralSymbols(SymbolTable symbolTable, Known
 	knownSymbols->filename_mode = SymbolTableInt_AddFast(symbolTable, filename_mode);
 	knownSymbols->first = SymbolTableInt_AddFast(symbolTable, first);
 	knownSymbols->floor = SymbolTableInt_AddFast(symbolTable, floor_);
-	knownSymbols->fn = SymbolTableInt_AddFast(symbolTable, fn);
 	knownSymbols->fold = SymbolTableInt_AddFast(symbolTable, fold);
 	knownSymbols->from_seed = SymbolTableInt_AddFast(symbolTable, from_seed);
 	knownSymbols->get_member = SymbolTableInt_AddFast(symbolTable, get_member);
@@ -675,6 +723,7 @@ static void KnownSymbolsInt_PreloadGeneralSymbols(SymbolTable symbolTable, Known
 	knownSymbols->newline_q = SymbolTableInt_AddFast(symbolTable, newline_q);
 	knownSymbols->next_pow2 = SymbolTableInt_AddFast(symbolTable, next_pow2);
 	knownSymbols->normalize_diacritics = SymbolTableInt_AddFast(symbolTable, normalize_diacritics);
+	knownSymbols->nonterminal = SymbolTableInt_AddFast(symbolTable, nonterminal);
 	knownSymbols->nth = SymbolTableInt_AddFast(symbolTable, nth);
 	knownSymbols->nth_cell = SymbolTableInt_AddFast(symbolTable, nth_cell);
 	knownSymbols->null_ = SymbolTableInt_AddFast(symbolTable, null_);
@@ -698,6 +747,7 @@ static void KnownSymbolsInt_PreloadGeneralSymbols(SymbolTable symbolTable, Known
 	knownSymbols->parity = SymbolTableInt_AddFast(symbolTable, parity);
 	knownSymbols->parse = SymbolTableInt_AddFast(symbolTable, parse);
 	knownSymbols->parse_and_eval = SymbolTableInt_AddFast(symbolTable, parse_and_eval);
+	knownSymbols->pattern = SymbolTableInt_AddFast(symbolTable, pattern);
 	knownSymbols->pos_q = SymbolTableInt_AddFast(symbolTable, pos_q);
 	knownSymbols->post = SymbolTableInt_AddFast(symbolTable, post);
 	knownSymbols->pow2_q = SymbolTableInt_AddFast(symbolTable, pow2_q);
@@ -724,7 +774,9 @@ static void KnownSymbolsInt_PreloadGeneralSymbols(SymbolTable symbolTable, Known
 	knownSymbols->real32_ = SymbolTableInt_AddFast(symbolTable, real32_);
 	knownSymbols->real64_ = SymbolTableInt_AddFast(symbolTable, real64_);
 	knownSymbols->rem = SymbolTableInt_AddFast(symbolTable, rem);
+	knownSymbols->repeat = SymbolTableInt_AddFast(symbolTable, repeat);
 	knownSymbols->replace = SymbolTableInt_AddFast(symbolTable, replace);
+	knownSymbols->replacement = SymbolTableInt_AddFast(symbolTable, replacement);
 	knownSymbols->resize = SymbolTableInt_AddFast(symbolTable, resize);
 	knownSymbols->rest = SymbolTableInt_AddFast(symbolTable, rest);
 	knownSymbols->reverse = SymbolTableInt_AddFast(symbolTable, reverse);

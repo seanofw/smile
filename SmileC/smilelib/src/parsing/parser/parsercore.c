@@ -53,7 +53,7 @@ SmileList Parser_Parse(Parser parser, Lexer lexer, ParseScope scope)
 	parser->currentScope = scope;
 	parser->lexer = lexer;
 
-	Parser_ParseExprsOpt(parser, &head, &tail, BINARYLINEBREAKS_DISALLOWED);
+	Parser_ParseExprsOpt(parser, &head, &tail, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
 
 	if ((token = Parser_NextToken(parser))->kind != TOKEN_EOI) {
 		Parser_AddError(parser, Token_GetPosition(token), "Unexpected content at end of file.");
@@ -69,7 +69,7 @@ STATIC_STRING(ExpectedOpenBraceError, "Expected { ... to begin a scope");
 STATIC_STRING(ExpectedCloseBraceError, "Expected ... } to end the scope");
 
 //  scope ::= . LBRACE exprs_opt RBRACE
-ParseError Parser_ParseScope(Parser parser, SmileObject *expr, Int binaryLineBreaks)
+ParseError Parser_ParseScope(Parser parser, SmileObject *expr)
 {
 	ParseError parseError;
 	ParseScope parentScope, newScope;
@@ -79,8 +79,6 @@ ParseError Parser_ParseScope(Parser parser, SmileObject *expr, Int binaryLineBre
 	Symbol *symbolNames;
 	SmileList head, tail;
 	SmileList declHead, declTail;
-
-	UNUSED(binaryLineBreaks);
 
 	if ((token = Parser_NextToken(parser))->kind != TOKEN_LEFTBRACE) {
 		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), ExpectedOpenBraceError);
@@ -93,7 +91,7 @@ ParseError Parser_ParseScope(Parser parser, SmileObject *expr, Int binaryLineBre
 	parser->currentScope = newScope;
 
 	LIST_INIT(head, tail);
-	Parser_ParseExprsOpt(parser, &head, &tail, BINARYLINEBREAKS_DISALLOWED);
+	Parser_ParseExprsOpt(parser, &head, &tail, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
 
 	parser->currentScope = parentScope;
 
@@ -122,7 +120,7 @@ ParseError Parser_ParseScope(Parser parser, SmileObject *expr, Int binaryLineBre
 
 //  exprs_opt ::= . exprs | .
 //  exprs ::= . expr | . exprs expr
-void Parser_ParseExprsOpt(Parser parser, SmileList *head, SmileList *tail, Int binaryLineBreaks)
+void Parser_ParseExprsOpt(Parser parser, SmileList *head, SmileList *tail, Int modeFlags)
 {
 	Token token;
 	LexerPosition lexerPosition;
@@ -137,7 +135,7 @@ void Parser_ParseExprsOpt(Parser parser, SmileList *head, SmileList *tail, Int b
 		Lexer_Unget(parser->lexer);
 
 		// Parse the next expression.
-		error = Parser_ParseExpr(parser, &expr, binaryLineBreaks);
+		error = Parser_ParseExpr(parser, &expr, modeFlags);
 		if (error == NULL) {
 			if (expr != NullObject) {
 
@@ -176,7 +174,7 @@ ParseError Parser_ParseOneExpressionFromText(Parser parser, SmileObject *expr, S
 	oldLexer = parser->lexer;
 	parser->lexer = Lexer_Create(string, 0, String_Length(string), startPosition->filename, startPosition->line, startPosition->column);
 
-	parseError = Parser_ParseExpr(parser, expr, BINARYLINEBREAKS_DISALLOWED);
+	parseError = Parser_ParseExpr(parser, expr, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
 	if (parseError != NULL) {
 		parser->lexer = oldLexer;
 		*expr = NULL;

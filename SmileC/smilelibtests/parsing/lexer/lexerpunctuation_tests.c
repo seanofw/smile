@@ -69,14 +69,21 @@ START_TEST(ShouldRecognizeSpecialSingleCharacterTokens)
 	Lexer lexer = Setup("+ - / * < > .\n"
 		"+= = =");
 
-	ASSERT(Lexer_Next(lexer) == TOKEN_PLUS);
-	ASSERT(Lexer_Next(lexer) == TOKEN_MINUS);
-	ASSERT(Lexer_Next(lexer) == TOKEN_SLASH);
-	ASSERT(Lexer_Next(lexer) == TOKEN_STAR);
-	ASSERT(Lexer_Next(lexer) == TOKEN_LT);
-	ASSERT(Lexer_Next(lexer) == TOKEN_GT);
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT(lexer->token->data.symbol == Smile_KnownSymbols.plus);
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT(lexer->token->data.symbol == Smile_KnownSymbols.minus);
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT(lexer->token->data.symbol == Smile_KnownSymbols.slash);
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT(lexer->token->data.symbol == Smile_KnownSymbols.star);
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT(lexer->token->data.symbol == Smile_KnownSymbols.lt);
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT(lexer->token->data.symbol == Smile_KnownSymbols.gt);
 	ASSERT(Lexer_Next(lexer) == TOKEN_DOT);
-	ASSERT(Lexer_Next(lexer) == TOKEN_PLUS);
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT(lexer->token->data.symbol == Smile_KnownSymbols.plus);
 	ASSERT(Lexer_Next(lexer) == TOKEN_EQUALWITHOUTWHITESPACE);
 	ASSERT(Lexer_Next(lexer) == TOKEN_EQUAL);
 	ASSERT(Lexer_Next(lexer) == TOKEN_EQUAL);
@@ -123,12 +130,18 @@ START_TEST(ShouldRecognizeSpecialCompoundPunctuation)
 {
 	Lexer lexer = Setup("<= >= != == === !== .. ... ##\n");
 
-	ASSERT(Lexer_Next(lexer) == TOKEN_LE);
-	ASSERT(Lexer_Next(lexer) == TOKEN_GE);
-	ASSERT(Lexer_Next(lexer) == TOKEN_NE);
-	ASSERT(Lexer_Next(lexer) == TOKEN_EQ);
-	ASSERT(Lexer_Next(lexer) == TOKEN_SUPEREQ);
-	ASSERT(Lexer_Next(lexer) == TOKEN_SUPERNE);
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT(lexer->token->data.symbol == Smile_KnownSymbols.le);
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT(lexer->token->data.symbol == Smile_KnownSymbols.ge);
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT(lexer->token->data.symbol == Smile_KnownSymbols.ne);
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT(lexer->token->data.symbol == Smile_KnownSymbols.eq);
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT(lexer->token->data.symbol == Smile_KnownSymbols.supereq_);
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT(lexer->token->data.symbol == Smile_KnownSymbols.superne_);
 	ASSERT(Lexer_Next(lexer) == TOKEN_RANGE);
 	ASSERT(Lexer_Next(lexer) == TOKEN_ELLIPSIS);
 	ASSERT(Lexer_Next(lexer) == TOKEN_DOUBLEHASH);
@@ -226,11 +239,14 @@ START_TEST(ShouldHandleWeirdPunctuationCornerCases)
 	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
 	ASSERT_STRING(lexer->token->text, "+==+", 4);
 
-	ASSERT(Lexer_Next(lexer) == TOKEN_PLUS);
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT(lexer->token->data.symbol == Smile_KnownSymbols.plus);
 	ASSERT(Lexer_Next(lexer) == TOKEN_EQUALWITHOUTWHITESPACE);
 
-	ASSERT(Lexer_Next(lexer) == TOKEN_PLUS);
-	ASSERT(Lexer_Next(lexer) == TOKEN_EQ);
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT(lexer->token->data.symbol == Smile_KnownSymbols.plus);
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT(lexer->token->data.symbol == Smile_KnownSymbols.eq);
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
 	ASSERT_STRING(lexer->token->text, "=+", 2);
@@ -248,7 +264,8 @@ START_TEST(ShouldHandleWeirdPunctuationCornerCases)
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
 	ASSERT_STRING(lexer->token->text, "&", 1);
-	ASSERT(Lexer_Next(lexer) == TOKEN_EQ);
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT(lexer->token->data.symbol == Smile_KnownSymbols.eq);
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
 	ASSERT_STRING(lexer->token->text, "=&", 2);

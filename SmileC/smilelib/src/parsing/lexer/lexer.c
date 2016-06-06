@@ -27,27 +27,17 @@
 
 STATIC_STRING(IllegalCharacterMessage, "Unknown or invalid character (character code \"%S\")");
 
-STATIC_STRING(KeywordAnd, "and");
-STATIC_STRING(KeywordAuto, "auto");
-STATIC_STRING(KeywordCatch, "catch");
-STATIC_STRING(KeywordConst, "const");
-STATIC_STRING(KeywordDo, "do");
-STATIC_STRING(KeywordElse, "else");
-STATIC_STRING(KeywordIf, "if");
-STATIC_STRING(KeywordIs, "is");
-STATIC_STRING(KeywordNew, "new");
-STATIC_STRING(KeywordNot, "not");
-STATIC_STRING(KeywordOr, "or");
-STATIC_STRING(KeywordReturn, "return");
-STATIC_STRING(KeywordThen, "then");
-STATIC_STRING(KeywordTill, "till");
-STATIC_STRING(KeywordTry, "try");
-STATIC_STRING(KeywordTypeof, "typeof");
-STATIC_STRING(KeywordUnless, "unless");
-STATIC_STRING(KeywordUntil, "until");
 STATIC_STRING(KeywordVar, "var");
-STATIC_STRING(KeywordWhen, "when");
-STATIC_STRING(KeywordWhile, "while");
+STATIC_STRING(KeywordAuto, "auto");
+STATIC_STRING(KeywordConst, "const");
+
+STATIC_STRING(KeywordAnd, "and");
+STATIC_STRING(KeywordOr, "or");
+STATIC_STRING(KeywordNot, "not");
+
+STATIC_STRING(KeywordNew, "new");
+STATIC_STRING(KeywordIs, "is");
+STATIC_STRING(KeywordTypeof, "typeof");
 
 /// <summary>
 /// Create a new instance of a lexical analyzer for the given input text.
@@ -242,185 +232,17 @@ retryAtSrc:
 			return Lexer_ParseDigit(lexer, isFirstContentOnLine);
 
 		//--------------------------------------------------------------------------
-		//  Keywords (also can be identifiers).
-
-		case 'a':
-			if (IS_KEYWORD_CHAR(0, 'n') && IS_KEYWORD_CHAR(1, 'd') && IS_KEYWORD_END(2)) {
-				src += 2;
-				token->text = KeywordAnd;
-				return SIMPLE_TOKEN(src - 3, TOKEN_AND);
-			}
-			if (IS_KEYWORD_CHAR(0, 'u') && IS_KEYWORD_CHAR(1, 't') && IS_KEYWORD_CHAR(2, 'o') && IS_KEYWORD_END(3)) {
-				src += 3;
-				token->text = KeywordAuto;
-				return SIMPLE_TOKEN(src - 4, TOKEN_AUTO);
-			}
-			goto parseAsName;
-
-		case 'c':
-			if (IS_KEYWORD_CHAR(0, 'a') && IS_KEYWORD_CHAR(1, 't') && IS_KEYWORD_CHAR(2, 'c')
-				&& IS_KEYWORD_CHAR(3, 'h') && IS_KEYWORD_END(4)) {
-				src += 4;
-				token->text = KeywordCatch;
-				return SIMPLE_TOKEN(src - 5, TOKEN_CATCH);
-			}
-			else if (IS_KEYWORD_CHAR(0, 'o') && IS_KEYWORD_CHAR(1, 'n') && IS_KEYWORD_CHAR(2, 's')
-				&& IS_KEYWORD_CHAR(3, 't') && IS_KEYWORD_END(4)) {
-				src += 4;
-				token->text = KeywordConst;
-				return SIMPLE_TOKEN(src - 5, TOKEN_CONST);
-			}
-			goto parseAsName;
-
-		case 'd':
-			if (IS_KEYWORD_CHAR(0, 'o') && IS_KEYWORD_END(1)) {
-				src += 1;
-				token->text = KeywordDo;
-				return SIMPLE_TOKEN(src - 2, TOKEN_DO);
-			}
-			goto parseAsName;
-
-		case 'e':
-			if (IS_KEYWORD_CHAR(0, 'l') && IS_KEYWORD_CHAR(1, 's') && IS_KEYWORD_CHAR(2, 'e') && IS_KEYWORD_END(3)) {
-				src += 3;
-				token->text = KeywordElse;
-				return SIMPLE_TOKEN(src - 4, TOKEN_ELSE);
-			}
-			goto parseAsName;
-
-		case 'i':
-			if (IS_KEYWORD_CHAR(0, 'f') && IS_KEYWORD_END(1)) {
-				src += 1;
-				token->text = KeywordIf;
-				return SIMPLE_TOKEN(src - 2, TOKEN_IF);
-			}
-			else if (IS_KEYWORD_CHAR(0, 's') && IS_KEYWORD_END(1)) {
-				src += 1;
-				token->text = KeywordIs;
-				return SIMPLE_TOKEN(src - 2, TOKEN_IS);
-			}
-			goto parseAsName;
-
-		case 'n':
-			if (IS_KEYWORD_CHAR(0, 'e') && IS_KEYWORD_CHAR(1, 'w') && IS_KEYWORD_END(2)) {
-				src += 2;
-				token->text = KeywordNew;
-				return SIMPLE_TOKEN(src - 3, TOKEN_NEW);
-			}
-			else if (IS_KEYWORD_CHAR(0, 'o') && IS_KEYWORD_CHAR(1, 't') && IS_KEYWORD_END(2)) {
-				src += 2;
-				token->text = KeywordNot;
-				return SIMPLE_TOKEN(src - 3, TOKEN_NOT);
-			}
-			goto parseAsName;
-
-		case 'o':
-			if (IS_KEYWORD_CHAR(0, 'r') && IS_KEYWORD_END(1)) {
-				src += 1;
-				token->text = KeywordOr;
-				return SIMPLE_TOKEN(src - 2, TOKEN_OR);
-			}
-			goto parseAsName;
-
-		case 'r':
-			if (IS_KEYWORD_CHAR(0, 'e') && IS_KEYWORD_CHAR(1, 't') && IS_KEYWORD_CHAR(2, 'u')
-				&& IS_KEYWORD_CHAR(3, 'r') && IS_KEYWORD_CHAR(4, 'n') && IS_KEYWORD_END(5)) {
-				src += 5;
-				token->text = KeywordReturn;
-				return SIMPLE_TOKEN(src - 6, TOKEN_RETURN);
-			}
-			goto parseAsName;
-
-		case 't':
-			if (src >= end)
-				goto parseAsName;
-
-			switch (*src) {
-				case 'h':
-					if (IS_KEYWORD_CHAR(1, 'e') && IS_KEYWORD_CHAR(2, 'n') && IS_KEYWORD_END(3)) {
-						src += 3;
-						token->text = KeywordThen;
-						return SIMPLE_TOKEN(src - 4, TOKEN_THEN);
-					}
-					goto parseAsName;
-				case 'i':
-					if (IS_KEYWORD_CHAR(1, 'l') && IS_KEYWORD_CHAR(2, 'l') && IS_KEYWORD_END(3)) {
-						src += 3;
-						token->text = KeywordTill;
-						return SIMPLE_TOKEN(src - 4, TOKEN_TILL);
-					}
-					goto parseAsName;
-				case 'r':
-					if (IS_KEYWORD_CHAR(1, 'y') && IS_KEYWORD_END(2)) {
-						src += 2;
-						token->text = KeywordTry;
-						return SIMPLE_TOKEN(src - 3, TOKEN_TRY);
-					}
-					goto parseAsName;
-				case 'y':
-					if (IS_KEYWORD_CHAR(1, 'p') && IS_KEYWORD_CHAR(2, 'e') && IS_KEYWORD_CHAR(3, 'o')
-						&& IS_KEYWORD_CHAR(4, 'f') && IS_KEYWORD_END(5)) {
-						src += 5;
-						token->text = KeywordTypeof;
-						return SIMPLE_TOKEN(src - 6, TOKEN_TYPEOF);
-					}
-					goto parseAsName;
-				default:
-					goto parseAsName;
-			}
-
-		case 'u':
-			if (IS_KEYWORD_CHAR(0, 'n')) {
-				if (IS_KEYWORD_CHAR(1, 't') && IS_KEYWORD_CHAR(2, 'i')
-					&& IS_KEYWORD_CHAR(3, 'l') && IS_KEYWORD_END(4)) {
-					src += 4;
-					token->text = KeywordUntil;
-					return SIMPLE_TOKEN(src - 5, TOKEN_UNTIL);
-				}
-				else if (IS_KEYWORD_CHAR(1, 'l') && IS_KEYWORD_CHAR(2, 'e')
-					&& IS_KEYWORD_CHAR(3, 's') && IS_KEYWORD_CHAR(4, 's') && IS_KEYWORD_END(5)) {
-					src += 5;
-					token->text = KeywordUnless;
-					return SIMPLE_TOKEN(src - 6, TOKEN_UNLESS);
-				}
-			}
-			goto parseAsName;
-
-		case 'v':
-			if (IS_KEYWORD_CHAR(0, 'a') && IS_KEYWORD_CHAR(1, 'r') && IS_KEYWORD_END(2)) {
-				src += 2;
-				token->text = KeywordVar;
-				return SIMPLE_TOKEN(src - 3, TOKEN_VAR);
-			}
-			goto parseAsName;
-
-		case 'w':
-			if (IS_KEYWORD_CHAR(0, 'h')) {
-				if (IS_KEYWORD_CHAR(1, 'i') && IS_KEYWORD_CHAR(2, 'l') && IS_KEYWORD_CHAR(3, 'e') && IS_KEYWORD_END(4)) {
-					src += 4;
-					token->text = KeywordWhile;
-					return SIMPLE_TOKEN(src - 5, TOKEN_WHILE);
-				}
-				else if (IS_KEYWORD_CHAR(1, 'e') && IS_KEYWORD_CHAR(2, 'n') && IS_KEYWORD_END(3)) {
-					src += 3;
-					token->text = KeywordWhen;
-					return SIMPLE_TOKEN(src - 4, TOKEN_WHEN);
-				}
-			}
-			goto parseAsName;
-
-		//--------------------------------------------------------------------------
 		//  Identifiers.
 
-		case 'b': case 'f': case 'g': case 'h': case 'j': case 'k': case 'l': case 'm':
-		case 'p': case 'q': case 's': case 'x': case 'y': case 'z':
+		case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h':
+		case 'i': case 'j': case 'k': case 'l': case 'm': case 'n': case 'o': case 'p':
+		case 'q': case 'r': case 's': case 't': case 'u': case 'v': case 'w': case 'x':
+		case 'y': case 'z':
 		case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H':
 		case 'I': case 'J': case 'K': case 'L': case 'M': case 'N': case 'O': case 'P':
 		case 'Q': case 'R': case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
 		case 'Y': case 'Z':
 		case '_': case '$':
-
-		parseAsName :
 			// General identifier form.
 			lexer->src = src-1;
 			return Lexer_ParseName(lexer, isFirstContentOnLine);

@@ -161,13 +161,19 @@ Bool Parser_Peek2(Parser parser, Token *token1, Token *token2)
 	Token token;
 
 	*token1 = token = Parser_NextToken(parser);
-	if (token->kind == TOKEN_EOI || token->kind == TOKEN_ERROR) return False;
+	if (token->kind == TOKEN_EOI || token->kind == TOKEN_ERROR) {
+		Lexer_Unget(parser->lexer);
+		return False;
+	}
 
 	*token2 = token = Parser_NextToken(parser);
-	if (token->kind == TOKEN_EOI || token->kind == TOKEN_ERROR) return False;
+	if (token->kind == TOKEN_EOI || token->kind == TOKEN_ERROR) {
+		Lexer_Unget(parser->lexer);
+		Lexer_Unget(parser->lexer);
+		return False;
+	}
 
 	Lexer_Unget(parser->lexer);
 	Lexer_Unget(parser->lexer);
-
 	return True;
 }

@@ -60,6 +60,8 @@ ParseScope ParseScope_CreateRoot(void)
 
 /// <summary>
 /// Declare the eighteen-or-so global operators in the given (presumably root-level) scope.
+/// This also declares 'null', 'true', and 'false'; even though they're not operators,
+/// everybody expects them to exist in the earliest stages of the universe.
 /// </summary>
 /// <param name="parseScope">The scope in which to declare the root-level operators.</param>
 /// <returns>True if all were declared successfully, False if any failed to be declared.</returns>
@@ -82,6 +84,13 @@ static ParseError ParseScope_DeclareGlobalOperators(ParseScope parseScope)
 	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.new_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
 	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.is_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
 	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.typeof_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.and_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.or_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.not_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+
+	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.null_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.true_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.false_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
 
 	return NULL;
 }

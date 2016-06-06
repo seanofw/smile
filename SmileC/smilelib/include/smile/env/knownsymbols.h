@@ -5,44 +5,77 @@
 #include <smile/env/symboltable.h>
 #endif
 
-// Preregistered symbol IDs for the special forms.
-#define SMILE_SPECIAL_FORM_EQUALS 1
-#define SMILE_SPECIAL_FORM_OP_EQUALS 2
-#define SMILE_SPECIAL_FORM_IF 3
-#define SMILE_SPECIAL_FORM_WHILE 4
-#define SMILE_SPECIAL_FORM_TILL 5
-#define SMILE_SPECIAL_FORM_VAR 6
-#define SMILE_SPECIAL_FORM_CATCH 7
-#define SMILE_SPECIAL_FORM_FN 8
-#define SMILE_SPECIAL_FORM_SCOPE 9
-#define SMILE_SPECIAL_FORM_QUOTE 10
-#define SMILE_SPECIAL_FORM_PROG1 11
-#define SMILE_SPECIAL_FORM_PROGN 12
-#define SMILE_SPECIAL_FORM_NEW 13
-#define SMILE_SPECIAL_FORM_RETURN 14
-#define SMILE_SPECIAL_FORM_NOT 15
-#define SMILE_SPECIAL_FORM_OR 16
-#define SMILE_SPECIAL_FORM_AND 17
-#define SMILE_SPECIAL_FORM_IS 18
-#define SMILE_SPECIAL_FORM_TYPEOF 19
-#define SMILE_SPECIAL_FORM_SUPEREQ 20
-#define SMILE_SPECIAL_FORM_SUPERNE 21
-#define SMILE_SPECIAL_FORM_BRK 22
+// Preregistered symbol IDs for the special symbols.
+#define SMILE_SPECIAL_SYMBOL_EQUALS 1
+#define SMILE_SPECIAL_SYMBOL_OP_EQUALS 2
+
+#define SMILE_SPECIAL_SYMBOL_IF 3
+#define SMILE_SPECIAL_SYMBOL_UNLESS 4
+#define SMILE_SPECIAL_SYMBOL_WHILE 5
+#define SMILE_SPECIAL_SYMBOL_UNTIL 6
+#define SMILE_SPECIAL_SYMBOL_TILL 7
+
+#define SMILE_SPECIAL_SYMBOL_VAR 8
+#define SMILE_SPECIAL_SYMBOL_CONST 9
+#define SMILE_SPECIAL_SYMBOL_AUTO 10
+
+#define SMILE_SPECIAL_SYMBOL_TRY 11
+#define SMILE_SPECIAL_SYMBOL_CATCH 12
+
+#define SMILE_SPECIAL_SYMBOL_FN 13
+#define SMILE_SPECIAL_SYMBOL_QUOTE 14
+#define SMILE_SPECIAL_SYMBOL_SCOPE 15
+#define SMILE_SPECIAL_SYMBOL_PROG1 16
+#define SMILE_SPECIAL_SYMBOL_PROGN 17
+#define SMILE_SPECIAL_SYMBOL_RETURN 18
+
+#define SMILE_SPECIAL_SYMBOL_NOT 19
+#define SMILE_SPECIAL_SYMBOL_OR 20
+#define SMILE_SPECIAL_SYMBOL_AND 21
+
+#define SMILE_SPECIAL_SYMBOL_NEW 22
+#define SMILE_SPECIAL_SYMBOL_IS 23
+#define SMILE_SPECIAL_SYMBOL_TYPEOF 24
+#define SMILE_SPECIAL_SYMBOL_SUPEREQ 25
+#define SMILE_SPECIAL_SYMBOL_SUPERNE 26
+
+#define SMILE_SPECIAL_SYMBOL_EQ 27
+#define SMILE_SPECIAL_SYMBOL_NE 28
+#define SMILE_SPECIAL_SYMBOL_LT 29
+#define SMILE_SPECIAL_SYMBOL_GT 30
+#define SMILE_SPECIAL_SYMBOL_LE 31
+#define SMILE_SPECIAL_SYMBOL_GE 32
+
+#define SMILE_SPECIAL_SYMBOL_PLUS 33
+#define SMILE_SPECIAL_SYMBOL_MINUS 34
+#define SMILE_SPECIAL_SYMBOL_STAR 35
+#define SMILE_SPECIAL_SYMBOL_SLASH 36
+
+#define SMILE_SPECIAL_SYMBOL_BRK 37
 
 // The set of known symbols, preregistered at startup time to save on runtime-initialization costs.
 typedef struct KnownSymbolsStruct {
 
 	// Specials.
 	Symbol equals_, op_equals_;
-	Symbol if_, while_, till_, var_, catch_, fn_, scope_, quote_, prog1_, progn_, new_, return_;
+	Symbol if_, unless_, while_, until_, till_;
+	Symbol var_, const_, auto_;
+	Symbol try_, catch_;
+	Symbol fn_, quote_, scope_, prog1_, progn_, return_;
 	Symbol not_, or_, and_;
-	Symbol is_, typeof_, supereq_, superne_;
+	Symbol new_, is_, typeof_, supereq_, superne_;
 	Symbol brk_;
+	Symbol eq, ne, lt, gt, le, ge;
+	Symbol plus, minus, star, slash;
 
 	// Operator symbols.
-	Symbol plus, minus, star, slash, caret;
+	Symbol caret;
 	Symbol shift_left, shift_right, arithmetic_shift_left, arithmetic_shift_right, rotate_left, rotate_right;
-	Symbol eq, ne, lt, gt, le, ge;
+
+	// Special punctuation.
+	Symbol left_parenthesis, right_parenthesis, left_bracket, right_bracket, left_brace, right_brace;
+	Symbol comma, semicolon, colon, question_mark;
+	Symbol implies;
 
 	// Typename symbols.
 	Symbol Actor_, Array_, ArrayBase_, Bool_, Byte_, ByteRange_, ByteArray_, Char_, Closure, Enumerable_, Exception_, Facade_, FacadeProper_, Fn_, Handle_;
@@ -59,7 +92,7 @@ typedef struct KnownSymbolsStruct {
 	Symbol count_left_ones, count_left_zeros, count_of, count_of_i, count_ones, count_right_ones, count_right_zeros, count_zeros, crc32, create, create_child_closure;
 	Symbol d, decompose, diacritic_q, digit_q, div, divide_by_zero, does_not_understand;
 	Symbol each, end, ends_with, ends_with_i, escape, eval, even_q, exit, exp, extend_object, extend_where_new;
-	Symbol false_, filename_mode, first, floor, fn, fold, from_seed;
+	Symbol false_, filename_mode, first, floor, fold, from_seed;
 	Symbol get_member, get_object_security, get_property;
 	Symbol handle_kind, has_property, hash, hex_string, hex_string_pretty, html_decode, html_encode, hyphenize;
 	Symbol id, in_, include, index_of, index_of_i, int_, int16_, int32_, int64_, int_lg;
@@ -70,13 +103,13 @@ typedef struct KnownSymbolsStruct {
 	Symbol lg, list, load, log, log_domain, lower, lowercase, lowercase_q, ln;
 	Symbol map, mark, mark_enclosing, mark_non_spacing, mark_spacing_combining;
 	Symbol match, matches, max, message, mid, min, mod;
-	Symbol name, neg_q, newline_q, next_pow2, normalize_diacritics, nth, nth_cell, null_, number;
+	Symbol name, neg_q, newline_q, next_pow2, nonterminal, normalize_diacritics, nth, nth_cell, null_, number;
 	Symbol number_decimal_digit, number_letter, number_other, numeric_q;
 	Symbol octal_q, of, of_size, odd_q, one_q, options, other;
 	Symbol other_control, other_format, other_not_assigned, other_private_use, other_surrogate;
-	Symbol parity, parse, parse_and_eval, pos_q, post, pow2_q, pre, primary_category, printf, process_id, property_names, punct_q, punctuation;
+	Symbol parity, parse, parse_and_eval, pattern, pos_q, post, pow2_q, pre, primary_category, printf, process_id, property_names, punct_q, punctuation;
 	Symbol punctuation_close, punctuation_connector, punctuation_dash, punctuation_final_quote, punctuation_initial_quote, punctuation_open, punctuation_other;
-	Symbol raw_reverse, read_append, read_only, read_write, read_write_append, real_, real32_, real64_, rem, replace, resize, rest, result;
+	Symbol raw_reverse, read_append, read_only, read_write, read_write_append, real_, real32_, real64_, rem, repeat, replace, replacement, resize, rest, result;
 	Symbol reverse, reverse_bits, reverse_bytes, right, rot_13;
 	Symbol separator, separator_line, separator_paragraph, separator_space;
 	Symbol set_member, set_object_security, set_property, sign, sin, space_q, splice, split, sprintf;

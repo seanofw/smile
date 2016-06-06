@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 0ddf79f188ea2a062f6875721bb3aa0b
+// SourceHash: 0ac417d24fcedc92b72ee41f35a046ed
 
 START_TEST_SUITE(LexerNumberTests)
 {
@@ -20,6 +20,7 @@ START_TEST_SUITE(LexerNumberTests)
 	ShouldRecognizeReal32s,
 	ShouldRecognizeReal64s,
 	ShouldRecognizeReal128s,
+	ShouldConsumeNumericSuffixes,
 }
 END_TEST_SUITE(LexerNumberTests)
 
