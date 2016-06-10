@@ -36,9 +36,10 @@ struct KnownObjectsStruct {
 
 	SmileSymbol ObjectSymbol;
 	SmileSymbol ListSymbol;
+	SmileSymbol PairSymbol;
 	SmileSymbol RangeSymbol;
 
-	SmileSymbol fnSymbol;
+	SmileSymbol fnSymbol, quoteSymbol;
 	SmileSymbol joinSymbol, ofSymbol;
 	SmileSymbol prognSymbol, scopeSymbol;
 	SmileSymbol opEqualsSymbol;

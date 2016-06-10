@@ -904,3 +904,45 @@ ParseError Parser_ParseDot(Parser parser, SmileObject *expr, Int modeFlags, Toke
 
 	return NULL;
 }
+
+//  term ::= . LPAREN expr RPAREN
+ParseError Parser_ParseParentheses(Parser parser, SmileObject *result, Int modeFlags)
+{
+	LexerPosition startPosition;
+	ParseError error;
+
+	UNUSED(modeFlags);
+
+	// Expect an initial '('; if it's not there, this is a programming error.
+	if (Lexer_Next(parser->lexer) != TOKEN_LEFTPARENTHESIS) {
+		Parser_AddFatalError(parser, Token_GetPosition(parser->lexer->token), "Expected '(' as first token in Parser_ParseParentheses().");
+		*result = NullObject;
+		return NULL;
+	}
+
+	startPosition = Token_GetPosition(parser->lexer->token);
+
+	// Parse the inside of the '(...)' block as an expression, with binary line-breaks allowed.
+	error = Parser_ParseExpr(parser, result, BINARYLINEBREAKS_ALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
+
+	if (error != NULL) {
+		// Handle any errors generated inside the expression parse by recovering here, and then
+		// telling the caller everything was successful so that it continues trying the parse.
+		Parser_AddMessage(parser, error);
+		Parser_Recover(parser, Parser_RightBracesBracketsParentheses_Recovery, Parser_RightBracesBracketsParentheses_Count);
+		*result = NullObject;
+		return NULL;
+	}
+
+	// Make sure there's a matching ')' following the opening '('.
+	if (!Parser_HasLookahead(parser, TOKEN_RIGHTPARENTHESIS)) {
+		error = ParseMessage_Create(PARSEMESSAGE_ERROR, startPosition,
+			String_Format("Missing ')' after expression starting on line %d.", startPosition->line));
+		*result = NullObject;
+		return error;
+	}
+	Parser_NextToken(parser);
+
+	// No errors, yay!
+	return NULL;
+}

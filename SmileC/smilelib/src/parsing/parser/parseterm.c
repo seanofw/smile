@@ -54,32 +54,8 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, T
 	switch (token->kind) {
 
 	case TOKEN_LEFTPARENTHESIS:
-		startPosition = Token_GetPosition(token);
-
-		// Parse the inside of the '(...)' block as an expression, with binary line-breaks allowed.
-		error = Parser_ParseExpr(parser, result, BINARYLINEBREAKS_ALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
-
-		if (error != NULL) {
-			// Handle any errors generated inside the expression parse by recovering here, and then
-			// telling the caller everything was successful so that it continues trying the parse.
-			Parser_AddMessage(parser, error);
-			Parser_Recover(parser, Parser_RightBracesBracketsParentheses_Recovery, Parser_RightBracesBracketsParentheses_Count);
-			*result = NullObject;
-			return NULL;
-		}
-
-		// Make sure there's a matching ')' following the opening '('.
-		if (!Parser_HasLookahead(parser, TOKEN_RIGHTPARENTHESIS)) {
-			error = ParseMessage_Create(PARSEMESSAGE_ERROR,
-				Token_GetPosition(firstUnaryTokenForErrorReporting != NULL ? firstUnaryTokenForErrorReporting : token),
-				String_Format("Missing ')' after expression starting on line %d.", startPosition->line));
-			*result = NullObject;
-			return error;
-		}
-		Parser_NextToken(parser);
-
-		// No errors, yay!
-		return NULL;
+		Lexer_Unget(parser->lexer);
+		return Parser_ParseParentheses(parser, result, modeFlags);
 
 	case TOKEN_LEFTBRACKET:
 		{
@@ -91,7 +67,7 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, T
 
 			if (!Parser_HasLookahead(parser, TOKEN_RIGHTBRACKET)) {
 				error = ParseMessage_Create(PARSEMESSAGE_ERROR,
-					Token_GetPosition(firstUnaryTokenForErrorReporting != NULL ? firstUnaryTokenForErrorReporting : token),
+					firstUnaryTokenForErrorReporting != NULL ? Token_GetPosition(firstUnaryTokenForErrorReporting) : startPosition,
 					String_Format("Missing ']' in list starting on line %d.", startPosition->line));
 				*result = NullObject;
 				return error;
@@ -107,10 +83,30 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, T
 		return error;
 
 	case TOKEN_BACKTICK:
-		error = ParseMessage_Create(PARSEMESSAGE_ERROR,
-			Token_GetPosition(firstUnaryTokenForErrorReporting != NULL ? firstUnaryTokenForErrorReporting : token),
-			String_Format("Backtick is not yet supported.  Sorry!"));
-		return error;
+		{
+			startPosition = Token_GetPosition(token);
+
+			if (Lexer_Peek(parser->lexer) == TOKEN_LEFTPARENTHESIS) {
+				// This is a quote of a parenthesized expression, so parse the expression and then quote it.
+				error = Parser_ParseParentheses(parser, result, modeFlags);
+				if (error != NULL)
+					return error;
+				*result = (SmileObject)SmileList_ConsWithSource(
+					(SmileObject)Smile_KnownObjects.quoteSymbol,
+					(SmileObject)SmileList_ConsWithSource(*result, NullObject, startPosition),
+					startPosition
+				);
+				return NULL;
+			}
+			else {
+				// This is a quote of a more generic thing, like a list or a symbol, so recursively parse
+				// this "quoted term".  Because the "quoted term" might be a list that somewhere contains
+				// a (parenthetical escape), thus turning the "quoted term" from an ordinary quoted list
+				// into a template, we do not do the quoting here, but instead do that quoting work inside
+				// Parser_ParseQuotedTerm() itself, which is the only code that knows how to do it correctly.
+				return Parser_ParseQuotedTerm(parser, result, modeFlags, startPosition);
+			}
+		}
 
 	case TOKEN_LEFTBRACE:
 		Lexer_Unget(parser->lexer);
@@ -153,7 +149,7 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, T
 	case TOKEN_UNKNOWNPUNCTNAME:
 		// If we get an operator name instead of a variable name, we can't use it as a term.
 		error = ParseMessage_Create(PARSEMESSAGE_ERROR,
-			Token_GetPosition(firstUnaryTokenForErrorReporting != NULL ? firstUnaryTokenForErrorReporting : token),
+			firstUnaryTokenForErrorReporting != NULL ? Token_GetPosition(firstUnaryTokenForErrorReporting) : Token_GetPosition(token),
 			String_Format("\"%S\" is not a known variable name", token->text));
 		return error;
 

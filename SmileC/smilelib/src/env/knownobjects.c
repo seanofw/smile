@@ -66,9 +66,11 @@ void KnownObjects_Preload(struct KnownObjectsStruct *knownObjects, struct KnownS
 
 	knownObjects->ObjectSymbol = SmileSymbol_Create(knownSymbols->Object_);
 	knownObjects->ListSymbol = SmileSymbol_Create(knownSymbols->List_);
+	knownObjects->PairSymbol = SmileSymbol_Create(knownSymbols->Pair_);
 	knownObjects->RangeSymbol = SmileSymbol_Create(knownSymbols->Range_);
 
 	knownObjects->fnSymbol = SmileSymbol_Create(knownSymbols->fn_);
+	knownObjects->quoteSymbol = SmileSymbol_Create(knownSymbols->quote_);
 	knownObjects->joinSymbol = SmileSymbol_Create(knownSymbols->join);
 	knownObjects->ofSymbol = SmileSymbol_Create(knownSymbols->of);
 	knownObjects->prognSymbol = SmileSymbol_Create(knownSymbols->progn_);

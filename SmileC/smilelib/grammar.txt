@@ -177,8 +177,7 @@ param_type ::= param_type_dot
 param_type_dot ::= param_type_dot DOT param_type_term | param_type_term
 param_type_term ::= ALPHA_NAME | PUNCT_NAME
 
-raw_list_item ::= raw_list_doublehash
-raw_list_doublehash ::= raw_list_dot DOUBLEHASH raw_list_doublehash | raw_list_dot
+raw_list_item ::= raw_list_dot
 raw_list_dot ::= raw_list_dot DOT any_name | raw_list_term
 raw_list_term ::= raw_list | any_name
        | CHAR | RAWSTRING
@@ -187,13 +186,7 @@ raw_list_term ::= raw_list | any_name
        | nonraw_term
 nonraw_term ::= LPAREN expr RPAREN
        | scope
-       | func
-       | BACKTICK LPAREN expr RPAREN
-       | BACKTICK scope
-       | BACKTICK raw_list_term
        | DYNSTRING
-       | INSERT
-       | NEW LBRACE members_opt RBRACE
 
 raw_list ::= LBRACKET raw_list_items_opt RBRACKET
 raw_list_items_opt ::= raw_list_items |

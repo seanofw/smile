@@ -772,6 +772,7 @@
     <ClCompile Include="src\parsing\parser\parseexpr.c" />
     <ClCompile Include="src\parsing\parser\parsefunc.c" />
     <ClCompile Include="src\parsing\parser\parsemessage.c" />
+    <ClCompile Include="src\parsing\parser\parsequote.c" />
     <ClCompile Include="src\parsing\parser\parsercore.c" />
     <ClCompile Include="src\parsing\parser\parserdynstrings.c" />
     <ClCompile Include="src\parsing\parser\parsererrors.c" />
