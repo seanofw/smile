@@ -27,6 +27,45 @@ STATIC_STRING(IllegalNameMessage, "Names must not mix characters from different 
 //---------------------------------------------------------------------------
 //  Alphabetic name parsing.
 
+static Bool IsValidRestartCharacter(const char *src, const char *end)
+{
+	Int code, charsets, identifierCharacterKind;
+	char ch;
+
+	switch (ch = *src) {
+
+	case '\\':
+
+	case 'a': case 'b': case 'c': case 'd':
+	case 'e': case 'f': case 'g': case 'h':
+	case 'i': case 'j': case 'k': case 'l':
+	case 'm': case 'n': case 'o': case 'p':
+	case 'q': case 'r': case 's': case 't':
+	case 'u': case 'v': case 'w': case 'x':
+	case 'y': case 'z':
+	case 'A': case 'B': case 'C': case 'D':
+	case 'E': case 'F': case 'G': case 'H':
+	case 'I': case 'J': case 'K': case 'L':
+	case 'M': case 'N': case 'O': case 'P':
+	case 'Q': case 'R': case 'S': case 'T':
+	case 'U': case 'V': case 'W': case 'X':
+	case 'Y': case 'Z':
+
+	case '_': case '$':
+		return True;
+
+	default:
+		if (ch >= 128) {
+			code = String_ExtractUnicodeCharacterInternal(&src, end);
+			identifierCharacterKind = SmileIdentifierKind(code);
+			charsets |= ((UInt64)1) << ((identifierCharacterKind & IDENTKIND_CHARSET_MASK) >> 4);
+			if ((identifierCharacterKind & IDENTKIND_STARTLETTER))
+				return True;
+		}
+		return False;
+	}
+}
+
 static String ParseNameRaw(Lexer lexer, Bool *hasEscapes)
 {
 	DECLARE_INLINE_STRINGBUILDER(namebuf, 64);
@@ -79,13 +118,16 @@ readMoreName:
 		case '4': case '5': case '6': case '7':
 		case '8': case '9':
 		case '_': case '\'': case '\"':
-		case '~': case '!': case '?': case '$':
-		case '@': case '%': case '^': case '&':
-		case '*': case '+': case '<':
-		case '>': case '/': case '-':
-			// Notable omission: '=' is not a valid trailing character.
+		case '!': case '?': case '$':
 			src++;
 			goto readMoreName;
+
+		case '-':
+			src++;
+			if (src < end && IsValidRestartCharacter(src, end))
+				goto readMoreName;
+			src--;
+			break;
 
 		default:
 			if (src > start) {
@@ -95,7 +137,7 @@ readMoreName:
 				code = String_ExtractUnicodeCharacterInternal(&src, end);
 				identifierCharacterKind = SmileIdentifierKind(code);
 				charsets |= ((UInt64)1) << ((identifierCharacterKind & IDENTKIND_CHARSET_MASK) >> 4);
-				if ((identifierCharacterKind & (IDENTKIND_MIDDLELETTER | IDENTKIND_STARTLETTER | IDENTKIND_PUNCTUATION))) {
+				if ((identifierCharacterKind & (IDENTKIND_MIDDLELETTER | IDENTKIND_STARTLETTER))) {
 					StringBuilder_AppendUnicode(namebuf, (UInt32)code);
 					start = src;
 					goto readMoreName;

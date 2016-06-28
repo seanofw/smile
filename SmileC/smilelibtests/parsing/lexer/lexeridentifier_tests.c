@@ -130,11 +130,15 @@ START_TEST(ShouldRecognizeAlphaIdentsWithEmbeddedPunct)
 {
 	Lexer lexer = Setup(
 		"x' = func x\n"
-		"y' = f**ck y\n"
+		"y' = f**ck\n"
 		"z'' = pl-rk? z\n"
+		"w = x-y\n"
+		"w = x+z\n"
+		"w = x-1\n"
+		"w = x+1\n"
 		"This-is-a-really-long-name-you-shouldn't-use-but-could!"
 		" x"
-		);
+	);
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
 	ASSERT_STRING(lexer->token->text, "x'", 2);
@@ -148,9 +152,11 @@ START_TEST(ShouldRecognizeAlphaIdentsWithEmbeddedPunct)
 	ASSERT_STRING(lexer->token->text, "y'", 2);
 	ASSERT(Lexer_Next(lexer) == TOKEN_EQUAL);
 	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
-	ASSERT_STRING(lexer->token->text, "f**ck", 5);
+	ASSERT_STRING(lexer->token->text, "f", 1);
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT_STRING(lexer->token->text, "**", 2);
 	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
-	ASSERT_STRING(lexer->token->text, "y", 1);
+	ASSERT_STRING(lexer->token->text, "ck", 2);
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
 	ASSERT_STRING(lexer->token->text, "z''", 3);
@@ -159,6 +165,42 @@ START_TEST(ShouldRecognizeAlphaIdentsWithEmbeddedPunct)
 	ASSERT_STRING(lexer->token->text, "pl-rk?", 6);
 	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
 	ASSERT_STRING(lexer->token->text, "z", 1);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "w", 1);
+	ASSERT(Lexer_Next(lexer) == TOKEN_EQUAL);
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "x-y", 3);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "w", 1);
+	ASSERT(Lexer_Next(lexer) == TOKEN_EQUAL);
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "x", 1);
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT_STRING(lexer->token->text, "+", 1);
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "z", 1);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "w", 1);
+	ASSERT(Lexer_Next(lexer) == TOKEN_EQUAL);
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "x", 1);
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT_STRING(lexer->token->text, "-", 1);
+	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER32);
+	ASSERT(lexer->token->data.i == 1);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "w", 1);
+	ASSERT(Lexer_Next(lexer) == TOKEN_EQUAL);
+	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
+	ASSERT_STRING(lexer->token->text, "x", 1);
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT_STRING(lexer->token->text, "+", 1);
+	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER32);
+	ASSERT(lexer->token->data.i == 1);
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
 	ASSERT_STRING(lexer->token->text, "This-is-a-really-long-name-you-shouldn't-use-but-could!", 55);
@@ -173,9 +215,9 @@ START_TEST(ShouldRecognizeAlphaOpEqualsForms)
 	Lexer lexer = Setup(
 		"x sin= y\n"
 		"x cos'= y\n"
-		"x tan-1''= y\n"
-		"x cot+1'''== y\n"
-		"x sec*1\"=== y\n"
+		"x tanm1''= y\n"
+		"x cotp1'''== y\n"
+		"x sec-1 === y\n"
 		);
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
@@ -197,7 +239,7 @@ START_TEST(ShouldRecognizeAlphaOpEqualsForms)
 	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
 	ASSERT_STRING(lexer->token->text, "x", 1);
 	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
-	ASSERT_STRING(lexer->token->text, "tan-1''", 7);
+	ASSERT_STRING(lexer->token->text, "tanm1''", 7);
 	ASSERT(Lexer_Next(lexer) == TOKEN_EQUALWITHOUTWHITESPACE);
 	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
 	ASSERT_STRING(lexer->token->text, "y", 1);
@@ -205,7 +247,7 @@ START_TEST(ShouldRecognizeAlphaOpEqualsForms)
 	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
 	ASSERT_STRING(lexer->token->text, "x", 1);
 	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
-	ASSERT_STRING(lexer->token->text, "cot+1'''", 8);
+	ASSERT_STRING(lexer->token->text, "cotp1'''", 8);
 	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
 	ASSERT_STRING(lexer->token->text, "==", 2);
 	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
@@ -214,7 +256,11 @@ START_TEST(ShouldRecognizeAlphaOpEqualsForms)
 	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
 	ASSERT_STRING(lexer->token->text, "x", 1);
 	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
-	ASSERT_STRING(lexer->token->text, "sec*1\"", 6);
+	ASSERT_STRING(lexer->token->text, "sec", 3);
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT_STRING(lexer->token->text, "-", 1);
+	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER32);
+	ASSERT(lexer->token->data.i == 1);
 	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
 	ASSERT_STRING(lexer->token->text, "===", 3);
 	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
