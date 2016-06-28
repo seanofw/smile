@@ -144,7 +144,7 @@ ParseError ParseScope_DeclareHere(ParseScope scope, Symbol symbol, Int kind, Lex
 				String_Format("Cannot redeclare \"%S\" as %s; it is already declared as %s, on line \"%d\".",
 				SymbolTable_GetName(Smile_SymbolTable, symbol),
 				ParseDecl_Names[kind],
-				ParseDecl_Names[previousDecl->kind],
+				ParseDecl_Names[previousDecl->declKind],
 				previousDecl->position != NULL ? previousDecl->position->line : 0));
 			return error;
 		}

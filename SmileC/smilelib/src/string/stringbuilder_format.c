@@ -111,6 +111,7 @@ void StringBuilder_AppendFormatStringv(StringBuilder stringBuilder, const String
 /// <li>%s - A C-style nul-terminated string argument.</li>
 /// <li>%S - A String (object) argument.</li>
 /// <li>%c - An 8-bit Byte argument, formatted as its equivalent character.</li>
+/// <li>%C - A 32-bit Int/UInt argument, formatted as a single Unicode code-point converted to UTF-8.</li>
 /// <li>%d - A signed Int argument, formatted as a signed decimal number.</li>
 /// <li>%u - An unsigned UInt argument, formatted as an unsigned decimal number.</li>
 /// <li>%x - An unsigned UInt argument, formatted as an unsigned hexadecimal number in lowercase.</li>
@@ -168,7 +169,7 @@ void StringBuilder_AppendFormatInternal(StringBuilder stringBuilder, const Byte 
 		}
 
 		// Got a '%' start character, so get the mode character after it.
-		// We only support "%s", "%S", "%d", "%u", "%x", "%X", and "%c", with no format parameters except 'h' and 'l'
+		// We only support "%s", "%S", "%d", "%u", "%x", "%X", "%c", and "%C", with no format parameters except 'h' and 'l'
 		// and digits and zero.  Digits and zero only affect numeric formatting, and there is a max width of BUFFER_LIMIT characters.
 		// "%d" implies a type of Int, while "%u", "%x", and "%X" implies a type of UInt;
 		// The 'h' and 'l' modifiers imply explicit 32-bit and 64-bit, respectively.
@@ -211,6 +212,14 @@ void StringBuilder_AppendFormatInternal(StringBuilder stringBuilder, const Byte 
 					// 8-bit character.  Because of the vagaries of C, this is 'int', not 'char'.
 					char ch = (char)va_arg(v, int);
 					StringBuilder_AppendByte(stringBuilder, ch);
+				}
+				break;
+
+			case 'C':
+				{
+					// 32-bit code point.
+					unsigned int ch = va_arg(v, unsigned int);
+					StringBuilder_AppendUnicode(stringBuilder, (UInt32)ch);
 				}
 				break;
 

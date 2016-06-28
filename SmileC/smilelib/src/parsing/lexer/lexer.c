@@ -25,8 +25,6 @@
 //---------------------------------------------------------------------------
 //  Core lexer.
 
-STATIC_STRING(IllegalCharacterMessage, "Unknown or invalid character (character code \"%S\")");
-
 STATIC_STRING(KeywordVar, "var");
 STATIC_STRING(KeywordAuto, "auto");
 STATIC_STRING(KeywordConst, "const");
@@ -243,7 +241,8 @@ retryAtSrc:
 		case 'Q': case 'R': case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
 		case 'Y': case 'Z':
 		case '_': case '$':
-			// General identifier form.
+		case '\\':
+			// Alpha/letter identifier form.
 			lexer->src = src-1;
 			return Lexer_ParseName(lexer, isFirstContentOnLine);
 
@@ -294,7 +293,7 @@ retryAtSrc:
 
 			// Everything else is an error at this point.
 			START_TOKEN(start);
-			lexer->token->text = IllegalCharacterMessage;
+			lexer->token->text = String_Format("Unknown or invalid character (character code \"%C\")", code);
 			return END_TOKEN(TOKEN_ERROR);
 	}
 }

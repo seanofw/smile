@@ -148,7 +148,7 @@ START_TEST(TheContainingScopeShouldInfluenceTheReplacement)
 	SmileSyntax expectedSyntax = SmileSyntax_Create(
 		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
 		SmileList_Cons(
-			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("magic"))),
+			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, "magic")),
 			(SmileObject)SmileList_Cons(
 				(SmileObject)SmileNonterminal_Create(
 					SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
@@ -162,6 +162,44 @@ START_TEST(TheContainingScopeShouldInfluenceTheReplacement)
 		(SmileObject)SimpleParse("[f x]"),
 		NULL
 	);
+
+	ASSERT((SmileObject)result != NullObject);
+	ASSERT(SmileSyntax_Equals((SmileSyntax)result->a, expectedSyntax));
+}
+END_TEST
+
+START_TEST(RealWorldSyntaxExample)
+{
+	Lexer lexer = SetupLexer("#syntax STMT: [if [EXPR x] then [STMT y]] => [\\if x y]");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileSyntax expectedSyntax = SmileSyntax_Create(
+		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
+		SmileList_CreateList(
+			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, "if")),
+			(SmileObject)SmileNonterminal_Create(
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("x")),
+				0,
+				0
+			),
+			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, "then")),
+			(SmileObject)SmileNonterminal_Create(
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("y")),
+				0,
+				0
+			),
+			NULL
+		),
+		(SmileObject)SimpleParse("[if x y]"),
+		NULL
+	);
+
+	const char *rs = StringifyToC(result->a);
+	const char *es = StringifyToC(expectedSyntax);
 
 	ASSERT((SmileObject)result != NullObject);
 	ASSERT(SmileSyntax_Equals((SmileSyntax)result->a, expectedSyntax));
