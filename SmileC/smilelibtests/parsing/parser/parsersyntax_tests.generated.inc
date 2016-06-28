@@ -1,11 +1,15 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 83271d31605bae8a9bcbf94ee47bb56a
+// SourceHash: 39d990528ee130cd348bca343a755130
 
 START_TEST_SUITE(ParserSyntaxTests)
 {
 	CanParseSimpleSyntaxForms,
 	CanParseSyntaxFormsThatUseSyntaxForms,
+	CanParseSyntaxFormsThatUseListForms,
+	CanParseSyntaxFormsThatContainNonterminals,
+	NonterminalsShouldNotLeakIntoTheContainingScope,
+	TheContainingScopeShouldInfluenceTheReplacement,
 }
 END_TEST_SUITE(ParserSyntaxTests)
 

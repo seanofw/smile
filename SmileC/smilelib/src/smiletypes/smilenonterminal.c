@@ -49,7 +49,7 @@ static Bool SmileNonterminal_CompareEqual(SmileNonterminal self, SmileObject oth
 {
 	SmileNonterminal otherNonterminal;
 
-	if (SMILE_KIND(other) != SMILE_KIND_SYNTAX)
+	if (SMILE_KIND(other) != SMILE_KIND_NONTERMINAL)
 		return False;
 
 	otherNonterminal = (SmileNonterminal)other;

@@ -74,4 +74,98 @@ START_TEST(CanParseSyntaxFormsThatUseSyntaxForms)
 }
 END_TEST
 
+START_TEST(CanParseSyntaxFormsThatUseListForms)
+{
+	Lexer lexer = SetupLexer("#syntax STMT: [do magic] => [Stdout.print \"Hello, World.\"]");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("Stdout")), PARSEDECL_VARIABLE, NULL, NULL);
+
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileSyntax expectedResult = SmileSyntax_Create(
+		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
+		(SmileList)SimpleParse("[do magic]"),
+		(SmileObject)SimpleParse("[ (Stdout.print) \"Hello, World.\" ]"),
+		NULL
+	);
+
+	ASSERT(result->d == NullObject);
+	ASSERT(SmileSyntax_Equals((SmileSyntax)result->a, expectedResult));
+}
+END_TEST
+
+START_TEST(CanParseSyntaxFormsThatContainNonterminals)
+{
+	Lexer lexer = SetupLexer("#syntax STMT: [magic [EXPR x]] => [x.* x]");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileSyntax expectedResult = SmileSyntax_Create(
+		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
+		SmileList_Cons(
+			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("magic"))),
+			(SmileObject)SmileList_Cons(
+				(SmileObject)SmileNonterminal_Create(
+					SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
+					SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("x")),
+					0,
+					0
+				),
+				NullObject
+			)
+		),
+		(SmileObject)SimpleParse("[(x.*) x]"),
+		NULL
+	);
+
+	ASSERT(result->d == NullObject);
+	ASSERT(SmileSyntax_Equals((SmileSyntax)result->a, expectedResult));
+}
+END_TEST
+
+START_TEST(NonterminalsShouldNotLeakIntoTheContainingScope)
+{
+	Lexer lexer = SetupLexer("#syntax STMT: [magic [EXPR x]] => [x.* x]\n"
+		"var y = x");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(Parser_GetErrorCount(parser) > 0);
+}
+END_TEST
+
+START_TEST(TheContainingScopeShouldInfluenceTheReplacement)
+{
+	Lexer lexer = SetupLexer("#syntax STMT: [magic [EXPR x]] => [f x]");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	ParseError parseDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "f"), PARSEDECL_VARIABLE, NULL, NULL);
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileSyntax expectedSyntax = SmileSyntax_Create(
+		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
+		SmileList_Cons(
+			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("magic"))),
+			(SmileObject)SmileList_Cons(
+				(SmileObject)SmileNonterminal_Create(
+					SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
+					SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("x")),
+					0,
+					0
+				),
+				NullObject
+			)
+		),
+		(SmileObject)SimpleParse("[f x]"),
+		NULL
+	);
+
+	ASSERT((SmileObject)result != NullObject);
+	ASSERT(SmileSyntax_Equals((SmileSyntax)result->a, expectedSyntax));
+}
+END_TEST
+
 #include "parsersyntax_tests.generated.inc"

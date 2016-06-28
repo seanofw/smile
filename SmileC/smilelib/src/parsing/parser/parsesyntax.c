@@ -285,7 +285,7 @@ static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailR
 	// Break it into a "tail" and the actual nonterminal.
 	text = token->text;
 	punctuationTail = ExtractPunctuationTail(text);
-	text = String_Substring(text, String_Length(text) - String_Length(punctuationTail), String_Length(punctuationTail));
+	text = String_Substring(text, 0, String_Length(text) - String_Length(punctuationTail));
 	nonterminal = SymbolTable_GetSymbol(Smile_SymbolTable, text);
 
 	// Decode the "tail" as the repeat, which must be nothing, '?', '*', or '+'.
