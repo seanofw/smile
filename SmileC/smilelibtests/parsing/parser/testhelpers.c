@@ -24,6 +24,7 @@
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/smilepair.h>
+#include <smile/smiletypes/smilesyntax.h>
 #include <smile/env/env.h>
 
 #include "testhelpers.h"
@@ -216,7 +217,16 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 			StringBuilder_AppendByte(stringBuilder, ')');
 		}
 		else if (ContainsNestedList(obj)) {
+			Bool isFirst = True;
 			StringBuilder_AppendByte(stringBuilder, '[');
+			while (SMILE_KIND(list) == SMILE_KIND_LIST && SMILE_KIND(list->a) == SMILE_KIND_SYMBOL) {
+				if (!isFirst) {
+					StringBuilder_AppendByte(stringBuilder, ' ');
+				}
+				StringifyRecursive((SmileObject)list->a, stringBuilder, indent + 1);
+				list = LIST_REST(list);
+				isFirst = False;
+			}
 			StringBuilder_AppendByte(stringBuilder, '\n');
 			while (SMILE_KIND(list) == SMILE_KIND_LIST) {
 				StringBuilder_AppendRepeat(stringBuilder, ' ', (indent + 1) * 4);
@@ -232,7 +242,7 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 			StringBuilder_AppendByte(stringBuilder, '[');
 			while (SMILE_KIND(list) == SMILE_KIND_LIST) {
 				if (!isFirst) {
-					StringBuilder_AppendC(stringBuilder, " ", 0, 4);
+					StringBuilder_AppendByte(stringBuilder, ' ');
 				}
 				StringifyRecursive((SmileObject)list->a, stringBuilder, indent + 1);
 				list = LIST_REST(list);
@@ -281,6 +291,23 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 
 	case SMILE_KIND_STRING:
 		StringBuilder_AppendFormat(stringBuilder, "\"%S\"", String_AddCSlashes((String)&((SmileString)obj)->string));
+		return;
+
+	case SMILE_KIND_NONTERMINAL:
+		StringBuilder_AppendFormat(stringBuilder, "[%S %S %S %S]",
+			((SmileNonterminal)obj)->nonterminal != 0 ? SymbolTable_GetName(Smile_SymbolTable, ((SmileNonterminal)obj)->nonterminal) : String_Empty,
+			((SmileNonterminal)obj)->name != 0 ? SymbolTable_GetName(Smile_SymbolTable, ((SmileNonterminal)obj)->name) : String_Empty,
+			((SmileNonterminal)obj)->repeat != 0 ? SymbolTable_GetName(Smile_SymbolTable, ((SmileNonterminal)obj)->repeat) : String_Empty,
+			((SmileNonterminal)obj)->separator != 0 ? SymbolTable_GetName(Smile_SymbolTable, ((SmileNonterminal)obj)->separator) : String_Empty
+		);
+		return;
+
+	case SMILE_KIND_SYNTAX:
+		StringBuilder_AppendFormat(stringBuilder, "#syntax %S ",
+			((SmileSyntax)obj)->nonterminal != 0 ? SymbolTable_GetName(Smile_SymbolTable, ((SmileSyntax)obj)->nonterminal) : String_Empty);
+		StringifyRecursive((SmileObject)((SmileSyntax)obj)->pattern, stringBuilder, indent + 1);
+		StringBuilder_AppendC(stringBuilder, " => ", 0, 4);
+		StringifyRecursive(((SmileSyntax)obj)->replacement, stringBuilder, indent + 1);
 		return;
 
 	default:
