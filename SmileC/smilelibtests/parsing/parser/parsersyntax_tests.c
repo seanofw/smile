@@ -168,6 +168,79 @@ START_TEST(TheContainingScopeShouldInfluenceTheReplacement)
 }
 END_TEST
 
+START_TEST(TheContainingScopeShouldInfluenceTheReplacement2)
+{
+	Lexer lexer = SetupLexer("#syntax STMT: [magic [EXPR y]] => x op y");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	ParseError parseDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "x"), PARSEDECL_VARIABLE, NULL, NULL);
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	// We expect "x op y" to become "[x.op y]" when "x" is declared in the parent
+	// scope.  If "x" is not an accessible variable, then this should parse
+	// instead as "[[y.op].x]".  In this test, we do it "x" declared, and in the
+	// next test, we do it without "x" declared to make sure it really is behaving
+	// as expected.
+	SmileSyntax expectedSyntax = SmileSyntax_Create(
+		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
+		SmileList_Cons(
+			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, "magic")),
+			(SmileObject)SmileList_Cons(
+				(SmileObject)SmileNonterminal_Create(
+					SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
+					SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("y")),
+					0,
+					0
+				),
+				NullObject
+			)
+		),
+		(SmileObject)SimpleParse("[(x . op) y]"),
+		NULL
+	);
+
+	ASSERT((SmileObject)result != NullObject);
+	ASSERT(SmileSyntax_Equals((SmileSyntax)result->a, expectedSyntax));
+}
+END_TEST
+
+START_TEST(TheContainingScopeShouldInfluenceTheReplacement3)
+{
+	Lexer lexer = SetupLexer("#syntax STMT: [magic [EXPR y]] => x op y");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+
+	// Notice how we specifically *don't* declare "x" in this test, like we did in
+	// the otherwise-identical test above.  "x" should now be seen by the parser
+	// as an operator, not as a variable.
+	//
+	//ParseError parseDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "x"), PARSEDECL_VARIABLE, NULL, NULL);
+
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileSyntax expectedSyntax = SmileSyntax_Create(
+		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
+		SmileList_Cons(
+			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, "magic")),
+			(SmileObject)SmileList_Cons(
+				(SmileObject)SmileNonterminal_Create(
+					SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
+					SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("y")),
+					0,
+					0
+				),
+				NullObject
+			)
+		),
+		(SmileObject)SimpleParse("[([(y . op)] . x)]"),
+		NULL
+	);
+
+	ASSERT((SmileObject)result != NullObject);
+	ASSERT(SmileSyntax_Equals((SmileSyntax)result->a, expectedSyntax));
+}
+END_TEST
+
 START_TEST(RealWorldSyntaxExample)
 {
 	Lexer lexer = SetupLexer("#syntax STMT: [if [EXPR x] then [STMT y]] => [\\if x y]");
@@ -197,9 +270,6 @@ START_TEST(RealWorldSyntaxExample)
 		(SmileObject)SimpleParse("[if x y]"),
 		NULL
 	);
-
-	const char *rs = StringifyToC(result->a);
-	const char *es = StringifyToC(expectedSyntax);
 
 	ASSERT((SmileObject)result != NullObject);
 	ASSERT(SmileSyntax_Equals((SmileSyntax)result->a, expectedSyntax));

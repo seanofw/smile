@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 6610c885e9dd8bf6746d4045e815d481
+// SourceHash: a05dec4644434fa49a486a051b462d67
 
 START_TEST_SUITE(ParserSyntaxTests)
 {
@@ -10,6 +10,8 @@ START_TEST_SUITE(ParserSyntaxTests)
 	CanParseSyntaxFormsThatContainNonterminals,
 	NonterminalsShouldNotLeakIntoTheContainingScope,
 	TheContainingScopeShouldInfluenceTheReplacement,
+	TheContainingScopeShouldInfluenceTheReplacement2,
+	TheContainingScopeShouldInfluenceTheReplacement3,
 	RealWorldSyntaxExample,
 }
 END_TEST_SUITE(ParserSyntaxTests)
