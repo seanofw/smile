@@ -51,7 +51,17 @@
 #define SMILE_SPECIAL_SYMBOL_STAR 35
 #define SMILE_SPECIAL_SYMBOL_SLASH 36
 
-#define SMILE_SPECIAL_SYMBOL_BRK 37
+#define SMILE_SPECIAL_SYMBOL_STMT 37
+#define SMILE_SPECIAL_SYMBOL_EXPR 38
+#define SMILE_SPECIAL_SYMBOL_CMP 39
+#define SMILE_SPECIAL_SYMBOL_ADDSUB 40
+#define SMILE_SPECIAL_SYMBOL_MULDIV 41
+#define SMILE_SPECIAL_SYMBOL_BINARY 42
+#define SMILE_SPECIAL_SYMBOL_UNARY 43
+#define SMILE_SPECIAL_SYMBOL_POSTFIX 44
+#define SMILE_SPECIAL_SYMBOL_TERM 45
+
+#define SMILE_SPECIAL_SYMBOL_BRK 46
 
 // The set of known symbols, preregistered at startup time to save on runtime-initialization costs.
 typedef struct KnownSymbolsStruct {
@@ -67,6 +77,9 @@ typedef struct KnownSymbolsStruct {
 	Symbol brk_;
 	Symbol eq, ne, lt, gt, le, ge;
 	Symbol plus, minus, star, slash;
+
+	// Special syntax nonterminals.
+	Symbol STMT, EXPR, CMP, ADDSUB, MULDIV, BINARY, UNARY, POSTFIX, TERM;
 
 	// Operator symbols.
 	Symbol caret;

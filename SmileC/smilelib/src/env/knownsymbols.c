@@ -65,6 +65,16 @@ STATIC_STRING(Minus_, "-");
 STATIC_STRING(Star_, "*");
 STATIC_STRING(Slash_, "/");
 
+STATIC_STRING(STMT_, "STMT");
+STATIC_STRING(EXPR_, "EXPR");
+STATIC_STRING(CMP_, "CMP");
+STATIC_STRING(ADDSUB_, "ADDSUB");
+STATIC_STRING(MULDIV_, "MULDIV");
+STATIC_STRING(BINARY_, "BINARY");
+STATIC_STRING(UNARY_, "UNARY");
+STATIC_STRING(POSTFIX_, "POSTFIX");
+STATIC_STRING(TERM_, "TERM");
+
 STATIC_STRING(Brk_, "brk");
 
 static void KnownSymbolsInt_PreloadSpecials(SymbolTable symbolTable, KnownSymbols knownSymbols)
@@ -113,6 +123,16 @@ static void KnownSymbolsInt_PreloadSpecials(SymbolTable symbolTable, KnownSymbol
 	knownSymbols->minus = SymbolTableInt_AddFast(symbolTable, Minus_);
 	knownSymbols->star = SymbolTableInt_AddFast(symbolTable, Star_);
 	knownSymbols->slash = SymbolTableInt_AddFast(symbolTable, Slash_);
+
+	knownSymbols->STMT = SymbolTableInt_AddFast(symbolTable, STMT_);
+	knownSymbols->EXPR = SymbolTableInt_AddFast(symbolTable, EXPR_);
+	knownSymbols->CMP = SymbolTableInt_AddFast(symbolTable, CMP_);
+	knownSymbols->ADDSUB = SymbolTableInt_AddFast(symbolTable, ADDSUB_);
+	knownSymbols->MULDIV = SymbolTableInt_AddFast(symbolTable, MULDIV_);
+	knownSymbols->BINARY = SymbolTableInt_AddFast(symbolTable, BINARY_);
+	knownSymbols->UNARY = SymbolTableInt_AddFast(symbolTable, UNARY_);
+	knownSymbols->POSTFIX = SymbolTableInt_AddFast(symbolTable, POSTFIX_);
+	knownSymbols->TERM = SymbolTableInt_AddFast(symbolTable, TERM_);
 
 	knownSymbols->brk_ = SymbolTableInt_AddFast(symbolTable, Brk_);
 }

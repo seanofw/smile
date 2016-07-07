@@ -80,16 +80,9 @@ struct ParserSyntaxTableStruct {
 //-------------------------------------------------------------------------------------------------
 //  Public interface
 
-SMILE_API_FUNC ParserSyntaxClass ParserSyntaxClass_CreateNew(void);
-SMILE_API_FUNC ParserSyntaxClass ParserSyntaxClass_MakeUnique(ParserSyntaxClass cls);
-SMILE_API_FUNC ParserSyntaxClass ParserSyntaxClass_Extend(Parser parser, LexerPosition position,
-	ParserSyntaxClass cls, ParserSyntaxNode parent,
-	Symbol name, Symbol variable, Int repetitionKind, Int repetitionSep,
-	ParserSyntaxNode *resultingNode);
-
 SMILE_API_FUNC ParserSyntaxTable ParserSyntaxTable_CreateNew(void);
 SMILE_API_FUNC ParserSyntaxTable ParserSyntaxTable_VFork(ParserSyntaxTable table);
-SMILE_API_FUNC void ParserSyntaxTable_AddRule(ParserSyntaxTable table, SmileSyntax rule);
-SMILE_API_FUNC void ParserSyntaxTable_SetupDefaultRules(ParserSyntaxTable table);
+SMILE_API_FUNC ParseError ParserSyntaxTable_AddRule(ParserSyntaxTable *table, SmileSyntax rule);
+SMILE_API_FUNC ParseError ParserSyntaxTable_SetupDefaultRules(ParserSyntaxTable *table);
 
 #endif
