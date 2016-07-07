@@ -139,6 +139,9 @@ END_TEST
 
 START_TEST(TheContainingScopeShouldInfluenceTheReplacement)
 {
+	// In this first test, we parse a syntax form that references a function outside its
+	// scope.  If the function 'f' is not visible while parsing the body of this syntax
+	// declaration, then we'll get [(x.f)] instead of [f x] as output.
 	Lexer lexer = SetupLexer("#syntax STMT: [magic [EXPR x]] => [f x]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();

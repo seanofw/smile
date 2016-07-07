@@ -23,16 +23,16 @@
 
 /// <summary>
 /// This object represents the shape of a single #syntax declaration (a single production rule):
-///     #syntax STMT [pattern] => [replacement]
+///	#syntax STMT [pattern] => [replacement]
 /// </summary>
 struct SmileSyntaxInt {
 	DECLARE_BASE_OBJECT_PROPERTIES;
 
-	Symbol nonterminal;				// The nonterminal on the left side of this rule.
-	SmileList pattern;				// The syntax pattern to match against; this is either SmileSymbol or SmileNonterminal objects.
-	SmileObject replacement;		// The replacement form to substitute; this is any legal Smile object.
-
-	LexerPosition position;			// The source location at which this syntax rule was declared.
+	Symbol nonterminal;	// The nonterminal on the left side of this rule.
+	SmileList pattern;	// The syntax pattern to match against; this is either SmileSymbol or SmileNonterminal objects.
+	SmileObject replacement;	// The replacement form to substitute; this is any legal Smile object.
+		
+	LexerPosition position;	// The source location at which this syntax rule was declared.
 };
 
 /// <summary>
@@ -41,10 +41,10 @@ struct SmileSyntaxInt {
 struct SmileNonterminalInt {
 	DECLARE_BASE_OBJECT_PROPERTIES;
 
-	Symbol nonterminal;				// What kind of nonterminals this should match.
-	Symbol name;					// The name to use in the substitution for the matched syntax construct.
-	Symbol repeat;					// Either 0 (no repetition), '?' for optional, '*' for zero-or-more, '+' for one-or-more.
-	Symbol separator;				// Either 0 (no separator), ',' for comma, or ';' for semicolon.
+	Symbol nonterminal;	// What kind of nonterminals this should match.
+	Symbol name;	// The name to use in the substitution for the matched syntax construct.
+	Symbol repeat;	// Either 0 (no repetition), '?' for optional, '*' for zero-or-more, '+' for one-or-more.
+	Symbol separator;	// Either 0 (no separator), ',' for comma, or ';' for semicolon.
 };
 
 //-------------------------------------------------------------------------------------------------

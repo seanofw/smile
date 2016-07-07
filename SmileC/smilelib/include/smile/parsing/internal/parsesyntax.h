@@ -23,36 +23,36 @@ typedef struct ParserSyntaxTableStruct *ParserSyntaxTable;
 //  Internal types
 
 /// <summary>
-/// A single node in a syntax tree.  *NOT* copy-on-write.
+/// A single node in a syntax tree.  <em>NOT</em> copy-on-write.
 /// Each node may be one of several possible token kinds:  NAME  ,  ;  :  (  )  {  }  [  ]
-/// Note that root nodes must always be KEYWORDs, and VARIABLEs may not be followed by certain
-/// tokens, depending on what class of nonterminal they are.
+/// Note that root nodes must always be KEYWORDs, and VARIABLEs may not be
+/// followed by certain tokens, depending on what class of nonterminal they are.
 /// </summary>
 struct ParserSyntaxNodeStruct {
-	Int32 referenceCount;			// For copy-on-write behavior.
-
-	Int8 repetitionKind;			// Either 0 (no repetition), '?' for optional, '*' for zero-or-more, '+' for one-or-more.
-	Int8 repetitionSep;				// Either 0 (no separator), ',' for comma, or ';' for semicolon.
-	Bool isNextNonterminal;			// Does the dictionary consist of a single nonterminal?
-	Int8 reserved;					// (reserved for padding, always zero)
-
-	Symbol name;					// The keyword/symbol or nonterminal name.
-	Symbol variable;				// The variable to emit on a nonterminal match, 0 if this is a keyword/symbol.
-
-	SmileList replacement;			// The replacement form, if this is the final node in the chain.
-
-	Int32Dict nextDict;				// Possible next states, keyed by keyword/symbol or nonterminal name.
+	Int32 referenceCount;	// For copy-on-write behavior.
+		
+	Int8 repetitionKind;	// Either 0 (no repetition), '?' for optional, '*' for zero-or-more, '+' for one-or-more.
+	Int8 repetitionSep;	// Either 0 (no separator), ',' for comma, or ';' for semicolon.
+	Bool isNextNonterminal;	// Does the dictionary consist of a single nonterminal?
+	Int8 reserved;	// (reserved for padding, always zero)
+		
+	Symbol name;	// The keyword/symbol or nonterminal name.
+	Symbol variable;	// The variable to emit on a nonterminal match, 0 if this is a keyword/symbol.
+		
+	SmileList replacement;	// The replacement form, if this is the final node in the chain.
+		
+	Int32Dict nextDict;	// Possible next states, keyed by keyword/symbol or nonterminal name.
 };
 
 /// <summary>
-/// A single syntax precedence class.  Precedence classes are wide trees composed of SmileSyntaxNodes, with
+/// A single syntax precedence class.  Precedence classes are wide trees composed of ParserSyntaxNodes, with
 /// each root branch starting with a unique (named) terminal.
 /// </summary>
 struct ParserSyntaxClassStruct {
-	Int referenceCount;				// For copy-on-write behavior.
-
-	Int32Dict rootDict;				// Possible root states, keyed by keyword/symbol or nonterminal name.
-	Bool isRootNonterminal;			// Does the dictionary consist of a single nonterminal?
+	Int referenceCount;	// For copy-on-write behavior.
+		
+	Int32Dict rootDict;	// Possible root states, keyed by keyword/symbol or nonterminal name.
+	Bool isRootNonterminal;	// Does the dictionary consist of a single nonterminal?
 };
 
 /// <summary>
@@ -62,18 +62,18 @@ struct ParserSyntaxClassStruct {
 /// absolutely necessary.)
 /// </summary>
 struct ParserSyntaxTableStruct {
-	Int referenceCount;					// For copy-on-write behavior.
-	Int32Dict syntaxClasses;			// Key is syntax level, value is a SyntaxClass.
-
+	Int referenceCount;	// For copy-on-write behavior.
+	Int32Dict syntaxClasses;	// Key is syntax level, value is a SyntaxClass.
+		
 	// Special syntax classes, for fast lookup.  These trees correspond to known built-in syntax-production names.
-	ParserSyntaxClass stmtClass;
-	ParserSyntaxClass exprClass;
-	ParserSyntaxClass cmpClass;			// Note: RValue of CMP (or more restrictive form) is assumed to exist before tree.
-	ParserSyntaxClass addSubClass;		// Note: RValue of ADDSUB (or more restrictive form) is assumed to exist before tree.
-	ParserSyntaxClass mulDivClass;		// Note: RValue of MULDIV (or more restrictive form) is assumed to exist before tree.
-	ParserSyntaxClass binaryClass;		// Note: RValue of BINARY (or more restrictive form) is assumed to exist before tree.
-	ParserSyntaxClass unaryClass;
-	ParserSyntaxClass postfixClass;		// Note: RValue of POSTFIX (or more restrictive form) is assumed to exist before tree.
+	ParserSyntaxClass stmtClass;	
+	ParserSyntaxClass exprClass;	
+	ParserSyntaxClass cmpClass;	// Note: RValue of CMP (or more restrictive form) is assumed to exist before tree.
+	ParserSyntaxClass addSubClass;	// Note: RValue of ADDSUB (or more restrictive form) is assumed to exist before tree.
+	ParserSyntaxClass mulDivClass;	// Note: RValue of MULDIV (or more restrictive form) is assumed to exist before tree.
+	ParserSyntaxClass binaryClass;	// Note: RValue of BINARY (or more restrictive form) is assumed to exist before tree.
+	ParserSyntaxClass unaryClass;	
+	ParserSyntaxClass postfixClass;	// Note: RValue of POSTFIX (or more restrictive form) is assumed to exist before tree.
 	ParserSyntaxClass termClass;
 };
 
