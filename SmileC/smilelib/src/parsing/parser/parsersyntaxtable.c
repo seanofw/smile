@@ -18,6 +18,7 @@
 #include <smile/types.h>
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/smilepair.h>
+#include <smile/smiletypes/smilesyntax.h>
 #include <smile/parsing/parser.h>
 #include <smile/parsing/internal/parserinternal.h>
 #include <smile/parsing/internal/parsedecl.h>
@@ -179,7 +180,7 @@ Inline ParserSyntaxNode ParserSyntaxNode_CreateInternal(Symbol name, Symbol vari
 	syntaxNode->isNextNonterminal = False;
 	syntaxNode->referenceCount = 1;
 
-	syntaxNode->replacement = NullList;
+	syntaxNode->replacement = NullObject;
 
 	syntaxNode->nextDict = NULL;
 
@@ -220,14 +221,17 @@ Inline ParserSyntaxNode ParserSyntaxNode_CreateInternal(Symbol name, Symbol vari
 /// Either 0 (no repetition), '?' for optional, '*' for zero-or-more, '+' for one-or-more.</param>
 /// <param name="repetitionSep">The separator for the repetition, if this is a nonterminal reference.
 /// Either 0 (no separator), ',' for comma, or ';' for semicolon.</param>
-/// <param name="resultingNode">This will be filled in with a pointer to the newly-created child node.</param>
+/// <param name="resultingNode">This will be filled in with a pointer to the found or newly-created child node.</param>
+/// <param name="resultingCls">This will be filled in with a pointer to the original or vforked syntax class,
+/// wherever the new node was added.</param>
 ///
-/// <returns>Either the original syntax class, or a modified copy of it, depending on whether the
-/// copy-on-write rule needed to be applied.</returns>
-static ParserSyntaxClass ParserSyntaxClass_Extend(Parser parser, LexerPosition position,
+/// <returns>True on success, or False if an error occurred.  The parser will be updated to
+/// include the error, if there was an error.  Note that the values of 'resultingNode' and 'resultingCls'
+/// are meaningless if False is returned.</returns>
+static Bool ParserSyntaxClass_Extend(Parser parser, LexerPosition position,
 	ParserSyntaxClass cls, ParserSyntaxNode parent,
 	Symbol name, Symbol variable, Int repetitionKind, Int repetitionSep,
-	ParserSyntaxNode *resultingNode)
+	ParserSyntaxNode *resultingNode, ParserSyntaxClass *resultingCls)
 {
 	ParserSyntaxClass newCls = cls;
 	ParserSyntaxNode syntaxNode;
@@ -254,11 +258,11 @@ static ParserSyntaxClass ParserSyntaxClass_Extend(Parser parser, LexerPosition p
 		else {
 			// Make sure we're not adding a nonterminal in such a way that the resulting tree
 			// is no longer deterministically parseable.
-			if (variable != 0 && parent->replacement != NullList) {
+			if (variable != 0 && parent->replacement != NullObject) {
 				Parser_AddError(parser, position, "Cannot add syntax rule because it forks the tree on the nonterminal \"%S %S\".",
 					SymbolTable_GetName(Smile_SymbolTable, name),
 					SymbolTable_GetName(Smile_SymbolTable, variable));
-				return newCls;
+				return False;
 			}
 
 			// There is no child dictionary yet, so create it, and add the first node.
@@ -284,7 +288,7 @@ static ParserSyntaxClass ParserSyntaxClass_Extend(Parser parser, LexerPosition p
 				Parser_AddError(parser, position, "Cannot add syntax rule because it forks the tree on the nonterminal \"%S %S\".",
 					SymbolTable_GetName(Smile_SymbolTable, syntaxNode->name),
 					SymbolTable_GetName(Smile_SymbolTable, syntaxNode->variable));
-				return newCls;
+				return False;
 			}
 			if (syntaxNode->name != name || syntaxNode->variable != variable
 				|| syntaxNode->repetitionKind != repetitionKind || syntaxNode->repetitionSep != repetitionSep) {
@@ -292,7 +296,7 @@ static ParserSyntaxClass ParserSyntaxClass_Extend(Parser parser, LexerPosition p
 				Parser_AddError(parser, position, "Cannot add syntax rule because it forks the tree on the nonterminal \"%S %S\".",
 					SymbolTable_GetName(Smile_SymbolTable, name),
 					SymbolTable_GetName(Smile_SymbolTable, variable));
-				return newCls;
+				return False;
 			}
 			else {
 				// Just a nonterminal, correctly mimicked in a new rule.
@@ -307,7 +311,7 @@ static ParserSyntaxClass ParserSyntaxClass_Extend(Parser parser, LexerPosition p
 				Parser_AddError(parser, position, "Cannot add syntax rule because it forks the tree on the nonterminal \"%S %S\".",
 					SymbolTable_GetName(Smile_SymbolTable, name),
 					SymbolTable_GetName(Smile_SymbolTable, variable));
-				return newCls;
+				return False;
 			}
 			else if (Int32Dict_TryGetValue(nextDict, name, (void **)&syntaxNode)) {
 				// Just a terminal, correctly mimicked in a new rule.
@@ -326,9 +330,10 @@ static ParserSyntaxClass ParserSyntaxClass_Extend(Parser parser, LexerPosition p
 
 	// Finally, now that we either found or created it, return it.
 	*resultingNode = syntaxNode;
+	*resultingCls = newCls;
 
 	// And return the (possibly-cloned/new) syntax class.
-	return newCls;
+	return True;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -390,36 +395,237 @@ ParserSyntaxTable ParserSyntaxTable_VFork(ParserSyntaxTable table)
 	return newTable;
 }
 
+STATIC_STRING(InvalidSyntaxRuleError, "Invalid syntax rule pattern; patterns are lists of only symbols and nonterminals.");
+STATIC_STRING(SyntaxRuleTooDeepError, "Syntax rule's pattern is too big (>256 nodes).");
+STATIC_STRING(IllegalRepeatSymbolError, "Syntax rule contains an unknown repeat symbol \"%S\" in nonterminal.");
+STATIC_STRING(IllegalSeparatorSymbolError, "Syntax rule contains an unknown separator symbol \"%S\" in nonterminal.");
+STATIC_STRING(CantRepeatFirstNonterminalError, "Cannot use '?' or '*' repeats on the first item in a syntax pattern.");
+STATIC_STRING(DuplicateSyntaxRuleError, "Duplicate syntax rule pattern; patterns must be unique within a syntax class.");
+
+/// <summary>
+/// Test to ensure that this new rule with an initial nonterminal will not result
+/// in an infinite loop when trying to match it during the actual parsing.
+/// </summary>
+/// <remarks>
+/// <p>This starts at the given root for the new rule (i.e., the nonterminal/class that is
+/// about to have a new rule assigned to it), and recursively traverses through the tree
+/// of all possible initial nonterminals pointed to by its next state.  This sequence
+/// must be a directed tree, not an arbitrary graph; and this function ensures that the
+/// precondition that it is a directed tree continues to hold.</p>
+///
+/// <p>What kind of rules can generate an invalid structure?  Consider the simple rules below:</p>
+///
+/// <ul>
+/// <li><code>add ::= mul '+' mul | mul</code></li>
+/// <li><code>mul ::= add '*' add | add</code></li>
+/// </ul>
+///
+/// <p>In this grammar, the author is clearly trying to write a grammar for arithmetic,
+/// but got the precedence rules wrong in the defintion of 'mul'.  Because 'add' is
+/// defined in terms of 'mul', and 'mul' is defined in terms of 'add', this grammar
+/// would result in an infinite loop trying to resolve either 'add' or 'mul':  The
+/// parser would arrive in the 'add' rule, see that 'mul' is the first nonterminal,
+/// go to the 'mul' rule, see that 'add' is the first nonterminal, go to the 'add'
+/// rule, and so on.  This grammar is neither LL(k) nor LR(k), and in fact, would cause
+/// most other parser-generators to fail with an error as well.</p>
+///
+/// </p>(There are scenarios that involve more legitimate grammars than this one, but
+/// this is an easy case to understand.)</p>
+///
+/// <p>Other parser-generators can handle some variations on this that pop up in other
+/// LL(k) and LR(k) grammars, but the Smile internal parser cannot.  So to ensure that
+/// the Smile parser doesn't loop forever, we recursively walk the tree from the root
+/// of each new rule that starts with a nonterminal and make sure that we never arrive
+/// back at the same root.</p>
+///
+/// <p>This search takes at most O(n) time, where n is the number of rules, and
+/// potentially O(n) stack space for the recursion.  However, the number of rules is
+/// usually bounded in practice, and is rarely greater than some small constant k.</p>
+/// </remarks>
+static Bool ParserSyntaxTable_ValidateRuleWithInitialNonterminal(Parser parser, ParserSyntaxTable table, Symbol rootNonterminal, Symbol nextNonterminal)
+{
+	UNUSED(parser);
+	UNUSED(table);
+	UNUSED(rootNonterminal);
+	UNUSED(nextNonterminal);
+
+	return True;
+}
+
 /// <summary>
 /// Add a new syntax rule to the existing syntax table, virtually forking the table
 /// as necessary.
 /// </summary>
+/// <param name="parser">The parser that owns this syntax table.  This will be used
+/// for error-reporting if the rule is invalid.</param>
 /// <param name="table">The table that will contain the new syntax rule.
 /// If more than one scope references this table, it will be virtually forked, and
 /// the new copy will be the one that gets the new rule.</param>
 /// <param name="rule">The new rule to add to this syntax table.</param>
-/// <returns>NULL on success, or a ParseError if the table contained another rule that
-/// is incompatible with the rule being added.</returns>
-ParseError ParserSyntaxTable_AddRule(ParserSyntaxTable *table, SmileSyntax rule)
+/// <returns>True on success, or False if one or more errors was produced.</returns>
+Bool ParserSyntaxTable_AddRule(Parser parser, ParserSyntaxTable *table, SmileSyntax rule)
 {
-	UNUSED(table);
-	UNUSED(rule);
+	ParserSyntaxTable syntaxTable;
+	ParserSyntaxClass syntaxClass, newSyntaxClass;
+	ParserSyntaxNode node, parentNode;
+	SmileList pattern;
+	SmileNonterminal nonterminal;
+	Int numNodes;
+	Int repeatKind, repeatSeparator;
 
-	return NULL;
+	// First, ensure that the syntax table can be safely modified by vforking it as
+	// necessary.
+	syntaxTable = *table;
+	if (syntaxTable->referenceCount > 1) {
+		syntaxTable = ParserSyntaxTable_VFork(syntaxTable);
+		*table = syntaxTable;
+	}
+
+	// Locate the appropriate class within the syntax table for the new rule's
+	// nonterminal.  If no such class exists, create one.
+	if (!Int32Dict_TryGetValue(syntaxTable->syntaxClasses, rule->nonterminal, &syntaxClass)) {
+		// Don't have a preexisting class, so create one, and add it to the set of known
+		// classes within this table.
+		syntaxClass = ParserSyntaxClass_CreateNew();
+		Int32Dict_Add(syntaxTable->syntaxClasses, rule->nonterminal, syntaxClass);
+	}
+
+	// The 'syntaxClass' variable now contains a valid root for this rule.
+	// So walk down the rule's pattern and repeatedly invoke Extend() to search for
+	// or build the tree of syntax nodes for it.
+	numNodes = 0;
+	parentNode = node = NULL;
+	for (pattern = rule->pattern; pattern != NullList; pattern = LIST_REST(pattern)) {
+
+		// As a safety check against broken dynamic data structures, we limit syntax trees
+		// to a maximum depth of 256 nodes.  (There is no sensible grammar that requires more
+		// than 256 nodes for a single rule that can't be broken up into smaller rules; in
+		// fact, thanks to normal forms like CNF and GNF, you shouldn't technically need more
+		// than 2 nodes per rule, so a limit of 256 is plenty.)
+		if (++numNodes > 256) {
+			Parser_AddMessage(parser, ParseMessage_Create(PARSEMESSAGE_ERROR, rule->position,
+				SyntaxRuleTooDeepError));
+			return False;
+		}
+	
+		// Try to extend the rule with the next terminal or nonterminal in the pattern.
+		switch (SMILE_KIND(pattern->a)) {
+		
+			default:
+				Parser_AddMessage(parser, ParseMessage_Create(PARSEMESSAGE_ERROR, rule->position,
+					InvalidSyntaxRuleError));
+				return False;
+		
+			case SMILE_KIND_SYMBOL:
+				// This is a terminal in the pattern (i.e., a keyword or symbol).
+				if (!ParserSyntaxClass_Extend(parser, rule->position, syntaxClass, parentNode,
+					((SmileSymbol)pattern->a)->symbol, 0, 0, 0,
+					&node, &newSyntaxClass))
+					return False;
+				break;
+			
+			case SMILE_KIND_NONTERMINAL:
+				// This is a nonterminal in the pattern (i.e., a reference to another rule).
+				nonterminal = ((SmileNonterminal)pattern->a);
+
+				// If this is a leftmost nonterminal, then go make sure this new rule wouldn't
+				// result in an infinite loop during parsing.
+				if (numNodes == 0) {
+					if (!ParserSyntaxTable_ValidateRuleWithInitialNonterminal(parser, syntaxTable,
+						rule->nonterminal, nonterminal->nonterminal))
+						return False;
+				}
+
+				// Figure out what kind of repeat they want, if any.
+				if (nonterminal->repeat == Smile_KnownSymbols.question_mark) {
+					repeatKind = '?';
+					if (numNodes == 0) {
+						Parser_AddMessage(parser, ParseMessage_Create(PARSEMESSAGE_ERROR, rule->position,
+							CantRepeatFirstNonterminalError));
+						return False;
+					}
+				}
+				else if (nonterminal->repeat == Smile_KnownSymbols.star) {
+					repeatKind = '*';
+					if (numNodes == 0) {
+						Parser_AddMessage(parser, ParseMessage_Create(PARSEMESSAGE_ERROR, rule->position,
+							CantRepeatFirstNonterminalError));
+						return False;
+					}
+				}
+				else if (nonterminal->repeat == Smile_KnownSymbols.plus) {
+					repeatKind = '+';
+				}
+				else if (nonterminal->repeat == 0) {
+					repeatKind = 0;
+				}
+				else {
+					Parser_AddMessage(parser, ParseMessage_Create(PARSEMESSAGE_ERROR, rule->position,
+						String_FormatString(IllegalRepeatSymbolError, SymbolTable_GetName(Smile_SymbolTable, nonterminal->repeat))));
+					return False;
+				}
+			
+				// Figure out what kind of separator they want, if any.
+				if (nonterminal->separator == Smile_KnownSymbols.comma) {
+					repeatSeparator = ',';
+				}
+				else if (nonterminal->separator == Smile_KnownSymbols.semicolon) {
+					repeatSeparator = ';';
+				}
+				else if (nonterminal->separator == 0) {
+					repeatSeparator = 0;
+				}
+				else {
+					Parser_AddMessage(parser, ParseMessage_Create(PARSEMESSAGE_ERROR, rule->position,
+						String_FormatString(IllegalSeparatorSymbolError, SymbolTable_GetName(Smile_SymbolTable, nonterminal->separator))));
+					return False;
+				}
+			
+				// We have the requirements figured out now, so add the node to the syntax class.
+				if (!ParserSyntaxClass_Extend(parser, rule->position, syntaxClass, parentNode,
+					nonterminal->nonterminal, nonterminal->name, repeatKind, repeatSeparator,
+					&node, &newSyntaxClass))
+					return False;
+				break;
+		}
+	
+		parentNode = node;
+	}
+
+	if (node == NULL) {
+		// Empty/null rule pattern is illegal :-/
+		Parser_AddMessage(parser, ParseMessage_Create(PARSEMESSAGE_ERROR, rule->position,
+			InvalidSyntaxRuleError));
+		return False;
+	}
+
+	if (node->replacement != NULL) {
+		// We already have a parse rule here.  We can't legally replace it, even with an
+		// identical rule, so we have to abort.
+		Parser_AddMessage(parser, ParseMessage_Create(PARSEMESSAGE_ERROR, rule->position, DuplicateSyntaxRuleError));
+		return False;
+	}
+
+	// Finally!  Assign the replacement, creating the rule for real.
+	node->replacement = rule->replacement;
+
+	return True;
 }
 
 /// <summary>
 /// Set up the default syntax rules for normal Smile code.  This adds in the common
 /// stuff like if-then-else and while-statements.
 /// </summary>
+/// <param name="parser">The parser that owns this syntax table.  This will be used
+/// for error-reporting if the rule is invalid.</param>
 /// <param name="table">The syntax table to add the default rules to.
 /// If more than one scope references this table, it will be virtually forked, and
 /// the new copy will be the one that gets the new rules.</param>
-/// <returns>NULL on success, or a ParseError if the table contained any other rules
-/// that are incompatible with the rules being added.</returns>
-ParseError ParserSyntaxTable_SetupDefaultRules(ParserSyntaxTable *table)
+/// <returns>True on success, or False if one or more errors was produced.</returns>
+Bool ParserSyntaxTable_SetupDefaultRules(Parser parser, ParserSyntaxTable *table)
 {
+	UNUSED(parser);
 	UNUSED(table);
 
-	return NULL;
+	return True;
 }

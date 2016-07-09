@@ -39,7 +39,7 @@ struct ParserSyntaxNodeStruct {
 	Symbol name;	// The keyword/symbol or nonterminal name.
 	Symbol variable;	// The variable to emit on a nonterminal match, 0 if this is a keyword/symbol.
 		
-	SmileList replacement;	// The replacement form, if this is the final node in the chain.
+	SmileObject replacement;	// The replacement form, if this is the final node in the chain.
 		
 	Int32Dict nextDict;	// Possible next states, keyed by keyword/symbol or nonterminal name.
 };
@@ -82,7 +82,7 @@ struct ParserSyntaxTableStruct {
 
 SMILE_API_FUNC ParserSyntaxTable ParserSyntaxTable_CreateNew(void);
 SMILE_API_FUNC ParserSyntaxTable ParserSyntaxTable_VFork(ParserSyntaxTable table);
-SMILE_API_FUNC ParseError ParserSyntaxTable_AddRule(ParserSyntaxTable *table, SmileSyntax rule);
-SMILE_API_FUNC ParseError ParserSyntaxTable_SetupDefaultRules(ParserSyntaxTable *table);
+SMILE_API_FUNC Bool ParserSyntaxTable_AddRule(Parser parser, ParserSyntaxTable *table, SmileSyntax rule);
+SMILE_API_FUNC Bool ParserSyntaxTable_SetupDefaultRules(Parser parser, ParserSyntaxTable *table);
 
 #endif
