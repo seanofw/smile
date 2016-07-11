@@ -81,8 +81,16 @@ struct ParserSyntaxTableStruct {
 //  Public interface
 
 SMILE_API_FUNC ParserSyntaxTable ParserSyntaxTable_CreateNew(void);
-SMILE_API_FUNC ParserSyntaxTable ParserSyntaxTable_VFork(ParserSyntaxTable table);
 SMILE_API_FUNC Bool ParserSyntaxTable_AddRule(Parser parser, ParserSyntaxTable *table, SmileSyntax rule);
 SMILE_API_FUNC Bool ParserSyntaxTable_SetupDefaultRules(Parser parser, ParserSyntaxTable *table);
+
+/// <summary>
+/// Increase the reference count for the given syntax table, so that it knows
+/// to fork itself if it is subsequently modified.
+/// </summary>
+Inline void ParserSyntaxTable_AddRef(ParserSyntaxTable table)
+{
+	table->referenceCount++;
+}
 
 #endif

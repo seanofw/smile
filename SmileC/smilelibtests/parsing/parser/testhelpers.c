@@ -94,6 +94,24 @@ SmileObject SimpleParse(const char *input)
 	return RecursiveSimpleParse(lexer);
 }
 
+SmileList FullParse(const char *input)
+{
+	String source;
+	Lexer lexer;
+	Parser parser;
+	ParseScope parseScope;
+	SmileList result;
+
+	source = String_FromC(input);
+	lexer = Lexer_Create(source, 0, String_Length(source), TestFilename, 1, 1);
+	lexer->symbolTable = Smile_SymbolTable;
+	parser = Parser_Create();
+	parseScope = ParseScope_CreateRoot();
+	result = Parser_Parse(parser, lexer, parseScope);
+
+	return result;
+}
+
 Bool RecursiveEquals(SmileObject a, SmileObject b)
 {
 	if (a == NULL || b == NULL) return False;		// Should never have C NULL.

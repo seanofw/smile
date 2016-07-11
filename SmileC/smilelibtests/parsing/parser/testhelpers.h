@@ -9,6 +9,7 @@ Bool IsRegularList(SmileObject list);
 Bool ContainsNestedList(SmileObject obj);
 
 SmileObject SimpleParse(const char *input);
+SmileList FullParse(const char *input);
 Bool RecursiveEquals(SmileObject a, SmileObject b);
 Lexer SetupLexerFromString(String source);
 Lexer SetupLexer(const char *string);

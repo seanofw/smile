@@ -87,6 +87,9 @@
     <ClCompile Include="parsing\parser\parserquote_tests.c">
       <Filter>parsing\parser</Filter>
     </ClCompile>
+    <ClCompile Include="parsing\parser\parsersyntaxtable_tests.c">
+      <Filter>parsing\parser</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />

@@ -25,15 +25,75 @@
 #include <smile/parsing/internal/parsescope.h>
 #include <smile/parsing/internal/parsesyntax.h>
 
+static ParserSyntaxNode ParserSyntaxNode_CreateInternal(Symbol name, Symbol variable, Int repetitionKind, Int repetitionSep);
+
+static ParserSyntaxClass ParserSyntaxClass_CreateNew(void);
+static void *ParserSyntaxClass_DictClone(Int32 key, void *value, void *param);
+static ParserSyntaxClass ParserSyntaxClass_VFork(ParserSyntaxClass cls);
+static ParserSyntaxClass ParserSyntaxClass_FindOrCreate(ParserSyntaxTable *table, Symbol nonterminal);
+static Bool ParserSyntaxClass_Extend(Parser parser, LexerPosition position,
+	ParserSyntaxClass cls, ParserSyntaxNode parent,
+	Symbol name, Symbol variable, Int repetitionKind, Int repetitionSep,
+	ParserSyntaxNode *resultingNode, ParserSyntaxClass *resultingCls);
+
+static ParserSyntaxTable ParserSyntaxTable_VFork(ParserSyntaxTable table);
+static Bool ParserSyntaxTable_ValidateRuleWithInitialNonterminal(ParserSyntaxTable table, Symbol rootNonterminal, Symbol firstNonterminal);
+
 //-------------------------------------------------------------------------------------------------
-//  ParserSyntaxClass and ParserSyntaxNode functions.
+// Static data.
+
+STATIC_STRING(InvalidSyntaxRuleError, "Invalid syntax rule pattern; patterns are lists of only symbols and nonterminals.");
+STATIC_STRING(SyntaxRuleTooDeepError, "Syntax rule's pattern is too big (>256 nodes).");
+STATIC_STRING(IllegalRepeatSymbolError, "Syntax rule contains an unknown repeat symbol \"%S\" in nonterminal.");
+STATIC_STRING(IllegalSeparatorSymbolError, "Syntax rule contains an unknown separator symbol \"%S\" in nonterminal.");
+STATIC_STRING(CantRepeatFirstNonterminalError, "Cannot use '?' or '*' repeats on the first item in a syntax pattern.");
+STATIC_STRING(DuplicateSyntaxRuleError, "Duplicate syntax rule pattern; patterns must be unique within a syntax class.");
+STATIC_STRING(NullReplacementError, "Syntax rules must not have null/[] as their replacement form.");
+
+//-------------------------------------------------------------------------------------------------
+//  ParserSyntaxNode functions.
+
+/// <summary>
+/// Create a single node (eventually to be used in the syntax tree), filling in its
+/// 'name' and 'variable' fields with the provided symbols, and with default values for
+/// all the other fields.  This doesn't attach the node to anything; it just allocates it
+/// and sets up its fields.
+/// </summary>
+/// <param name="name">The keyword/symbol or nonterminal name.</param>
+/// <param name="variable">The variable to emit on a nonterminal match, 0 if this is a keyword/symbol.</param>
+/// <param name="repetitionKind">The kind of repetition to use, if this is a nonterminal reference.
+/// Either 0 (no repetition), '?' for optional, '*' for zero-or-more, '+' for one-or-more.</param>
+/// <param name="repetitionSep">The separator for the repetition, if this is a nonterminal reference.
+/// Either 0 (no separator), ',' for comma, or ';' for semicolon.</param>
+/// <returns>The newly-created syntax node.</returns>
+static ParserSyntaxNode ParserSyntaxNode_CreateInternal(Symbol name, Symbol variable, Int repetitionKind, Int repetitionSep)
+{
+	ParserSyntaxNode syntaxNode = GC_MALLOC_STRUCT(struct ParserSyntaxNodeStruct);
+
+	syntaxNode->name = name;
+	syntaxNode->variable = variable;
+
+	syntaxNode->repetitionKind = (Int8)repetitionKind;
+	syntaxNode->repetitionSep = (Int8)repetitionSep;
+	syntaxNode->isNextNonterminal = False;
+	syntaxNode->referenceCount = 1;
+
+	syntaxNode->replacement = NullObject;
+
+	syntaxNode->nextDict = NULL;
+
+	return syntaxNode;
+}
+
+//-------------------------------------------------------------------------------------------------
+//  ParserSyntaxClass functions.
 
 /// <summary>
 /// Create a new, empty parser syntax class (top-level nonterminal class).  The
 /// resulting syntax class will have a copy-on-write reference count of 1.
 /// </summary>
 /// <returns>The new, empty syntax class.</returns>
-Inline ParserSyntaxClass ParserSyntaxClass_CreateNew(void)
+static ParserSyntaxClass ParserSyntaxClass_CreateNew(void)
 {
 	ParserSyntaxClass cls = GC_MALLOC_STRUCT(struct ParserSyntaxClassStruct);
 
@@ -67,7 +127,7 @@ static void *ParserSyntaxClass_DictClone(Int32 key, void *value, void *param)
 /// </summary>
 /// <param name="cls">The original, possibly non-unique class.</param>
 /// <returns>The unique-ified syntax class.</returns>
-Inline ParserSyntaxClass ParserSyntaxClass_VFork(ParserSyntaxClass cls)
+static ParserSyntaxClass ParserSyntaxClass_VFork(ParserSyntaxClass cls)
 {
 	ParserSyntaxClass newCls;
 
@@ -153,38 +213,6 @@ static ParserSyntaxClass ParserSyntaxClass_FindOrCreate(ParserSyntaxTable *table
 	}
 
 	return syntaxClass;
-}
-
-/// <summary>
-/// Create a single node (eventually to be used in the syntax tree), filling in its
-/// 'name' and 'variable' fields with the provided symbols, and with default values for
-/// all the other fields.  This doesn't attach the node to anything; it just allocates it
-/// and sets up its fields.
-/// </summary>
-/// <param name="name">The keyword/symbol or nonterminal name.</param>
-/// <param name="variable">The variable to emit on a nonterminal match, 0 if this is a keyword/symbol.</param>
-/// <param name="repetitionKind">The kind of repetition to use, if this is a nonterminal reference.
-/// Either 0 (no repetition), '?' for optional, '*' for zero-or-more, '+' for one-or-more.</param>
-/// <param name="repetitionSep">The separator for the repetition, if this is a nonterminal reference.
-/// Either 0 (no separator), ',' for comma, or ';' for semicolon.</param>
-/// <returns>The newly-created syntax node.</returns>
-Inline ParserSyntaxNode ParserSyntaxNode_CreateInternal(Symbol name, Symbol variable, Int repetitionKind, Int repetitionSep)
-{
-	ParserSyntaxNode syntaxNode = GC_MALLOC_STRUCT(struct ParserSyntaxNodeStruct);
-
-	syntaxNode->name = name;
-	syntaxNode->variable = variable;
-
-	syntaxNode->repetitionKind = (Int8)repetitionKind;
-	syntaxNode->repetitionSep = (Int8)repetitionSep;
-	syntaxNode->isNextNonterminal = False;
-	syntaxNode->referenceCount = 1;
-
-	syntaxNode->replacement = NullObject;
-
-	syntaxNode->nextDict = NULL;
-
-	return syntaxNode;
 }
 
 /// <summary>
@@ -337,7 +365,7 @@ static Bool ParserSyntaxClass_Extend(Parser parser, LexerPosition position,
 }
 
 //-------------------------------------------------------------------------------------------------
-//  The public ParserSyntaxTable interface.
+//  ParserSyntaxTable functions.
 
 /// <summary>
 /// Create a new, empty syntax table.
@@ -373,7 +401,7 @@ ParserSyntaxTable ParserSyntaxTable_CreateNew(void)
 /// <param name="table">The syntax table to virtually fork.</param>
 /// <returns>Either a new forked syntax table, or the original table if it was not referenced
 /// anywhere else.</returns>
-ParserSyntaxTable ParserSyntaxTable_VFork(ParserSyntaxTable table)
+static ParserSyntaxTable ParserSyntaxTable_VFork(ParserSyntaxTable table)
 {
 	ParserSyntaxTable newTable;
 
@@ -395,23 +423,16 @@ ParserSyntaxTable ParserSyntaxTable_VFork(ParserSyntaxTable table)
 	return newTable;
 }
 
-STATIC_STRING(InvalidSyntaxRuleError, "Invalid syntax rule pattern; patterns are lists of only symbols and nonterminals.");
-STATIC_STRING(SyntaxRuleTooDeepError, "Syntax rule's pattern is too big (>256 nodes).");
-STATIC_STRING(IllegalRepeatSymbolError, "Syntax rule contains an unknown repeat symbol \"%S\" in nonterminal.");
-STATIC_STRING(IllegalSeparatorSymbolError, "Syntax rule contains an unknown separator symbol \"%S\" in nonterminal.");
-STATIC_STRING(CantRepeatFirstNonterminalError, "Cannot use '?' or '*' repeats on the first item in a syntax pattern.");
-STATIC_STRING(DuplicateSyntaxRuleError, "Duplicate syntax rule pattern; patterns must be unique within a syntax class.");
-
 /// <summary>
 /// Test to ensure that this new rule with an initial nonterminal will not result
 /// in an infinite loop when trying to match it during the actual parsing.
 /// </summary>
 /// <remarks>
 /// <p>This starts at the given root for the new rule (i.e., the nonterminal/class that is
-/// about to have a new rule assigned to it), and recursively traverses through the tree
+/// about to have a new rule assigned to it), and recursively traverses through the list
 /// of all possible initial nonterminals pointed to by its next state.  This sequence
-/// must be a directed tree, not an arbitrary graph; and this function ensures that the
-/// precondition that it is a directed tree continues to hold.</p>
+/// must be a directed list that terminates, and not circular; and this function ensures
+/// that the precondition that it is a directed list continues to hold.</p>
 ///
 /// <p>What kind of rules can generate an invalid structure?  Consider the simple rules below:</p>
 ///
@@ -442,14 +463,48 @@ STATIC_STRING(DuplicateSyntaxRuleError, "Duplicate syntax rule pattern; patterns
 /// potentially O(n) stack space for the recursion.  However, the number of rules is
 /// usually bounded in practice, and is rarely greater than some small constant k.</p>
 /// </remarks>
-static Bool ParserSyntaxTable_ValidateRuleWithInitialNonterminal(Parser parser, ParserSyntaxTable table, Symbol rootNonterminal, Symbol nextNonterminal)
+/// <param name="table">The syntax table that contains all the current rules.</param>
+/// <param name="rootNonterminal">The root (class symbol) of the would-be new rule.</param>
+/// <param name="firstNonterminal">The first nonterminal symbol of the would-be new rule.</param>
+/// <returns>True if this rule is valid, or false if it would result in an
+/// infinitely-circular grammar.</returns>
+static Bool ParserSyntaxTable_ValidateRuleWithInitialNonterminal(ParserSyntaxTable table, Symbol rootNonterminal, Symbol firstNonterminal)
 {
-	UNUSED(parser);
-	UNUSED(table);
-	UNUSED(rootNonterminal);
-	UNUSED(nextNonterminal);
+	Symbol currentNonterminal;
+	ParserSyntaxClass syntaxClass;
+	Int32DictKeyValuePair pair;
 
-	return True;
+	// In this algorithm, we simply walk the list.  Previous invocations of this function
+	// have ensured that the initial nonterminals of all the rules so far must form a list,
+	// so we don't need to use algorithms the "trail of breadcrumbs" or "tortoise-and-hare"
+	// to ensure we don't have circles; we merely need to see if the current set of rules,
+	// starting from 'nextNonterminal', would eventually get us back to the 'rootNonterminal'
+	// that would own 'nextNonterminal' if this rule were added.
+	for (currentNonterminal = firstNonterminal; currentNonterminal != rootNonterminal; ) {
+
+		// Find the rule pointed-to by the current nonterminal.
+		if (!Int32Dict_TryGetValue(table->syntaxClasses, currentNonterminal, &syntaxClass)) {
+			// If we got here, then we ended up nowhere (i.e., this set of syntax rules is
+			// incomplete). This is not necessarily an error, since we may not have
+			// encountered the rest of the syntax rules yet.
+			return True;
+		}
+	
+		if (!syntaxClass->isRootNonterminal) {
+			// This syntax class starts with a terminal, so it can't result in a loop.
+			return True;
+		}
+
+		// By definition, the dictionary associated with a nonterminal must have one entry
+		// in it, since you cannot fork rules on nonterminals.
+		pair = Int32Dict_GetFirst(syntaxClass->rootDict);
+	
+		// Move to the nonterminal that starts this rule.
+		currentNonterminal = ((SmileNonterminal)pair.value)->nonterminal;
+	}
+
+	// Found a recursive loop.
+	return False;
 }
 
 /// <summary>
@@ -531,8 +586,7 @@ Bool ParserSyntaxTable_AddRule(Parser parser, ParserSyntaxTable *table, SmileSyn
 				// If this is a leftmost nonterminal, then go make sure this new rule wouldn't
 				// result in an infinite loop during parsing.
 				if (numNodes == 0) {
-					if (!ParserSyntaxTable_ValidateRuleWithInitialNonterminal(parser, syntaxTable,
-						rule->nonterminal, nonterminal->nonterminal))
+					if (!ParserSyntaxTable_ValidateRuleWithInitialNonterminal(syntaxTable, rule->nonterminal, nonterminal->nonterminal))
 						return False;
 				}
 
@@ -599,10 +653,15 @@ Bool ParserSyntaxTable_AddRule(Parser parser, ParserSyntaxTable *table, SmileSyn
 		return False;
 	}
 
-	if (node->replacement != NULL) {
+	if (node->replacement != NullObject) {
 		// We already have a parse rule here.  We can't legally replace it, even with an
 		// identical rule, so we have to abort.
 		Parser_AddMessage(parser, ParseMessage_Create(PARSEMESSAGE_ERROR, rule->position, DuplicateSyntaxRuleError));
+		return False;
+	}
+
+	if (rule->replacement == NullObject) {
+		Parser_AddMessage(parser, ParseMessage_Create(PARSEMESSAGE_ERROR, rule->position, NullReplacementError));
 		return False;
 	}
 
