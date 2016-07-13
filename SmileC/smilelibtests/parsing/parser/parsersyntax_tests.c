@@ -244,6 +244,268 @@ START_TEST(TheContainingScopeShouldInfluenceTheReplacement3)
 }
 END_TEST
 
+START_TEST(CanParseSyntaxWithEmbeddedCommas)
+{
+	Lexer lexer = SetupLexer("#syntax STMT: [if [EXPR x], [EXPR y] then [STMT z]] => [\\if x y z]");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileSyntax expectedSyntax = SmileSyntax_Create(
+		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
+		SmileList_CreateList(
+			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, "if")),
+			(SmileObject)SmileNonterminal_Create(
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("x")),
+				0,
+				0
+			),
+			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, ",")),
+			(SmileObject)SmileNonterminal_Create(
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("y")),
+				0,
+				0
+			),
+			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, "then")),
+			(SmileObject)SmileNonterminal_Create(
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("z")),
+				0,
+				0
+			),
+			NULL
+		),
+		(SmileObject)SimpleParse("[if x y z]"),
+		NULL
+	);
+
+	ASSERT((SmileObject)result != NullObject);
+	ASSERT(SmileSyntax_Equals((SmileSyntax)result->a, expectedSyntax));
+}
+END_TEST
+
+START_TEST(CanParseSyntaxWithEmbeddedSemicolons)
+{
+	Lexer lexer = SetupLexer("#syntax STMT: [if [EXPR x]; [EXPR y] then [STMT z]] => [\\if x y z]");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileSyntax expectedSyntax = SmileSyntax_Create(
+		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
+		SmileList_CreateList(
+			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, "if")),
+			(SmileObject)SmileNonterminal_Create(
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("x")),
+				0,
+				0
+			),
+			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, ";")),
+			(SmileObject)SmileNonterminal_Create(
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("y")),
+				0,
+				0
+			),
+			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, "then")),
+			(SmileObject)SmileNonterminal_Create(
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("z")),
+				0,
+				0
+			),
+			NULL
+		),
+		(SmileObject)SimpleParse("[if x y z]"),
+		NULL
+	);
+
+	ASSERT((SmileObject)result != NullObject);
+	ASSERT(SmileSyntax_Equals((SmileSyntax)result->a, expectedSyntax));
+}
+END_TEST
+
+START_TEST(CanParseSyntaxWithEmbeddedColons)
+{
+	Lexer lexer = SetupLexer("#syntax STMT: [if [EXPR x]: [EXPR y] then [STMT z]] => [\\if x y z]");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileSyntax expectedSyntax = SmileSyntax_Create(
+		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
+		SmileList_CreateList(
+			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, "if")),
+			(SmileObject)SmileNonterminal_Create(
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("x")),
+				0,
+				0
+			),
+			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, ":")),
+			(SmileObject)SmileNonterminal_Create(
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("y")),
+				0,
+				0
+			),
+			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, "then")),
+			(SmileObject)SmileNonterminal_Create(
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("z")),
+				0,
+				0
+			),
+			NULL
+		),
+		(SmileObject)SimpleParse("[if x y z]"),
+		NULL
+	);
+
+	ASSERT((SmileObject)result != NullObject);
+	ASSERT(SmileSyntax_Equals((SmileSyntax)result->a, expectedSyntax));
+}
+END_TEST
+
+START_TEST(CanParseSyntaxWithEmbeddedParentheses)
+{
+	Lexer lexer = SetupLexer("#syntax STMT: [if ([EXPR x]: [EXPR y]) then [STMT z]] => [\\if x y z]");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileSyntax expectedSyntax = SmileSyntax_Create(
+		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
+		SmileList_CreateList(
+			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, "if")),
+			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, "(")),
+			(SmileObject)SmileNonterminal_Create(
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("x")),
+				0,
+				0
+			),
+			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, ":")),
+			(SmileObject)SmileNonterminal_Create(
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("y")),
+				0,
+				0
+			),
+			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, ")")),
+			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, "then")),
+			(SmileObject)SmileNonterminal_Create(
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("z")),
+				0,
+				0
+			),
+			NULL
+		),
+		(SmileObject)SimpleParse("[if x y z]"),
+		NULL
+	);
+
+	ASSERT((SmileObject)result != NullObject);
+	ASSERT(SmileSyntax_Equals((SmileSyntax)result->a, expectedSyntax));
+}
+END_TEST
+
+START_TEST(CannotParseSyntaxWithMismatchedParentheses1)
+{
+	Lexer lexer = SetupLexer("#syntax STMT: [if ([EXPR x]: [EXPR y] then [STMT z]] => [\\if x y z]");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(result == NullList);
+	ASSERT(Parser_GetErrorCount(parser) > 0);
+}
+END_TEST
+
+START_TEST(CannotParseSyntaxWithMismatchedParentheses2)
+{
+	Lexer lexer = SetupLexer("#syntax STMT: [if [EXPR x]: [EXPR y]) then [STMT z]] => [\\if x y z]");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(result == NullList);
+	ASSERT(Parser_GetErrorCount(parser) > 0);
+}
+END_TEST
+
+START_TEST(CanParseSyntaxWithEmbeddedCurlyBraces)
+{
+	Lexer lexer = SetupLexer("#syntax STMT: [if {[EXPR x]: [EXPR y]} then [STMT z]] => [\\if x y z]");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileSyntax expectedSyntax = SmileSyntax_Create(
+		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
+		SmileList_CreateList(
+			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, "if")),
+			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, "{")),
+			(SmileObject)SmileNonterminal_Create(
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("x")),
+				0,
+				0
+			),
+			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, ":")),
+			(SmileObject)SmileNonterminal_Create(
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("y")),
+				0,
+				0
+			),
+			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, "}")),
+			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, "then")),
+			(SmileObject)SmileNonterminal_Create(
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
+				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("z")),
+				0,
+				0
+			),
+			NULL
+		),
+		(SmileObject)SimpleParse("[if x y z]"),
+		NULL
+	);
+
+	ASSERT((SmileObject)result != NullObject);
+	ASSERT(SmileSyntax_Equals((SmileSyntax)result->a, expectedSyntax));
+}
+END_TEST
+
+START_TEST(CannotParseSyntaxWithMismatchedCurlyBraces1)
+{
+	Lexer lexer = SetupLexer("#syntax STMT: [if {[EXPR x]: [EXPR y] then [STMT z]] => [\\if x y z]");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(result == NullList);
+	ASSERT(Parser_GetErrorCount(parser) > 0);
+}
+END_TEST
+
+START_TEST(CannotParseSyntaxWithMismatchedCurlyBraces2)
+{
+	Lexer lexer = SetupLexer("#syntax STMT: [if [EXPR x]: [EXPR y]} then [STMT z]] => [\\if x y z]");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(result == NullList);
+	ASSERT(Parser_GetErrorCount(parser) > 0);
+}
+END_TEST
+
 START_TEST(RealWorldSyntaxExample)
 {
 	Lexer lexer = SetupLexer("#syntax STMT: [if [EXPR x] then [STMT y]] => [\\if x y]");

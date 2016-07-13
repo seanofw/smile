@@ -161,6 +161,8 @@ static ParseError Parser_ParseSyntaxPattern(Parser parser, SmileList **tailRef)
 				break;
 
 			case TOKEN_RIGHTBRACKET:
+			case TOKEN_RIGHTPARENTHESIS:
+			case TOKEN_RIGHTBRACE:
 				return NULL;
 
 			default:
@@ -261,7 +263,6 @@ static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailR
 	Symbol name;
 	Symbol repeat;
 	Symbol separator;
-	String text;
 	String punctuationTail;
 	Token token;
 	Int tokenKind;
@@ -273,7 +274,7 @@ static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailR
 		return parseError;
 	}
 
-	// Read the next thing, which should be the nonterminal name/repeat identifier.
+	// Read the next thing, which should be the nonterminal name.
 	token = Parser_NextToken(parser);
 	if (token->kind != TOKEN_ALPHANAME && token->kind != TOKEN_UNKNOWNALPHANAME) {
 		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
@@ -281,31 +282,34 @@ static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailR
 		Parser_Recover(parser, _syntaxRecover, _syntaxRecoverCount);
 		return parseError;
 	}
+	nonterminal = SymbolTable_GetSymbol(Smile_SymbolTable, token->text);
 
-	// Break it into a "tail" and the actual nonterminal.
-	text = token->text;
-	punctuationTail = ExtractPunctuationTail(text);
-	text = String_Substring(text, 0, String_Length(text) - String_Length(punctuationTail));
-	nonterminal = SymbolTable_GetSymbol(Smile_SymbolTable, text);
+	// If the next thing is a punctuation identifier, it must be a repeat symbol.
+	token = Parser_NextToken(parser);
+	if (token->kind == TOKEN_PUNCTNAME || token->kind == TOKEN_UNKNOWNPUNCTNAME) {
+		punctuationTail = token->text;
 
-	// Decode the "tail" as the repeat, which must be nothing, '?', '*', or '+'.
-	if (String_Equals(punctuationTail, String_Empty)) {
-		repeat = 0;
-	}
-	else if (String_Equals(punctuationTail, String_Plus)) {
-		repeat = Smile_KnownSymbols.plus;
-	}
-	else if (String_Equals(punctuationTail, String_Star)) {
-		repeat = Smile_KnownSymbols.star;
-	}
-	else if (String_Equals(punctuationTail, String_QuestionMark)) {
-		repeat = Smile_KnownSymbols.question_mark;
+		// Decode the "tail" as the repeat, which must be '?', '*', or '+'.
+		if (String_Equals(punctuationTail, String_Plus)) {
+			repeat = Smile_KnownSymbols.plus;
+		}
+		else if (String_Equals(punctuationTail, String_Star)) {
+			repeat = Smile_KnownSymbols.star;
+		}
+		else if (String_Equals(punctuationTail, String_QuestionMark)) {
+			repeat = Smile_KnownSymbols.question_mark;
+		}
+		else {
+			parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
+				String_FormatString(MalformedSyntaxPatternIllegalNonterminalRepeat, punctuationTail));
+			Parser_Recover(parser, _syntaxRecover, _syntaxRecoverCount);
+			return parseError;
+		}
 	}
 	else {
-		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
-			String_FormatString(MalformedSyntaxPatternIllegalNonterminalRepeat, punctuationTail));
-		Parser_Recover(parser, _syntaxRecover, _syntaxRecoverCount);
-		return parseError;
+		// No repeat symbol.
+		Lexer_Unget(parser->lexer);
+		repeat = 0;
 	}
 
 	// Read the next thing, which should be the substitution variable name.
@@ -319,18 +323,18 @@ static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailR
 	name = SymbolTable_GetSymbol(Smile_SymbolTable, parser->lexer->token->text);
 
 	// Last, but not least, allow an optional trailing ',' or ';' to express the notion of a separator character.
-	if ((tokenKind = Lexer_Peek(parser->lexer)) == ',' || tokenKind == ';') {
+	if ((tokenKind = Lexer_Peek(parser->lexer)) == TOKEN_COMMA || tokenKind == TOKEN_SEMICOLON) {
 		Lexer_Next(parser->lexer);
 
 		if (!repeat) {
 			parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
 				String_FormatString(MalformedSyntaxPatternNonterminalRepeatSeparatorMismatch,
-					tokenKind == ',' ? String_Comma : String_Semicolon));
+					tokenKind == TOKEN_COMMA ? String_Comma : String_Semicolon));
 			Parser_Recover(parser, _syntaxRecover, _syntaxRecoverCount);
 			return parseError;
 		}
 
-		separator = (tokenKind == ',' ? Smile_KnownSymbols.comma : Smile_KnownSymbols.semicolon);
+		separator = (tokenKind == TOKEN_COMMA ? Smile_KnownSymbols.comma : Smile_KnownSymbols.semicolon);
 	}
 	else separator = 0;
 

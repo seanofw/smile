@@ -312,4 +312,258 @@ START_TEST(CanAddRulesWithTerminalForksToASyntaxTable)
 }
 END_TEST
 
+START_TEST(CanAddRulesWithInitialNonterminals)
+{
+	ParserSyntaxNode node, finalNode;
+	ParserSyntaxClass cls;
+
+	ParserSyntaxTable syntaxTable = ParserSyntaxTable_CreateNew();
+	ParserSyntaxTable resultSyntaxTable = syntaxTable;
+
+	SmileList parsedCode = FullParse("#syntax MYADD: [[EXPR x] + [EXPR y]] => 123");
+	SmileSyntax rule = (SmileSyntax)((SmileList)parsedCode)->a;
+	Parser parser = Parser_Create();
+
+	Bool result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == True);
+	ASSERT(Parser_GetErrorCount(parser) == 0);
+
+	cls = GetSyntaxClassSafely(syntaxTable, "MYADD");
+	node = GetRootNodeSafely(cls, "EXPR");
+
+	finalNode = WalkSyntaxPattern(node, "EXPR x; +; EXPR y");
+	ASSERT(finalNode != NULL);
+	ASSERT(finalNode->replacement != NullObject);
+	ASSERT(RecursiveEquals(SimpleParse("123"), finalNode->replacement));
+}
+END_TEST
+
+START_TEST(CanAddRulesWithRepeatingNonterminals)
+{
+	ParserSyntaxNode node, finalNode;
+	ParserSyntaxClass cls;
+
+	ParserSyntaxTable syntaxTable = ParserSyntaxTable_CreateNew();
+	ParserSyntaxTable resultSyntaxTable = syntaxTable;
+
+	SmileList parsedCode = FullParse("#syntax STMT: [till [NAME+ x] do [STMT y]] => 123");
+	SmileSyntax rule = (SmileSyntax)((SmileList)parsedCode)->a;
+	Parser parser = Parser_Create();
+
+	Bool result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == True);
+	ASSERT(Parser_GetErrorCount(parser) == 0);
+
+	cls = GetSyntaxClassSafely(syntaxTable, "STMT");
+	node = GetRootNodeSafely(cls, "till");
+
+	finalNode = WalkSyntaxPattern(node, "till; NAME x +; do; STMT y");
+	ASSERT(finalNode != NULL);
+	ASSERT(finalNode->replacement != NullObject);
+	ASSERT(RecursiveEquals(SimpleParse("123"), finalNode->replacement));
+}
+END_TEST
+
+START_TEST(CanAddRulesWithRepeatingNonterminalsAndSeparators)
+{
+	ParserSyntaxNode node, finalNode;
+	ParserSyntaxClass cls;
+
+	ParserSyntaxTable syntaxTable = ParserSyntaxTable_CreateNew();
+	ParserSyntaxTable resultSyntaxTable = syntaxTable;
+
+	SmileList parsedCode = FullParse("#syntax STMT: [till [NAME+ x,] do [STMT y]] => 123");
+	SmileSyntax rule = (SmileSyntax)((SmileList)parsedCode)->a;
+	Parser parser = Parser_Create();
+
+	Bool result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == True);
+	ASSERT(Parser_GetErrorCount(parser) == 0);
+
+	cls = GetSyntaxClassSafely(syntaxTable, "STMT");
+	node = GetRootNodeSafely(cls, "till");
+
+	finalNode = WalkSyntaxPattern(node, "till; NAME x + ,; do; STMT y");
+	ASSERT(finalNode != NULL);
+	ASSERT(finalNode->replacement != NullObject);
+	ASSERT(RecursiveEquals(SimpleParse("123"), finalNode->replacement));
+}
+END_TEST
+
+// This should go without saying, but since it's a common real-world scenario, we test it.
+START_TEST(CanAddRulesThatAreRightRecursive)
+{
+	ParserSyntaxNode node, finalNode;
+	ParserSyntaxClass cls;
+
+	ParserSyntaxTable syntaxTable = ParserSyntaxTable_CreateNew();
+	ParserSyntaxTable resultSyntaxTable = syntaxTable;
+	Parser parser = Parser_Create();
+
+	SmileList parsedCode = FullParse("#syntax MYADD: [[MYMUL x] + [MYADD y]] => 123");
+	SmileSyntax rule = (SmileSyntax)((SmileList)parsedCode)->a;
+	Bool result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == True);
+	ASSERT(Parser_GetErrorCount(parser) == 0);
+
+	parsedCode = FullParse("#syntax MYADD: [[MYMUL x]] => 456");
+	rule = (SmileSyntax)((SmileList)parsedCode)->a;
+	result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == True);
+	ASSERT(Parser_GetErrorCount(parser) == 0);
+
+	parsedCode = FullParse("#syntax MYMUL: [[TERM x] + [MYMUL y]] => 789");
+	rule = (SmileSyntax)((SmileList)parsedCode)->a;
+	result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == True);
+	ASSERT(Parser_GetErrorCount(parser) == 0);
+
+	parsedCode = FullParse("#syntax MYMUL: [[TERM x]] => \"abc\"");
+	rule = (SmileSyntax)((SmileList)parsedCode)->a;
+	result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == True);
+	ASSERT(Parser_GetErrorCount(parser) == 0);
+
+	cls = GetSyntaxClassSafely(syntaxTable, "MYADD");
+	node = GetRootNodeSafely(cls, "MYMUL");
+
+	finalNode = WalkSyntaxPattern(node, "MYMUL x");
+	ASSERT(finalNode != NULL);
+	ASSERT(finalNode->replacement != NullObject);
+	ASSERT(RecursiveEquals(SimpleParse("456"), finalNode->replacement));
+
+	finalNode = WalkSyntaxPattern(finalNode, "MYMUL x; +; MYADD y");
+	ASSERT(finalNode != NULL);
+	ASSERT(finalNode->replacement != NullObject);
+	ASSERT(RecursiveEquals(SimpleParse("123"), finalNode->replacement));
+
+	cls = GetSyntaxClassSafely(syntaxTable, "MYMUL");
+	node = GetRootNodeSafely(cls, "TERM");
+
+	finalNode = WalkSyntaxPattern(node, "TERM x");
+	ASSERT(finalNode != NULL);
+	ASSERT(finalNode->replacement != NullObject);
+	ASSERT(RecursiveEquals(SimpleParse("\"abc\""), finalNode->replacement));
+
+	finalNode = WalkSyntaxPattern(finalNode, "TERM x; +; MYMUL y");
+	ASSERT(finalNode != NULL);
+	ASSERT(finalNode->replacement != NullObject);
+	ASSERT(RecursiveEquals(SimpleParse("789"), finalNode->replacement));
+}
+END_TEST
+
+START_TEST(CannotAddRulesWithInitialNonterminalForks)
+{
+	ParserSyntaxTable syntaxTable = ParserSyntaxTable_CreateNew();
+	ParserSyntaxTable resultSyntaxTable = syntaxTable;
+	Parser parser = Parser_Create();
+
+	SmileList parsedCode = FullParse("#syntax FOO: [[EXPR x] + [EXPR y]] => 123");
+	SmileSyntax rule = (SmileSyntax)((SmileList)parsedCode)->a;
+	Bool result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == True);
+	ASSERT(Parser_GetErrorCount(parser) == 0);
+
+	parsedCode = FullParse("#syntax FOO: [[STMT x] and [STMT y]] => 456");
+	rule = (SmileSyntax)((SmileList)parsedCode)->a;
+	result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == False);
+	ASSERT(Parser_GetErrorCount(parser) > 0);
+}
+END_TEST
+
+START_TEST(CannotAddRulesWithMiddleNonterminalForks)
+{
+	ParserSyntaxTable syntaxTable = ParserSyntaxTable_CreateNew();
+	ParserSyntaxTable resultSyntaxTable = syntaxTable;
+	Parser parser = Parser_Create();
+
+	SmileList parsedCode = FullParse("#syntax STMT: [if [EXPR x] then [STMT y]] => 123");
+	SmileSyntax rule = (SmileSyntax)((SmileList)parsedCode)->a;
+	Bool result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == True);
+	ASSERT(Parser_GetErrorCount(parser) == 0);
+
+	parsedCode = FullParse("#syntax STMT: [if [NAME z] abort] => 456");
+	rule = (SmileSyntax)((SmileList)parsedCode)->a;
+	result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == False);
+	ASSERT(Parser_GetErrorCount(parser) > 0);
+}
+END_TEST
+
+START_TEST(CannotAddRulesWithFinalNonterminalForks)
+{
+	ParserSyntaxTable syntaxTable = ParserSyntaxTable_CreateNew();
+	ParserSyntaxTable resultSyntaxTable = syntaxTable;
+	Parser parser = Parser_Create();
+
+	SmileList parsedCode = FullParse("#syntax STMT: [if [EXPR x] then [STMT y]] => 123");
+	SmileSyntax rule = (SmileSyntax)((SmileList)parsedCode)->a;
+	Bool result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == True);
+	ASSERT(Parser_GetErrorCount(parser) == 0);
+
+	parsedCode = FullParse("#syntax STMT: [if [EXPR x] then [NAME z]] => 456");
+	rule = (SmileSyntax)((SmileList)parsedCode)->a;
+	result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == False);
+	ASSERT(Parser_GetErrorCount(parser) > 0);
+}
+END_TEST
+
+START_TEST(CannotAddRulesWithNullReplacements)
+{
+	ParserSyntaxTable syntaxTable = ParserSyntaxTable_CreateNew();
+	ParserSyntaxTable resultSyntaxTable = syntaxTable;
+	Parser parser = Parser_Create();
+
+	SmileList parsedCode = FullParse("#syntax STMT: [if [EXPR x] then [STMT y]] => []");
+	SmileSyntax rule = (SmileSyntax)((SmileList)parsedCode)->a;
+	Bool result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == False);
+	ASSERT(Parser_GetErrorCount(parser) > 0);
+}
+END_TEST
+
+START_TEST(CannotAddRulesThatAreDuplicatesExceptForTheReplacement)
+{
+	ParserSyntaxTable syntaxTable = ParserSyntaxTable_CreateNew();
+	ParserSyntaxTable resultSyntaxTable = syntaxTable;
+	Parser parser = Parser_Create();
+
+	SmileList parsedCode = FullParse("#syntax STMT: [if [EXPR x] then [STMT y]] => 123");
+	SmileSyntax rule = (SmileSyntax)((SmileList)parsedCode)->a;
+	Bool result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == True);
+	ASSERT(Parser_GetErrorCount(parser) == 0);
+
+	parsedCode = FullParse("#syntax STMT: [if [EXPR x] then [STMT y]] => 456");
+	rule = (SmileSyntax)((SmileList)parsedCode)->a;
+	result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == False);
+	ASSERT(Parser_GetErrorCount(parser) > 0);
+}
+END_TEST
+
+START_TEST(CannotAddRulesThatAreDuplicates)
+{
+	ParserSyntaxTable syntaxTable = ParserSyntaxTable_CreateNew();
+	ParserSyntaxTable resultSyntaxTable = syntaxTable;
+	Parser parser = Parser_Create();
+
+	SmileList parsedCode = FullParse("#syntax STMT: [if [EXPR x] then [STMT y]] => 123");
+	SmileSyntax rule = (SmileSyntax)((SmileList)parsedCode)->a;
+	Bool result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == True);
+	ASSERT(Parser_GetErrorCount(parser) == 0);
+
+	parsedCode = FullParse("#syntax STMT: [if [EXPR x] then [STMT y]] => 123");
+	rule = (SmileSyntax)((SmileList)parsedCode)->a;
+	result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == False);
+	ASSERT(Parser_GetErrorCount(parser) > 0);
+}
+END_TEST
+
 #include "parsersyntaxtable_tests.generated.inc"

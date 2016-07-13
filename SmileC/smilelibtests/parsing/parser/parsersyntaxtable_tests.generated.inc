@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 61783e79c3c856c87e1e6b3c22d15058
+// SourceHash: 4aa174b107ffc04f15c1a69c5f398bd2
 
 START_TEST_SUITE(ParserSyntaxTableTests)
 {
@@ -9,6 +9,16 @@ START_TEST_SUITE(ParserSyntaxTableTests)
 	CanAddAComplexRuleToASyntaxTable,
 	CanAddOverlappingRulesToASyntaxTable,
 	CanAddRulesWithTerminalForksToASyntaxTable,
+	CanAddRulesWithInitialNonterminals,
+	CanAddRulesWithRepeatingNonterminals,
+	CanAddRulesWithRepeatingNonterminalsAndSeparators,
+	CanAddRulesThatAreRightRecursive,
+	CannotAddRulesWithInitialNonterminalForks,
+	CannotAddRulesWithMiddleNonterminalForks,
+	CannotAddRulesWithFinalNonterminalForks,
+	CannotAddRulesWithNullReplacements,
+	CannotAddRulesThatAreDuplicatesExceptForTheReplacement,
+	CannotAddRulesThatAreDuplicates,
 }
 END_TEST_SUITE(ParserSyntaxTableTests)
 
