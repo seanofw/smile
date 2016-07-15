@@ -44,6 +44,7 @@ static Bool ParserSyntaxTable_ValidateRuleWithInitialNonterminal(ParserSyntaxTab
 
 STATIC_STRING(InvalidSyntaxRuleError, "Invalid syntax rule pattern; patterns are lists of only symbols and nonterminals.");
 STATIC_STRING(SyntaxRuleTooDeepError, "Syntax rule's pattern is too big (>256 nodes).");
+STATIC_STRING(IllegalInitialNonterminalError, "Syntax rule produces an illegal grammar with infinite left recursion on the initial nonterminals.");
 STATIC_STRING(IllegalRepeatSymbolError, "Syntax rule contains an unknown repeat symbol \"%S\" in nonterminal.");
 STATIC_STRING(IllegalSeparatorSymbolError, "Syntax rule contains an unknown separator symbol \"%S\" in nonterminal.");
 STATIC_STRING(CantRepeatFirstNonterminalError, "Cannot use '?' or '*' repeats on the first item in a syntax pattern.");
@@ -500,7 +501,7 @@ static Bool ParserSyntaxTable_ValidateRuleWithInitialNonterminal(ParserSyntaxTab
 		pair = Int32Dict_GetFirst(syntaxClass->rootDict);
 	
 		// Move to the nonterminal that starts this rule.
-		currentNonterminal = ((SmileNonterminal)pair.value)->nonterminal;
+		currentNonterminal = ((ParserSyntaxNode)pair.value)->name;
 	}
 
 	// Found a recursive loop.
@@ -557,7 +558,7 @@ Bool ParserSyntaxTable_AddRule(Parser parser, ParserSyntaxTable *table, SmileSyn
 		// than 256 nodes for a single rule that can't be broken up into smaller rules; in
 		// fact, thanks to normal forms like CNF and GNF, you shouldn't technically need more
 		// than 2 nodes per rule, so a limit of 256 is plenty.)
-		if (++numNodes > 256) {
+		if (numNodes >= 256) {
 			Parser_AddMessage(parser, ParseMessage_Create(PARSEMESSAGE_ERROR, rule->position,
 				SyntaxRuleTooDeepError));
 			return False;
@@ -586,8 +587,11 @@ Bool ParserSyntaxTable_AddRule(Parser parser, ParserSyntaxTable *table, SmileSyn
 				// If this is a leftmost nonterminal, then go make sure this new rule wouldn't
 				// result in an infinite loop during parsing.
 				if (numNodes == 0) {
-					if (!ParserSyntaxTable_ValidateRuleWithInitialNonterminal(syntaxTable, rule->nonterminal, nonterminal->nonterminal))
+					if (!ParserSyntaxTable_ValidateRuleWithInitialNonterminal(syntaxTable, rule->nonterminal, nonterminal->nonterminal)) {
+						Parser_AddMessage(parser, ParseMessage_Create(PARSEMESSAGE_ERROR, rule->position,
+							IllegalInitialNonterminalError));
 						return False;
+					}
 				}
 
 				// Figure out what kind of repeat they want, if any.
@@ -644,6 +648,7 @@ Bool ParserSyntaxTable_AddRule(Parser parser, ParserSyntaxTable *table, SmileSyn
 		}
 	
 		parentNode = node;
+		numNodes++;
 	}
 
 	if (node == NULL) {

@@ -282,34 +282,42 @@ static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailR
 		Parser_Recover(parser, _syntaxRecover, _syntaxRecoverCount);
 		return parseError;
 	}
-	nonterminal = SymbolTable_GetSymbol(Smile_SymbolTable, token->text);
 
-	// If the next thing is a punctuation identifier, it must be a repeat symbol.
-	token = Parser_NextToken(parser);
-	if (token->kind == TOKEN_PUNCTNAME || token->kind == TOKEN_UNKNOWNPUNCTNAME) {
-		punctuationTail = token->text;
-
-		// Decode the "tail" as the repeat, which must be '?', '*', or '+'.
-		if (String_Equals(punctuationTail, String_Plus)) {
-			repeat = Smile_KnownSymbols.plus;
-		}
-		else if (String_Equals(punctuationTail, String_Star)) {
-			repeat = Smile_KnownSymbols.star;
-		}
-		else if (String_Equals(punctuationTail, String_QuestionMark)) {
-			repeat = Smile_KnownSymbols.question_mark;
-		}
-		else {
-			parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
-				String_FormatString(MalformedSyntaxPatternIllegalNonterminalRepeat, punctuationTail));
-			Parser_Recover(parser, _syntaxRecover, _syntaxRecoverCount);
-			return parseError;
-		}
+	if (String_EndsWith(token->text, String_QuestionMark)) {
+		// This ends with a question mark, so strip off the question mark to get the real nonterminal.
+		nonterminal = SymbolTable_GetSymbol(Smile_SymbolTable, String_Substring(token->text, 0, String_Length(token->text) - 1));
+		repeat = Smile_KnownSymbols.question_mark;
 	}
 	else {
-		// No repeat symbol.
-		Lexer_Unget(parser->lexer);
-		repeat = 0;
+		nonterminal = SymbolTable_GetSymbol(Smile_SymbolTable, token->text);
+
+		// If the next thing is a punctuation identifier, it must be a repeat symbol.
+		token = Parser_NextToken(parser);
+		if (token->kind == TOKEN_PUNCTNAME || token->kind == TOKEN_UNKNOWNPUNCTNAME) {
+			punctuationTail = token->text;
+
+			// Decode the "tail" as the repeat, which must be '?', '*', or '+'.
+			if (String_Equals(punctuationTail, String_Plus)) {
+				repeat = Smile_KnownSymbols.plus;
+			}
+			else if (String_Equals(punctuationTail, String_Star)) {
+				repeat = Smile_KnownSymbols.star;
+			}
+			else if (String_Equals(punctuationTail, String_QuestionMark)) {
+				repeat = Smile_KnownSymbols.question_mark;
+			}
+			else {
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
+					String_FormatString(MalformedSyntaxPatternIllegalNonterminalRepeat, punctuationTail));
+				Parser_Recover(parser, _syntaxRecover, _syntaxRecoverCount);
+				return parseError;
+			}
+		}
+		else {
+			// No repeat symbol.
+			Lexer_Unget(parser->lexer);
+			repeat = 0;
+		}
 	}
 
 	// Read the next thing, which should be the substitution variable name.

@@ -390,6 +390,58 @@ START_TEST(CanAddRulesWithRepeatingNonterminalsAndSeparators)
 }
 END_TEST
 
+START_TEST(CanAddRulesWithRepeatingZeroOrMoreNonterminals)
+{
+	ParserSyntaxNode node, finalNode;
+	ParserSyntaxClass cls;
+
+	ParserSyntaxTable syntaxTable = ParserSyntaxTable_CreateNew();
+	ParserSyntaxTable resultSyntaxTable = syntaxTable;
+
+	SmileList parsedCode = FullParse("#syntax STMT: [till [NAME* x] do [STMT y]] => 123");
+	SmileSyntax rule = (SmileSyntax)((SmileList)parsedCode)->a;
+	Parser parser = Parser_Create();
+
+	Bool result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == True);
+	ASSERT(Parser_GetErrorCount(parser) == 0);
+
+	cls = GetSyntaxClassSafely(syntaxTable, "STMT");
+	node = GetRootNodeSafely(cls, "till");
+
+	finalNode = WalkSyntaxPattern(node, "till; NAME x *; do; STMT y");
+	ASSERT(finalNode != NULL);
+	ASSERT(finalNode->replacement != NullObject);
+	ASSERT(RecursiveEquals(SimpleParse("123"), finalNode->replacement));
+}
+END_TEST
+
+START_TEST(CanAddRulesWithRepeatingZeroOrOneNonterminals)
+{
+	ParserSyntaxNode node, finalNode;
+	ParserSyntaxClass cls;
+
+	ParserSyntaxTable syntaxTable = ParserSyntaxTable_CreateNew();
+	ParserSyntaxTable resultSyntaxTable = syntaxTable;
+
+	SmileList parsedCode = FullParse("#syntax STMT: [till [NAME? x] do [STMT y]] => 123");
+	SmileSyntax rule = (SmileSyntax)((SmileList)parsedCode)->a;
+	Parser parser = Parser_Create();
+
+	Bool result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == True);
+	ASSERT(Parser_GetErrorCount(parser) == 0);
+
+	cls = GetSyntaxClassSafely(syntaxTable, "STMT");
+	node = GetRootNodeSafely(cls, "till");
+
+	finalNode = WalkSyntaxPattern(node, "till; NAME x ?; do; STMT y");
+	ASSERT(finalNode != NULL);
+	ASSERT(finalNode->replacement != NullObject);
+	ASSERT(RecursiveEquals(SimpleParse("123"), finalNode->replacement));
+}
+END_TEST
+
 // This should go without saying, but since it's a common real-world scenario, we test it.
 START_TEST(CanAddRulesThatAreRightRecursive)
 {
@@ -560,6 +612,94 @@ START_TEST(CannotAddRulesThatAreDuplicates)
 
 	parsedCode = FullParse("#syntax STMT: [if [EXPR x] then [STMT y]] => 123");
 	rule = (SmileSyntax)((SmileList)parsedCode)->a;
+	result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == False);
+	ASSERT(Parser_GetErrorCount(parser) > 0);
+}
+END_TEST
+
+START_TEST(CannotAddRulesWhoseInitialNonterminalsRepeatZeroOrMoreTimes)
+{
+	ParserSyntaxTable syntaxTable = ParserSyntaxTable_CreateNew();
+	ParserSyntaxTable resultSyntaxTable = syntaxTable;
+	Parser parser = Parser_Create();
+
+	SmileList parsedCode = FullParse("#syntax MY_LIST: [[ITEM+ x]] => 123");
+	SmileSyntax rule = (SmileSyntax)((SmileList)parsedCode)->a;
+	Bool result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == True);
+	ASSERT(Parser_GetErrorCount(parser) == 0);
+
+	parsedCode = FullParse("#syntax YOUR_LIST: [[ITEM* x]] => 456");
+	rule = (SmileSyntax)((SmileList)parsedCode)->a;
+	result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == False);
+	ASSERT(Parser_GetErrorCount(parser) > 0);
+}
+END_TEST
+
+START_TEST(CannotAddRulesWhoseInitialNonterminalsRepeatZeroOrOneTimes)
+{
+	ParserSyntaxTable syntaxTable = ParserSyntaxTable_CreateNew();
+	ParserSyntaxTable resultSyntaxTable = syntaxTable;
+	Parser parser = Parser_Create();
+
+	SmileList parsedCode = FullParse("#syntax MY_LIST: [[ITEM x]] => 123");
+	SmileSyntax rule = (SmileSyntax)((SmileList)parsedCode)->a;
+	Bool result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == True);
+	ASSERT(Parser_GetErrorCount(parser) == 0);
+
+	parsedCode = FullParse("#syntax YOUR_LIST: [[ITEM? x]] => 456");
+	rule = (SmileSyntax)((SmileList)parsedCode)->a;
+	result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == False);
+	ASSERT(Parser_GetErrorCount(parser) > 0);
+}
+END_TEST
+
+START_TEST(CannotAddRulesWhoseInitialNonterminalsAreCrossReferential)
+{
+	ParserSyntaxTable syntaxTable = ParserSyntaxTable_CreateNew();
+	ParserSyntaxTable resultSyntaxTable = syntaxTable;
+	Parser parser = Parser_Create();
+
+	SmileList parsedCode = FullParse("#syntax ADD: [[MUL x] + [TERM y]] => 123");
+	SmileSyntax rule = (SmileSyntax)((SmileList)parsedCode)->a;
+	Bool result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == True);
+	ASSERT(Parser_GetErrorCount(parser) == 0);
+
+	parsedCode = FullParse("#syntax MUL: [[ADD x] * [TERM y]] => 456");
+	rule = (SmileSyntax)((SmileList)parsedCode)->a;
+	result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == False);
+	ASSERT(Parser_GetErrorCount(parser) > 0);
+}
+END_TEST
+
+START_TEST(CannotAddRulesWhoseInitialNonterminalsAreIndirectlyCrossReferential)
+{
+	ParserSyntaxTable syntaxTable = ParserSyntaxTable_CreateNew();
+	ParserSyntaxTable resultSyntaxTable = syntaxTable;
+	Parser parser = Parser_Create();
+
+	SmileSyntax rule = (SmileSyntax)((SmileList)FullParse("#syntax ADD: [[MUL x] + [TERM y]] => 123"))->a;
+	Bool result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == True);
+	ASSERT(Parser_GetErrorCount(parser) == 0);
+
+	rule = (SmileSyntax)((SmileList)FullParse("#syntax TERM: [[EXPR x]] => 789"))->a;
+	result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == True);
+	ASSERT(Parser_GetErrorCount(parser) == 0);
+
+	rule = (SmileSyntax)((SmileList)FullParse("#syntax MUL: [[TERM x] + [TERM y]] => 456"))->a;
+	result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
+	ASSERT(result == True);
+	ASSERT(Parser_GetErrorCount(parser) == 0);
+
+	rule = (SmileSyntax)((SmileList)FullParse("#syntax EXPR: [[ADD x]] => 555"))->a;
 	result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
 	ASSERT(result == False);
 	ASSERT(Parser_GetErrorCount(parser) > 0);
