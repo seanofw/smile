@@ -65,7 +65,6 @@ static ParseError Parser_ParseSyntaxPattern(Parser parser, SmileList **tailRef);
 static ParseError Parser_ParseSyntaxTerminal(Parser parser, SmileList **tailRef);
 static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailRef);
 static void Parser_DeclareNonterminals(SmileList pattern, ParseScope scope, LexerPosition position);
-static String ExtractPunctuationTail(String text);
 
 // syntax_expr :: = . syntax_level COLON LBRACKET syntax_pattern RBRACKET IMPLIES expr
 SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *expr, Int modeFlags)
@@ -357,44 +356,6 @@ static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailR
 	**tailRef = SmileList_Cons((SmileObject)SmileNonterminal_Create(nonterminal, name, repeat, separator), NullObject);
 	*tailRef = (SmileList *)&((**tailRef)->d);
 	return NULL;
-}
-
-static String ExtractPunctuationTail(String text)
-{
-	const Byte *src, *end, *start;
-	const Byte *punctStart = NULL;
-	Byte ch;
-	UInt code, identifierCharacterKind;
-
-	src = String_GetBytes(text);
-	end = src + String_Length(text);
-
-	while (src < end) {
-		start = src;
-
-		if ((ch = *src) >= 128) {
-			code = String_ExtractUnicodeCharacterInternal(&src, end);
-		}
-		else {
-			code = ch;
-			src++;
-		}
-
-		identifierCharacterKind = SmileIdentifierKind(code);
-
-		if ((identifierCharacterKind & IDENTKIND_PUNCTUATION)) {
-			if (punctStart == NULL)
-				punctStart = start;
-		}
-		else {
-			punctStart = NULL;
-		}
-	}
-
-	if (punctStart == NULL)
-		return String_Empty;
-
-	return String_SubstringAt(text, punctStart - String_GetBytes(text));
 }
 
 static void Parser_DeclareNonterminals(SmileList pattern, ParseScope scope, LexerPosition position)
