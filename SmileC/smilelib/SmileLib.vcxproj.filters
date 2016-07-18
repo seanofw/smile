@@ -756,6 +756,9 @@
     <ClCompile Include="src\parsing\parser\parsequote.c">
       <Filter>src\parsing\parser</Filter>
     </ClCompile>
+    <ClCompile Include="src\parsing\parser\applysyntax.c">
+      <Filter>src\parsing\parser</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">
@@ -1063,6 +1066,9 @@
     </ClInclude>
     <ClInclude Include="include\smile\smiletypes\text\smileuchar.h">
       <Filter>include\smiletypes\text</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\parsing\parsertypes.h">
+      <Filter>include\parsing</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

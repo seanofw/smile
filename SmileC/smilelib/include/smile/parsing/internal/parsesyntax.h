@@ -15,10 +15,6 @@
 #include <smile/parsing/lexer.h>
 #endif
 
-typedef struct ParserSyntaxNodeStruct *ParserSyntaxNode;
-typedef struct ParserSyntaxClassStruct *ParserSyntaxClass;
-typedef struct ParserSyntaxTableStruct *ParserSyntaxTable;
-
 //-------------------------------------------------------------------------------------------------
 //  Internal types
 
@@ -30,29 +26,33 @@ typedef struct ParserSyntaxTableStruct *ParserSyntaxTable;
 /// </summary>
 struct ParserSyntaxNodeStruct {
 	Int32 referenceCount;	// For copy-on-write behavior.
+	Bool isNonterminal;	// Does the dictionary consist of a single nonterminal?
+	Byte reserved[3];	// Reserved for padding/alignment.
+	Int32Dict nextDict;	// Possible next states, keyed by keyword/symbol or nonterminal name.
 		
 	Int8 repetitionKind;	// Either 0 (no repetition), '?' for optional, '*' for zero-or-more, '+' for one-or-more.
 	Int8 repetitionSep;	// Either 0 (no separator), ',' for comma, or ';' for semicolon.
-	Bool isNextNonterminal;	// Does the dictionary consist of a single nonterminal?
-	Int8 reserved;	// (reserved for padding, always zero)
+	UInt16 numReplacementVariables;	// The number of replacement variable names.
 		
 	Symbol name;	// The keyword/symbol or nonterminal name.
 	Symbol variable;	// The variable to emit on a nonterminal match, 0 if this is a keyword/symbol.
 		
 	SmileObject replacement;	// The replacement form, if this is the final node in the chain.
-		
-	Int32Dict nextDict;	// Possible next states, keyed by keyword/symbol or nonterminal name.
+	Symbol *replacementVariables;	// All variable names from the pattern (only filled in if a replacement form is provided as well).
 };
 
 /// <summary>
 /// A single syntax precedence class.  Precedence classes are wide trees composed of ParserSyntaxNodes, with
 /// each root branch starting with a unique (named) terminal.
 /// </summary>
+/// <remarks>Important: SyntaxNode structurally inherits from SyntaxClass.  Do not change
+/// the layout of one struct without changing the layout of the other, because some code depends
+/// on the layouts matching.</remarks>
 struct ParserSyntaxClassStruct {
-	Int referenceCount;	// For copy-on-write behavior.
-		
-	Int32Dict rootDict;	// Possible root states, keyed by keyword/symbol or nonterminal name.
-	Bool isRootNonterminal;	// Does the dictionary consist of a single nonterminal?
+	Int32 referenceCount;	// For copy-on-write behavior.
+	Bool isNonterminal;	// Does the dictionary consist of a single nonterminal?
+	Byte reserved[3];	// Reserved for padding/alignment.
+	Int32Dict nextDict;	// Possible root states, keyed by keyword/symbol or nonterminal name.
 };
 
 /// <summary>

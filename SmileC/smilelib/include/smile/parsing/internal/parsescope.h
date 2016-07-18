@@ -17,8 +17,14 @@
 #ifndef __SMILE_SMILETYPES_TEXT_SMILESYMBOL_H__
 #include <smile/smiletypes/text/smilesymbol.h>
 #endif
+#ifndef __SMILE_PARSING_PARSETYPES_H__
+#include <smile/parsing/parsetypes.h>
+#endif
 #ifndef __SMILE_PARSING_INTERNAL_PARSEDECL_H__
 #include <smile/parsing/internal/parsedecl.h>
+#endif
+#ifndef __SMILE_PARSING_INTERNAL_PARSESYNTAX_H__
+#include <smile/parsing/internal/parsesyntax.h>
 #endif
 #ifndef __SMILE_PARSING_PARSEMESSAGE_H__
 #include <smile/parsing/parsemessage.h>
@@ -45,7 +51,7 @@
 /// parsing looks like this.  At runtime, they will be represented as full lexical closures
 /// (or equivalent), but during parsing, there's just this much data associated with them.
 /// </summary>
-typedef struct ParseScopeStruct {
+struct ParseScopeStruct {
 
 	// Every scope (except for the global scope) has a lexical parent.
 	struct ParseScopeStruct *parentScope;
@@ -59,7 +65,10 @@ typedef struct ParseScopeStruct {
 	// the Lisp-1 family.
 	Closure closure;
 
-} *ParseScope;
+	// The syntax table for this scope, which describes the current effective set of syntax rules.
+	ParserSyntaxTable syntaxTable;
+
+};
 
 //-------------------------------------------------------------------------------------------------
 //  External implementation.

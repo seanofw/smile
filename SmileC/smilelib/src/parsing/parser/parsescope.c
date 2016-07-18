@@ -49,6 +49,7 @@ ParseScope ParseScope_CreateRoot(void)
 	parseScope->kind = PARSESCOPE_OUTERMOST;
 	parseScope->parentScope = NULL;
 	parseScope->closure = Closure_CreateDynamic(NULL, ClosureInfo_Create(NULL));
+	parseScope->syntaxTable = ParserSyntaxTable_CreateNew();
 
 	if ((error = ParseScope_DeclareGlobalOperators(parseScope)) != NULL) {
 		String errorMessage = String_Format("Unable to declare global operators; this is most likely due to a corrupt memory space. Reported error was: %S", error->message);
@@ -108,6 +109,7 @@ ParseScope ParseScope_CreateChild(ParseScope parentScope, Int kind)
 	parseScope->kind = kind;
 	parseScope->parentScope = parentScope;
 	parseScope->closure = Closure_CreateDynamic(parentScope->closure, ClosureInfo_Create(parentScope->closure->closureInfo));
+	(parseScope->syntaxTable = parentScope->syntaxTable)->referenceCount++;
 
 	return parseScope;
 }

@@ -37,7 +37,7 @@
 /// <summary>
 /// The Smile parser.
 /// </summary>
-typedef struct ParserStruct {
+struct ParserStruct {
 
 	Lexer lexer;							// The lexer, which provides the source token stream.
 
@@ -45,7 +45,7 @@ typedef struct ParserStruct {
 
 	SmileList firstMessage, lastMessage;	// A list of messages (errors/warnings) generated during the parse.
 
-} *Parser;
+};
 
 //-------------------------------------------------------------------------------------------------
 //  External parts of the implementation

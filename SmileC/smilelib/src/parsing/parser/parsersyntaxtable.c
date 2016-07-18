@@ -71,17 +71,17 @@ static ParserSyntaxNode ParserSyntaxNode_CreateInternal(Symbol name, Symbol vari
 {
 	ParserSyntaxNode syntaxNode = GC_MALLOC_STRUCT(struct ParserSyntaxNodeStruct);
 
+	syntaxNode->isNonterminal = False;
+	syntaxNode->referenceCount = 1;
+	syntaxNode->nextDict = NULL;
+
 	syntaxNode->name = name;
 	syntaxNode->variable = variable;
 
 	syntaxNode->repetitionKind = (Int8)repetitionKind;
 	syntaxNode->repetitionSep = (Int8)repetitionSep;
-	syntaxNode->isNextNonterminal = False;
-	syntaxNode->referenceCount = 1;
 
 	syntaxNode->replacement = NullObject;
-
-	syntaxNode->nextDict = NULL;
 
 	return syntaxNode;
 }
@@ -99,8 +99,8 @@ static ParserSyntaxClass ParserSyntaxClass_CreateNew(void)
 	ParserSyntaxClass cls = GC_MALLOC_STRUCT(struct ParserSyntaxClassStruct);
 
 	cls->referenceCount = 1;
-	cls->rootDict = NULL;
-	cls->isRootNonterminal = False;
+	cls->nextDict = NULL;
+	cls->isNonterminal = False;
 
 	return cls;
 }
@@ -138,8 +138,8 @@ static ParserSyntaxClass ParserSyntaxClass_VFork(ParserSyntaxClass cls)
 	newCls = GC_MALLOC_STRUCT(struct ParserSyntaxClassStruct);
 
 	newCls->referenceCount = 1;
-	newCls->rootDict = Int32Dict_Clone(cls->rootDict, ParserSyntaxClass_DictClone, NULL);
-	newCls->isRootNonterminal = cls->isRootNonterminal;
+	newCls->nextDict = Int32Dict_Clone(cls->nextDict, ParserSyntaxClass_DictClone, NULL);
+	newCls->isNonterminal = cls->isNonterminal;
 
 	return newCls;
 }
@@ -268,8 +268,8 @@ static Bool ParserSyntaxClass_Extend(Parser parser, LexerPosition position,
 	Int32Dict nextDict;
 	Bool nextIsNonterminal;
 
-	nextIsNonterminal = (parent == NULL ? newCls->isRootNonterminal : parent->isNextNonterminal);
-	nextDict = (parent == NULL ? newCls->rootDict : parent->nextDict);
+	nextIsNonterminal = (parent == NULL ? newCls->isNonterminal : parent->isNonterminal);
+	nextDict = (parent == NULL ? newCls->nextDict : parent->nextDict);
 
 	if (nextDict == NULL) {
 		// No dictionary at this level yet.
@@ -279,10 +279,10 @@ static Bool ParserSyntaxClass_Extend(Parser parser, LexerPosition position,
 			if (newCls->referenceCount > 1) {
 				newCls = ParserSyntaxClass_VFork(newCls);
 			}
-			newCls->rootDict = Int32Dict_CreateWithSize(4);
-			newCls->isRootNonterminal = (variable != 0);
+			newCls->nextDict = Int32Dict_CreateWithSize(4);
+			newCls->isNonterminal = (variable != 0);
 			syntaxNode = ParserSyntaxNode_CreateInternal(name, variable, repetitionKind, repetitionSep);
-			Int32Dict_Add(newCls->rootDict, name, syntaxNode);
+			Int32Dict_Add(newCls->nextDict, name, syntaxNode);
 		}
 		else {
 			// Make sure we're not adding a nonterminal in such a way that the resulting tree
@@ -299,7 +299,7 @@ static Bool ParserSyntaxClass_Extend(Parser parser, LexerPosition position,
 				newCls = ParserSyntaxClass_VFork(newCls);
 			}
 			parent->nextDict = Int32Dict_CreateWithSize(4);
-			parent->isNextNonterminal = (variable != 0);
+			parent->isNonterminal = (variable != 0);
 			syntaxNode = ParserSyntaxNode_CreateInternal(name, variable, repetitionKind, repetitionSep);
 			Int32Dict_Add(parent->nextDict, name, syntaxNode);
 		}
@@ -491,14 +491,14 @@ static Bool ParserSyntaxTable_ValidateRuleWithInitialNonterminal(ParserSyntaxTab
 			return True;
 		}
 	
-		if (!syntaxClass->isRootNonterminal) {
+		if (!syntaxClass->isNonterminal) {
 			// This syntax class starts with a terminal, so it can't result in a loop.
 			return True;
 		}
 
 		// By definition, the dictionary associated with a nonterminal must have one entry
 		// in it, since you cannot fork rules on nonterminals.
-		pair = Int32Dict_GetFirst(syntaxClass->rootDict);
+		pair = Int32Dict_GetFirst(syntaxClass->nextDict);
 	
 		// Move to the nonterminal that starts this rule.
 		currentNonterminal = ((ParserSyntaxNode)pair.value)->name;
@@ -525,9 +525,15 @@ Bool ParserSyntaxTable_AddRule(Parser parser, ParserSyntaxTable *table, SmileSyn
 	ParserSyntaxClass syntaxClass, newSyntaxClass;
 	ParserSyntaxNode node, parentNode;
 	SmileList pattern;
+	SmileList replacementVariables, replacementVariablesTail;
 	SmileNonterminal nonterminal;
 	Int numNodes;
 	Int repeatKind, repeatSeparator;
+	Int numReplacementVariables;
+	Symbol *destSymbol;
+	
+	numReplacementVariables = 0;
+	replacementVariables = replacementVariablesTail = NullList;
 
 	// First, ensure that the syntax table can be safely modified by vforking it as
 	// necessary.
@@ -644,6 +650,10 @@ Bool ParserSyntaxTable_AddRule(Parser parser, ParserSyntaxTable *table, SmileSyn
 					nonterminal->nonterminal, nonterminal->name, repeatKind, repeatSeparator,
 					&node, &newSyntaxClass))
 					return False;
+			
+				// Save this nonterminal's variable name; we'll need it later, when resolving the variables during application.
+				LIST_APPEND(replacementVariables, replacementVariablesTail, SmileSymbol_Create(nonterminal->name));
+				numReplacementVariables++;
 				break;
 		}
 	
@@ -672,6 +682,13 @@ Bool ParserSyntaxTable_AddRule(Parser parser, ParserSyntaxTable *table, SmileSyn
 
 	// Finally!  Assign the replacement, creating the rule for real.
 	node->replacement = rule->replacement;
+
+	// And set up the replacement variables so all the substitution logic will work when parsing with it.
+	node->replacementVariables = destSymbol = GC_MALLOC_RAW_ARRAY(Symbol, numReplacementVariables);
+	node->numReplacementVariables = (UInt16)numReplacementVariables;
+	for (; SMILE_KIND(replacementVariables) == SMILE_KIND_LIST; replacementVariables = LIST_REST(replacementVariables)) {
+		*destSymbol++ = ((SmileSymbol)(replacementVariables->a))->symbol;
+	}
 
 	return True;
 }

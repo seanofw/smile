@@ -39,7 +39,7 @@
 /// <summary>
 /// This describes the shape of a single name declared in the current scope.
 /// </summary>
-typedef struct ParseDeclStruct {
+struct ParseDeclStruct {
 
 	DECLARE_BASE_OBJECT_PROPERTIES;
 
@@ -58,7 +58,7 @@ typedef struct ParseDeclStruct {
 	// The initial assignment of this variable in this scope.
 	SmileObject initialAssignment;
 
-} *ParseDecl;
+};
 
 SMILE_API_DATA SmileVTable ParseDecl_VTable;
 

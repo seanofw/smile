@@ -26,7 +26,7 @@
 /// <summary>
 /// This describes the shape of a single parser output message.
 /// </summary>
-typedef struct ParseMessageStruct {
+struct ParseMessageStruct {
 
 	DECLARE_BASE_OBJECT_PROPERTIES;
 
@@ -39,10 +39,7 @@ typedef struct ParseMessageStruct {
 	// The text of the message itself.
 	String message;
 
-} *ParseMessage;
-
-// Alternate name for a ParseMessage, which is a useful alternate name when talking about errors.
-typedef struct ParseMessageStruct *ParseError;
+};
 
 SMILE_API_DATA SmileVTable ParseMessage_VTable;
 

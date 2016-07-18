@@ -19,6 +19,9 @@
 #ifndef __SMILE_PARSING_TOKENKIND_H__
 #include <smile/parsing/tokenkind.h>
 #endif
+#ifndef __SMILE_PARSING_PARSERTYPES_H__
+#include <smile/parsing/parsertypes.h>
+#endif
 
 //-------------------------------------------------------------------------------------------------
 //  Public type declarations
@@ -27,20 +30,18 @@
 /// A position within a source file.  This represents the start of a token within that source
 /// file, and the length of that token.
 /// </summary>
-typedef struct LexerPositionStruct {
-
-	String filename;						// Which source file this position is in.
-	Int32 line;								// On which line this position begins.
-	Int32 column;							// The column within that line (note: tabs count as 1 char)
-	Int32 lineStart;						// The offset of the start of this line from the start of the file.
-	Int32 length;							// The length of the span of content, in characters.
-
-} *LexerPosition;
+struct LexerPositionStruct {
+	String filename;	// Which source file this position is in.
+	Int32 line;	// On which line this position begins.
+	Int32 column;	// The column within that line (note: tabs count as 1 char)
+	Int32 lineStart;	// The offset of the start of this line from the start of the file.
+	Int32 length;	// The length of the span of content, in characters.
+};
 
 /// <summary>
 /// A single token from the input.
 /// </summary>
-typedef struct TokenStruct {
+struct TokenStruct {
 
 	enum TokenKind kind;					// What kind of token this is (see tokenkind.h)
 
@@ -61,12 +62,12 @@ typedef struct TokenStruct {
 		Real128 real128;					// A 128-bit real value for this token.
 	} data;
 
-} *Token;
+};
 
 /// <summary>
 /// The Smile lexical analyzer.
 /// </summary>
-typedef struct LexerStruct {
+struct LexerStruct {
 
 	// The actual input, and current position within it.
 	const Byte *input;			// The input (source file) itself.
@@ -88,7 +89,7 @@ typedef struct LexerStruct {
 	// External helper constructs.
 	SymbolTable symbolTable;	// The symbol table, for resolving identifiers.
 
-} *Lexer;
+};
 
 //-------------------------------------------------------------------------------------------------
 //  External parts of the implementation

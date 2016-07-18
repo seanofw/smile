@@ -13,17 +13,23 @@
 
 // Mode flags.
 
-#define BINARYLINEBREAKS_DISALLOWED		0			// Declare that line breaks are disallowed before a binary operator, causing the start of a new expression.
-#define BINARYLINEBREAKS_ALLOWED		(1 << 0)	// Declare that line breaks are allowed before a binary operator, allowing the expression to cross line breaks.
-#define BINARYLINEBREAKS_MASK			(1 << 0)
-
-#define COMMAMODE_NORMAL				0			// Declare that commas delineate successive operands in N-ary operations.
+#define BINARYLINEBREAKS_DISALLOWED	0	// Declare that line breaks are disallowed before a binary operator, causing the start of a new expression.
+#define BINARYLINEBREAKS_ALLOWED	(1 << 0)	// Declare that line breaks are allowed before a binary operator, allowing the expression to cross line breaks.
+#define BINARYLINEBREAKS_MASK	(1 << 0)
+		
+#define COMMAMODE_NORMAL	0	// Declare that commas delineate successive operands in N-ary operations.
 #define COMMAMODE_VARIABLEDECLARATION	(1 << 1)	// Declare that commas are being used to separate successive variable declarations.
-#define COMMAMODE_MASK					(1 << 1)
+#define COMMAMODE_MASK	(1 << 1)
+		
+#define COLONMODE_MEMBERACCESS	0	// Declare that colons are used for member-retrieval.
+#define COLONMODE_MEMBERDECL	(1 << 2)	// Declare that colons are used for member-declaration.
+#define COLONMODE_MASK	(1 << 2)
 
-#define COLONMODE_MEMBERACCESS			0			// Declare that colons are used for member-retrieval.
-#define COLONMODE_MEMBERDECL			(1 << 2)	// Declare that colons are used for member-declaration.
-#define COLONMODE_MASK					(1 << 2)
+typedef enum {
+	CustomSyntaxResult_PartialApplicationWithError = -1,
+	CustomSyntaxResult_NotMatchedAndNoTokensConsumed = 0,
+	CustomSyntaxResult_SuccessfullyParsed = 1,
+} CustomSyntaxResult;
 
 //-------------------------------------------------------------------------------------------------
 // Parser-internal methods
@@ -68,6 +74,8 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseParam(Parser parser, SmileObject *par
 SMILE_INTERNAL_FUNC ParseError Parser_ParseParamType(Parser parser, SmileObject *type);
 
 SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *expr, Int modeFlags);
+
+SMILE_INTERNAL_FUNC CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, Int modeFlags, Symbol syntaxClassSymbol, ParseError *parseError);
 
 SMILE_INTERNAL_FUNC Token Parser_Recover(Parser parser, Int *tokenKinds, Int numTokenKinds);
 SMILE_INTERNAL_FUNC Bool Parser_IsLValue(SmileObject obj);

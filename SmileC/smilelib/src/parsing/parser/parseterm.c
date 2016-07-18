@@ -154,7 +154,16 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, T
 		return error;
 
 	case TOKEN_LOANWORD_SYNTAX:
-		return Parser_ParseSyntax(parser, result, modeFlags);
+		// Parse the new syntax rule.
+		error = Parser_ParseSyntax(parser, result, modeFlags);
+		if (error != NULL)
+			return error;
+	
+		// Add the syntax rule to the table of syntax rules for the current scope.
+		if (!ParserSyntaxTable_AddRule(parser, &parser->currentScope->syntaxTable, (SmileSyntax)*result)) {
+			*result = NullObject;
+		}
+		return NULL;
 
 	default:
 		// We got an unknown token that can't be turned into a term.  So we're going to generate

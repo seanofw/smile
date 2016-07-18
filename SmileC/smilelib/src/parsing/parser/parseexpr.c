@@ -54,6 +54,7 @@ ParseError Parser_ParseExpr(Parser parser, SmileObject *expr, Int modeFlags)
 //         | . INSERT_UNDEFINE any_name
 ParseError Parser_ParseBaseExpr(Parser parser, SmileObject *expr, Int modeFlags)
 {
+	ParseError parseError;
 	Token token;
 
 	switch ((token = Parser_NextToken(parser))->kind) {
@@ -75,8 +76,15 @@ ParseError Parser_ParseBaseExpr(Parser parser, SmileObject *expr, Int modeFlags)
 			// Fall through to default case if not a declaration.
 
 		default:
-			Lexer_Unget(parser->lexer);
-			return Parser_ParseOpEquals(parser, expr, (modeFlags & ~COMMAMODE_MASK) | COMMAMODE_NORMAL);
+			{
+				CustomSyntaxResult customSyntaxResult;
+				Lexer_Unget(parser->lexer);
+				customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, Smile_KnownSymbols.STMT, &parseError);
+				if (customSyntaxResult == CustomSyntaxResult_NotMatchedAndNoTokensConsumed) {
+					return Parser_ParseOpEquals(parser, expr, (modeFlags & ~COMMAMODE_MASK) | COMMAMODE_NORMAL);
+				}
+				return parseError;
+			}
 	}
 }
 

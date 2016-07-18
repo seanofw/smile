@@ -51,8 +51,8 @@ static ParserSyntaxNode GetRootNodeSafely(ParserSyntaxClass cls, const char *ter
 	Symbol termSymbol = SymbolTable_GetSymbolC(Smile_SymbolTable, term);
 
 	if (cls == NULL) return NULL;
-	if (cls->rootDict == NULL) return NULL;
-	if (!Int32Dict_TryGetValue(cls->rootDict, termSymbol, &syntaxNode)) return NULL;
+	if (cls->nextDict == NULL) return NULL;
+	if (!Int32Dict_TryGetValue(cls->nextDict, termSymbol, &syntaxNode)) return NULL;
 	return syntaxNode;
 }
 
@@ -155,18 +155,18 @@ START_TEST(CanAddASimpleRuleToASyntaxTable)
 	cls = (ParserSyntaxClass)(Int32Dict_GetFirst(syntaxTable->syntaxClasses).value);
 	ASSERT(cls != NULL);
 	ASSERT(cls->referenceCount == 1);
-	ASSERT(cls->isRootNonterminal == False);
-	ASSERT(cls->rootDict != NULL);
-	ASSERT(Int32Dict_Count(cls->rootDict) == 1);
+	ASSERT(cls->isNonterminal == False);
+	ASSERT(cls->nextDict != NULL);
+	ASSERT(Int32Dict_Count(cls->nextDict) == 1);
 
-	node = (ParserSyntaxNode)(Int32Dict_GetFirst(cls->rootDict).value);
+	node = (ParserSyntaxNode)(Int32Dict_GetFirst(cls->nextDict).value);
 	ASSERT(node != NULL);
 	ASSERT(node->referenceCount == 1);
 	ASSERT(node->name == SymbolTable_GetSymbolNoCreateC(Smile_SymbolTable, "foo"));
 	ASSERT(node->variable == 0);
 	ASSERT(node->repetitionKind == 0);
 	ASSERT(node->repetitionSep == 0);
-	ASSERT(node->isNextNonterminal == False);
+	ASSERT(node->isNonterminal == False);
 	ASSERT(node->nextDict == NULL);
 
 	obj = SimpleParse("123");
