@@ -66,9 +66,6 @@
     <ClCompile Include="parsing\parser\parsercore_tests.c">
       <Filter>parsing\parser</Filter>
     </ClCompile>
-    <ClCompile Include="parsing\parser\parsersyntax_tests.c">
-      <Filter>parsing\parser</Filter>
-    </ClCompile>
     <ClCompile Include="parsing\parser\testhelpers.c">
       <Filter>parsing\parser</Filter>
     </ClCompile>
@@ -87,7 +84,13 @@
     <ClCompile Include="parsing\parser\parserquote_tests.c">
       <Filter>parsing\parser</Filter>
     </ClCompile>
-    <ClCompile Include="parsing\parser\parsersyntaxtable_tests.c">
+    <ClCompile Include="parsing\parser\parsersyntax_decl_tests.c">
+      <Filter>parsing\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="parsing\parser\parsersyntax_table_tests.c">
+      <Filter>parsing\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="parsing\parser\parsersyntax_walk_tests.c">
       <Filter>parsing\parser</Filter>
     </ClCompile>
   </ItemGroup>

@@ -275,6 +275,49 @@ static SmileObject Parser_Accept(SmileObject replacement, Symbol *replacementVar
 	return result;
 }
 
+static CustomSyntaxResult Parser_RecursivelyApplyCustomSyntax(Parser parser, SmileObject *expr, Int modeFlags, Symbol syntaxClassSymbol, ParseError *parseError)
+{
+	switch (syntaxClassSymbol) {
+
+		case SMILE_SPECIAL_SYMBOL_STMT:
+			*parseError = Parser_ParseBaseExpr(parser, expr, modeFlags);
+			break;
+
+		case SMILE_SPECIAL_SYMBOL_EXPR:
+			*parseError = Parser_ParseEquals(parser, expr, modeFlags);
+			break;
+
+		case SMILE_SPECIAL_SYMBOL_CMP:
+			*parseError = Parser_ParseCmp(parser, expr, modeFlags);
+			break;
+
+		case SMILE_SPECIAL_SYMBOL_ADDSUB:
+			*parseError = Parser_ParseAddSub(parser, expr, modeFlags);
+			break;
+
+		case SMILE_SPECIAL_SYMBOL_MULDIV:
+			*parseError = Parser_ParseMulDiv(parser, expr, modeFlags);
+			break;
+
+		case SMILE_SPECIAL_SYMBOL_BINARY:
+			*parseError = Parser_ParseBinary(parser, expr, modeFlags);
+			break;
+
+		case SMILE_SPECIAL_SYMBOL_UNARY:
+			*parseError = Parser_ParseUnary(parser, expr, modeFlags);
+			break;
+
+		case SMILE_SPECIAL_SYMBOL_TERM:
+			*parseError = Parser_ParseTerm(parser, expr, modeFlags, NULL);
+			break;
+
+		default:
+			return Parser_ApplyCustomSyntax(parser, expr, modeFlags, syntaxClassSymbol, parseError);
+	}
+
+	return *parseError != NULL ? CustomSyntaxResult_PartialApplicationWithError : CustomSyntaxResult_SuccessfullyParsed;
+}
+
 CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, Int modeFlags, Symbol syntaxClassSymbol, ParseError *parseError)
 {
 	ParserSyntaxClass syntaxClass;
@@ -286,8 +329,10 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 
 	// Get the class that contains all the rules under the provided nonterminal symbol.
 	syntaxClass = GetSyntaxClass(parser, syntaxClassSymbol);
-	if (syntaxClass == NULL)
+	if (syntaxClass == NULL) {
+		*parseError = NULL;
 		return CustomSyntaxResult_NotMatchedAndNoTokensConsumed;
+	}
 
 	// Begin walking the tree nodes of the class, consuming input tokens where they match.
 	node = (ParserSyntaxNode)syntaxClass;
@@ -310,11 +355,12 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 			nextNode = (ParserSyntaxNode)(Int32Dict_GetFirst(node->nextDict).value);
 		
 			// Recursively traverse the syntax tree and handle the result.
-			switch (Parser_ApplyCustomSyntax(parser, &localExpr, modeFlags, nextNode->name, parseError)) {
+			switch (Parser_RecursivelyApplyCustomSyntax(parser, &localExpr, modeFlags, nextNode->name, parseError)) {
 				case CustomSyntaxResult_NotMatchedAndNoTokensConsumed:
-					Parser_AddError(parser, position, "Syntax error: Missing a %S in %S",
-						SymbolTable_GetName(Smile_SymbolTable, nextNode->name),
-						SymbolTable_GetName(Smile_SymbolTable, syntaxClassSymbol));
+					*parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position,
+						String_Format("Syntax error: Missing a %S in %S",
+							SymbolTable_GetName(Smile_SymbolTable, nextNode->name),
+							SymbolTable_GetName(Smile_SymbolTable, syntaxClassSymbol)));
 					return CustomSyntaxResult_PartialApplicationWithError;
 
 				case CustomSyntaxResult_PartialApplicationWithError:
@@ -335,13 +381,14 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 			else if (isFirst) {
 				// First position, and nothing matched, so we didn't even start to consume this rule.
 				Lexer_Unget(parser->lexer);
+				*parseError = NULL;
 				return CustomSyntaxResult_NotMatchedAndNoTokensConsumed;
 			}
 			else {
 				// No match, and we've traversed at least one node of the tree.  So the
 				// input is an error, and we begin error recovery.
-				Parser_AddError(parser, Token_GetPosition(parser->lexer->token), "Syntax error in %S",
-					SymbolTable_GetName(Smile_SymbolTable, syntaxClassSymbol));
+				*parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
+					String_Format("Syntax error in %S", SymbolTable_GetName(Smile_SymbolTable, syntaxClassSymbol)));
 				return CustomSyntaxResult_PartialApplicationWithError;
 			}
 		}
@@ -364,6 +411,7 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 	// We're done, and have valid expressions for each of the nonterminals.  We now need
 	// to use the expressions and the replacement form and generate the parsed output.
 	*expr = Parser_Accept(node->replacement, node->replacementVariables, node->numReplacementVariables, localHead);
+	*parseError = NULL;
 
 	return CustomSyntaxResult_SuccessfullyParsed;
 }

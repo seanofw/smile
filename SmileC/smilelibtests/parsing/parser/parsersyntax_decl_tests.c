@@ -541,4 +541,4 @@ START_TEST(RealWorldSyntaxExample)
 }
 END_TEST
 
-#include "parsersyntax_tests.generated.inc"
+#include "parsersyntax_decl_tests.generated.inc"

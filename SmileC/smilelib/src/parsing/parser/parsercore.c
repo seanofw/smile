@@ -72,13 +72,13 @@ STATIC_STRING(ExpectedCloseBraceError, "Expected ... } to end the scope");
 ParseError Parser_ParseScope(Parser parser, SmileObject *expr)
 {
 	ParseError parseError;
-	ParseScope parentScope, newScope;
 	Token token;
 	LexerPosition startPosition;
 	int i, numVariables;
 	Symbol *symbolNames;
 	SmileList head, tail;
 	SmileList declHead, declTail;
+	ClosureInfo closureInfo;
 
 	if ((token = Parser_NextToken(parser))->kind != TOKEN_LEFTBRACE) {
 		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), ExpectedOpenBraceError);
@@ -86,14 +86,12 @@ ParseError Parser_ParseScope(Parser parser, SmileObject *expr)
 	}
 	startPosition = Token_GetPosition(token);
 
-	parentScope = parser->currentScope;
-	newScope = ParseScope_CreateChild(parentScope, PARSESCOPE_FUNCTION);
-	parser->currentScope = newScope;
+	Parser_BeginScope(parser, PARSESCOPE_SCOPEDECL);
 
 	LIST_INIT(head, tail);
 	Parser_ParseExprsOpt(parser, &head, &tail, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
 
-	parser->currentScope = parentScope;
+	Parser_EndScope(parser);
 
 	if ((token = Parser_NextToken(parser))->kind != TOKEN_RIGHTBRACE) {
 		*expr = NULL;
@@ -101,13 +99,15 @@ ParseError Parser_ParseScope(Parser parser, SmileObject *expr)
 		return parseError;
 	}
 
-	if (newScope->closure->closureInfo->numVariables == 0) {
+	closureInfo = parser->currentScope->closure->closureInfo;
+
+	if (closureInfo->numVariables == 0) {
 		*expr = (SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects.prognSymbol, (SmileObject)head, startPosition);
 		return NULL;
 	}
 	else {
-		numVariables = newScope->closure->closureInfo->numVariables;
-		symbolNames = (Symbol *)Int32Int32Dict_GetKeys(newScope->closure->closureInfo->symbolDictionary);
+		numVariables = closureInfo->numVariables;
+		symbolNames = (Symbol *)Int32Int32Dict_GetKeys(closureInfo->symbolDictionary);
 		LIST_INIT(declHead, declTail);
 		for (i = 0; i < numVariables; i++) {
 			LIST_APPEND(declHead, declTail, SmileSymbol_Create(symbolNames[i]));

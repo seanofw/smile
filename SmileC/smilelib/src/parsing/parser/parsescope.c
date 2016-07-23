@@ -109,9 +109,23 @@ ParseScope ParseScope_CreateChild(ParseScope parentScope, Int kind)
 	parseScope->kind = kind;
 	parseScope->parentScope = parentScope;
 	parseScope->closure = Closure_CreateDynamic(parentScope->closure, ClosureInfo_Create(parentScope->closure->closureInfo));
-	(parseScope->syntaxTable = parentScope->syntaxTable)->referenceCount++;
+	ParserSyntaxTable_AddRef(parseScope->syntaxTable = parentScope->syntaxTable);
 
 	return parseScope;
+}
+
+/// <summary>
+/// This is called by the parser to tell this scope that it is finished,
+/// and no new content will be added to it.
+/// </summary>
+void ParseScope_Finish(ParseScope parseScope)
+{
+	ParserSyntaxTable_RemoveRef(parseScope->syntaxTable);
+
+	// Allow GC to reclaim the attached objects, if this was the last reference.
+	parseScope->syntaxTable = NULL;
+	parseScope->closure = NULL;
+	parseScope->parentScope = NULL;
 }
 
 /// <summary>

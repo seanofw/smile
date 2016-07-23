@@ -93,4 +93,13 @@ Inline void ParserSyntaxTable_AddRef(ParserSyntaxTable table)
 	table->referenceCount++;
 }
 
+/// <summary>
+/// Decrease the reference count for the given syntax table, so that it knows
+/// it no longer needs to fork itself if it is subsequently modified.
+/// </summary>
+Inline void ParserSyntaxTable_RemoveRef(ParserSyntaxTable table)
+{
+	table->referenceCount--;
+}
+
 #endif

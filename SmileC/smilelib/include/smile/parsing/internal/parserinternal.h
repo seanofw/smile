@@ -153,4 +153,26 @@ Inline Token Parser_NextToken(Parser parser)
 	return token;
 }
 
+/// <summary>
+/// Enter a new parsing scope (a function, for example), in which local declarations will be contained.
+/// </summary>
+/// <param name="parser">The parser that is about to enter a new parsing scope.</param>
+/// <param name="parseScopeKind">What kind of parsing scope to enter (one of the PARSESCOPE_* values).</param>
+Inline void Parser_BeginScope(Parser parser, Int parseScopeKind)
+{
+	ParseScope newScope = ParseScope_CreateChild(parser->currentScope, parseScopeKind);
+	parser->currentScope = newScope;
+}
+
+/// <summary>
+/// End the current parsing scope (a function, for example), in which local declarations are contained.
+/// </summary>
+/// <param name="parser">The parser that is ending its current parsing scope.</param>
+Inline void Parser_EndScope(Parser parser)
+{
+	ParseScope currentScope = parser->currentScope;
+	parser->currentScope = currentScope->parentScope;
+	ParseScope_Finish(currentScope);
+}
+
 #endif

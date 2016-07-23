@@ -132,8 +132,9 @@
     <ClCompile Include="parsing\parser\parsernew_tests.c" />
     <ClCompile Include="parsing\parser\parserquote_tests.c" />
     <ClCompile Include="parsing\parser\parserstring_tests.c" />
-    <ClCompile Include="parsing\parser\parsersyntaxtable_tests.c" />
-    <ClCompile Include="parsing\parser\parsersyntax_tests.c" />
+    <ClCompile Include="parsing\parser\parsersyntax_table_tests.c" />
+    <ClCompile Include="parsing\parser\parsersyntax_walk_tests.c" />
+    <ClCompile Include="parsing\parser\parsersyntax_decl_tests.c" />
     <ClCompile Include="parsing\parser\parserterm_tests.c" />
     <ClCompile Include="parsing\parser\testhelpers.c" />
     <ClCompile Include="stdafx.c" />

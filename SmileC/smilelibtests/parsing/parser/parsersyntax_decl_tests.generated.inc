@@ -1,0 +1,27 @@
+// This file was auto-generated.  Do not edit!
+//
+// SourceHash: c3312af697b6b412da04ecf488fe992d
+
+START_TEST_SUITE(ParserSyntaxTests)
+{
+	CanParseSimpleSyntaxForms,
+	CanParseSyntaxFormsThatUseSyntaxForms,
+	CanParseSyntaxFormsThatUseListForms,
+	CanParseSyntaxFormsThatContainNonterminals,
+	NonterminalsShouldNotLeakIntoTheContainingScope,
+	TheContainingScopeShouldInfluenceTheReplacement,
+	TheContainingScopeShouldInfluenceTheReplacement2,
+	TheContainingScopeShouldInfluenceTheReplacement3,
+	CanParseSyntaxWithEmbeddedCommas,
+	CanParseSyntaxWithEmbeddedSemicolons,
+	CanParseSyntaxWithEmbeddedColons,
+	CanParseSyntaxWithEmbeddedParentheses,
+	CannotParseSyntaxWithMismatchedParentheses1,
+	CannotParseSyntaxWithMismatchedParentheses2,
+	CanParseSyntaxWithEmbeddedCurlyBraces,
+	CannotParseSyntaxWithMismatchedCurlyBraces1,
+	CannotParseSyntaxWithMismatchedCurlyBraces2,
+	RealWorldSyntaxExample,
+}
+END_TEST_SUITE(ParserSyntaxTests)
+

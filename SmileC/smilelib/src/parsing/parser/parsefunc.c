@@ -32,7 +32,6 @@ static Int _barRecoveryTokens[] = {
 ParseError Parser_ParseFunc(Parser parser, SmileObject *expr, Int modeFlags)
 {
 	LexerPosition funcPosition;
-	ParseScope parentScope, newScope;
 	SmileList paramList;
 	SmileObject body;
 	ParseError parseError;
@@ -40,9 +39,7 @@ ParseError Parser_ParseFunc(Parser parser, SmileObject *expr, Int modeFlags)
 
 	funcPosition = Token_GetPosition(parser->lexer->token);
 
-	parentScope = parser->currentScope;
-	newScope = ParseScope_CreateChild(parentScope, PARSESCOPE_FUNCTION);
-	parser->currentScope = newScope;
+	Parser_BeginScope(parser, PARSESCOPE_FUNCTION);
 
 	parseError = Parser_ParseParamsOpt(parser, &paramList);
 	if (parseError != NULL) {
@@ -50,7 +47,7 @@ ParseError Parser_ParseFunc(Parser parser, SmileObject *expr, Int modeFlags)
 		token = Parser_Recover(parser, _barRecoveryTokens, sizeof(_barRecoveryTokens));
 		if (token->kind != TOKEN_BAR) {
 			*expr = NullObject;
-			parser->currentScope = parentScope;
+			Parser_EndScope(parser);
 			return NULL;
 		}
 	}
@@ -60,14 +57,14 @@ ParseError Parser_ParseFunc(Parser parser, SmileObject *expr, Int modeFlags)
 		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
 			String_Format("Expected |...| to end function parameters starting on line %d", funcPosition->lineStart));
 		*expr = NullObject;
-		parser->currentScope = parentScope;
+		Parser_EndScope(parser);
 		return parseError;
 	}
 
 	parseError = Parser_ParseExpr(parser, &body, modeFlags);
 	if (parseError != NULL) {
 		*expr = NullObject;
-		parser->currentScope = parentScope;
+		Parser_EndScope(parser);
 		return parseError;
 	}
 
@@ -76,7 +73,7 @@ ParseError Parser_ParseFunc(Parser parser, SmileObject *expr, Int modeFlags)
 		Lexer_Unget(parser->lexer);
 	}
 
-	parser->currentScope = parentScope;
+	Parser_EndScope(parser);
 
 	*expr =
 		(SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects.fnSymbol,

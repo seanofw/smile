@@ -75,8 +75,6 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *ex
 	SmileList *patternTail;
 	SmileObject replacement;
 	ParseError parseError;
-	ParseScope parentScope;
-	ParseScope scope;
 	LexerPosition rulePosition;
 
 	// First, read the syntax predicate's leading nonterminal.
@@ -127,14 +125,11 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *ex
 	}
 
 	// Create a new scope for the syntax rule's substitution expression.
-	parentScope = parser->currentScope;
-	scope = ParseScope_CreateChild(parentScope, PARSESCOPE_SYNTAX);
-	Parser_DeclareNonterminals(pattern, scope, rulePosition);
+	Parser_BeginScope(parser, PARSESCOPE_SYNTAX);
 
 	// Parse the substitution expression in the syntax rule's scope.
-	parser->currentScope = scope;
 	parseError = Parser_ParseExpr(parser, &replacement, modeFlags);
-	parser->currentScope = parentScope;
+	Parser_EndScope(parser);
 	if (parseError != NULL) {
 		*expr = NullObject;
 		return parseError;

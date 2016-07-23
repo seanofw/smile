@@ -550,6 +550,37 @@ Bool ParserSyntaxTable_AddRule(Parser parser, ParserSyntaxTable *table, SmileSyn
 		// classes within this table.
 		syntaxClass = ParserSyntaxClass_CreateNew();
 		Int32Dict_Add(syntaxTable->syntaxClasses, rule->nonterminal, syntaxClass);
+
+		// If this is a special class, glue it into the special slots in this syntax table.
+		switch (rule->nonterminal) {
+			case SMILE_SPECIAL_SYMBOL_STMT:
+				syntaxTable->stmtClass = syntaxClass;
+				break;
+			case SMILE_SPECIAL_SYMBOL_EXPR:
+				syntaxTable->exprClass = syntaxClass;
+				break;
+			case SMILE_SPECIAL_SYMBOL_CMP:
+				syntaxTable->cmpClass = syntaxClass;
+				break;
+			case SMILE_SPECIAL_SYMBOL_ADDSUB:
+				syntaxTable->addSubClass = syntaxClass;
+				break;
+			case SMILE_SPECIAL_SYMBOL_MULDIV:
+				syntaxTable->mulDivClass = syntaxClass;
+				break;
+			case SMILE_SPECIAL_SYMBOL_BINARY:
+				syntaxTable->binaryClass = syntaxClass;
+				break;
+			case SMILE_SPECIAL_SYMBOL_UNARY:
+				syntaxTable->unaryClass = syntaxClass;
+				break;
+			case SMILE_SPECIAL_SYMBOL_POSTFIX:
+				syntaxTable->postfixClass = syntaxClass;
+				break;
+			case SMILE_SPECIAL_SYMBOL_TERM:
+				syntaxTable->termClass = syntaxClass;
+				break;
+		}
 	}
 
 	// The 'syntaxClass' variable now contains a valid root for this rule.

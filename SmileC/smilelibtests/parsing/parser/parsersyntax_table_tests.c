@@ -32,6 +32,9 @@ STATIC_STRING(TestFilename, "test.sm");
 STATIC_STRING(SemicolonString, ";");
 STATIC_STRING(SpaceString, " ");
 
+//-------------------------------------------------------------------------------------------------
+//  Helpers.
+
 static ParserSyntaxClass GetSyntaxClassSafely(ParserSyntaxTable table, const char *nonterminal)
 {
 	ParserSyntaxClass syntaxClass;
@@ -706,4 +709,4 @@ START_TEST(CannotAddRulesWhoseInitialNonterminalsAreIndirectlyCrossReferential)
 }
 END_TEST
 
-#include "parsersyntaxtable_tests.generated.inc"
+#include "parsersyntax_table_tests.generated.inc"
