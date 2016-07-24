@@ -124,6 +124,7 @@
   <ItemGroup>
     <ClInclude Include="include\smile.h" />
     <ClInclude Include="include\smile\array.h" />
+    <ClInclude Include="include\smile\atomic.h" />
     <ClInclude Include="include\smile\bittwiddling.h" />
     <ClInclude Include="include\smile\dict\int32int32dict.h" />
     <ClInclude Include="include\smile\env\closure.h" />
@@ -155,6 +156,7 @@
     <ClInclude Include="include\smile\platform\cygwin-gcc-x86\platform.h" />
     <ClInclude Include="include\smile\platform\linux-gcc-x64\platform.h" />
     <ClInclude Include="include\smile\platform\linux-gcc-x86\platform.h" />
+    <ClInclude Include="include\smile\platform\macosx-clang-x64\platform.h" />
     <ClInclude Include="include\smile\platform\platform.h" />
     <ClInclude Include="include\smile\platform\windows-msvc-x64\platform.h" />
     <ClInclude Include="include\smile\platform\windows-msvc-x86\platform.h" />
@@ -739,6 +741,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\atomic\atomic.c" />
+    <ClCompile Include="src\atomic\atomic_windows_msvc.inc" />
     <ClCompile Include="src\dict\dictstats.c" />
     <ClCompile Include="src\dict\int32int32dict.c" />
     <ClCompile Include="src\env\closure.c" />

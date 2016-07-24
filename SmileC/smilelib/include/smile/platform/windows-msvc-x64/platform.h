@@ -10,6 +10,10 @@
 #endif
 #define SMILE_PLATFORM_IS_DEFINED
 
+#define SMILE_OS	SMILE_OS_WINDOWS
+#define SMILE_CPU	SMILE_CPU_X64
+#define SMILE_COMPILER	SMILE_COMPILER_MSVC
+
 //------------------------------------------------------------------------------------------------
 //  Portable type definitions.
 

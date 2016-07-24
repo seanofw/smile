@@ -109,6 +109,12 @@
     <Filter Include="include\platform\linux-gcc-x86">
       <UniqueIdentifier>{15fff788-ea95-4fbf-88eb-18d91f95f79d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\atomic">
+      <UniqueIdentifier>{181c8843-3e72-4133-a6c2-9471742f60b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\platform\macosx-clang-x64">
+      <UniqueIdentifier>{f599b67f-d855-4844-8cf4-f507589c4daf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gc\src\allchblk.c">
@@ -759,6 +765,12 @@
     <ClCompile Include="src\parsing\parser\applysyntax.c">
       <Filter>src\parsing\parser</Filter>
     </ClCompile>
+    <ClCompile Include="src\atomic\atomic.c">
+      <Filter>src\atomic</Filter>
+    </ClCompile>
+    <ClCompile Include="src\atomic\atomic_windows_msvc.inc">
+      <Filter>src\atomic</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">
@@ -1069,6 +1081,12 @@
     </ClInclude>
     <ClInclude Include="include\smile\parsing\parsertypes.h">
       <Filter>include\parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\atomic.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\platform\macosx-clang-x64\platform.h">
+      <Filter>include\platform\macosx-clang-x64</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
