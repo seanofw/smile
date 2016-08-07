@@ -742,7 +742,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\atomic\atomic.c" />
-    <ClCompile Include="src\atomic\atomic_windows_msvc.inc" />
+    <Text Include="src\atomic\atomic_windows_msvc.inc">
+      <FileType>Document</FileType>
+    </Text>
     <ClCompile Include="src\dict\dictstats.c" />
     <ClCompile Include="src\dict\int32int32dict.c" />
     <ClCompile Include="src\env\closure.c" />
