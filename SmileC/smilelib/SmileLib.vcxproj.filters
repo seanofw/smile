@@ -771,6 +771,9 @@
     <ClCompile Include="src\atomic\atomic_windows_msvc.inc">
       <Filter>src\atomic</Filter>
     </ClCompile>
+    <ClCompile Include="src\smiletypes\smileobject_stringify.c">
+      <Filter>src\smiletypes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">

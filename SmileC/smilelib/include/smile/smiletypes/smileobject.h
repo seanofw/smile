@@ -278,6 +278,15 @@ SMILE_API_FUNC String SmileObject_ToString(SmileObject self);
 SMILE_API_FUNC SmileObject SmileObject_Create(void);
 
 //-------------------------------------------------------------------------------------------------
+// These aren't core operations, but they're commonly-needed.
+
+SMILE_API_FUNC String SmileObject_Stringify(SmileObject obj);
+SMILE_API_FUNC const char *SmileObject_StringifyToC(SmileObject obj);
+
+SMILE_API_FUNC Bool SmileObject_IsRegularList(SmileObject list);
+SMILE_API_FUNC Bool SmileObject_ContainsNestedList(SmileObject obj);
+
+//-------------------------------------------------------------------------------------------------
 //  Inline operations on SmileObject.
 
 Inline Bool SmileObject_IsList(SmileObject self)
