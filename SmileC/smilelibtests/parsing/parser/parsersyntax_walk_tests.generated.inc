@@ -1,12 +1,10 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 146a1bf4488fe2f8f374cfd927747537
+// SourceHash: f4edcfba186c0d93adf30bc49273ebc6
 
 START_TEST_SUITE(ParserSyntaxWalkTests)
 {
-	CanReplaceSimpleTerminalForms,
-	CanReplaceMultiTerminalForms,
-	CanReplaceFormsWithAKnownNonterminal,
+	Dummy,
 }
 END_TEST_SUITE(ParserSyntaxWalkTests)
 

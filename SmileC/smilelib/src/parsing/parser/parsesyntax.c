@@ -38,7 +38,6 @@ STATIC_STRING(MalformedSyntaxPatternKeyword, "Invalid syntax pattern: Missing ke
 STATIC_STRING(MalformedSyntaxPatternMismatchedParentheses, "Invalid syntax pattern: Mismatched parentheses in rule.");
 STATIC_STRING(MalformedSyntaxPatternMismatchedBraces, "Invalid syntax pattern: Mismatched curly braces in rule.");
 STATIC_STRING(MalformedSyntaxPatternMismatchedBrackets, "Invalid syntax pattern: Mismatched square brackets in rule.");
-STATIC_STRING(MalformedSyntaxPatternBadRepeat, "Invalid syntax pattern: Expression cannot be optional or repeated here.");
 STATIC_STRING(MalformedSyntaxPatternIllegalNonterminal, "Invalid syntax pattern: Nonterminals must be named identifiers, not \"%S\".");
 STATIC_STRING(MalformedSyntaxPatternIllegalNonterminalName, "Invalid syntax pattern: Nonterminal variables must be named identifiers, not \"%S\".");
 STATIC_STRING(MalformedSyntaxPatternIllegalNonterminalRepeat, "Invalid syntax pattern: Unknown nonterminal repeat kind '%S'.");
@@ -126,6 +125,9 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *ex
 
 	// Create a new scope for the syntax rule's substitution expression.
 	Parser_BeginScope(parser, PARSESCOPE_SYNTAX);
+
+	// Make sure the subsitution expression can "see" the nonterminal variables in scope.
+	Parser_DeclareNonterminals(pattern, parser->currentScope, rulePosition);
 
 	// Parse the substitution expression in the syntax rule's scope.
 	parseError = Parser_ParseExpr(parser, &replacement, modeFlags);

@@ -38,13 +38,12 @@
 /// The Smile parser.
 /// </summary>
 struct ParserStruct {
-
-	Lexer lexer;							// The lexer, which provides the source token stream.
-
-	ParseScope currentScope;				// The current parsing scope.
-
+	Lexer lexer;	// The lexer, which provides the source token stream.
+		
+	ParseScope currentScope;	// The current parsing scope.
+	Int32Int32Dict customFollowSet;	// The set of tokens that follow in the current custom syntax rule.
+		
 	SmileList firstMessage, lastMessage;	// A list of messages (errors/warnings) generated during the parse.
-
 };
 
 //-------------------------------------------------------------------------------------------------

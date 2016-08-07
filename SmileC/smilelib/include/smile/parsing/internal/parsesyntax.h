@@ -8,6 +8,9 @@
 #ifndef __SMILE_DICT_INT32DICT_H__
 #include <smile/dict/int32dict.h>
 #endif
+#ifndef __SMILE_DICT_INT32INT32DICT_H__
+#include <smile/dict/int32int32dict.h>
+#endif
 #ifndef __SMILE_SMILETYPES_PREDECL_H__
 #include <smile/smiletypes/predecl.h>
 #endif
@@ -25,10 +28,10 @@
 /// followed by certain tokens, depending on what class of nonterminal they are.
 /// </summary>
 struct ParserSyntaxNodeStruct {
-	Int32 referenceCount;	// For copy-on-write behavior.
-	Bool isNonterminal;	// Does the dictionary consist of a single nonterminal?
-	Byte reserved[3];	// Reserved for padding/alignment.
-	Int32Dict nextDict;	// Possible next states, keyed by keyword/symbol or nonterminal name.
+	UInt32 referenceCount;	// For copy-on-write behavior.
+	UInt32 nodeID;	// A unique ID for this node (used for caching FOLLOW sets and transition tables for nonterminals).
+	Int32Dict nextTerminals;	// Possible next states, keyed by keyword/symbol.
+	Int32Dict nextNonterminals;	// Possible next states, keyed by nonterminal.
 		
 	Int8 repetitionKind;	// Either 0 (no repetition), '?' for optional, '*' for zero-or-more, '+' for one-or-more.
 	Int8 repetitionSep;	// Either 0 (no separator), ',' for comma, or ';' for semicolon.
@@ -49,10 +52,10 @@ struct ParserSyntaxNodeStruct {
 /// the layout of one struct without changing the layout of the other, because some code depends
 /// on the layouts matching.</remarks>
 struct ParserSyntaxClassStruct {
-	Int32 referenceCount;	// For copy-on-write behavior.
-	Bool isNonterminal;	// Does the dictionary consist of a single nonterminal?
-	Byte reserved[3];	// Reserved for padding/alignment.
-	Int32Dict nextDict;	// Possible root states, keyed by keyword/symbol or nonterminal name.
+	UInt32 referenceCount;	// For copy-on-write behavior.
+	UInt32 nodeID;	// A unique ID for this node (used for caching FOLLOW sets and transition tables for nonterminals).
+	Int32Dict nextTerminals;	// Possible root states, keyed by keyword/symbol.
+	Int32Dict nextNonterminals;	// Possible root states, keyed by nonterminal.
 };
 
 /// <summary>
@@ -65,6 +68,10 @@ struct ParserSyntaxTableStruct {
 	Int referenceCount;	// For copy-on-write behavior.
 	Int32Dict syntaxClasses;	// Key is syntax level, value is a SyntaxClass.
 		
+	Int32Dict firstSets;	// Cached FIRST sets for the nonterminals in this table.  Not copied when we fork the table.
+	Int32Dict followSets;	// Cached FOLLOW sets for the nonterminal nodes in this table.  Not copied when we fork the table.
+	Int32Dict transitionTables;	// Cached transition tables for every nonterminal node in this table.  Not copied when we fork the table.
+		
 	// Special syntax classes, for fast lookup.  These trees correspond to known built-in syntax-production names.
 	ParserSyntaxClass stmtClass;	
 	ParserSyntaxClass exprClass;	
@@ -74,7 +81,7 @@ struct ParserSyntaxTableStruct {
 	ParserSyntaxClass binaryClass;	// Note: RValue of BINARY (or more restrictive form) is assumed to exist before tree.
 	ParserSyntaxClass unaryClass;	
 	ParserSyntaxClass postfixClass;	// Note: RValue of POSTFIX (or more restrictive form) is assumed to exist before tree.
-	ParserSyntaxClass termClass;
+	ParserSyntaxClass termClass;	
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -83,6 +90,9 @@ struct ParserSyntaxTableStruct {
 SMILE_API_FUNC ParserSyntaxTable ParserSyntaxTable_CreateNew(void);
 SMILE_API_FUNC Bool ParserSyntaxTable_AddRule(Parser parser, ParserSyntaxTable *table, SmileSyntax rule);
 SMILE_API_FUNC Bool ParserSyntaxTable_SetupDefaultRules(Parser parser, ParserSyntaxTable *table);
+SMILE_API_FUNC Int32Int32Dict ParserSyntaxTable_GetFirstSet(ParserSyntaxTable table, Symbol nonterminal);
+SMILE_API_FUNC Int32Int32Dict ParserSyntaxTable_GetFollowSet(ParserSyntaxTable table, ParserSyntaxNode node);
+SMILE_API_FUNC Int32Dict ParserSyntaxTable_GetTransitionTable(ParserSyntaxTable table, ParserSyntaxNode node);
 
 /// <summary>
 /// Increase the reference count for the given syntax table, so that it knows

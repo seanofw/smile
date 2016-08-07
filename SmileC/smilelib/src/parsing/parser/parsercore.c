@@ -31,6 +31,7 @@ Parser Parser_Create(void)
 	Parser parser = GC_MALLOC_STRUCT(struct ParserStruct);
 	parser->lexer = NULL;
 	parser->currentScope = NULL;
+	parser->customFollowSet = NULL;
 	LIST_INIT(parser->firstMessage, parser->lastMessage);
 	return parser;
 }
@@ -91,6 +92,7 @@ ParseError Parser_ParseScope(Parser parser, SmileObject *expr)
 	LIST_INIT(head, tail);
 	Parser_ParseExprsOpt(parser, &head, &tail, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
 
+	closureInfo = parser->currentScope->closure->closureInfo;
 	Parser_EndScope(parser);
 
 	if ((token = Parser_NextToken(parser))->kind != TOKEN_RIGHTBRACE) {
@@ -98,8 +100,6 @@ ParseError Parser_ParseScope(Parser parser, SmileObject *expr)
 		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), ExpectedCloseBraceError);
 		return parseError;
 	}
-
-	closureInfo = parser->currentScope->closure->closureInfo;
 
 	if (closureInfo->numVariables == 0) {
 		*expr = (SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects.prognSymbol, (SmileObject)head, startPosition);

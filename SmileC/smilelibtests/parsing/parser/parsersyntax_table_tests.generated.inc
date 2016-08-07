@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: b0704e2ebd266ed9c5ec9940c1caddac
+// SourceHash: 60fc51884bcbd8a7f3506aeef0702c03
 
 START_TEST_SUITE(ParserSyntaxTableTests)
 {
@@ -15,16 +15,11 @@ START_TEST_SUITE(ParserSyntaxTableTests)
 	CanAddRulesWithRepeatingZeroOrMoreNonterminals,
 	CanAddRulesWithRepeatingZeroOrOneNonterminals,
 	CanAddRulesThatAreRightRecursive,
-	CannotAddRulesWithInitialNonterminalForks,
-	CannotAddRulesWithMiddleNonterminalForks,
-	CannotAddRulesWithFinalNonterminalForks,
 	CannotAddRulesWithNullReplacements,
 	CannotAddRulesThatAreDuplicatesExceptForTheReplacement,
 	CannotAddRulesThatAreDuplicates,
 	CannotAddRulesWhoseInitialNonterminalsRepeatZeroOrMoreTimes,
 	CannotAddRulesWhoseInitialNonterminalsRepeatZeroOrOneTimes,
-	CannotAddRulesWhoseInitialNonterminalsAreCrossReferential,
-	CannotAddRulesWhoseInitialNonterminalsAreIndirectlyCrossReferential,
 }
 END_TEST_SUITE(ParserSyntaxTableTests)
 

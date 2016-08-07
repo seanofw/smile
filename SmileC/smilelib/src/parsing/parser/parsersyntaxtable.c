@@ -16,6 +16,7 @@
 //---------------------------------------------------------------------------------------
 
 #include <smile/types.h>
+#include <smile/atomic.h>
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/smilepair.h>
 #include <smile/smiletypes/smilesyntax.h>
@@ -38,6 +39,8 @@ static Bool ParserSyntaxClass_Extend(Parser parser, LexerPosition position,
 
 static ParserSyntaxTable ParserSyntaxTable_VFork(ParserSyntaxTable table);
 static Bool ParserSyntaxTable_ValidateRuleWithInitialNonterminal(ParserSyntaxTable table, Symbol rootNonterminal, Symbol firstNonterminal);
+
+static UInt32 UniqueNodeID = 0;
 
 //-------------------------------------------------------------------------------------------------
 // Static data.
@@ -71,9 +74,9 @@ static ParserSyntaxNode ParserSyntaxNode_CreateInternal(Symbol name, Symbol vari
 {
 	ParserSyntaxNode syntaxNode = GC_MALLOC_STRUCT(struct ParserSyntaxNodeStruct);
 
-	syntaxNode->isNonterminal = False;
 	syntaxNode->referenceCount = 1;
-	syntaxNode->nextDict = NULL;
+	syntaxNode->nextTerminals = NULL;
+	syntaxNode->nextNonterminals = NULL;
 
 	syntaxNode->name = name;
 	syntaxNode->variable = variable;
@@ -82,6 +85,8 @@ static ParserSyntaxNode ParserSyntaxNode_CreateInternal(Symbol name, Symbol vari
 	syntaxNode->repetitionSep = (Int8)repetitionSep;
 
 	syntaxNode->replacement = NullObject;
+
+	syntaxNode->nodeID = Atomic_IncrementInt32(&UniqueNodeID);
 
 	return syntaxNode;
 }
@@ -99,8 +104,9 @@ static ParserSyntaxClass ParserSyntaxClass_CreateNew(void)
 	ParserSyntaxClass cls = GC_MALLOC_STRUCT(struct ParserSyntaxClassStruct);
 
 	cls->referenceCount = 1;
-	cls->nextDict = NULL;
-	cls->isNonterminal = False;
+	cls->nextTerminals = NULL;
+	cls->nextNonterminals = NULL;
+	cls->nodeID = Atomic_IncrementInt32(&UniqueNodeID);
 
 	return cls;
 }
@@ -138,8 +144,8 @@ static ParserSyntaxClass ParserSyntaxClass_VFork(ParserSyntaxClass cls)
 	newCls = GC_MALLOC_STRUCT(struct ParserSyntaxClassStruct);
 
 	newCls->referenceCount = 1;
-	newCls->nextDict = Int32Dict_Clone(cls->nextDict, ParserSyntaxClass_DictClone, NULL);
-	newCls->isNonterminal = cls->isNonterminal;
+	newCls->nextTerminals = Int32Dict_Clone(cls->nextTerminals, ParserSyntaxClass_DictClone, NULL);
+	newCls->nextNonterminals = Int32Dict_Clone(cls->nextNonterminals, ParserSyntaxClass_DictClone, NULL);
 
 	return newCls;
 }
@@ -264,96 +270,59 @@ static Bool ParserSyntaxClass_Extend(Parser parser, LexerPosition position,
 {
 	ParserSyntaxClass newCls = cls;
 	ParserSyntaxNode syntaxNode;
-	Int32DictKeyValuePair firstPair;
 	Int32Dict nextDict;
-	Bool nextIsNonterminal;
 
-	nextIsNonterminal = (parent == NULL ? newCls->isNonterminal : parent->isNonterminal);
-	nextDict = (parent == NULL ? newCls->nextDict : parent->nextDict);
+	if (parent == NULL) {
+		parent = (ParserSyntaxNode)cls;
+	}
 
-	if (nextDict == NULL) {
-		// No dictionary at this level yet.
-
-		if (parent == NULL) {
-			// Empty root dictionary, so create it, and add the first node.
+	if ((!variable && parent->nextTerminals == NULL) || (variable && parent->nextNonterminals == NULL)) {
+		// No dictionary at this level yet, so create one, and add the new node to it.
+		if (newCls->referenceCount > 1) {
+			newCls = ParserSyntaxClass_VFork(newCls);
+		}
+		nextDict = variable	? (parent->nextNonterminals	= Int32Dict_CreateWithSize(4))
+			: (parent->nextTerminals	= Int32Dict_CreateWithSize(4));
+		syntaxNode = ParserSyntaxNode_CreateInternal(name, variable, repetitionKind, repetitionSep);
+		Int32Dict_Add(nextDict, name, syntaxNode);
+	}
+	else if (variable) {
+		// This is a nonterminal that we'd like to add to a preexisting dictionary.
+		
+		if (!Int32Dict_TryGetValue(parent->nextNonterminals, name, &syntaxNode)) {
+			// Nonterminal doesn't exist yet, so it's safe to add it.
 			if (newCls->referenceCount > 1) {
 				newCls = ParserSyntaxClass_VFork(newCls);
 			}
-			newCls->nextDict = Int32Dict_CreateWithSize(4);
-			newCls->isNonterminal = (variable != 0);
 			syntaxNode = ParserSyntaxNode_CreateInternal(name, variable, repetitionKind, repetitionSep);
-			Int32Dict_Add(newCls->nextDict, name, syntaxNode);
+			Int32Dict_Add(parent->nextNonterminals, name, syntaxNode);
+		}
+		if (syntaxNode->name == name && (syntaxNode->repetitionKind != repetitionKind || syntaxNode->repetitionSep != repetitionSep)) {
+			// Error: Can't fork nonterminal --> nonterminal with different repeat behavior.
+			Parser_AddError(parser, position, "Cannot add syntax rule because the nonterminal \"%S %S\" has different repeat behavior from other nonterminals in the same position in their rules.",
+				SymbolTable_GetName(Smile_SymbolTable, name),
+				SymbolTable_GetName(Smile_SymbolTable, variable));
+			return False;
 		}
 		else {
-			// Make sure we're not adding a nonterminal in such a way that the resulting tree
-			// is no longer deterministically parseable.
-			if (variable != 0 && parent->replacement != NullObject) {
-				Parser_AddError(parser, position, "Cannot add syntax rule because it forks the tree on the nonterminal \"%S %S\".",
-					SymbolTable_GetName(Smile_SymbolTable, name),
-					SymbolTable_GetName(Smile_SymbolTable, variable));
-				return False;
-			}
-
-			// There is no child dictionary yet, so create it, and add the first node.
-			if (newCls->referenceCount > 1) {
-				newCls = ParserSyntaxClass_VFork(newCls);
-			}
-			parent->nextDict = Int32Dict_CreateWithSize(4);
-			parent->isNonterminal = (variable != 0);
-			syntaxNode = ParserSyntaxNode_CreateInternal(name, variable, repetitionKind, repetitionSep);
-			Int32Dict_Add(parent->nextDict, name, syntaxNode);
+			// A nonterminal correctly mimicked in a new rule.
+			// Nothing to do here.
 		}
 	}
 	else {
-		// Preexisting dictionary at this level.
+		// This is a nonterminal that we'd like to add to a preexisting dictionary.
 
-		if (nextIsNonterminal) {
-			// This dictionary contains only a single nonterminal.
-
-			firstPair = Int32Dict_GetFirst(nextDict);
-			syntaxNode = (ParserSyntaxNode)firstPair.value;
-			if (variable == 0) {
-				// Error: Can't fork nonterminal --> terminal.
-				Parser_AddError(parser, position, "Cannot add syntax rule because it forks the tree on the nonterminal \"%S %S\".",
-					SymbolTable_GetName(Smile_SymbolTable, syntaxNode->name),
-					SymbolTable_GetName(Smile_SymbolTable, syntaxNode->variable));
-				return False;
-			}
-			if (syntaxNode->name != name || syntaxNode->variable != variable
-				|| syntaxNode->repetitionKind != repetitionKind || syntaxNode->repetitionSep != repetitionSep) {
-				// Error: Can't fork nonterminal --> different nonterminal.
-				Parser_AddError(parser, position, "Cannot add syntax rule because it forks the tree on the nonterminal \"%S %S\".",
-					SymbolTable_GetName(Smile_SymbolTable, name),
-					SymbolTable_GetName(Smile_SymbolTable, variable));
-				return False;
-			}
-			else {
-				// Just a nonterminal, correctly mimicked in a new rule.
-				// Nothing to do here.
-			}
+		if (Int32Dict_TryGetValue(parent->nextTerminals, name, &syntaxNode)) {
+			// Just a terminal, correctly mimicked in a new rule.
+			// Nothing to do here.
 		}
 		else {
-			// This dictionary is a collection of one or more terminals.
-
-			if (variable != 0) {
-				// Error: Can't fork terminal --> nonterminal.
-				Parser_AddError(parser, position, "Cannot add syntax rule because it forks the tree on the nonterminal \"%S %S\".",
-					SymbolTable_GetName(Smile_SymbolTable, name),
-					SymbolTable_GetName(Smile_SymbolTable, variable));
-				return False;
+			// Terminal doesn't exist yet, so it's safe to add it.
+			if (newCls->referenceCount > 1) {
+				newCls = ParserSyntaxClass_VFork(newCls);
 			}
-			else if (Int32Dict_TryGetValue(nextDict, name, (void **)&syntaxNode)) {
-				// Just a terminal, correctly mimicked in a new rule.
-				// Nothing to do here.
-			}
-			else {
-				// Forking the syntax tree at a terminal.
-				if (newCls->referenceCount > 1) {
-					newCls = ParserSyntaxClass_VFork(newCls);
-				}
-				syntaxNode = ParserSyntaxNode_CreateInternal(name, variable, repetitionKind, repetitionSep);
-				Int32Dict_Add(nextDict, name, syntaxNode);
-			}
+			syntaxNode = ParserSyntaxNode_CreateInternal(name, variable, repetitionKind, repetitionSep);
+			Int32Dict_Add(parent->nextTerminals, name, syntaxNode);
 		}
 	}
 
@@ -378,6 +347,9 @@ ParserSyntaxTable ParserSyntaxTable_CreateNew(void)
 
 	syntaxTable->referenceCount = 1;
 	syntaxTable->syntaxClasses = Int32Dict_Create();
+
+	syntaxTable->firstSets = NULL;
+	syntaxTable->followSets = NULL;
 
 	syntaxTable->stmtClass = NULL;
 	syntaxTable->exprClass = NULL;
@@ -411,6 +383,9 @@ static ParserSyntaxTable ParserSyntaxTable_VFork(ParserSyntaxTable table)
 	newTable->referenceCount = 1;
 	newTable->syntaxClasses = Int32Dict_Clone(table->syntaxClasses, ParserSyntaxClass_DictClone, NULL);
 
+	newTable->firstSets = NULL;
+	newTable->followSets = NULL;
+
 	newTable->stmtClass = table->stmtClass;
 	newTable->exprClass = table->exprClass;
 	newTable->cmpClass = table->cmpClass;
@@ -424,88 +399,232 @@ static ParserSyntaxTable ParserSyntaxTable_VFork(ParserSyntaxTable table)
 	return newTable;
 }
 
-/// <summary>
-/// Test to ensure that this new rule with an initial nonterminal will not result
-/// in an infinite loop when trying to match it during the actual parsing.
-/// </summary>
-/// <remarks>
-/// <p>This starts at the given root for the new rule (i.e., the nonterminal/class that is
-/// about to have a new rule assigned to it), and recursively traverses through the list
-/// of all possible initial nonterminals pointed to by its next state.  This sequence
-/// must be a directed list that terminates, and not circular; and this function ensures
-/// that the precondition that it is a directed list continues to hold.</p>
-///
-/// <p>What kind of rules can generate an invalid structure?  Consider the simple rules below:</p>
-///
-/// <ul>
-/// <li><code>add ::= mul '+' mul | mul</code></li>
-/// <li><code>mul ::= add '*' add | add</code></li>
-/// </ul>
-///
-/// <p>In this grammar, the author is clearly trying to write a grammar for arithmetic,
-/// but got the precedence rules wrong in the defintion of 'mul'.  Because 'add' is
-/// defined in terms of 'mul', and 'mul' is defined in terms of 'add', this grammar
-/// would result in an infinite loop trying to resolve either 'add' or 'mul':  The
-/// parser would arrive in the 'add' rule, see that 'mul' is the first nonterminal,
-/// go to the 'mul' rule, see that 'add' is the first nonterminal, go to the 'add'
-/// rule, and so on.  This grammar is neither LL(k) nor LR(k), and in fact, would cause
-/// most other parser-generators to fail with an error as well.</p>
-///
-/// </p>(There are scenarios that involve more legitimate grammars than this one, but
-/// this is an easy case to understand.)</p>
-///
-/// <p>Other parser-generators can handle some variations on this that pop up in other
-/// LL(k) and LR(k) grammars, but the Smile internal parser cannot.  So to ensure that
-/// the Smile parser doesn't loop forever, we recursively walk the tree from the root
-/// of each new rule that starts with a nonterminal and make sure that we never arrive
-/// back at the same root.</p>
-///
-/// <p>This search takes at most O(n) time, where n is the number of rules, and
-/// potentially O(n) stack space for the recursion.  However, the number of rules is
-/// usually bounded in practice, and is rarely greater than some small constant k.</p>
-/// </remarks>
-/// <param name="table">The syntax table that contains all the current rules.</param>
-/// <param name="rootNonterminal">The root (class symbol) of the would-be new rule.</param>
-/// <param name="firstNonterminal">The first nonterminal symbol of the would-be new rule.</param>
-/// <returns>True if this rule is valid, or false if it would result in an
-/// infinitely-circular grammar.</returns>
-static Bool ParserSyntaxTable_ValidateRuleWithInitialNonterminal(ParserSyntaxTable table, Symbol rootNonterminal, Symbol firstNonterminal)
+static void ParserSyntaxTable_RecursivelyComputeFirstSet(ParserSyntaxTable table, Symbol nonterminal, Int32Int32Dict firstSet, Int32Int32Dict nonterminalsSeen)
 {
-	Symbol currentNonterminal;
 	ParserSyntaxClass syntaxClass;
-	Int32DictKeyValuePair pair;
 
-	// In this algorithm, we simply walk the list.  Previous invocations of this function
-	// have ensured that the initial nonterminals of all the rules so far must form a list,
-	// so we don't need to use algorithms the "trail of breadcrumbs" or "tortoise-and-hare"
-	// to ensure we don't have circles; we merely need to see if the current set of rules,
-	// starting from 'nextNonterminal', would eventually get us back to the 'rootNonterminal'
-	// that would own 'nextNonterminal' if this rule were added.
-	for (currentNonterminal = firstNonterminal; currentNonterminal != rootNonterminal; ) {
+	// See if we've already processed this nonterminal.  If so, abort.
+	if (!Int32Int32Dict_Add(nonterminalsSeen, nonterminal, 0))
+		return;
 
-		// Find the rule pointed-to by the current nonterminal.
-		if (!Int32Dict_TryGetValue(table->syntaxClasses, currentNonterminal, &syntaxClass)) {
-			// If we got here, then we ended up nowhere (i.e., this set of syntax rules is
-			// incomplete). This is not necessarily an error, since we may not have
-			// encountered the rest of the syntax rules yet.
-			return True;
-		}
-	
-		if (!syntaxClass->isNonterminal) {
-			// This syntax class starts with a terminal, so it can't result in a loop.
-			return True;
-		}
-
-		// By definition, the dictionary associated with a nonterminal must have one entry
-		// in it, since you cannot fork rules on nonterminals.
-		pair = Int32Dict_GetFirst(syntaxClass->nextDict);
-	
-		// Move to the nonterminal that starts this rule.
-		currentNonterminal = ((ParserSyntaxNode)pair.value)->name;
+	// Find the rule pointed-to by the current nonterminal.
+	if (!Int32Dict_TryGetValue(table->syntaxClasses, nonterminal, &syntaxClass)) {
+		// If we got here, then we ended up nowhere (i.e., this set of syntax rules is
+		// incomplete or broken or something).
+		return;
 	}
 
-	// Found a recursive loop.
-	return False;
+	if (syntaxClass->nextTerminals != NULL) {
+		// This syntax class has terminals that start it, so add them to the FIRST set.
+		Int32 *keys = Int32Dict_GetKeys(syntaxClass->nextTerminals);
+		Int32 numKeys = Int32Dict_Count(syntaxClass->nextTerminals);
+	
+		while (numKeys--) {
+			Int32Int32Dict_Add(firstSet, *keys++, 0);
+		}
+	}
+
+	if (syntaxClass->nextNonterminals != NULL) {
+		// This syntax class has nonterminals that start it, so recurse on them.
+		Int32 *keys = Int32Dict_GetKeys(syntaxClass->nextTerminals);
+		Int32 numKeys = Int32Dict_Count(syntaxClass->nextTerminals);
+	
+		while (numKeys--) {
+			Symbol nextNonterminal = *keys++;
+			ParserSyntaxTable_RecursivelyComputeFirstSet(table, nextNonterminal, firstSet, nonterminalsSeen);
+		}
+	}
+}
+
+/// <summary>
+/// Compute the FIRST set, which describes which input symbols are matchable by the leftmost
+/// terminals and nonterminals in all the rules for this nonterminal.  For example, given
+/// this grammar:
+///
+///    addexpr ::= mulexpr '+' addexpr | mulexpr
+///    mulexpr ::= unary '*' mulexpr | unary
+///    unary ::= '-' unary | term
+///    term ::= IDENT | NUMBER
+///
+/// The FIRST set for addexpr is ['-', IDENT, NUMBER].
+/// </summary>
+/// <param name="table">The syntax table that records the grammar containing this node.</param>
+/// <param name="node">The node for which you would like to retrieve the FOLLOW set.</param>
+/// <returns>The return value is a dictionary whose keys are the FOLLOW set (and whose values are all zero).</returns>
+static Int32Int32Dict ParserSyntaxTable_ComputeFirstSet(ParserSyntaxTable table, Symbol nonterminal)
+{
+	Int32Int32Dict firstSet = Int32Int32Dict_Create();
+	Int32Int32Dict nonterminalsSeen = Int32Int32Dict_Create();
+
+	ParserSyntaxTable_RecursivelyComputeFirstSet(table, nonterminal, firstSet, nonterminalsSeen);
+
+	return firstSet;
+}
+
+/// <summary>
+/// Compute the FOLLOW set, which describes which input symbols should cause us to
+/// exit the given nonterminal node.  For example, given this grammar:
+///
+///    addexpr ::= mulexpr '+' addexpr | mulexpr
+///    mulexpr ::= unary '*' mulexpr | unary
+///    unary ::= '-' unary | term
+///    term ::= IDENT | NUMBER
+///
+/// The FOLLOW set for the first 'mulexpr' in the 'addexpr' rule is ['+'], which means
+/// that while processing 'mulexpr' in that position or anything recursively deeper than
+/// it, if we see a '+' symbol in the input, we should use it to escape the deeper rules
+/// and resume processing the 'addexpr'.
+/// </summary>
+/// <param name="table">The syntax table that records the grammar containing this node.</param>
+/// <param name="node">The node for which you would like to retrieve the FOLLOW set.</param>
+/// <returns>The return value is a dictionary whose keys are the FOLLOW set (and whose values are all zero).</returns>
+static Int32Int32Dict ParserSyntaxTable_ComputeFollowSet(ParserSyntaxTable table, ParserSyntaxNode node)
+{
+	Int32Int32Dict followSet = Int32Int32Dict_Create();
+
+	if (node->nextTerminals != NULL) {
+		// This node class has terminals that are in its next-state dictionary, so add them to the FOLLOW set.
+		Int32 *terminals = Int32Dict_GetKeys(node->nextTerminals);
+		Int32 numTerminals = Int32Dict_Count(node->nextTerminals);
+	
+		while (numTerminals--) {
+			Int32Int32Dict_Add(followSet, *terminals++, 0);
+		}
+	}
+
+	if (node->nextNonterminals != NULL) {
+		// This syntax class has nonterminals that are in its next-state dictionary, so add the union of their
+		// FIRST sets to the FOLLOW set.
+		Int32 *nextNonterminals = Int32Dict_GetKeys(node->nextNonterminals);
+		Int32 numNextNonterminals = Int32Dict_Count(node->nextNonterminals);
+
+		while (numNextNonterminals--) {
+			// Get the FIRST set for this nonterminal.
+			Symbol nextNonterminal = *nextNonterminals++;
+			Int32Int32Dict firstSet = ParserSyntaxTable_GetFirstSet(table, nextNonterminal);
+
+			Int32 *terminals = Int32Int32Dict_GetKeys(firstSet);
+			Int32 numTerminals = Int32Int32Dict_Count(firstSet);
+
+			// Union the full FIRST set for this nonterminal into the FOLLOW set for this node.
+			while (numTerminals--) {
+				Int32Int32Dict_Add(followSet, *terminals++, 0);
+			}
+		}
+	}
+
+	return followSet;
+}
+
+/// <summary>
+/// Compute the transition table that describes where to go from the given node.
+/// This table is a straightforward dictionary mapping input symbols to next nodes.
+/// </summary>
+/// <param name="table">The syntax table that records the grammar containing this node.</param>
+/// <param name="node">The node for which you would like to retrieve a transition-out table.</param>
+/// <returns>A suitable transition table for that node, or NULL if the grammar is ambigious
+/// (within the limitations of LL(1)) after this node.</returns>
+static Int32Dict ParserSyntaxTable_ComputeTransitionTable(ParserSyntaxTable table, ParserSyntaxNode node)
+{
+	Int32Dict transitionTable = Int32Dict_Create();
+	
+	if (node->nextTerminals != NULL) {
+		// This node has terminals that follow it, so create transitions for them.
+		Int32DictKeyValuePair *pair = Int32Dict_GetAll(node->nextTerminals);
+		Int32 numPairs = Int32Dict_Count(node->nextTerminals);
+
+		for (; numPairs--; pair++) {
+			if (!Int32Dict_Add(transitionTable, pair->key, pair->value)) {
+				// Well, nuts.  We have a conflict, i.e., an ambiguous grammar.
+				return NULL;
+			}
+		}
+	}
+
+	if (node->nextNonterminals != NULL) {
+		// This node has nonterminals that follow it, so create transitions for their respective FIRST sets.
+		Int32DictKeyValuePair *pair = Int32Dict_GetAll(node->nextNonterminals);
+		Int32 numPairs = Int32Dict_Count(node->nextNonterminals);
+
+		for (; numPairs--; pair++) {
+			// Get the FIRST set for this nonterminal.
+			Int32Int32Dict firstSet = ParserSyntaxTable_GetFirstSet(table, pair->key);
+
+			Int32 *terminal = Int32Int32Dict_GetKeys(firstSet);
+			Int32 numTerminals = Int32Int32Dict_Count(firstSet);
+
+			// Union the full FIRST set for this nonterminal into the FOLLOW set for this node.
+			for (; numTerminals--; terminal++) {
+				if (!Int32Dict_Add(transitionTable, *terminal, pair->value)) {
+					// Well, nuts.  We have a conflict, i.e., an ambiguous grammar.
+					return NULL;
+				}
+			}
+		}
+	}
+
+	return transitionTable;
+}
+
+Int32Int32Dict ParserSyntaxTable_GetFirstSet(ParserSyntaxTable table, Symbol nonterminal)
+{
+	Int32Int32Dict firstSet;
+
+	if (!Int32Dict_TryGetValue(table->firstSets, nonterminal, &firstSet)) {
+		firstSet = ParserSyntaxTable_ComputeFirstSet(table, nonterminal);
+		Int32Dict_Add(table->firstSets, nonterminal, firstSet);
+	}
+	
+	return firstSet;
+}
+
+/// <summary>
+/// Get the FOLLOW set, which describes which input symbols should cause us to
+/// exit the given nonterminal node.  For example, given this grammar:
+///
+///    addexpr ::= mulexpr '+' addexpr | mulexpr
+///    mulexpr ::= unary '*' mulexpr | unary
+///    unary ::= '-' unary | term
+///    term ::= IDENT | NUMBER
+///
+/// The FOLLOW set for the first 'mulexpr' in the 'addexpr' rule is ['+'], which means
+/// that while processing 'mulexpr' in that position or anything recursively deeper than
+/// it, if we see a '+' symbol in the input, we should use it to escape the deeper rules
+/// and resume processing the 'addexpr'.
+/// </summary>
+/// <param name="table">The syntax table that records the grammar containing this node.</param>
+/// <param name="node">The node for which you would like to retrieve the FOLLOW set.</param>
+/// <returns>The return value is a dictionary whose keys are the FOLLOW set (and whose values are all zero).</returns>
+Int32Int32Dict ParserSyntaxTable_GetFollowSet(ParserSyntaxTable table, ParserSyntaxNode node)
+{
+	Int32Int32Dict followSet;
+
+	if (!Int32Dict_TryGetValue(table->followSets, node->nodeID, &followSet)) {
+		followSet = ParserSyntaxTable_ComputeFollowSet(table, node);
+		Int32Dict_Add(table->firstSets, node->nodeID, followSet);
+	}
+
+	return followSet;
+}
+
+/// <summary>
+/// Get the transition table that describes where to go from the given node.
+/// This table is a straightforward dictionary mapping input symbols to next nodes.
+/// </summary>
+/// <param name="table">The syntax table that records the grammar containing this node.</param>
+/// <param name="node">The node for which you would like to retrieve a transition-out table.</param>
+/// <returns>A suitable transition table for that node, or NULL if the grammar is ambigious
+/// (within the limitations of LL(1)) after this node.</returns>
+Int32Dict ParserSyntaxTable_GetTransitionTable(ParserSyntaxTable table, ParserSyntaxNode node)
+{
+	Int32Dict transitionTable;
+
+	if (!Int32Dict_TryGetValue(table->transitionTables, node->nodeID, &transitionTable)) {
+		transitionTable = ParserSyntaxTable_ComputeTransitionTable(table, node);
+		Int32Dict_Add(table->transitionTables, node->nodeID, transitionTable);
+	}
+
+	return transitionTable;
 }
 
 /// <summary>
@@ -620,16 +739,6 @@ Bool ParserSyntaxTable_AddRule(Parser parser, ParserSyntaxTable *table, SmileSyn
 			case SMILE_KIND_NONTERMINAL:
 				// This is a nonterminal in the pattern (i.e., a reference to another rule).
 				nonterminal = ((SmileNonterminal)pattern->a);
-
-				// If this is a leftmost nonterminal, then go make sure this new rule wouldn't
-				// result in an infinite loop during parsing.
-				if (numNodes == 0) {
-					if (!ParserSyntaxTable_ValidateRuleWithInitialNonterminal(syntaxTable, rule->nonterminal, nonterminal->nonterminal)) {
-						Parser_AddMessage(parser, ParseMessage_Create(PARSEMESSAGE_ERROR, rule->position,
-							IllegalInitialNonterminalError));
-						return False;
-					}
-				}
 
 				// Figure out what kind of repeat they want, if any.
 				if (nonterminal->repeat == Smile_KnownSymbols.question_mark) {
