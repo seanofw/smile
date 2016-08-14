@@ -30,13 +30,7 @@ TEST_SUITE(ParserSyntaxWalkTests)
 
 STATIC_STRING(TestFilename, "test.sm");
 
-START_TEST(Dummy)
-{
-}
-END_TEST
-
-/*
-TART_TEST(CanReplaceSimpleTerminalForms)
+START_TEST(CanReplaceSimpleTerminalForms)
 {
 	Lexer lexer = SetupLexer(
 		"#syntax STMT: [foo] => 123\n"
@@ -54,7 +48,7 @@ TART_TEST(CanReplaceSimpleTerminalForms)
 }
 END_TEST
 
-TART_TEST(CanReplaceMultiTerminalForms)
+START_TEST(CanReplaceMultiTerminalForms)
 {
 	Lexer lexer = SetupLexer(
 		"#syntax STMT: [foo bar baz] => 123\n"
@@ -72,7 +66,7 @@ TART_TEST(CanReplaceMultiTerminalForms)
 }
 END_TEST
 
-TART_TEST(CanReplaceFormsWithAKnownNonterminal)
+START_TEST(CanReplaceFormsWithAKnownNonterminal)
 {
 	Lexer lexer = SetupLexer(
 		"#syntax STMT: [foo [EXPR x] baz] => 123\n"
@@ -89,6 +83,98 @@ TART_TEST(CanReplaceFormsWithAKnownNonterminal)
 	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[(6 . +) 7]")));
 }
 END_TEST
-*/
+
+START_TEST(SubstitutionWorksWithAKnownNonterminal)
+{
+	Lexer lexer = SetupLexer(
+		"#syntax STMT: [foo [EXPR x] baz] => 123 + x\n"
+		"4 + 5\n"
+		"foo 999 baz\n"
+		"6 + 7\n"
+	);
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(RecursiveEquals(LIST_SECOND(result), SimpleParse("[(4 . +) 5]")));
+	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(123 . +) 999]")));
+	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[(6 . +) 7]")));
+}
+END_TEST
+
+START_TEST(SubstitutionOfComplexContentWorksWithAKnownNonterminal)
+{
+	Lexer lexer = SetupLexer(
+		"#syntax STMT: [foo [EXPR x] baz] => 123 + x\n"
+		"4 + 5\n"
+		"foo 8 * 9 / 10 baz\n"
+		"6 + 7\n"
+	);
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(RecursiveEquals(LIST_SECOND(result), SimpleParse("[(4 . +) 5]")));
+	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(123 . +) [([(8 . *) 9] . /) 10]]")));
+	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[(6 . +) 7]")));
+}
+END_TEST
+
+START_TEST(IfThenTest)
+{
+	Lexer lexer = SetupLexer(
+		"#syntax STMT: [if [EXPR x] then [STMT y]] => [\\if x y]\n"
+		"4 + 5\n"
+		"if 1 < 2 then 10\n"
+		"6 + 7\n"
+		);
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(RecursiveEquals(LIST_SECOND(result), SimpleParse("[(4 . +) 5]")));
+	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[if [(1 . <) 2] 10]")));
+	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[(6 . +) 7]")));
+}
+END_TEST
+
+START_TEST(IfThenElseTest)
+{
+	Lexer lexer = SetupLexer(
+		"#syntax STMT: [if [EXPR x] then [STMT y] else [STMT z]] => [\\if x y z]\n"
+		"4 + 5\n"
+		"if 1 < 2 then 10 else 20\n"
+		"6 + 7\n"
+		);
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(RecursiveEquals(LIST_SECOND(result), SimpleParse("[(4 . +) 5]")));
+	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[if [(1 . <) 2] 10 20]")));
+	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[(6 . +) 7]")));
+}
+END_TEST
+
+START_TEST(IfThenElseTestWithBothIfThenRules)
+{
+	Lexer lexer = SetupLexer(
+		"#syntax STMT: [if [EXPR x] then [STMT y]] => [\\if x y]\n"
+		"#syntax STMT: [if [EXPR x] then [STMT y] else [STMT z]] => [\\if x y z]\n"
+		"4 + 5\n"
+		"if 1 < 2 then 10\n"
+		"if 3 < 4 then 30 else 40\n"
+		"6 + 7\n"
+	);
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(4 . +) 5]")));
+	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[if [(1 . <) 2] 10]")));
+	ASSERT(RecursiveEquals(LIST_FIFTH(result), SimpleParse("[if [(3 . <) 4] 30 40]")));
+	ASSERT(RecursiveEquals(LIST_SIXTH(result), SimpleParse("[(6 . +) 7]")));
+}
+END_TEST
 
 #include "parsersyntax_walk_tests.generated.inc"

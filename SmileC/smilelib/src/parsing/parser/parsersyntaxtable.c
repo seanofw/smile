@@ -78,13 +78,13 @@ static ParserSyntaxNode ParserSyntaxNode_CreateInternal(Symbol name, Symbol vari
 	syntaxNode->nextTerminals = NULL;
 	syntaxNode->nextNonterminals = NULL;
 
+	syntaxNode->replacement = NullObject;
+
 	syntaxNode->name = name;
 	syntaxNode->variable = variable;
 
 	syntaxNode->repetitionKind = (Int8)repetitionKind;
 	syntaxNode->repetitionSep = (Int8)repetitionSep;
-
-	syntaxNode->replacement = NullObject;
 
 	syntaxNode->nodeID = Atomic_IncrementInt32(&UniqueNodeID);
 
@@ -107,6 +107,8 @@ static ParserSyntaxClass ParserSyntaxClass_CreateNew(void)
 	cls->nextTerminals = NULL;
 	cls->nextNonterminals = NULL;
 	cls->nodeID = Atomic_IncrementInt32(&UniqueNodeID);
+
+	cls->replacement = NullObject;
 
 	return cls;
 }
@@ -407,6 +409,23 @@ static void ParserSyntaxTable_RecursivelyComputeFirstSet(ParserSyntaxTable table
 	if (!Int32Int32Dict_Add(nonterminalsSeen, nonterminal, 0))
 		return;
 
+	// If we landed on one of the eight built-in rules, add the special "everything"
+	// marker to the rule's first set.
+	switch (nonterminal) {
+		case SMILE_SPECIAL_SYMBOL_STMT:
+		case SMILE_SPECIAL_SYMBOL_EXPR:
+		case SMILE_SPECIAL_SYMBOL_CMP:
+		case SMILE_SPECIAL_SYMBOL_ADDSUB:
+		case SMILE_SPECIAL_SYMBOL_MULDIV:
+		case SMILE_SPECIAL_SYMBOL_BINARY:
+		case SMILE_SPECIAL_SYMBOL_UNARY:
+		case SMILE_SPECIAL_SYMBOL_POSTFIX:
+		case SMILE_SPECIAL_SYMBOL_TERM:
+			Int32Int32Dict_Add(firstSet, -1, 0);
+			Int32Int32Dict_Add(nonterminalsSeen, -1, 0);
+			break;
+	}
+
 	// Find the rule pointed-to by the current nonterminal.
 	if (!Int32Dict_TryGetValue(table->syntaxClasses, nonterminal, &syntaxClass)) {
 		// If we got here, then we ended up nowhere (i.e., this set of syntax rules is
@@ -570,6 +589,10 @@ Int32Int32Dict ParserSyntaxTable_GetFirstSet(ParserSyntaxTable table, Symbol non
 {
 	Int32Int32Dict firstSet;
 
+	if (table->firstSets == NULL) {
+		table->firstSets = Int32Dict_Create();
+	}
+
 	if (!Int32Dict_TryGetValue(table->firstSets, nonterminal, &firstSet)) {
 		firstSet = ParserSyntaxTable_ComputeFirstSet(table, nonterminal);
 		Int32Dict_Add(table->firstSets, nonterminal, firstSet);
@@ -599,6 +622,10 @@ Int32Int32Dict ParserSyntaxTable_GetFollowSet(ParserSyntaxTable table, ParserSyn
 {
 	Int32Int32Dict followSet;
 
+	if (table->followSets == NULL) {
+		table->followSets = Int32Dict_Create();
+	}
+
 	if (!Int32Dict_TryGetValue(table->followSets, node->nodeID, &followSet)) {
 		followSet = ParserSyntaxTable_ComputeFollowSet(table, node);
 		Int32Dict_Add(table->firstSets, node->nodeID, followSet);
@@ -618,6 +645,10 @@ Int32Int32Dict ParserSyntaxTable_GetFollowSet(ParserSyntaxTable table, ParserSyn
 Int32Dict ParserSyntaxTable_GetTransitionTable(ParserSyntaxTable table, ParserSyntaxNode node)
 {
 	Int32Dict transitionTable;
+
+	if (table->transitionTables == NULL) {
+		table->transitionTables = Int32Dict_Create();
+	}
 
 	if (!Int32Dict_TryGetValue(table->transitionTables, node->nodeID, &transitionTable)) {
 		transitionTable = ParserSyntaxTable_ComputeTransitionTable(table, node);

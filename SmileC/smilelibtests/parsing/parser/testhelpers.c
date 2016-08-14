@@ -35,6 +35,10 @@ static SmileObject RecursiveSimpleParse(Lexer lexer)
 {
 	switch (Lexer_Next(lexer)) {
 
+	case TOKEN_EOI:
+		ASSERT(False);
+		return NullObject;
+
 	case TOKEN_LEFTBRACKET:
 	{
 		SmileList head = NullList, tail = NullList;
@@ -47,7 +51,6 @@ static SmileObject RecursiveSimpleParse(Lexer lexer)
 		}
 		return (SmileObject)head;
 	}
-	break;
 
 	case TOKEN_LEFTPARENTHESIS:
 	{
@@ -60,7 +63,6 @@ static SmileObject RecursiveSimpleParse(Lexer lexer)
 			ASSERT(False);
 		return (SmileObject)SmilePair_Create(left, right);
 	}
-	break;
 
 	case TOKEN_ALPHANAME:
 	case TOKEN_UNKNOWNALPHANAME:

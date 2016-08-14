@@ -76,14 +76,14 @@ ParseError Parser_ParseBaseExpr(Parser parser, SmileObject *expr, Int modeFlags)
 
 		default:
 			{
-				//CustomSyntaxResult customSyntaxResult;
-				//ParseError parseError;
+				CustomSyntaxResult customSyntaxResult;
+				ParseError parseError;
 				Lexer_Unget(parser->lexer);
-				//customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, Smile_KnownSymbols.STMT, &parseError);
-				//if (customSyntaxResult == CustomSyntaxResult_NotMatchedAndNoTokensConsumed) {
+				customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, Smile_KnownSymbols.STMT, &parseError);
+				if (customSyntaxResult == CustomSyntaxResult_NotMatchedAndNoTokensConsumed) {
 					return Parser_ParseOpEquals(parser, expr, (modeFlags & ~COMMAMODE_MASK) | COMMAMODE_NORMAL);
-				//}
-				//return parseError;
+				}
+				return parseError;
 			}
 	}
 }
@@ -416,10 +416,13 @@ ParseError Parser_ParseMulDiv(Parser parser, SmileObject *expr, Int modeFlags)
 	return NULL;
 }
 
-Inline Bool Parser_IsAcceptableArbitraryBinaryOperator(Symbol symbol)
+Inline Bool Parser_IsAcceptableArbitraryBinaryOperator(Parser parser, Symbol symbol)
 {
 	switch (symbol) {
 		default:
+			if (parser->customFollowSet != NULL) {
+				return !Int32Int32Dict_ContainsKey(parser->customFollowSet, symbol);
+			}
 			return True;
 
 		case SMILE_SPECIAL_SYMBOL_VAR:
@@ -470,7 +473,7 @@ ParseError Parser_ParseBinary(Parser parser, SmileObject *expr, Int modeFlags)
 
 	while (((token = Parser_NextToken(parser))->kind == TOKEN_UNKNOWNALPHANAME || token->kind == TOKEN_UNKNOWNPUNCTNAME)
 		&& ((modeFlags & BINARYLINEBREAKS_MASK) == BINARYLINEBREAKS_ALLOWED || !token->isFirstContentOnLine)
-		&& Parser_IsAcceptableArbitraryBinaryOperator(symbol = token->data.symbol)) {
+		&& Parser_IsAcceptableArbitraryBinaryOperator(parser, symbol = token->data.symbol)) {
 
 		lexerPosition = Token_GetPosition(token);
 

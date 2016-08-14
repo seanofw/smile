@@ -35,7 +35,8 @@ SMILE_INTERNAL_FUNC Int Lexer_ParseHyphenOrEquals(Lexer lexer, Int initialChar, 
 	 (token->_position.line = (Int32)lexer->line), \
 	 (token->_position.lineStart = (Int32)(lexer->lineStart - lexer->input)), \
 	 (token->_position.column = (Int32)((lexer->tokenStart = (__startPtr__)) - lexer->lineStart)), \
-	 (token->isFirstContentOnLine = isFirstContentOnLine))
+	 (token->isFirstContentOnLine = isFirstContentOnLine), \
+	 (token->hasEscapes = False))
 
 // End the current token as the given kind.
 #define END_TOKEN(__kind__) \

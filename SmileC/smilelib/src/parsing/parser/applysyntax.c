@@ -318,6 +318,65 @@ static CustomSyntaxResult Parser_RecursivelyApplyCustomSyntax(Parser parser, Smi
 	return *parseError != NULL ? CustomSyntaxResult_PartialApplicationWithError : CustomSyntaxResult_SuccessfullyParsed;
 }
 
+Inline Symbol GetSymbolForToken(Token token)
+{
+	Symbol tokenSymbol;
+
+	switch (token->kind) {
+
+		case TOKEN_ALPHANAME:
+		case TOKEN_UNKNOWNALPHANAME:
+		case TOKEN_PUNCTNAME:
+		case TOKEN_UNKNOWNPUNCTNAME:
+			// If this token had escapes in it, we treat it as an unknown generic name.  If it didn't,
+			// then we look it up in the symbol table to try to match it as a keyword.
+			tokenSymbol = token->hasEscapes ? -1 : SymbolTable_GetSymbolNoCreate(Smile_SymbolTable, token->text);
+			break;
+		
+		case TOKEN_COMMA:
+			tokenSymbol = SMILE_SPECIAL_SYMBOL_COMMA;
+			break;
+		
+		case TOKEN_SEMICOLON:
+			tokenSymbol = SMILE_SPECIAL_SYMBOL_SEMICOLON;
+			break;
+		
+		case TOKEN_COLON:
+			tokenSymbol = SMILE_SPECIAL_SYMBOL_COLON;
+			break;
+		
+		case TOKEN_LEFTPARENTHESIS:
+			tokenSymbol = SMILE_SPECIAL_SYMBOL_LEFTPARENTHESIS;
+			break;
+		
+		case TOKEN_RIGHTPARENTHESIS:
+			tokenSymbol = SMILE_SPECIAL_SYMBOL_RIGHTPARENTHESIS;
+			break;
+		
+		case TOKEN_LEFTBRACE:
+			tokenSymbol = SMILE_SPECIAL_SYMBOL_LEFTBRACE;
+			break;
+		
+		case TOKEN_RIGHTBRACE:
+			tokenSymbol = SMILE_SPECIAL_SYMBOL_RIGHTBRACE;
+			break;
+		
+		case TOKEN_LEFTBRACKET:
+			tokenSymbol = SMILE_SPECIAL_SYMBOL_LEFTBRACKET;
+			break;
+		
+		case TOKEN_RIGHTBRACKET:
+			tokenSymbol = SMILE_SPECIAL_SYMBOL_RIGHTBRACKET;
+			break;
+		
+		default:
+			tokenSymbol = 0;
+			break;
+	}
+
+	return tokenSymbol;
+}
+
 CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, Int modeFlags, Symbol syntaxClassSymbol, ParseError *parseError)
 {
 	ParserSyntaxClass syntaxClass;
@@ -361,11 +420,15 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 		}
 
 		// Try to actually transition to the next state.
-		tokenKind = Lexer_Peek(parser->lexer);
-		tokenSymbol = SymbolTable_GetSymbol(Smile_SymbolTable, parser->lexer->token->text);
-		if (!Int32Dict_TryGetValue(transitionTable, tokenKind, &nextNode)) {
-			// Nothing in the transition table matches the next incoming token, so we're done with this rule.
-			break;
+		tokenKind = Lexer_Next(parser->lexer);
+		tokenSymbol = GetSymbolForToken(parser->lexer->token);
+		if (!Int32Dict_TryGetValue(transitionTable, tokenSymbol, &nextNode)) {
+			// Didn't match it exactly.  See if this transition table has an "every symbol" catch-all rule.
+			if (!Int32Dict_TryGetValue(transitionTable, -1, &nextNode)) {
+				// Nothing in the transition table matches the next incoming token, so we're done with this rule.
+				Lexer_Unget(parser->lexer);
+				break;
+			}
 		}
 		node = nextNode;
 
@@ -374,13 +437,13 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 
 			// The next node is a simple terminal (effectively a keyword or piece of punctuation), so consume the
 			// token, and transition directly into it.
-			Lexer_Next(parser->lexer);
 		}
 		else {
 			// The next node is a nonterminal, so recursively invoke it.
 
 			// Collect the current position, for error-reporting.
 			position = Token_GetPosition(parser->lexer->token);
+			Lexer_Unget(parser->lexer);
 
 			// Recursively traverse the syntax tree.  We record the 'follow' set so that the
 			// main parser knows what symbols it can and cannot safely consume.
@@ -411,7 +474,7 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 		// Continue until we reach an accept node or bail due to a syntax error.
 	}
 
-	if (node->replacement != NULL) {
+	if (node->replacement != NullObject) {
 
 		// We're done, and have valid expressions for each of the nonterminals.  We now need
 		// to use the expressions and the replacement form and generate the parsed output.

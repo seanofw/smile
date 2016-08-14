@@ -43,23 +43,24 @@ struct LexerPositionStruct {
 /// </summary>
 struct TokenStruct {
 
-	enum TokenKind kind;					// What kind of token this is (see tokenkind.h)
-
+	enum TokenKind kind;	// What kind of token this is (see tokenkind.h)
+		
 	struct LexerPositionStruct _position;	// The position where the start of this token was found.
-	Bool isFirstContentOnLine;				// Whether this token is the first content on the line.
-
-	String text;							// The text of this token (for strings/numbers/#loanwords).
+	Bool isFirstContentOnLine;	// Whether this token is the first content on the line.
+	Bool hasEscapes;	// Whether this token's text used escape codes (mainly needed for symbols).
+		
+	String text;	// The text of this token (for strings/numbers/#loanwords).
 
 	// The various kinds of data this token can represent ('kind' determines which of these is valid).
 	union {
-		Symbol symbol;						// The symbol for this token (for identifiers).
-		Int32 i;							// The integer value of this token (char/byte/int16/int32).
-		Int64 int64;						// A 64-bit integer value for this token.
-		Float32 float32;					// A 32-bit float value for this token.
-		Float64 float64;					// A 64-bit float value for this token.
-		Real32 real32;						// A 32-bit real value for this token.
-		Real64 real64;						// A 64-bit real value for this token.
-		Real128 real128;					// A 128-bit real value for this token.
+		Symbol symbol;	// The symbol for this token (for identifiers).
+		Int32 i;	// The integer value of this token (char/byte/int16/int32).
+		Int64 int64;	// A 64-bit integer value for this token.
+		Float32 float32;	// A 32-bit float value for this token.
+		Float64 float64;	// A 64-bit float value for this token.
+		Real32 real32;	// A 32-bit real value for this token.
+		Real64 real64;	// A 64-bit real value for this token.
+		Real128 real128;	// A 128-bit real value for this token.
 	} data;
 
 };

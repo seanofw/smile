@@ -189,6 +189,7 @@ Int Lexer_ParseName(Lexer lexer, Bool isFirstContentOnLine)
 
 	token->text = text;
 	token->data.symbol = symbol;
+	token->hasEscapes = hasEscapes;
 
 	return END_TOKEN(TOKEN_ALPHANAME);
 }
@@ -393,6 +394,7 @@ Int Lexer_ParsePunctuation(Lexer lexer, Bool isFirstContentOnLine)
 
 	token->text = text;
 	token->data.symbol = symbol;
+	token->hasEscapes = hasEscapes;
 
 	return END_TOKEN(tokenKind);
 }

@@ -33,15 +33,15 @@ struct ParserSyntaxNodeStruct {
 	Int32Dict nextTerminals;	// Possible next states, keyed by keyword/symbol.
 	Int32Dict nextNonterminals;	// Possible next states, keyed by nonterminal.
 		
+	SmileObject replacement;	// The replacement form, if this is the final node in the chain.
+	Symbol *replacementVariables;	// All variable names from the pattern (only filled in if a replacement form is provided as well).
+		
 	Int8 repetitionKind;	// Either 0 (no repetition), '?' for optional, '*' for zero-or-more, '+' for one-or-more.
 	Int8 repetitionSep;	// Either 0 (no separator), ',' for comma, or ';' for semicolon.
 	UInt16 numReplacementVariables;	// The number of replacement variable names.
 		
 	Symbol name;	// The keyword/symbol or nonterminal name.
 	Symbol variable;	// The variable to emit on a nonterminal match, 0 if this is a keyword/symbol.
-		
-	SmileObject replacement;	// The replacement form, if this is the final node in the chain.
-	Symbol *replacementVariables;	// All variable names from the pattern (only filled in if a replacement form is provided as well).
 };
 
 /// <summary>
@@ -56,6 +56,8 @@ struct ParserSyntaxClassStruct {
 	UInt32 nodeID;	// A unique ID for this node (used for caching FOLLOW sets and transition tables for nonterminals).
 	Int32Dict nextTerminals;	// Possible root states, keyed by keyword/symbol.
 	Int32Dict nextNonterminals;	// Possible root states, keyed by nonterminal.
+		
+	SmileObject replacement;	// The replacement form (always NullObject for the class root).
 };
 
 /// <summary>
