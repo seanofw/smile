@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 4426a5ed5c5719f98cedf30600dd3fb1
+// SourceHash: 321d1316dfa3a8dc38780ed2ed4dd558
 
 START_TEST_SUITE(ParserSyntaxWalkTests)
 {
@@ -12,6 +12,9 @@ START_TEST_SUITE(ParserSyntaxWalkTests)
 	IfThenTest,
 	IfThenElseTest,
 	IfThenElseTestWithBothIfThenRules,
+	IfThenElseTestWithNestedConditionals,
+	CStyleIfThenElseTest,
+	SimpleCustomDslTest,
 }
 END_TEST_SUITE(ParserSyntaxWalkTests)
 

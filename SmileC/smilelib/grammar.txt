@@ -1,5 +1,5 @@
 
-Grammar for Smile, 14.1
+Grammar for Smile, 14.2
 =======================
 
 This grammar is something like LR(3), with common shift-reduce conflicts resolved in
@@ -192,18 +192,10 @@ raw_list ::= LBRACKET raw_list_items_opt RBRACKET
 raw_list_items_opt ::= raw_list_items |
 raw_list_items ::= raw_list_items raw_list_item | raw_list_item
 
-syntax_expr ::= syntax_level COLON LBRACKET syntax_pattern RBRACKET IMPLIES expr
+syntax_expr ::= syntax_level COLON LBRACKET syntax_pattern RBRACKET IMPLIES raw_list_item
 syntax_level ::= any_name
 syntax_pattern ::= syntax_element | syntax_element syntax_pattern
 syntax_element ::= syntax_term | syntax_nonterm
 syntax_term ::= any_name | COMMA | SEMICOLON | COLON | LPAREN syntax_pattern RPAREN | LBRACE syntax_pattern RBRACE
 syntax_nonterm ::= LBRACKET any_name any_name syntax_sep_opt RBRACKET
 syntax_sep_opt ::= COMMA | SEMICOLON |
-
-/*
-	#syntax UNARY [array ( [EXPR* n ,] )] => [Array.of ## n]
-
-	Stdout print array(1, 2, x + 3, 4, 5)
-
-	--> [Stdout.print [Array.of 1 2 [x.+ 3] 4 5]]
-*/

@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: c3312af697b6b412da04ecf488fe992d
+// SourceHash: 7974daea6245270c94976fa225e5f847
 
 START_TEST_SUITE(ParserSyntaxTests)
 {

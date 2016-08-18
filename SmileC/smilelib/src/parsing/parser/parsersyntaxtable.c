@@ -445,8 +445,8 @@ static void ParserSyntaxTable_RecursivelyComputeFirstSet(ParserSyntaxTable table
 
 	if (syntaxClass->nextNonterminals != NULL) {
 		// This syntax class has nonterminals that start it, so recurse on them.
-		Int32 *keys = Int32Dict_GetKeys(syntaxClass->nextTerminals);
-		Int32 numKeys = Int32Dict_Count(syntaxClass->nextTerminals);
+		Int32 *keys = Int32Dict_GetKeys(syntaxClass->nextNonterminals);
+		Int32 numKeys = Int32Dict_Count(syntaxClass->nextNonterminals);
 	
 		while (numKeys--) {
 			Symbol nextNonterminal = *keys++;

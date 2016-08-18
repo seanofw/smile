@@ -118,10 +118,19 @@ ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Bool *isT
 	case TOKEN_BACKTICK:
 		{
 			Bool temp;
+			startPosition = Token_GetPosition(token);
 			error = Parser_ParseRawListTerm(parser, result, &temp, modeFlags);
 			if (error != NULL)
 				return error;
-			*result = (SmileObject)SmileList_Cons((SmileObject)Smile_KnownObjects.quoteSymbol, *result);
+			*result = (SmileObject)SmileList_ConsWithSource(
+				(SmileObject)Smile_KnownObjects.quoteSymbol,
+				(SmileObject)SmileList_ConsWithSource(
+					*result,
+					NullObject,
+					startPosition
+				),
+				startPosition
+			);
 			*isTemplate = False;
 			return NULL;
 		}

@@ -31,6 +31,11 @@
 
 STATIC_STRING(TestFilename, "test.sm");
 
+String Stringify(SmileObject obj)
+{
+	return SmileObject_Stringify(obj);
+}
+
 static SmileObject RecursiveSimpleParse(Lexer lexer)
 {
 	switch (Lexer_Next(lexer)) {

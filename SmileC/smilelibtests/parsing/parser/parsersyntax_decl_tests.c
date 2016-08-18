@@ -55,7 +55,7 @@ END_TEST
 
 START_TEST(CanParseSyntaxFormsThatUseSyntaxForms)
 {
-	Lexer lexer = SetupLexer("#syntax STMT: [do magic] => Stdout print \"Hello, World.\"");
+	Lexer lexer = SetupLexer("#syntax STMT: [do magic] => (Stdout print \"Hello, World.\")");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("Stdout")), PARSEDECL_VARIABLE, NULL, NULL);
@@ -173,7 +173,7 @@ END_TEST
 
 START_TEST(TheContainingScopeShouldInfluenceTheReplacement2)
 {
-	Lexer lexer = SetupLexer("#syntax STMT: [magic [EXPR y]] => x op y");
+	Lexer lexer = SetupLexer("#syntax STMT: [magic [EXPR y]] => (x op y)");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	ParseError parseDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "x"), PARSEDECL_VARIABLE, NULL, NULL);
@@ -209,7 +209,7 @@ END_TEST
 
 START_TEST(TheContainingScopeShouldInfluenceTheReplacement3)
 {
-	Lexer lexer = SetupLexer("#syntax STMT: [magic [EXPR y]] => x op y");
+	Lexer lexer = SetupLexer("#syntax STMT: [magic [EXPR y]] => (x op y)");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 

@@ -280,7 +280,7 @@ static CustomSyntaxResult Parser_RecursivelyApplyCustomSyntax(Parser parser, Smi
 	switch (syntaxClassSymbol) {
 
 		case SMILE_SPECIAL_SYMBOL_STMT:
-			*parseError = Parser_ParseBaseExpr(parser, expr, modeFlags);
+			*parseError = Parser_ParseStmt(parser, expr, modeFlags);
 			break;
 
 		case SMILE_SPECIAL_SYMBOL_EXPR:

@@ -75,6 +75,7 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *ex
 	SmileObject replacement;
 	ParseError parseError;
 	LexerPosition rulePosition;
+	Bool isTemplate;
 
 	// First, read the syntax predicate's leading nonterminal.
 	token = Parser_NextToken(parser);
@@ -130,7 +131,7 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *ex
 	Parser_DeclareNonterminals(pattern, parser->currentScope, rulePosition);
 
 	// Parse the substitution expression in the syntax rule's scope.
-	parseError = Parser_ParseExpr(parser, &replacement, modeFlags);
+	parseError = Parser_ParseRawListTerm(parser, &replacement, &isTemplate, modeFlags);
 	Parser_EndScope(parser);
 	if (parseError != NULL) {
 		*expr = NullObject;

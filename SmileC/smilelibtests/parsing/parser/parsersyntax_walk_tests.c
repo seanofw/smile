@@ -87,7 +87,7 @@ END_TEST
 START_TEST(SubstitutionWorksWithAKnownNonterminal)
 {
 	Lexer lexer = SetupLexer(
-		"#syntax STMT: [foo [EXPR x] baz] => 123 + x\n"
+		"#syntax STMT: [foo [EXPR x] baz] => (123 + x)\n"
 		"4 + 5\n"
 		"foo 999 baz\n"
 		"6 + 7\n"
@@ -105,7 +105,7 @@ END_TEST
 START_TEST(SubstitutionOfComplexContentWorksWithAKnownNonterminal)
 {
 	Lexer lexer = SetupLexer(
-		"#syntax STMT: [foo [EXPR x] baz] => 123 + x\n"
+		"#syntax STMT: [foo [EXPR x] baz] => (123 + x)\n"
 		"4 + 5\n"
 		"foo 8 * 9 / 10 baz\n"
 		"6 + 7\n"
@@ -123,11 +123,11 @@ END_TEST
 START_TEST(IfThenTest)
 {
 	Lexer lexer = SetupLexer(
-		"#syntax STMT: [if [EXPR x] then [STMT y]] => [\\if x y]\n"
+		"#syntax STMT: [if [EXPR x] then [STMT y]] => [if x y]\n"
 		"4 + 5\n"
 		"if 1 < 2 then 10\n"
 		"6 + 7\n"
-		);
+	);
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
@@ -141,7 +141,7 @@ END_TEST
 START_TEST(IfThenElseTest)
 {
 	Lexer lexer = SetupLexer(
-		"#syntax STMT: [if [EXPR x] then [STMT y] else [STMT z]] => [\\if x y z]\n"
+		"#syntax STMT: [if [EXPR x] then [STMT y] else [STMT z]] => [if x y z]\n"
 		"4 + 5\n"
 		"if 1 < 2 then 10 else 20\n"
 		"6 + 7\n"
@@ -159,8 +159,8 @@ END_TEST
 START_TEST(IfThenElseTestWithBothIfThenRules)
 {
 	Lexer lexer = SetupLexer(
-		"#syntax STMT: [if [EXPR x] then [STMT y]] => [\\if x y]\n"
-		"#syntax STMT: [if [EXPR x] then [STMT y] else [STMT z]] => [\\if x y z]\n"
+		"#syntax STMT: [if [EXPR x] then [STMT y]] => [if x y]\n"
+		"#syntax STMT: [if [EXPR x] then [STMT y] else [STMT z]] => [if x y z]\n"
 		"4 + 5\n"
 		"if 1 < 2 then 10\n"
 		"if 3 < 4 then 30 else 40\n"
@@ -174,6 +174,74 @@ START_TEST(IfThenElseTestWithBothIfThenRules)
 	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[if [(1 . <) 2] 10]")));
 	ASSERT(RecursiveEquals(LIST_FIFTH(result), SimpleParse("[if [(3 . <) 4] 30 40]")));
 	ASSERT(RecursiveEquals(LIST_SIXTH(result), SimpleParse("[(6 . +) 7]")));
+}
+END_TEST
+
+START_TEST(IfThenElseTestWithNestedConditionals)
+{
+	Lexer lexer = SetupLexer(
+		"#syntax STMT: [if [EXPR x] then [STMT y]] => [if x y]\n"
+		"#syntax STMT: [if [EXPR x] then [STMT y] else [STMT z]] => [if x y z]\n"
+		"4 + 5\n"
+		"if 1 < 2 then\n"
+		"  if 5 < 6 then 50\n"
+		"  else 60\n"
+		"else if 3 < 4 then\n"
+		"  if 7 < 8 then 70\n"
+		"  else 80\n"
+		"else 40\n"
+		"6 + 7\n"
+		);
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(4 . +) 5]")));
+	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[if [(1 . <) 2] [if [(5 . <) 6] 50 60] [if [(3 . <) 4] [if [(7 . <) 8] 70 80] 40]]")));
+	ASSERT(RecursiveEquals(LIST_FIFTH(result), SimpleParse("[(6 . +) 7]")));
+}
+END_TEST
+
+START_TEST(CStyleIfThenElseTest)
+{
+	Lexer lexer = SetupLexer(
+		"#syntax STMT: [if ( [EXPR x] ) [STMT y]] => [if x y]\n"
+		"#syntax STMT: [if ( [EXPR x] ) [STMT y] else [STMT z]] => [if x y z]\n"
+		"4 + 5\n"
+		"if (1 < 2) 10\n"
+		"if (3 < 4) 30 else 40\n"
+		"6 + 7\n"
+		);
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(4 . +) 5]")));
+	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[if [(1 . <) 2] 10]")));
+	ASSERT(RecursiveEquals(LIST_FIFTH(result), SimpleParse("[if [(3 . <) 4] 30 40]")));
+	ASSERT(RecursiveEquals(LIST_SIXTH(result), SimpleParse("[(6 . +) 7]")));
+}
+END_TEST
+
+START_TEST(SimpleCustomDslTest)
+{
+	Lexer lexer = SetupLexer(
+		"#syntax STMT: [fronk { [FRONKS x] }] => [fronk `x]\n"
+		"#syntax FRONKS: [[GROOP x] [FRONKS y]] => [x y]\n"
+		"#syntax FRONKS: [[GROOP x]] => [x]\n"
+		"#syntax GROOP: [qux] => qux\n"
+		"#syntax GROOP: [xuq] => xuq\n"
+		"1 + 2\n"
+		"fronk { qux xuq xuq qux }\n"
+		"3 + 4\n"
+	);
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(RecursiveEquals(LIST_SIXTH(result), SimpleParse("[(1 . +) 2]")));
+	ASSERT(RecursiveEquals(LIST_SEVENTH(result), SimpleParse("[fronk [quote [qux [xuq [xuq [qux]]]]]]")));
+	ASSERT(RecursiveEquals(LIST_EIGHTH(result), SimpleParse("[(3 . +) 4]")));
 }
 END_TEST
 
