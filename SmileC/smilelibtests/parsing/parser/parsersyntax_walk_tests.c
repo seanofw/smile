@@ -226,11 +226,11 @@ END_TEST
 START_TEST(SimpleCustomDslTest)
 {
 	Lexer lexer = SetupLexer(
-		"#syntax STMT: [fronk { [FRONKS x] }] => [fronk `x]\n"
-		"#syntax FRONKS: [[GROOP x] [FRONKS y]] => [x y]\n"
-		"#syntax FRONKS: [[GROOP x]] => [x]\n"
-		"#syntax GROOP: [qux] => qux\n"
-		"#syntax GROOP: [xuq] => xuq\n"
+		"#syntax STMT: [fronk { [FOO-FRONKS x] }] => [fronk `x]\n"
+		"#syntax FOO-FRONKS: [[FOO-GROOP x] [FOO-FRONKS y]] => [x y]\n"
+		"#syntax FOO-FRONKS: [[FOO-GROOP x]] => [x]\n"
+		"#syntax FOO-GROOP: [qux] => qux\n"
+		"#syntax FOO-GROOP: [xuq] => xuq\n"
 		"1 + 2\n"
 		"fronk { qux xuq xuq qux }\n"
 		"3 + 4\n"

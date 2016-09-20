@@ -83,8 +83,11 @@ STATIC_STRING(CMP_, "CMP");
 STATIC_STRING(ADDSUB_, "ADDSUB");
 STATIC_STRING(MULDIV_, "MULDIV");
 STATIC_STRING(BINARY_, "BINARY");
+STATIC_STRING(RANGE_, "RANGE");
+STATIC_STRING(COLON_, "COLON");
 STATIC_STRING(UNARY_, "UNARY");
 STATIC_STRING(POSTFIX_, "POSTFIX");
+STATIC_STRING(DOUBLEHASH_, "DOUBLEHASH");
 STATIC_STRING(TERM_, "TERM");
 
 STATIC_STRING(Brk_, "brk");
@@ -165,8 +168,12 @@ static void KnownSymbolsInt_PreloadSpecials(SymbolTable symbolTable, KnownSymbol
 	knownSymbols->ADDSUB = AddSpecialSymbol(symbolTable, ADDSUB_, SMILE_SPECIAL_SYMBOL_ADDSUB);
 	knownSymbols->MULDIV = AddSpecialSymbol(symbolTable, MULDIV_, SMILE_SPECIAL_SYMBOL_MULDIV);
 	knownSymbols->BINARY = AddSpecialSymbol(symbolTable, BINARY_, SMILE_SPECIAL_SYMBOL_BINARY);
+	knownSymbols->COLON = AddSpecialSymbol(symbolTable, COLON_, SMILE_SPECIAL_SYMBOL_COLON_NAME);
+	knownSymbols->RANGE = AddSpecialSymbol(symbolTable, RANGE_, SMILE_SPECIAL_SYMBOL_RANGE);
 	knownSymbols->UNARY = AddSpecialSymbol(symbolTable, UNARY_, SMILE_SPECIAL_SYMBOL_UNARY);
 	knownSymbols->POSTFIX = AddSpecialSymbol(symbolTable, POSTFIX_, SMILE_SPECIAL_SYMBOL_POSTFIX);
+	knownSymbols->DOUBLEHASH = AddSpecialSymbol(symbolTable, DOUBLEHASH_, SMILE_SPECIAL_SYMBOL_DOUBLEHASH);
+	knownSymbols->DOT = AddSpecialSymbol(symbolTable, DOUBLEHASH_, SMILE_SPECIAL_SYMBOL_DOT);
 	knownSymbols->TERM = AddSpecialSymbol(symbolTable, TERM_, SMILE_SPECIAL_SYMBOL_TERM);
 
 	knownSymbols->brk_ = AddSpecialSymbol(symbolTable, Brk_, SMILE_SPECIAL_SYMBOL_BRK);

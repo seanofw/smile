@@ -43,12 +43,29 @@ STATIC_STRING(MalformedSyntaxPatternIllegalNonterminalName, "Invalid syntax patt
 STATIC_STRING(MalformedSyntaxPatternIllegalNonterminalRepeat, "Invalid syntax pattern: Unknown nonterminal repeat kind '%S'.");
 STATIC_STRING(MalformedSyntaxPatternNonterminalRepeatSeparatorMismatch, "Invalid syntax pattern: Nonterminal has a separator '%S' but does not repeat.");
 
+STATIC_STRING(InvalidPatternError, "Syntax patterns must be non-empty lists.");
+STATIC_STRING(BrokenPatternError, "Internal error: Syntax patterns must only consist of symbols and nonterminals.");
+
+STATIC_STRING(InvalidSealedPatternError, "Syntax patterns may not be added to the special %s class.");
+STATIC_STRING(InvalidClassError, "Unknown or illegal syntax class '%s' (did you forget a hyphen?)");
+STATIC_STRING(InvalidKeywordPatternError, "Syntax patterns in the %s class must start with a keyword.");
+
+STATIC_STRING(InvalidCmpPatternError, "Syntax patterns in the CMP class must either start with a keyword, or with an ADDSUB nonterminal followed by a keyword that is none of the nine standard comparison operators.");
+STATIC_STRING(InvalidAddSubPatternError, "Syntax patterns in the ADDSUB class must either start with a keyword, or with a MULDIV nonterminal followed by a keyword that is neither '+' or '-'.");
+STATIC_STRING(InvalidMulDivPatternError, "Syntax patterns in the MULDIV class must either start with a keyword, or with a BINARY nonterminal followed by a keyword that is neither '*' or '/'.");
+STATIC_STRING(InvalidBinaryPatternError, "Syntax patterns in the BINARY class must either start with a keyword, or with a COLON nonterminal followed by a keyword.");
+STATIC_STRING(InvalidPostfixPatternError, "Syntax patterns in the POSTFIX class must either start with a keyword, or with a DOUBLEHASH nonterminal followed by a keyword.");
+
 STATIC_STRING(String_Plus, "+");
 STATIC_STRING(String_Star, "*");
 STATIC_STRING(String_QuestionMark, "?");
 STATIC_STRING(String_Comma, ",");
 STATIC_STRING(String_Semicolon, ";");
 
+/// <summary>
+/// Tokens that are used during common recovery scenarios to determine the
+/// likely end of the current error:  {  }  [  ]  (  )
+/// </summary>
 static Int _syntaxRecover[] = {
 	TOKEN_RIGHTBRACKET,
 	TOKEN_RIGHTBRACE,
@@ -57,9 +74,32 @@ static Int _syntaxRecover[] = {
 	TOKEN_LEFTBRACE,
 	TOKEN_LEFTPARENTHESIS,
 };
-
 static Int _syntaxRecoverCount = sizeof(_syntaxRecover) / sizeof(Int);
 
+/// <summary>
+/// Reserved class names: These are names that are used in the core grammar currently or that may be used in the future.
+/// This list must be in alphabetical (ASCIIbetical) order.
+/// </summary>
+static const char *_reservedClassNames[] = {
+	"ADDSUB", "ALPHANAME", "ASSIGN",
+	"BINARY", "BOOL", "BYTE",
+	"CHAR", "CMP", "COLON",
+	"DOT", "DOUBLEHASH", "DYNSTRING",
+	"EXPR", "EXPRS",
+	"FLOAT", "FLOAT128", "FLOAT16", "FLOAT32", "FLOAT64", "FLOAT8", "FUNC",
+	"INT", "INT128", "INT16", "INT32", "INT64", "INT8",
+	"MULDIV",
+	"NAME", "NEW", "NUMBER",
+	"POSTFIX", "PUNCTNAME",
+	"RANGE", "RAWLIST", "RAWLISTTERM", "RAWSTRING", "REAL", "REAL128", "REAL16", "REAL32", "REAL64", "REAL8",
+	"SCOPE", "STMT", "STRING",
+	"TERM",
+	"UNARY",
+	"VARIABLE",
+};
+static Int _reservedClassNameLength = sizeof(_reservedClassNames) / sizeof(const char *);
+
+static ParseError Parser_ValidateSpecialSyntaxClasses(Symbol nonterminal, SmileList pattern, LexerPosition position);
 static ParseError Parser_ParseSyntaxPattern(Parser parser, SmileList **tailRef);
 static ParseError Parser_ParseSyntaxTerminal(Parser parser, SmileList **tailRef);
 static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailRef);
@@ -133,6 +173,14 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *ex
 	// Parse the substitution expression in the syntax rule's scope.
 	parseError = Parser_ParseRawListTerm(parser, &replacement, &isTemplate, modeFlags);
 	Parser_EndScope(parser);
+	if (parseError != NULL) {
+		*expr = NullObject;
+		return parseError;
+	}
+
+	// Make sure that if this is one of the special (known) syntax classes, that the pattern is
+	// a valid form.
+	parseError = Parser_ValidateSpecialSyntaxClasses(nonterminal, pattern, rulePosition);
 	if (parseError != NULL) {
 		*expr = NullObject;
 		return parseError;
@@ -356,6 +404,13 @@ static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailR
 	return NULL;
 }
 
+/// <summary>
+/// Skim through the given pattern, find all its nonterminals, and declare them as variables in the given scope.
+/// </summary>
+/// <param name="pattern">The pattern to extract nonterminals from.</param>
+/// <param name="scope">The parse scope in which the new variables will be declared.</param>
+/// <param name="position">The lexical position where the nonterminals were found, so that the new
+/// variables will be considered to have been declared *there*.</param>
 static void Parser_DeclareNonterminals(SmileList pattern, ParseScope scope, LexerPosition position)
 {
 	SmileNonterminal nonterminal;
@@ -366,5 +421,241 @@ static void Parser_DeclareNonterminals(SmileList pattern, ParseScope scope, Lexe
 			nonterminal = (SmileNonterminal)pattern->a;
 			ParseScope_Declare(scope, nonterminal->name, PARSEDECL_VARIABLE, position, &decl);
 		}
+	}
+}
+
+/// <summary>
+/// Determine whether the given string refers to a reserved classname.
+/// </summary>
+/// <param name="clsString">The name of the classname to check.</param>
+/// <returns>True if that name is reserved (a known name), false if that name is not reserved (an unknown name).</returns>
+static Bool Parser_IsReservedClassName(String clsString)
+{
+	const char *clsText;
+	Int clsLength;
+	Int start, mid, end;
+	int cmp;
+
+	clsText = String_ToC(clsString);
+	clsLength = String_Length(clsString);
+
+	start = 0;
+	end = _reservedClassNameLength;
+
+	// Binary search through the _reservedClassNames for the given symbol.
+	// This isn't the most elegant solution we could use, but it's fairly fast, has
+	// good worst-case performance, and makes the reserved-names list easy to change.
+	while (start < end) {
+		mid = (start + end) / 2;
+		cmp = strcmp(clsText, _reservedClassNames[mid]);
+		if (cmp == 0)
+			return True;
+		if (cmp < 0) {
+			end = mid;
+		}
+		else {
+			start = mid + 1;
+		}
+	}
+
+	// Didn't find it in the reserved set, so it's not reserved.
+	return False;
+}
+
+/// <summary>
+/// Determine whether the given syntax pattern is valid for the given syntax class.
+/// </summary>
+/// <param name="cls">The name of the class that is about to have the given pattern added to it.</param>
+/// <param name="pattern">The parsed syntax pattern to check.</param>
+/// <param name="position">The pattern's position in the source, for error-reporting purposes.</param>
+/// <returns>NULL if no errors were found, or a ParseError if an error was found in the pattern or
+/// in the class it's about to be added to.</returns>
+static ParseError Parser_ValidateSpecialSyntaxClasses(Symbol cls, SmileList pattern, LexerPosition position)
+{
+	ParseError parseError;
+	SmileNonterminal nonterminal;
+	SmileSymbol smileSymbol;
+	String clsString;
+
+	// Invalid patterns early-out.
+	if (SMILE_KIND(pattern) != SMILE_KIND_LIST) {
+		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidPatternError);
+		return parseError;
+	}
+
+	// Any class with a hyphen ('-') in its name is custom (i.e., always valid).
+	clsString = SymbolTable_GetName(Smile_SymbolTable, cls);
+	if (String_IndexOfChar(clsString, '-', 0) >= 0)
+		return NULL;
+
+	switch (cls) {
+		case SMILE_SPECIAL_SYMBOL_STMT:
+			// STMT must always start with a symbol (keyword).
+			if (LIST_FIRST(pattern)->kind != SMILE_KIND_SYMBOL) {
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, String_FormatString(InvalidKeywordPatternError, "STMT"));
+				return parseError;
+			}
+			return NULL;
+
+		case SMILE_SPECIAL_SYMBOL_EXPR:
+			// EXPR must always start with a symbol (keyword).
+			if (LIST_FIRST(pattern)->kind != SMILE_KIND_SYMBOL) {
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, String_FormatString(InvalidKeywordPatternError, "EXPR"));
+				return parseError;
+			}
+			return NULL;
+
+		case SMILE_SPECIAL_SYMBOL_CMP:
+			// CMP must always start with either a symbol (keyword) or an ADDSUB nonterminal followed by a
+			// symbol (keyword) that is not '<' or '>' or '<=' or '>=' or '==' or '!=' or '===' or '!===' or 'is'.
+			if (LIST_FIRST(pattern)->kind == SMILE_KIND_SYMBOL)
+				return NULL;
+			if (LIST_FIRST(pattern)->kind != SMILE_KIND_NONTERMINAL) {
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, BrokenPatternError);
+				return parseError;
+			}
+			nonterminal = (SmileNonterminal)(LIST_FIRST(pattern));
+			if (nonterminal->nonterminal != SMILE_SPECIAL_SYMBOL_MULDIV) {
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidCmpPatternError);
+				return parseError;
+			}
+			if (LIST_SECOND(pattern)->kind != SMILE_KIND_SYMBOL) {
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidCmpPatternError);
+				return parseError;
+			}
+			smileSymbol = (SmileSymbol)(LIST_SECOND(pattern));
+			switch (smileSymbol->symbol) {
+				case SMILE_SPECIAL_SYMBOL_LT:
+				case SMILE_SPECIAL_SYMBOL_LE:
+				case SMILE_SPECIAL_SYMBOL_GT:
+				case SMILE_SPECIAL_SYMBOL_GE:
+				case SMILE_SPECIAL_SYMBOL_EQ:
+				case SMILE_SPECIAL_SYMBOL_NE:
+				case SMILE_SPECIAL_SYMBOL_SUPEREQ:
+				case SMILE_SPECIAL_SYMBOL_SUPERNE:
+				case SMILE_SPECIAL_SYMBOL_IS:
+					parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidCmpPatternError);
+					return parseError;
+			}
+			return NULL;
+
+		case SMILE_SPECIAL_SYMBOL_ADDSUB:
+			// ADDSUB must always start with either a symbol (keyword) or a MULDIV nonterminal followed by a
+			// symbol (keyword) that is not '+' or '-'.
+			if (LIST_FIRST(pattern)->kind == SMILE_KIND_SYMBOL)
+				return NULL;
+			if (LIST_FIRST(pattern)->kind != SMILE_KIND_NONTERMINAL) {
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, BrokenPatternError);
+				return parseError;
+			}
+			nonterminal = (SmileNonterminal)(LIST_FIRST(pattern));
+			if (nonterminal->nonterminal != SMILE_SPECIAL_SYMBOL_MULDIV) {
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidAddSubPatternError);
+				return parseError;
+			}
+			if (LIST_SECOND(pattern)->kind != SMILE_KIND_SYMBOL) {
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidAddSubPatternError);
+				return parseError;
+			}
+			smileSymbol = (SmileSymbol)(LIST_SECOND(pattern));
+			if (smileSymbol->symbol == SMILE_SPECIAL_SYMBOL_PLUS || smileSymbol->symbol == SMILE_SPECIAL_SYMBOL_MINUS) {
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidAddSubPatternError);
+				return parseError;
+			}
+			return NULL;
+
+		case SMILE_SPECIAL_SYMBOL_MULDIV:
+			// MULDIV must always start with either a symbol (keyword) or a BINARY nonterminal followed by a
+			// symbol (keyword) that is not '*' or '/'.
+			if (LIST_FIRST(pattern)->kind == SMILE_KIND_SYMBOL)
+				return NULL;
+			if (LIST_FIRST(pattern)->kind != SMILE_KIND_NONTERMINAL) {
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, BrokenPatternError);
+				return parseError;
+			}
+			nonterminal = (SmileNonterminal)(LIST_FIRST(pattern));
+			if (nonterminal->nonterminal != SMILE_SPECIAL_SYMBOL_BINARY) {
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidMulDivPatternError);
+				return parseError;
+			}
+			if (LIST_SECOND(pattern)->kind != SMILE_KIND_SYMBOL) {
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidMulDivPatternError);
+				return parseError;
+			}
+			smileSymbol = (SmileSymbol)(LIST_SECOND(pattern));
+			if (smileSymbol->symbol == SMILE_SPECIAL_SYMBOL_STAR || smileSymbol->symbol == SMILE_SPECIAL_SYMBOL_SLASH) {
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidMulDivPatternError);
+				return parseError;
+			}
+			return NULL;
+
+		case SMILE_SPECIAL_SYMBOL_BINARY:
+			// BINARY must always start with either a symbol (keyword) or a COLON nonterminal followed by a
+			// symbol (keyword).
+			if (LIST_FIRST(pattern)->kind == SMILE_KIND_SYMBOL)
+				return NULL;
+			if (LIST_FIRST(pattern)->kind != SMILE_KIND_NONTERMINAL) {
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, BrokenPatternError);
+				return parseError;
+			}
+			nonterminal = (SmileNonterminal)(LIST_FIRST(pattern));
+			if (nonterminal->nonterminal != SMILE_SPECIAL_SYMBOL_COLON) {
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidBinaryPatternError);
+				return parseError;
+			}
+			if (LIST_SECOND(pattern)->kind != SMILE_KIND_SYMBOL) {
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidBinaryPatternError);
+				return parseError;
+			}
+			return NULL;
+
+		case SMILE_SPECIAL_SYMBOL_UNARY:
+			// UNARY must always start with a symbol (keyword).
+			if (LIST_FIRST(pattern)->kind != SMILE_KIND_SYMBOL) {
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, String_FormatString(InvalidKeywordPatternError, "UNARY"));
+				return parseError;
+			}
+			return NULL;
+
+		case SMILE_SPECIAL_SYMBOL_POSTFIX:
+			// POSTFIX must always start with either a symbol (keyword) or a DOUBLEHASH nonterminal followed by a
+			// symbol (keyword).
+			if (LIST_FIRST(pattern)->kind == SMILE_KIND_SYMBOL) {
+				return NULL;
+			}
+			if (LIST_FIRST(pattern)->kind != SMILE_KIND_NONTERMINAL) {
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, BrokenPatternError);
+				return parseError;
+			}
+			nonterminal = (SmileNonterminal)(LIST_FIRST(pattern));
+			if (nonterminal->nonterminal != SMILE_SPECIAL_SYMBOL_DOUBLEHASH) {
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidPostfixPatternError);
+				return parseError;
+			}
+			if (LIST_SECOND(pattern)->kind != SMILE_KIND_SYMBOL) {
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidPostfixPatternError);
+				return parseError;
+			}
+			return NULL;
+
+		case SMILE_SPECIAL_SYMBOL_TERM:
+			// TERM must always start with a symbol (keyword).
+			if (LIST_FIRST(pattern)->kind != SMILE_KIND_SYMBOL) {
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, String_FormatString(InvalidKeywordPatternError, "TERM"));
+				return parseError;
+			}
+			return NULL;
+
+		default:
+			// One kind of error message for known reserved class names...
+			if (Parser_IsReservedClassName(clsString)) {
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, String_FormatString(InvalidSealedPatternError, "DOT"));
+				return parseError;
+			}
+			else {
+				// ...another kind of error message if they're just doin' it wrong.
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, String_FormatString(InvalidClassError, clsString));
+				return parseError;
+			}
 	}
 }
