@@ -515,7 +515,7 @@ static ParseError Parser_ValidateSpecialSyntaxClasses(Symbol cls, SmileList patt
 				return parseError;
 			}
 			nonterminal = (SmileNonterminal)(LIST_FIRST(pattern));
-			if (nonterminal->nonterminal != SMILE_SPECIAL_SYMBOL_MULDIV) {
+			if (nonterminal->nonterminal != SMILE_SPECIAL_SYMBOL_ADDSUB) {
 				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidCmpPatternError);
 				return parseError;
 			}
@@ -599,7 +599,7 @@ static ParseError Parser_ValidateSpecialSyntaxClasses(Symbol cls, SmileList patt
 				return parseError;
 			}
 			nonterminal = (SmileNonterminal)(LIST_FIRST(pattern));
-			if (nonterminal->nonterminal != SMILE_SPECIAL_SYMBOL_COLON) {
+			if (nonterminal->nonterminal != SMILE_SPECIAL_SYMBOL_COLON_NAME) {
 				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidBinaryPatternError);
 				return parseError;
 			}

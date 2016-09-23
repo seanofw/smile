@@ -88,6 +88,7 @@ STATIC_STRING(COLON_, "COLON");
 STATIC_STRING(UNARY_, "UNARY");
 STATIC_STRING(POSTFIX_, "POSTFIX");
 STATIC_STRING(DOUBLEHASH_, "DOUBLEHASH");
+STATIC_STRING(DOT_, "DOT");
 STATIC_STRING(TERM_, "TERM");
 
 STATIC_STRING(Brk_, "brk");
@@ -173,7 +174,7 @@ static void KnownSymbolsInt_PreloadSpecials(SymbolTable symbolTable, KnownSymbol
 	knownSymbols->UNARY = AddSpecialSymbol(symbolTable, UNARY_, SMILE_SPECIAL_SYMBOL_UNARY);
 	knownSymbols->POSTFIX = AddSpecialSymbol(symbolTable, POSTFIX_, SMILE_SPECIAL_SYMBOL_POSTFIX);
 	knownSymbols->DOUBLEHASH = AddSpecialSymbol(symbolTable, DOUBLEHASH_, SMILE_SPECIAL_SYMBOL_DOUBLEHASH);
-	knownSymbols->DOT = AddSpecialSymbol(symbolTable, DOUBLEHASH_, SMILE_SPECIAL_SYMBOL_DOT);
+	knownSymbols->DOT = AddSpecialSymbol(symbolTable, DOT_, SMILE_SPECIAL_SYMBOL_DOT);
 	knownSymbols->TERM = AddSpecialSymbol(symbolTable, TERM_, SMILE_SPECIAL_SYMBOL_TERM);
 
 	knownSymbols->brk_ = AddSpecialSymbol(symbolTable, Brk_, SMILE_SPECIAL_SYMBOL_BRK);

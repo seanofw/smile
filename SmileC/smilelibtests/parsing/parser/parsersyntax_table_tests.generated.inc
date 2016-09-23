@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 2f97c8145231e3cf462f590d7acce5e1
+// SourceHash: 6e0b4fe8099d5410ddd0d804c59207b1
 
 START_TEST_SUITE(ParserSyntaxTableTests)
 {
@@ -20,6 +20,16 @@ START_TEST_SUITE(ParserSyntaxTableTests)
 	CannotAddRulesThatAreDuplicates,
 	CannotAddRulesWhoseInitialNonterminalsRepeatZeroOrMoreTimes,
 	CannotAddRulesWhoseInitialNonterminalsRepeatZeroOrOneTimes,
+	CannotAddRulesToUnknownRootClasses,
+	StmtMustStartWithAKeyword,
+	ExprMustStartWithAKeyword,
+	CmpRequiresComplexSyntaxPatternRules,
+	AddSubRequiresComplexSyntaxPatternRules,
+	MulDivRequiresComplexSyntaxPatternRules,
+	BinaryRequiresComplexSyntaxPatternRules,
+	UnaryMustStartWithAKeyword,
+	PostfixRequiresComplexSyntaxPatternRules,
+	TermMustStartWithAKeyword,
 }
 END_TEST_SUITE(ParserSyntaxTableTests)
 
