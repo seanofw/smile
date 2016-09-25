@@ -39,18 +39,11 @@ ParseError Parser_ParseExpr(Parser parser, SmileObject *expr, Int modeFlags)
 }
 
 //  base_expr ::= . arith
-//         | . if_then
-//         | . while_do
-//         | . do_while
 //         | . var_decl
-//         | . till_do
-//         | . try_catch
 //         | . scope
 //         | . return
 //         | . INCLUDE string
 //         | . INSERT_BRK base_expr
-//         | . INSERT_SYNTAX syntax_expr
-//         | . INSERT_MACRO macro_expr
 //         | . INSERT_UNDEFINE any_name
 ParseError Parser_ParseStmt(Parser parser, SmileObject *expr, Int modeFlags)
 {
@@ -78,7 +71,7 @@ ParseError Parser_ParseStmt(Parser parser, SmileObject *expr, Int modeFlags)
 
 		default:
 			Lexer_Unget(parser->lexer);
-			customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, Smile_KnownSymbols.STMT, &parseError);
+			customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_STMT, SYNTAXROOT_KEYWORD, 0, &parseError);
 			if (customSyntaxResult != CustomSyntaxResult_NotMatchedAndNoTokensConsumed)
 				return parseError;
 
@@ -97,7 +90,7 @@ ParseError Parser_ParseOr(Parser parser, SmileObject *expr, Int modeFlags)
 	Bool isFirst = True;
 	CustomSyntaxResult customSyntaxResult;
 
-	customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, Smile_KnownSymbols.EXPR, &parseError);
+	customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_EXPR, SYNTAXROOT_KEYWORD, 0, &parseError);
 	if (customSyntaxResult != CustomSyntaxResult_NotMatchedAndNoTokensConsumed)
 		return parseError;
 
@@ -299,7 +292,7 @@ ParseError Parser_ParseCmp(Parser parser, SmileObject *expr, Int modeFlags)
 	Symbol symbol;
 	CustomSyntaxResult customSyntaxResult;
 
-	customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, Smile_KnownSymbols.CMP, &parseError);
+	customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_CMP, SYNTAXROOT_KEYWORD, 0, &parseError);
 	if (customSyntaxResult != CustomSyntaxResult_NotMatchedAndNoTokensConsumed)
 		return parseError;
 
@@ -307,7 +300,18 @@ ParseError Parser_ParseCmp(Parser parser, SmileObject *expr, Int modeFlags)
 	if (parseError != NULL)
 		return parseError;
 
-	while (((token = Parser_NextToken(parser))->kind == TOKEN_UNKNOWNPUNCTNAME || token->kind == TOKEN_UNKNOWNALPHANAME
+parseNextOperator:
+
+	if ((customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_CMP, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_ADDSUB, &parseError))
+		!= CustomSyntaxResult_NotMatchedAndNoTokensConsumed) {
+		
+		if (customSyntaxResult == CustomSyntaxResult_PartialApplicationWithError)
+			return parseError;
+	
+		goto parseNextOperator;
+	}
+
+	if (((token = Parser_NextToken(parser))->kind == TOKEN_UNKNOWNPUNCTNAME || token->kind == TOKEN_UNKNOWNALPHANAME
 			|| token->kind == TOKEN_PUNCTNAME || token->kind == TOKEN_ALPHANAME)
 		&& (symbolObject = Parser_GetSymbolObjectForCmpOperator(symbol = token->data.symbol)) != NULL
 		&& ((modeFlags & BINARYLINEBREAKS_MASK) == BINARYLINEBREAKS_ALLOWED || !token->isFirstContentOnLine)) {
@@ -339,6 +343,8 @@ ParseError Parser_ParseCmp(Parser parser, SmileObject *expr, Int modeFlags)
 				lexerPosition
 			);
 		}
+		
+		goto parseNextOperator;
 	}
 
 	Lexer_Unget(parser->lexer);
@@ -356,7 +362,7 @@ ParseError Parser_ParseAddSub(Parser parser, SmileObject *expr, Int modeFlags)
 	Symbol symbol;
 	CustomSyntaxResult customSyntaxResult;
 
-	customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, Smile_KnownSymbols.ADDSUB, &parseError);
+	customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_ADDSUB, SYNTAXROOT_KEYWORD, 0, &parseError);
 	if (customSyntaxResult != CustomSyntaxResult_NotMatchedAndNoTokensConsumed)
 		return parseError;
 
@@ -364,7 +370,18 @@ ParseError Parser_ParseAddSub(Parser parser, SmileObject *expr, Int modeFlags)
 	if (parseError != NULL)
 		return parseError;
 
-	while (((token = Parser_NextToken(parser))->kind == TOKEN_UNKNOWNPUNCTNAME || token->kind == TOKEN_PUNCTNAME)
+parseNextOperator:
+
+	if ((customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_ADDSUB, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_MULDIV, &parseError))
+		!= CustomSyntaxResult_NotMatchedAndNoTokensConsumed) {
+
+		if (customSyntaxResult == CustomSyntaxResult_PartialApplicationWithError)
+			return parseError;
+
+		goto parseNextOperator;
+	}
+
+	if (((token = Parser_NextToken(parser))->kind == TOKEN_UNKNOWNPUNCTNAME || token->kind == TOKEN_PUNCTNAME)
 		&& ((symbol = token->data.symbol) == SMILE_SPECIAL_SYMBOL_PLUS || symbol == SMILE_SPECIAL_SYMBOL_MINUS)
 		&& ((modeFlags & BINARYLINEBREAKS_MASK) == BINARYLINEBREAKS_ALLOWED || !token->isFirstContentOnLine)) {
 
@@ -383,6 +400,8 @@ ParseError Parser_ParseAddSub(Parser parser, SmileObject *expr, Int modeFlags)
 				lexerPosition),
 			lexerPosition
 		);
+
+		goto parseNextOperator;
 	}
 
 	Lexer_Unget(parser->lexer);
@@ -400,7 +419,7 @@ ParseError Parser_ParseMulDiv(Parser parser, SmileObject *expr, Int modeFlags)
 	Symbol symbol;
 	CustomSyntaxResult customSyntaxResult;
 
-	customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, Smile_KnownSymbols.MULDIV, &parseError);
+	customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_MULDIV, SYNTAXROOT_KEYWORD, 0, &parseError);
 	if (customSyntaxResult != CustomSyntaxResult_NotMatchedAndNoTokensConsumed)
 		return parseError;
 
@@ -408,7 +427,18 @@ ParseError Parser_ParseMulDiv(Parser parser, SmileObject *expr, Int modeFlags)
 	if (parseError != NULL)
 		return parseError;
 
-	while (((token = Parser_NextToken(parser))->kind == TOKEN_UNKNOWNPUNCTNAME || token->kind == TOKEN_PUNCTNAME)
+parseNextOperator:
+
+	if ((customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_MULDIV, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_BINARY, &parseError))
+		!= CustomSyntaxResult_NotMatchedAndNoTokensConsumed) {
+
+		if (customSyntaxResult == CustomSyntaxResult_PartialApplicationWithError)
+			return parseError;
+
+		goto parseNextOperator;
+	}
+
+	if (((token = Parser_NextToken(parser))->kind == TOKEN_UNKNOWNPUNCTNAME || token->kind == TOKEN_PUNCTNAME)
 		&& ((symbol = token->data.symbol) == SMILE_SPECIAL_SYMBOL_STAR || symbol == SMILE_SPECIAL_SYMBOL_SLASH)
 		&& ((modeFlags & BINARYLINEBREAKS_MASK) == BINARYLINEBREAKS_ALLOWED || !token->isFirstContentOnLine)) {
 
@@ -427,6 +457,8 @@ ParseError Parser_ParseMulDiv(Parser parser, SmileObject *expr, Int modeFlags)
 				lexerPosition),
 			lexerPosition
 		);
+
+		goto parseNextOperator;
 	}
 
 	Lexer_Unget(parser->lexer);
@@ -486,7 +518,7 @@ ParseError Parser_ParseBinary(Parser parser, SmileObject *expr, Int modeFlags)
 	Symbol symbol;
 	CustomSyntaxResult customSyntaxResult;
 
-	customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, Smile_KnownSymbols.BINARY, &parseError);
+	customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_BINARY, SYNTAXROOT_KEYWORD, 0, &parseError);
 	if (customSyntaxResult != CustomSyntaxResult_NotMatchedAndNoTokensConsumed)
 		return parseError;
 
@@ -494,7 +526,18 @@ ParseError Parser_ParseBinary(Parser parser, SmileObject *expr, Int modeFlags)
 	if (parseError != NULL)
 		return parseError;
 
-	while (((token = Parser_NextToken(parser))->kind == TOKEN_UNKNOWNALPHANAME || token->kind == TOKEN_UNKNOWNPUNCTNAME)
+parseNextOperator:
+
+	if ((customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_BINARY, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_COLON_NAME, &parseError))
+		!= CustomSyntaxResult_NotMatchedAndNoTokensConsumed) {
+
+		if (customSyntaxResult == CustomSyntaxResult_PartialApplicationWithError)
+			return parseError;
+
+		goto parseNextOperator;
+	}
+
+	if (((token = Parser_NextToken(parser))->kind == TOKEN_UNKNOWNALPHANAME || token->kind == TOKEN_UNKNOWNPUNCTNAME)
 		&& ((modeFlags & BINARYLINEBREAKS_MASK) == BINARYLINEBREAKS_ALLOWED || !token->isFirstContentOnLine)
 		&& Parser_IsAcceptableArbitraryBinaryOperator(parser, symbol = token->data.symbol)) {
 
@@ -532,6 +575,8 @@ ParseError Parser_ParseBinary(Parser parser, SmileObject *expr, Int modeFlags)
 				tail = (SmileList)(tail->d = (SmileObject)SmileList_ConsWithSource(rvalue, NullObject, lexerPosition));
 			}
 		}
+
+		goto parseNextOperator;
 	}
 
 	Lexer_Unget(parser->lexer);
@@ -866,7 +911,7 @@ ParseError Parser_ParsePostfix(Parser parser, SmileObject *expr, Int modeFlags, 
 	ParseError parseError;
 	CustomSyntaxResult customSyntaxResult;
 
-	customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, Smile_KnownSymbols.POSTFIX, &parseError);
+	customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_POSTFIX, SYNTAXROOT_KEYWORD, 0, &parseError);
 	if (customSyntaxResult != CustomSyntaxResult_NotMatchedAndNoTokensConsumed)
 		return parseError;
 

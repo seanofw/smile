@@ -23,7 +23,12 @@
 		
 #define COLONMODE_MEMBERACCESS	0	// Declare that colons are used for member-retrieval.
 #define COLONMODE_MEMBERDECL	(1 << 2)	// Declare that colons are used for member-declaration.
-#define COLONMODE_MASK	(1 << 2)
+#define COLONMODE_MASK	(1 << 2)	
+		
+#define SYNTAXROOT_ASIS	0	// Parse the custom syntax rule as-is.
+#define SYNTAXROOT_NONTERMINAL	1	// Parse the custom syntax rule, skipping a preexisting nonterminal.
+#define SYNTAXROOT_KEYWORD	2	// Parse the custom syntax rule, but only rules starting with an initial keyword.
+#define SYNTAXROOT_RECURSE	3	// Parse the custom syntax rule, recursing from a parent custom syntax rule.
 
 typedef enum {
 	CustomSyntaxResult_PartialApplicationWithError = -1,
@@ -76,7 +81,8 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseParamType(Parser parser, SmileObject 
 
 SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *expr, Int modeFlags);
 
-SMILE_INTERNAL_FUNC CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, Int modeFlags, Symbol syntaxClassSymbol, ParseError *parseError);
+SMILE_INTERNAL_FUNC CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, Int modeFlags, Symbol syntaxClassSymbol,
+	Int syntaxRootMode, Symbol rootSkipSymbol, ParseError *parseError);
 
 SMILE_INTERNAL_FUNC Token Parser_Recover(Parser parser, Int *tokenKinds, Int numTokenKinds);
 SMILE_INTERNAL_FUNC Bool Parser_IsLValue(SmileObject obj);

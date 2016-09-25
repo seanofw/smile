@@ -133,6 +133,7 @@
     <ClCompile Include="parsing\parser\parserquote_tests.c" />
     <ClCompile Include="parsing\parser\parserstring_tests.c" />
     <ClCompile Include="parsing\parser\parsersyntax_table_tests.c" />
+    <ClCompile Include="parsing\parser\parsersyntax_validate_tests.c" />
     <ClCompile Include="parsing\parser\parsersyntax_walk_tests.c" />
     <ClCompile Include="parsing\parser\parsersyntax_decl_tests.c" />
     <ClCompile Include="parsing\parser\parserterm_tests.c" />

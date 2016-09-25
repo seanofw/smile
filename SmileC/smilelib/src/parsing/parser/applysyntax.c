@@ -312,7 +312,7 @@ static CustomSyntaxResult Parser_RecursivelyApplyCustomSyntax(Parser parser, Smi
 			break;
 
 		default:
-			return Parser_ApplyCustomSyntax(parser, expr, modeFlags, syntaxClassSymbol, parseError);
+			return Parser_ApplyCustomSyntax(parser, expr, modeFlags, syntaxClassSymbol, SYNTAXROOT_RECURSE, 0, parseError);
 	}
 
 	return *parseError != NULL ? CustomSyntaxResult_PartialApplicationWithError : CustomSyntaxResult_SuccessfullyParsed;
@@ -377,7 +377,8 @@ Inline Symbol GetSymbolForToken(Token token)
 	return tokenSymbol;
 }
 
-CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, Int modeFlags, Symbol syntaxClassSymbol, ParseError *parseError)
+CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, Int modeFlags, Symbol syntaxClassSymbol,
+	Int syntaxRootMode, Symbol rootSkipSymbol, ParseError *parseError)
 {
 	ParserSyntaxClass syntaxClass;
 	ParserSyntaxNode node, nextNode;
@@ -405,10 +406,31 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 	// This is the list where we'll be collecting the nonterminal matches as we find them.
 	localTail = localHead = NullList;
 
+	// For the special syntax classes, we may need to apply special behaviors for the initial transition.
+	if (syntaxRootMode == SYNTAXROOT_KEYWORD) {
+		// We can only transition via an initial terminal; we don't need to construct or find a
+		// transition table, since the nextTerminals set will be sufficient.
+		tokenKind = Lexer_Next(parser->lexer);
+		tokenSymbol = GetSymbolForToken(parser->lexer->token);
+		if (node->nextTerminals == NULL || !Int32Dict_TryGetValue(node->nextTerminals, tokenSymbol, &nextNode)) {
+			Lexer_Unget(parser->lexer);
+			return CustomSyntaxResult_NotMatchedAndNoTokensConsumed;
+		}
+		node = nextNode;
+		goto handleTransition;
+	}
+	else if (syntaxRootMode == SYNTAXROOT_NONTERMINAL) {
+		// We need to skip over the given initial nonterminal (which should already have been
+		// parsed and sitting in *expr), and then parse everything after it.
+		if (node->nextNonterminals == NULL || !Int32Dict_TryGetValue(node->nextNonterminals, rootSkipSymbol, &nextNode))
+			return CustomSyntaxResult_NotMatchedAndNoTokensConsumed;
+		node = nextNode;
+	}
+
 	for (;;) {
 		// Try to match the next item (terminal or nonterminal) in the pattern.
-
-		// Peek at the next token, and see if it's even possible to transition on it to a next state.
+	
+		// Find or construct a table that describes possible transitions to subsequent states.
 		transitionTable = ParserSyntaxTable_GetTransitionTable(parser->currentScope->syntaxTable, node);
 		if (transitionTable == NULL) {
 			// Couldn't construct a transition table due to a grammar conflict.
@@ -419,7 +441,7 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 			return isFirst ? CustomSyntaxResult_NotMatchedAndNoTokensConsumed : CustomSyntaxResult_PartialApplicationWithError;
 		}
 
-		// Try to actually transition to the next state.
+		// Try to actually transition to the next state based on the next token in the input.
 		tokenKind = Lexer_Next(parser->lexer);
 		tokenSymbol = GetSymbolForToken(parser->lexer->token);
 		if (!Int32Dict_TryGetValue(transitionTable, tokenSymbol, &nextNode)) {
@@ -431,6 +453,8 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 			}
 		}
 		node = nextNode;
+	
+	handleTransition:
 
 		// We have a next state for this token in nextNode, so transition into it.
 		if (!node->variable) {
@@ -472,6 +496,7 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 		isFirst = False;
 
 		// Continue until we reach an accept node or bail due to a syntax error.
+		syntaxRootMode = SYNTAXROOT_ASIS;
 	}
 
 	if (node->replacement != NullObject) {

@@ -93,6 +93,9 @@
     <ClCompile Include="parsing\parser\parsersyntax_walk_tests.c">
       <Filter>parsing\parser</Filter>
     </ClCompile>
+    <ClCompile Include="parsing\parser\parsersyntax_validate_tests.c">
+      <Filter>parsing\parser</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
