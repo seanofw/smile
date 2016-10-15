@@ -584,7 +584,7 @@ parseNextOperator:
 	return NULL;
 }
 
-// colonexpr :: = . colonexpr COLON range | . range
+// colonexpr :: = . colonexpr COLON rangeexpr | . rangeexpr
 ParseError Parser_ParseColonExpr(Parser parser, SmileObject *expr, Int modeFlags)
 {
 	SmileObject rvalue;
@@ -592,7 +592,7 @@ ParseError Parser_ParseColonExpr(Parser parser, SmileObject *expr, Int modeFlags
 	Token token;
 	LexerPosition lexerPosition;
 
-	parseError = Parser_ParseRange(parser, expr, modeFlags);
+	parseError = Parser_ParseRangeExpr(parser, expr, modeFlags);
 	if (parseError != NULL)
 		return parseError;
 
@@ -604,7 +604,7 @@ ParseError Parser_ParseColonExpr(Parser parser, SmileObject *expr, Int modeFlags
 
 		lexerPosition = Token_GetPosition(token);
 
-		parseError = Parser_ParseRange(parser, &rvalue, modeFlags);
+		parseError = Parser_ParseRangeExpr(parser, &rvalue, modeFlags);
 		if (parseError != NULL)
 			return parseError;
 
@@ -622,8 +622,8 @@ ParseError Parser_ParseColonExpr(Parser parser, SmileObject *expr, Int modeFlags
 	return NULL;
 }
 
-// range ::= . unary RANGE unary | . unary
-ParseError Parser_ParseRange(Parser parser, SmileObject *expr, Int modeFlags)
+// rangeexpr ::= . unary DOTDOT unary | . unary
+ParseError Parser_ParseRangeExpr(Parser parser, SmileObject *expr, Int modeFlags)
 {
 	SmileObject rvalue;
 	ParseError parseError;
@@ -634,7 +634,7 @@ ParseError Parser_ParseRange(Parser parser, SmileObject *expr, Int modeFlags)
 	if (parseError != NULL)
 		return parseError;
 
-	if ((token = Parser_NextToken(parser))->kind == TOKEN_RANGE
+	if ((token = Parser_NextToken(parser))->kind == TOKEN_DOTDOT
 		&& ((modeFlags & BINARYLINEBREAKS_MASK) == BINARYLINEBREAKS_ALLOWED || !token->isFirstContentOnLine)) {
 
 		lexerPosition = Token_GetPosition(token);

@@ -142,8 +142,8 @@ START_TEST(ShouldRecognizeSpecialCompoundPunctuation)
 	ASSERT(lexer->token->data.symbol == Smile_KnownSymbols.supereq_);
 	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
 	ASSERT(lexer->token->data.symbol == Smile_KnownSymbols.superne_);
-	ASSERT(Lexer_Next(lexer) == TOKEN_RANGE);
-	ASSERT(Lexer_Next(lexer) == TOKEN_ELLIPSIS);
+	ASSERT(Lexer_Next(lexer) == TOKEN_DOTDOT);
+	ASSERT(Lexer_Next(lexer) == TOKEN_DOTDOTDOT);
 	ASSERT(Lexer_Next(lexer) == TOKEN_DOUBLEHASH);
 }
 END_TEST

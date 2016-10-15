@@ -22,7 +22,7 @@ parser in the standard Smile implementation.
 
 Tokens:
 	LBRACE RBRACE LPAREN RPAREN LBRACKET RBRACKET
-	BAR EQUAL EQUAL_NOSPACE BACKTICK DOT DOUBLEHASH COLON COMMA
+	BAR EQUAL EQUAL_NOSPACE BACKTICK DOT DOTDOT DOTDOTDOT DOUBLEHASH COLON COMMA
 	IF UNLESS THEN ELSE WHILE UNTIL DO TILL WHEN RETURN VAR AUTO CONST TRY CATCH NEW IS TYPEOF AND OR NOT
 	VAR_NAME UNKNOWN_ALPHA_NAME UNKNOWN_PUNCT_NAME TILL_NAME
 	EQ NE LE GE GT LT SUPEREQ SUPERNE
@@ -121,9 +121,9 @@ binaryexpr ::=	  binaryexpr UNKNOWN_PUNCT_NAME binary_args	// See note above abo
 	| colonexpr
 binary_args ::= binary_args COMMA colonexpr | colonexpr
 
-colonexpr ::= colonexpr COLON range | range
+colonexpr ::= colonexpr COLON rangeexpr | rangeexpr
 
-range ::= unary RANGE unary | unary
+rangeexpr ::= unary DOTDOT unary | unary
 
 unary ::= UNKNOWN_PUNCT_NAME unary | UNKNOWN_ALPHA_NAME unary
 		| AND unary | OR unary

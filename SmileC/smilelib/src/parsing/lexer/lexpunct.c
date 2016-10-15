@@ -154,9 +154,9 @@ Int Lexer_ParseDot(Lexer lexer, Bool isFirstContentOnLine)
 		if (src < end && (ch = *src) == '.') {
 			src++;
 			// Three dots, so ellipsis.
-			return SIMPLE_TOKEN(src - 3, TOKEN_ELLIPSIS);
+			return SIMPLE_TOKEN(src - 3, TOKEN_DOTDOTDOT);
 		}
-		else return SIMPLE_TOKEN(src - 2, TOKEN_RANGE);
+		else return SIMPLE_TOKEN(src - 2, TOKEN_DOTDOT);
 	}
 
 	if (ch >= '0' && ch <= '9') {
