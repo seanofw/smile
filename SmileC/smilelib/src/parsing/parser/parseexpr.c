@@ -773,7 +773,7 @@ ParseError Parser_ParsePrefixExpr(Parser parser, SmileObject *expr, Int modeFlag
 }
 
 // newexpr ::=	  . NEW LBRACE members_opt RBRACE
-// 	| . NEW dot LBRACE members_opt RBRACE
+// 	| . NEW dotexpr LBRACE members_opt RBRACE
 // 	| . consexpr
 ParseError Parser_ParseNewExpr(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting)
 {
@@ -797,7 +797,7 @@ ParseError Parser_ParseNewExpr(Parser parser, SmileObject *expr, Int modeFlags, 
 		base = (SmileObject)Smile_KnownObjects.ObjectSymbol;
 	}
 	else {
-		parseError = Parser_ParseDot(parser, &base, modeFlags, newToken);
+		parseError = Parser_ParseDotExpr(parser, &base, modeFlags, newToken);
 		if (parseError != NULL) {
 			token = Parser_Recover(parser, Parser_RightBracesBracketsParentheses_Recovery, Parser_RightBracesBracketsParentheses_Count);
 			if (token->kind != TOKEN_LEFTBRACE) {
@@ -918,7 +918,7 @@ ParseError Parser_ParsePostfixExpr(Parser parser, SmileObject *expr, Int modeFla
 	return Parser_ParseConsExpr(parser, expr, modeFlags, firstUnaryTokenForErrorReporting);
 }
 
-// consexpr ::= . dot DOUBLEHASH consexpr | . dot
+// consexpr ::= . dotexpr DOUBLEHASH consexpr | . dotexpr
 ParseError Parser_ParseConsExpr(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting)
 {
 	SmileList tail;
@@ -927,7 +927,7 @@ ParseError Parser_ParseConsExpr(Parser parser, SmileObject *expr, Int modeFlags,
 	LexerPosition lexerPosition;
 	Bool isFirst;
 
-	parseError = Parser_ParseDot(parser, expr, modeFlags, firstUnaryTokenForErrorReporting);
+	parseError = Parser_ParseDotExpr(parser, expr, modeFlags, firstUnaryTokenForErrorReporting);
 	if (parseError != NULL)
 		return parseError;
 
@@ -940,7 +940,7 @@ ParseError Parser_ParseConsExpr(Parser parser, SmileObject *expr, Int modeFlags,
 		rvalue = NullObject;
 
 		do {
-			parseError = Parser_ParseDot(parser, &nextRValue, modeFlags, firstUnaryTokenForErrorReporting);
+			parseError = Parser_ParseDotExpr(parser, &nextRValue, modeFlags, firstUnaryTokenForErrorReporting);
 			if (parseError != NULL)
 				return parseError;
 
@@ -961,8 +961,8 @@ ParseError Parser_ParseConsExpr(Parser parser, SmileObject *expr, Int modeFlags,
 	return NULL;
 }
 
-// dot ::= . dot DOT any_name | . term
-ParseError Parser_ParseDot(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting)
+// dotexpr ::= . dotexpr DOT any_name | . term
+ParseError Parser_ParseDotExpr(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting)
 {
 	ParseError parseError;
 	Int tokenKind;

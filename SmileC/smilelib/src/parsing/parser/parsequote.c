@@ -198,7 +198,7 @@ ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Bool *isT
 
 // raw_list_items_opt :: = . raw_list_items | .
 // raw_list_items :: = . raw_list_items raw_list_item | . raw_list_item
-// raw_list_item :: = raw_list_dot
+// raw_list_item :: = raw_list_dotexpr
 ParseError Parser_ParseRawListItemsOpt(Parser parser, SmileList *head, SmileList *tail, Bool *isTemplate, Int modeFlags)
 {
 	Token token;
@@ -222,7 +222,7 @@ ParseError Parser_ParseRawListItemsOpt(Parser parser, SmileList *head, SmileList
 
 		// Parse the next expression.
 		itemTriggersTemplateMode = False;
-		error = Parser_ParseRawListDot(parser, &expr, &itemTriggersTemplateMode, modeFlags);
+		error = Parser_ParseRawListDotExpr(parser, &expr, &itemTriggersTemplateMode, modeFlags);
 		if (error == NULL) {
 			if (expr != NullObject) {
 
@@ -270,8 +270,8 @@ ParseError Parser_ParseRawListItemsOpt(Parser parser, SmileList *head, SmileList
 	return NULL;
 }
 
-// raw_list_dot :: = . raw_list_dot DOT any_name | . raw_list_term
-ParseError Parser_ParseRawListDot(Parser parser, SmileObject *result, Bool *isTemplate, Int modeFlags)
+// raw_list_dotexpr :: = . raw_list_dotexpr DOT any_name | . raw_list_term
+ParseError Parser_ParseRawListDotExpr(Parser parser, SmileObject *result, Bool *isTemplate, Int modeFlags)
 {
 	ParseError parseError;
 	Int tokenKind;

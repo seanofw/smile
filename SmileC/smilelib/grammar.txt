@@ -101,7 +101,7 @@ assign ::= lvalue EQUAL assign
         | unknown_name EQUAL_NOSPACE assign
         | orexpr
 
-lvalue ::=	  colonexpr COLON prefixexpr | dot DOT name | VAR_NAME
+lvalue ::=	  colonexpr COLON prefixexpr | dotexpr DOT name | VAR_NAME
 	| LPAREN lvalue RPAREN				// See note above about binary operators (breaking allowed in 'lvalue').
 
 orexpr ::= orexpr OR andexpr | andexpr
@@ -137,12 +137,12 @@ prefixexpr ::=	  UNKNOWN_PUNCT_NAME prefixexpr | UNKNOWN_ALPHA_NAME prefixexpr
 	| newexpr
 
 newexpr ::=	  NEW LBRACE members_opt RBRACE	// See note above about binary operators (no breaking allowed in 'members_opt').
-	| NEW dot LBRACE members_opt RBRACE	// See note above about binary operators (no breaking allowed in 'members_opt').
+	| NEW dotexpr LBRACE members_opt RBRACE	// See note above about binary operators (no breaking allowed in 'members_opt').
 	| consexpr
 
-consexpr ::= dot DOUBLEHASH consexpr | dot
+consexpr ::= dotexpr DOUBLEHASH consexpr | dotexpr
 
-dot ::= dot DOT any_name | term
+dotexpr ::= dotexpr DOT any_name | term
 
 term ::= LPAREN expr RPAREN							// See note above about binary operators (breaking allowed in 'expr').
        | scope
@@ -177,8 +177,8 @@ param_type ::= param_type_dot
 param_type_dot ::= param_type_dot DOT param_type_term | param_type_term
 param_type_term ::= ALPHA_NAME | PUNCT_NAME
 
-raw_list_item ::= raw_list_dot
-raw_list_dot ::= raw_list_dot DOT any_name | raw_list_term
+raw_list_item ::= raw_list_dotexpr
+raw_list_dotexpr ::= raw_list_dotexpr DOT any_name | raw_list_term
 raw_list_term ::= raw_list | any_name
        | CHAR | RAWSTRING
        | BYTE | INT16 | INT32 | INT64 | REAL32 | REAL64 | REAL128 | FLOAT32 | FLOAT64

@@ -88,7 +88,7 @@ STATIC_STRING(COLONEXPR_, "COLONEXPR");
 STATIC_STRING(PREFIXEXPR_, "PREFIXEXPR");
 STATIC_STRING(POSTFIXEXPR_, "POSTFIXEXPR");
 STATIC_STRING(CONSEXPR_, "CONSEXPR");
-STATIC_STRING(DOT_, "DOT");
+STATIC_STRING(DOTEXPR_, "DOTEXPR");
 STATIC_STRING(TERM_, "TERM");
 
 STATIC_STRING(Brk_, "brk");
@@ -174,7 +174,7 @@ static void KnownSymbolsInt_PreloadSpecials(SymbolTable symbolTable, KnownSymbol
 	knownSymbols->PREFIXEXPR = AddSpecialSymbol(symbolTable, PREFIXEXPR_, SMILE_SPECIAL_SYMBOL_PREFIXEXPR);
 	knownSymbols->POSTFIXEXPR = AddSpecialSymbol(symbolTable, POSTFIXEXPR_, SMILE_SPECIAL_SYMBOL_POSTFIXEXPR);
 	knownSymbols->CONSEXPR = AddSpecialSymbol(symbolTable, CONSEXPR_, SMILE_SPECIAL_SYMBOL_CONSEXPR);
-	knownSymbols->DOT = AddSpecialSymbol(symbolTable, DOT_, SMILE_SPECIAL_SYMBOL_DOT);
+	knownSymbols->DOTEXPR = AddSpecialSymbol(symbolTable, DOTEXPR_, SMILE_SPECIAL_SYMBOL_DOTEXPR);
 	knownSymbols->TERM = AddSpecialSymbol(symbolTable, TERM_, SMILE_SPECIAL_SYMBOL_TERM);
 
 	knownSymbols->brk_ = AddSpecialSymbol(symbolTable, Brk_, SMILE_SPECIAL_SYMBOL_BRK);

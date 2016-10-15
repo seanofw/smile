@@ -84,7 +84,7 @@ static const char *_reservedClassNames[] = {
 	"ADDEXPR", "ALPHANAME", "ASSIGN",
 	"BINARYEXPR", "BOOL", "BYTE",
 	"CHAR", "CMPEXPR", "COLONEXPR", "CONSEXPR",
-	"DOT", "DYNSTRING",
+	"DOTEXPR", "DYNSTRING",
 	"EXPR", "EXPRS",
 	"FLOAT", "FLOAT128", "FLOAT16", "FLOAT32", "FLOAT64", "FLOAT8", "FUNC",
 	"INT", "INT128", "INT16", "INT32", "INT64", "INT8",
@@ -648,12 +648,12 @@ static ParseError Parser_ValidateSpecialSyntaxClasses(Symbol cls, SmileList patt
 		default:
 			// One kind of error message for known reserved class names...
 			if (Parser_IsReservedClassName(clsString)) {
-				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, String_FormatString(InvalidSealedPatternError, "DOT"));
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, String_FormatString(InvalidSealedPatternError, String_ToC(clsString)));
 				return parseError;
 			}
 			else {
 				// ...another kind of error message if they're just doin' it wrong.
-				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, String_FormatString(InvalidClassError, clsString));
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, String_FormatString(InvalidClassError, String_ToC(clsString)));
 				return parseError;
 			}
 	}
