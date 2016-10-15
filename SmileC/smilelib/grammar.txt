@@ -108,12 +108,12 @@ or ::= or OR and | and
 and ::= and AND not | not
 not ::= NOT not | cmp
 
-cmp ::= cmp LT addsub | cmp GT addsub | cmp LE addsub | cmp GE addsub
-		| cmp EQ addsub | cmp NE addsub | cmp SUPEREQ addsub | cmp SUPERNE addsub
-        | cmp IS addsub
-		| addsub
+cmp ::= cmp LT addexpr | cmp GT addexpr | cmp LE addexpr | cmp GE addexpr
+		| cmp EQ addexpr | cmp NE addexpr | cmp SUPEREQ addexpr | cmp SUPERNE addexpr
+        | cmp IS addexpr
+		| addexpr
 
-addsub ::= addsub PLUS muldiv | addsub MINUS muldiv | muldiv
+addexpr ::= addexpr PLUS muldiv | addexpr MINUS muldiv | muldiv
 muldiv ::= muldiv STAR binary | muldiv SLASH binary | binary
 
 binary ::= binary UNKNOWN_PUNCT_NAME binary_args	// See note above about binary operators.

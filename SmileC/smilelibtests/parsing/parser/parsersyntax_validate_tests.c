@@ -71,15 +71,15 @@ START_TEST(ExprMustStartWithAKeyword)
 	parser = Parser_Create();
 	parseScope = ParseScope_CreateRoot();
 
-	result = Parser_ParseFromC(parser, parseScope, "#syntax EXPR: [math [ADDSUB x] plus [ADDSUB y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax EXPR: [math [ADDEXPR x] plus [ADDEXPR y]] => 123");
 	ASSERT(SMILE_KIND(result) != SMILE_KIND_NULL);
 	ASSERT(Parser_GetErrorCount(parser) == 0);
 
-	result = Parser_ParseFromC(parser, parseScope, "#syntax EXPR: [[ADDSUB x] plus [ADDSUB y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax EXPR: [[ADDEXPR x] plus [ADDEXPR y]] => 123");
 	ASSERT(SMILE_KIND(result) == SMILE_KIND_NULL);
 	ASSERT(Parser_GetErrorCount(parser) == 1);
 
-	result = Parser_ParseFromC(parser, parseScope, "#syntax EXPR: [math [ADDSUB x] minus [ADDSUB y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax EXPR: [math [ADDEXPR x] minus [ADDEXPR y]] => 123");
 	ASSERT(SMILE_KIND(result) != SMILE_KIND_NULL);
 	ASSERT(Parser_GetErrorCount(parser) == 1);
 }
@@ -97,44 +97,44 @@ START_TEST(CmpRequiresComplexSyntaxPatternRules)
 	expectedErrorCount = 0;
 
 	// Starting with a keyword is okay.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [math [ADDSUB x] flerk [ADDSUB y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [math [ADDEXPR x] flerk [ADDEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == expectedErrorCount);
 	ASSERT(SMILE_KIND(result) != SMILE_KIND_NULL);
 
-	// Starting with ADDSUB is okay, if not followed by a standard comparison operator.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDSUB x] flerk [ADDSUB y]] => 123");
+	// Starting with ADDEXPR is okay, if not followed by a standard comparison operator.
+	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDEXPR x] flerk [ADDEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == expectedErrorCount);
 	ASSERT(SMILE_KIND(result) != SMILE_KIND_NULL);
 
-	// Starting with any nonterminal other than ADDSUB is not okay.
+	// Starting with any nonterminal other than ADDEXPR is not okay.
 	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[MULDIV x] flerk [MULDIV y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
 	ASSERT(SMILE_KIND(result) == SMILE_KIND_NULL);
 
-	// Starting with ADDSUB but following that with one of the standard comparisons is not okay.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDSUB x] < [ADDSUB y]] => 123");
+	// Starting with ADDEXPR but following that with one of the standard comparisons is not okay.
+	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDEXPR x] < [ADDEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
-	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDSUB x] > [ADDSUB y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDEXPR x] > [ADDEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
-	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDSUB x] <= [ADDSUB y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDEXPR x] <= [ADDEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
-	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDSUB x] >= [ADDSUB y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDEXPR x] >= [ADDEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
-	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDSUB x] != [ADDSUB y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDEXPR x] != [ADDEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
-	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDSUB x] == [ADDSUB y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDEXPR x] == [ADDEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
-	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDSUB x] !== [ADDSUB y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDEXPR x] !== [ADDEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
-	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDSUB x] === [ADDSUB y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDEXPR x] === [ADDEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
-	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDSUB x] is [ADDSUB y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDEXPR x] is [ADDEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
 	ASSERT(SMILE_KIND(result) == SMILE_KIND_NULL);
 }
 END_TEST
 
-START_TEST(AddSubRequiresComplexSyntaxPatternRules)
+START_TEST(AddExprRequiresComplexSyntaxPatternRules)
 {
 	Parser parser;
 	ParseScope parseScope;
@@ -146,24 +146,24 @@ START_TEST(AddSubRequiresComplexSyntaxPatternRules)
 	expectedErrorCount = 0;
 
 	// Starting with a keyword is okay.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax ADDSUB: [math [MULDIV x] flerk [MULDIV y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax ADDEXPR: [math [MULDIV x] flerk [MULDIV y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == expectedErrorCount);
 	ASSERT(SMILE_KIND(result) != SMILE_KIND_NULL);
 
 	// Starting with MULDIV is okay, if not followed by a standard addition operator.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax ADDSUB: [[MULDIV x] flerk [MULDIV y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax ADDEXPR: [[MULDIV x] flerk [MULDIV y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == expectedErrorCount);
 	ASSERT(SMILE_KIND(result) != SMILE_KIND_NULL);
 
 	// Starting with any nonterminal other than MULDIV is not okay.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax ADDSUB: [[TERM x] flerk [TERM y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax ADDEXPR: [[TERM x] flerk [TERM y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
 	ASSERT(SMILE_KIND(result) == SMILE_KIND_NULL);
 
 	// Starting with MULDIV but following that with one of the addition operators is not okay.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax ADDSUB: [[MULDIV x] + [MULDIV y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax ADDEXPR: [[MULDIV x] + [MULDIV y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
-	result = Parser_ParseFromC(parser, parseScope, "#syntax ADDSUB: [[MULDIV x] - [MULDIV y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax ADDEXPR: [[MULDIV x] - [MULDIV y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
 	ASSERT(SMILE_KIND(result) == SMILE_KIND_NULL);
 }

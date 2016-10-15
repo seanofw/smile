@@ -50,8 +50,8 @@ STATIC_STRING(InvalidSealedPatternError, "Syntax patterns may not be added to th
 STATIC_STRING(InvalidClassError, "Unknown or illegal syntax class '%s' (did you forget a hyphen?)");
 STATIC_STRING(InvalidKeywordPatternError, "Syntax patterns in the %s class must start with a keyword.");
 
-STATIC_STRING(InvalidCmpPatternError, "Syntax patterns in the CMP class must either start with a keyword, or with an ADDSUB nonterminal followed by a keyword that is none of the nine standard comparison operators.");
-STATIC_STRING(InvalidAddSubPatternError, "Syntax patterns in the ADDSUB class must either start with a keyword, or with a MULDIV nonterminal followed by a keyword that is neither '+' or '-'.");
+STATIC_STRING(InvalidCmpPatternError, "Syntax patterns in the CMP class must either start with a keyword, or with an ADDEXPR nonterminal followed by a keyword that is none of the nine standard comparison operators.");
+STATIC_STRING(InvalidAddExprPatternError, "Syntax patterns in the ADDEXPR class must either start with a keyword, or with a MULDIV nonterminal followed by a keyword that is neither '+' or '-'.");
 STATIC_STRING(InvalidMulDivPatternError, "Syntax patterns in the MULDIV class must either start with a keyword, or with a BINARY nonterminal followed by a keyword that is neither '*' or '/'.");
 STATIC_STRING(InvalidBinaryPatternError, "Syntax patterns in the BINARY class must either start with a keyword, or with a COLON nonterminal followed by a keyword.");
 STATIC_STRING(InvalidPostfixPatternError, "Syntax patterns in the POSTFIX class must either start with a keyword, or with a DOUBLEHASH nonterminal followed by a keyword.");
@@ -81,7 +81,7 @@ static Int _syntaxRecoverCount = sizeof(_syntaxRecover) / sizeof(Int);
 /// This list must be in alphabetical (ASCIIbetical) order.
 /// </summary>
 static const char *_reservedClassNames[] = {
-	"ADDSUB", "ALPHANAME", "ASSIGN",
+	"ADDEXPR", "ALPHANAME", "ASSIGN",
 	"BINARY", "BOOL", "BYTE",
 	"CHAR", "CMP", "COLON",
 	"DOT", "DOUBLEHASH", "DYNSTRING",
@@ -506,7 +506,7 @@ static ParseError Parser_ValidateSpecialSyntaxClasses(Symbol cls, SmileList patt
 			return NULL;
 
 		case SMILE_SPECIAL_SYMBOL_CMP:
-			// CMP must always start with either a symbol (keyword) or an ADDSUB nonterminal followed by a
+			// CMP must always start with either a symbol (keyword) or an ADDEXPR nonterminal followed by a
 			// symbol (keyword) that is not '<' or '>' or '<=' or '>=' or '==' or '!=' or '===' or '!===' or 'is'.
 			if (LIST_FIRST(pattern)->kind == SMILE_KIND_SYMBOL)
 				return NULL;
@@ -515,7 +515,7 @@ static ParseError Parser_ValidateSpecialSyntaxClasses(Symbol cls, SmileList patt
 				return parseError;
 			}
 			nonterminal = (SmileNonterminal)(LIST_FIRST(pattern));
-			if (nonterminal->nonterminal != SMILE_SPECIAL_SYMBOL_ADDSUB) {
+			if (nonterminal->nonterminal != SMILE_SPECIAL_SYMBOL_ADDEXPR) {
 				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidCmpPatternError);
 				return parseError;
 			}
@@ -539,8 +539,8 @@ static ParseError Parser_ValidateSpecialSyntaxClasses(Symbol cls, SmileList patt
 			}
 			return NULL;
 
-		case SMILE_SPECIAL_SYMBOL_ADDSUB:
-			// ADDSUB must always start with either a symbol (keyword) or a MULDIV nonterminal followed by a
+		case SMILE_SPECIAL_SYMBOL_ADDEXPR:
+			// ADDEXPR must always start with either a symbol (keyword) or a MULDIV nonterminal followed by a
 			// symbol (keyword) that is not '+' or '-'.
 			if (LIST_FIRST(pattern)->kind == SMILE_KIND_SYMBOL)
 				return NULL;
@@ -550,16 +550,16 @@ static ParseError Parser_ValidateSpecialSyntaxClasses(Symbol cls, SmileList patt
 			}
 			nonterminal = (SmileNonterminal)(LIST_FIRST(pattern));
 			if (nonterminal->nonterminal != SMILE_SPECIAL_SYMBOL_MULDIV) {
-				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidAddSubPatternError);
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidAddExprPatternError);
 				return parseError;
 			}
 			if (LIST_SECOND(pattern)->kind != SMILE_KIND_SYMBOL) {
-				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidAddSubPatternError);
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidAddExprPatternError);
 				return parseError;
 			}
 			smileSymbol = (SmileSymbol)(LIST_SECOND(pattern));
 			if (smileSymbol->symbol == SMILE_SPECIAL_SYMBOL_PLUS || smileSymbol->symbol == SMILE_SPECIAL_SYMBOL_MINUS) {
-				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidAddSubPatternError);
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidAddExprPatternError);
 				return parseError;
 			}
 			return NULL;

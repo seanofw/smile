@@ -201,8 +201,8 @@ static ParserSyntaxClass ParserSyntaxClass_FindOrCreate(ParserSyntaxTable *table
 	case SMILE_SPECIAL_SYMBOL_CMP:
 		(*table)->cmpClass = syntaxClass;
 		break;
-	case SMILE_SPECIAL_SYMBOL_ADDSUB:
-		(*table)->addSubClass = syntaxClass;
+	case SMILE_SPECIAL_SYMBOL_ADDEXPR:
+		(*table)->addExprClass = syntaxClass;
 		break;
 	case SMILE_SPECIAL_SYMBOL_MULDIV:
 		(*table)->mulDivClass = syntaxClass;
@@ -356,7 +356,7 @@ ParserSyntaxTable ParserSyntaxTable_CreateNew(void)
 	syntaxTable->stmtClass = NULL;
 	syntaxTable->exprClass = NULL;
 	syntaxTable->cmpClass = NULL;
-	syntaxTable->addSubClass = NULL;
+	syntaxTable->addExprClass = NULL;
 	syntaxTable->mulDivClass = NULL;
 	syntaxTable->binaryClass = NULL;
 	syntaxTable->unaryClass = NULL;
@@ -391,7 +391,7 @@ static ParserSyntaxTable ParserSyntaxTable_VFork(ParserSyntaxTable table)
 	newTable->stmtClass = table->stmtClass;
 	newTable->exprClass = table->exprClass;
 	newTable->cmpClass = table->cmpClass;
-	newTable->addSubClass = table->addSubClass;
+	newTable->addExprClass = table->addExprClass;
 	newTable->mulDivClass = table->mulDivClass;
 	newTable->binaryClass = table->binaryClass;
 	newTable->unaryClass = table->unaryClass;
@@ -415,7 +415,7 @@ static void ParserSyntaxTable_RecursivelyComputeFirstSet(ParserSyntaxTable table
 		case SMILE_SPECIAL_SYMBOL_STMT:
 		case SMILE_SPECIAL_SYMBOL_EXPR:
 		case SMILE_SPECIAL_SYMBOL_CMP:
-		case SMILE_SPECIAL_SYMBOL_ADDSUB:
+		case SMILE_SPECIAL_SYMBOL_ADDEXPR:
 		case SMILE_SPECIAL_SYMBOL_MULDIV:
 		case SMILE_SPECIAL_SYMBOL_BINARY:
 		case SMILE_SPECIAL_SYMBOL_UNARY:
@@ -712,8 +712,8 @@ Bool ParserSyntaxTable_AddRule(Parser parser, ParserSyntaxTable *table, SmileSyn
 			case SMILE_SPECIAL_SYMBOL_CMP:
 				syntaxTable->cmpClass = syntaxClass;
 				break;
-			case SMILE_SPECIAL_SYMBOL_ADDSUB:
-				syntaxTable->addSubClass = syntaxClass;
+			case SMILE_SPECIAL_SYMBOL_ADDEXPR:
+				syntaxTable->addExprClass = syntaxClass;
 				break;
 			case SMILE_SPECIAL_SYMBOL_MULDIV:
 				syntaxTable->mulDivClass = syntaxClass;

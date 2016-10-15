@@ -108,7 +108,7 @@ START_TEST(CanMakeAnEmptySyntaxTable)
 	ASSERT(syntaxTable->referenceCount == 1);
 	ASSERT(syntaxTable->syntaxClasses != NULL);
 
-	ASSERT(syntaxTable->addSubClass == NULL);
+	ASSERT(syntaxTable->addExprClass == NULL);
 	ASSERT(syntaxTable->binaryClass == NULL);
 	ASSERT(syntaxTable->cmpClass == NULL);
 	ASSERT(syntaxTable->exprClass == NULL);

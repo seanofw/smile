@@ -53,7 +53,7 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseOr(Parser parser, SmileObject *expr, 
 SMILE_INTERNAL_FUNC ParseError Parser_ParseAnd(Parser parser, SmileObject *expr, Int modeFlags);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseNot(Parser parser, SmileObject *expr, Int modeFlags);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseCmp(Parser parser, SmileObject *expr, Int modeFlags);
-SMILE_INTERNAL_FUNC ParseError Parser_ParseAddSub(Parser parser, SmileObject *expr, Int modeFlags);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseAddExpr(Parser parser, SmileObject *expr, Int modeFlags);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseMulDiv(Parser parser, SmileObject *expr, Int modeFlags);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseBinary(Parser parser, SmileObject *expr, Int modeFlags);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseColon(Parser parser, SmileObject *expr, Int modeFlags);

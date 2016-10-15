@@ -78,7 +78,7 @@ struct ParserSyntaxTableStruct {
 	ParserSyntaxClass stmtClass;	
 	ParserSyntaxClass exprClass;	
 	ParserSyntaxClass cmpClass;	// Note: RValue of CMP (or more restrictive form) is assumed to exist before tree.
-	ParserSyntaxClass addSubClass;	// Note: RValue of ADDSUB (or more restrictive form) is assumed to exist before tree.
+	ParserSyntaxClass addExprClass;	// Note: RValue of ADDEXPR (or more restrictive form) is assumed to exist before tree.
 	ParserSyntaxClass mulDivClass;	// Note: RValue of MULDIV (or more restrictive form) is assumed to exist before tree.
 	ParserSyntaxClass binaryClass;	// Note: RValue of BINARY (or more restrictive form) is assumed to exist before tree.
 	ParserSyntaxClass unaryClass;	

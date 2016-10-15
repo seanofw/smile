@@ -80,7 +80,7 @@ STATIC_STRING(RightBrace, "}");
 STATIC_STRING(STMT_, "STMT");
 STATIC_STRING(EXPR_, "EXPR");
 STATIC_STRING(CMP_, "CMP");
-STATIC_STRING(ADDSUB_, "ADDSUB");
+STATIC_STRING(ADDEXPR_, "ADDEXPR");
 STATIC_STRING(MULDIV_, "MULDIV");
 STATIC_STRING(BINARY_, "BINARY");
 STATIC_STRING(RANGE_, "RANGE");
@@ -166,7 +166,7 @@ static void KnownSymbolsInt_PreloadSpecials(SymbolTable symbolTable, KnownSymbol
 	knownSymbols->STMT = AddSpecialSymbol(symbolTable, STMT_, SMILE_SPECIAL_SYMBOL_STMT);
 	knownSymbols->EXPR = AddSpecialSymbol(symbolTable, EXPR_, SMILE_SPECIAL_SYMBOL_EXPR);
 	knownSymbols->CMP = AddSpecialSymbol(symbolTable, CMP_, SMILE_SPECIAL_SYMBOL_CMP);
-	knownSymbols->ADDSUB = AddSpecialSymbol(symbolTable, ADDSUB_, SMILE_SPECIAL_SYMBOL_ADDSUB);
+	knownSymbols->ADDEXPR = AddSpecialSymbol(symbolTable, ADDEXPR_, SMILE_SPECIAL_SYMBOL_ADDEXPR);
 	knownSymbols->MULDIV = AddSpecialSymbol(symbolTable, MULDIV_, SMILE_SPECIAL_SYMBOL_MULDIV);
 	knownSymbols->BINARY = AddSpecialSymbol(symbolTable, BINARY_, SMILE_SPECIAL_SYMBOL_BINARY);
 	knownSymbols->COLON = AddSpecialSymbol(symbolTable, COLON_, SMILE_SPECIAL_SYMBOL_COLON_NAME);

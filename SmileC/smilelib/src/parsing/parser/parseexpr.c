@@ -278,10 +278,10 @@ Inline SmileSymbol Parser_GetSymbolObjectForCmpOperator(Symbol symbol)
 	}
 }
 
-// cmp ::= . cmp LT addsub | . cmp GT addsub | . cmp LE addsub | . cmp GE addsub
-//       | . cmp EQ addsub | . cmp NE addsub | . cmp SUPEREQ addsub | . cmp SUPERNE addsub
-//       | . cmp IS addsub
-//       | . addsub
+// cmp ::= . cmp LT addexpr | . cmp GT addexpr | . cmp LE addexpr | . cmp GE addexpr
+//       | . cmp EQ addexpr | . cmp NE addexpr | . cmp SUPEREQ addexpr | . cmp SUPERNE addexpr
+//       | . cmp IS addexpr
+//       | . addexpr
 ParseError Parser_ParseCmp(Parser parser, SmileObject *expr, Int modeFlags)
 {
 	SmileObject rvalue;
@@ -296,13 +296,13 @@ ParseError Parser_ParseCmp(Parser parser, SmileObject *expr, Int modeFlags)
 	if (customSyntaxResult != CustomSyntaxResult_NotMatchedAndNoTokensConsumed)
 		return parseError;
 
-	parseError = Parser_ParseAddSub(parser, expr, modeFlags);
+	parseError = Parser_ParseAddExpr(parser, expr, modeFlags);
 	if (parseError != NULL)
 		return parseError;
 
 parseNextOperator:
 
-	if ((customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_CMP, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_ADDSUB, &parseError))
+	if ((customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_CMP, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_ADDEXPR, &parseError))
 		!= CustomSyntaxResult_NotMatchedAndNoTokensConsumed) {
 		
 		if (customSyntaxResult == CustomSyntaxResult_PartialApplicationWithError)
@@ -318,7 +318,7 @@ parseNextOperator:
 
 		lexerPosition = Token_GetPosition(token);
 
-		parseError = Parser_ParseAddSub(parser, &rvalue, modeFlags);
+		parseError = Parser_ParseAddExpr(parser, &rvalue, modeFlags);
 		if (parseError != NULL)
 			return parseError;
 
@@ -352,8 +352,8 @@ parseNextOperator:
 	return NULL;
 }
 
-// addsub ::= . addsub PLUS muldiv | . addsub MINUS muldiv | . muldiv
-ParseError Parser_ParseAddSub(Parser parser, SmileObject *expr, Int modeFlags)
+// addexpr ::= . addexpr PLUS muldiv | . addexpr MINUS muldiv | . muldiv
+ParseError Parser_ParseAddExpr(Parser parser, SmileObject *expr, Int modeFlags)
 {
 	SmileObject rvalue;
 	ParseError parseError;
@@ -362,7 +362,7 @@ ParseError Parser_ParseAddSub(Parser parser, SmileObject *expr, Int modeFlags)
 	Symbol symbol;
 	CustomSyntaxResult customSyntaxResult;
 
-	customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_ADDSUB, SYNTAXROOT_KEYWORD, 0, &parseError);
+	customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_ADDEXPR, SYNTAXROOT_KEYWORD, 0, &parseError);
 	if (customSyntaxResult != CustomSyntaxResult_NotMatchedAndNoTokensConsumed)
 		return parseError;
 
@@ -372,7 +372,7 @@ ParseError Parser_ParseAddSub(Parser parser, SmileObject *expr, Int modeFlags)
 
 parseNextOperator:
 
-	if ((customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_ADDSUB, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_MULDIV, &parseError))
+	if ((customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_ADDEXPR, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_MULDIV, &parseError))
 		!= CustomSyntaxResult_NotMatchedAndNoTokensConsumed) {
 
 		if (customSyntaxResult == CustomSyntaxResult_PartialApplicationWithError)
