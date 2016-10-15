@@ -731,7 +731,7 @@ ParseError Parser_ParsePrefixExpr(Parser parser, SmileObject *expr, Int modeFlag
 	Lexer_Unget(parser->lexer);
 
 	// We now have all of the unary prefix operators.  Now go parse the term itself.
-	parseError = Parser_ParseNew(parser, expr, modeFlags, firstUnaryTokenForErrorReporting);
+	parseError = Parser_ParseNewExpr(parser, expr, modeFlags, firstUnaryTokenForErrorReporting);
 	if (parseError != NULL)
 		return parseError;
 
@@ -772,10 +772,10 @@ ParseError Parser_ParsePrefixExpr(Parser parser, SmileObject *expr, Int modeFlag
 	return NULL;
 }
 
-// new ::= . NEW LBRACE members_opt RBRACE
-// 		| . NEW dot LBRACE members_opt RBRACE
-// 		| . doublehash
-ParseError Parser_ParseNew(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting)
+// newexpr ::=	  . NEW LBRACE members_opt RBRACE
+// 	| . NEW dot LBRACE members_opt RBRACE
+// 	| . doublehash
+ParseError Parser_ParseNewExpr(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting)
 {
 	Token token, newToken;
 	SmileObject base, body;

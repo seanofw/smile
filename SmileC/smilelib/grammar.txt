@@ -134,11 +134,11 @@ prefixexpr ::=	  UNKNOWN_PUNCT_NAME prefixexpr | UNKNOWN_ALPHA_NAME prefixexpr
 	| PLUS prefixexpr | MINUS prefixexpr
 	| STAR prefixexpr | SLASH prefixexpr
 	| TYPEOF prefixexpr
-	| new
+	| newexpr
 
-new ::= NEW LBRACE members_opt RBRACE				// See note above about binary operators (no breaking allowed in 'members_opt').
-		| NEW dot LBRACE members_opt RBRACE			// See note above about binary operators (no breaking allowed in 'members_opt').
-		| doublehash
+newexpr ::=	  NEW LBRACE members_opt RBRACE	// See note above about binary operators (no breaking allowed in 'members_opt').
+	| NEW dot LBRACE members_opt RBRACE	// See note above about binary operators (no breaking allowed in 'members_opt').
+	| doublehash
 
 doublehash ::= dot DOUBLEHASH doublehash | dot
 
