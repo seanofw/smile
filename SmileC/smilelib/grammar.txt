@@ -101,7 +101,7 @@ assign ::= lvalue EQUAL assign
         | unknown_name EQUAL_NOSPACE assign
         | orexpr
 
-lvalue ::=	  colon COLON unary | dot DOT name | VAR_NAME
+lvalue ::=	  colonexpr COLON unary | dot DOT name | VAR_NAME
 	| LPAREN lvalue RPAREN				// See note above about binary operators (breaking allowed in 'lvalue').
 
 orexpr ::= orexpr OR andexpr | andexpr
@@ -118,10 +118,10 @@ mulexpr ::= mulexpr STAR binaryexpr | mulexpr SLASH binaryexpr | binaryexpr
 
 binaryexpr ::=	  binaryexpr UNKNOWN_PUNCT_NAME binary_args	// See note above about binary operators.
 	| binaryexpr UNKNOWN_ALPHA_NAME binary_args	// See note above about binary operators.
-	| range
-binary_args ::= binary_args COMMA colon | colon
+	| colonexpr
+binary_args ::= binary_args COMMA colonexpr | colonexpr
 
-colon ::= colon COLON range | range
+colonexpr ::= colonexpr COLON range | range
 
 range ::= unary RANGE unary | unary
 

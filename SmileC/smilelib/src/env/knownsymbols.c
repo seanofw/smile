@@ -84,7 +84,7 @@ STATIC_STRING(ADDEXPR_, "ADDEXPR");
 STATIC_STRING(MULEXPR_, "MULEXPR");
 STATIC_STRING(BINARYEXPR_, "BINARYEXPR");
 STATIC_STRING(RANGE_, "RANGE");
-STATIC_STRING(COLON_, "COLON");
+STATIC_STRING(COLONEXPR_, "COLONEXPR");
 STATIC_STRING(UNARY_, "UNARY");
 STATIC_STRING(POSTFIX_, "POSTFIX");
 STATIC_STRING(DOUBLEHASH_, "DOUBLEHASH");
@@ -169,7 +169,7 @@ static void KnownSymbolsInt_PreloadSpecials(SymbolTable symbolTable, KnownSymbol
 	knownSymbols->ADDEXPR = AddSpecialSymbol(symbolTable, ADDEXPR_, SMILE_SPECIAL_SYMBOL_ADDEXPR);
 	knownSymbols->MULEXPR = AddSpecialSymbol(symbolTable, MULEXPR_, SMILE_SPECIAL_SYMBOL_MULEXPR);
 	knownSymbols->BINARYEXPR = AddSpecialSymbol(symbolTable, BINARYEXPR_, SMILE_SPECIAL_SYMBOL_BINARYEXPR);
-	knownSymbols->COLON = AddSpecialSymbol(symbolTable, COLON_, SMILE_SPECIAL_SYMBOL_COLON_NAME);
+	knownSymbols->COLONEXPR = AddSpecialSymbol(symbolTable, COLONEXPR_, SMILE_SPECIAL_SYMBOL_COLONEXPR);
 	knownSymbols->RANGE = AddSpecialSymbol(symbolTable, RANGE_, SMILE_SPECIAL_SYMBOL_RANGE);
 	knownSymbols->UNARY = AddSpecialSymbol(symbolTable, UNARY_, SMILE_SPECIAL_SYMBOL_UNARY);
 	knownSymbols->POSTFIX = AddSpecialSymbol(symbolTable, POSTFIX_, SMILE_SPECIAL_SYMBOL_POSTFIX);

@@ -216,22 +216,22 @@ START_TEST(BinaryExprRequiresComplexSyntaxPatternRules)
 	expectedErrorCount = 0;
 
 	// Starting with a keyword is okay.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax BINARYEXPR: [math [COLON x] flerk [COLON y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax BINARYEXPR: [math [COLONEXPR x] flerk [COLONEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == expectedErrorCount);
 	ASSERT(SMILE_KIND(result) != SMILE_KIND_NULL);
 
-	// Starting with COLON is okay, if followed by a keyword.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax BINARYEXPR: [[COLON x] flerk [COLON y]] => 123");
+	// Starting with COLONEXPR is okay, if followed by a keyword.
+	result = Parser_ParseFromC(parser, parseScope, "#syntax BINARYEXPR: [[COLONEXPR x] flerk [COLONEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == expectedErrorCount);
 	ASSERT(SMILE_KIND(result) != SMILE_KIND_NULL);
 
-	// Starting with any nonterminal other than COLON is not okay.
+	// Starting with any nonterminal other than COLONEXPR is not okay.
 	result = Parser_ParseFromC(parser, parseScope, "#syntax BINARYEXPR: [[TERM x] flerk [TERM y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
 	ASSERT(SMILE_KIND(result) == SMILE_KIND_NULL);
 
-	// Starting with COLON but not following that with a keyword is not okay.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax BINARYEXPR: [[COLON x] [COLON y]] => 123");
+	// Starting with COLONEXPR but not following that with a keyword is not okay.
+	result = Parser_ParseFromC(parser, parseScope, "#syntax BINARYEXPR: [[COLONEXPR x] [COLONEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
 	ASSERT(SMILE_KIND(result) == SMILE_KIND_NULL);
 }

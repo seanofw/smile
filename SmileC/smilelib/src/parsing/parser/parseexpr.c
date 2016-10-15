@@ -506,8 +506,8 @@ Inline Bool Parser_IsAcceptableArbitraryBinaryOperator(Parser parser, Symbol sym
 
 // binaryexpr ::= . binaryexpr UNKNOWN_PUNCT_NAME binary_args
 // 		| . binaryexpr UNKNOWN_ALPHA_NAME binary_args
-// 		| . range
-// binary_args ::= binary_args COMMA range | range
+// 		| . colonexpr
+// binary_args ::= binary_args COMMA colonexpr | colonexpr
 ParseError Parser_ParseBinaryExpr(Parser parser, SmileObject *expr, Int modeFlags)
 {
 	SmileList binaryExpr, tail;
@@ -522,13 +522,13 @@ ParseError Parser_ParseBinaryExpr(Parser parser, SmileObject *expr, Int modeFlag
 	if (customSyntaxResult != CustomSyntaxResult_NotMatchedAndNoTokensConsumed)
 		return parseError;
 
-	parseError = Parser_ParseColon(parser, expr, modeFlags);
+	parseError = Parser_ParseColonExpr(parser, expr, modeFlags);
 	if (parseError != NULL)
 		return parseError;
 
 parseNextOperator:
 
-	if ((customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_BINARYEXPR, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_COLON_NAME, &parseError))
+	if ((customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_BINARYEXPR, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_COLONEXPR, &parseError))
 		!= CustomSyntaxResult_NotMatchedAndNoTokensConsumed) {
 
 		if (customSyntaxResult == CustomSyntaxResult_PartialApplicationWithError)
@@ -548,7 +548,7 @@ parseNextOperator:
 			return NULL;
 		}
 
-		parseError = Parser_ParseColon(parser, &rvalue, modeFlags);
+		parseError = Parser_ParseColonExpr(parser, &rvalue, modeFlags);
 		if (parseError != NULL)
 			return parseError;
 
@@ -568,7 +568,7 @@ parseNextOperator:
 
 				lexerPosition = Token_GetPosition(parser->lexer->token);
 
-				parseError = Parser_ParseColon(parser, &rvalue, modeFlags);
+				parseError = Parser_ParseColonExpr(parser, &rvalue, modeFlags);
 				if (parseError != NULL)
 					return parseError;
 
@@ -584,8 +584,8 @@ parseNextOperator:
 	return NULL;
 }
 
-// colon :: = . colon COLON range | . range
-ParseError Parser_ParseColon(Parser parser, SmileObject *expr, Int modeFlags)
+// colonexpr :: = . colonexpr COLON range | . range
+ParseError Parser_ParseColonExpr(Parser parser, SmileObject *expr, Int modeFlags)
 {
 	SmileObject rvalue;
 	ParseError parseError;
