@@ -113,8 +113,8 @@ cmp ::= cmp LT addexpr | cmp GT addexpr | cmp LE addexpr | cmp GE addexpr
         | cmp IS addexpr
 		| addexpr
 
-addexpr ::= addexpr PLUS muldiv | addexpr MINUS muldiv | muldiv
-muldiv ::= muldiv STAR binary | muldiv SLASH binary | binary
+addexpr ::= addexpr PLUS mulexpr | addexpr MINUS mulexpr | mulexpr
+mulexpr ::= mulexpr STAR binary | mulexpr SLASH binary | binary
 
 binary ::= binary UNKNOWN_PUNCT_NAME binary_args	// See note above about binary operators.
 		| binary UNKNOWN_ALPHA_NAME binary_args		// See note above about binary operators.

@@ -352,7 +352,7 @@ parseNextOperator:
 	return NULL;
 }
 
-// addexpr ::= . addexpr PLUS muldiv | . addexpr MINUS muldiv | . muldiv
+// addexpr ::= . addexpr PLUS mulexpr | . addexpr MINUS mulexpr | . mulexpr
 ParseError Parser_ParseAddExpr(Parser parser, SmileObject *expr, Int modeFlags)
 {
 	SmileObject rvalue;
@@ -366,13 +366,13 @@ ParseError Parser_ParseAddExpr(Parser parser, SmileObject *expr, Int modeFlags)
 	if (customSyntaxResult != CustomSyntaxResult_NotMatchedAndNoTokensConsumed)
 		return parseError;
 
-	parseError = Parser_ParseMulDiv(parser, expr, modeFlags);
+	parseError = Parser_ParseMulExpr(parser, expr, modeFlags);
 	if (parseError != NULL)
 		return parseError;
 
 parseNextOperator:
 
-	if ((customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_ADDEXPR, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_MULDIV, &parseError))
+	if ((customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_ADDEXPR, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_MULEXPR, &parseError))
 		!= CustomSyntaxResult_NotMatchedAndNoTokensConsumed) {
 
 		if (customSyntaxResult == CustomSyntaxResult_PartialApplicationWithError)
@@ -387,7 +387,7 @@ parseNextOperator:
 
 		lexerPosition = Token_GetPosition(token);
 
-		parseError = Parser_ParseMulDiv(parser, &rvalue, modeFlags);
+		parseError = Parser_ParseMulExpr(parser, &rvalue, modeFlags);
 		if (parseError != NULL)
 			return parseError;
 
@@ -409,8 +409,8 @@ parseNextOperator:
 	return NULL;
 }
 
-// muldiv ::= . muldiv STAR binary | . muldiv SLASH binary | . binary
-ParseError Parser_ParseMulDiv(Parser parser, SmileObject *expr, Int modeFlags)
+// mulexpr ::= . mulexpr STAR binary | . mulexpr SLASH binary | . binary
+ParseError Parser_ParseMulExpr(Parser parser, SmileObject *expr, Int modeFlags)
 {
 	SmileObject rvalue;
 	ParseError parseError;
@@ -419,7 +419,7 @@ ParseError Parser_ParseMulDiv(Parser parser, SmileObject *expr, Int modeFlags)
 	Symbol symbol;
 	CustomSyntaxResult customSyntaxResult;
 
-	customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_MULDIV, SYNTAXROOT_KEYWORD, 0, &parseError);
+	customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_MULEXPR, SYNTAXROOT_KEYWORD, 0, &parseError);
 	if (customSyntaxResult != CustomSyntaxResult_NotMatchedAndNoTokensConsumed)
 		return parseError;
 
@@ -429,7 +429,7 @@ ParseError Parser_ParseMulDiv(Parser parser, SmileObject *expr, Int modeFlags)
 
 parseNextOperator:
 
-	if ((customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_MULDIV, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_BINARY, &parseError))
+	if ((customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_MULEXPR, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_BINARY, &parseError))
 		!= CustomSyntaxResult_NotMatchedAndNoTokensConsumed) {
 
 		if (customSyntaxResult == CustomSyntaxResult_PartialApplicationWithError)

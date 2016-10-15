@@ -107,7 +107,7 @@ START_TEST(CmpRequiresComplexSyntaxPatternRules)
 	ASSERT(SMILE_KIND(result) != SMILE_KIND_NULL);
 
 	// Starting with any nonterminal other than ADDEXPR is not okay.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[MULDIV x] flerk [MULDIV y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[MULEXPR x] flerk [MULEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
 	ASSERT(SMILE_KIND(result) == SMILE_KIND_NULL);
 
@@ -146,30 +146,30 @@ START_TEST(AddExprRequiresComplexSyntaxPatternRules)
 	expectedErrorCount = 0;
 
 	// Starting with a keyword is okay.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax ADDEXPR: [math [MULDIV x] flerk [MULDIV y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax ADDEXPR: [math [MULEXPR x] flerk [MULEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == expectedErrorCount);
 	ASSERT(SMILE_KIND(result) != SMILE_KIND_NULL);
 
-	// Starting with MULDIV is okay, if not followed by a standard addition operator.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax ADDEXPR: [[MULDIV x] flerk [MULDIV y]] => 123");
+	// Starting with MULEXPR is okay, if not followed by a standard addition operator.
+	result = Parser_ParseFromC(parser, parseScope, "#syntax ADDEXPR: [[MULEXPR x] flerk [MULEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == expectedErrorCount);
 	ASSERT(SMILE_KIND(result) != SMILE_KIND_NULL);
 
-	// Starting with any nonterminal other than MULDIV is not okay.
+	// Starting with any nonterminal other than MULEXPR is not okay.
 	result = Parser_ParseFromC(parser, parseScope, "#syntax ADDEXPR: [[TERM x] flerk [TERM y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
 	ASSERT(SMILE_KIND(result) == SMILE_KIND_NULL);
 
-	// Starting with MULDIV but following that with one of the addition operators is not okay.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax ADDEXPR: [[MULDIV x] + [MULDIV y]] => 123");
+	// Starting with MULEXPR but following that with one of the addition operators is not okay.
+	result = Parser_ParseFromC(parser, parseScope, "#syntax ADDEXPR: [[MULEXPR x] + [MULEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
-	result = Parser_ParseFromC(parser, parseScope, "#syntax ADDEXPR: [[MULDIV x] - [MULDIV y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax ADDEXPR: [[MULEXPR x] - [MULEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
 	ASSERT(SMILE_KIND(result) == SMILE_KIND_NULL);
 }
 END_TEST
 
-START_TEST(MulDivRequiresComplexSyntaxPatternRules)
+START_TEST(MulExprRequiresComplexSyntaxPatternRules)
 {
 	Parser parser;
 	ParseScope parseScope;
@@ -181,24 +181,24 @@ START_TEST(MulDivRequiresComplexSyntaxPatternRules)
 	expectedErrorCount = 0;
 
 	// Starting with a keyword is okay.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax MULDIV: [math [BINARY x] flerk [BINARY y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax MULEXPR: [math [BINARY x] flerk [BINARY y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == expectedErrorCount);
 	ASSERT(SMILE_KIND(result) != SMILE_KIND_NULL);
 
 	// Starting with BINARY is okay, if not followed by a standard multiplication operator.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax MULDIV: [[BINARY x] flerk [BINARY y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax MULEXPR: [[BINARY x] flerk [BINARY y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == expectedErrorCount);
 	ASSERT(SMILE_KIND(result) != SMILE_KIND_NULL);
 
 	// Starting with any nonterminal other than BINARY is not okay.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax MULDIV: [[TERM x] flerk [TERM y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax MULEXPR: [[TERM x] flerk [TERM y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
 	ASSERT(SMILE_KIND(result) == SMILE_KIND_NULL);
 
 	// Starting with BINARY but following that with one of the multiplication operators is not okay.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax MULDIV: [[BINARY x] * [BINARY y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax MULEXPR: [[BINARY x] * [BINARY y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
-	result = Parser_ParseFromC(parser, parseScope, "#syntax MULDIV: [[BINARY x] / [BINARY y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax MULEXPR: [[BINARY x] / [BINARY y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
 	ASSERT(SMILE_KIND(result) == SMILE_KIND_NULL);
 }

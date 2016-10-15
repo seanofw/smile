@@ -51,8 +51,8 @@ STATIC_STRING(InvalidClassError, "Unknown or illegal syntax class '%s' (did you 
 STATIC_STRING(InvalidKeywordPatternError, "Syntax patterns in the %s class must start with a keyword.");
 
 STATIC_STRING(InvalidCmpPatternError, "Syntax patterns in the CMP class must either start with a keyword, or with an ADDEXPR nonterminal followed by a keyword that is none of the nine standard comparison operators.");
-STATIC_STRING(InvalidAddExprPatternError, "Syntax patterns in the ADDEXPR class must either start with a keyword, or with a MULDIV nonterminal followed by a keyword that is neither '+' or '-'.");
-STATIC_STRING(InvalidMulDivPatternError, "Syntax patterns in the MULDIV class must either start with a keyword, or with a BINARY nonterminal followed by a keyword that is neither '*' or '/'.");
+STATIC_STRING(InvalidAddExprPatternError, "Syntax patterns in the ADDEXPR class must either start with a keyword, or with a MULEXPR nonterminal followed by a keyword that is neither '+' or '-'.");
+STATIC_STRING(InvalidMulExprPatternError, "Syntax patterns in the MULEXPR class must either start with a keyword, or with a BINARY nonterminal followed by a keyword that is neither '*' or '/'.");
 STATIC_STRING(InvalidBinaryPatternError, "Syntax patterns in the BINARY class must either start with a keyword, or with a COLON nonterminal followed by a keyword.");
 STATIC_STRING(InvalidPostfixPatternError, "Syntax patterns in the POSTFIX class must either start with a keyword, or with a DOUBLEHASH nonterminal followed by a keyword.");
 
@@ -88,7 +88,7 @@ static const char *_reservedClassNames[] = {
 	"EXPR", "EXPRS",
 	"FLOAT", "FLOAT128", "FLOAT16", "FLOAT32", "FLOAT64", "FLOAT8", "FUNC",
 	"INT", "INT128", "INT16", "INT32", "INT64", "INT8",
-	"MULDIV",
+	"MULEXPR",
 	"NAME", "NEW", "NUMBER",
 	"POSTFIX", "PUNCTNAME",
 	"RANGE", "RAWLIST", "RAWLISTTERM", "RAWSTRING", "REAL", "REAL128", "REAL16", "REAL32", "REAL64", "REAL8",
@@ -540,7 +540,7 @@ static ParseError Parser_ValidateSpecialSyntaxClasses(Symbol cls, SmileList patt
 			return NULL;
 
 		case SMILE_SPECIAL_SYMBOL_ADDEXPR:
-			// ADDEXPR must always start with either a symbol (keyword) or a MULDIV nonterminal followed by a
+			// ADDEXPR must always start with either a symbol (keyword) or a MULEXPR nonterminal followed by a
 			// symbol (keyword) that is not '+' or '-'.
 			if (LIST_FIRST(pattern)->kind == SMILE_KIND_SYMBOL)
 				return NULL;
@@ -549,7 +549,7 @@ static ParseError Parser_ValidateSpecialSyntaxClasses(Symbol cls, SmileList patt
 				return parseError;
 			}
 			nonterminal = (SmileNonterminal)(LIST_FIRST(pattern));
-			if (nonterminal->nonterminal != SMILE_SPECIAL_SYMBOL_MULDIV) {
+			if (nonterminal->nonterminal != SMILE_SPECIAL_SYMBOL_MULEXPR) {
 				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidAddExprPatternError);
 				return parseError;
 			}
@@ -564,8 +564,8 @@ static ParseError Parser_ValidateSpecialSyntaxClasses(Symbol cls, SmileList patt
 			}
 			return NULL;
 
-		case SMILE_SPECIAL_SYMBOL_MULDIV:
-			// MULDIV must always start with either a symbol (keyword) or a BINARY nonterminal followed by a
+		case SMILE_SPECIAL_SYMBOL_MULEXPR:
+			// MULEXPR must always start with either a symbol (keyword) or a BINARY nonterminal followed by a
 			// symbol (keyword) that is not '*' or '/'.
 			if (LIST_FIRST(pattern)->kind == SMILE_KIND_SYMBOL)
 				return NULL;
@@ -575,16 +575,16 @@ static ParseError Parser_ValidateSpecialSyntaxClasses(Symbol cls, SmileList patt
 			}
 			nonterminal = (SmileNonterminal)(LIST_FIRST(pattern));
 			if (nonterminal->nonterminal != SMILE_SPECIAL_SYMBOL_BINARY) {
-				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidMulDivPatternError);
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidMulExprPatternError);
 				return parseError;
 			}
 			if (LIST_SECOND(pattern)->kind != SMILE_KIND_SYMBOL) {
-				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidMulDivPatternError);
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidMulExprPatternError);
 				return parseError;
 			}
 			smileSymbol = (SmileSymbol)(LIST_SECOND(pattern));
 			if (smileSymbol->symbol == SMILE_SPECIAL_SYMBOL_STAR || smileSymbol->symbol == SMILE_SPECIAL_SYMBOL_SLASH) {
-				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidMulDivPatternError);
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidMulExprPatternError);
 				return parseError;
 			}
 			return NULL;

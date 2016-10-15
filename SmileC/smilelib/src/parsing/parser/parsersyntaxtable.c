@@ -204,8 +204,8 @@ static ParserSyntaxClass ParserSyntaxClass_FindOrCreate(ParserSyntaxTable *table
 	case SMILE_SPECIAL_SYMBOL_ADDEXPR:
 		(*table)->addExprClass = syntaxClass;
 		break;
-	case SMILE_SPECIAL_SYMBOL_MULDIV:
-		(*table)->mulDivClass = syntaxClass;
+	case SMILE_SPECIAL_SYMBOL_MULEXPR:
+		(*table)->mulExprClass = syntaxClass;
 		break;
 	case SMILE_SPECIAL_SYMBOL_BINARY:
 		(*table)->binaryClass = syntaxClass;
@@ -357,7 +357,7 @@ ParserSyntaxTable ParserSyntaxTable_CreateNew(void)
 	syntaxTable->exprClass = NULL;
 	syntaxTable->cmpClass = NULL;
 	syntaxTable->addExprClass = NULL;
-	syntaxTable->mulDivClass = NULL;
+	syntaxTable->mulExprClass = NULL;
 	syntaxTable->binaryClass = NULL;
 	syntaxTable->unaryClass = NULL;
 	syntaxTable->postfixClass = NULL;
@@ -392,7 +392,7 @@ static ParserSyntaxTable ParserSyntaxTable_VFork(ParserSyntaxTable table)
 	newTable->exprClass = table->exprClass;
 	newTable->cmpClass = table->cmpClass;
 	newTable->addExprClass = table->addExprClass;
-	newTable->mulDivClass = table->mulDivClass;
+	newTable->mulExprClass = table->mulExprClass;
 	newTable->binaryClass = table->binaryClass;
 	newTable->unaryClass = table->unaryClass;
 	newTable->postfixClass = table->postfixClass;
@@ -416,7 +416,7 @@ static void ParserSyntaxTable_RecursivelyComputeFirstSet(ParserSyntaxTable table
 		case SMILE_SPECIAL_SYMBOL_EXPR:
 		case SMILE_SPECIAL_SYMBOL_CMP:
 		case SMILE_SPECIAL_SYMBOL_ADDEXPR:
-		case SMILE_SPECIAL_SYMBOL_MULDIV:
+		case SMILE_SPECIAL_SYMBOL_MULEXPR:
 		case SMILE_SPECIAL_SYMBOL_BINARY:
 		case SMILE_SPECIAL_SYMBOL_UNARY:
 		case SMILE_SPECIAL_SYMBOL_POSTFIX:
@@ -715,8 +715,8 @@ Bool ParserSyntaxTable_AddRule(Parser parser, ParserSyntaxTable *table, SmileSyn
 			case SMILE_SPECIAL_SYMBOL_ADDEXPR:
 				syntaxTable->addExprClass = syntaxClass;
 				break;
-			case SMILE_SPECIAL_SYMBOL_MULDIV:
-				syntaxTable->mulDivClass = syntaxClass;
+			case SMILE_SPECIAL_SYMBOL_MULEXPR:
+				syntaxTable->mulExprClass = syntaxClass;
 				break;
 			case SMILE_SPECIAL_SYMBOL_BINARY:
 				syntaxTable->binaryClass = syntaxClass;

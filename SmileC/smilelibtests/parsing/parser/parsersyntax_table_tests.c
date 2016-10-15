@@ -112,7 +112,7 @@ START_TEST(CanMakeAnEmptySyntaxTable)
 	ASSERT(syntaxTable->binaryClass == NULL);
 	ASSERT(syntaxTable->cmpClass == NULL);
 	ASSERT(syntaxTable->exprClass == NULL);
-	ASSERT(syntaxTable->mulDivClass == NULL);
+	ASSERT(syntaxTable->mulExprClass == NULL);
 	ASSERT(syntaxTable->postfixClass == NULL);
 	ASSERT(syntaxTable->stmtClass == NULL);
 	ASSERT(syntaxTable->termClass == NULL);
