@@ -79,7 +79,7 @@ STATIC_STRING(RightBrace, "}");
 
 STATIC_STRING(STMT_, "STMT");
 STATIC_STRING(EXPR_, "EXPR");
-STATIC_STRING(CMP_, "CMP");
+STATIC_STRING(CMPEXPR_, "CMPEXPR");
 STATIC_STRING(ADDEXPR_, "ADDEXPR");
 STATIC_STRING(MULEXPR_, "MULEXPR");
 STATIC_STRING(BINARY_, "BINARY");
@@ -165,7 +165,7 @@ static void KnownSymbolsInt_PreloadSpecials(SymbolTable symbolTable, KnownSymbol
 	
 	knownSymbols->STMT = AddSpecialSymbol(symbolTable, STMT_, SMILE_SPECIAL_SYMBOL_STMT);
 	knownSymbols->EXPR = AddSpecialSymbol(symbolTable, EXPR_, SMILE_SPECIAL_SYMBOL_EXPR);
-	knownSymbols->CMP = AddSpecialSymbol(symbolTable, CMP_, SMILE_SPECIAL_SYMBOL_CMP);
+	knownSymbols->CMPEXPR = AddSpecialSymbol(symbolTable, CMPEXPR_, SMILE_SPECIAL_SYMBOL_CMPEXPR);
 	knownSymbols->ADDEXPR = AddSpecialSymbol(symbolTable, ADDEXPR_, SMILE_SPECIAL_SYMBOL_ADDEXPR);
 	knownSymbols->MULEXPR = AddSpecialSymbol(symbolTable, MULEXPR_, SMILE_SPECIAL_SYMBOL_MULEXPR);
 	knownSymbols->BINARY = AddSpecialSymbol(symbolTable, BINARY_, SMILE_SPECIAL_SYMBOL_BINARY);

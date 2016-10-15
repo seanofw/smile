@@ -51,7 +51,7 @@ expr ::= arith
 		| scope
 		| return
 		| LOANWORD_INCLUDE include_expr
-        | LOANWORD_BRK base_expr
+		| LOANWORD_BRK base_expr
 
 include_expr ::= STRING
 		| STRING COLON include_names
@@ -101,17 +101,17 @@ assign ::= lvalue EQUAL assign
         | unknown_name EQUAL_NOSPACE assign
         | or
 
-lvalue ::= colon COLON unary | dot DOT name | VAR_NAME
-		| LPAREN lvalue RPAREN				// See note above about binary operators (breaking allowed in 'lvalue').
+lvalue ::=	  colon COLON unary | dot DOT name | VAR_NAME
+	| LPAREN lvalue RPAREN				// See note above about binary operators (breaking allowed in 'lvalue').
 
 or ::= or OR and | and
 and ::= and AND not | not
-not ::= NOT not | cmp
+not ::= NOT not | cmpexpr
 
-cmp ::= cmp LT addexpr | cmp GT addexpr | cmp LE addexpr | cmp GE addexpr
-		| cmp EQ addexpr | cmp NE addexpr | cmp SUPEREQ addexpr | cmp SUPERNE addexpr
-        | cmp IS addexpr
-		| addexpr
+cmpexpr ::=	  cmpexpr LT addexpr | cmpexpr GT addexpr | cmpexpr LE addexpr | cmpexpr GE addexpr
+	| cmpexpr EQ addexpr | cmpexpr NE addexpr | cmpexpr SUPEREQ addexpr | cmpexpr SUPERNE addexpr
+	| cmpexpr IS addexpr
+	| addexpr
 
 addexpr ::= addexpr PLUS mulexpr | addexpr MINUS mulexpr | mulexpr
 mulexpr ::= mulexpr STAR binary | mulexpr SLASH binary | binary

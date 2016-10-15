@@ -198,8 +198,8 @@ static ParserSyntaxClass ParserSyntaxClass_FindOrCreate(ParserSyntaxTable *table
 	case SMILE_SPECIAL_SYMBOL_EXPR:
 		(*table)->exprClass = syntaxClass;
 		break;
-	case SMILE_SPECIAL_SYMBOL_CMP:
-		(*table)->cmpClass = syntaxClass;
+	case SMILE_SPECIAL_SYMBOL_CMPEXPR:
+		(*table)->cmpExprClass = syntaxClass;
 		break;
 	case SMILE_SPECIAL_SYMBOL_ADDEXPR:
 		(*table)->addExprClass = syntaxClass;
@@ -355,7 +355,7 @@ ParserSyntaxTable ParserSyntaxTable_CreateNew(void)
 
 	syntaxTable->stmtClass = NULL;
 	syntaxTable->exprClass = NULL;
-	syntaxTable->cmpClass = NULL;
+	syntaxTable->cmpExprClass = NULL;
 	syntaxTable->addExprClass = NULL;
 	syntaxTable->mulExprClass = NULL;
 	syntaxTable->binaryClass = NULL;
@@ -390,7 +390,7 @@ static ParserSyntaxTable ParserSyntaxTable_VFork(ParserSyntaxTable table)
 
 	newTable->stmtClass = table->stmtClass;
 	newTable->exprClass = table->exprClass;
-	newTable->cmpClass = table->cmpClass;
+	newTable->cmpExprClass = table->cmpExprClass;
 	newTable->addExprClass = table->addExprClass;
 	newTable->mulExprClass = table->mulExprClass;
 	newTable->binaryClass = table->binaryClass;
@@ -414,7 +414,7 @@ static void ParserSyntaxTable_RecursivelyComputeFirstSet(ParserSyntaxTable table
 	switch (nonterminal) {
 		case SMILE_SPECIAL_SYMBOL_STMT:
 		case SMILE_SPECIAL_SYMBOL_EXPR:
-		case SMILE_SPECIAL_SYMBOL_CMP:
+		case SMILE_SPECIAL_SYMBOL_CMPEXPR:
 		case SMILE_SPECIAL_SYMBOL_ADDEXPR:
 		case SMILE_SPECIAL_SYMBOL_MULEXPR:
 		case SMILE_SPECIAL_SYMBOL_BINARY:
@@ -709,8 +709,8 @@ Bool ParserSyntaxTable_AddRule(Parser parser, ParserSyntaxTable *table, SmileSyn
 			case SMILE_SPECIAL_SYMBOL_EXPR:
 				syntaxTable->exprClass = syntaxClass;
 				break;
-			case SMILE_SPECIAL_SYMBOL_CMP:
-				syntaxTable->cmpClass = syntaxClass;
+			case SMILE_SPECIAL_SYMBOL_CMPEXPR:
+				syntaxTable->cmpExprClass = syntaxClass;
 				break;
 			case SMILE_SPECIAL_SYMBOL_ADDEXPR:
 				syntaxTable->addExprClass = syntaxClass;

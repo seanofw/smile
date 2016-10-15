@@ -176,7 +176,7 @@ ParseError Parser_ParseAnd(Parser parser, SmileObject *expr, Int modeFlags)
 	return NULL;
 }
 
-// not :: = . NOT not | . cmp
+// not :: = . NOT not | . cmpexpr
 ParseError Parser_ParseNot(Parser parser, SmileObject *expr, Int modeFlags)
 {
 	ParseError parseError;
@@ -188,7 +188,7 @@ ParseError Parser_ParseNot(Parser parser, SmileObject *expr, Int modeFlags)
 	Int numOperators = 0, maxOperators = 16, newMax, i;
 
 	// Because this rule is right-recursive, and we don't want to recurse wherever we can
-	// avoid it, we loop to collect NOTs, and then parse the 'cmp' expression, and then build
+	// avoid it, we loop to collect NOTs, and then parse the 'cmpexpr' expression, and then build
 	// up the same tree of NOTs we would have built recursively.
 
 	// Collect the first unary prefix operator.
@@ -216,7 +216,7 @@ ParseError Parser_ParseNot(Parser parser, SmileObject *expr, Int modeFlags)
 	Lexer_Unget(parser->lexer);
 
 	// We now have all of the unary prefix operators.  Now go parse the term itself.
-	parseError = Parser_ParseCmp(parser, expr, modeFlags);
+	parseError = Parser_ParseCmpExpr(parser, expr, modeFlags);
 	if (parseError != NULL)
 		return parseError;
 
@@ -278,11 +278,11 @@ Inline SmileSymbol Parser_GetSymbolObjectForCmpOperator(Symbol symbol)
 	}
 }
 
-// cmp ::= . cmp LT addexpr | . cmp GT addexpr | . cmp LE addexpr | . cmp GE addexpr
-//       | . cmp EQ addexpr | . cmp NE addexpr | . cmp SUPEREQ addexpr | . cmp SUPERNE addexpr
-//       | . cmp IS addexpr
+// cmpexpr ::= . cmpexpr LT addexpr | . cmpexpr GT addexpr | . cmpexpr LE addexpr | . cmpexpr GE addexpr
+//       | . cmpexpr EQ addexpr | . cmpexpr NE addexpr | . cmpexpr SUPEREQ addexpr | . cmpexpr SUPERNE addexpr
+//       | . cmpexpr IS addexpr
 //       | . addexpr
-ParseError Parser_ParseCmp(Parser parser, SmileObject *expr, Int modeFlags)
+ParseError Parser_ParseCmpExpr(Parser parser, SmileObject *expr, Int modeFlags)
 {
 	SmileObject rvalue;
 	SmileSymbol symbolObject;
@@ -292,7 +292,7 @@ ParseError Parser_ParseCmp(Parser parser, SmileObject *expr, Int modeFlags)
 	Symbol symbol;
 	CustomSyntaxResult customSyntaxResult;
 
-	customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_CMP, SYNTAXROOT_KEYWORD, 0, &parseError);
+	customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_CMPEXPR, SYNTAXROOT_KEYWORD, 0, &parseError);
 	if (customSyntaxResult != CustomSyntaxResult_NotMatchedAndNoTokensConsumed)
 		return parseError;
 
@@ -302,7 +302,7 @@ ParseError Parser_ParseCmp(Parser parser, SmileObject *expr, Int modeFlags)
 
 parseNextOperator:
 
-	if ((customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_CMP, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_ADDEXPR, &parseError))
+	if ((customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_CMPEXPR, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_ADDEXPR, &parseError))
 		!= CustomSyntaxResult_NotMatchedAndNoTokensConsumed) {
 		
 		if (customSyntaxResult == CustomSyntaxResult_PartialApplicationWithError)

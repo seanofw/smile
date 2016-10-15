@@ -52,8 +52,8 @@ static ParserSyntaxClass GetSyntaxClass(Parser parser, Symbol syntaxClassSymbol)
 			return syntaxTable->stmtClass;
 		case SMILE_SPECIAL_SYMBOL_EXPR:
 			return syntaxTable->exprClass;
-		case SMILE_SPECIAL_SYMBOL_CMP:
-			return syntaxTable->cmpClass;
+		case SMILE_SPECIAL_SYMBOL_CMPEXPR:
+			return syntaxTable->cmpExprClass;
 		case SMILE_SPECIAL_SYMBOL_ADDEXPR:
 			return syntaxTable->addExprClass;
 		case SMILE_SPECIAL_SYMBOL_MULEXPR:
@@ -287,8 +287,8 @@ static CustomSyntaxResult Parser_RecursivelyApplyCustomSyntax(Parser parser, Smi
 			*parseError = Parser_ParseEquals(parser, expr, modeFlags);
 			break;
 
-		case SMILE_SPECIAL_SYMBOL_CMP:
-			*parseError = Parser_ParseCmp(parser, expr, modeFlags);
+		case SMILE_SPECIAL_SYMBOL_CMPEXPR:
+			*parseError = Parser_ParseCmpExpr(parser, expr, modeFlags);
 			break;
 
 		case SMILE_SPECIAL_SYMBOL_ADDEXPR:

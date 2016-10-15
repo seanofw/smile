@@ -85,7 +85,7 @@ START_TEST(ExprMustStartWithAKeyword)
 }
 END_TEST
 
-START_TEST(CmpRequiresComplexSyntaxPatternRules)
+START_TEST(CmpExprRequiresComplexSyntaxPatternRules)
 {
 	Parser parser;
 	ParseScope parseScope;
@@ -97,38 +97,38 @@ START_TEST(CmpRequiresComplexSyntaxPatternRules)
 	expectedErrorCount = 0;
 
 	// Starting with a keyword is okay.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [math [ADDEXPR x] flerk [ADDEXPR y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax CMPEXPR: [math [ADDEXPR x] flerk [ADDEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == expectedErrorCount);
 	ASSERT(SMILE_KIND(result) != SMILE_KIND_NULL);
 
 	// Starting with ADDEXPR is okay, if not followed by a standard comparison operator.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDEXPR x] flerk [ADDEXPR y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax CMPEXPR: [[ADDEXPR x] flerk [ADDEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == expectedErrorCount);
 	ASSERT(SMILE_KIND(result) != SMILE_KIND_NULL);
 
 	// Starting with any nonterminal other than ADDEXPR is not okay.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[MULEXPR x] flerk [MULEXPR y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax CMPEXPR: [[MULEXPR x] flerk [MULEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
 	ASSERT(SMILE_KIND(result) == SMILE_KIND_NULL);
 
 	// Starting with ADDEXPR but following that with one of the standard comparisons is not okay.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDEXPR x] < [ADDEXPR y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax CMPEXPR: [[ADDEXPR x] < [ADDEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
-	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDEXPR x] > [ADDEXPR y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax CMPEXPR: [[ADDEXPR x] > [ADDEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
-	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDEXPR x] <= [ADDEXPR y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax CMPEXPR: [[ADDEXPR x] <= [ADDEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
-	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDEXPR x] >= [ADDEXPR y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax CMPEXPR: [[ADDEXPR x] >= [ADDEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
-	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDEXPR x] != [ADDEXPR y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax CMPEXPR: [[ADDEXPR x] != [ADDEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
-	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDEXPR x] == [ADDEXPR y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax CMPEXPR: [[ADDEXPR x] == [ADDEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
-	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDEXPR x] !== [ADDEXPR y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax CMPEXPR: [[ADDEXPR x] !== [ADDEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
-	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDEXPR x] === [ADDEXPR y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax CMPEXPR: [[ADDEXPR x] === [ADDEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
-	result = Parser_ParseFromC(parser, parseScope, "#syntax CMP: [[ADDEXPR x] is [ADDEXPR y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax CMPEXPR: [[ADDEXPR x] is [ADDEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
 	ASSERT(SMILE_KIND(result) == SMILE_KIND_NULL);
 }

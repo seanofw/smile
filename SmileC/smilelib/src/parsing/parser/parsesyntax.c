@@ -50,7 +50,7 @@ STATIC_STRING(InvalidSealedPatternError, "Syntax patterns may not be added to th
 STATIC_STRING(InvalidClassError, "Unknown or illegal syntax class '%s' (did you forget a hyphen?)");
 STATIC_STRING(InvalidKeywordPatternError, "Syntax patterns in the %s class must start with a keyword.");
 
-STATIC_STRING(InvalidCmpPatternError, "Syntax patterns in the CMP class must either start with a keyword, or with an ADDEXPR nonterminal followed by a keyword that is none of the nine standard comparison operators.");
+STATIC_STRING(InvalidCmpExprPatternError, "Syntax patterns in the CMPEXPR class must either start with a keyword, or with an ADDEXPR nonterminal followed by a keyword that is none of the nine standard comparison operators.");
 STATIC_STRING(InvalidAddExprPatternError, "Syntax patterns in the ADDEXPR class must either start with a keyword, or with a MULEXPR nonterminal followed by a keyword that is neither '+' or '-'.");
 STATIC_STRING(InvalidMulExprPatternError, "Syntax patterns in the MULEXPR class must either start with a keyword, or with a BINARY nonterminal followed by a keyword that is neither '*' or '/'.");
 STATIC_STRING(InvalidBinaryPatternError, "Syntax patterns in the BINARY class must either start with a keyword, or with a COLON nonterminal followed by a keyword.");
@@ -83,7 +83,7 @@ static Int _syntaxRecoverCount = sizeof(_syntaxRecover) / sizeof(Int);
 static const char *_reservedClassNames[] = {
 	"ADDEXPR", "ALPHANAME", "ASSIGN",
 	"BINARY", "BOOL", "BYTE",
-	"CHAR", "CMP", "COLON",
+	"CHAR", "CMPEXPR", "COLON",
 	"DOT", "DOUBLEHASH", "DYNSTRING",
 	"EXPR", "EXPRS",
 	"FLOAT", "FLOAT128", "FLOAT16", "FLOAT32", "FLOAT64", "FLOAT8", "FUNC",
@@ -505,8 +505,8 @@ static ParseError Parser_ValidateSpecialSyntaxClasses(Symbol cls, SmileList patt
 			}
 			return NULL;
 
-		case SMILE_SPECIAL_SYMBOL_CMP:
-			// CMP must always start with either a symbol (keyword) or an ADDEXPR nonterminal followed by a
+		case SMILE_SPECIAL_SYMBOL_CMPEXPR:
+			// CMPEXPR must always start with either a symbol (keyword) or an ADDEXPR nonterminal followed by a
 			// symbol (keyword) that is not '<' or '>' or '<=' or '>=' or '==' or '!=' or '===' or '!===' or 'is'.
 			if (LIST_FIRST(pattern)->kind == SMILE_KIND_SYMBOL)
 				return NULL;
@@ -516,11 +516,11 @@ static ParseError Parser_ValidateSpecialSyntaxClasses(Symbol cls, SmileList patt
 			}
 			nonterminal = (SmileNonterminal)(LIST_FIRST(pattern));
 			if (nonterminal->nonterminal != SMILE_SPECIAL_SYMBOL_ADDEXPR) {
-				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidCmpPatternError);
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidCmpExprPatternError);
 				return parseError;
 			}
 			if (LIST_SECOND(pattern)->kind != SMILE_KIND_SYMBOL) {
-				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidCmpPatternError);
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidCmpExprPatternError);
 				return parseError;
 			}
 			smileSymbol = (SmileSymbol)(LIST_SECOND(pattern));
@@ -534,7 +534,7 @@ static ParseError Parser_ValidateSpecialSyntaxClasses(Symbol cls, SmileList patt
 				case SMILE_SPECIAL_SYMBOL_SUPEREQ:
 				case SMILE_SPECIAL_SYMBOL_SUPERNE:
 				case SMILE_SPECIAL_SYMBOL_IS:
-					parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidCmpPatternError);
+					parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidCmpExprPatternError);
 					return parseError;
 			}
 			return NULL;

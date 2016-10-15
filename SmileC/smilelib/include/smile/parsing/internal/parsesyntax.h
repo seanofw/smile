@@ -77,7 +77,7 @@ struct ParserSyntaxTableStruct {
 	// Special syntax classes, for fast lookup.  These trees correspond to known built-in syntax-production names.
 	ParserSyntaxClass stmtClass;	
 	ParserSyntaxClass exprClass;	
-	ParserSyntaxClass cmpClass;	// Note: RValue of CMP (or more restrictive form) is assumed to exist before tree.
+	ParserSyntaxClass cmpExprClass;	// Note: RValue of CMPEXPR (or more restrictive form) is assumed to exist before tree.
 	ParserSyntaxClass addExprClass;	// Note: RValue of ADDEXPR (or more restrictive form) is assumed to exist before tree.
 	ParserSyntaxClass mulExprClass;	// Note: RValue of MULEXPR (or more restrictive form) is assumed to exist before tree.
 	ParserSyntaxClass binaryClass;	// Note: RValue of BINARY (or more restrictive form) is assumed to exist before tree.
