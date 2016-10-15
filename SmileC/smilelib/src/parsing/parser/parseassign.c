@@ -254,28 +254,30 @@ ParseError Parser_ParseEquals(Parser parser, SmileObject *expr, Int modeFlags)
 		if (error != NULL) return error;
 
 		// See if it's actually an lvalue followed by an equal sign.
-		if (Parser_IsLValue(lvalue) && Parser_HasEqualLookahead(parser)) {
+		if (!Parser_IsLValue(lvalue) || !Parser_HasEqualLookahead(parser)) {
 
-			// It is, so this is a variable assignment.
-			token2 = Parser_NextToken(parser);
-			position2 = Token_GetPosition(token2);
-
-			// Collect the rvalue, recursively.
-			error = Parser_ParseEquals(parser, &rvalue, modeFlags);
-
-			// Construct the resulting list, which will look like [\= lvalue rvalue], but invisibly
-			// annotated with source locations.
-			*expr =
-				(SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects.equalsSymbol,
-					(SmileObject)SmileList_ConsWithSource(lvalue,
-						(SmileObject)SmileList_ConsWithSource(rvalue, NullObject,
-						position2),
-					position2),
-				position2);
+			// It's just a plain lvalue.
+			*expr = lvalue;
+			return NULL;
 		}
 
-		// It's just a plain lvalue.
-		*expr = lvalue;
+		// It is an lvalue followed by an equal sign, so this is a variable assignment.
+		token2 = Parser_NextToken(parser);
+		position2 = Token_GetPosition(token2);
+
+		// Collect the rvalue, recursively.
+		error = Parser_ParseEquals(parser, &rvalue, modeFlags);
+
+		// Construct the resulting list, which will look like [\= lvalue rvalue], but invisibly
+		// annotated with source locations.
+		*expr =
+			(SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects.equalsSymbol,
+				(SmileObject)SmileList_ConsWithSource(lvalue,
+					(SmileObject)SmileList_ConsWithSource(rvalue, NullObject,
+					position2),
+				position2),
+			position2);
+
 		return NULL;
 	}
 }

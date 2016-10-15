@@ -245,4 +245,41 @@ START_TEST(SimpleCustomDslTest)
 }
 END_TEST
 
+START_TEST(CanExtendStmtWithKeywordRoots)
+{
+	Lexer lexer = SetupLexer(
+		"#syntax STMT: [if ( [EXPR x] ) [STMT y]] => [if x y]\n"
+		"4 + 5\n"
+		"if (1 < 2) 10\n"
+		"6 + 7\n"
+		);
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(RecursiveEquals(LIST_SECOND(result), SimpleParse("[(4 . +) 5]")));
+	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[if [(1 . <) 2] 10]")));
+	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[(6 . +) 7]")));
+}
+END_TEST
+
+START_TEST(CanExtendExprWithKeywordRoots)
+{
+	Lexer lexer = SetupLexer(
+		"#syntax EXPR: [if ( [EXPR x] ) [STMT y]] => [if x y]\n"
+		"4 + 5\n"
+		"x = if (1 < 2) 10\n"
+		"6 + 7\n"
+		);
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	ParseError declError = ParseScope_Declare(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "x"), PARSEDECL_GLOBAL, NULL, NULL);
+	SmileList result = Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(RecursiveEquals(LIST_SECOND(result), SimpleParse("[(4 . +) 5]")));
+	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[\\= x [if [(1 . <) 2] 10]]")));
+	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[(6 . +) 7]")));
+}
+END_TEST
+
 #include "parsersyntax_walk_tests.generated.inc"
