@@ -249,8 +249,8 @@ ParseError Parser_ParseEquals(Parser parser, SmileObject *expr, Int modeFlags)
 		// Not an implicit variable declaration, so handle the other three productions:
 		//   assign ::= . lvalue EQUAL assign | . lvalue EQUAL_NOSPACE assign | . or
 
-		// Try reading an 'or'-level nonterminal, whatever it might turn out to be.
-		error = Parser_ParseOr(parser, &lvalue, modeFlags);
+		// Try reading an 'orexpr'-level nonterminal, whatever it might turn out to be.
+		error = Parser_ParseOrExpr(parser, &lvalue, modeFlags);
 		if (error != NULL) return error;
 
 		// See if it's actually an lvalue followed by an equal sign.

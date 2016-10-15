@@ -79,8 +79,8 @@ ParseError Parser_ParseStmt(Parser parser, SmileObject *expr, Int modeFlags)
 	}
 }
 
-// or :: = . or OR and | . and
-ParseError Parser_ParseOr(Parser parser, SmileObject *expr, Int modeFlags)
+// orexpr :: = . orexpr OR andexpr | . andexpr
+ParseError Parser_ParseOrExpr(Parser parser, SmileObject *expr, Int modeFlags)
 {
 	SmileList tail = NullList;
 	SmileObject rvalue;
@@ -94,7 +94,7 @@ ParseError Parser_ParseOr(Parser parser, SmileObject *expr, Int modeFlags)
 	if (customSyntaxResult != CustomSyntaxResult_NotMatchedAndNoTokensConsumed)
 		return parseError;
 
-	parseError = Parser_ParseAnd(parser, expr, modeFlags);
+	parseError = Parser_ParseAndExpr(parser, expr, modeFlags);
 	if (parseError != NULL)
 		return parseError;
 
@@ -104,7 +104,7 @@ ParseError Parser_ParseOr(Parser parser, SmileObject *expr, Int modeFlags)
 
 		lexerPosition = Token_GetPosition(token);
 
-		parseError = Parser_ParseAnd(parser, &rvalue, modeFlags);
+		parseError = Parser_ParseAndExpr(parser, &rvalue, modeFlags);
 		if (parseError != NULL)
 			return parseError;
 
@@ -130,8 +130,8 @@ ParseError Parser_ParseOr(Parser parser, SmileObject *expr, Int modeFlags)
 	return NULL;
 }
 
-// and :: = . and AND not | . not
-ParseError Parser_ParseAnd(Parser parser, SmileObject *expr, Int modeFlags)
+// andexpr :: = . andexpr AND notexpr | . notexpr
+ParseError Parser_ParseAndExpr(Parser parser, SmileObject *expr, Int modeFlags)
 {
 	SmileList tail = NullList;
 	SmileObject rvalue;
@@ -140,7 +140,7 @@ ParseError Parser_ParseAnd(Parser parser, SmileObject *expr, Int modeFlags)
 	LexerPosition lexerPosition;
 	Bool isFirst = True;
 
-	parseError = Parser_ParseNot(parser, expr, modeFlags);
+	parseError = Parser_ParseNotExpr(parser, expr, modeFlags);
 	if (parseError != NULL)
 		return parseError;
 
@@ -150,7 +150,7 @@ ParseError Parser_ParseAnd(Parser parser, SmileObject *expr, Int modeFlags)
 
 		lexerPosition = Token_GetPosition(token);
 
-		parseError = Parser_ParseNot(parser, &rvalue, modeFlags);
+		parseError = Parser_ParseNotExpr(parser, &rvalue, modeFlags);
 		if (parseError != NULL)
 			return parseError;
 
@@ -176,8 +176,8 @@ ParseError Parser_ParseAnd(Parser parser, SmileObject *expr, Int modeFlags)
 	return NULL;
 }
 
-// not :: = . NOT not | . cmpexpr
-ParseError Parser_ParseNot(Parser parser, SmileObject *expr, Int modeFlags)
+// notexpr :: = . NOT notexpr | . cmpexpr
+ParseError Parser_ParseNotExpr(Parser parser, SmileObject *expr, Int modeFlags)
 {
 	ParseError parseError;
 	Token token;

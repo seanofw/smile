@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 2efa1c7407e9ae3a9581c959b3b0afcc
+// SourceHash: c45228e2aa1cf0aadee40c7b0eff04a7
 
 START_TEST_SUITE(ParserCoreTests)
 {
@@ -8,8 +8,8 @@ START_TEST_SUITE(ParserCoreTests)
 	CanParseASequenceOfTerms,
 	ParenthesesHaveNoMeaningInASequenceOfTerms,
 	ParenthesesShouldOnlyAllowOneContainedElement,
-	CanParseAnd,
-	CanParseOr,
+	CanParseAndExpr,
+	CanParseOrExpr,
 	CanParseAMixOfAndAndOrAndNot,
 	CanParseAMixOfAndAndOrAndNotWithParentheses,
 	CanParseComparisons,

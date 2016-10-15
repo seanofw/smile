@@ -101,7 +101,7 @@ END_TEST
 //-------------------------------------------------------------------------------------------------
 //  Core expression grammar tests.
 
-START_TEST(CanParseAnd)
+START_TEST(CanParseAndExpr)
 {
 	Lexer lexer = SetupLexer("\t true and false and true and gronk\n");
 	Parser parser = Parser_Create();
@@ -115,7 +115,7 @@ START_TEST(CanParseAnd)
 }
 END_TEST
 
-START_TEST(CanParseOr)
+START_TEST(CanParseOrExpr)
 {
 	Lexer lexer = SetupLexer("\t true or false or true or gronk\n");
 	Parser parser = Parser_Create();

@@ -99,14 +99,14 @@ assign ::= lvalue EQUAL assign
 		| lvalue EQUAL_NOSPACE assign
         | unknown_name EQUAL assign
         | unknown_name EQUAL_NOSPACE assign
-        | or
+        | orexpr
 
 lvalue ::=	  colon COLON unary | dot DOT name | VAR_NAME
 	| LPAREN lvalue RPAREN				// See note above about binary operators (breaking allowed in 'lvalue').
 
-or ::= or OR and | and
-and ::= and AND not | not
-not ::= NOT not | cmpexpr
+orexpr ::= orexpr OR andexpr | andexpr
+andexpr ::= andexpr AND notexpr | notexpr
+notexpr ::= NOT notexpr | cmpexpr
 
 cmpexpr ::=	  cmpexpr LT addexpr | cmpexpr GT addexpr | cmpexpr LE addexpr | cmpexpr GE addexpr
 	| cmpexpr EQ addexpr | cmpexpr NE addexpr | cmpexpr SUPEREQ addexpr | cmpexpr SUPERNE addexpr
@@ -133,7 +133,7 @@ unary ::= UNKNOWN_PUNCT_NAME unary | UNKNOWN_ALPHA_NAME unary
 		| LT unary | GT unary
 		| PLUS unary | MINUS unary
 		| STAR unary | SLASH unary
-        | TYPEOF unary
+		| TYPEOF unary
 		| new
 
 new ::= NEW LBRACE members_opt RBRACE				// See note above about binary operators (no breaking allowed in 'members_opt').
