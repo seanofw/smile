@@ -622,7 +622,7 @@ ParseError Parser_ParseColonExpr(Parser parser, SmileObject *expr, Int modeFlags
 	return NULL;
 }
 
-// rangeexpr ::= . unary DOTDOT unary | . unary
+// rangeexpr ::= . prefixexpr DOTDOT prefixexpr | . prefixexpr
 ParseError Parser_ParseRangeExpr(Parser parser, SmileObject *expr, Int modeFlags)
 {
 	SmileObject rvalue;
@@ -630,7 +630,7 @@ ParseError Parser_ParseRangeExpr(Parser parser, SmileObject *expr, Int modeFlags
 	Token token;
 	LexerPosition lexerPosition;
 
-	parseError = Parser_ParseUnary(parser, expr, modeFlags);
+	parseError = Parser_ParsePrefixExpr(parser, expr, modeFlags);
 	if (parseError != NULL)
 		return parseError;
 
@@ -639,7 +639,7 @@ ParseError Parser_ParseRangeExpr(Parser parser, SmileObject *expr, Int modeFlags
 
 		lexerPosition = Token_GetPosition(token);
 
-		parseError = Parser_ParseUnary(parser, &rvalue, modeFlags);
+		parseError = Parser_ParsePrefixExpr(parser, &rvalue, modeFlags);
 		if (parseError != NULL)
 			return parseError;
 
@@ -660,7 +660,7 @@ ParseError Parser_ParseRangeExpr(Parser parser, SmileObject *expr, Int modeFlags
 	return NULL;
 }
 
-Inline Bool Parser_IsAcceptableArbitraryUnaryOperator(Symbol symbol)
+Inline Bool Parser_IsAcceptableArbitraryPrefixOperator(Symbol symbol)
 {
 	switch (symbol) {
 		default:
@@ -682,17 +682,17 @@ Inline Bool Parser_IsAcceptableArbitraryUnaryOperator(Symbol symbol)
 	}
 }
 
-// unary ::= . UNKNOWN_PUNCT_NAME unary | . UNKNOWN_ALPHA_NAME unary
-// 		| . AND unary | . OR unary
-// 		| . EQ unary | . NE unary
-// 		| . SUPER_EQ unary | . SUPER_NE unary
-// 		| . LE unary | . GE unary
-// 		| . LT unary | . GT unary
-// 		| . PLUS unary | . MINUS unary
-// 		| . STAR unary | . SLASH unary
-//      | . TYPEOF unary
+// prefixexpr ::= . UNKNOWN_PUNCT_NAME prefixexpr | . UNKNOWN_ALPHA_NAME prefixexpr
+// 		| . AND prefixexpr | . OR prefixexpr
+// 		| . EQ prefixexpr | . NE prefixexpr
+// 		| . SUPER_EQ prefixexpr | . SUPER_NE prefixexpr
+// 		| . LE prefixexpr | . GE prefixexpr
+// 		| . LT prefixexpr | . GT prefixexpr
+// 		| . PLUS prefixexpr | . MINUS prefixexpr
+// 		| . STAR prefixexpr | . SLASH prefixexpr
+//      | . TYPEOF prefixexpr
 // 		| . new
-ParseError Parser_ParseUnary(Parser parser, SmileObject *expr, Int modeFlags)
+ParseError Parser_ParsePrefixExpr(Parser parser, SmileObject *expr, Int modeFlags)
 {
 	LexerPosition position;
 	ParseError parseError;
@@ -709,7 +709,7 @@ ParseError Parser_ParseUnary(Parser parser, SmileObject *expr, Int modeFlags)
 
 	// Collect the first unary prefix operator.
 	if (((token = Parser_NextToken(parser))->kind == TOKEN_UNKNOWNALPHANAME || token->kind == TOKEN_UNKNOWNPUNCTNAME)
-		&& Parser_IsAcceptableArbitraryUnaryOperator(token->data.symbol)) {
+		&& Parser_IsAcceptableArbitraryPrefixOperator(token->data.symbol)) {
 
 		MemCpy(unaryOperators + numOperators++, token, sizeof(struct TokenStruct));
 		firstUnaryTokenForErrorReporting = &unaryOperators[0];
@@ -786,7 +786,7 @@ ParseError Parser_ParseNew(Parser parser, SmileObject *expr, Int modeFlags, Toke
 	if (!((token->kind == TOKEN_ALPHANAME || token->kind == TOKEN_UNKNOWNALPHANAME)
 		&& token->data.symbol == Smile_KnownSymbols.new_)) {
 		Lexer_Unget(parser->lexer);
-		return Parser_ParsePostfix(parser, expr, modeFlags, firstUnaryTokenForErrorReporting);
+		return Parser_ParsePostfixExpr(parser, expr, modeFlags, firstUnaryTokenForErrorReporting);
 	}
 
 	newTokenPosition = Token_GetPosition(token);
@@ -906,12 +906,12 @@ Bool Parser_ParseMembers(Parser parser, SmileObject *expr)
 	return True;
 }
 
-ParseError Parser_ParsePostfix(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting)
+ParseError Parser_ParsePostfixExpr(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting)
 {
 	ParseError parseError;
 	CustomSyntaxResult customSyntaxResult;
 
-	customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_POSTFIX, SYNTAXROOT_KEYWORD, 0, &parseError);
+	customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_POSTFIXEXPR, SYNTAXROOT_KEYWORD, 0, &parseError);
 	if (customSyntaxResult != CustomSyntaxResult_NotMatchedAndNoTokensConsumed)
 		return parseError;
 

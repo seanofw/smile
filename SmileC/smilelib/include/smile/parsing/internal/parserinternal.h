@@ -58,10 +58,10 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseMulExpr(Parser parser, SmileObject *e
 SMILE_INTERNAL_FUNC ParseError Parser_ParseBinaryExpr(Parser parser, SmileObject *expr, Int modeFlags);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseColonExpr(Parser parser, SmileObject *expr, Int modeFlags);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseRangeExpr(Parser parser, SmileObject *expr, Int modeFlags);
-SMILE_INTERNAL_FUNC ParseError Parser_ParseUnary(Parser parser, SmileObject *expr, Int modeFlags);
+SMILE_INTERNAL_FUNC ParseError Parser_ParsePrefixExpr(Parser parser, SmileObject *expr, Int modeFlags);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseNew(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting);
 SMILE_INTERNAL_FUNC Bool Parser_ParseMembers(Parser parser, SmileObject *expr);
-SMILE_INTERNAL_FUNC ParseError Parser_ParsePostfix(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting);
+SMILE_INTERNAL_FUNC ParseError Parser_ParsePostfixExpr(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseDoubleHash(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseDot(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseTerm(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting);

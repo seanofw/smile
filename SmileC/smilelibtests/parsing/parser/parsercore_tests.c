@@ -276,7 +276,7 @@ START_TEST(CanParseArbitraryBinaryOperators)
 }
 END_TEST
 
-START_TEST(CanParseArbitraryUnaryOperators)
+START_TEST(CanParseArbitraryPrefixOperators)
 {
 	Lexer lexer = SetupLexer("\t minus 34 \n count html-encode reverse ''foo'' \n");
 	Parser parser = Parser_Create();
@@ -289,7 +289,7 @@ START_TEST(CanParseArbitraryUnaryOperators)
 }
 END_TEST
 
-START_TEST(SpecialBinaryOperatorsCanBeArbitraryUnaryOperators)
+START_TEST(SpecialBinaryOperatorsCanBeArbitraryPrefixOperators)
 {
 	Lexer lexer = SetupLexer("\t -34 \n + * / ''foo'' \n");
 	Parser parser = Parser_Create();
@@ -302,7 +302,7 @@ START_TEST(SpecialBinaryOperatorsCanBeArbitraryUnaryOperators)
 }
 END_TEST
 
-START_TEST(CanParseAMixOfBinaryAndUnaryOperators)
+START_TEST(CanParseAMixOfBinaryAndPrefixOperators)
 {
 	Lexer lexer = SetupLexer("\t negative 34 times negative 97 plus 14 \n");
 	Parser parser = Parser_Create();
@@ -315,7 +315,7 @@ START_TEST(CanParseAMixOfBinaryAndUnaryOperators)
 }
 END_TEST
 
-START_TEST(CanParseAMixOfSpecialBinaryAndArbitraryUnaryOperators)
+START_TEST(CanParseAMixOfSpecialBinaryAndArbitraryPrefixOperators)
 {
 	Lexer lexer = SetupLexer("\t sin -314 * cos +314 \n");
 	Parser parser = Parser_Create();

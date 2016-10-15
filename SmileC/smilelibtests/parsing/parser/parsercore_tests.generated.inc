@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: c45228e2aa1cf0aadee40c7b0eff04a7
+// SourceHash: db02edbb23cf95975c42512966a87a16
 
 START_TEST_SUITE(ParserCoreTests)
 {
@@ -19,10 +19,10 @@ START_TEST_SUITE(ParserCoreTests)
 	PlusAndMinusHaveLowerPrecedenceThanStarAndSlash,
 	PlusAndMinusHaveGreaterPrecedenceThanComparisons,
 	CanParseArbitraryBinaryOperators,
-	CanParseArbitraryUnaryOperators,
-	SpecialBinaryOperatorsCanBeArbitraryUnaryOperators,
-	CanParseAMixOfBinaryAndUnaryOperators,
-	CanParseAMixOfSpecialBinaryAndArbitraryUnaryOperators,
+	CanParseArbitraryPrefixOperators,
+	SpecialBinaryOperatorsCanBeArbitraryPrefixOperators,
+	CanParseAMixOfBinaryAndPrefixOperators,
+	CanParseAMixOfSpecialBinaryAndArbitraryPrefixOperators,
 	BinaryOperatorsDontWrapLines,
 	BinaryOperatorsCanWrapLinesInParentheses,
 	BinaryOperatorWrappingPropagatesIntoFunctions1,

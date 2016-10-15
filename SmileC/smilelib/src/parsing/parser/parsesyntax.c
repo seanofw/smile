@@ -54,7 +54,7 @@ STATIC_STRING(InvalidCmpExprPatternError, "Syntax patterns in the CMPEXPR class 
 STATIC_STRING(InvalidAddExprPatternError, "Syntax patterns in the ADDEXPR class must either start with a keyword, or with a MULEXPR nonterminal followed by a keyword that is neither '+' or '-'.");
 STATIC_STRING(InvalidMulExprPatternError, "Syntax patterns in the MULEXPR class must either start with a keyword, or with a BINARYEXPR nonterminal followed by a keyword that is neither '*' or '/'.");
 STATIC_STRING(InvalidBinaryExprPatternError, "Syntax patterns in the BINARYEXPR class must either start with a keyword, or with a COLONEXPR nonterminal followed by a keyword.");
-STATIC_STRING(InvalidPostfixPatternError, "Syntax patterns in the POSTFIX class must either start with a keyword, or with a DOUBLEHASH nonterminal followed by a keyword.");
+STATIC_STRING(InvalidPostfixExprPatternError, "Syntax patterns in the POSTFIXEXPR class must either start with a keyword, or with a DOUBLEHASH nonterminal followed by a keyword.");
 
 STATIC_STRING(String_Plus, "+");
 STATIC_STRING(String_Star, "*");
@@ -90,11 +90,10 @@ static const char *_reservedClassNames[] = {
 	"INT", "INT128", "INT16", "INT32", "INT64", "INT8",
 	"MULEXPR",
 	"NAME", "NEW", "NUMBER",
-	"POSTFIX", "PUNCTNAME",
+	"PREFIXEXPR", "POSTFIXEXPR", "PUNCTNAME",
 	"RANGEEXPR", "RAWLIST", "RAWLISTTERM", "RAWSTRING", "REAL", "REAL128", "REAL16", "REAL32", "REAL64", "REAL8",
 	"SCOPE", "STMT", "STRING",
 	"TERM",
-	"UNARY",
 	"VARIABLE",
 };
 static Int _reservedClassNameLength = sizeof(_reservedClassNames) / sizeof(const char *);
@@ -609,16 +608,16 @@ static ParseError Parser_ValidateSpecialSyntaxClasses(Symbol cls, SmileList patt
 			}
 			return NULL;
 
-		case SMILE_SPECIAL_SYMBOL_UNARY:
-			// UNARY must always start with a symbol (keyword).
+		case SMILE_SPECIAL_SYMBOL_PREFIXEXPR:
+			// PREFIXEXPR must always start with a symbol (keyword).
 			if (LIST_FIRST(pattern)->kind != SMILE_KIND_SYMBOL) {
-				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, String_FormatString(InvalidKeywordPatternError, "UNARY"));
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, String_FormatString(InvalidKeywordPatternError, "PREFIXEXPR"));
 				return parseError;
 			}
 			return NULL;
 
-		case SMILE_SPECIAL_SYMBOL_POSTFIX:
-			// POSTFIX must always start with either a symbol (keyword) or a DOUBLEHASH nonterminal followed by a
+		case SMILE_SPECIAL_SYMBOL_POSTFIXEXPR:
+			// POSTFIXEXPR must always start with either a symbol (keyword) or a DOUBLEHASH nonterminal followed by a
 			// symbol (keyword).
 			if (LIST_FIRST(pattern)->kind == SMILE_KIND_SYMBOL) {
 				return NULL;
@@ -629,11 +628,11 @@ static ParseError Parser_ValidateSpecialSyntaxClasses(Symbol cls, SmileList patt
 			}
 			nonterminal = (SmileNonterminal)(LIST_FIRST(pattern));
 			if (nonterminal->nonterminal != SMILE_SPECIAL_SYMBOL_DOUBLEHASH) {
-				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidPostfixPatternError);
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidPostfixExprPatternError);
 				return parseError;
 			}
 			if (LIST_SECOND(pattern)->kind != SMILE_KIND_SYMBOL) {
-				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidPostfixPatternError);
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidPostfixExprPatternError);
 				return parseError;
 			}
 			return NULL;

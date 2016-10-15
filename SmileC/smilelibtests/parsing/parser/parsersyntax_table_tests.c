@@ -113,10 +113,10 @@ START_TEST(CanMakeAnEmptySyntaxTable)
 	ASSERT(syntaxTable->cmpExprClass == NULL);
 	ASSERT(syntaxTable->exprClass == NULL);
 	ASSERT(syntaxTable->mulExprClass == NULL);
-	ASSERT(syntaxTable->postfixClass == NULL);
+	ASSERT(syntaxTable->postfixExprClass == NULL);
 	ASSERT(syntaxTable->stmtClass == NULL);
 	ASSERT(syntaxTable->termClass == NULL);
-	ASSERT(syntaxTable->unaryClass == NULL);
+	ASSERT(syntaxTable->prefixExprClass == NULL);
 }
 END_TEST
 

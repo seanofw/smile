@@ -237,7 +237,7 @@ START_TEST(BinaryExprRequiresComplexSyntaxPatternRules)
 }
 END_TEST
 
-START_TEST(UnaryMustStartWithAKeyword)
+START_TEST(PrefixExprMustStartWithAKeyword)
 {
 	Parser parser;
 	ParseScope parseScope;
@@ -246,21 +246,21 @@ START_TEST(UnaryMustStartWithAKeyword)
 	parser = Parser_Create();
 	parseScope = ParseScope_CreateRoot();
 
-	result = Parser_ParseFromC(parser, parseScope, "#syntax UNARY: [math [TERM x] plus [TERM y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax PREFIXEXPR: [math [TERM x] plus [TERM y]] => 123");
 	ASSERT(SMILE_KIND(result) != SMILE_KIND_NULL);
 	ASSERT(Parser_GetErrorCount(parser) == 0);
 
-	result = Parser_ParseFromC(parser, parseScope, "#syntax UNARY: [[TERM x] plus [TERM y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax PREFIXEXPR: [[TERM x] plus [TERM y]] => 123");
 	ASSERT(SMILE_KIND(result) == SMILE_KIND_NULL);
 	ASSERT(Parser_GetErrorCount(parser) == 1);
 
-	result = Parser_ParseFromC(parser, parseScope, "#syntax UNARY: [math [TERM x] minus [TERM y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax PREFIXEXPR: [math [TERM x] minus [TERM y]] => 123");
 	ASSERT(SMILE_KIND(result) != SMILE_KIND_NULL);
 	ASSERT(Parser_GetErrorCount(parser) == 1);
 }
 END_TEST
 
-START_TEST(PostfixRequiresComplexSyntaxPatternRules)
+START_TEST(PostfixExprRequiresComplexSyntaxPatternRules)
 {
 	Parser parser;
 	ParseScope parseScope;
@@ -272,22 +272,22 @@ START_TEST(PostfixRequiresComplexSyntaxPatternRules)
 	expectedErrorCount = 0;
 
 	// Starting with a keyword is okay.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax POSTFIX: [math [DOUBLEHASH x] flerk [DOUBLEHASH y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax POSTFIXEXPR: [math [DOUBLEHASH x] flerk [DOUBLEHASH y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == expectedErrorCount);
 	ASSERT(SMILE_KIND(result) != SMILE_KIND_NULL);
 
 	// Starting with DOUBLEHASH is okay, if followed by a keyword.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax POSTFIX: [[DOUBLEHASH x] flerk [DOUBLEHASH y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax POSTFIXEXPR: [[DOUBLEHASH x] flerk [DOUBLEHASH y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == expectedErrorCount);
 	ASSERT(SMILE_KIND(result) != SMILE_KIND_NULL);
 
 	// Starting with any nonterminal other than DOUBLEHASH is not okay.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax POSTFIX: [[TERM x] flerk [TERM y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax POSTFIXEXPR: [[TERM x] flerk [TERM y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
 	ASSERT(SMILE_KIND(result) == SMILE_KIND_NULL);
 
 	// Starting with DOUBLEHASH but not following that with a keyword is not okay.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax POSTFIX: [[DOUBLEHASH x] [DOUBLEHASH y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax POSTFIXEXPR: [[DOUBLEHASH x] [DOUBLEHASH y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
 	ASSERT(SMILE_KIND(result) == SMILE_KIND_NULL);
 }

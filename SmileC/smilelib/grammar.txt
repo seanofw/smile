@@ -101,7 +101,7 @@ assign ::= lvalue EQUAL assign
         | unknown_name EQUAL_NOSPACE assign
         | orexpr
 
-lvalue ::=	  colonexpr COLON unary | dot DOT name | VAR_NAME
+lvalue ::=	  colonexpr COLON prefixexpr | dot DOT name | VAR_NAME
 	| LPAREN lvalue RPAREN				// See note above about binary operators (breaking allowed in 'lvalue').
 
 orexpr ::= orexpr OR andexpr | andexpr
@@ -123,18 +123,18 @@ binary_args ::= binary_args COMMA colonexpr | colonexpr
 
 colonexpr ::= colonexpr COLON rangeexpr | rangeexpr
 
-rangeexpr ::= unary DOTDOT unary | unary
+rangeexpr ::= prefixexpr DOTDOT prefixexpr | prefixexpr
 
-unary ::= UNKNOWN_PUNCT_NAME unary | UNKNOWN_ALPHA_NAME unary
-		| AND unary | OR unary
-		| EQ unary | NE unary
-		| SUPER_EQ unary | SUPER_NE unary
-		| LE unary | GE unary
-		| LT unary | GT unary
-		| PLUS unary | MINUS unary
-		| STAR unary | SLASH unary
-		| TYPEOF unary
-		| new
+prefixexpr ::=	  UNKNOWN_PUNCT_NAME prefixexpr | UNKNOWN_ALPHA_NAME prefixexpr
+	| AND prefixexpr | OR prefixexpr
+	| EQ prefixexpr | NE prefixexpr
+	| SUPER_EQ prefixexpr | SUPER_NE prefixexpr
+	| LE prefixexpr | GE prefixexpr
+	| LT prefixexpr | GT prefixexpr
+	| PLUS prefixexpr | MINUS prefixexpr
+	| STAR prefixexpr | SLASH prefixexpr
+	| TYPEOF prefixexpr
+	| new
 
 new ::= NEW LBRACE members_opt RBRACE				// See note above about binary operators (no breaking allowed in 'members_opt').
 		| NEW dot LBRACE members_opt RBRACE			// See note above about binary operators (no breaking allowed in 'members_opt').

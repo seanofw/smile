@@ -210,11 +210,11 @@ static ParserSyntaxClass ParserSyntaxClass_FindOrCreate(ParserSyntaxTable *table
 	case SMILE_SPECIAL_SYMBOL_BINARYEXPR:
 		(*table)->binaryExprClass = syntaxClass;
 		break;
-	case SMILE_SPECIAL_SYMBOL_UNARY:
-		(*table)->unaryClass = syntaxClass;
+	case SMILE_SPECIAL_SYMBOL_PREFIXEXPR:
+		(*table)->prefixExprClass = syntaxClass;
 		break;
-	case SMILE_SPECIAL_SYMBOL_POSTFIX:
-		(*table)->postfixClass = syntaxClass;
+	case SMILE_SPECIAL_SYMBOL_POSTFIXEXPR:
+		(*table)->postfixExprClass = syntaxClass;
 		break;
 	case SMILE_SPECIAL_SYMBOL_TERM:
 		(*table)->termClass = syntaxClass;
@@ -359,8 +359,8 @@ ParserSyntaxTable ParserSyntaxTable_CreateNew(void)
 	syntaxTable->addExprClass = NULL;
 	syntaxTable->mulExprClass = NULL;
 	syntaxTable->binaryExprClass = NULL;
-	syntaxTable->unaryClass = NULL;
-	syntaxTable->postfixClass = NULL;
+	syntaxTable->prefixExprClass = NULL;
+	syntaxTable->postfixExprClass = NULL;
 	syntaxTable->termClass = NULL;
 
 	return syntaxTable;
@@ -394,8 +394,8 @@ static ParserSyntaxTable ParserSyntaxTable_VFork(ParserSyntaxTable table)
 	newTable->addExprClass = table->addExprClass;
 	newTable->mulExprClass = table->mulExprClass;
 	newTable->binaryExprClass = table->binaryExprClass;
-	newTable->unaryClass = table->unaryClass;
-	newTable->postfixClass = table->postfixClass;
+	newTable->prefixExprClass = table->prefixExprClass;
+	newTable->postfixExprClass = table->postfixExprClass;
 	newTable->termClass = table->termClass;
 
 	return newTable;
@@ -418,8 +418,8 @@ static void ParserSyntaxTable_RecursivelyComputeFirstSet(ParserSyntaxTable table
 		case SMILE_SPECIAL_SYMBOL_ADDEXPR:
 		case SMILE_SPECIAL_SYMBOL_MULEXPR:
 		case SMILE_SPECIAL_SYMBOL_BINARYEXPR:
-		case SMILE_SPECIAL_SYMBOL_UNARY:
-		case SMILE_SPECIAL_SYMBOL_POSTFIX:
+		case SMILE_SPECIAL_SYMBOL_PREFIXEXPR:
+		case SMILE_SPECIAL_SYMBOL_POSTFIXEXPR:
 		case SMILE_SPECIAL_SYMBOL_TERM:
 			Int32Int32Dict_Add(firstSet, -1, 0);
 			Int32Int32Dict_Add(nonterminalsSeen, -1, 0);
@@ -460,8 +460,8 @@ static void ParserSyntaxTable_RecursivelyComputeFirstSet(ParserSyntaxTable table
 /// terminals and nonterminals in all the rules for this nonterminal.  For example, given
 /// this grammar:
 ///
-///    addexpr ::= mulexpr '+' addexpr | mulexpr
-///    mulexpr ::= unary '*' mulexpr | unary
+///    add ::= mul '+' add | mul
+///    mul ::= unary '*' mul | unary
 ///    unary ::= '-' unary | term
 ///    term ::= IDENT | NUMBER
 ///
@@ -721,11 +721,11 @@ Bool ParserSyntaxTable_AddRule(Parser parser, ParserSyntaxTable *table, SmileSyn
 			case SMILE_SPECIAL_SYMBOL_BINARYEXPR:
 				syntaxTable->binaryExprClass = syntaxClass;
 				break;
-			case SMILE_SPECIAL_SYMBOL_UNARY:
-				syntaxTable->unaryClass = syntaxClass;
+			case SMILE_SPECIAL_SYMBOL_PREFIXEXPR:
+				syntaxTable->prefixExprClass = syntaxClass;
 				break;
-			case SMILE_SPECIAL_SYMBOL_POSTFIX:
-				syntaxTable->postfixClass = syntaxClass;
+			case SMILE_SPECIAL_SYMBOL_POSTFIXEXPR:
+				syntaxTable->postfixExprClass = syntaxClass;
 				break;
 			case SMILE_SPECIAL_SYMBOL_TERM:
 				syntaxTable->termClass = syntaxClass;

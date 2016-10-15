@@ -60,10 +60,10 @@ static ParserSyntaxClass GetSyntaxClass(Parser parser, Symbol syntaxClassSymbol)
 			return syntaxTable->mulExprClass;
 		case SMILE_SPECIAL_SYMBOL_BINARYEXPR:
 			return syntaxTable->binaryExprClass;
-		case SMILE_SPECIAL_SYMBOL_UNARY:
-			return syntaxTable->unaryClass;
-		case SMILE_SPECIAL_SYMBOL_POSTFIX:
-			return syntaxTable->postfixClass;
+		case SMILE_SPECIAL_SYMBOL_PREFIXEXPR:
+			return syntaxTable->prefixExprClass;
+		case SMILE_SPECIAL_SYMBOL_POSTFIXEXPR:
+			return syntaxTable->postfixExprClass;
 		case SMILE_SPECIAL_SYMBOL_TERM:
 			return syntaxTable->termClass;
 		
@@ -303,8 +303,8 @@ static CustomSyntaxResult Parser_RecursivelyApplyCustomSyntax(Parser parser, Smi
 			*parseError = Parser_ParseBinaryExpr(parser, expr, modeFlags);
 			break;
 
-		case SMILE_SPECIAL_SYMBOL_UNARY:
-			*parseError = Parser_ParseUnary(parser, expr, modeFlags);
+		case SMILE_SPECIAL_SYMBOL_PREFIXEXPR:
+			*parseError = Parser_ParsePrefixExpr(parser, expr, modeFlags);
 			break;
 
 		case SMILE_SPECIAL_SYMBOL_TERM:
