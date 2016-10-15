@@ -774,7 +774,7 @@ ParseError Parser_ParsePrefixExpr(Parser parser, SmileObject *expr, Int modeFlag
 
 // newexpr ::=	  . NEW LBRACE members_opt RBRACE
 // 	| . NEW dot LBRACE members_opt RBRACE
-// 	| . doublehash
+// 	| . consexpr
 ParseError Parser_ParseNewExpr(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting)
 {
 	Token token, newToken;
@@ -915,11 +915,11 @@ ParseError Parser_ParsePostfixExpr(Parser parser, SmileObject *expr, Int modeFla
 	if (customSyntaxResult != CustomSyntaxResult_NotMatchedAndNoTokensConsumed)
 		return parseError;
 
-	return Parser_ParseDoubleHash(parser, expr, modeFlags, firstUnaryTokenForErrorReporting);
+	return Parser_ParseConsExpr(parser, expr, modeFlags, firstUnaryTokenForErrorReporting);
 }
 
-// doublehash ::= . dot DOUBLEHASH doublehash | . dot
-ParseError Parser_ParseDoubleHash(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting)
+// consexpr ::= . dot DOUBLEHASH consexpr | . dot
+ParseError Parser_ParseConsExpr(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting)
 {
 	SmileList tail;
 	SmileObject rvalue, nextRValue;

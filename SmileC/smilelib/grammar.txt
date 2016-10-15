@@ -138,9 +138,9 @@ prefixexpr ::=	  UNKNOWN_PUNCT_NAME prefixexpr | UNKNOWN_ALPHA_NAME prefixexpr
 
 newexpr ::=	  NEW LBRACE members_opt RBRACE	// See note above about binary operators (no breaking allowed in 'members_opt').
 	| NEW dot LBRACE members_opt RBRACE	// See note above about binary operators (no breaking allowed in 'members_opt').
-	| doublehash
+	| consexpr
 
-doublehash ::= dot DOUBLEHASH doublehash | dot
+consexpr ::= dot DOUBLEHASH consexpr | dot
 
 dot ::= dot DOT any_name | term
 

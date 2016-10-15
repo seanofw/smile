@@ -272,22 +272,22 @@ START_TEST(PostfixExprRequiresComplexSyntaxPatternRules)
 	expectedErrorCount = 0;
 
 	// Starting with a keyword is okay.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax POSTFIXEXPR: [math [DOUBLEHASH x] flerk [DOUBLEHASH y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax POSTFIXEXPR: [math [CONSEXPR x] flerk [CONSEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == expectedErrorCount);
 	ASSERT(SMILE_KIND(result) != SMILE_KIND_NULL);
 
-	// Starting with DOUBLEHASH is okay, if followed by a keyword.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax POSTFIXEXPR: [[DOUBLEHASH x] flerk [DOUBLEHASH y]] => 123");
+	// Starting with CONSEXPR is okay, if followed by a keyword.
+	result = Parser_ParseFromC(parser, parseScope, "#syntax POSTFIXEXPR: [[CONSEXPR x] flerk [CONSEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == expectedErrorCount);
 	ASSERT(SMILE_KIND(result) != SMILE_KIND_NULL);
 
-	// Starting with any nonterminal other than DOUBLEHASH is not okay.
+	// Starting with any nonterminal other than CONSEXPR is not okay.
 	result = Parser_ParseFromC(parser, parseScope, "#syntax POSTFIXEXPR: [[TERM x] flerk [TERM y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
 	ASSERT(SMILE_KIND(result) == SMILE_KIND_NULL);
 
-	// Starting with DOUBLEHASH but not following that with a keyword is not okay.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax POSTFIXEXPR: [[DOUBLEHASH x] [DOUBLEHASH y]] => 123");
+	// Starting with CONSEXPR but not following that with a keyword is not okay.
+	result = Parser_ParseFromC(parser, parseScope, "#syntax POSTFIXEXPR: [[CONSEXPR x] [CONSEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
 	ASSERT(SMILE_KIND(result) == SMILE_KIND_NULL);
 }

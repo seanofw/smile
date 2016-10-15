@@ -54,7 +54,7 @@ STATIC_STRING(InvalidCmpExprPatternError, "Syntax patterns in the CMPEXPR class 
 STATIC_STRING(InvalidAddExprPatternError, "Syntax patterns in the ADDEXPR class must either start with a keyword, or with a MULEXPR nonterminal followed by a keyword that is neither '+' or '-'.");
 STATIC_STRING(InvalidMulExprPatternError, "Syntax patterns in the MULEXPR class must either start with a keyword, or with a BINARYEXPR nonterminal followed by a keyword that is neither '*' or '/'.");
 STATIC_STRING(InvalidBinaryExprPatternError, "Syntax patterns in the BINARYEXPR class must either start with a keyword, or with a COLONEXPR nonterminal followed by a keyword.");
-STATIC_STRING(InvalidPostfixExprPatternError, "Syntax patterns in the POSTFIXEXPR class must either start with a keyword, or with a DOUBLEHASH nonterminal followed by a keyword.");
+STATIC_STRING(InvalidPostfixExprPatternError, "Syntax patterns in the POSTFIXEXPR class must either start with a keyword, or with a CONSEXPR nonterminal followed by a keyword.");
 
 STATIC_STRING(String_Plus, "+");
 STATIC_STRING(String_Star, "*");
@@ -83,8 +83,8 @@ static Int _syntaxRecoverCount = sizeof(_syntaxRecover) / sizeof(Int);
 static const char *_reservedClassNames[] = {
 	"ADDEXPR", "ALPHANAME", "ASSIGN",
 	"BINARYEXPR", "BOOL", "BYTE",
-	"CHAR", "CMPEXPR", "COLONEXPR",
-	"DOT", "DOUBLEHASH", "DYNSTRING",
+	"CHAR", "CMPEXPR", "COLONEXPR", "CONSEXPR",
+	"DOT", "DYNSTRING",
 	"EXPR", "EXPRS",
 	"FLOAT", "FLOAT128", "FLOAT16", "FLOAT32", "FLOAT64", "FLOAT8", "FUNC",
 	"INT", "INT128", "INT16", "INT32", "INT64", "INT8",
@@ -617,7 +617,7 @@ static ParseError Parser_ValidateSpecialSyntaxClasses(Symbol cls, SmileList patt
 			return NULL;
 
 		case SMILE_SPECIAL_SYMBOL_POSTFIXEXPR:
-			// POSTFIXEXPR must always start with either a symbol (keyword) or a DOUBLEHASH nonterminal followed by a
+			// POSTFIXEXPR must always start with either a symbol (keyword) or a CONSEXPR nonterminal followed by a
 			// symbol (keyword).
 			if (LIST_FIRST(pattern)->kind == SMILE_KIND_SYMBOL) {
 				return NULL;
@@ -627,7 +627,7 @@ static ParseError Parser_ValidateSpecialSyntaxClasses(Symbol cls, SmileList patt
 				return parseError;
 			}
 			nonterminal = (SmileNonterminal)(LIST_FIRST(pattern));
-			if (nonterminal->nonterminal != SMILE_SPECIAL_SYMBOL_DOUBLEHASH) {
+			if (nonterminal->nonterminal != SMILE_SPECIAL_SYMBOL_CONSEXPR) {
 				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidPostfixExprPatternError);
 				return parseError;
 			}
