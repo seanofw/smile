@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 0590604740ce2bd0d6abc23e7d942183
+// SourceHash: d85aa688a9d606b1d3ab62ee4b0fc9f7
 
 START_TEST_SUITE(ParserSyntaxValidateTests)
 {
@@ -10,7 +10,7 @@ START_TEST_SUITE(ParserSyntaxValidateTests)
 	CmpExprRequiresComplexSyntaxPatternRules,
 	AddExprRequiresComplexSyntaxPatternRules,
 	MulExprRequiresComplexSyntaxPatternRules,
-	BinaryRequiresComplexSyntaxPatternRules,
+	BinaryExprRequiresComplexSyntaxPatternRules,
 	UnaryMustStartWithAKeyword,
 	PostfixRequiresComplexSyntaxPatternRules,
 	TermMustStartWithAKeyword,

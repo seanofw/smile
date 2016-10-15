@@ -109,7 +109,7 @@ START_TEST(CanMakeAnEmptySyntaxTable)
 	ASSERT(syntaxTable->syntaxClasses != NULL);
 
 	ASSERT(syntaxTable->addExprClass == NULL);
-	ASSERT(syntaxTable->binaryClass == NULL);
+	ASSERT(syntaxTable->binaryExprClass == NULL);
 	ASSERT(syntaxTable->cmpExprClass == NULL);
 	ASSERT(syntaxTable->exprClass == NULL);
 	ASSERT(syntaxTable->mulExprClass == NULL);

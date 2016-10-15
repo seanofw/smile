@@ -55,7 +55,7 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseNotExpr(Parser parser, SmileObject *e
 SMILE_INTERNAL_FUNC ParseError Parser_ParseCmpExpr(Parser parser, SmileObject *expr, Int modeFlags);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseAddExpr(Parser parser, SmileObject *expr, Int modeFlags);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseMulExpr(Parser parser, SmileObject *expr, Int modeFlags);
-SMILE_INTERNAL_FUNC ParseError Parser_ParseBinary(Parser parser, SmileObject *expr, Int modeFlags);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseBinaryExpr(Parser parser, SmileObject *expr, Int modeFlags);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseColon(Parser parser, SmileObject *expr, Int modeFlags);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseRange(Parser parser, SmileObject *expr, Int modeFlags);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseUnary(Parser parser, SmileObject *expr, Int modeFlags);

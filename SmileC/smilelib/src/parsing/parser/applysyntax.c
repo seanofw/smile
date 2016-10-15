@@ -58,8 +58,8 @@ static ParserSyntaxClass GetSyntaxClass(Parser parser, Symbol syntaxClassSymbol)
 			return syntaxTable->addExprClass;
 		case SMILE_SPECIAL_SYMBOL_MULEXPR:
 			return syntaxTable->mulExprClass;
-		case SMILE_SPECIAL_SYMBOL_BINARY:
-			return syntaxTable->binaryClass;
+		case SMILE_SPECIAL_SYMBOL_BINARYEXPR:
+			return syntaxTable->binaryExprClass;
 		case SMILE_SPECIAL_SYMBOL_UNARY:
 			return syntaxTable->unaryClass;
 		case SMILE_SPECIAL_SYMBOL_POSTFIX:
@@ -299,8 +299,8 @@ static CustomSyntaxResult Parser_RecursivelyApplyCustomSyntax(Parser parser, Smi
 			*parseError = Parser_ParseMulExpr(parser, expr, modeFlags);
 			break;
 
-		case SMILE_SPECIAL_SYMBOL_BINARY:
-			*parseError = Parser_ParseBinary(parser, expr, modeFlags);
+		case SMILE_SPECIAL_SYMBOL_BINARYEXPR:
+			*parseError = Parser_ParseBinaryExpr(parser, expr, modeFlags);
 			break;
 
 		case SMILE_SPECIAL_SYMBOL_UNARY:

@@ -52,8 +52,8 @@ STATIC_STRING(InvalidKeywordPatternError, "Syntax patterns in the %s class must 
 
 STATIC_STRING(InvalidCmpExprPatternError, "Syntax patterns in the CMPEXPR class must either start with a keyword, or with an ADDEXPR nonterminal followed by a keyword that is none of the nine standard comparison operators.");
 STATIC_STRING(InvalidAddExprPatternError, "Syntax patterns in the ADDEXPR class must either start with a keyword, or with a MULEXPR nonterminal followed by a keyword that is neither '+' or '-'.");
-STATIC_STRING(InvalidMulExprPatternError, "Syntax patterns in the MULEXPR class must either start with a keyword, or with a BINARY nonterminal followed by a keyword that is neither '*' or '/'.");
-STATIC_STRING(InvalidBinaryPatternError, "Syntax patterns in the BINARY class must either start with a keyword, or with a COLON nonterminal followed by a keyword.");
+STATIC_STRING(InvalidMulExprPatternError, "Syntax patterns in the MULEXPR class must either start with a keyword, or with a BINARYEXPR nonterminal followed by a keyword that is neither '*' or '/'.");
+STATIC_STRING(InvalidBinaryExprPatternError, "Syntax patterns in the BINARYEXPR class must either start with a keyword, or with a COLON nonterminal followed by a keyword.");
 STATIC_STRING(InvalidPostfixPatternError, "Syntax patterns in the POSTFIX class must either start with a keyword, or with a DOUBLEHASH nonterminal followed by a keyword.");
 
 STATIC_STRING(String_Plus, "+");
@@ -82,7 +82,7 @@ static Int _syntaxRecoverCount = sizeof(_syntaxRecover) / sizeof(Int);
 /// </summary>
 static const char *_reservedClassNames[] = {
 	"ADDEXPR", "ALPHANAME", "ASSIGN",
-	"BINARY", "BOOL", "BYTE",
+	"BINARYEXPR", "BOOL", "BYTE",
 	"CHAR", "CMPEXPR", "COLON",
 	"DOT", "DOUBLEHASH", "DYNSTRING",
 	"EXPR", "EXPRS",
@@ -565,7 +565,7 @@ static ParseError Parser_ValidateSpecialSyntaxClasses(Symbol cls, SmileList patt
 			return NULL;
 
 		case SMILE_SPECIAL_SYMBOL_MULEXPR:
-			// MULEXPR must always start with either a symbol (keyword) or a BINARY nonterminal followed by a
+			// MULEXPR must always start with either a symbol (keyword) or a BINARYEXPR nonterminal followed by a
 			// symbol (keyword) that is not '*' or '/'.
 			if (LIST_FIRST(pattern)->kind == SMILE_KIND_SYMBOL)
 				return NULL;
@@ -574,7 +574,7 @@ static ParseError Parser_ValidateSpecialSyntaxClasses(Symbol cls, SmileList patt
 				return parseError;
 			}
 			nonterminal = (SmileNonterminal)(LIST_FIRST(pattern));
-			if (nonterminal->nonterminal != SMILE_SPECIAL_SYMBOL_BINARY) {
+			if (nonterminal->nonterminal != SMILE_SPECIAL_SYMBOL_BINARYEXPR) {
 				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidMulExprPatternError);
 				return parseError;
 			}
@@ -589,8 +589,8 @@ static ParseError Parser_ValidateSpecialSyntaxClasses(Symbol cls, SmileList patt
 			}
 			return NULL;
 
-		case SMILE_SPECIAL_SYMBOL_BINARY:
-			// BINARY must always start with either a symbol (keyword) or a COLON nonterminal followed by a
+		case SMILE_SPECIAL_SYMBOL_BINARYEXPR:
+			// BINARYEXPR must always start with either a symbol (keyword) or a COLON nonterminal followed by a
 			// symbol (keyword).
 			if (LIST_FIRST(pattern)->kind == SMILE_KIND_SYMBOL)
 				return NULL;
@@ -600,11 +600,11 @@ static ParseError Parser_ValidateSpecialSyntaxClasses(Symbol cls, SmileList patt
 			}
 			nonterminal = (SmileNonterminal)(LIST_FIRST(pattern));
 			if (nonterminal->nonterminal != SMILE_SPECIAL_SYMBOL_COLON_NAME) {
-				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidBinaryPatternError);
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidBinaryExprPatternError);
 				return parseError;
 			}
 			if (LIST_SECOND(pattern)->kind != SMILE_KIND_SYMBOL) {
-				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidBinaryPatternError);
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, position, InvalidBinaryExprPatternError);
 				return parseError;
 			}
 			return NULL;

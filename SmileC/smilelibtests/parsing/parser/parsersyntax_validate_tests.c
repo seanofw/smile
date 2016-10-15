@@ -181,30 +181,30 @@ START_TEST(MulExprRequiresComplexSyntaxPatternRules)
 	expectedErrorCount = 0;
 
 	// Starting with a keyword is okay.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax MULEXPR: [math [BINARY x] flerk [BINARY y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax MULEXPR: [math [BINARYEXPR x] flerk [BINARYEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == expectedErrorCount);
 	ASSERT(SMILE_KIND(result) != SMILE_KIND_NULL);
 
-	// Starting with BINARY is okay, if not followed by a standard multiplication operator.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax MULEXPR: [[BINARY x] flerk [BINARY y]] => 123");
+	// Starting with BINARYEXPR is okay, if not followed by a standard multiplication operator.
+	result = Parser_ParseFromC(parser, parseScope, "#syntax MULEXPR: [[BINARYEXPR x] flerk [BINARYEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == expectedErrorCount);
 	ASSERT(SMILE_KIND(result) != SMILE_KIND_NULL);
 
-	// Starting with any nonterminal other than BINARY is not okay.
+	// Starting with any nonterminal other than BINARYEXPR is not okay.
 	result = Parser_ParseFromC(parser, parseScope, "#syntax MULEXPR: [[TERM x] flerk [TERM y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
 	ASSERT(SMILE_KIND(result) == SMILE_KIND_NULL);
 
 	// Starting with BINARY but following that with one of the multiplication operators is not okay.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax MULEXPR: [[BINARY x] * [BINARY y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax MULEXPR: [[BINARYEXPR x] * [BINARYEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
-	result = Parser_ParseFromC(parser, parseScope, "#syntax MULEXPR: [[BINARY x] / [BINARY y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax MULEXPR: [[BINARYEXPR x] / [BINARYEXPR y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
 	ASSERT(SMILE_KIND(result) == SMILE_KIND_NULL);
 }
 END_TEST
 
-START_TEST(BinaryRequiresComplexSyntaxPatternRules)
+START_TEST(BinaryExprRequiresComplexSyntaxPatternRules)
 {
 	Parser parser;
 	ParseScope parseScope;
@@ -216,22 +216,22 @@ START_TEST(BinaryRequiresComplexSyntaxPatternRules)
 	expectedErrorCount = 0;
 
 	// Starting with a keyword is okay.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax BINARY: [math [COLON x] flerk [COLON y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax BINARYEXPR: [math [COLON x] flerk [COLON y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == expectedErrorCount);
 	ASSERT(SMILE_KIND(result) != SMILE_KIND_NULL);
 
 	// Starting with COLON is okay, if followed by a keyword.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax BINARY: [[COLON x] flerk [COLON y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax BINARYEXPR: [[COLON x] flerk [COLON y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == expectedErrorCount);
 	ASSERT(SMILE_KIND(result) != SMILE_KIND_NULL);
 
 	// Starting with any nonterminal other than COLON is not okay.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax BINARY: [[TERM x] flerk [TERM y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax BINARYEXPR: [[TERM x] flerk [TERM y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
 	ASSERT(SMILE_KIND(result) == SMILE_KIND_NULL);
 
 	// Starting with COLON but not following that with a keyword is not okay.
-	result = Parser_ParseFromC(parser, parseScope, "#syntax BINARY: [[COLON x] [COLON y]] => 123");
+	result = Parser_ParseFromC(parser, parseScope, "#syntax BINARYEXPR: [[COLON x] [COLON y]] => 123");
 	ASSERT(Parser_GetErrorCount(parser) == ++expectedErrorCount);
 	ASSERT(SMILE_KIND(result) == SMILE_KIND_NULL);
 }

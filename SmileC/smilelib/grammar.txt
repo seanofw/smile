@@ -114,11 +114,11 @@ cmpexpr ::=	  cmpexpr LT addexpr | cmpexpr GT addexpr | cmpexpr LE addexpr | cmp
 	| addexpr
 
 addexpr ::= addexpr PLUS mulexpr | addexpr MINUS mulexpr | mulexpr
-mulexpr ::= mulexpr STAR binary | mulexpr SLASH binary | binary
+mulexpr ::= mulexpr STAR binaryexpr | mulexpr SLASH binaryexpr | binaryexpr
 
-binary ::= binary UNKNOWN_PUNCT_NAME binary_args	// See note above about binary operators.
-		| binary UNKNOWN_ALPHA_NAME binary_args		// See note above about binary operators.
-		| range
+binaryexpr ::=	  binaryexpr UNKNOWN_PUNCT_NAME binary_args	// See note above about binary operators.
+	| binaryexpr UNKNOWN_ALPHA_NAME binary_args	// See note above about binary operators.
+	| range
 binary_args ::= binary_args COMMA colon | colon
 
 colon ::= colon COLON range | range

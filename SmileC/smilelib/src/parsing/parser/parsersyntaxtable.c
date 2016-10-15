@@ -207,8 +207,8 @@ static ParserSyntaxClass ParserSyntaxClass_FindOrCreate(ParserSyntaxTable *table
 	case SMILE_SPECIAL_SYMBOL_MULEXPR:
 		(*table)->mulExprClass = syntaxClass;
 		break;
-	case SMILE_SPECIAL_SYMBOL_BINARY:
-		(*table)->binaryClass = syntaxClass;
+	case SMILE_SPECIAL_SYMBOL_BINARYEXPR:
+		(*table)->binaryExprClass = syntaxClass;
 		break;
 	case SMILE_SPECIAL_SYMBOL_UNARY:
 		(*table)->unaryClass = syntaxClass;
@@ -358,7 +358,7 @@ ParserSyntaxTable ParserSyntaxTable_CreateNew(void)
 	syntaxTable->cmpExprClass = NULL;
 	syntaxTable->addExprClass = NULL;
 	syntaxTable->mulExprClass = NULL;
-	syntaxTable->binaryClass = NULL;
+	syntaxTable->binaryExprClass = NULL;
 	syntaxTable->unaryClass = NULL;
 	syntaxTable->postfixClass = NULL;
 	syntaxTable->termClass = NULL;
@@ -393,7 +393,7 @@ static ParserSyntaxTable ParserSyntaxTable_VFork(ParserSyntaxTable table)
 	newTable->cmpExprClass = table->cmpExprClass;
 	newTable->addExprClass = table->addExprClass;
 	newTable->mulExprClass = table->mulExprClass;
-	newTable->binaryClass = table->binaryClass;
+	newTable->binaryExprClass = table->binaryExprClass;
 	newTable->unaryClass = table->unaryClass;
 	newTable->postfixClass = table->postfixClass;
 	newTable->termClass = table->termClass;
@@ -417,7 +417,7 @@ static void ParserSyntaxTable_RecursivelyComputeFirstSet(ParserSyntaxTable table
 		case SMILE_SPECIAL_SYMBOL_CMPEXPR:
 		case SMILE_SPECIAL_SYMBOL_ADDEXPR:
 		case SMILE_SPECIAL_SYMBOL_MULEXPR:
-		case SMILE_SPECIAL_SYMBOL_BINARY:
+		case SMILE_SPECIAL_SYMBOL_BINARYEXPR:
 		case SMILE_SPECIAL_SYMBOL_UNARY:
 		case SMILE_SPECIAL_SYMBOL_POSTFIX:
 		case SMILE_SPECIAL_SYMBOL_TERM:
@@ -718,8 +718,8 @@ Bool ParserSyntaxTable_AddRule(Parser parser, ParserSyntaxTable *table, SmileSyn
 			case SMILE_SPECIAL_SYMBOL_MULEXPR:
 				syntaxTable->mulExprClass = syntaxClass;
 				break;
-			case SMILE_SPECIAL_SYMBOL_BINARY:
-				syntaxTable->binaryClass = syntaxClass;
+			case SMILE_SPECIAL_SYMBOL_BINARYEXPR:
+				syntaxTable->binaryExprClass = syntaxClass;
 				break;
 			case SMILE_SPECIAL_SYMBOL_UNARY:
 				syntaxTable->unaryClass = syntaxClass;

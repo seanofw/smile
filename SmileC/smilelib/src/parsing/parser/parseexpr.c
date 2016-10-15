@@ -409,7 +409,7 @@ parseNextOperator:
 	return NULL;
 }
 
-// mulexpr ::= . mulexpr STAR binary | . mulexpr SLASH binary | . binary
+// mulexpr ::= . mulexpr STAR binaryexpr | . mulexpr SLASH binaryexpr | . binaryexpr
 ParseError Parser_ParseMulExpr(Parser parser, SmileObject *expr, Int modeFlags)
 {
 	SmileObject rvalue;
@@ -423,13 +423,13 @@ ParseError Parser_ParseMulExpr(Parser parser, SmileObject *expr, Int modeFlags)
 	if (customSyntaxResult != CustomSyntaxResult_NotMatchedAndNoTokensConsumed)
 		return parseError;
 
-	parseError = Parser_ParseBinary(parser, expr, modeFlags);
+	parseError = Parser_ParseBinaryExpr(parser, expr, modeFlags);
 	if (parseError != NULL)
 		return parseError;
 
 parseNextOperator:
 
-	if ((customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_MULEXPR, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_BINARY, &parseError))
+	if ((customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_MULEXPR, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_BINARYEXPR, &parseError))
 		!= CustomSyntaxResult_NotMatchedAndNoTokensConsumed) {
 
 		if (customSyntaxResult == CustomSyntaxResult_PartialApplicationWithError)
@@ -444,7 +444,7 @@ parseNextOperator:
 
 		lexerPosition = Token_GetPosition(token);
 
-		parseError = Parser_ParseBinary(parser, &rvalue, modeFlags);
+		parseError = Parser_ParseBinaryExpr(parser, &rvalue, modeFlags);
 		if (parseError != NULL)
 			return parseError;
 
@@ -504,11 +504,11 @@ Inline Bool Parser_IsAcceptableArbitraryBinaryOperator(Parser parser, Symbol sym
 	}
 }
 
-// binary ::= . binary UNKNOWN_PUNCT_NAME binary_args
-// 		| . binary UNKNOWN_ALPHA_NAME binary_args
+// binaryexpr ::= . binaryexpr UNKNOWN_PUNCT_NAME binary_args
+// 		| . binaryexpr UNKNOWN_ALPHA_NAME binary_args
 // 		| . range
 // binary_args ::= binary_args COMMA range | range
-ParseError Parser_ParseBinary(Parser parser, SmileObject *expr, Int modeFlags)
+ParseError Parser_ParseBinaryExpr(Parser parser, SmileObject *expr, Int modeFlags)
 {
 	SmileList binaryExpr, tail;
 	SmileObject rvalue;
@@ -518,7 +518,7 @@ ParseError Parser_ParseBinary(Parser parser, SmileObject *expr, Int modeFlags)
 	Symbol symbol;
 	CustomSyntaxResult customSyntaxResult;
 
-	customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_BINARY, SYNTAXROOT_KEYWORD, 0, &parseError);
+	customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_BINARYEXPR, SYNTAXROOT_KEYWORD, 0, &parseError);
 	if (customSyntaxResult != CustomSyntaxResult_NotMatchedAndNoTokensConsumed)
 		return parseError;
 
@@ -528,7 +528,7 @@ ParseError Parser_ParseBinary(Parser parser, SmileObject *expr, Int modeFlags)
 
 parseNextOperator:
 
-	if ((customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_BINARY, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_COLON_NAME, &parseError))
+	if ((customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_BINARYEXPR, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_COLON_NAME, &parseError))
 		!= CustomSyntaxResult_NotMatchedAndNoTokensConsumed) {
 
 		if (customSyntaxResult == CustomSyntaxResult_PartialApplicationWithError)
