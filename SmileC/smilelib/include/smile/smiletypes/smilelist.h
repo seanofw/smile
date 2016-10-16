@@ -59,6 +59,8 @@ Inline SmileObject SmileList_First(SmileList list)
 	return list->a;
 }
 
+#define LIST_CONS(__a__, __d__) (SmileList_Cons((SmileObject)(__a__), (SmileObject)(__d__)))
+
 #define LIST_REST(__list__) (SmileList_Rest(__list__))
 
 #define LIST_FIRST(__list__) ((__list__)->a)

@@ -53,6 +53,7 @@ SMILE_API_FUNC Parser Parser_Create(void);
 SMILE_API_FUNC SmileList Parser_Parse(Parser parser, Lexer lexer, ParseScope scope);
 SMILE_API_FUNC SmileList Parser_ParseFromC(Parser parser, ParseScope scope, const char *text);
 SMILE_API_FUNC SmileList Parser_ParseString(Parser parser, ParseScope scope, String text);
+SMILE_API_FUNC SmileObject Parser_ParseConstant(Parser parser, Lexer lexer, ParseScope scope);
 SMILE_API_FUNC ParseError Parser_ParseOneExpressionFromText(Parser parser, SmileObject *expr, String string, LexerPosition startPosition);
 
 SMILE_API_FUNC void Parser_AddMessage(Parser parser, ParseMessage message);

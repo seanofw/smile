@@ -108,6 +108,49 @@ SmileList Parser_Parse(Parser parser, Lexer lexer, ParseScope scope)
 	return head;
 }
 
+/// <summary>
+/// Parse the input from the given lexical analyzer as a single constant raw term.  This leaves the lexer
+/// sitting at the next content after the raw term, if any.
+/// </summary>
+/// <param name="parser">The parser that is doing the parsing of the source text.</param>
+/// <param name="lexer">The lexical analyzer that will provide both the source tokens and their file locations.</param>
+/// <param name="scope">The scope in which the parsing is to take place.</param>
+/// <returns>The single item resulting from the parse.  If errors are generated, those errors will be
+/// added to the parser's message collection, and the return object will always be the Null list.</returns>
+/// <remarks>
+/// program ::= . raw_list_term
+/// </remarks>
+SmileObject Parser_ParseConstant(Parser parser, Lexer lexer, ParseScope scope)
+{
+	ParseScope parentScope;
+	Lexer oldLexer;
+	SmileObject result;
+	Bool isTemplate;
+	ParseError parseError;
+
+	parentScope = parser->currentScope;
+	oldLexer = parser->lexer;
+
+	parser->currentScope = scope;
+	parser->lexer = lexer;
+
+	parseError = Parser_ParseRawListTerm(parser, &result, &isTemplate, 0);
+
+	if (parseError != NULL) {
+		Parser_AddMessage(parser, parseError);
+		result = NullObject;
+	}
+	else if (isTemplate) {
+		Parser_AddError(parser, Token_GetPosition(parser->lexer->token), "Template and variable data is not allowed in constant values.");
+		result = NullObject;
+	}
+
+	parser->currentScope = parentScope;
+	parser->lexer = oldLexer;
+
+	return result;
+}
+
 STATIC_STRING(ExpectedOpenBraceError, "Expected { ... to begin a scope");
 STATIC_STRING(ExpectedCloseBraceError, "Expected ... } to end the scope");
 

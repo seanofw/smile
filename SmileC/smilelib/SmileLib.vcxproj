@@ -134,6 +134,7 @@
     <ClInclude Include="include\smile\env\knownstrings.h" />
     <ClInclude Include="include\smile\env\knownsymbols.h" />
     <ClInclude Include="include\smile\env\symboltable.h" />
+    <ClInclude Include="include\smile\eval\eval.h" />
     <ClInclude Include="include\smile\gc.h" />
     <ClInclude Include="include\smile\mem.h" />
     <ClInclude Include="include\smile\numeric\real.h" />
@@ -755,6 +756,7 @@
     <ClCompile Include="src\env\knownsymbols.c" />
     <ClCompile Include="src\env\parsedecl.c" />
     <ClCompile Include="src\env\symboltable.c" />
+    <ClCompile Include="src\eval\eval.c" />
     <ClCompile Include="src\fnvhash.c" />
     <ClCompile Include="src\init.c">
       <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</PreprocessToFile>

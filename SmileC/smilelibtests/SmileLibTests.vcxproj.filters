@@ -130,6 +130,9 @@
     <Filter Include="parsing\parser">
       <UniqueIdentifier>{4d97c7e2-7173-4b41-9393-b4c9361937b1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="eval">
+      <UniqueIdentifier>{70ba463a-52d8-4f35-b875-dccfbecc32b5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="string\stringcore_tests.generated.inc">

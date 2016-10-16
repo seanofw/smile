@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SmileLib", "smilelib\SmileLib.vcxproj", "{060B99B1-FD7B-4C51-B20B-DB0969ACC235}"
 EndProject
@@ -11,6 +11,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SmileLibTests", "smilelibte
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{4FFB24D9-4937-4058-BDE9-6C6EAFA0D730}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SmileRunner", "smilerunner\SmileRunner.vcxproj", "{21280C7E-1135-4EFB-82F7-19747FEFFE0F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{060B99B1-FD7B-4C51-B20B-DB0969ACC235} = {060B99B1-FD7B-4C51-B20B-DB0969ACC235}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,6 +41,14 @@ Global
 		{57D61308-B534-40C7-8166-3C89EF443243}.Release|Win32.Build.0 = Release|Win32
 		{57D61308-B534-40C7-8166-3C89EF443243}.Release|x64.ActiveCfg = Release|x64
 		{57D61308-B534-40C7-8166-3C89EF443243}.Release|x64.Build.0 = Release|x64
+		{21280C7E-1135-4EFB-82F7-19747FEFFE0F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{21280C7E-1135-4EFB-82F7-19747FEFFE0F}.Debug|Win32.Build.0 = Debug|Win32
+		{21280C7E-1135-4EFB-82F7-19747FEFFE0F}.Debug|x64.ActiveCfg = Debug|x64
+		{21280C7E-1135-4EFB-82F7-19747FEFFE0F}.Debug|x64.Build.0 = Debug|x64
+		{21280C7E-1135-4EFB-82F7-19747FEFFE0F}.Release|Win32.ActiveCfg = Release|Win32
+		{21280C7E-1135-4EFB-82F7-19747FEFFE0F}.Release|Win32.Build.0 = Release|Win32
+		{21280C7E-1135-4EFB-82F7-19747FEFFE0F}.Release|x64.ActiveCfg = Release|x64
+		{21280C7E-1135-4EFB-82F7-19747FEFFE0F}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
