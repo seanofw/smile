@@ -23,6 +23,8 @@
 #include <smile.h>
 #include <smile/smiletypes/smilepair.h>
 #include <smile/smiletypes/smilelist.h>
+#include <smile/smiletypes/text/smilestring.h>
+#include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/parsing/lexer.h>
 #include <smile/parsing/parser.h>
 
