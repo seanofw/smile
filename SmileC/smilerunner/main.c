@@ -37,17 +37,63 @@ typedef struct CommandLineArgsStruct {
 
 STATIC_STRING(_commandLineArgument, "command-line argument");
 STATIC_STRING(_commandLineScriptName, "script");
+STATIC_STRING(_newline, "\n");
+STATIC_STRING(_newlineAndTab, "\n    ");
+
+STATIC_STRING(_whileWrapper,
+	"#include \"stdio\"\n"
+	"\n"
+	"till done do {\n"
+	"\tline = get-line Stdin\n"
+	"\tif line === null then done\n"
+	"%S\n"
+	"%S\n"
+	"}\n");
+
+STATIC_STRING(_printLine,
+	"Stdout print line");
+
+static void Verbose(const char *format, ...)
+{
+	va_list v;
+	va_start(v, format);
+	puts("- ");
+	vfprintf(stdout, format, v);
+	puts("\n");
+	va_end(v);
+}
+
+static void Error(const char *filename, Int line, const char *format, ...)
+{
+	va_list v;
+	va_start(v, format);
+
+	if (filename != NULL) {
+		if (line > 0) {
+			fprintf(stderr, "%s:%d: ", filename, line);
+		}
+		else {
+			fprintf(stderr, "%s: ", filename);
+		}
+	}
+
+	vfprintf(stderr, format, v);
+	fputs("\n", stderr);
+
+	va_end(v);
+}
 
 static void PrintHelp()
 {
 	printf(
+		"\n"
 		"Usage: smile [options] [--] program.sm ...\n"
 		"\n"
 		"Execution options:\n"
 		"  -c --check     Check syntax and for warnings/errors, but do not run\n"
 		"  -Dname=value   Define a global variable with the given constant value.\n"
 		"  -e 'script'    One line of program (several -e's allowed; omit program.sm)\n"
-		"  -n             Add \"while { line = get-line Stdin ... }\" around program\n"
+		"  -n             Wrap script with \"till done { line = get-line Stdin ... }\"\n"
 		"  -o             Print program's resulting value to Stdout\n"
 		"  -p             Like '-n', but also add \"Stdout print line\" in the loop\n"
 		"\n"
@@ -60,10 +106,7 @@ static void PrintHelp()
 		"\n"
 		"Control options:\n"
 		"  --             Treat subsequent arguments as program name/args.\n"
-		"\n",
-		MAJOR_VERSION,
-		MINOR_VERSION,
-		BUILDSTRING
+		"\n"
 	);
 }
 
@@ -196,7 +239,7 @@ static CommandLineArgs ParseCommandLine(int argc, const char **argv)
 						case 'h':
 							if (!strcmp(argv[i] + 2, "help")) {
 								PrintHelp();
-								return False;
+								return NULL;
 							}
 							else goto unknownArgument;
 						case 'q':
@@ -223,7 +266,7 @@ static CommandLineArgs ParseCommandLine(int argc, const char **argv)
 							lastOption = True;
 							break;
 						unknownArgument:
-							fprintf(stderr, "Invalid command-line argument \"%s\".\n", argv[i]);
+							Error("smile", 0, "Invalid command-line argument \"%s\".\n", argv[i]);
 							return NULL;
 					}
 				}
@@ -235,7 +278,7 @@ static CommandLineArgs ParseCommandLine(int argc, const char **argv)
 							case 'h':
 							case '?':
 								PrintHelp();
-								return False;
+								return NULL;
 							case 'q':
 								options->quiet = True;
 								break;
@@ -246,7 +289,7 @@ static CommandLineArgs ParseCommandLine(int argc, const char **argv)
 								options->outputResult = True;
 								break;
 							case 'p':
-								options->printLineInLoop = True;
+								options->printLineInLoop = options->wrapWithWhile = True;
 								break;
 							case 'c':
 								options->checkOnly = True;
@@ -256,11 +299,11 @@ static CommandLineArgs ParseCommandLine(int argc, const char **argv)
 								break;
 							case 'e':
 								if (*ptr != '\0') {
-									fprintf(stderr, "Invalid command-line argument \"-%s\".\n", ptr-1);
+									Error("smile", 0, "Invalid command-line argument \"-%s\".\n", ptr-1);
 									return NULL;
 								}
 								if (++i >= argc) {
-									fprintf(stderr, "Invalid command-line argument \"-%s\".\n", ptr - 1);
+									Error("smile", 0, "Invalid command-line argument \"-%s\".\n", ptr - 1);
 									return NULL;
 								}
 								if (scriptBuilder == NULL)
@@ -277,7 +320,7 @@ static CommandLineArgs ParseCommandLine(int argc, const char **argv)
 
 									equalPtr = strchr(ptr, '=');
 									if (equalPtr == NULL) {
-										fprintf(stderr, "Invalid command-line argument \"-%s\".\n", ptr-1);
+										Error("smile", 0, "Invalid command-line argument \"-%s\".\n", ptr-1);
 										return NULL;
 									}
 
@@ -296,7 +339,7 @@ static CommandLineArgs ParseCommandLine(int argc, const char **argv)
 								done = True;
 								break;
 							default:
-								fprintf(stderr, "Invalid command-line argument \"-%c\".\n", ptr[-1]);
+								Error("smile", 0, "Invalid command-line argument \"-%c\".\n", ptr[-1]);
 								break;
 						}
 					}
@@ -317,9 +360,15 @@ static CommandLineArgs ParseCommandLine(int argc, const char **argv)
 		options->script = StringBuilder_ToString(scriptBuilder);
 	}
 
-	if (options->script != NULL && options->scriptName != NULL) {
-		fprintf(stderr, "Cannot use both a script name and \"-e\" on the command-line.\n");
-		return NULL;
+	if (options->scriptName != NULL) {
+		if (options->script != NULL) {
+			Error("smile", 0, "Cannot use both a script name and \"-e\" on the command-line.\n");
+			return NULL;
+		}
+		if (options->wrapWithWhile) {
+			Error("smile", 0, "Cannot use both a script name and \"-n\" or \"-p\" on the command-line.\n");
+			return NULL;
+		}
 	}
 
 	return options;
@@ -332,18 +381,20 @@ static String LoadFile(String filename)
 	Byte *buffer;
 	size_t readLength;
 
+	const int ReadLength = 0x10000;	// Read 64K at a time.
+
 	if ((fp = fopen(String_ToC(filename), "rb")) == NULL) {
-		fprintf(stderr, "smile: Cannot open \"%s\" for reading.", String_ToC(filename));
+		Error("smile", 0, "Cannot open \"%s\" for reading.", String_ToC(filename));
 		return NULL;
 	}
 
 	stringBuilder = StringBuilder_Create();
 
-	buffer = GC_MALLOC_ATOMIC(0x10000);
+	buffer = GC_MALLOC_ATOMIC(ReadLength);
 	if (buffer == NULL)
 		Smile_Abort_OutOfMemory();
 
-	while ((readLength = fread(buffer, 1, 0x10000, fp)) > 0) {
+	while ((readLength = fread(buffer, 1, ReadLength, fp)) > 0) {
 		StringBuilder_Append(stringBuilder, buffer, 0, readLength);
 	}
 
@@ -352,12 +403,11 @@ static String LoadFile(String filename)
 	return StringBuilder_ToString(stringBuilder);
 }
 
-static SmileObject ParseAndEval(CommandLineArgs options, String string, String filename, Int line)
+static Int ParseOnly(CommandLineArgs options, String string, String filename, Int line)
 {
 	Lexer lexer;
 	Parser parser;
 	ParseScope globalScope;
-	SmileList result;
 	SmileList list;
 
 	globalScope = ParseScope_CreateRoot();
@@ -369,77 +419,181 @@ static SmileObject ParseAndEval(CommandLineArgs options, String string, String f
 	lexer = Lexer_Create(string, 0, String_Length(string), filename, line, 1);
 	parser = Parser_Create();
 
-	result = Parser_Parse(parser, lexer, globalScope);
+	if (options->verbose) {
+		Verbose("Parsing \"%s\".", String_ToC(filename));
+	}
+	Parser_Parse(parser, lexer, globalScope);
 
 	if (parser->firstMessage != NullList) {
 		Bool hasErrors = PrintParseMessages(options, parser);
-		if (hasErrors) return NullObject;
+		if (hasErrors) return 1;
 	}
 
-	{
-		String output = SmileObject_Stringify((SmileObject)result);
-		fwrite(String_GetBytes(output), 1, String_Length(output), stdout);
-		printf("\r\n");
+	return 0;
+}
+
+static Int ParseAndEval(CommandLineArgs options, String string, String filename, Int line, SmileObject *result)
+{
+	Lexer lexer;
+	Parser parser;
+	ParseScope globalScope;
+	SmileList parsedScript;
+	SmileList list;
+
+	globalScope = ParseScope_CreateRoot();
+
+	for (list = options->globalDefinitions; SMILE_KIND(list) != SMILE_KIND_NULL; list = LIST_REST(list)) {
+		ParseScope_Declare(globalScope, ((SmileSymbol)((SmileList)list->a)->a)->symbol, PARSEDECL_GLOBAL, NULL, NULL);
 	}
 
-	return NullObject;
+	lexer = Lexer_Create(string, 0, String_Length(string), filename, line, 1);
+	parser = Parser_Create();
+
+	if (options->verbose) {
+		Verbose("Parsing \"%s\".", String_ToC(filename));
+	}
+
+	parsedScript = Parser_Parse(parser, lexer, globalScope);
+
+	if (parser->firstMessage != NullList) {
+		Bool hasErrors = PrintParseMessages(options, parser);
+		if (hasErrors) return 1;
+	}
+
+	if (options->verbose) {
+		Verbose("Evaluating parsed script.");
+	}
+
+	*result = (SmileObject)parsedScript;
+
+	return 0;
 }
 
 int main(int argc, const char **argv)
 {
 	String script;
+	String scriptName;
 	CommandLineArgs options;
+	SmileObject result;
+	Int exitCode;
 
+	// Initialize the Smile runtime.
 	Smile_Init();
 
+	// Parse the command line.  This returns NULL if the user provided invalid options on
+	// the command-line, or if they requested "--help".
 	if ((options = ParseCommandLine(argc, argv)) == NULL)
 		return -1;
 
+	// If they gave us nothing to do, and requested "-v", then print the version number and
+	// exit.  Otherwise, fall into the REPL.
 	if (options->scriptName == NULL && options->script == NULL) {
-		fprintf(stderr, "Smile v%d.%d / %s\n", MAJOR_VERSION, MINOR_VERSION, BUILDSTRING);
-		return 0;
-	}
-
-	if (options->verbose) {
-		printf("Smile v%d.%d / %s\n", MAJOR_VERSION, MINOR_VERSION, BUILDSTRING);
-		printf("\nVerbose output: true\n");
-		if (options->quiet)
-			printf("Quiet: true\n");
-		if (options->warningsAsErrors)
-			printf("Warnings as errors: true\n");
-		if (options->checkOnly)
-			printf("Check only: true\n");
-		if (options->outputResult)
-			printf("Output result: true\n");
-		if (options->wrapWithWhile)
-			printf("Wrap with while loop: true\n");
-		if (options->printLineInLoop)
-			printf("Print line in loop: true\n");
-		if (options->scriptName != NULL) {
-			printf("Script name: \"%s\"\n", String_ToC(options->scriptName));
-			if (options->scriptArgs != NullList)
-				printf("Arguments: %s\n", SmileObject_StringifyToC((SmileObject)options->scriptArgs));
+		if (options->verbose) {
+			printf("Smile v%d.%d / %s\n", MAJOR_VERSION, MINOR_VERSION, BUILDSTRING);
+			return 0;
 		}
 		else {
-			printf("Script text:\n%s", String_ToC(options->script));
+			if (options->verbose) {
+				Verbose("No script given, so entering REPL.");
+			}
+		
+			printf(
+				"+--------------------------------+\n"
+				"  Smile Programming Language\n"
+				"  v%d.%d / %s\n"
+				"+--------------------------------+\n"
+				"\n"
+				"Welcome to Smile! :-)\n"
+				"\n"
+				"For help, type \"help\" and press Enter.\n"
+				"\n",
+				MAJOR_VERSION, MINOR_VERSION, BUILDSTRING);
+		
+			// TODO: FIXME: Create the REPL and invoke it here :-)
+			printf("] (TODO: Add REPL here.)\n\n");
+
+			return 0;
+		}
+	}
+
+	// If they provided a script on the command-line itself using "-e", see if it needs to
+	// have the "-p" or "-n" flags applied, and apply them to get the "full" script.
+	if (options->script != NULL) {
+		if (options->wrapWithWhile) {
+			script = String_FormatString(_whileWrapper, options->script, options->printLineInLoop ? _printLine : String_Empty);
+			scriptName = _commandLineScriptName;
+		}
+		else {
+			script = options->script;
+			scriptName = _commandLineScriptName;
+		}
+	}
+
+	// If they requested verbose output, dump everything we know about what they've asked,
+	// so they can be sure about what they asked us to do.
+	if (options->verbose) {
+		Verbose("Smile v%d.%d / %s", MAJOR_VERSION, MINOR_VERSION, BUILDSTRING);
+		Verbose("");
+		Verbose("Verbose output: true");
+		if (options->quiet)
+			Verbose("Quiet: true");
+		if (options->warningsAsErrors)
+			Verbose("Warnings as errors: true");
+		if (options->checkOnly)
+			Verbose("Check only: true");
+		if (options->outputResult)
+			Verbose("Output result: true");
+		if (options->wrapWithWhile)
+			Verbose("Wrap with while loop: true");
+		if (options->printLineInLoop)
+			Verbose("Print line in loop: true");
+		if (options->scriptName != NULL) {
+			Verbose("Script name: \"%s\"", String_ToC(options->scriptName));
+			if (options->scriptArgs != NullList)
+				Verbose("Arguments: %s", SmileObject_StringifyToC((SmileObject)options->scriptArgs));
+		}
+		else {
+			String indentedScript;
+			Verbose("Script text:");
+			indentedScript = String_Replace(script, _newline, _newlineAndTab);
+			fwrite(String_GetBytes(indentedScript), 1, String_Length(indentedScript), stdout);
+			puts("\n");
 		}
 		if (options->globalDefinitions != NULL) {
-			printf("Global variables: %s\n", SmileObject_StringifyToC((SmileObject)options->globalDefinitions));
+			Verbose("Global variables: %s", SmileObject_StringifyToC((SmileObject)options->globalDefinitions));
 		}
-		printf("\n");
+		Verbose("");
 	}
 
+	// If they're running an external ".sm" program, load that now.
 	if (options->scriptName != NULL) {
+		if (options->verbose) {
+			Verbose("Loading \"%s\".", String_ToC(options->scriptName));
+		}
 		if ((script = LoadFile(options->scriptName)) == NULL)
 			return -1;
+		scriptName = options->scriptName;
+	}
 
-		ParseAndEval(options, script, options->scriptName, 1);
+	// Now parse and evaluate the program!
+	if (options->checkOnly) {
+		exitCode = ParseOnly(options, script, scriptName, 1);
+		result = NullObject;
 	}
 	else {
-		ParseAndEval(options, options->script, _commandLineScriptName, 1);
+		exitCode = ParseAndEval(options, script, scriptName, 1, &result);
 	}
 
+	// If they requested the result to be outputted, do that now.
+	if (options->outputResult) {
+		// Convert the object to a string by a virtual call to its toString() method.
+		String stringResult = SMILE_VCALL(result, toString);
+		fwrite(String_GetBytes(stringResult), 1, String_Length(stringResult), stdout);
+		fflush(stdout);
+	}
+
+	// And we're done.
 	Smile_End();
 
-	return 0;
+	return (int)exitCode;
 }

@@ -19,6 +19,7 @@
 #define __STDAFX_H__
 
 #include <stdio.h>
+#include <stdarg.h>
 
 #include <smile.h>
 #include <smile/smiletypes/smilepair.h>
