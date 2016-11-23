@@ -22,11 +22,11 @@
 /// </summary>
 typedef struct ArrayInt
 {
-	void *data;			// The buffer that actually stores each item.
+	void *data;	// The buffer that actually stores each item.
 	UInt16 itemSize;	// The uniform size of each item in the data[] buffer.
-	Bool isAtomic;		// Whether this uses atomic allocation for the data[] buffer.
-	Int length;			// The current apparent length of the data[] buffer.
-	Int _max;			// Always the size of the actual data[] buffer, as a count of itemSize.
+	Bool isAtomic;	// Whether this uses atomic allocation for the data[] buffer.
+	Int length;	// The current apparent length of the data[] buffer.
+	Int _max;	// Always the size of the actual data[] buffer, as a count of itemSize.
 } *Array;
 
 #define ARRAY_AT(__array__, __index__, __type__) ((__type__ *)((Byte *)(__array__)->data + (__array__)->itemSize * (__index__)))

@@ -780,6 +780,15 @@
     <ClCompile Include="src\eval\eval.c">
       <Filter>src\eval</Filter>
     </ClCompile>
+    <ClCompile Include="src\eval\bytecode.c">
+      <Filter>src\eval</Filter>
+    </ClCompile>
+    <ClCompile Include="src\eval\compiler.c">
+      <Filter>src\eval</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\numeric\smileinteger128.c">
+      <Filter>src\smiletypes\numeric</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">
@@ -1100,6 +1109,15 @@
     <ClInclude Include="include\smile\eval\eval.h">
       <Filter>include\eval</Filter>
     </ClInclude>
+    <ClInclude Include="include\smile\eval\opcode.h">
+      <Filter>include\eval</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\eval\compiler.h">
+      <Filter>include\eval</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\eval\bytecode.h">
+      <Filter>include\eval</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\smile\array.h">
@@ -1151,6 +1169,9 @@
   <ItemGroup>
     <None Include="src\string\string_parsefloat.generated.inc">
       <Filter>src\string</Filter>
+    </None>
+    <None Include="src\eval\opnames.inc">
+      <Filter>src\eval</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

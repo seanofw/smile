@@ -1,5 +1,7 @@
 // This file was auto-generated.  Do not edit!
 
+EXTERN_TEST_SUITE(ByteCodeTests);
+EXTERN_TEST_SUITE(CompilerTests);
 EXTERN_TEST_SUITE(Int32DictTests);
 EXTERN_TEST_SUITE(LexerCoreTests);
 EXTERN_TEST_SUITE(LexerIdentifierTests);
@@ -35,6 +37,8 @@ void RunAllTests()
 {
 	TestSuiteResults *results = CreateEmptyTestSuiteResults();
 
+	RUN_TEST_SUITE(results, ByteCodeTests);
+	RUN_TEST_SUITE(results, CompilerTests);
 	RUN_TEST_SUITE(results, Int32DictTests);
 	RUN_TEST_SUITE(results, LexerCoreTests);
 	RUN_TEST_SUITE(results, LexerIdentifierTests);
@@ -71,6 +75,8 @@ void RunAllTests()
 
 
 const char *TestSuiteNames[] = {
+	"ByteCodeTests",
+	"CompilerTests",
 	"Int32DictTests",
 	"LexerCoreTests",
 	"LexerIdentifierTests",
@@ -104,5 +110,5 @@ const char *TestSuiteNames[] = {
 };
 
 
-int NumTestSuites = 30;
+int NumTestSuites = 32;
 

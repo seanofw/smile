@@ -34,8 +34,8 @@ SMILE_API_FUNC void SmileInteger64_SetProperty(SmileInteger64 self, Symbol prope
 SMILE_API_FUNC Bool SmileInteger64_HasProperty(SmileInteger64 self, Symbol propertyName);
 SMILE_API_FUNC SmileList SmileInteger64_GetPropertyNames(SmileInteger64 self);
 SMILE_API_FUNC Bool SmileInteger64_ToBool(SmileInteger64 self);
-SMILE_API_FUNC Int32 SmileInteger64_ToInteger64(SmileInteger64 self);
-SMILE_API_FUNC Real64 SmileInteger64_ToReal64(SmileInteger64 self);
+SMILE_API_FUNC Int32 SmileInteger64_ToInteger32(SmileInteger64 self);
+SMILE_API_FUNC Real64 SmileInteger64_ToReal32(SmileInteger64 self);
 SMILE_API_FUNC String SmileInteger64_ToString(SmileInteger64 self);
 
 //-------------------------------------------------------------------------------------------------
@@ -46,7 +46,7 @@ Inline SmileInteger64 SmileInteger64_Create(Int64 value)
 	if (value >= -100 && value <= 100)
 		return Smile_KnownObjects.SmallInt64s[value + 100];
 	else
-		return SmileInteger64_CreateInternal(value);
+		return SmileInteger64_CreateInternal((Int)value);
 }
 
 #endif

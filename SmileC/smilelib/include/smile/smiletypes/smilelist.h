@@ -44,6 +44,7 @@ SMILE_API_FUNC SmileList SmileList_ConsWithSource(SmileObject a, SmileObject d, 
 SMILE_API_FUNC SmileList SmileList_CreateListFromArray(SmileObject *objects, Int numObjects);
 SMILE_API_FUNC SmileList SmileList_CreateList(SmileObject firstObject, ...);
 SMILE_API_FUNC SmileList SmileList_CreateListv(SmileObject firstObject, va_list v);
+SMILE_API_FUNC Int SmileList_Length(SmileList list);
 
 //-------------------------------------------------------------------------------------------------
 //  Inline operations
@@ -57,6 +58,15 @@ Inline SmileList SmileList_Rest(SmileList list)
 Inline SmileObject SmileList_First(SmileList list)
 {
 	return list->a;
+}
+
+Inline LexerPosition SmileList_GetSourceLocation(SmileList list)
+{
+	if (list->kind & SMILE_FLAG_WITHSOURCE) {
+		struct SmileListWithSourceInt *listWithSource = (struct SmileListWithSourceInt *)list;
+		return listWithSource->position;
+	}
+	else return NULL;
 }
 
 #define LIST_CONS(__a__, __d__) (SmileList_Cons((SmileObject)(__a__), (SmileObject)(__d__)))

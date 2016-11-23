@@ -30,6 +30,10 @@ struct KnownObjectsStruct {
 	SmileInteger64 ZeroInt64;
 	SmileInteger64 OneInt64;
 
+	SmileInteger128 SmallInt128s[201];
+	SmileInteger128 ZeroInt128;
+	SmileInteger128 OneInt128;
+
 	SmileChar Chars[256];
 
 	SmileUChar UChars[256];

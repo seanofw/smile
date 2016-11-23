@@ -134,7 +134,10 @@
     <ClInclude Include="include\smile\env\knownstrings.h" />
     <ClInclude Include="include\smile\env\knownsymbols.h" />
     <ClInclude Include="include\smile\env\symboltable.h" />
+    <ClInclude Include="include\smile\eval\bytecode.h" />
+    <ClInclude Include="include\smile\eval\compiler.h" />
     <ClInclude Include="include\smile\eval\eval.h" />
+    <ClInclude Include="include\smile\eval\opcode.h" />
     <ClInclude Include="include\smile\gc.h" />
     <ClInclude Include="include\smile\mem.h" />
     <ClInclude Include="include\smile\numeric\real.h" />
@@ -756,6 +759,8 @@
     <ClCompile Include="src\env\knownsymbols.c" />
     <ClCompile Include="src\env\parsedecl.c" />
     <ClCompile Include="src\env\symboltable.c" />
+    <ClCompile Include="src\eval\bytecode.c" />
+    <ClCompile Include="src\eval\compiler.c" />
     <ClCompile Include="src\eval\eval.c" />
     <ClCompile Include="src\fnvhash.c" />
     <ClCompile Include="src\init.c">
@@ -794,6 +799,7 @@
     <ClCompile Include="src\parsing\parser\parseterm.c" />
     <ClCompile Include="src\siphash.c" />
     <ClCompile Include="src\smiletypes\numeric\smilebyte.c" />
+    <ClCompile Include="src\smiletypes\numeric\smileinteger128.c" />
     <ClCompile Include="src\smiletypes\numeric\smileinteger16.c" />
     <ClCompile Include="src\smiletypes\numeric\smileinteger32.c" />
     <ClCompile Include="src\smiletypes\numeric\smileinteger64.c" />
@@ -837,6 +843,7 @@
     <ClCompile Include="src\unicode\uppercase.c" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="src\eval\opnames.inc" />
     <None Include="src\string\string_parsefloat.generated.inc" />
   </ItemGroup>
   <ItemGroup>

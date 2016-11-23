@@ -42,4 +42,13 @@ SMILE_API_DATA SmileVTable SmilePair_VTable;
 SMILE_API_FUNC SmilePair SmilePair_Create(SmileObject left, SmileObject right);
 SMILE_API_FUNC SmilePair SmilePair_CreateWithSource(SmileObject left, SmileObject right, LexerPosition position);
 
+Inline LexerPosition SmilePair_GetSourceLocation(SmilePair pair)
+{
+	if (pair->kind & SMILE_FLAG_WITHSOURCE) {
+		struct SmilePairWithSourceInt *pairWithSource = (struct SmilePairWithSourceInt *)pair;
+		return pairWithSource->position;
+	}
+	else return NULL;
+}
+
 #endif

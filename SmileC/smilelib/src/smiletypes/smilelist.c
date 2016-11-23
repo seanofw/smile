@@ -94,6 +94,24 @@ SmileList SmileList_CreateListv(SmileObject firstObject, va_list v)
 	return head;
 }
 
+/// <summary>
+/// Determine the length of this list, and whether it is well-formed (i.e., whether it consists of
+/// a sequence of SmileList objects, chained by their ->d pointers, followed by SmileNull for the
+/// last ->d pointer).
+/// </summary>
+/// <param name="list">The list to analyze.</param>
+/// <returns>The length of the list, if it is well-formed; or -1 if it is not well-formed.</returns>
+Int SmileList_Length(SmileList list)
+{
+	Int length = 0;
+
+	for (; SMILE_KIND(list) == SMILE_KIND_LIST; list = (SmileList)list->d) {
+		length++;
+	}
+
+	return SMILE_KIND(list) == SMILE_KIND_NULL ? length : -1;
+}
+
 static Bool SmileList_CompareEqual(SmileList self, SmileObject other)
 {
 	SmileList otherList;
