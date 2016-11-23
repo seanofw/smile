@@ -52,7 +52,7 @@ ParseError Parser_ParseQuotedTerm(Parser parser, SmileObject *result, Int modeFl
 
 	if (!isTemplate) {
 		*result = (SmileObject)SmileList_ConsWithSource(
-			(SmileObject)Smile_KnownObjects.quoteSymbol,
+			(SmileObject)Smile_KnownObjects._quoteSymbol,
 			(SmileObject)SmileList_ConsWithSource(*result, NullObject, position),
 			position
 		);
@@ -123,7 +123,7 @@ ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Bool *isT
 			if (error != NULL)
 				return error;
 			*result = (SmileObject)SmileList_ConsWithSource(
-				(SmileObject)Smile_KnownObjects.quoteSymbol,
+				(SmileObject)Smile_KnownObjects._quoteSymbol,
 				(SmileObject)SmileList_ConsWithSource(
 					*result,
 					NullObject,
@@ -238,7 +238,7 @@ ParseError Parser_ParseRawListItemsOpt(Parser parser, SmileList *head, SmileList
 					// This is a templated list, but not a templated item.  So we need to quote it
 					// before adding it to the list.
 					expr = (SmileObject)SmileList_ConsWithSource(
-						(SmileObject)Smile_KnownObjects.quoteSymbol,
+						(SmileObject)Smile_KnownObjects._quoteSymbol,
 						(SmileObject)SmileList_ConsWithSource(expr, NullObject, lexerPosition),
 						lexerPosition
 					);
@@ -365,7 +365,7 @@ static void Parser_TransformListIntoTemplate(SmileList *head, SmileList *tail, L
 
 		// Take each element x in the old list, and turn it into [quote x] in the new list.
 		newExpr = (SmileObject)SmileList_ConsWithSource(
-			(SmileObject)Smile_KnownObjects.quoteSymbol,
+			(SmileObject)Smile_KnownObjects._quoteSymbol,
 			(SmileObject)SmileList_ConsWithSource(oldExpr, NullObject, position),
 			position
 		);

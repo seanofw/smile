@@ -39,7 +39,7 @@ START_TEST(CanParseEmptyNew)
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedResult = SimpleParse("[new Object []]");
+	SmileObject expectedResult = SimpleParse("[$new Object []]");
 
 	ASSERT(RecursiveEquals((SmileObject)result->a, (SmileObject)expectedResult));
 }
@@ -53,7 +53,7 @@ START_TEST(CanParseInheritedNew)
 	ParseError parseError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "SomeNamespace"), PARSEDECL_VARIABLE, NULL, NULL);
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedResult = SimpleParse("[new ((SomeNamespace . SomeClass) . SomeNestedClass) []]");
+	SmileObject expectedResult = SimpleParse("[$new ((SomeNamespace . SomeClass) . SomeNestedClass) []]");
 
 	ASSERT(RecursiveEquals((SmileObject)result->a, (SmileObject)expectedResult));
 }
@@ -66,7 +66,7 @@ START_TEST(CanParseNewWithMembers)
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedResult = SimpleParse("[new Object [[x 10] [y 20] [z [(5 . +) 7]]]]");
+	SmileObject expectedResult = SimpleParse("[$new Object [[x 10] [y 20] [z [(5 . +) 7]]]]");
 
 	ASSERT(RecursiveEquals((SmileObject)result->a, (SmileObject)expectedResult));
 }
@@ -91,7 +91,7 @@ START_TEST(NewWithMembersWithNestedColonsIsNotAnError)
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedResult = SimpleParse("[new Object [ [x 10] [y [(''Foo''.get-member) 2]] [z 20] ]]");
+	SmileObject expectedResult = SimpleParse("[$new Object [ [x 10] [y [(''Foo''.get-member) 2]] [z 20] ]]");
 
 	ASSERT(RecursiveEquals((SmileObject)result->a, (SmileObject)expectedResult));
 }
@@ -104,7 +104,7 @@ START_TEST(NewWithMembersSupportsNestedFunctions)
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedResult = SimpleParse("[new Object [ [x [fn [x] [(x . +) 1] ]] [y 20] ]]");
+	SmileObject expectedResult = SimpleParse("[$new Object [ [x [$fn [x] [(x . +) 1] ]] [y 20] ]]");
 
 	ASSERT(RecursiveEquals((SmileObject)result->a, (SmileObject)expectedResult));
 }
@@ -129,7 +129,7 @@ START_TEST(NewWithMembersAllowsColonsInNestedFunctionsIfWrapped)
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedResult = SimpleParse("[new Object [ [x [fn [x] [(x . get-member) 1] ]] [y 20] ]]");
+	SmileObject expectedResult = SimpleParse("[$new Object [ [x [$fn [x] [(x . get-member) 1] ]] [y 20] ]]");
 
 	ASSERT(RecursiveEquals((SmileObject)result->a, (SmileObject)expectedResult));
 }
@@ -142,7 +142,7 @@ START_TEST(NewWithMembersAllowsColonsInNestedFunctionsIfWrapped2)
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedResult = SimpleParse("[new Object [ [x [fn [x] [progn [(x . get-member) 1] ] ]] [y 20] ]]");
+	SmileObject expectedResult = SimpleParse("[$new Object [ [x [$fn [x] [$progn [(x . get-member) 1] ] ]] [y 20] ]]");
 
 	ASSERT(RecursiveEquals((SmileObject)result->a, (SmileObject)expectedResult));
 }

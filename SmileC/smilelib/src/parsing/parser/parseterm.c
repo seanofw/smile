@@ -92,7 +92,7 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, T
 				if (error != NULL)
 					return error;
 				*result = (SmileObject)SmileList_ConsWithSource(
-					(SmileObject)Smile_KnownObjects.quoteSymbol,
+					(SmileObject)Smile_KnownObjects._quoteSymbol,
 					(SmileObject)SmileList_ConsWithSource(*result, NullObject, startPosition),
 					startPosition
 				);

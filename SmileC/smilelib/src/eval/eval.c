@@ -198,13 +198,13 @@ SmileObject Smile_EvalInternal(SmileObject expr)
 			
 				case SMILE_KIND_SYMBOL:
 					switch (((SmileSymbol)list->a)->symbol) {
-						case SMILE_SPECIAL_SYMBOL_EQUALS:
+						case SMILE_SPECIAL_SYMBOL__SET:
 							return EvalEquals(LIST_SECOND(list), Smile_EvalInternal(LIST_THIRD(list)));
-						case SMILE_SPECIAL_SYMBOL_OP_EQUALS:
+						case SMILE_SPECIAL_SYMBOL__OPSET:
 							return EvalOpEquals(LIST_REST(list));
-						case SMILE_SPECIAL_SYMBOL_IF:
+						case SMILE_SPECIAL_SYMBOL__IF:
 							return EvalIf(LIST_REST(list));
-						case SMILE_SPECIAL_SYMBOL_WHILE:
+						case SMILE_SPECIAL_SYMBOL__WHILE:
 							return EvalWhile(LIST_REST(list));
 						default:
 							Smile_Throw((SmileObject)SmileString_Create(String_Format("Cannot call unknown function: %S", SmileObject_Stringify(list->a))));

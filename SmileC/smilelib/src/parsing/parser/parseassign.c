@@ -67,10 +67,10 @@ ParseError Parser_ParseVarDecls(Parser parser, SmileObject *expr, Int modeFlags,
 	Lexer_Unget(parser->lexer);
 
 	// Finally, take our pile of assignments (if they exist), and turn them into an executable
-	// form by prefixing them with 'progn':  [progn [\= x 5] [\= y 8] [\= z 10] ...]
+	// form by prefixing them with '$progn':  [$progn [\= x 5] [\= y 8] [\= z 10] ...]
 	*expr = head->kind == SMILE_KIND_NULL
 		? NullObject
-		: (SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects.prognSymbol, (SmileObject)head,
+		: (SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects._prognSymbol, (SmileObject)head,
 			((struct SmileListWithSourceInt *)head)->position);
 	return NULL;
 }
@@ -115,10 +115,10 @@ ParseError Parser_ParseDecl(Parser parser, SmileObject *expr, Int modeFlags, Int
 		error = Parser_ParseOpEquals(parser, &rvalue, (modeFlags & ~COMMAMODE_MASK) | COMMAMODE_VARIABLEDECLARATION);
 		if (error != NULL) return error;
 
-		// Build the result, which is a list shaped like [= symbol rvalue]
+		// Build the result, which is a list shaped like [$set symbol rvalue]
 		lexerPosition = Token_GetPosition(token);
 		*expr =
-			(SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects.equalsSymbol,
+			(SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects._setSymbol,
 				(SmileObject)SmileList_ConsWithSource((SmileObject)SmileSymbol_Create(symbol),
 					(SmileObject)SmileList_ConsWithSource(rvalue,
 						NullObject,
@@ -179,9 +179,9 @@ ParseError Parser_ParseOpEquals(Parser parser, SmileObject *expr, Int modeFlags)
 	error = Parser_ParseOpEquals(parser, &rvalue, modeFlags);
 	if (error != NULL) return error;
 
-	// Build the result, which is a list shaped like [op= operator lvalue rvalue]
+	// Build the result, which is a list shaped like [$opset operator lvalue rvalue]
 	*expr =
-		(SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects.opEqualsSymbol,
+		(SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects._opsetSymbol,
 			(SmileObject)SmileList_ConsWithSource((SmileObject)SmileSymbol_Create(opToken->data.symbol),
 				(SmileObject)SmileList_ConsWithSource(lvalue,
 					(SmileObject)SmileList_ConsWithSource(rvalue,
@@ -234,10 +234,10 @@ ParseError Parser_ParseEquals(Parser parser, SmileObject *expr, Int modeFlags)
 		error = Parser_ParseEquals(parser, &rvalue, modeFlags);
 		if (error != NULL) return error;
 
-		// Construct the resulting list, which will look like [\= name rvalue], but invisibly
+		// Construct the resulting list, which will look like [$set name rvalue], but invisibly
 		// annotated with source locations.
 		*expr =
-			(SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects.equalsSymbol,
+			(SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects._setSymbol,
 				(SmileObject)SmileList_ConsWithSource((SmileObject)SmileSymbol_Create(token->data.symbol),
 					(SmileObject)SmileList_ConsWithSource(rvalue, NullObject,
 					position2),
@@ -268,10 +268,10 @@ ParseError Parser_ParseEquals(Parser parser, SmileObject *expr, Int modeFlags)
 		// Collect the rvalue, recursively.
 		error = Parser_ParseEquals(parser, &rvalue, modeFlags);
 
-		// Construct the resulting list, which will look like [\= lvalue rvalue], but invisibly
+		// Construct the resulting list, which will look like [$set lvalue rvalue], but invisibly
 		// annotated with source locations.
 		*expr =
-			(SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects.equalsSymbol,
+			(SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects._setSymbol,
 				(SmileObject)SmileList_ConsWithSource(lvalue,
 					(SmileObject)SmileList_ConsWithSource(rvalue, NullObject,
 					position2),

@@ -187,7 +187,7 @@ ParseError Parser_ParseScope(Parser parser, SmileObject *expr)
 	}
 
 	if (closureInfo->numVariables == 0) {
-		*expr = (SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects.prognSymbol, (SmileObject)head, startPosition);
+		*expr = (SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects._prognSymbol, (SmileObject)head, startPosition);
 		return NULL;
 	}
 	else {
@@ -197,7 +197,7 @@ ParseError Parser_ParseScope(Parser parser, SmileObject *expr)
 		for (i = 0; i < numVariables; i++) {
 			LIST_APPEND(declHead, declTail, SmileSymbol_Create(symbolNames[i]));
 		}
-		*expr = (SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects.scopeSymbol,
+		*expr = (SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects._scopeSymbol,
 			(SmileObject)SmileList_ConsWithSource((SmileObject)declHead, (SmileObject)head, startPosition), startPosition);
 		return NULL;
 	}

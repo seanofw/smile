@@ -70,24 +70,26 @@ static ParseError ParseScope_DeclareGlobalOperators(ParseScope parseScope)
 {
 	ParseError error;
 
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.equals_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.op_equals_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.if_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.while_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.var_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.till_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.catch_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.fn_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.scope_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.progn_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.quote_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.new_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.is_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.typeof_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.and_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.or_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.not_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__SET, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__OPSET, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__IF, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__WHILE, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__TILL, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__FN, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__QUOTE, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__SCOPE, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__PROG1, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__PROGN, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__RETURN, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__CATCH, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__NOT, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__OR, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__AND, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__EQ, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__NE, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__NEW, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__IS, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__TYPEOF, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
 
 	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.null_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
 	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.true_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;

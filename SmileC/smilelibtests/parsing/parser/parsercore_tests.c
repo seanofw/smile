@@ -109,7 +109,7 @@ START_TEST(CanParseAndExpr)
 	ParseError parseDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "gronk"), PARSEDECL_VARIABLE, NULL, NULL);
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedResult = SimpleParse("[and true false true gronk]");
+	SmileObject expectedResult = SimpleParse("[$and true false true gronk]");
 
 	ASSERT(RecursiveEquals((SmileObject)result->a, (SmileObject)expectedResult));
 }
@@ -123,7 +123,7 @@ START_TEST(CanParseOrExpr)
 	ParseError parseDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "gronk"), PARSEDECL_VARIABLE, NULL, NULL);
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedResult = SimpleParse("[or true false true gronk]");
+	SmileObject expectedResult = SimpleParse("[$or true false true gronk]");
 
 	ASSERT(RecursiveEquals((SmileObject)result->a, (SmileObject)expectedResult));
 }
@@ -138,7 +138,7 @@ START_TEST(CanParseAMixOfAndAndOrAndNot)
 	ParseError parseDeclError2 = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "foo"), PARSEDECL_VARIABLE, NULL, NULL);
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedResult = SimpleParse("[or true [and [not false] true foo] [not [not gronk]]]");
+	SmileObject expectedResult = SimpleParse("[$or true [$and [$not false] true foo] [$not [$not gronk]]]");
 
 	ASSERT(RecursiveEquals((SmileObject)result->a, (SmileObject)expectedResult));
 }
@@ -153,7 +153,7 @@ START_TEST(CanParseAMixOfAndAndOrAndNotWithParentheses)
 	ParseError parseDeclError2 = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "foo"), PARSEDECL_VARIABLE, NULL, NULL);
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedResult = SimpleParse("[and [or true [not false]] true [or foo [not [not gronk]]]]");
+	SmileObject expectedResult = SimpleParse("[$and [$or true [$not false]] true [$or foo [$not [$not gronk]]]]");
 
 	ASSERT(RecursiveEquals((SmileObject)result->a, (SmileObject)expectedResult));
 }
@@ -166,7 +166,7 @@ START_TEST(CanParseComparisons)
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedResult = SimpleParse("[and [(1 . <) 10] [(0 . ==) 0] [(15 . >=) 8] [(23 . >) 7] [(99 . <) 100] [(1 . !=) 2]]");
+	SmileObject expectedResult = SimpleParse("[$and [(1 . <) 10] [(0 . ==) 0] [(15 . >=) 8] [(23 . >) 7] [(99 . <) 100] [(1 . !=) 2]]");
 
 	ASSERT(RecursiveEquals((SmileObject)result->a, (SmileObject)expectedResult));
 }
@@ -181,7 +181,7 @@ START_TEST(CanParseSpecialComparisons)
 	ParseError declError = ParseScope_DeclareHere(parseScope, numberSymbol, PARSEDECL_VARIABLE, NULL, NULL);
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedResult = SimpleParse("[and [!== 1 10] [=== 0 0] [is 15 Number]]");
+	SmileObject expectedResult = SimpleParse("[$and [$ne 1 10] [$eq 0 0] [$is 15 Number]]");
 
 	ASSERT(RecursiveEquals((SmileObject)result->a, (SmileObject)expectedResult));
 }
@@ -367,7 +367,7 @@ START_TEST(BinaryOperatorWrappingPropagatesIntoFunctions1)
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
 	SmileObject expectedResult = SimpleParse("[\n"
-		"[fn [x] [ ([([(x . -)] . sin)] . *) [([(x . +)] . cos)] ]]\n"
+		"[$fn [x] [ ([([(x . -)] . sin)] . *) [([(x . +)] . cos)] ]]\n"
 		"[ ([(123 . tan)] . *) ]\n"
 		"]");
 
@@ -383,7 +383,7 @@ START_TEST(BinaryOperatorWrappingPropagatesIntoFunctions2)
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
 	SmileObject expectedResult = SimpleParse("[\n"
-		"[fn [x] [([([([(x . -)] . sin)] . *) [([(x . +)] . cos)]] . *) [(123 . tan)]]]\n"
+		"[$fn [x] [([([([(x . -)] . sin)] . *) [([(x . +)] . cos)]] . *) [(123 . tan)]]]\n"
 		"]");
 
 	ASSERT(RecursiveEquals((SmileObject)result, (SmileObject)expectedResult));

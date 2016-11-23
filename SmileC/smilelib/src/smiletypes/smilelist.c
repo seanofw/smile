@@ -217,7 +217,7 @@ static String SmileList_ToString(SmileList self)
 		return String_Format("(%S ## %S)", SMILE_VCALL(self->a, toString), SMILE_VCALL(self->d, toString));
 
 	if (SMILE_KIND(self->a) == SMILE_KIND_SYMBOL
-		&& ((SmileSymbol)self->a)->symbol == Smile_KnownSymbols.quote_
+		&& ((SmileSymbol)self->a)->symbol == SMILE_SPECIAL_SYMBOL__QUOTE
 		&& SMILE_KIND(LIST_REST(LIST_REST(self))) == SMILE_KIND_NULL)
 	{
 		SmileObject quotedItem = LIST_FIRST(LIST_REST(self));
@@ -230,8 +230,8 @@ static String SmileList_ToString(SmileList self)
 	StringBuilder_AppendByte(stringBuilder, '[');
 
 	useIndents = (SMILE_KIND(self->a) == SMILE_KIND_SYMBOL &&
-		(((SmileSymbol)self->a)->symbol == Smile_KnownSymbols.scope_
-		|| ((SmileSymbol)self->a)->symbol == Smile_KnownSymbols.progn_));
+		(((SmileSymbol)self->a)->symbol == SMILE_SPECIAL_SYMBOL__SCOPE
+		|| ((SmileSymbol)self->a)->symbol == SMILE_SPECIAL_SYMBOL__PROGN));
 
 	if (useIndents) _indent++;
 

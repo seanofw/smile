@@ -76,20 +76,32 @@ void KnownObjects_Preload(struct KnownObjectsStruct *knownObjects, struct KnownS
 	knownObjects->PairSymbol = SmileSymbol_Create(knownSymbols->Pair_);
 	knownObjects->RangeSymbol = SmileSymbol_Create(knownSymbols->Range_);
 
-	knownObjects->fnSymbol = SmileSymbol_Create(knownSymbols->fn_);
-	knownObjects->quoteSymbol = SmileSymbol_Create(knownSymbols->quote_);
-	knownObjects->joinSymbol = SmileSymbol_Create(knownSymbols->join);
-	knownObjects->ofSymbol = SmileSymbol_Create(knownSymbols->of);
-	knownObjects->prognSymbol = SmileSymbol_Create(knownSymbols->progn_);
-	knownObjects->scopeSymbol = SmileSymbol_Create(knownSymbols->scope_);
-	knownObjects->opEqualsSymbol = SmileSymbol_Create(knownSymbols->op_equals_);
-	knownObjects->equalsSymbol = SmileSymbol_Create(knownSymbols->equals_);
-	knownObjects->typeSymbol = SmileSymbol_Create(knownSymbols->type);
-	knownObjects->newSymbol = SmileSymbol_Create(knownSymbols->new_);
+	knownObjects->_setSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__SET);
+	knownObjects->_opsetSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__OPSET);
+	knownObjects->_ifSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__IF);
+	knownObjects->_whileSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__WHILE);
+	knownObjects->_tillSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__TILL);
+	knownObjects->_fnSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__FN);
+	knownObjects->_quoteSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__QUOTE);
+	knownObjects->_scopeSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__SCOPE);
+	knownObjects->_prog1Symbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__PROG1);
+	knownObjects->_prognSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__PROGN);
+	knownObjects->_returnSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__RETURN);
+	knownObjects->_catchSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__CATCH);
+	knownObjects->_notSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__NOT);
+	knownObjects->_orSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__OR);
+	knownObjects->_andSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__AND);
+	knownObjects->_eqSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__EQ);
+	knownObjects->_neSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__NE);
+	knownObjects->_newSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__NEW);
+	knownObjects->_isSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__IS);
+	knownObjects->_typeofSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__TYPEOF);
 
-	knownObjects->orSymbol = SmileSymbol_Create(knownSymbols->or_);
-	knownObjects->andSymbol = SmileSymbol_Create(knownSymbols->and_);
-	knownObjects->notSymbol = SmileSymbol_Create(knownSymbols->not_);
+	knownObjects->getMemberSymbol = SmileSymbol_Create(knownSymbols->get_member);
+	knownObjects->setMemberSymbol = SmileSymbol_Create(knownSymbols->set_member);
+	knownObjects->ofSymbol = SmileSymbol_Create(knownSymbols->of);
+	knownObjects->typeSymbol = SmileSymbol_Create(knownSymbols->type);
+	knownObjects->joinSymbol = SmileSymbol_Create(knownSymbols->join);
 
 	knownObjects->eqSymbol = SmileSymbol_Create(knownSymbols->eq);
 	knownObjects->neSymbol = SmileSymbol_Create(knownSymbols->ne);
@@ -97,17 +109,8 @@ void KnownObjects_Preload(struct KnownObjectsStruct *knownObjects, struct KnownS
 	knownObjects->gtSymbol = SmileSymbol_Create(knownSymbols->gt);
 	knownObjects->leSymbol = SmileSymbol_Create(knownSymbols->le);
 	knownObjects->geSymbol = SmileSymbol_Create(knownSymbols->ge);
-	knownObjects->supereqSymbol = SmileSymbol_Create(knownSymbols->supereq_);
-	knownObjects->superneSymbol = SmileSymbol_Create(knownSymbols->superne_);
-	knownObjects->isSymbol = SmileSymbol_Create(knownSymbols->is_);
-
 	knownObjects->plusSymbol = SmileSymbol_Create(knownSymbols->plus);
 	knownObjects->minusSymbol = SmileSymbol_Create(knownSymbols->minus);
 	knownObjects->starSymbol = SmileSymbol_Create(knownSymbols->star);
 	knownObjects->slashSymbol = SmileSymbol_Create(knownSymbols->slash);
-
-	knownObjects->typeofSymbol = SmileSymbol_Create(knownSymbols->typeof_);
-
-	knownObjects->getMemberSymbol = SmileSymbol_Create(knownSymbols->get_member);
-	knownObjects->setMemberSymbol = SmileSymbol_Create(knownSymbols->set_member);
 }

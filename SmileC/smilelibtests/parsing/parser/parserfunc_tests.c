@@ -36,7 +36,7 @@ START_TEST(CanParseAFunction)
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedForm = SimpleParse("[fn [x] x]");
+	SmileObject expectedForm = SimpleParse("[$fn [x] x]");
 
 	ASSERT(result != NULL && result != NullList);
 	ASSERT(result->a != NULL && result->a != NullObject);
@@ -53,7 +53,7 @@ START_TEST(CanParseAFunctionOfNoArguments)
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedForm = SimpleParse("[fn [] 123]");
+	SmileObject expectedForm = SimpleParse("[$fn [] 123]");
 
 	ASSERT(result != NULL && result != NullList);
 	ASSERT(result->a != NULL && result->a != NullObject);
@@ -70,7 +70,7 @@ START_TEST(CanParseAFunctionWithMultipleArguments)
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedForm = SimpleParse("[fn [w x y z] [w x y z]]");
+	SmileObject expectedForm = SimpleParse("[$fn [w x y z] [w x y z]]");
 
 	ASSERT(result != NULL && result != NullList);
 	ASSERT(result->a != NULL && result->a != NullObject);
@@ -87,7 +87,7 @@ START_TEST(CanParseAFunctionWithOptionalCommas)
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedForm = SimpleParse("[fn [w x y z] [w x y z]]");
+	SmileObject expectedForm = SimpleParse("[$fn [w x y z] [w x y z]]");
 
 	ASSERT(result != NULL && result != NullList);
 	ASSERT(result->a != NULL && result->a != NullObject);

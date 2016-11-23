@@ -76,7 +76,7 @@ ParseError Parser_ParseFunc(Parser parser, SmileObject *expr, Int modeFlags)
 	Parser_EndScope(parser);
 
 	*expr =
-		(SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects.fnSymbol,
+		(SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects._fnSymbol,
 			(SmileObject)SmileList_ConsWithSource((SmileObject)paramList,
 				(SmileObject)SmileList_ConsWithSource(body, NullObject, funcPosition),
 			funcPosition),

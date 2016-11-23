@@ -110,7 +110,7 @@ ParseError Parser_ParseOrExpr(Parser parser, SmileObject *expr, Int modeFlags)
 
 		if (isFirst) {
 			*expr = (SmileObject)SmileList_ConsWithSource(
-				(SmileObject)Smile_KnownObjects.orSymbol,
+				(SmileObject)Smile_KnownObjects._orSymbol,
 				(SmileObject)SmileList_ConsWithSource(*expr,
 					(SmileObject)(tail = SmileList_ConsWithSource(rvalue,
 						NullObject,
@@ -156,7 +156,7 @@ ParseError Parser_ParseAndExpr(Parser parser, SmileObject *expr, Int modeFlags)
 
 		if (isFirst) {
 			*expr = (SmileObject)SmileList_ConsWithSource(
-				(SmileObject)Smile_KnownObjects.andSymbol,
+				(SmileObject)Smile_KnownObjects._andSymbol,
 				(SmileObject)SmileList_ConsWithSource(*expr,
 					(SmileObject)(tail = SmileList_ConsWithSource(rvalue,
 						NullObject,
@@ -228,9 +228,9 @@ ParseError Parser_ParseNotExpr(Parser parser, SmileObject *expr, Int modeFlags)
 	// each unary operator, going from last (innermost) to first (outermost).
 	for (i = numOperators - 1; i >= 0; i--) {
 		lexerPosition = Token_GetPosition(&unaryOperators[i]);
-		// Not is a special built-in form:  [not x]
+		// Not is a special built-in form:  [$not x]
 		*expr = (SmileObject)SmileList_ConsWithSource(
-			(SmileObject)Smile_KnownObjects.notSymbol,
+			(SmileObject)Smile_KnownObjects._notSymbol,
 			(SmileObject)SmileList_ConsWithSource(
 				*expr,
 				NullObject,
@@ -265,13 +265,13 @@ Inline SmileSymbol Parser_GetSymbolObjectForCmpOperator(Symbol symbol)
 			return Smile_KnownObjects.geSymbol;
 			break;
 		case SMILE_SPECIAL_SYMBOL_SUPEREQ:
-			return Smile_KnownObjects.supereqSymbol;
+			return Smile_KnownObjects._eqSymbol;
 			break;
 		case SMILE_SPECIAL_SYMBOL_SUPERNE:
-			return Smile_KnownObjects.superneSymbol;
+			return Smile_KnownObjects._neSymbol;
 			break;
 		case SMILE_SPECIAL_SYMBOL_IS:
-			return Smile_KnownObjects.isSymbol;
+			return Smile_KnownObjects._isSymbol;
 			break;
 		default:
 			return NULL;
@@ -676,8 +676,6 @@ Inline Bool Parser_IsAcceptableArbitraryPrefixOperator(Symbol symbol)
 		case SMILE_SPECIAL_SYMBOL_TYPEOF:
 		case SMILE_SPECIAL_SYMBOL_SUPEREQ:
 		case SMILE_SPECIAL_SYMBOL_SUPERNE:
-
-		case SMILE_SPECIAL_SYMBOL_BRK:
 			return False;
 	}
 }
@@ -745,9 +743,9 @@ ParseError Parser_ParsePrefixExpr(Parser parser, SmileObject *expr, Int modeFlag
 		position = Token_GetPosition(&unaryOperators[i]);
 		symbol = unaryOperators[i].data.symbol;
 		if (symbol == SMILE_SPECIAL_SYMBOL_TYPEOF) {
-			// Typeof is a special built-in form:  [typeof x]
+			// Typeof is a special built-in form:  [$typeof x]
 			*expr = (SmileObject)SmileList_ConsWithSource(
-				(SmileObject)Smile_KnownObjects.typeofSymbol,
+				(SmileObject)Smile_KnownObjects._typeofSymbol,
 				(SmileObject)SmileList_ConsWithSource(
 					*expr,
 					NullObject,
@@ -834,7 +832,7 @@ ParseError Parser_ParseNewExpr(Parser parser, SmileObject *expr, Int modeFlags, 
 	}
 
 	*expr = (SmileObject)SmileList_ConsWithSource(
-		(SmileObject)Smile_KnownObjects.newSymbol,
+		(SmileObject)Smile_KnownObjects._newSymbol,
 		(SmileObject)SmileList_ConsWithSource(
 			base,
 			(SmileObject)SmileList_ConsWithSource(

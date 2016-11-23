@@ -565,74 +565,74 @@ static Bool Compiler_CompileStandardForm(Compiler compiler, Symbol symbol, Smile
 	switch (symbol) {
 
 		// Assignment.
-		case SMILE_SPECIAL_SYMBOL_EQUALS:
+		case SMILE_SPECIAL_SYMBOL__SET:
 			Compiler_CompileSetf(compiler, args);
 			return True;
-		case SMILE_SPECIAL_SYMBOL_OP_EQUALS:
+		case SMILE_SPECIAL_SYMBOL__OPSET:
 			Compiler_CompileOpEquals(compiler, args);
 			return True;
 
 		// Control flow.
-		case SMILE_SPECIAL_SYMBOL_IF:
+		case SMILE_SPECIAL_SYMBOL__IF:
 			Compiler_CompileIf(compiler, args);
 			return True;
-		case SMILE_SPECIAL_SYMBOL_WHILE:
+		case SMILE_SPECIAL_SYMBOL__WHILE:
 			Compiler_CompileWhile(compiler, args);
 			return True;
-		case SMILE_SPECIAL_SYMBOL_TILL:
+		case SMILE_SPECIAL_SYMBOL__TILL:
 			Compiler_CompileTill(compiler, args);
 			return True;
-		case SMILE_SPECIAL_SYMBOL_CATCH:
+		case SMILE_SPECIAL_SYMBOL__CATCH:
 			Compiler_CompileCatch(compiler, args);
 			return True;
-		case SMILE_SPECIAL_SYMBOL_RETURN:
+		case SMILE_SPECIAL_SYMBOL__RETURN:
 			Compiler_CompileReturn(compiler, args);
 			return True;
 
 		// Expression-evaluation control.
-		case SMILE_SPECIAL_SYMBOL_FN:
+		case SMILE_SPECIAL_SYMBOL__FN:
 			Compiler_CompileFn(compiler, args);
 			return True;
-		case SMILE_SPECIAL_SYMBOL_QUOTE:
+		case SMILE_SPECIAL_SYMBOL__QUOTE:
 			Compiler_CompileQuote(compiler, args);
 			return True;
-		case SMILE_SPECIAL_SYMBOL_PROG1:
+		case SMILE_SPECIAL_SYMBOL__PROG1:
 			Compiler_CompileProg1(compiler, args);
 			return True;
-		case SMILE_SPECIAL_SYMBOL_PROGN:
+		case SMILE_SPECIAL_SYMBOL__PROGN:
 			Compiler_CompileProgN(compiler, args);
 			return True;
-		case SMILE_SPECIAL_SYMBOL_SCOPE:
+		case SMILE_SPECIAL_SYMBOL__SCOPE:
 			Compiler_CompileScope(compiler, args);
 			return True;
 
 		// Object creation and type testing.
-		case SMILE_SPECIAL_SYMBOL_NEW:
+		case SMILE_SPECIAL_SYMBOL__NEW:
 			Compiler_CompileNew(compiler, args);
 			return True;
-		case SMILE_SPECIAL_SYMBOL_IS:
+		case SMILE_SPECIAL_SYMBOL__IS:
 			Compiler_CompileIs(compiler, args);
 			return True;
-		case SMILE_SPECIAL_SYMBOL_TYPEOF:
+		case SMILE_SPECIAL_SYMBOL__TYPEOF:
 			Compiler_CompileTypeOf(compiler, args);
 			return True;
 
 		// Reference comparison.
-		case SMILE_SPECIAL_SYMBOL_SUPEREQ:
+		case SMILE_SPECIAL_SYMBOL__EQ:
 			Compiler_CompileSuperEq(compiler, args);
 			return True;
-		case SMILE_SPECIAL_SYMBOL_SUPERNE:
+		case SMILE_SPECIAL_SYMBOL__NE:
 			Compiler_CompileSuperNe(compiler, args);
 			return True;
 		
 		// Logical operations.
-		case SMILE_SPECIAL_SYMBOL_AND:
+		case SMILE_SPECIAL_SYMBOL__AND:
 			Compiler_CompileAnd(compiler, args);
 			return True;
-		case SMILE_SPECIAL_SYMBOL_OR:
+		case SMILE_SPECIAL_SYMBOL__OR:
 			Compiler_CompileOr(compiler, args);
 			return True;
-		case SMILE_SPECIAL_SYMBOL_NOT:
+		case SMILE_SPECIAL_SYMBOL__NOT:
 			Compiler_CompileNot(compiler, args);
 			return True;
 

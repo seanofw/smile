@@ -43,37 +43,23 @@ struct KnownObjectsStruct {
 	SmileSymbol PairSymbol;
 	SmileSymbol RangeSymbol;
 
-	SmileSymbol fnSymbol, quoteSymbol;
-	SmileSymbol joinSymbol, ofSymbol;
-	SmileSymbol prognSymbol, scopeSymbol;
-	SmileSymbol opEqualsSymbol;
-	SmileSymbol equalsSymbol;
-	SmileSymbol typeSymbol;
-	SmileSymbol newSymbol;
+	// The twenty core special forms.
+	SmileSymbol _setSymbol, _opsetSymbol;
+	SmileSymbol _ifSymbol, _whileSymbol, _tillSymbol;
+	SmileSymbol _fnSymbol, _quoteSymbol, _scopeSymbol, _prog1Symbol, _prognSymbol, _returnSymbol, _catchSymbol;
+	SmileSymbol _notSymbol, _orSymbol, _andSymbol, _eqSymbol, _neSymbol;
+	SmileSymbol _newSymbol, _isSymbol, _typeofSymbol;
 
-	SmileSymbol andSymbol;
-	SmileSymbol orSymbol;
-	SmileSymbol notSymbol;
-
-	SmileSymbol eqSymbol;
-	SmileSymbol neSymbol;
-	SmileSymbol ltSymbol;
-	SmileSymbol gtSymbol;
-	SmileSymbol leSymbol;
-	SmileSymbol geSymbol;
-	SmileSymbol supereqSymbol;
-	SmileSymbol superneSymbol;
-	SmileSymbol isSymbol;
-
-	SmileSymbol plusSymbol;
-	SmileSymbol minusSymbol;
-	SmileSymbol starSymbol;
-	SmileSymbol slashSymbol;
-
-	SmileSymbol typeofSymbol;
-
+	// Method names used at parse-time.
 	SmileSymbol getMemberSymbol;
 	SmileSymbol setMemberSymbol;
+	SmileSymbol ofSymbol;
+	SmileSymbol typeSymbol;
+	SmileSymbol joinSymbol;
+
+	// Operator names used at parse-time.
+	SmileSymbol eqSymbol, neSymbol, ltSymbol, gtSymbol, leSymbol, geSymbol;
+	SmileSymbol plusSymbol, minusSymbol, starSymbol, slashSymbol;
 };
 
 extern void KnownObjects_Preload(struct KnownObjectsStruct *knownObjects, struct KnownSymbolsStruct *knownSymbols);

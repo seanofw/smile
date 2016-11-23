@@ -36,7 +36,7 @@ START_TEST(CanParseAQuotedSymbol)
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedForm = SimpleParse("[quote x]");
+	SmileObject expectedForm = SimpleParse("[$quote x]");
 
 	ASSERT(result != NULL && result != NullList);
 	ASSERT(result->a != NULL && result->a != NullObject);
@@ -53,7 +53,7 @@ START_TEST(CanParseAQuotedList)
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedForm = SimpleParse("[quote [x y z]]");
+	SmileObject expectedForm = SimpleParse("[$quote [x y z]]");
 
 	ASSERT(result != NULL && result != NullList);
 	ASSERT(result->a != NULL && result->a != NullObject);
@@ -70,7 +70,7 @@ START_TEST(CanParseAQuotedListWithPairsInIt)
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedForm = SimpleParse("[quote [(x . y) (a . b) (c . d)]]");
+	SmileObject expectedForm = SimpleParse("[$quote [(x . y) (a . b) (c . d)]]");
 
 	ASSERT(result != NULL && result != NullList);
 	ASSERT(result->a != NULL && result->a != NullObject);
@@ -87,7 +87,7 @@ START_TEST(CanParseAQuotedListWithNestedLists)
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedForm = SimpleParse("[quote [x y [a b c] [p q [r s]] z]]");
+	SmileObject expectedForm = SimpleParse("[$quote [x y [a b c] [p q [r s]] z]]");
 
 	ASSERT(result != NULL && result != NullList);
 	ASSERT(result->a != NULL && result->a != NullObject);
@@ -104,7 +104,7 @@ START_TEST(CanParseAQuotedExpression)
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedForm = SimpleParse("[quote [(1 . +) [(2 . *) 3]]]");
+	SmileObject expectedForm = SimpleParse("[$quote [(1 . +) [(2 . *) 3]]]");
 
 	ASSERT(result != NULL && result != NullList);
 	ASSERT(result->a != NULL && result->a != NullObject);
@@ -121,7 +121,7 @@ START_TEST(CanParseAListTemplateForm)
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedForm = SimpleParse("[(List . of) [quote x] [quote y] [quote z] [(1 . +) [(2 . *) 3]]]");
+	SmileObject expectedForm = SimpleParse("[(List . of) [$quote x] [$quote y] [$quote z] [(1 . +) [(2 . *) 3]]]");
 
 	ASSERT(result != NULL && result != NullList);
 	ASSERT(result->a != NULL && result->a != NullObject);
@@ -138,7 +138,7 @@ START_TEST(CanParseAListTemplateFormUsingCurlyBraces)
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedForm = SimpleParse("[(List . of) [quote x] [quote y] [quote z] [progn [(1 . +) [(2 . *) 3]]] ]");
+	SmileObject expectedForm = SimpleParse("[(List . of) [$quote x] [$quote y] [$quote z] [$progn [(1 . +) [(2 . *) 3]]] ]");
 
 	ASSERT(result != NULL && result != NullList);
 	ASSERT(result->a != NULL && result->a != NullObject);
@@ -155,7 +155,7 @@ START_TEST(CanParseAPairTemplateForm)
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedForm = SimpleParse("[(List . of) [(Pair . of) [(1 . +) [(2 . *) 3]] -] [quote x]]");
+	SmileObject expectedForm = SimpleParse("[(List . of) [(Pair . of) [(1 . +) [(2 . *) 3]] -] [$quote x]]");
 
 	ASSERT(result != NULL && result != NullList);
 	ASSERT(result->a != NULL && result->a != NullObject);
@@ -173,7 +173,7 @@ START_TEST(CanParseAStringTemplateForm)
 	ParseError xError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "x"), PARSEDECL_VARIABLE, NULL, NULL);
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedForm = SimpleParse("[(List . of) [quote x] [quote y] [quote z] [([(List . of) x \" is awesome.\"] . join)]]");
+	SmileObject expectedForm = SimpleParse("[(List . of) [$quote x] [$quote y] [$quote z] [([(List . of) x \" is awesome.\"] . join)]]");
 
 	ASSERT(result != NULL && result != NullList);
 	ASSERT(result->a != NULL && result->a != NullObject);
@@ -191,7 +191,7 @@ START_TEST(ParserIsntFooledByADynamicStringWithoutInserts)
 	ParseError xError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "x"), PARSEDECL_VARIABLE, NULL, NULL);
 	SmileList result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedForm = SimpleParse("[quote [x y z \"x is awesome.\"]]");
+	SmileObject expectedForm = SimpleParse("[$quote [x y z \"x is awesome.\"]]");
 
 	ASSERT(result != NULL && result != NullList);
 	ASSERT(result->a != NULL && result->a != NullObject);
