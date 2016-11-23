@@ -32,11 +32,23 @@ TEST_SUITE(CompilerTests)
 
 static SmileList Parse(const char *text)
 {
-	String source = String_FromC(text);
-	Lexer lexer = Lexer_Create(source, 0, String_Length(source), TestFilename, 1, 1);
-	Parser parser = Parser_Create();
-	ParseScope scope = ParseScope_CreateRoot();
-	SmileList expr = Parser_Parse(parser, lexer, scope);
+	String source;
+	Lexer lexer;
+	Parser parser;
+	ParseScope scope;
+	SmileList expr;
+
+	Smile_ResetEnvironment();
+
+	source = String_FromC(text);
+
+	lexer = Lexer_Create(source, 0, String_Length(source), TestFilename, 1, 1);
+	lexer->symbolTable = Smile_SymbolTable;
+
+	parser = Parser_Create();
+	scope = ParseScope_CreateRoot();
+	expr = Parser_Parse(parser, lexer, scope);
+
 	return SMILE_KIND(parser->firstMessage) == SMILE_KIND_NULL ? expr : NullList;
 }
 
@@ -160,6 +172,68 @@ START_TEST(CanCompileMildlyInterestingArithmetic)
 		"\tBinary `+\n"
 		"\tLd32 50\n"
 		"\tBinary `*\n";
+
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, compiler->compiledTables);
+	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
+}
+END_TEST
+
+START_TEST(CanCompileSimpleConditionals)
+{
+	SmileList expr = Parse("[$if 1 < 10 `then-side `else-side]");
+
+	Compiler compiler = Compiler_Create();
+	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
+	Int offset = Compiler_CompileExpr(compiler, expr->a);
+	String result;
+
+	const char *expectedResult =
+		"\tLd32 1\n"
+		"\tLd32 10\n"
+		"\tBinary `<\n"
+		"\tBf >L6\n"
+		"\tLdSym `then-side\n"
+		"\tJmp >L8\n"
+		"L6:\n"
+		"\tLdSym `else-side\n"
+		"L8:\n";
+
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, compiler->compiledTables);
+	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
+}
+END_TEST
+
+START_TEST(CanCompileConditionalsAllTheWay)
+{
+	SmileList exprs = Parse(
+		"#syntax STMT: [if [EXPR x] then [STMT y]] => [$if x y]\n"
+		"#syntax STMT: [if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
+		"\n"
+		"if 1 < 10 then\n"
+		"\t`then-side\n"
+		"else\n"
+		"\t`else-side\n"
+	);
+
+	Compiler compiler = Compiler_Create();
+	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
+	Int offset = Compiler_CompileExprs(compiler, exprs);
+	String result;
+
+	const char *expectedResult =
+		"\tLdObj @0\n"
+		"\tPop1\n"
+		"\tLdObj @1\n"
+		"\tPop1\n"
+		"\tLd32 1\n"
+		"\tLd32 10\n"
+		"\tBinary `<\n"
+		"\tBf >L10\n"
+		"\tLdSym `then-side\n"
+		"\tJmp >L12\n"
+		"L10:\n"
+		"\tLdSym `else-side\n"
+		"L12:\n";
 
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, compiler->compiledTables);
 	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));

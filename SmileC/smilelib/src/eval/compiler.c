@@ -307,7 +307,7 @@ Int Compiler_CompileExpr(Compiler compiler, SmileObject expr)
 	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 	Int startIndex = segment->numByteCodes;
 	SmileList list;
-	Int argCount;
+	Int argCount, index;
 
 	switch (SMILE_KIND(expr)) {
 
@@ -373,7 +373,6 @@ Int Compiler_CompileExpr(Compiler compiler, SmileObject expr)
 		case SMILE_KIND_FUNCTION:
 		case SMILE_KIND_HANDLE:
 		case SMILE_KIND_NONTERMINAL:
-		case SMILE_KIND_SYNTAX:
 		case SMILE_KIND_USEROBJECT:
 		case SMILE_KIND_CLOSURE:
 		case SMILE_KIND_FACADE:
@@ -396,6 +395,12 @@ Int Compiler_CompileExpr(Compiler compiler, SmileObject expr)
 		// Symbols (variables) resolve to whatever the current closure (or any base closure) says they are.
 		case SMILE_KIND_SYMBOL:
 			Compiler_CompileVariable(compiler, ((SmileSymbol)expr)->symbol, False);
+			break;
+		
+		// Syntax objects resolve to themselves, like most other special user data does.
+		case SMILE_KIND_SYNTAX:
+			index = Compiler_AddObject(compiler, expr);
+			ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, Op_LdObj)->u.index = index;
 			break;
 		
 		// In general, lists resolve by evaluating their arguments and then passing the results
@@ -1117,6 +1122,17 @@ static void Compiler_CompileQuote(Compiler compiler, SmileList args)
 		return;
 	}
 
+	if (SMILE_KIND(args->a) == SMILE_KIND_SYMBOL) {
+		// A quoted symbol can just be loaded directly.
+		ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, Op_LdSym)->u.symbol = ((SmileSymbol)args->a)->symbol;
+		return;
+	}
+	else if (SMILE_KIND(args->a) != SMILE_KIND_LIST && SMILE_KIND(args->a) != SMILE_KIND_PAIR) {
+		// It's neither a list nor a pair nor a symbol, so quoting it just results in *it*, whatever it is.
+		Compiler_CompileExpr(compiler, args->a);
+		return;
+	}
+
 	// Add the quoted form as a literal stored object.
 	objectIndex = Compiler_AddObject(compiler, args->a);
 
@@ -1139,8 +1155,15 @@ static void Compiler_CompileProg1(Compiler compiler, SmileList args)
 		Compiler_CompileExpr(compiler, args->a);
 	
 		// ...and discard its result.
-		ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, Op_Pop);
+		ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, Op_Pop1);
 	}
+}
+
+Int Compiler_CompileExprs(Compiler compiler, SmileList exprs)
+{
+	Int offset = compiler->currentFunction->byteCodeSegment->numByteCodes;
+	Compiler_CompileProgN(compiler, exprs);
+	return offset;
 }
 
 static void Compiler_CompileProgN(Compiler compiler, SmileList args)
@@ -1157,7 +1180,7 @@ static void Compiler_CompileProgN(Compiler compiler, SmileList args)
 		if (SMILE_KIND(args) != SMILE_KIND_LIST) break;
 
 		// Otherwise, discard it and move to the next expression.
-		ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, Op_Pop);
+		ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, Op_Pop1);
 	}
 }
 

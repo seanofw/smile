@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 817a9b9023a79710cb166cafecb79947
+// SourceHash: 1109e0e4d556a1344def4bdf5b98950e
 
 START_TEST_SUITE(CompilerTests)
 {
@@ -11,6 +11,8 @@ START_TEST_SUITE(CompilerTests)
 	CanCompileInt64,
 	CanCompileBasicArithmetic,
 	CanCompileMildlyInterestingArithmetic,
+	CanCompileSimpleConditionals,
+	CanCompileConditionalsAllTheWay,
 }
 END_TEST_SUITE(CompilerTests)
 
