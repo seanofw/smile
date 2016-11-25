@@ -49,7 +49,10 @@ typedef struct CompiledFunctionStruct {
 	Int functionIndex;	// The index of this function in the compiled-function list.
 	Int functionDepth;	// The number of functions deep in which this function was declared.
 	Int numArgs;	// The number of arguments to this function (derived from 'args').
-	Int localDepth;	// The current depth of the local variables.
+	Int currentLocalDepth;	// The current depth of the local variables.
+	Int localSize;	// The total number of locals required by this function.
+	Int currentStackDepth;	// The current depth of the temporary stack.
+	Int stackSize;	// The total number of stack temporaries required by this function.
 	Bool isCompiled;	// Whether this function is fully or only partially compiled.
 	SmileList args;	// This function's arguments, from its raw expression.
 	SmileObject body;	// This function's body, from its raw expression.

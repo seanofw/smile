@@ -30,14 +30,14 @@
 typedef struct ClosureInfoStruct {
 
 	struct ClosureInfoStruct *parent;	// A pointer to the parent info struct, if any.
-
+		
 	Int32Int32Dict symbolDictionary;	// A (likely heavily-shared) dictionary that maps Symbol IDs to variable indices.
-
-	Int32 numVariables;					// The number of variables in this closure's 'variables' array.
-	Int32 maxVariables;					// The current maximum number of variables in this closure's 'variables' array, if it can grow.
-
-	Bool isReadOnly;					// Whether this closure is modifiable in any way.
-	Bool canGrow;						// Whether this closure allows new variables to be added to it or can only read/write its current set.
+		
+	Int32 numVariables;	// The number of variables in this closure's 'variables' array.
+	Int32 maxVariables;	// The current maximum number of variables in this closure's 'variables' array, if it can grow.
+		
+	Bool isReadOnly;	// Whether this closure is modifiable in any way.
+	Bool canGrow;	// Whether this closure allows new variables to be added to it or can only read/write its current set.
 
 } *ClosureInfo;
 
@@ -47,9 +47,12 @@ typedef struct ClosureInfoStruct {
 /// ClosureInfo struct, to which this object points.
 /// </summary>
 typedef struct ClosureStruct {
-	struct ClosureStruct *parent;		// A pointer to the parent closure, if any.
-	ClosureInfo closureInfo;			// Shared metadata about this closure.
-	SmileObject *variables;				// The array of variables currently stored in this closure.
+
+	struct ClosureStruct *parent;	// A pointer to the parent closure, if any.
+
+	ClosureInfo closureInfo;	// Shared metadata about this closure.
+	SmileObject *variables;	// The array of variables currently stored in this closure.
+
 } *Closure;
 
 //-------------------------------------------------------------------------------------------------

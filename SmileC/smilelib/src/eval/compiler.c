@@ -58,6 +58,35 @@ static void Compiler_CompileAnd(Compiler compiler, SmileList args);
 static void Compiler_CompileOr(Compiler compiler, SmileList args);
 static void Compiler_CompileNot(Compiler compiler, SmileList args);
 
+#define EMIT0(__opcode__, __stackDelta__) \
+	((byteCode = ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, (__opcode__))), \
+		ApplyStackDelta(compiler->currentFunction, __stackDelta__), \
+		byteCode)
+		
+#define EMIT1(__opcode__, __stackDelta__, __operand1__) \
+	((byteCode = ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, (__opcode__))), \
+		byteCode->u.__operand1__, \
+		ApplyStackDelta(compiler->currentFunction, __stackDelta__), \
+		byteCode)
+
+#define EMIT2(__opcode__, __stackDelta__, __operand1__, __operand2__) \
+	((byteCode = ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, (__opcode__))), \
+		byteCode->u.__operand1__, \
+		byteCode->u.__operand2__, \
+		ApplyStackDelta(compiler->currentFunction, __stackDelta__), \
+		byteCode)
+
+Inline Int ApplyStackDelta(CompiledFunction compiledFunction, Int stackDelta)
+{
+	compiledFunction->currentStackDepth += stackDelta;
+
+	if (compiledFunction->currentStackDepth > compiledFunction->stackSize) {
+		compiledFunction->stackSize = compiledFunction->currentStackDepth;
+	}
+
+	return 0;
+}
+
 /// <summary>
 /// Create a new CompiledTables object.
 /// </summary>
@@ -132,7 +161,9 @@ CompiledFunction Compiler_BeginFunction(Compiler compiler, SmileList args, Smile
 	newFunction->numArgs = 0;
 	newFunction->isCompiled = False;
 	newFunction->parent = compiler->currentFunction;
-	newFunction->localDepth = 0;
+	newFunction->currentLocalDepth = 0;
+	newFunction->localSize = 0;
+	newFunction->stackSize = 0;
 	newFunction->functionDepth = compiler->currentFunction != NULL ? compiler->currentFunction->functionDepth + 1 : 0;
 
 	// Do we have enough space to add it?  If not, reallocate.
@@ -308,41 +339,42 @@ Int Compiler_CompileExpr(Compiler compiler, SmileObject expr)
 	Int startIndex = segment->numByteCodes;
 	SmileList list;
 	Int argCount, index;
+	ByteCode byteCode;
 
 	switch (SMILE_KIND(expr)) {
 
 		// Primitive constants.
 		case SMILE_KIND_NULL:
-			ByteCodeSegment_Emit(segment, Op_LdNull);
+			EMIT0(Op_LdNull, +1);
 			break;
 		case SMILE_KIND_BOOL:
-			ByteCodeSegment_Emit(segment, Op_LdBool)->u.boolean = ((SmileBool)expr)->value;
+			EMIT1(Op_LdBool, +1, boolean = ((SmileBool)expr)->value);
 			break;
 		case SMILE_KIND_CHAR:
-			ByteCodeSegment_Emit(segment, Op_LdCh)->u.ch = ((SmileChar)expr)->value;
+			EMIT1(Op_LdCh, +1, ch = ((SmileChar)expr)->value);
 			break;
 		case SMILE_KIND_UCHAR:
-			ByteCodeSegment_Emit(segment, Op_LdUCh)->u.uch = ((SmileUChar)expr)->value;
+			EMIT1(Op_LdUCh, +1, uch = ((SmileUChar)expr)->value);
 			break;
 		case SMILE_KIND_STRING:
-			ByteCodeSegment_Emit(segment, Op_LdStr)->u.index = Compiler_AddString(compiler, (String)&((SmileString)expr)->string);
+			EMIT1(Op_LdStr, +1, index = Compiler_AddString(compiler, (String)&((SmileString)expr)->string));
 			break;
 		case SMILE_KIND_OBJECT:
-			ByteCodeSegment_Emit(segment, Op_LdObj)->u.index = Compiler_AddObject(compiler, Smile_KnownObjects.Object);
+			EMIT1(Op_LdObj, +1, index = Compiler_AddObject(compiler, Smile_KnownObjects.Object));
 			break;
 
 		// Integer constants evaluate to themselves.
 		case SMILE_KIND_BYTE:
-			ByteCodeSegment_Emit(segment, Op_Ld8)->u.byte = ((SmileByte)expr)->value;
+			EMIT1(Op_Ld8, +1, byte = ((SmileByte)expr)->value);
 			break;
 		case SMILE_KIND_INTEGER16:
-			ByteCodeSegment_Emit(segment, Op_Ld16)->u.int16 = ((SmileInteger16)expr)->value;
+			EMIT1(Op_Ld16, +1, int16 = ((SmileInteger16)expr)->value);
 			break;
 		case SMILE_KIND_INTEGER32:
-			ByteCodeSegment_Emit(segment, Op_Ld32)->u.int32 = ((SmileInteger32)expr)->value;
+			EMIT1(Op_Ld32, +1, int32 = ((SmileInteger32)expr)->value);
 			break;
 		case SMILE_KIND_INTEGER64:
-			ByteCodeSegment_Emit(segment, Op_Ld64)->u.int64 = ((SmileInteger64)expr)->value;
+			EMIT1(Op_Ld64, +1, int64 = ((SmileInteger64)expr)->value);
 			break;
 		case SMILE_KIND_INTEGER128:
 			Smile_Abort_FatalError("Integer128 is not yet supported.");
@@ -400,7 +432,7 @@ Int Compiler_CompileExpr(Compiler compiler, SmileObject expr)
 		// Syntax objects resolve to themselves, like most other special user data does.
 		case SMILE_KIND_SYNTAX:
 			index = Compiler_AddObject(compiler, expr);
-			ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, Op_LdObj)->u.index = index;
+			EMIT1(Op_LdObj, +1, index = index);
 			break;
 		
 		// In general, lists resolve by evaluating their arguments and then passing the results
@@ -443,7 +475,7 @@ Int Compiler_CompileExpr(Compiler compiler, SmileObject expr)
 					//   3.  Otherwise, if it does not have an 'fn' method, then Call attempts to invoke
 					//        [x.does-not-understand `fn ...] on it.
 					//   4.  Otherwise, if it does not have a 'does-not-understand' method, a run-time exception is thrown.
-					ByteCodeSegment_Emit(segment, Op_Call)->u.index = argCount;
+					EMIT1(Op_Call, +1 - argCount, index = argCount);
 					break;
 			}
 			break;
@@ -458,8 +490,8 @@ Int Compiler_CompileExpr(Compiler compiler, SmileObject expr)
 
 static void Compiler_CompileProperty(Compiler compiler, SmilePair pair, Bool store)
 {
-	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 	Symbol symbol;
+	ByteCode byteCode;
 
 	if (SMILE_KIND(pair->right) != SMILE_KIND_SYMBOL) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmilePair_GetSourceLocation(pair),
@@ -471,19 +503,28 @@ static void Compiler_CompileProperty(Compiler compiler, SmilePair pair, Bool sto
 
 	// Extract the property named by the symbol on the right side, leaving the property's value on the stack.
 	symbol = ((SmileSymbol)(pair->right))->symbol;
-	ByteCodeSegment_Emit(segment, (store ? Op_StProp : Op_LdProp))->u.symbol = symbol;
+	if (store) {
+		EMIT1(Op_StProp, -2, symbol = symbol);
+	}
+	else {
+		EMIT1(Op_LdProp, -1+1, symbol = symbol);
+	}
 }
 
 static void Compiler_CompileVariable(Compiler compiler, Symbol symbol, Bool store)
 {
 	ByteCode byteCode;
 	Int functionDepth;
-	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 	CompiledLocalSymbol localSymbol = CompileScope_FindSymbol(compiler->currentScope, symbol);
 
 	if (localSymbol == NULL) {
 		// Don't know what this is, so it comes from an outer closure.
-		ByteCodeSegment_Emit(segment, (store ? Op_StX : Op_LdX))->u.symbol = symbol;
+		if (store) {
+			EMIT1(Op_StX, -1, symbol = symbol);
+		}
+		else {
+			EMIT1(Op_LdX, +1, symbol = symbol);
+		}
 		return;
 	}
 
@@ -493,24 +534,39 @@ static void Compiler_CompileVariable(Compiler compiler, Symbol symbol, Bool stor
 
 		case PARSEDECL_ARGUMENT:
 			if (functionDepth <= 7) {
-				byteCode = ByteCodeSegment_Emit(segment, (store ? Op_StArg0 : Op_LdArg0) + functionDepth);
+				if (store) {
+					EMIT0(Op_StArg0 + functionDepth, 0);	// Leaves the value on the stack.
+				}
+				else {
+					EMIT0(Op_LdArg0 + functionDepth, +1);
+				}
 			}
 			else {
-				byteCode = ByteCodeSegment_Emit(segment, (store ? Op_StArg : Op_LdArg));
-				byteCode->u.i2.a = functionDepth;
-				byteCode->u.i2.b = localSymbol->index;
+				if (store) {
+					EMIT2(Op_StArg, 0, i2.a = functionDepth, i2.b = localSymbol->index);	// Leaves the value on the stack.
+				}
+				else {
+					EMIT2(Op_LdArg, +1, i2.a = functionDepth, i2.b = localSymbol->index);
+				}
 			}
 			break;
 
 		case PARSEDECL_VARIABLE:
 			if (functionDepth <= 7) {
-				byteCode = ByteCodeSegment_Emit(segment, (store ? Op_StLoc0 : Op_LdLoc0) + functionDepth);
-				byteCode->u.index = localSymbol->index;
+				if (store) {
+					EMIT1(Op_StLoc0 + functionDepth, 0, index = localSymbol->index);	// Leaves the value on the stack.
+				}
+				else {
+					EMIT1(Op_LdLoc0 + functionDepth, +1, index = localSymbol->index);
+				}
 			}
 			else {
-				byteCode = ByteCodeSegment_Emit(segment, (store ? Op_StLoc : Op_LdLoc));
-				byteCode->u.i2.a = functionDepth;
-				byteCode->u.i2.b = localSymbol->index;
+				if (store) {
+					EMIT2(Op_StLoc, 0, i2.a = functionDepth, i2.b = localSymbol->index);	// Leaves the value on the stack.
+				}
+				else {
+					EMIT2(Op_LdLoc, +1, i2.a = functionDepth, i2.b = localSymbol->index);
+				}
 			}
 			break;
 
@@ -551,17 +607,15 @@ static void Compiler_CompileMethodCall(Compiler compiler, SmilePair pair, SmileL
 	if (length <= 7) {
 		// If this is the special get-member method, use the special fast instruction for that.
 		if (length == 1 && symbol == Smile_KnownSymbols.get_member) {
-			ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, Op_LdMember);
+			EMIT0(Op_LdMember, -2 + 1);
 		}
 		else {
 			// Use a short form.
-			ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, Op_Met0 + length)->u.symbol = symbol;
+			EMIT1(Op_Met0 + length, -(length + 1) + 1, symbol = symbol);
 		}
 	}
 	else {
-		byteCode = ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, Op_Met);
-		byteCode->u.i2.a = length;
-		byteCode->u.i2.b = (Int32)symbol;
+		EMIT2(Op_Met, -(length + 1) + 1, i2.a = length, i2.b = (Int32)symbol);
 	}
 }
 
@@ -653,6 +707,7 @@ static void Compiler_CompileSetf(Compiler compiler, SmileList args)
 	SmileObject dest, value, index;
 	SmilePair pair;
 	Symbol symbol;
+	ByteCode byteCode;
 
 	// There are three possible legal forms for the arguments:
 	//
@@ -707,7 +762,7 @@ static void Compiler_CompileSetf(Compiler compiler, SmileList args)
 			Compiler_CompileExpr(compiler, value);
 		
 			// Assign the property.
-			ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, Op_StProp)->u.symbol = symbol;
+			EMIT1(Op_StProp, -1, symbol = symbol);	// Leaves the value on the stack.
 			break;
 		
 		case SMILE_KIND_LIST:
@@ -731,7 +786,7 @@ static void Compiler_CompileSetf(Compiler compiler, SmileList args)
 			Compiler_CompileExpr(compiler, pair->left);
 			Compiler_CompileExpr(compiler, index);
 			Compiler_CompileExpr(compiler, value);
-			ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, Op_StMember);
+			EMIT0(Op_StMember, -3);	// Leaves the value on the stack.
 			break;
 		
 		default:
@@ -776,6 +831,7 @@ static void Compiler_CompileIf(Compiler compiler, SmileList args)
 	Int bfOffset, bfLabelOffset, bfDelta;
 	Int jmpOffset, jmpLabelOffset, jmpDelta;
 	ByteCode bf, jmp, bfLabel, jmpLabel;
+	ByteCode byteCode;
 
 	segment = compiler->currentFunction->byteCodeSegment;
 
@@ -830,15 +886,18 @@ static void Compiler_CompileIf(Compiler compiler, SmileList args)
 
 	// Emit the conditional logic.
 	bfOffset = segment->numByteCodes;
-	bf = ByteCodeSegment_Emit(segment, Op_Bf);
+	bf = EMIT0(Op_Bf, -1);
 	Compiler_CompileExpr(compiler, thenClause);
 	jmpOffset = segment->numByteCodes;
-	jmp = ByteCodeSegment_Emit(segment, Op_Jmp);
+	jmp = EMIT0(Op_Jmp, 0);
 	bfLabelOffset = segment->numByteCodes;
-	bfLabel = ByteCodeSegment_Emit(segment, Op_Label);
+	bfLabel = EMIT0(Op_Label, 0);
 	Compiler_CompileExpr(compiler, elseClause);
 	jmpLabelOffset = segment->numByteCodes;
-	jmpLabel = ByteCodeSegment_Emit(segment, Op_Label);
+	jmpLabel = EMIT0(Op_Label, 0);
+
+	// By the time we reach this point, only 'then' or 'else' will be left on the stack.
+	compiler->currentFunction->currentStackDepth--;
 
 	// Fill in the relative branch targets.
 	bfDelta = bfLabelOffset - bfOffset;
@@ -858,6 +917,7 @@ static void Compiler_CompileWhile(Compiler compiler, SmileList args)
 	Int bOffset, bLabelOffset, bDelta;
 	Int jmpOffset, jmpLabelOffset, jmpDelta;
 	ByteCode b, jmp, bLabel, jmpLabel;
+	ByteCode byteCode;
 
 	segment = compiler->currentFunction->byteCodeSegment;
 
@@ -915,27 +975,32 @@ static void Compiler_CompileWhile(Compiler compiler, SmileList args)
 		//   l1: eval stmts1
 		//       eval cond
 		//       branch l2
+		//		pop1
 		//       eval stmts2
+		//		pop1
 		//       jmp l1
 		//   l2:
 
 		jmpLabelOffset = segment->numByteCodes;
-		jmpLabel = ByteCodeSegment_Emit(segment, Op_Label);
-
+		jmpLabel = EMIT0(Op_Label, 0);
+	
 		Compiler_CompileExpr(compiler, preClause);
 
 		Compiler_CompileExpr(compiler, condition);
 
 		bOffset = segment->numByteCodes;
-		b = ByteCodeSegment_Emit(segment, not ? Op_Bf : Op_Bt);
+		b = EMIT0(not ? Op_Bf : Op_Bt, -1);
 	
+		EMIT0(Op_Pop1, -1);
+
 		Compiler_CompileExpr(compiler, postClause);
+		EMIT0(Op_Pop1, -1);
 
 		jmpOffset = segment->numByteCodes;
-		jmp = ByteCodeSegment_Emit(segment, Op_Jmp);
-
+		jmp = EMIT0(Op_Jmp, 0);
+	
 		bLabelOffset = segment->numByteCodes;
-		bLabel = ByteCodeSegment_Emit(segment, Op_Label);
+		bLabel = EMIT0(Op_Label, 0);
 
 		bDelta = bLabelOffset - bOffset;
 		b->u.index = bDelta;
@@ -944,52 +1009,79 @@ static void Compiler_CompileWhile(Compiler compiler, SmileList args)
 		jmpDelta = jmpLabelOffset - jmpOffset;
 		jmp->u.index = jmpDelta;
 		jmpLabel->u.index = -jmpDelta;
+	
+		// By the time we reach this point, one iteration will be left on the stack.
+		compiler->currentFunction->currentStackDepth++;
 	}
 	else if (hasPre) {
 		// Form: do {...} while cond
 		//
 		// Emit this in order of:
+		//       jmp l1
+		//   l2: pop1
 		//   l1: eval stmts
 		//       eval cond
-		//       branch l1
+		//       branch l2
+	
+		jmpOffset = segment->numByteCodes;
+		jmp = EMIT0(Op_Jmp, 0);
 
 		bLabelOffset = segment->numByteCodes;
-		bLabel = ByteCodeSegment_Emit(segment, Op_Label);
+		bLabel = EMIT0(Op_Label, 0);
 	
+		EMIT0(Op_Pop1, -1);
+
+		jmpLabelOffset = segment->numByteCodes;
+		jmpLabel = EMIT0(Op_Label, 0);
+
 		Compiler_CompileExpr(compiler, preClause);
+
 		Compiler_CompileExpr(compiler, condition);
 
 		bOffset = segment->numByteCodes;
-		b = ByteCodeSegment_Emit(segment, not ? Op_Bf : Op_Bt);
-
+		b = EMIT0(not ? Op_Bf : Op_Bt, -1);
+	
 		bDelta = bLabelOffset - bOffset;
 		b->u.index = bDelta;
 		bLabel->u.index = -bDelta;
+	
+		jmpDelta = jmpLabelOffset - jmpOffset;
+		jmp->u.index = jmpDelta;
+		jmpLabel->u.index = -jmpDelta;
+
+		// By the time we reach this point, one iteration will be left on the stack.
+		compiler->currentFunction->currentStackDepth++;
 	}
 	else if (hasPost) {
 		// Form: while cond do {...}
 		//
 		// Emit this in order of:
+		//       ldnull
 		//       jmp l1
-		//   l2: eval stmts
+		//   l2: pop1
+		//       eval stmts
 		//   l1: eval cond
 		//       branch l2
 	
+		EMIT0(Op_LdNull, +1);
+	
 		jmpOffset = segment->numByteCodes;
-		jmp = ByteCodeSegment_Emit(segment, Op_Jmp);
+		jmp = EMIT0(Op_Jmp, 0);
 	
 		bLabelOffset = segment->numByteCodes;
-		bLabel = ByteCodeSegment_Emit(segment, Op_Label);
+		bLabel = EMIT0(Op_Label, 0);
 	
+		EMIT0(Op_Pop1, -1);
+
 		Compiler_CompileExpr(compiler, postClause);
 
 		jmpLabelOffset = segment->numByteCodes;
-		jmpLabel = ByteCodeSegment_Emit(segment, Op_Label);
+		jmpLabel = EMIT0(Op_Label, 0);
 	
 		Compiler_CompileExpr(compiler, condition);
 
 		bOffset = segment->numByteCodes;
-		b = ByteCodeSegment_Emit(segment, not ? Op_Bf : Op_Bt);
+		b = EMIT0(not ? Op_Bf : Op_Bt, -1);
 	
 		bDelta = bLabelOffset - bOffset;
 		b->u.index = bDelta;
@@ -1005,14 +1097,17 @@ static void Compiler_CompileWhile(Compiler compiler, SmileList args)
 		// Emit this in order of:
 		//   l1: eval cond
 		//       branch l1
+		//       ldnull
 
 		bLabelOffset = segment->numByteCodes;
-		bLabel = ByteCodeSegment_Emit(segment, Op_Label);
+		bLabel = EMIT0(Op_Label, 0);
 	
 		Compiler_CompileExpr(compiler, condition);
 
 		bOffset = segment->numByteCodes;
-		b = ByteCodeSegment_Emit(segment, not ? Op_Bf : Op_Bt);
+		b = EMIT0(not ? Op_Bf : Op_Bt, -1);
+	
+		EMIT0(Op_LdNull, +1);
 	
 		bDelta = bLabelOffset - bOffset;
 		b->u.index = bDelta;
@@ -1034,10 +1129,12 @@ static void Compiler_CompileCatch(Compiler compiler, SmileList args)
 
 static void Compiler_CompileReturn(Compiler compiler, SmileList args)
 {
+	ByteCode byteCode;
+
 	if (SMILE_KIND(args) == SMILE_KIND_NULL) {
 		// Naked [$return], so we're implicitly returning null.
-		ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, Op_LdNull);
-		ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, Op_Ret);
+		EMIT0(Op_LdNull, +1);
+		EMIT0(Op_Ret, -1);
 	}
 	else if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_NULL) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
@@ -1049,7 +1146,7 @@ static void Compiler_CompileReturn(Compiler compiler, SmileList args)
 		Compiler_CompileExpr(compiler, args->a);
 	
 		// ...and return it.
-		ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, Op_Ret);
+		EMIT0(Op_Ret, -1);
 	}
 }
 
@@ -1060,6 +1157,7 @@ static void Compiler_CompileFn(Compiler compiler, SmileList args)
 	SmileList functionArgs, temp;
 	SmileObject functionBody;
 	Int numFunctionArgs;
+	ByteCode byteCode;
 
 	// The [$fn] expression must be of the form:  [$fn [args...] body].
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->a) != SMILE_KIND_LIST
@@ -1096,25 +1194,26 @@ static void Compiler_CompileFn(Compiler compiler, SmileList args)
 
 	// If this function has arguments, emit an 'args' instruction to ensure at least that many arguments exist.
 	if (numFunctionArgs > 0) {
-		ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, Op_Args)->u.index = numFunctionArgs;
+		EMIT1(Op_Args, 0, index = numFunctionArgs);
 	}
 
 	// Compile the body.
 	Compiler_CompileExpr(compiler, functionBody);
 
 	// Emit a return instruction at the end.
-	ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, Op_Ret);
+	EMIT0(Op_Ret, -1);
 
 	// We're done compiling this function.
 	Compiler_EndFunction(compiler);
 
 	// Finally, emit an instruction to load a new instance of this function onto its parent's stack.
-	ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, Op_NewFn)->u.index = compiledFunction->functionIndex;
+	EMIT1(Op_NewFn, 1, index = compiledFunction->functionIndex);
 }
 
 static void Compiler_CompileQuote(Compiler compiler, SmileList args)
 {
 	Int objectIndex;
+	ByteCode byteCode;
 
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_NULL) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
@@ -1124,7 +1223,7 @@ static void Compiler_CompileQuote(Compiler compiler, SmileList args)
 
 	if (SMILE_KIND(args->a) == SMILE_KIND_SYMBOL) {
 		// A quoted symbol can just be loaded directly.
-		ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, Op_LdSym)->u.symbol = ((SmileSymbol)args->a)->symbol;
+		EMIT1(Op_LdSym, +1, symbol = ((SmileSymbol)args->a)->symbol);
 		return;
 	}
 	else if (SMILE_KIND(args->a) != SMILE_KIND_LIST && SMILE_KIND(args->a) != SMILE_KIND_PAIR) {
@@ -1137,11 +1236,13 @@ static void Compiler_CompileQuote(Compiler compiler, SmileList args)
 	objectIndex = Compiler_AddObject(compiler, args->a);
 
 	// Add an instruction to load it.
-	ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, Op_LdObj);
+	EMIT1(Op_LdObj, +1, index = objectIndex);
 }
 
 static void Compiler_CompileProg1(Compiler compiler, SmileList args)
 {
+	ByteCode byteCode;
+
 	if (SMILE_KIND(args) != SMILE_KIND_LIST)
 		return;
 
@@ -1155,7 +1256,7 @@ static void Compiler_CompileProg1(Compiler compiler, SmileList args)
 		Compiler_CompileExpr(compiler, args->a);
 	
 		// ...and discard its result.
-		ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, Op_Pop1);
+		EMIT0(Op_Pop1, -1);
 	}
 }
 
@@ -1168,6 +1269,8 @@ Int Compiler_CompileExprs(Compiler compiler, SmileList exprs)
 
 static void Compiler_CompileProgN(Compiler compiler, SmileList args)
 {
+	ByteCode byteCode;
+
 	if (SMILE_KIND(args) != SMILE_KIND_LIST)
 		return;
 
@@ -1180,7 +1283,7 @@ static void Compiler_CompileProgN(Compiler compiler, SmileList args)
 		if (SMILE_KIND(args) != SMILE_KIND_LIST) break;
 
 		// Otherwise, discard it and move to the next expression.
-		ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, Op_Pop1);
+		EMIT0(Op_Pop1, -1);
 	}
 }
 
@@ -1189,6 +1292,7 @@ static void Compiler_CompileScope(Compiler compiler, SmileList args)
 	CompileScope scope;
 	SmileList scopeVars, temp;
 	Int numScopeVars;
+	ByteCode byteCode;
 
 	// The [$scope] expression must be of the form:  [$scope [locals...] ...].
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->a) != SMILE_KIND_LIST
@@ -1219,15 +1323,18 @@ static void Compiler_CompileScope(Compiler compiler, SmileList args)
 	}
 
 	// Allocate more space on the stack for these locals.
-	ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, Op_LocalAlloc)->u.index = numScopeVars;
-	compiler->currentFunction->localDepth += numScopeVars;
+	EMIT1(Op_LocalAlloc, 0, index = numScopeVars);
+	compiler->currentFunction->currentLocalDepth += numScopeVars;
+	if (compiler->currentFunction->currentLocalDepth > compiler->currentFunction->localSize) {
+		compiler->currentFunction->localSize = compiler->currentFunction->currentLocalDepth;
+	}
 
 	// Compile the rest of the [scope] as though it was just a [progn].
 	Compiler_CompileProgN(compiler, (SmileList)args->d);
 
 	// Free the local variables, now that we no longer need them.
-	ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, Op_LocalFree)->u.index = numScopeVars;
-	compiler->currentFunction->localDepth -= numScopeVars;
+	EMIT1(Op_LocalFree, 0, index = numScopeVars);
+	compiler->currentFunction->currentLocalDepth -= numScopeVars;
 
 	Compiler_EndScope(compiler);
 }
@@ -1238,7 +1345,7 @@ static void Compiler_CompileNew(Compiler compiler, SmileList args)
 	SmileList pairs, pair;
 	Symbol symbol;
 	SmileObject value;
-	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
+	ByteCode byteCode;
 
 	// Must be an expression of the form: [$new base [[sym1 val1] [sym2 val2] [sym3 val3] ...]]
 	if (SmileList_Length(args) != 2) {
@@ -1265,7 +1372,7 @@ static void Compiler_CompileNew(Compiler compiler, SmileList args)
 		}
 		symbol = ((SmileSymbol)pair->a)->symbol;
 		value = LIST_SECOND(pair);
-		ByteCodeSegment_Emit(segment, Op_LdSym)->u.symbol = symbol;
+		EMIT1(Op_LdSym, +1, symbol = symbol);
 		Compiler_CompileExpr(compiler, value);
 	}
 	if (SMILE_KIND(pairs) != SMILE_KIND_NULL) {
@@ -1275,11 +1382,13 @@ static void Compiler_CompileNew(Compiler compiler, SmileList args)
 	}
 
 	// Create the new object.
-	ByteCodeSegment_Emit(segment, Op_NewObj)->u.int32 = numPairs;
+	EMIT1(Op_NewObj, +1 - (numPairs * 2 + 1), int32 = numPairs);
 }
 
 static void Compiler_CompileIs(Compiler compiler, SmileList args)
 {
+	ByteCode byteCode;
+
 	// Must be an expression of the form [$is x y].
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_LIST
 		|| SMILE_KIND(((SmileList)args->d)->d) != SMILE_KIND_NULL) {
@@ -1295,11 +1404,13 @@ static void Compiler_CompileIs(Compiler compiler, SmileList args)
 	Compiler_CompileExpr(compiler, ((SmileList)args->d)->a);
 
 	// Add an instruction to perform inheritance comparison on the result.
-	ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, Op_Is);
+	EMIT0(Op_Is, -2 + 1);
 }
 
 static void Compiler_CompileTypeOf(Compiler compiler, SmileList args)
 {
+	ByteCode byteCode;
+
 	// Must be an expression of the form [$typeof x].
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_NULL) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
@@ -1311,11 +1422,13 @@ static void Compiler_CompileTypeOf(Compiler compiler, SmileList args)
 	Compiler_CompileExpr(compiler, args->a);
 
 	// Add an instruction to get the type symbol for this object.
-	ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, Op_TypeOf);
+	EMIT0(Op_TypeOf, -1 + 1);
 }
 
 static void Compiler_CompileSuperEq(Compiler compiler, SmileList args)
 {
+	ByteCode byteCode;
+
 	// Must be an expression of the form [$eq x y].
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_LIST
 		|| SMILE_KIND(((SmileList)args->d)->d) != SMILE_KIND_NULL) {
@@ -1331,11 +1444,13 @@ static void Compiler_CompileSuperEq(Compiler compiler, SmileList args)
 	Compiler_CompileExpr(compiler, ((SmileList)args->d)->a);
 
 	// Add an instruction to perform reference comparison on the result.
-	ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, Op_SuperEq);
+	EMIT0(Op_SuperEq, -2 + 1);
 }
 
 static void Compiler_CompileSuperNe(Compiler compiler, SmileList args)
 {
+	ByteCode byteCode;
+
 	// Must be an expression of the form [$ne x y].
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_LIST
 		|| SMILE_KIND(((SmileList)args->d)->d) != SMILE_KIND_NULL) {
@@ -1351,7 +1466,7 @@ static void Compiler_CompileSuperNe(Compiler compiler, SmileList args)
 	Compiler_CompileExpr(compiler, ((SmileList)args->d)->a);
 
 	// Add an instruction to perform reference comparison on the result.
-	ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, Op_SuperNe);
+	EMIT0(Op_SuperNe, -2 + 1);
 }
 
 static void Compiler_CompileAnd(Compiler compiler, SmileList args)
@@ -1369,6 +1484,7 @@ static void Compiler_CompileAnd(Compiler compiler, SmileList args)
 	Int falseOffset;
 	ByteCode jmpByteCode, jmpLabelByteCode;
 	Int jmpOffset, jmpLabelOffset, jmpDelta;
+	ByteCode byteCode;
 
 	// Must be a well-formed expression of the form [$and x y z ...].
 	if ((length = SmileList_Length(args)) <= 0) {
@@ -1401,23 +1517,23 @@ static void Compiler_CompileAnd(Compiler compiler, SmileList args)
 	
 		// If falsy, branch to result in 'false'.
 		bfOffsets[i] = segment->numByteCodes;
-		bfByteCodes[i] = ByteCodeSegment_Emit(segment, not ? Op_Bt : Op_Bf);
+		bfByteCodes[i] = EMIT0(not ? Op_Bt : Op_Bf, -1);
 	
 		// It's truthy, so keep going.
 	}
 
 	// We passed all the tests, so the result is true.
-	ByteCodeSegment_Emit(segment, Op_LdBool)->u.boolean = True;
+	EMIT1(Op_LdBool, +1, boolean = True);
 	jmpOffset = segment->numByteCodes;
-	jmpByteCode = ByteCodeSegment_Emit(segment, Op_Jmp);
+	jmpByteCode = EMIT0(Op_Jmp, 0);
 
 	// Now handle the falsy case.
 	falseOffset = segment->numByteCodes;
-	ByteCodeSegment_Emit(segment, Op_LdBool)->u.boolean = False;
+	EMIT1(Op_LdBool, +1, boolean = False);
 
 	// Add a branch target for the jump.
 	jmpLabelOffset = segment->numByteCodes;
-	jmpLabelByteCode = ByteCodeSegment_Emit(segment, Op_Label);
+	jmpLabelByteCode = EMIT0(Op_Label, 0);
 
 	// Now fill in all the branch deltas for the conditional branches.
 	for (i = 0; i < length; i++) {
@@ -1428,6 +1544,8 @@ static void Compiler_CompileAnd(Compiler compiler, SmileList args)
 	jmpDelta = jmpLabelOffset - jmpOffset;
 	jmpByteCode->u.index = jmpDelta;
 	jmpLabelByteCode->u.index = -jmpDelta;
+
+	compiler->currentFunction->currentStackDepth--;	// We actually have one fewer on the stack than the automatic count.
 }
 
 static void Compiler_CompileOr(Compiler compiler, SmileList args)
@@ -1445,6 +1563,7 @@ static void Compiler_CompileOr(Compiler compiler, SmileList args)
 	Int trueOffset;
 	ByteCode jmpByteCode, jmpLabelByteCode;
 	Int jmpOffset, jmpLabelOffset, jmpDelta;
+	ByteCode byteCode;
 
 	// Must be a well-formed expression of the form [$or x y z ...].
 	if ((length = SmileList_Length(args)) <= 0) {
@@ -1477,23 +1596,23 @@ static void Compiler_CompileOr(Compiler compiler, SmileList args)
 
 		// If truthy, branch to result in 'true'.
 		btOffsets[i] = segment->numByteCodes;
-		btByteCodes[i] = ByteCodeSegment_Emit(segment, not ? Op_Bf : Op_Bt);
+		btByteCodes[i] = EMIT0(not ? Op_Bf : Op_Bt, -1);
 	
 		// It's truthy, so keep going.
 	}
 
 	// We failed all the tests, so the result is false.
-	ByteCodeSegment_Emit(segment, Op_LdBool)->u.boolean = False;
+	EMIT1(Op_LdBool, +1, boolean = False);
 	jmpOffset = segment->numByteCodes;
-	jmpByteCode = ByteCodeSegment_Emit(segment, Op_Jmp);
+	jmpByteCode = EMIT0(Op_Jmp, 0);
 
 	// Now handle the truthy case.
 	trueOffset = segment->numByteCodes;
-	ByteCodeSegment_Emit(segment, Op_LdBool)->u.boolean = True;
+	EMIT1(Op_LdBool, +1, boolean = True);
 
 	// Add a branch target for the jump.
 	jmpLabelOffset = segment->numByteCodes;
-	jmpLabelByteCode = ByteCodeSegment_Emit(segment, Op_Label);
+	jmpLabelByteCode = EMIT0(Op_Label, 0);
 
 	// Now fill in all the branch deltas for the conditional branches.
 	for (i = 0; i < length; i++) {
@@ -1504,10 +1623,14 @@ static void Compiler_CompileOr(Compiler compiler, SmileList args)
 	jmpDelta = jmpLabelOffset - jmpOffset;
 	jmpByteCode->u.index = jmpDelta;
 	jmpLabelByteCode->u.index = -jmpDelta;
+
+	compiler->currentFunction->currentStackDepth--;	// We actually have one fewer on the stack than the automatic count.
 }
 
 static void Compiler_CompileNot(Compiler compiler, SmileList args)
 {
+	ByteCode byteCode;
+
 	// Must be an expression of the form [$not x].
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_NULL) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
@@ -1519,5 +1642,5 @@ static void Compiler_CompileNot(Compiler compiler, SmileList args)
 	Compiler_CompileExpr(compiler, args->a);
 
 	// Add an instruction to convert to boolean and then invert the result.
-	ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, Op_Not);
+	EMIT0(Op_Not, -1 + 1);
 }

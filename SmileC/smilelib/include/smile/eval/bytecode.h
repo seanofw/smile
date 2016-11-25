@@ -56,8 +56,8 @@ typedef struct ByteCodeStruct {
 /// </summary>
 typedef struct ByteCodeSegmentStruct {
 	ByteCode byteCodes;
-	Int numByteCodes;
-	Int maxByteCodes;
+	Int32 numByteCodes;
+	Int32 maxByteCodes;
 } *ByteCodeSegment;
 
 //-------------------------------------------------------------------------------------------------
