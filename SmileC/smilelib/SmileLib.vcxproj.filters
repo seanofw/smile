@@ -789,6 +789,9 @@
     <ClCompile Include="src\smiletypes\numeric\smileinteger128.c">
       <Filter>src\smiletypes\numeric</Filter>
     </ClCompile>
+    <ClCompile Include="src\eval\costack.c">
+      <Filter>src\eval</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">
@@ -1116,6 +1119,9 @@
       <Filter>include\eval</Filter>
     </ClInclude>
     <ClInclude Include="include\smile\eval\bytecode.h">
+      <Filter>include\eval</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\eval\costack.h">
       <Filter>include\eval</Filter>
     </ClInclude>
   </ItemGroup>

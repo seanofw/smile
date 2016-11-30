@@ -118,6 +118,7 @@
     <ClCompile Include="env\symboltable_tests.c" />
     <ClCompile Include="eval\bytecode_tests.c" />
     <ClCompile Include="eval\compiler_tests.c" />
+    <ClCompile Include="eval\eval_tests.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="numeric\real128_tests.c" />
     <ClCompile Include="numeric\real32_tests.c" />

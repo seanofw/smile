@@ -102,6 +102,9 @@
     <ClCompile Include="eval\compiler_tests.c">
       <Filter>eval</Filter>
     </ClCompile>
+    <ClCompile Include="eval\eval_tests.c">
+      <Filter>eval</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />

@@ -17,6 +17,8 @@
 
 #include <smile/env/closure.h>
 
+#if 0
+
 /// <summary>
 /// Create a new ClosureInfo struct, which contains metadata about a closure.
 /// </summary>
@@ -202,3 +204,5 @@ Bool Closure_Has(Closure closure, Symbol name)
 	// Didn't find it.
 	return False;
 }
+
+#endif

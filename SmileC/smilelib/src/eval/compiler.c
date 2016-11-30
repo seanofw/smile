@@ -315,6 +315,41 @@ Int Compiler_AddObject(Compiler compiler, SmileObject obj)
 }
 
 /// <summary>
+/// Compile expressions in the global scope, creating a new global function for them.
+/// </summary>
+/// <param name="compiler">The compiler that will be compiling these expressions.</param>
+/// <param name="exprs">The expressions to compile.</param>
+/// <returns>The resulting compiled function.</returns>
+CompiledFunction Compiler_CompileGlobal(Compiler compiler, SmileList exprs)
+{
+	ByteCode byteCode;
+	SmileObject body;
+	CompiledFunction compiledFunction;
+	Int length;
+	
+	length = SmileList_Length(exprs);
+	if (length <= 0) {
+		body = NullObject;
+	}
+	else if (length == 1) {
+		body = exprs->a;
+	}
+	else {
+		body = (SmileObject)LIST_CONS(SMILE_SPECIAL_SYMBOL__PROGN, exprs);
+	}
+
+	compiledFunction = Compiler_BeginFunction(compiler, NullList, body);
+
+	Compiler_CompileExpr(compiler, body);
+
+	EMIT0(Op_Ret, -1);
+
+	Compiler_EndFunction(compiler);
+
+	return compiledFunction;
+}
+
+/// <summary>
 /// Compile the given *single* expression.
 /// </summary>
 /// <param name="compiler">The compiler that will be compiling this expression.</param>

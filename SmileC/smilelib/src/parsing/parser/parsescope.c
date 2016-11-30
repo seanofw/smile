@@ -45,11 +45,18 @@ ParseScope ParseScope_CreateRoot(void)
 	ParseError error;
 
 	ParseScope parseScope = GC_MALLOC_STRUCT(struct ParseScopeStruct);
+	if (parseScope == NULL)
+		Smile_Abort_OutOfMemory();
 
 	parseScope->kind = PARSESCOPE_OUTERMOST;
 	parseScope->parentScope = NULL;
-	parseScope->closure = Closure_CreateDynamic(NULL, ClosureInfo_Create(NULL));
+	parseScope->symbolDict = Int32Int32Dict_Create();
 	parseScope->syntaxTable = ParserSyntaxTable_CreateNew();
+	parseScope->decls = GC_MALLOC_STRUCT_ARRAY(ParseDecl, 16);
+	if (parseScope->decls == NULL)
+		Smile_Abort_OutOfMemory();
+	parseScope->numDecls = 0;
+	parseScope->maxDecls = 16;
 
 	if ((error = ParseScope_DeclareGlobalOperators(parseScope)) != NULL) {
 		String errorMessage = String_Format("Unable to declare global operators; this is most likely due to a corrupt memory space. Reported error was: %S", error->message);
@@ -107,10 +114,17 @@ static ParseError ParseScope_DeclareGlobalOperators(ParseScope parseScope)
 ParseScope ParseScope_CreateChild(ParseScope parentScope, Int kind)
 {
 	ParseScope parseScope = GC_MALLOC_STRUCT(struct ParseScopeStruct);
+	if (parseScope == NULL)
+		Smile_Abort_OutOfMemory();
 
 	parseScope->kind = kind;
 	parseScope->parentScope = parentScope;
-	parseScope->closure = Closure_CreateDynamic(parentScope->closure, ClosureInfo_Create(parentScope->closure->closureInfo));
+	parseScope->symbolDict = Int32Int32Dict_Create();
+	parseScope->decls = GC_MALLOC_STRUCT_ARRAY(ParseDecl, 16);
+	if (parseScope->decls == NULL)
+		Smile_Abort_OutOfMemory();
+	parseScope->numDecls = 0;
+	parseScope->maxDecls = 16;
 	ParserSyntaxTable_AddRef(parseScope->syntaxTable = parentScope->syntaxTable);
 
 	return parseScope;
@@ -126,7 +140,10 @@ void ParseScope_Finish(ParseScope parseScope)
 
 	// Allow GC to reclaim the attached objects, if this was the last reference.
 	parseScope->syntaxTable = NULL;
-	parseScope->closure = NULL;
+	parseScope->symbolDict = NULL;
+	parseScope->decls = NULL;
+	parseScope->numDecls = 0;
+	parseScope->maxDecls = 0;
 	parseScope->parentScope = NULL;
 }
 
@@ -145,12 +162,13 @@ ParseError ParseScope_DeclareHere(ParseScope scope, Symbol symbol, Int kind, Lex
 	ParseDecl parseDecl;
 	ParseDecl previousDecl;
 	ParseError error;
+	Int32 declIndex;
 
 	// Construct the base declaration object for this name.
-	parseDecl = ParseDecl_Create(symbol, kind, scope->closure->closureInfo->numVariables, position, NULL);
+	parseDecl = ParseDecl_Create(symbol, kind, scope->numDecls, position, NULL);
 
-	if ((previousDecl = (ParseDecl)Closure_GetHereByName(scope->closure, symbol))->kind != SMILE_KIND_NULL) {
-
+	if ((previousDecl = ParseScope_FindDeclaration(scope, symbol)) != NULL) {
+	
 		// Already declared.  This isn't necessarily an error, but it depends on what
 		// kind of thing is being declared and how it relates to what was already declared.
 		if ((previousDecl->declKind != kind && previousDecl->declKind >= PARSEDECL_UNDECLARED)
@@ -168,7 +186,23 @@ ParseError ParseScope_DeclareHere(ParseScope scope, Symbol symbol, Int kind, Lex
 		}
 	}
 
-	Closure_Let(scope->closure, symbol, (SmileObject)parseDecl);
+	// Allocate a new index for the declaration.
+	if (scope->numDecls >= scope->maxDecls) {
+		Int32 newMax = scope->maxDecls * 2;
+		ParseDecl *newDecls = GC_MALLOC_STRUCT_ARRAY(ParseDecl, newMax);
+		if (newDecls == NULL)
+			Smile_Abort_OutOfMemory();
+		MemCpy(newDecls, scope->decls, sizeof(ParseDecl) * scope->numDecls);
+		scope->decls = newDecls;
+		scope->maxDecls = newMax;
+	}
+
+	// Store the new declaration.
+	declIndex = scope->numDecls++;
+	scope->decls[declIndex] = parseDecl;
+
+	// And record it in the lookup table.
+	Int32Int32Dict_SetValue(scope->symbolDict, symbol, declIndex);
 
 	// Last, return the declaration object itself.
 	if (decl != NULL)

@@ -160,11 +160,11 @@ ParseError Parser_ParseScope(Parser parser, SmileObject *expr)
 	ParseError parseError;
 	Token token;
 	LexerPosition startPosition;
-	int i, numVariables;
-	Symbol *symbolNames;
+	Int i;
 	SmileList head, tail;
 	SmileList declHead, declTail;
-	ClosureInfo closureInfo;
+	ParseDecl *decls;
+	Int numDecls;
 
 	if ((token = Parser_NextToken(parser))->kind != TOKEN_LEFTBRACE) {
 		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), ExpectedOpenBraceError);
@@ -177,7 +177,9 @@ ParseError Parser_ParseScope(Parser parser, SmileObject *expr)
 	LIST_INIT(head, tail);
 	Parser_ParseExprsOpt(parser, &head, &tail, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
 
-	closureInfo = parser->currentScope->closure->closureInfo;
+	decls = parser->currentScope->decls;
+	numDecls = parser->currentScope->numDecls;
+
 	Parser_EndScope(parser);
 
 	if ((token = Parser_NextToken(parser))->kind != TOKEN_RIGHTBRACE) {
@@ -186,16 +188,14 @@ ParseError Parser_ParseScope(Parser parser, SmileObject *expr)
 		return parseError;
 	}
 
-	if (closureInfo->numVariables == 0) {
+	if (numDecls == 0) {
 		*expr = (SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects._prognSymbol, (SmileObject)head, startPosition);
 		return NULL;
 	}
 	else {
-		numVariables = closureInfo->numVariables;
-		symbolNames = (Symbol *)Int32Int32Dict_GetKeys(closureInfo->symbolDictionary);
 		LIST_INIT(declHead, declTail);
-		for (i = 0; i < numVariables; i++) {
-			LIST_APPEND(declHead, declTail, SmileSymbol_Create(symbolNames[i]));
+		for (i = 0; i < numDecls; i++) {
+			LIST_APPEND(declHead, declTail, SmileSymbol_Create(decls[i]->symbol));
 		}
 		*expr = (SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects._scopeSymbol,
 			(SmileObject)SmileList_ConsWithSource((SmileObject)declHead, (SmileObject)head, startPosition), startPosition);

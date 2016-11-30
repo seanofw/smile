@@ -16,7 +16,3 @@
 //---------------------------------------------------------------------------------------
 
 #include <smile/parsing/internal/parsedecl.h>
-#include <smile/smiletypes/easyobject.h>
-
-SMILE_EASY_OBJECT_HANDLE(ParseDecl,
-	True, obj->scopeIndex, SymbolTable_GetName(Smile_SymbolTable, obj->symbol));

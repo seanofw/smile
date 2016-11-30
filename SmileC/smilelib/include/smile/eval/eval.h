@@ -9,6 +9,10 @@
 #include <smile/env/closure.h>
 #endif
 
+#ifndef __SMILE_EVAL_COMPILER_H__
+#include <smile/eval/compiler.h>
+#endif
+
 #ifndef __SMILE_SMILETYPES_SMILEOBJECT_H__
 #include <smile/smiletypes/smileobject.h>
 #endif
@@ -20,6 +24,7 @@
 
 #define EVAL_RESULT_VALUE	0
 #define EVAL_RESULT_EXCEPTION	1
+#define EVAL_RESULT_BREAK	2
 
 typedef struct EscapeContinuationStruct {
 	Int escapeKind;	// What kind of escape continuation this is, from the ESCAPE_KIND_* enumeration.
@@ -37,7 +42,11 @@ typedef struct EvalResultStruct {
 //  The core Smile eval() function
 
 SMILE_API_FUNC EvalResult Smile_Eval(SmileObject expr, Closure closure);
-SMILE_API_FUNC SmileObject Smile_EvalInternal(SmileObject expr);
+
+SMILE_API_FUNC EvalResult Eval_RunOuter(CompiledTables tables, CompiledFunction function,
+	ByteCodeSegment segment, Int pc, Closure globalClosure);
+SMILE_API_FUNC void Eval_Run(Int pc);
+
 SMILE_API_FUNC void Smile_Throw(SmileObject expr);
 
 Inline EscapeContinuation EscapeContinuation_Create(Int escapeKind)

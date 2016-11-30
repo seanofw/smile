@@ -14,6 +14,11 @@
 #ifndef __SMILE_ENV_ENV_H__
 #include <smile/env/env.h>
 #endif
+#ifndef __SMILE_EVAL_COSTACK_H__
+#include <smile/eval/costack.h>
+#endif
+
+struct CompiledFunctionStruct;
 
 //-------------------------------------------------------------------------------------------------
 // Closure Structures.
@@ -31,32 +36,47 @@ typedef struct ClosureInfoStruct {
 
 	struct ClosureInfoStruct *parent;	// A pointer to the parent info struct, if any.
 		
-	Int32Int32Dict symbolDictionary;	// A (likely heavily-shared) dictionary that maps Symbol IDs to variable indices.
+	Int32Int32Dict argsDictionary;	// A shared dictionary that maps Symbol IDs to args before the frame.
+	Int32Int32Dict localsDictionary;	// A shared dictionary that maps Symbol IDs to indices in the frame.
 		
-	Int32 numVariables;	// The number of variables in this closure's 'variables' array.
-	Int32 maxVariables;	// The current maximum number of variables in this closure's 'variables' array, if it can grow.
+	Symbol *locals;	// The names of the variables in the 'locals' array.
+	Int32 numlocals;	// The number of locals in this closure's 'locals' array.
+	Int32 maxlocals;	// The current maximum number of locals in this closure's 'locals' array, if it can grow.
 		
-	Bool isReadOnly;	// Whether this closure is modifiable in any way.
-	Bool canGrow;	// Whether this closure allows new variables to be added to it or can only read/write its current set.
+	Symbol *args;	// The names of the variables in the 'args' array.
+	Int32 numArgs;	// The number of args in this closure's 'args' array.
+		
+	Int32 maxTemps;	// The maximum amount of temporary stack space required by this closure.
 
 } *ClosureInfo;
 
 /// <summary>
 /// A Closure object stores the current instance data of a closure, and is designed to be as
 /// small as possible.  Anything that doesn't absolutely have to be stored here is stored in the
-/// ClosureInfo struct, to which this object points.
+/// ClosureInfo struct, to which this object points.  These objects are allocated directly
+/// on the current costack.
 /// </summary>
 typedef struct ClosureStruct {
 
-	struct ClosureStruct *parent;	// A pointer to the parent closure, if any.
-
 	ClosureInfo closureInfo;	// Shared metadata about this closure.
-	SmileObject *variables;	// The array of variables currently stored in this closure.
+		
+	CoStack costack;	// A back-pointer to the costack that contains this closure.
+		
+	Int32 parentClosureOffset;	// The offset of the parent (lexically-containing) closure on the stack, if any.
+	Int32 callingClosureOffset;	// The offset of the calling closure on the stack, if any.
+		
+	Int32 retAddr;	// The return address within the caller's byte-code.
+	Int32 catchAddr;	// The exception-catch address within the caller's byte-code.
+		
+	Int32 args;	// Stack offset, the start of arguments for this closure.
+	Int32 frame;	// Stack offset, the start of this closure's frame (locals and temps).
 
 } *Closure;
 
 //-------------------------------------------------------------------------------------------------
 // External Implementation.
+
+#if 0
 
 SMILE_API_FUNC ClosureInfo ClosureInfo_Create(ClosureInfo parent);
 
@@ -208,5 +228,7 @@ Inline Bool Closure_HasHere(Closure closure, Symbol name)
 {
 	return Int32Int32Dict_ContainsKey(closure->closureInfo->symbolDictionary, name);
 }
+
+#endif
 
 #endif

@@ -41,8 +41,6 @@
 /// </summary>
 struct ParseDeclStruct {
 
-	DECLARE_BASE_OBJECT_PROPERTIES;
-
 	// The symbol that has been declared.
 	Symbol symbol;
 
@@ -60,8 +58,6 @@ struct ParseDeclStruct {
 
 };
 
-SMILE_API_DATA SmileVTable ParseDecl_VTable;
-
 //-------------------------------------------------------------------------------------------------
 //  Functions.
 
@@ -71,11 +67,6 @@ SMILE_API_DATA SmileVTable ParseDecl_VTable;
 Inline ParseDecl ParseDecl_Create(Symbol symbol, Int declKind, Int scopeIndex, LexerPosition position, SmileObject initialAssignment)
 {
 	ParseDecl parseDecl = GC_MALLOC_STRUCT(struct ParseDeclStruct);
-
-	parseDecl->kind = SMILE_KIND_PARSEDECL;
-	parseDecl->base = Smile_KnownObjects.Object;
-	parseDecl->vtable = ParseDecl_VTable;
-	parseDecl->assignedSymbol = 0;
 
 	parseDecl->symbol = symbol;
 	parseDecl->declKind = declKind;
