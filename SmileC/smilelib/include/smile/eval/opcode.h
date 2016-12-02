@@ -52,14 +52,15 @@ enum Opcode {
 				
 	Op_LdLoc	= 0x30,	// +1 | int32, int32	; Load the indexed local variable in the given relative-indexed scope onto the work stack.
 	Op_StLoc	= 0x31,	//  0 | int32, int32	; Store the value of the stack top into the indexed local variable in the given relative-indexed scope.
-	Op_LdArg	= 0x32,	// +1 | int32, int32	; Load the value of the given function's argument onto the work stack.  (function index, arg index)
-	Op_StArg	= 0x33,	//  0 | int32, int32	; Store the value of the stack top into the given function's argument.  (function index, arg index)
-	Op_LdX	= 0x34,	// +1 | int32	; Load the value of the given named variable (symbol) onto the work stack.
-	Op_StX	= 0x35,	//  0 | int32	; Store the value of the stack top into the given named variable (symbol).
-	Op_LdProp	= 0x38,	// -1, +1 | int32	; Retrieve the given property from the object on the stack top, or null if there is no such property.
-	Op_StProp	= 0x39,	// -1, +1 | int32	; Store the stack top into the given property of the given object.  Results in the stack top value.
-	Op_LdMember	= 0x3A,	// -2, +1	; Call 'get-member', passing member (top-1) and object (top-2).
-	Op_StMember	= 0x3B,	// -2, +1	; Call 'set-member', passing value (top-1), member (top-2), and object (top-3).  Results in the stack top value.
+	Op_StpLoc	= 0x32,	// -1 | int32, int32	; Store and pop the value of the stack top into the indexed local variable in the given relative-indexed scope.
+				
+	Op_LdArg	= 0x34,	// +1 | int32, int32	; Load the value of the given function's argument onto the work stack.  (function index, arg index)
+	Op_StArg	= 0x35,	//  0 | int32, int32	; Store the value of the stack top into the given function's argument.  (function index, arg index)
+	Op_StpArg	= 0x36,	// -1 | int32, int32	; Store and pop the value of the stack top into the given function's argument.  (function index, arg index)
+				
+	Op_LdX	= 0x38,	// +1 | int32	; Load the value of the given named variable (global) onto the work stack.
+	Op_StX	= 0x39,	//  0 | int32	; Store the value of the stack top into the given named variable (global).
+	Op_StpX	= 0x3A,	// -1 | int32	; Store and pop the value of the stack top into the given named variable (global).
 				
 	Op_LdArg0	= 0x40,	// +1 | int32	; Load the current function's argument (by index) onto the work stack.
 	Op_LdArg1	= 0x41,	// +1 | int32	; Load the parent function's argument (by index) onto the work stack.
@@ -95,36 +96,30 @@ enum Opcode {
 	Op_StLoc6	= 0x5E,	//  0 | int32	; etc.
 	Op_StLoc7	= 0x5F,	//  0 | int32	; etc.
 				
-	Op_Jmp	= 0x60,	//  0 | label	; Unconditional jump to the given label.
-	Op_Bt	= 0x61,	// -1 | label	; Branch to the given label if the stack top is truthy.
-	Op_Bf	= 0x62,	// -1 | label	; Branch to the given label if the stack top is falsy.
-	Op_Met	= 0x64,	// -n, +1 | int32, int32	; Call the given method with 'n' arguments.  Target and arguments must all be on the stack.
-	Op_Call	= 0x65,	// -(n+1), +1 | int32	; Call the given function with 'n' arguments.  Function and arguments must all be on the stack.
-	Op_CallEsc	= 0x66,	// -(n+1), +1 | int32	; Call the given function with 'n' arguments as well as also passing an escape continuation.
-	Op_CallTail	= 0x67,	// -(n+1), +1 | int32	; Jump to the given function with 'n' arguments as a tail-call, discarding the current scope.
-	Op_LocalAlloc	= 0x6C,	//  0 | int32	; Allocate 'n' more local variables; construct any new local variables with null.
-	Op_LocalFree	= 0x6D,	//  0 | int32	; Free 'n' unneeded local variables from the top of the local-variable stack.
-	Op_Args	= 0x6E,	//  0 | int32	; Ensure current fn has 'n' arguments minimum; construct missing args with null.  Must be first instr of function.
-	Op_Ret	= 0x6F,	//  0	; Return to caller, destroying the current function's dynamic scope.  Stack top must contain return value.
+	Op_StpArg0	= 0x60,	//  -1 | int32	; Store and pop the value of the stack top into the current function's argument (by index).
+	Op_StpArg1	= 0x61,	//  -1 | int32	; Store and pop the value of the stack top into the parent function's argument (by index).
+	Op_StpArg2	= 0x62,	//  -1 | int32	; Store and pop the value of the stack top into the parent-parent function's argument (by index).
+	Op_StpArg3	= 0x63,	//  -1 | int32	; Store and pop the value of the stack top into the parent-parent-parent function's argument (by index).
+	Op_StpArg4	= 0x64,	//  -1 | int32	; etc.
+	Op_StpArg5	= 0x65,	//  -1 | int32	; etc.
+	Op_StpArg6	= 0x66,	//  -1 | int32	; etc.
+	Op_StpArg7	= 0x67,	//  -1 | int32	; etc.
+	Op_StpLoc0	= 0x68,	//  -1 | int32	; Store and pop the value of the stack top into the named variable (symbol) in the current function.
+	Op_StpLoc1	= 0x69,	//  -1 | int32	; Store and pop the value of the stack top into the named variable (symbol) in the parent function.
+	Op_StpLoc2	= 0x6A,	//  -1 | int32	; Store and pop the value of the stack top into the named variable (symbol) in the parent-parent function.
+	Op_StpLoc3	= 0x6B,	//  -1 | int32	; Store and pop the value of the stack top into the named variable (symbol) in the parent-parent-parent function.
+	Op_StpLoc4	= 0x6C,	//  -1 | int32	; etc.
+	Op_StpLoc5	= 0x6D,	//  -1 | int32	; etc.
+	Op_StpLoc6	= 0x6E,	//  -1 | int32	; etc.
+	Op_StpLoc7	= 0x6F,	//  -1 | int32	; etc.
 				
-	Op_Call0	= 0x70,	// -1, +1	; Call the given function with 0 arguments.  Function must be on the stack.
-	Op_Call1	= 0x71,	// -2, +1	; Call the given function with 1 argument.  Function and argument must be on the stack.
-	Op_Call2	= 0x72,	// -3, +1	; Call the given function with 2 arguments.  Function and arguments must be on the stack.
-	Op_Call3	= 0x73,	// -4, +1	; Call the given function with 3 arguments.  Function and arguments must be on the stack.
-	Op_Call4	= 0x74,	// -5, +1	; Call the given function with 4 arguments.  Function and arguments must be on the stack.
-	Op_Call5	= 0x75,	// -6, +1	; Call the given function with 5 arguments.  Function and arguments must be on the stack.
-	Op_Call6	= 0x76,	// -7, +1	; Call the given function with 6 arguments.  Function and arguments must be on the stack.
-	Op_Call7	= 0x77,	// -8, +1	; Call the given function with 7 arguments.  Function and arguments must be on the stack.
-	Op_Met0	= 0x78,	// -1, +1 | int32	; Call the given named method with 0 arguments.  'This' object must be on the stack.
-	Op_Unary	= 0x78,	// -1, +1 | int32	; Call the given named method with 0 arguments.  'This' object must be on the stack.
-	Op_Met1	= 0x79,	// -2, +1 | int32	; Call the given named method with 1 argument.  'This' object and arguments must be on the stack.
-	Op_Binary	= 0x79,	// -2, +1 | int32	; Call the given named method with 1 argument.  'This' object and arguments must be on the stack.
-	Op_Met2	= 0x7A,	// -3, +1 | int32	; Call the given named method with 2 arguments.  'This' object and arguments must be on the stack.
-	Op_Met3	= 0x7B,	// -4, +1 | int32	; Call the given named method with 3 arguments.  'This' object and arguments must be on the stack.
-	Op_Met4	= 0x7C,	// -5, +1 | int32	; Call the given named method with 4 arguments.  'This' object and arguments must be on the stack.
-	Op_Met5	= 0x7D,	// -6, +1 | int32	; Call the given named method with 5 arguments.  'This' object and arguments must be on the stack.
-	Op_Met6	= 0x7E,	// -7, +1 | int32	; Call the given named method with 6 arguments.  'This' object and arguments must be on the stack.
-	Op_Met7	= 0x7F,	// -8, +1 | int32	; Call the given named method with 7 arguments.  'This' object and arguments must be on the stack.
+	Op_LdProp	= 0x70,	// -1, +1 | int32	; Retrieve the given property from the object on the stack top, or null if there is no such property.
+	Op_StProp	= 0x71,	// -1, +1 | int32	; Store the stack top into the given property of the given object.  Results in the stack top value.
+	Op_StpProp	= 0x72,	// -2 | int32	; Store and pop the stack top into the given property of the given object.
+				
+	Op_LdMember	= 0x74,	// -2, +1	; Call 'get-member', passing member (top-1) and object (top-2).
+	Op_StMember	= 0x75,	// -2, +1	; Call 'set-member', passing value (top-1), member (top-2), and object (top-3).  Results in the stack top value.
+	Op_StpMember	= 0x76,	// -3	; Call 'set-member', passing value (top-1), member (top-2), and object (top-3).  Pops the stack top value.
 				
 	Op_Begin	= 0x80,	//  0 | int32, int32	; Set up a new scope with 'n' locals and 'm' work-stack space, preserving a reference to the parent scope.
 	Op_End	= 0x81,	//  0	; Revert to the parent scope.
@@ -139,15 +134,92 @@ enum Opcode {
 	Op_Is	= 0x8C,	// -2, +1	; Push true if a (top-2) is derived from b (top-1); push false if not.
 	Op_TypeOf	= 0x8D,	// -1, +1	; Push the formal type symbol corresponding to the type of the stack top.
 				
-	Op_Cons	= 0x90,	// -2, +1	; Create a new List object from the given a/d values on the work stack.
-	Op_Car	= 0x91,	// -1, +1	; Retrieve the 'a' property from the List on the stack top.
-	Op_Cdr	= 0x92,	// -1, +1	; Retrieve the 'd' property from the List on the stack top.
-	Op_NewPair	= 0x94,	// -2, +1	; Create a new Pair object from the given left/right values on the work stack.
-	Op_Left	= 0x95,	// -1, +1	; Retrieve the 'left' property from the Pair on the stack top.
-	Op_Right	= 0x96,	// -1, +1	; Retrieve the 'right' property from the Pair on the stack top.
-	Op_NewFn	= 0x98,	// +1 | int32	; Push a new function instance that comes from the given compiled function (by function table index).
-	Op_NewObj	= 0x99,	// -(n*2+1), +1 | int32	; Create a new object from the 'n' property decls and base object on the work stack.
-	Op_NewRange	= 0x9A,	// -2, +1	; Create a new Range object from the given start/end points on the work stack.
+	Op_Call0	= 0x90,	// -1, +1	; Call the given function with 0 arguments.  Function must be on the stack.
+	Op_Call1	= 0x91,	// -2, +1	; Call the given function with 1 argument.  Function and argument must be on the stack.
+	Op_Call2	= 0x92,	// -3, +1	; Call the given function with 2 arguments.  Function and arguments must be on the stack.
+	Op_Call3	= 0x93,	// -4, +1	; Call the given function with 3 arguments.  Function and arguments must be on the stack.
+	Op_Call4	= 0x94,	// -5, +1	; Call the given function with 4 arguments.  Function and arguments must be on the stack.
+	Op_Call5	= 0x95,	// -6, +1	; Call the given function with 5 arguments.  Function and arguments must be on the stack.
+	Op_Call6	= 0x96,	// -7, +1	; Call the given function with 6 arguments.  Function and arguments must be on the stack.
+	Op_Call7	= 0x97,	// -8, +1	; Call the given function with 7 arguments.  Function and arguments must be on the stack.
+	Op_Met0	= 0x98,	// -1, +1 | int32	; Call the given named method with 0 arguments.  'This' object must be on the stack.
+	Op_Unary	= 0x98,	// -1, +1 | int32	; Call the given named method with 0 arguments.  'This' object must be on the stack.
+	Op_Met1	= 0x99,	// -2, +1 | int32	; Call the given named method with 1 argument.  'This' object and arguments must be on the stack.
+	Op_Binary	= 0x99,	// -2, +1 | int32	; Call the given named method with 1 argument.  'This' object and arguments must be on the stack.
+	Op_Met2	= 0x9A,	// -3, +1 | int32	; Call the given named method with 2 arguments.  'This' object and arguments must be on the stack.
+	Op_Met3	= 0x9B,	// -4, +1 | int32	; Call the given named method with 3 arguments.  'This' object and arguments must be on the stack.
+	Op_Met4	= 0x9C,	// -5, +1 | int32	; Call the given named method with 4 arguments.  'This' object and arguments must be on the stack.
+	Op_Met5	= 0x9D,	// -6, +1 | int32	; Call the given named method with 5 arguments.  'This' object and arguments must be on the stack.
+	Op_Met6	= 0x9E,	// -7, +1 | int32	; Call the given named method with 6 arguments.  'This' object and arguments must be on the stack.
+	Op_Met7	= 0x9F,	// -8, +1 | int32	; Call the given named method with 7 arguments.  'This' object and arguments must be on the stack.
+				
+	Op_TCall0	= 0xA0,	// -1, +1	; Jump to the given function with 0 arguments, as a tail-call.  Function must be on the stack.
+	Op_TCall1	= 0xA1,	// -2, +1	; Jump to the given function with 1 argument, as a tail-call.  Function and argument must be on the stack.
+	Op_TCall2	= 0xA2,	// -3, +1	; Jump to the given function with 2 arguments, as a tail-call.  Function and arguments must be on the stack.
+	Op_TCall3	= 0xA3,	// -4, +1	; Jump to the given function with 3 arguments, as a tail-call.  Function and arguments must be on the stack.
+	Op_TCall4	= 0xA4,	// -5, +1	; Jump to the given function with 4 arguments, as a tail-call.  Function and arguments must be on the stack.
+	Op_TCall5	= 0xA5,	// -6, +1	; Jump to the given function with 5 arguments, as a tail-call.  Function and arguments must be on the stack.
+	Op_TCall6	= 0xA6,	// -7, +1	; Jump to the given function with 6 arguments, as a tail-call.  Function and arguments must be on the stack.
+	Op_TCall7	= 0xA7,	// -8, +1	; Jump to the given function with 7 arguments, as a tail-call.  Function and arguments must be on the stack.
+	Op_TMet0	= 0xA8,	// -1, +1 | int32	; Jump to the given named method with 0 arguments, as a tail-call.  'This' object must be on the stack.
+	Op_TUnary	= 0xA8,	// -1, +1 | int32	; Jump to the given named method with 0 arguments, as a tail-call.  'This' object must be on the stack.
+	Op_TMet1	= 0xA9,	// -2, +1 | int32	; Jump to the given named method with 1 argument, as a tail-call.  'This' object and arguments must be on the stack.
+	Op_TBinary	= 0xA9,	// -2, +1 | int32	; Jump to the given named method with 1 argument, as a tail-call.  'This' object and arguments must be on the stack.
+	Op_TMet2	= 0xAA,	// -3, +1 | int32	; Jump to the given named method with 2 arguments, as a tail-call.  'This' object and arguments must be on the stack.
+	Op_TMet3	= 0xAB,	// -4, +1 | int32	; Jump to the given named method with 3 arguments, as a tail-call.  'This' object and arguments must be on the stack.
+	Op_TMet4	= 0xAC,	// -5, +1 | int32	; Jump to the given named method with 4 arguments, as a tail-call.  'This' object and arguments must be on the stack.
+	Op_TMet5	= 0xAD,	// -6, +1 | int32	; Jump to the given named method with 5 arguments, as a tail-call.  'This' object and arguments must be on the stack.
+	Op_TMet6	= 0xAE,	// -7, +1 | int32	; Jump to the given named method with 6 arguments, as a tail-call.  'This' object and arguments must be on the stack.
+	Op_TMet7	= 0xAF,	// -8, +1 | int32	; Jump to the given named method with 7 arguments, as a tail-call.  'This' object and arguments must be on the stack.
+				
+	Op_Jmp	= 0xB0,	//  0 | label	; Unconditional jump to the given label.
+	Op_Bt	= 0xB1,	// -1 | label	; Branch to the given label if the stack top is truthy.
+	Op_Bf	= 0xB2,	// -1 | label	; Branch to the given label if the stack top is falsy.
+	Op_Met	= 0xB4,	// -n, +1 | int32, int32	; Call the given method with 'n' arguments.  Target and arguments must all be on the stack.
+	Op_TMet	= 0xB5,	// -n, +1 | int32, int32	; Jump to the given method with 'n' arguments, as a tail-call.  Target and arguments must all be on the stack.
+	Op_Call	= 0xB6,	// -(n+1), +1 | int32	; Call the given function with 'n' arguments.  Function and arguments must all be on the stack.
+	Op_TCall	= 0xB7,	// -(n+1), +1 | int32	; Jump to the given function with 'n' arguments as a tail-call, discarding the current scope.
+	Op_CallEsc	= 0xB8,	// -(n+1), +1 | int32	; Call the given function with 'n' arguments as well as also passing an escape continuation.
+	Op_LocalAlloc	= 0xBC,	//  0 | int32	; Allocate 'n' more local variables; construct any new local variables with null.
+	Op_LocalFree	= 0xBD,	//  0 | int32	; Free 'n' unneeded local variables from the top of the local-variable stack.
+	Op_Args	= 0xBE,	//  0 | int32	; Ensure current fn has 'n' arguments minimum; construct missing args with null.  Must be first instr of function.
+	Op_Ret	= 0xBF,	//  0	; Return to caller, destroying the current function's dynamic scope.  Stack top must contain return value.
+				
+	Op_Cons	= 0xC0,	// -2, +1	; Create a new List object from the given a/d values on the work stack.
+	Op_Car	= 0xC1,	// -1, +1	; Retrieve the 'a' property from the List on the stack top (UNDEFINED if not a List or Null).
+	Op_Cdr	= 0xC2,	// -1, +1	; Retrieve the 'd' property from the List on the stack top (UNDEFINED if not a List or Null).
+	Op_NewPair	= 0xC4,	// -2, +1	; Create a new Pair object from the given left/right values on the work stack.
+	Op_Left	= 0xC5,	// -1, +1	; Retrieve the 'left' property from the Pair on the stack top (UNDEFINED if not a Pair).
+	Op_Right	= 0xC6,	// -1, +1	; Retrieve the 'right' property from the Pair on the stack top (UNDEFINED if not a Pair).
+	Op_NewFn	= 0xC8,	// +1 | int32	; Push a new function instance that comes from the given compiled function (by function table index).
+	Op_NewObj	= 0xC9,	// -(n*2+1), +1 | int32	; Create a new object from the 'n' property decls and base object on the work stack.
+	Op_NewRange	= 0xCA,	// -2, +1	; Create a new Range object from the given start/end points on the work stack.
+				
+	Op_LdA	= 0xD0,	// -1, +1	; Retrieve the 'a' property from the object on the stack top.
+	Op_LdD	= 0xD1,	// -1, +1	; Retrieve the 'd' property from the object on the stack top.
+	Op_LdLeft	= 0xD2,	// -1, +1	; Retrieve the 'left' property from the object on the stack top.
+	Op_LdRight	= 0xD3,	// -1, +1	; Retrieve the 'right' property from the object on the stack top.
+	Op_LdStart	= 0xD4,	// -1, +1	; Retrieve the 'start' property from the object on the stack top.
+	Op_LdEnd	= 0xD5,	// -1, +1	; Retrieve the 'end' property from the object on the stack top.
+	Op_LdCount	= 0xD6,	// -1, +1	; Retrieve the 'count' property from the object on the stack top.
+	Op_LdLength	= 0xD7,	// -1, +1	; Retrieve the 'length' property from the object on the stack top.
+				
+	Op_Add8	= 0xE0,	// -1, +1 | byte	; Add the given literal Byte to the Byte on the stack top. 
+	Op_Sub8	= 0xE1,	// -1, +1 | byte	; Subtract the given literal Byte from the Byte on the stack top.
+	Op_Add16	= 0xE2,	// -1, +1 | int16	; Add the given literal Integer16 to the Integer16 on the stack top. 
+	Op_Sub16	= 0xE3,	// -1, +1 | int16	; Subtract the given literal Integer16 from the Integer16 on the stack top.
+	Op_Add32	= 0xE4,	// -1, +1 | int32	; Add the given literal Integer32 to the Integer32 on the stack top. 
+	Op_Sub32	= 0xE5,	// -1, +1 | int32	; Subtract the given literal Integer32 from the Integer32 on the stack top.
+	Op_Add64	= 0xE6,	// -1, +1 | int64	; Add the given literal Integer64 to the Integer64 on the stack top. 
+	Op_Sub64	= 0xE7,	// -1, +1 | int64	; Subtract the given literal Integer64 from the Integer64 on the stack top.				
+	Op_AddR32	= 0xE8,	// -1, +1 | real32	; Add the given literal Real32 to the Real32 on the stack top.
+	Op_SubR32	= 0xE9,	// -1, +1 | real32	; Subtract the given literal Real32 from the Real32 on the stack top.
+	Op_AddR64	= 0xEA,	// -1, +1 | real64	; Add the given literal Real64 to the Real64 on the stack top.
+	Op_SubR64	= 0xEB,	// -1, +1 | real64	; Subtract the given literal Real64 from the Real64 on the stack top.
+	Op_AddF32	= 0xEC,	// -1, +1 | float32	; Add the given literal Float32 to the Float32 on the stack top.
+	Op_SubF32	= 0xED,	// -1, +1 | float32	; Subtract the given literal Float32 from the Float32 on the stack top.
+	Op_AddF64	= 0xEE,	// -1, +1 | float64	; Add the given literal Float64 to the Float64 on the stack top.
+	Op_SubF64	= 0xEF,	// -1, +1 | float64	; Subtract the given literal Float64 from the Float64 on the stack top.
 				
 	Op_Label	= 0xFF,	//  0	; Branch target
 };
