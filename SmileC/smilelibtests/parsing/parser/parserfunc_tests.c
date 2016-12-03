@@ -34,15 +34,11 @@ START_TEST(CanParseAFunction)
 	Lexer lexer = SetupLexer("|x| x");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
 	SmileObject expectedForm = SimpleParse("[$fn [x] x]");
 
-	ASSERT(result != NULL && result != NullList);
-	ASSERT(result->a != NULL && result->a != NullObject);
-	ASSERT(result->d == NullObject);
-
-	ASSERT(RecursiveEquals(result->a, expectedForm));
+	ASSERT(RecursiveEquals(result, expectedForm));
 }
 END_TEST
 
@@ -51,15 +47,11 @@ START_TEST(CanParseAFunctionOfNoArguments)
 	Lexer lexer = SetupLexer("|| 123");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
 	SmileObject expectedForm = SimpleParse("[$fn [] 123]");
 
-	ASSERT(result != NULL && result != NullList);
-	ASSERT(result->a != NULL && result->a != NullObject);
-	ASSERT(result->d == NullObject);
-
-	ASSERT(RecursiveEquals(result->a, expectedForm));
+	ASSERT(RecursiveEquals(result, expectedForm));
 }
 END_TEST
 
@@ -68,15 +60,11 @@ START_TEST(CanParseAFunctionWithMultipleArguments)
 	Lexer lexer = SetupLexer("|w x y z| [w x y z]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
 	SmileObject expectedForm = SimpleParse("[$fn [w x y z] [w x y z]]");
 
-	ASSERT(result != NULL && result != NullList);
-	ASSERT(result->a != NULL && result->a != NullObject);
-	ASSERT(result->d == NullObject);
-
-	ASSERT(RecursiveEquals(result->a, expectedForm));
+	ASSERT(RecursiveEquals(result, expectedForm));
 }
 END_TEST
 
@@ -85,15 +73,11 @@ START_TEST(CanParseAFunctionWithOptionalCommas)
 	Lexer lexer = SetupLexer("|w, x, y, z| [w x y z]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
 	SmileObject expectedForm = SimpleParse("[$fn [w x y z] [w x y z]]");
 
-	ASSERT(result != NULL && result != NullList);
-	ASSERT(result->a != NULL && result->a != NullObject);
-	ASSERT(result->d == NullObject);
-
-	ASSERT(RecursiveEquals(result->a, expectedForm));
+	ASSERT(RecursiveEquals(result, expectedForm));
 }
 END_TEST
 
@@ -102,7 +86,7 @@ START_TEST(AFunctionWithBrokenCommasShouldFail)
 	Lexer lexer = SetupLexer("|w, x, y,| [w x y]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
 	ASSERT(Parser_GetErrorCount(parser) > 0);
 }
@@ -113,7 +97,7 @@ START_TEST(AFunctionWithBrokenCommasShouldFail2)
 	Lexer lexer = SetupLexer("|, x, y| [x y]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
 	ASSERT(Parser_GetErrorCount(parser) > 0);
 }
@@ -124,7 +108,7 @@ START_TEST(AFunctionWithBrokenCommasShouldFail3)
 	Lexer lexer = SetupLexer("|,| 123");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
 	ASSERT(Parser_GetErrorCount(parser) > 0);
 }

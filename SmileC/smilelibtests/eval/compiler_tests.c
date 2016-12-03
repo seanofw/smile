@@ -30,13 +30,13 @@ STATIC_STRING(TestFilename, "test.sm");
 
 TEST_SUITE(CompilerTests)
 
-static SmileList Parse(const char *text)
+static SmileObject Parse(const char *text)
 {
 	String source;
 	Lexer lexer;
 	Parser parser;
 	ParseScope scope;
-	SmileList expr;
+	SmileObject expr;
 
 	Smile_ResetEnvironment();
 
@@ -56,16 +56,29 @@ static SmileList Parse(const char *text)
 
 	expr = Parser_Parse(parser, lexer, scope);
 
-	return SMILE_KIND(parser->firstMessage) == SMILE_KIND_NULL ? expr : NullList;
+	if (SMILE_KIND(parser->firstMessage) == SMILE_KIND_NULL) {
+		String stringified = SmileObject_Stringify((SmileObject)expr);
+		return expr;
+	}
+	else {
+		ParseError error = (ParseMessage)(parser->firstMessage->a);
+		String errorMessage = String_Format("%S: line %d: %S",
+			error->position != NULL ? error->position->filename : String_Empty,
+			error->position != NULL ? error->position->line : 0,
+			error->message
+		);
+		FAIL_TEST(String_ToC(errorMessage));
+		return NullObject;
+	}
 }
 
 START_TEST(CanCompileNull)
 {
-	SmileList expr = Parse("[]");
+	SmileObject expr = Parse("[]");
 
 	Compiler compiler = Compiler_Create();
 	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr->a);
+	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
 	const char *expectedResult =
@@ -78,11 +91,11 @@ END_TEST
 
 START_TEST(CanCompileByte)
 {
-	SmileList expr = Parse("123x");
+	SmileObject expr = Parse("123x");
 
 	Compiler compiler = Compiler_Create();
 	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr->a);
+	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
 	const char *expectedResult =
@@ -95,11 +108,11 @@ END_TEST
 
 START_TEST(CanCompileInt16)
 {
-	SmileList expr = Parse("123h");
+	SmileObject expr = Parse("123h");
 
 	Compiler compiler = Compiler_Create();
 	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr->a);
+	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
 	const char *expectedResult =
@@ -112,11 +125,11 @@ END_TEST
 
 START_TEST(CanCompileInt32)
 {
-	SmileList expr = Parse("123");
+	SmileObject expr = Parse("123");
 
 	Compiler compiler = Compiler_Create();
 	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr->a);
+	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
 	const char *expectedResult =
@@ -129,11 +142,11 @@ END_TEST
 
 START_TEST(CanCompileInt64)
 {
-	SmileList expr = Parse("123L");
+	SmileObject expr = Parse("123L");
 
 	Compiler compiler = Compiler_Create();
 	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr->a);
+	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
 	const char *expectedResult =
@@ -146,11 +159,11 @@ END_TEST
 
 START_TEST(CanCompileBasicArithmetic)
 {
-	SmileList expr = Parse("123 + 456");
+	SmileObject expr = Parse("123 + 456");
 
 	Compiler compiler = Compiler_Create();
 	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr->a);
+	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -167,11 +180,11 @@ END_TEST
 
 START_TEST(CanCompileMildlyInterestingArithmetic)
 {
-	SmileList expr = Parse("(123 + -456) * 50");
+	SmileObject expr = Parse("(123 + -456) * 50");
 
 	Compiler compiler = Compiler_Create();
 	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr->a);
+	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -196,11 +209,11 @@ END_TEST
 
 START_TEST(CanCompileGlobalReadsAndWrites)
 {
-	SmileList expr = Parse("ga = gb");
+	SmileObject expr = Parse("ga = gb");
 
 	Compiler compiler = Compiler_Create();
 	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr->a);
+	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -217,11 +230,11 @@ END_TEST
 
 START_TEST(CanCompileReadsFromProperties)
 {
-	SmileList expr = Parse("ga = gb.foo");
+	SmileObject expr = Parse("ga = gb.foo");
 
 	Compiler compiler = Compiler_Create();
 	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr->a);
+	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -240,11 +253,11 @@ END_TEST
 
 START_TEST(CanCompileWritesToProperties)
 {
-	SmileList expr = Parse("ga.foo = gb");
+	SmileObject expr = Parse("ga.foo = gb");
 
 	Compiler compiler = Compiler_Create();
 	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr->a);
+	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -263,11 +276,11 @@ END_TEST
 
 START_TEST(CanCompileReadsFromMembers)
 {
-	SmileList expr = Parse("ga = gb:10");
+	SmileObject expr = Parse("ga = gb:10");
 
 	Compiler compiler = Compiler_Create();
 	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr->a);
+	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -286,11 +299,11 @@ END_TEST
 
 START_TEST(CanCompileWritesToMembers)
 {
-	SmileList expr = Parse("ga:10 = gb");
+	SmileObject expr = Parse("ga:10 = gb");
 
 	Compiler compiler = Compiler_Create();
 	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr->a);
+	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -312,11 +325,11 @@ END_TEST
 
 START_TEST(CanCompileScopeVariableReads)
 {
-	SmileList expr = Parse("{ a = gb }");
+	SmileObject expr = Parse("{ a = gb }");
 
 	Compiler compiler = Compiler_Create();
 	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr->a);
+	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -335,11 +348,11 @@ END_TEST
 
 START_TEST(CanCompileNestedScopeVariableReads)
 {
-	SmileList expr = Parse("{ var b = 10 { var a = b, c = a + b } }");
+	SmileObject expr = Parse("{ var b = 10 { var a = b, c = a + b } }");
 
 	Compiler compiler = Compiler_Create();
 	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr->a);
+	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -361,15 +374,48 @@ START_TEST(CanCompileNestedScopeVariableReads)
 }
 END_TEST
 
+START_TEST(NestedScopesVariablesDontOverlap)
+{
+	SmileObject expr = Parse("{ var b = 10 { var a = b, c = a + b } { var d = b * 20 } }");
+
+	Compiler compiler = Compiler_Create();
+	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
+	Int offset = Compiler_CompileExpr(compiler, expr);
+	String result;
+
+	String expectedResult = String_Format(
+		"\tLd32 10\n"
+		"\tStpLoc0 0\t; b\n"
+		"\tLdLoc0 0\t; b\n"
+		"\tStpLoc0 1\t; a\n"
+		"\tLdLoc0 1\t; a\n"
+		"\tLdLoc0 0\t; b\n"
+		"\tBinary %d\t; +\n"
+		"\tStpLoc0 2\t; c\n"
+		"\tLdLoc0 0\t; b\n"
+		"\tLd32 20\n"
+		"\tBinary %d\t; *\n"
+		"\tStLoc0 3\t; d\n",
+		Smile_KnownSymbols.plus,
+		Smile_KnownSymbols.star
+	);
+
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
+	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
+
+	ASSERT(globalFunction->localSize == 4);
+}
+END_TEST
+
 //-------------------------------------------------------------------------------------------------
 
 START_TEST(CanCompileSimpleConditionals)
 {
-	SmileList expr = Parse("[$if 1 < 10 `then-side `else-side]");
+	SmileObject expr = Parse("[$if 1 < 10 `then-side `else-side]");
 
 	Compiler compiler = Compiler_Create();
 	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr->a);
+	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -394,7 +440,7 @@ END_TEST
 
 START_TEST(CanCompileConditionalsAllTheWay)
 {
-	SmileList exprs = Parse(
+	SmileObject expr = Parse(
 		"#syntax STMT: [if [EXPR x] then [STMT y]] => [$if x y]\n"
 		"#syntax STMT: [if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
 		"\n"
@@ -406,7 +452,7 @@ START_TEST(CanCompileConditionalsAllTheWay)
 
 	Compiler compiler = Compiler_Create();
 	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExprs(compiler, exprs);
+	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -425,6 +471,56 @@ START_TEST(CanCompileConditionalsAllTheWay)
 	);
 
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
+	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
+}
+END_TEST
+
+//-------------------------------------------------------------------------------------------------
+
+START_TEST(CanCompileAWhileLoopThatComputesLogarithms)
+{
+	SmileObject expr = Parse(
+		"#syntax STMT: [while [EXPR x] do [STMT y]] => [$while [] x y]\n"
+		"\n"
+		"n = 12345678\n"
+		"log = 0\n"
+		"while n do {\n"
+		"\tn = n >>> 1\n"
+		"\tlog = log + 1\n"
+		"}\n"
+	);
+
+	Compiler compiler = Compiler_Create();
+	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
+	Int offset = Compiler_CompileExpr(compiler, expr);
+	String result;
+
+	String expectedResult = String_Format(
+		"\tLd32 12345678\n"
+		"\tStpLoc0 0\t; n\n"
+		"\tLd32 0\n"
+		"\tStpLoc0 1\t; log\n"
+		"\tLdNull\n"
+		"\tJmp >L16\n"
+		"L6:\n"
+		"\tPop1\n"
+		"\tLdLoc0 0\t; n\n"
+		"\tLd32 1\n"
+		"\tBinary %d\t; >>>\n"
+		"\tStpLoc0 0\t; n\n"
+		"\tLdLoc0 1\t; log\n"
+		"\tLd32 1\n"
+		"\tBinary %d\t; +\n"
+		"\tStLoc0 1\t; log\n"
+		"L16:\n"
+		"\tLdLoc0 0\t; n\n"
+		"\tBt L6\n",
+		SymbolTable_GetSymbolC(Smile_SymbolTable, ">>>"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "+")
+	);
+
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
+
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
 END_TEST

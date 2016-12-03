@@ -103,15 +103,17 @@ Inline void ByteCodeSegment_More(ByteCodeSegment segment, Int count)
 /// <param name="opcode">The opcode of the instruction to append.</param>
 /// <returns>A pointer to the instruction that was added.  The operator will be
 /// set to the given opcode, and the operand(s) will be zeroed out.</returns>
-Inline ByteCode ByteCodeSegment_Emit(ByteCodeSegment segment, Int opcode)
+Inline Int ByteCodeSegment_Emit(ByteCodeSegment segment, Int opcode)
 {
 	ByteCode byteCode;
+	Int offset;
 
 	ByteCodeSegment_More(segment, 1);
-	byteCode = segment->byteCodes + segment->numByteCodes++;
+	byteCode = segment->byteCodes + (offset = segment->numByteCodes++);
 	byteCode->opcode = opcode;
 	byteCode->u.int64 = 0;
-	return byteCode;
+
+	return offset;
 }
 
 #endif

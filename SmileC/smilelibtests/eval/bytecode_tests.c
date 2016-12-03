@@ -51,10 +51,10 @@ START_TEST(CanEmitIntegerLoads)
 		"\tLd32 12345678\n"
 		"\tLd64 1234567890\n";
 
-	ByteCodeSegment_Emit(segment, Op_Ld8)->u.byte = 123;
-	ByteCodeSegment_Emit(segment, Op_Ld16)->u.int16 = 12345;
-	ByteCodeSegment_Emit(segment, Op_Ld32)->u.int32 = 12345678;
-	ByteCodeSegment_Emit(segment, Op_Ld64)->u.int64 = 1234567890;
+	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Ld8)].u.byte = 123;
+	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Ld16)].u.int16 = 12345;
+	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Ld32)].u.int32 = 12345678;
+	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Ld64)].u.int64 = 1234567890;
 
 	result = ByteCodeSegment_ToString(segment, NULL, compiledTables);
 	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
@@ -79,14 +79,14 @@ START_TEST(CanEmitBranches)
 		Smile_KnownSymbols.minus
 	);
 
-	ByteCodeSegment_Emit(segment, Op_Ld32)->u.int32 = 123;
-	ByteCodeSegment_Emit(segment, Op_Jmp)->u.index = +4;
-	ByteCodeSegment_Emit(segment, Op_Label)->u.index = +5;
-	ByteCodeSegment_Emit(segment, Op_Ld32)->u.int32 = 1;
-	ByteCodeSegment_Emit(segment, Op_Met1)->u.symbol = Smile_KnownSymbols.minus;
-	ByteCodeSegment_Emit(segment, Op_Label)->u.index = -4;
+	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Ld32)].u.int32 = 123;
+	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Jmp)].u.index = +4;
+	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Label)].u.index = +5;
+	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Ld32)].u.int32 = 1;
+	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Met1)].u.symbol = Smile_KnownSymbols.minus;
+	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Label)].u.index = -4;
 	ByteCodeSegment_Emit(segment, Op_Dup1);
-	ByteCodeSegment_Emit(segment, Op_Bt)->u.index = -5;
+	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Bt)].u.index = -5;
 
 	result = ByteCodeSegment_ToString(segment, NULL, compiledTables);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));

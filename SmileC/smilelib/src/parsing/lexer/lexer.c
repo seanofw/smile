@@ -48,8 +48,7 @@ STATIC_STRING(KeywordTypeof, "typeof");
 /// <param name="firstColumn">The one-based number of the first column where the given start character is located.
 /// (Note that for these purposes, all characters count as a single column, including tabs.)</param>
 /// <returns>The new lexical analyzer for the given input text.</returns>
-Lexer Lexer_Create(String input, Int start, Int length,
-					String filename, Int firstLine, Int firstColumn)
+Lexer Lexer_Create(String input, Int start, Int length, String filename, Int firstLine, Int firstColumn)
 {
 	Lexer lexer = GC_MALLOC_STRUCT(struct LexerStruct);
 	Int inputLength = String_Length(input);
@@ -75,6 +74,83 @@ Lexer Lexer_Create(String input, Int start, Int length,
 	lexer->ungetCount = 0;
 
 	return lexer;
+}
+
+/// <summary>
+/// Get the position of the next token that will be read.  Note that since it hasn't
+/// been read yet, the length of this position is always zero.  This does correctly handle
+/// ungets, or tokens being put back on the input.
+/// </summary>
+/// <param name="lexer">The lexer to get the position of.</param>
+/// <returns>The next lexer position, excluding its length.</returns>
+LexerPosition Lexer_GetPosition(Lexer lexer)
+{
+	LexerPosition position;
+	Token token;
+
+	if (lexer->ungetCount > 0) {
+		token = lexer->tokenBuffer + ((lexer->tokenIndex + 1) & 15);
+		position = Token_GetPosition(token);
+	}
+	else {
+		position = GC_MALLOC_STRUCT(struct LexerPositionStruct);
+		if (position == NULL)
+			Smile_Abort_OutOfMemory();
+		position->filename = lexer->filename;
+		position->line = lexer->line;
+		position->lineStart = lexer->lineStart - lexer->input;
+		position->column = lexer->src - lexer->lineStart;
+	}
+
+	position->length = 0;
+	return position;
+}
+
+/// <summary>
+/// Make a safe clone of a position on the heap.
+/// </summary>
+/// <param name="position">The position to clone.</param>
+/// <returns>A copy of the provided position, located on the GC heap.</returns>
+LexerPosition LexerPosition_Clone(LexerPosition position)
+{
+	LexerPosition newPosition = GC_MALLOC_STRUCT(struct LexerPositionStruct);
+	if (newPosition == NULL)
+		Smile_Abort_OutOfMemory();
+	MemCpy(newPosition, position, sizeof(struct LexerPositionStruct));
+	return newPosition;
+}
+
+/// <summary>
+/// Compare two lexer positions to see if they are identical/equivalent.
+/// </summary>
+/// <param name="a">The first position to compare.</param>
+/// <param name="b">The first position to compare.</param>
+/// <returns>True if they are identical positions, False if they are not identical.</returns>
+Bool LexerPosition_Equals(LexerPosition a, LexerPosition b)
+{
+	if (a == NULL) return (b == NULL);
+	else if (b == NULL) return False;
+
+	return (a == b
+		|| a->line == b->line
+			&& a->column == b->column
+			&& a->lineStart == b->lineStart
+			&& a->length == b->length
+			&& String_Equals(a->filename, b->filename));
+}
+
+/// <summary>
+/// Make a safe clone of a token on the heap.
+/// </summary>
+/// <param name="token">The token to clone.</param>
+/// <returns>A copy of the provided token, located on the GC heap.</returns>
+Token Token_Clone(Token token)
+{
+	Token newToken = GC_MALLOC_STRUCT(struct TokenStruct);
+	if (newToken == NULL)
+		Smile_Abort_OutOfMemory();
+	MemCpy(newToken, token, sizeof(struct TokenStruct));
+	return newToken;
 }
 
 //---------------------------------------------------------------------------

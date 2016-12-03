@@ -101,13 +101,13 @@ SmileObject SimpleParse(const char *input)
 	return RecursiveSimpleParse(lexer);
 }
 
-SmileList FullParse(const char *input)
+SmileObject FullParse(const char *input)
 {
 	String source;
 	Lexer lexer;
 	Parser parser;
 	ParseScope parseScope;
-	SmileList result;
+	SmileObject result;
 
 	source = String_FromC(input);
 	lexer = Lexer_Create(source, 0, String_Length(source), TestFilename, 1, 1);

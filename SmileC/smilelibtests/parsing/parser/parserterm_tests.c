@@ -40,15 +40,10 @@ START_TEST(CanParseASingleByte)
 	Lexer lexer = SetupLexer("127x");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
-	ASSERT(result != NULL && result != NullList);
-
-	ASSERT(result->a != NULL && result->a != NullObject);
-	ASSERT(result->d == NullObject);
-
-	ASSERT(SMILE_KIND(result->a) == SMILE_KIND_BYTE);
-	ASSERT(((SmileByte)result->a)->value == 127);
+	ASSERT(SMILE_KIND(result) == SMILE_KIND_BYTE);
+	ASSERT(((SmileByte)result)->value == 127);
 }
 END_TEST
 
@@ -57,15 +52,10 @@ START_TEST(CanParseASingleInteger16)
 	Lexer lexer = SetupLexer("16383h");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
-	ASSERT(result != NULL && result != NullList);
-
-	ASSERT(result->a != NULL && result->a != NullObject);
-	ASSERT(result->d == NullObject);
-
-	ASSERT(SMILE_KIND(result->a) == SMILE_KIND_INTEGER16);
-	ASSERT(((SmileInteger16)result->a)->value == 16383);
+	ASSERT(SMILE_KIND(result) == SMILE_KIND_INTEGER16);
+	ASSERT(((SmileInteger16)result)->value == 16383);
 }
 END_TEST
 
@@ -74,15 +64,10 @@ START_TEST(CanParseASingleInteger32)
 	Lexer lexer = SetupLexer("12345");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
-	ASSERT(result != NULL && result != NullList);
-
-	ASSERT(result->a != NULL && result->a != NullObject);
-	ASSERT(result->d == NullObject);
-
-	ASSERT(SMILE_KIND(result->a) == SMILE_KIND_INTEGER32);
-	ASSERT(((SmileInteger32)result->a)->value == 12345);
+	ASSERT(SMILE_KIND(result) == SMILE_KIND_INTEGER32);
+	ASSERT(((SmileInteger32)result)->value == 12345);
 }
 END_TEST
 
@@ -91,15 +76,10 @@ START_TEST(CanParseASingleInteger64)
 	Lexer lexer = SetupLexer("12345L");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
-	ASSERT(result != NULL && result != NullList);
-
-	ASSERT(result->a != NULL && result->a != NullObject);
-	ASSERT(result->d == NullObject);
-
-	ASSERT(SMILE_KIND(result->a) == SMILE_KIND_INTEGER64);
-	ASSERT(((SmileInteger64)result->a)->value == 12345LL);
+	ASSERT(SMILE_KIND(result) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result)->value == 12345LL);
 }
 END_TEST
 

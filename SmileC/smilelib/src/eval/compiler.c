@@ -61,22 +61,25 @@ static void Compiler_CompileNot(Compiler compiler, SmileList args);
 static void EmitPop1(Compiler compiler);
 
 #define EMIT0(__opcode__, __stackDelta__) \
-	((byteCode = ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, (__opcode__))), \
+	((offset = ByteCodeSegment_Emit(segment, (__opcode__))), \
 		ApplyStackDelta(compiler->currentFunction, __stackDelta__), \
-		byteCode)
+		offset)
 		
 #define EMIT1(__opcode__, __stackDelta__, __operand1__) \
-	((byteCode = ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, (__opcode__))), \
-		byteCode->u.__operand1__, \
+	((offset = ByteCodeSegment_Emit(segment, (__opcode__))), \
+		segment->byteCodes[offset].u.__operand1__, \
 		ApplyStackDelta(compiler->currentFunction, __stackDelta__), \
-		byteCode)
+		offset)
 
 #define EMIT2(__opcode__, __stackDelta__, __operand1__, __operand2__) \
-	((byteCode = ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, (__opcode__))), \
-		byteCode->u.__operand1__, \
-		byteCode->u.__operand2__, \
+	((offset = ByteCodeSegment_Emit(segment, (__opcode__))), \
+		segment->byteCodes[offset].u.__operand1__, \
+		segment->byteCodes[offset].u.__operand2__, \
 		ApplyStackDelta(compiler->currentFunction, __stackDelta__), \
-		byteCode)
+		offset)
+
+#define FIX_BRANCH(__offset__, __delta__) \
+	(segment->byteCodes[(__offset__)].u.index = (__delta__))
 
 Inline Int ApplyStackDelta(CompiledFunction compiledFunction, Int stackDelta)
 {
@@ -95,7 +98,7 @@ static void EmitPop1(Compiler compiler)
 {
 	Int lastOpcode, newOpcode;
 	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
-	ByteCode byteCode;
+	Int offset;
 
 	if (segment->numByteCodes <= 0) {
 		EMIT0(Op_Pop1, -1);
@@ -429,29 +432,18 @@ Int Compiler_AddObject(Compiler compiler, SmileObject obj)
 /// Compile expressions in the global scope, creating a new global function for them.
 /// </summary>
 /// <param name="compiler">The compiler that will be compiling these expressions.</param>
-/// <param name="exprs">The expressions to compile.</param>
+/// <param name="expr">The expression to compile.</param>
 /// <returns>The resulting compiled function.</returns>
-CompiledFunction Compiler_CompileGlobal(Compiler compiler, SmileList exprs)
+CompiledFunction Compiler_CompileGlobal(Compiler compiler, SmileObject expr)
 {
-	ByteCode byteCode;
-	SmileObject body;
 	CompiledFunction compiledFunction;
-	Int length;
-	
-	length = SmileList_Length(exprs);
-	if (length <= 0) {
-		body = NullObject;
-	}
-	else if (length == 1) {
-		body = exprs->a;
-	}
-	else {
-		body = (SmileObject)LIST_CONS(SMILE_SPECIAL_SYMBOL__PROGN, exprs);
-	}
+	Int offset;
+	ByteCodeSegment segment;
 
-	compiledFunction = Compiler_BeginFunction(compiler, NullList, body);
+	compiledFunction = Compiler_BeginFunction(compiler, NullList, expr);
+	segment = compiler->currentFunction->byteCodeSegment;
 
-	Compiler_CompileExpr(compiler, body);
+	Compiler_CompileExpr(compiler, expr);
 
 	EMIT0(Op_Ret, -1);
 
@@ -484,8 +476,7 @@ Int Compiler_CompileExpr(Compiler compiler, SmileObject expr)
 	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 	Int startIndex = segment->numByteCodes;
 	SmileList list;
-	Int argCount, index;
-	ByteCode byteCode;
+	Int argCount, index, offset;
 
 	switch (SMILE_KIND(expr)) {
 
@@ -638,7 +629,8 @@ Int Compiler_CompileExpr(Compiler compiler, SmileObject expr)
 static void Compiler_CompileProperty(Compiler compiler, SmilePair pair, Bool store)
 {
 	Symbol symbol;
-	ByteCode byteCode;
+	Int offset;
+	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 
 	if (SMILE_KIND(pair->right) != SMILE_KIND_SYMBOL) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmilePair_GetSourceLocation(pair),
@@ -690,8 +682,9 @@ static void Compiler_CompileProperty(Compiler compiler, SmilePair pair, Bool sto
 // Form: symbol
 static void Compiler_CompileVariable(Compiler compiler, Symbol symbol, Bool store)
 {
-	ByteCode byteCode;
+	Int offset;
 	Int functionDepth;
+	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 	CompiledLocalSymbol localSymbol = CompileScope_FindSymbol(compiler->currentScope, symbol);
 
 	if (localSymbol == NULL) {
@@ -758,8 +751,9 @@ static void Compiler_CompileMethodCall(Compiler compiler, SmilePair pair, SmileL
 {
 	Int length;
 	SmileList temp;
-	ByteCode byteCode;
+	Int offset;
 	Symbol symbol;
+	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 
 	// First, make sure the args are well-formed, and count how many of them there are.
 	length = SmileList_Length(args);
@@ -890,7 +884,8 @@ static void Compiler_CompileSetf(Compiler compiler, SmileList args)
 	SmileObject dest, value, index;
 	SmilePair pair;
 	Symbol symbol;
-	ByteCode byteCode;
+	Int offset;
+	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 
 	// There are three possible legal forms for the arguments:
 	//
@@ -986,7 +981,8 @@ static void Compiler_CompileOpEquals(Compiler compiler, SmileList args)
 	SmileObject dest, value, index;
 	SmilePair pair;
 	Symbol symbol, op;
-	ByteCode byteCode;
+	Int offset;
+	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 
 	// There are three possible legal forms for the arguments:
 	//
@@ -1139,10 +1135,9 @@ static void Compiler_CompileIf(Compiler compiler, SmileList args)
 	Int elseKind;
 	Bool not;
 	ByteCodeSegment segment;
-	Int bfOffset, bfLabelOffset, bfDelta;
-	Int jmpOffset, jmpLabelOffset, jmpDelta;
-	ByteCode bf, jmp, bfLabel, jmpLabel;
-	ByteCode byteCode;
+	Int bfDelta, jmpDelta;
+	Int bf, jmp, bfLabel, jmpLabel;
+	Int offset;
 
 	segment = compiler->currentFunction->byteCodeSegment;
 
@@ -1196,27 +1191,23 @@ static void Compiler_CompileIf(Compiler compiler, SmileList args)
 	Compiler_CompileExpr(compiler, condition);
 
 	// Emit the conditional logic.
-	bfOffset = segment->numByteCodes;
 	bf = EMIT0(Op_Bf, -1);
 	Compiler_CompileExpr(compiler, thenClause);
-	jmpOffset = segment->numByteCodes;
 	jmp = EMIT0(Op_Jmp, 0);
-	bfLabelOffset = segment->numByteCodes;
 	bfLabel = EMIT0(Op_Label, 0);
 	Compiler_CompileExpr(compiler, elseClause);
-	jmpLabelOffset = segment->numByteCodes;
 	jmpLabel = EMIT0(Op_Label, 0);
 
 	// By the time we reach this point, only 'then' or 'else' will be left on the stack.
 	compiler->currentFunction->currentStackDepth--;
 
 	// Fill in the relative branch targets.
-	bfDelta = bfLabelOffset - bfOffset;
-	bf->u.index = bfDelta;
-	bfLabel->u.index = -bfDelta;
-	jmpDelta = jmpLabelOffset - jmpOffset;
-	jmp->u.index = jmpDelta;
-	jmpLabel->u.index = -jmpDelta;
+	bfDelta = bfLabel - bf;
+	FIX_BRANCH(bf, bfDelta);
+	FIX_BRANCH(bfLabel, -bfDelta);
+	jmpDelta = jmpLabel - jmp;
+	FIX_BRANCH(jmp, jmpDelta);
+	FIX_BRANCH(jmpLabel, -jmpDelta);
 }
 
 // Form: [$while pre-body cond post-body]
@@ -1226,10 +1217,9 @@ static void Compiler_CompileWhile(Compiler compiler, SmileList args)
 	Int postKind, tailKind;
 	Bool not, hasPre, hasPost;
 	ByteCodeSegment segment;
-	Int bOffset, bLabelOffset, bDelta;
-	Int jmpOffset, jmpLabelOffset, jmpDelta;
-	ByteCode b, jmp, bLabel, jmpLabel;
-	ByteCode byteCode;
+	Int bDelta, jmpDelta;
+	Int b, jmp, bLabel, jmpLabel;
+	Int offset;
 
 	segment = compiler->currentFunction->byteCodeSegment;
 
@@ -1293,14 +1283,12 @@ static void Compiler_CompileWhile(Compiler compiler, SmileList args)
 		//       jmp l1
 		//   l2:
 
-		jmpLabelOffset = segment->numByteCodes;
 		jmpLabel = EMIT0(Op_Label, 0);
 	
 		Compiler_CompileExpr(compiler, preClause);
 
 		Compiler_CompileExpr(compiler, condition);
 
-		bOffset = segment->numByteCodes;
 		b = EMIT0(not ? Op_Bf : Op_Bt, -1);
 	
 		EmitPop1(compiler);
@@ -1308,19 +1296,17 @@ static void Compiler_CompileWhile(Compiler compiler, SmileList args)
 		Compiler_CompileExpr(compiler, postClause);
 		EmitPop1(compiler);
 
-		jmpOffset = segment->numByteCodes;
 		jmp = EMIT0(Op_Jmp, 0);
 	
-		bLabelOffset = segment->numByteCodes;
 		bLabel = EMIT0(Op_Label, 0);
 
-		bDelta = bLabelOffset - bOffset;
-		b->u.index = bDelta;
-		bLabel->u.index = -bDelta;
-
-		jmpDelta = jmpLabelOffset - jmpOffset;
-		jmp->u.index = jmpDelta;
-		jmpLabel->u.index = -jmpDelta;
+		bDelta = bLabel - b;
+		FIX_BRANCH(b, bDelta);
+		FIX_BRANCH(bLabel, -bDelta);
+	
+		jmpDelta = jmpLabel - jmp;
+		FIX_BRANCH(jmp, jmpDelta);
+		FIX_BRANCH(jmpLabel, -jmpDelta);
 	
 		// By the time we reach this point, one iteration will be left on the stack.
 		compiler->currentFunction->currentStackDepth++;
@@ -1335,31 +1321,27 @@ static void Compiler_CompileWhile(Compiler compiler, SmileList args)
 		//       eval cond
 		//       branch l2
 	
-		jmpOffset = segment->numByteCodes;
 		jmp = EMIT0(Op_Jmp, 0);
 
-		bLabelOffset = segment->numByteCodes;
 		bLabel = EMIT0(Op_Label, 0);
 	
 		EmitPop1(compiler);
 
-		jmpLabelOffset = segment->numByteCodes;
 		jmpLabel = EMIT0(Op_Label, 0);
 
 		Compiler_CompileExpr(compiler, preClause);
 
 		Compiler_CompileExpr(compiler, condition);
 
-		bOffset = segment->numByteCodes;
 		b = EMIT0(not ? Op_Bf : Op_Bt, -1);
 	
-		bDelta = bLabelOffset - bOffset;
-		b->u.index = bDelta;
-		bLabel->u.index = -bDelta;
+		bDelta = bLabel - b;
+		FIX_BRANCH(b, bDelta);
+		FIX_BRANCH(bLabel, -bDelta);
 	
-		jmpDelta = jmpLabelOffset - jmpOffset;
-		jmp->u.index = jmpDelta;
-		jmpLabel->u.index = -jmpDelta;
+		jmpDelta = jmpLabel - jmp;
+		FIX_BRANCH(jmp, jmpDelta);
+		FIX_BRANCH(jmpLabel, -jmpDelta);
 
 		// By the time we reach this point, one iteration will be left on the stack.
 		compiler->currentFunction->currentStackDepth++;
@@ -1377,31 +1359,27 @@ static void Compiler_CompileWhile(Compiler compiler, SmileList args)
 	
 		EMIT0(Op_LdNull, +1);
 	
-		jmpOffset = segment->numByteCodes;
 		jmp = EMIT0(Op_Jmp, 0);
 	
-		bLabelOffset = segment->numByteCodes;
 		bLabel = EMIT0(Op_Label, 0);
 	
 		EmitPop1(compiler);
 
 		Compiler_CompileExpr(compiler, postClause);
 
-		jmpLabelOffset = segment->numByteCodes;
 		jmpLabel = EMIT0(Op_Label, 0);
 	
 		Compiler_CompileExpr(compiler, condition);
 
-		bOffset = segment->numByteCodes;
 		b = EMIT0(not ? Op_Bf : Op_Bt, -1);
 	
-		bDelta = bLabelOffset - bOffset;
-		b->u.index = bDelta;
-		bLabel->u.index = -bDelta;
+		bDelta = bLabel - b;
+		FIX_BRANCH(b, bDelta);
+		FIX_BRANCH(bLabel, -bDelta);
 	
-		jmpDelta = jmpLabelOffset - jmpOffset;
-		jmp->u.index = jmpDelta;
-		jmpLabel->u.index = -jmpDelta;
+		jmpDelta = jmpLabel - jmp;
+		FIX_BRANCH(jmp, jmpDelta);
+		FIX_BRANCH(jmpLabel, -jmpDelta);
 	}
 	else {
 		// Form: while cond {}
@@ -1411,19 +1389,17 @@ static void Compiler_CompileWhile(Compiler compiler, SmileList args)
 		//       branch l1
 		//       ldnull
 
-		bLabelOffset = segment->numByteCodes;
 		bLabel = EMIT0(Op_Label, 0);
 	
 		Compiler_CompileExpr(compiler, condition);
 
-		bOffset = segment->numByteCodes;
 		b = EMIT0(not ? Op_Bf : Op_Bt, -1);
 	
 		EMIT0(Op_LdNull, +1);
 	
-		bDelta = bLabelOffset - bOffset;
-		b->u.index = bDelta;
-		bLabel->u.index = -bDelta;
+		bDelta = bLabel - b;
+		FIX_BRANCH(b, bDelta);
+		FIX_BRANCH(bLabel, -bDelta);
 	}
 }
 
@@ -1442,7 +1418,8 @@ static void Compiler_CompileCatch(Compiler compiler, SmileList args)
 // Form: [$return] or [$return value]
 static void Compiler_CompileReturn(Compiler compiler, SmileList args)
 {
-	ByteCode byteCode;
+	Int offset;
+	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 
 	if (SMILE_KIND(args) == SMILE_KIND_NULL) {
 		// Naked [$return], so we're implicitly returning null.
@@ -1471,7 +1448,8 @@ static void Compiler_CompileFn(Compiler compiler, SmileList args)
 	SmileList functionArgs, temp;
 	SmileObject functionBody;
 	Int numFunctionArgs;
-	ByteCode byteCode;
+	Int offset;
+	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 
 	// The [$fn] expression must be of the form:  [$fn [args...] body].
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->a) != SMILE_KIND_LIST
@@ -1528,7 +1506,8 @@ static void Compiler_CompileFn(Compiler compiler, SmileList args)
 static void Compiler_CompileQuote(Compiler compiler, SmileList args)
 {
 	Int objectIndex;
-	ByteCode byteCode;
+	Int offset;
+	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_NULL) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
@@ -1572,14 +1551,6 @@ static void Compiler_CompileProg1(Compiler compiler, SmileList args)
 		// ...and discard its result.
 		EmitPop1(compiler);
 	}
-}
-
-// Form:  [a b c ...]   (This is intended to be used for the global scope.)
-Int Compiler_CompileExprs(Compiler compiler, SmileList exprs)
-{
-	Int offset = compiler->currentFunction->byteCodeSegment->numByteCodes;
-	Compiler_CompileProgN(compiler, exprs);
-	return offset;
 }
 
 // Form: [$progn a b c ...]
@@ -1628,7 +1599,8 @@ static void Compiler_CompileScope(Compiler compiler, SmileList args)
 	CompileScope scope;
 	SmileList scopeVars, temp;
 	Int numScopeVars, localIndex;
-	ByteCode byteCode;
+	Int offset;
+	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 
 	// The [$scope] expression must be of the form:  [$scope [locals...] ...].
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->a) != SMILE_KIND_LIST
@@ -1682,7 +1654,8 @@ static void Compiler_CompileNew(Compiler compiler, SmileList args)
 	SmileList pairs, pair;
 	Symbol symbol;
 	SmileObject value;
-	ByteCode byteCode;
+	Int offset;
+	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 
 	// Must be an expression of the form: [$new base [[sym1 val1] [sym2 val2] [sym3 val3] ...]]
 	if (SmileList_Length(args) != 2) {
@@ -1725,7 +1698,8 @@ static void Compiler_CompileNew(Compiler compiler, SmileList args)
 // Form: [$is x y]
 static void Compiler_CompileIs(Compiler compiler, SmileList args)
 {
-	ByteCode byteCode;
+	Int offset;
+	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 
 	// Must be an expression of the form [$is x y].
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_LIST
@@ -1748,7 +1722,8 @@ static void Compiler_CompileIs(Compiler compiler, SmileList args)
 // Form: [$typeof x]
 static void Compiler_CompileTypeOf(Compiler compiler, SmileList args)
 {
-	ByteCode byteCode;
+	Int offset;
+	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 
 	// Must be an expression of the form [$typeof x].
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_NULL) {
@@ -1767,7 +1742,8 @@ static void Compiler_CompileTypeOf(Compiler compiler, SmileList args)
 // Form: [$eq x y]
 static void Compiler_CompileSuperEq(Compiler compiler, SmileList args)
 {
-	ByteCode byteCode;
+	Int offset;
+	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 
 	// Must be an expression of the form [$eq x y].
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_LIST
@@ -1790,7 +1766,8 @@ static void Compiler_CompileSuperEq(Compiler compiler, SmileList args)
 // Form: [$ne x y]
 static void Compiler_CompileSuperNe(Compiler compiler, SmileList args)
 {
-	ByteCode byteCode;
+	Int offset;
+	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 
 	// Must be an expression of the form [$ne x y].
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_LIST
@@ -1819,14 +1796,11 @@ static void Compiler_CompileAnd(Compiler compiler, SmileList args)
 	SmileObject condition;
 	Bool not;
 
-	ByteCode localBfByteCodes[16];
-	Int localBfOffsets[16];
-	ByteCode *bfByteCodes;
-	Int *bfOffsets;
+	Int localBfs[16];
+	Int *bfs;
 	Int falseOffset;
-	ByteCode jmpByteCode, jmpLabelByteCode;
-	Int jmpOffset, jmpLabelOffset, jmpDelta;
-	ByteCode byteCode;
+	Int jmp, jmpLabel, jmpDelta;
+	Int offset;
 
 	// Must be a well-formed expression of the form [$and x y z ...].
 	if ((length = SmileList_Length(args)) <= 0) {
@@ -1837,14 +1811,12 @@ static void Compiler_CompileAnd(Compiler compiler, SmileList args)
 
 	// Create somewhere to store the byte-code branches, if there are a lot of them.
 	if (length > 16) {
-		bfByteCodes = GC_MALLOC_STRUCT_ARRAY(ByteCode, length);
-		bfOffsets = (Int *)GC_MALLOC_ATOMIC(sizeof(Int) * length);
-		if (bfByteCodes == NULL || bfOffsets == NULL)
+		bfs = (Int *)GC_MALLOC_ATOMIC(sizeof(Int) * length);
+		if (bfs == NULL)
 			Smile_Abort_OutOfMemory();
 	}
 	else {
-		bfByteCodes = localBfByteCodes;
-		bfOffsets = localBfOffsets;
+		bfs = localBfs;
 	}
 
 	// Emit all of the conditionals.
@@ -1858,34 +1830,31 @@ static void Compiler_CompileAnd(Compiler compiler, SmileList args)
 		Compiler_CompileExpr(compiler, condition);
 	
 		// If falsy, branch to result in 'false'.
-		bfOffsets[i] = segment->numByteCodes;
-		bfByteCodes[i] = EMIT0(not ? Op_Bt : Op_Bf, -1);
+		bfs[i] = EMIT0(not ? Op_Bt : Op_Bf, -1);
 	
 		// It's truthy, so keep going.
 	}
 
 	// We passed all the tests, so the result is true.
 	EMIT1(Op_LdBool, +1, boolean = True);
-	jmpOffset = segment->numByteCodes;
-	jmpByteCode = EMIT0(Op_Jmp, 0);
+	jmp = EMIT0(Op_Jmp, 0);
 
 	// Now handle the falsy case.
 	falseOffset = segment->numByteCodes;
 	EMIT1(Op_LdBool, +1, boolean = False);
 
 	// Add a branch target for the jump.
-	jmpLabelOffset = segment->numByteCodes;
-	jmpLabelByteCode = EMIT0(Op_Label, 0);
+	jmpLabel = EMIT0(Op_Label, 0);
 
 	// Now fill in all the branch deltas for the conditional branches.
 	for (i = 0; i < length; i++) {
-		bfByteCodes[i]->u.index = falseOffset - bfOffsets[i];
+		FIX_BRANCH(bfs[i], falseOffset - bfs[i]);
 	}
 
 	// And fill in the branch delta for the unconditional branch.
-	jmpDelta = jmpLabelOffset - jmpOffset;
-	jmpByteCode->u.index = jmpDelta;
-	jmpLabelByteCode->u.index = -jmpDelta;
+	jmpDelta = jmpLabel - jmp;
+	FIX_BRANCH(jmp, jmpDelta);
+	FIX_BRANCH(jmpLabel, -jmpDelta);
 
 	compiler->currentFunction->currentStackDepth--;	// We actually have one fewer on the stack than the automatic count.
 }
@@ -1899,14 +1868,11 @@ static void Compiler_CompileOr(Compiler compiler, SmileList args)
 	SmileObject condition;
 	Bool not;
 
-	ByteCode localBtByteCodes[16];
-	Int localBtOffsets[16];
-	ByteCode *btByteCodes;
-	Int *btOffsets;
+	Int localBts[16];
+	Int *bts;
 	Int trueOffset;
-	ByteCode jmpByteCode, jmpLabelByteCode;
-	Int jmpOffset, jmpLabelOffset, jmpDelta;
-	ByteCode byteCode;
+	Int jmp, jmpLabel, jmpDelta;
+	Int offset;
 
 	// Must be a well-formed expression of the form [$or x y z ...].
 	if ((length = SmileList_Length(args)) <= 0) {
@@ -1917,14 +1883,12 @@ static void Compiler_CompileOr(Compiler compiler, SmileList args)
 
 	// Create somewhere to store the byte-code branches, if there are a lot of them.
 	if (length > 16) {
-		btByteCodes = GC_MALLOC_STRUCT_ARRAY(ByteCode, length);
-		btOffsets = (Int *)GC_MALLOC_ATOMIC(sizeof(Int) * length);
-		if (btByteCodes == NULL || btOffsets == NULL)
+		bts = (Int *)GC_MALLOC_ATOMIC(sizeof(Int) * length);
+		if (bts == NULL)
 			Smile_Abort_OutOfMemory();
 	}
 	else {
-		btByteCodes = localBtByteCodes;
-		btOffsets = localBtOffsets;
+		bts = localBts;
 	}
 
 	// Emit all of the conditionals.
@@ -1938,34 +1902,31 @@ static void Compiler_CompileOr(Compiler compiler, SmileList args)
 		Compiler_CompileExpr(compiler, temp->a);
 
 		// If truthy, branch to result in 'true'.
-		btOffsets[i] = segment->numByteCodes;
-		btByteCodes[i] = EMIT0(not ? Op_Bf : Op_Bt, -1);
+		bts[i] = EMIT0(not ? Op_Bf : Op_Bt, -1);
 	
 		// It's truthy, so keep going.
 	}
 
 	// We failed all the tests, so the result is false.
 	EMIT1(Op_LdBool, +1, boolean = False);
-	jmpOffset = segment->numByteCodes;
-	jmpByteCode = EMIT0(Op_Jmp, 0);
+	jmp = EMIT0(Op_Jmp, 0);
 
 	// Now handle the truthy case.
 	trueOffset = segment->numByteCodes;
 	EMIT1(Op_LdBool, +1, boolean = True);
 
 	// Add a branch target for the jump.
-	jmpLabelOffset = segment->numByteCodes;
-	jmpLabelByteCode = EMIT0(Op_Label, 0);
+	jmpLabel = EMIT0(Op_Label, 0);
 
 	// Now fill in all the branch deltas for the conditional branches.
 	for (i = 0; i < length; i++) {
-		btByteCodes[i]->u.index = trueOffset - btOffsets[i];
+		FIX_BRANCH(bts[i], trueOffset - bts[i]);
 	}
 
 	// And fill in the branch delta for the unconditional branch.
-	jmpDelta = jmpLabelOffset - jmpOffset;
-	jmpByteCode->u.index = jmpDelta;
-	jmpLabelByteCode->u.index = -jmpDelta;
+	jmpDelta = jmpLabel - jmp;
+	FIX_BRANCH(jmp, jmpDelta);
+	FIX_BRANCH(jmpLabel, -jmpDelta);
 
 	compiler->currentFunction->currentStackDepth--;	// We actually have one fewer on the stack than the automatic count.
 }
@@ -1973,7 +1934,8 @@ static void Compiler_CompileOr(Compiler compiler, SmileList args)
 // Form: [$not x]
 static void Compiler_CompileNot(Compiler compiler, SmileList args)
 {
-	ByteCode byteCode;
+	Int offset;
+	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 
 	// Must be an expression of the form [$not x].
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_NULL) {

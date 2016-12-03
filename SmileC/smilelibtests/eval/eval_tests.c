@@ -30,13 +30,13 @@ STATIC_STRING(TestFilename, "test.sm");
 
 TEST_SUITE(EvalTests)
 
-static SmileList Parse(const char *text)
+static SmileObject Parse(const char *text)
 {
 	String source;
 	Lexer lexer;
 	Parser parser;
 	ParseScope scope;
-	SmileList expr;
+	SmileObject expr;
 
 	Smile_ResetEnvironment();
 
@@ -49,15 +49,15 @@ static SmileList Parse(const char *text)
 	scope = ParseScope_CreateRoot();
 	expr = Parser_Parse(parser, lexer, scope);
 
-	return SMILE_KIND(parser->firstMessage) == SMILE_KIND_NULL ? expr : NullList;
+	return SMILE_KIND(parser->firstMessage) == SMILE_KIND_NULL ? expr : NullObject;
 }
 
 static Compiler Compile(const char *text)
 {
-	SmileList exprs = Parse(text);
+	SmileObject expr = Parse(text);
 
 	Compiler compiler = Compiler_Create();
-	CompiledFunction globalFunction = Compiler_CompileGlobal(compiler, exprs);
+	CompiledFunction globalFunction = Compiler_CompileGlobal(compiler, expr);
 	
 	return compiler;
 }

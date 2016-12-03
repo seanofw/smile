@@ -40,6 +40,7 @@ typedef enum {
 // Parser-internal methods
 
 SMILE_INTERNAL_FUNC ParseError Parser_ParseScope(Parser parser, SmileObject *expr);
+SMILE_INTERNAL_FUNC SmileObject Parser_ParseScopeBody(Parser parser);
 SMILE_INTERNAL_FUNC void Parser_ParseExprsOpt(Parser parser, SmileList *head, SmileList *tail, Int modeFlags);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseExpr(Parser parser, SmileObject *expr, Int modeFlags);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseStmt(Parser parser, SmileObject *expr, Int modeFlags);

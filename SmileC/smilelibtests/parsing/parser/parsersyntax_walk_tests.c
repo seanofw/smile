@@ -40,11 +40,12 @@ START_TEST(CanReplaceSimpleTerminalForms)
 	);
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileList result = (SmileList)Parser_Parse(parser, lexer, parseScope);
 
-	ASSERT(RecursiveEquals(LIST_SECOND(result), SimpleParse("[(4 . +) 5]")));
-	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("123")));
-	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[(6 . +) 7]")));
+	ASSERT(RecursiveEquals(LIST_FIRST(result), SimpleParse("$progn")));
+	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(4 . +) 5]")));
+	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("123")));
+	ASSERT(RecursiveEquals(LIST_FIFTH(result), SimpleParse("[(6 . +) 7]")));
 }
 END_TEST
 
@@ -58,11 +59,12 @@ START_TEST(CanReplaceMultiTerminalForms)
 	);
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileList result = (SmileList)Parser_Parse(parser, lexer, parseScope);
 
-	ASSERT(RecursiveEquals(LIST_SECOND(result), SimpleParse("[(4 . +) 5]")));
-	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("123")));
-	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[(6 . +) 7]")));
+	ASSERT(RecursiveEquals(LIST_FIRST(result), SimpleParse("$progn")));
+	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(4 . +) 5]")));
+	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("123")));
+	ASSERT(RecursiveEquals(LIST_FIFTH(result), SimpleParse("[(6 . +) 7]")));
 }
 END_TEST
 
@@ -76,11 +78,12 @@ START_TEST(CanReplaceFormsWithAKnownNonterminal)
 		);
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileList result = (SmileList)Parser_Parse(parser, lexer, parseScope);
 
-	ASSERT(RecursiveEquals(LIST_SECOND(result), SimpleParse("[(4 . +) 5]")));
-	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("123")));
-	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[(6 . +) 7]")));
+	ASSERT(RecursiveEquals(LIST_FIRST(result), SimpleParse("$progn")));
+	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(4 . +) 5]")));
+	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("123")));
+	ASSERT(RecursiveEquals(LIST_FIFTH(result), SimpleParse("[(6 . +) 7]")));
 }
 END_TEST
 
@@ -94,11 +97,12 @@ START_TEST(SubstitutionWorksWithAKnownNonterminal)
 	);
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileList result = (SmileList)Parser_Parse(parser, lexer, parseScope);
 
-	ASSERT(RecursiveEquals(LIST_SECOND(result), SimpleParse("[(4 . +) 5]")));
-	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(123 . +) 999]")));
-	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[(6 . +) 7]")));
+	ASSERT(RecursiveEquals(LIST_FIRST(result), SimpleParse("$progn")));
+	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(4 . +) 5]")));
+	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[(123 . +) 999]")));
+	ASSERT(RecursiveEquals(LIST_FIFTH(result), SimpleParse("[(6 . +) 7]")));
 }
 END_TEST
 
@@ -112,11 +116,12 @@ START_TEST(SubstitutionOfComplexContentWorksWithAKnownNonterminal)
 	);
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileList result = (SmileList)Parser_Parse(parser, lexer, parseScope);
 
-	ASSERT(RecursiveEquals(LIST_SECOND(result), SimpleParse("[(4 . +) 5]")));
-	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(123 . +) [([(8 . *) 9] . /) 10]]")));
-	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[(6 . +) 7]")));
+	ASSERT(RecursiveEquals(LIST_FIRST(result), SimpleParse("$progn")));
+	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(4 . +) 5]")));
+	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[(123 . +) [([(8 . *) 9] . /) 10]]")));
+	ASSERT(RecursiveEquals(LIST_FIFTH(result), SimpleParse("[(6 . +) 7]")));
 }
 END_TEST
 
@@ -130,11 +135,12 @@ START_TEST(IfThenTest)
 	);
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileList result = (SmileList)Parser_Parse(parser, lexer, parseScope);
 
-	ASSERT(RecursiveEquals(LIST_SECOND(result), SimpleParse("[(4 . +) 5]")));
-	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[$if [(1 . <) 2] 10]")));
-	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[(6 . +) 7]")));
+	ASSERT(RecursiveEquals(LIST_FIRST(result), SimpleParse("$progn")));
+	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(4 . +) 5]")));
+	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[$if [(1 . <) 2] 10]")));
+	ASSERT(RecursiveEquals(LIST_FIFTH(result), SimpleParse("[(6 . +) 7]")));
 }
 END_TEST
 
@@ -148,11 +154,12 @@ START_TEST(IfThenElseTest)
 		);
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileList result = (SmileList)Parser_Parse(parser, lexer, parseScope);
 
-	ASSERT(RecursiveEquals(LIST_SECOND(result), SimpleParse("[(4 . +) 5]")));
-	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[$if [(1 . <) 2] 10 20]")));
-	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[(6 . +) 7]")));
+	ASSERT(RecursiveEquals(LIST_FIRST(result), SimpleParse("$progn")));
+	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(4 . +) 5]")));
+	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[$if [(1 . <) 2] 10 20]")));
+	ASSERT(RecursiveEquals(LIST_FIFTH(result), SimpleParse("[(6 . +) 7]")));
 }
 END_TEST
 
@@ -168,12 +175,13 @@ START_TEST(IfThenElseTestWithBothIfThenRules)
 	);
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileList result = (SmileList)Parser_Parse(parser, lexer, parseScope);
 
-	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(4 . +) 5]")));
-	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[$if [(1 . <) 2] 10]")));
-	ASSERT(RecursiveEquals(LIST_FIFTH(result), SimpleParse("[$if [(3 . <) 4] 30 40]")));
-	ASSERT(RecursiveEquals(LIST_SIXTH(result), SimpleParse("[(6 . +) 7]")));
+	ASSERT(RecursiveEquals(LIST_FIRST(result), SimpleParse("$progn")));
+	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[(4 . +) 5]")));
+	ASSERT(RecursiveEquals(LIST_FIFTH(result), SimpleParse("[$if [(1 . <) 2] 10]")));
+	ASSERT(RecursiveEquals(LIST_SIXTH(result), SimpleParse("[$if [(3 . <) 4] 30 40]")));
+	ASSERT(RecursiveEquals(LIST_SEVENTH(result), SimpleParse("[(6 . +) 7]")));
 }
 END_TEST
 
@@ -194,11 +202,12 @@ START_TEST(IfThenElseTestWithNestedConditionals)
 		);
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileList result = (SmileList)Parser_Parse(parser, lexer, parseScope);
 
-	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(4 . +) 5]")));
-	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[$if [(1 . <) 2] [$if [(5 . <) 6] 50 60] [$if [(3 . <) 4] [$if [(7 . <) 8] 70 80] 40]]")));
-	ASSERT(RecursiveEquals(LIST_FIFTH(result), SimpleParse("[(6 . +) 7]")));
+	ASSERT(RecursiveEquals(LIST_FIRST(result), SimpleParse("$progn")));
+	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[(4 . +) 5]")));
+	ASSERT(RecursiveEquals(LIST_FIFTH(result), SimpleParse("[$if [(1 . <) 2] [$if [(5 . <) 6] 50 60] [$if [(3 . <) 4] [$if [(7 . <) 8] 70 80] 40]]")));
+	ASSERT(RecursiveEquals(LIST_SIXTH(result), SimpleParse("[(6 . +) 7]")));
 }
 END_TEST
 
@@ -214,12 +223,13 @@ START_TEST(CStyleIfThenElseTest)
 		);
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileList result = (SmileList)Parser_Parse(parser, lexer, parseScope);
 
-	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(4 . +) 5]")));
-	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[$if [(1 . <) 2] 10]")));
-	ASSERT(RecursiveEquals(LIST_FIFTH(result), SimpleParse("[$if [(3 . <) 4] 30 40]")));
-	ASSERT(RecursiveEquals(LIST_SIXTH(result), SimpleParse("[(6 . +) 7]")));
+	ASSERT(RecursiveEquals(LIST_FIRST(result), SimpleParse("$progn")));
+	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[(4 . +) 5]")));
+	ASSERT(RecursiveEquals(LIST_FIFTH(result), SimpleParse("[$if [(1 . <) 2] 10]")));
+	ASSERT(RecursiveEquals(LIST_SIXTH(result), SimpleParse("[$if [(3 . <) 4] 30 40]")));
+	ASSERT(RecursiveEquals(LIST_SEVENTH(result), SimpleParse("[(6 . +) 7]")));
 }
 END_TEST
 
@@ -237,11 +247,12 @@ START_TEST(SimpleCustomDslTest)
 	);
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileList result = (SmileList)Parser_Parse(parser, lexer, parseScope);
 
-	ASSERT(RecursiveEquals(LIST_SIXTH(result), SimpleParse("[(1 . +) 2]")));
-	ASSERT(RecursiveEquals(LIST_SEVENTH(result), SimpleParse("[fronk [$quote [qux [xuq [xuq [qux]]]]]]")));
-	ASSERT(RecursiveEquals(LIST_EIGHTH(result), SimpleParse("[(3 . +) 4]")));
+	ASSERT(RecursiveEquals(LIST_FIRST(result), SimpleParse("$progn")));
+	ASSERT(RecursiveEquals(LIST_SEVENTH(result), SimpleParse("[(1 . +) 2]")));
+	ASSERT(RecursiveEquals(LIST_EIGHTH(result), SimpleParse("[fronk [$quote [qux [xuq [xuq [qux]]]]]]")));
+	ASSERT(RecursiveEquals(LIST_NINTH(result), SimpleParse("[(3 . +) 4]")));
 }
 END_TEST
 
@@ -252,14 +263,15 @@ START_TEST(CanExtendStmtWithKeywordRoots)
 		"4 + 5\n"
 		"if (1 < 2) 10\n"
 		"6 + 7\n"
-		);
+	);
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileList result = (SmileList)Parser_Parse(parser, lexer, parseScope);
 
-	ASSERT(RecursiveEquals(LIST_SECOND(result), SimpleParse("[(4 . +) 5]")));
-	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[$if [(1 . <) 2] 10]")));
-	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[(6 . +) 7]")));
+	ASSERT(RecursiveEquals(LIST_FIRST(result), SimpleParse("$progn")));
+	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(4 . +) 5]")));
+	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[$if [(1 . <) 2] 10]")));
+	ASSERT(RecursiveEquals(LIST_FIFTH(result), SimpleParse("[(6 . +) 7]")));
 }
 END_TEST
 
@@ -270,15 +282,16 @@ START_TEST(CanExtendExprWithKeywordRoots)
 		"4 + 5\n"
 		"x = if (1 < 2) 10\n"
 		"6 + 7\n"
-		);
+	);
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	ParseError declError = ParseScope_Declare(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "x"), PARSEDECL_GLOBAL, NULL, NULL);
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileList result = (SmileList)Parser_Parse(parser, lexer, parseScope);
 
-	ASSERT(RecursiveEquals(LIST_SECOND(result), SimpleParse("[(4 . +) 5]")));
-	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[$set x [$if [(1 . <) 2] 10]]")));
-	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[(6 . +) 7]")));
+	ASSERT(RecursiveEquals(LIST_FIRST(result), SimpleParse("$progn")));
+	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(4 . +) 5]")));
+	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[$set x [$if [(1 . <) 2] 10]]")));
+	ASSERT(RecursiveEquals(LIST_FIFTH(result), SimpleParse("[(6 . +) 7]")));
 }
 END_TEST
 

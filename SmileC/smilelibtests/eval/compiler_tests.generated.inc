@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 9de2dca5bac8e01c813893fd5682ce61
+// SourceHash: 4ec8ae769b9dd094b99c6bfb45f17fe2
 
 START_TEST_SUITE(CompilerTests)
 {
@@ -18,8 +18,10 @@ START_TEST_SUITE(CompilerTests)
 	CanCompileWritesToMembers,
 	CanCompileScopeVariableReads,
 	CanCompileNestedScopeVariableReads,
+	NestedScopesVariablesDontOverlap,
 	CanCompileSimpleConditionals,
 	CanCompileConditionalsAllTheWay,
+	CanCompileAWhileLoopThatComputesLogarithms,
 }
 END_TEST_SUITE(CompilerTests)
 

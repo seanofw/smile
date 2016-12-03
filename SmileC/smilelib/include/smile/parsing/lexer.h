@@ -98,21 +98,13 @@ struct LexerStruct {
 SMILE_API_FUNC Lexer Lexer_Create(String input, Int start, Int length, String filename, Int firstLine, Int firstColumn);
 SMILE_API_FUNC Int Lexer_Next(Lexer lexer);
 SMILE_API_FUNC Int Lexer_DecodeEscapeCode(const Byte **input, const Byte *end, Bool allowUnknowns);
+SMILE_API_FUNC LexerPosition Lexer_GetPosition(Lexer lexer);
+SMILE_API_FUNC LexerPosition LexerPosition_Clone(LexerPosition position);
+SMILE_API_FUNC Token Token_Clone(Token token);
+SMILE_API_FUNC Bool LexerPosition_Equals(LexerPosition a, LexerPosition b);
 
 //-------------------------------------------------------------------------------------------------
 //  Inline parts of the implementation
-
-/// <summary>
-/// Make a safe clone of a position on the heap.
-/// </summary>
-/// <param name="position">The position to clone.</param>
-/// <returns>A copy of the provided position, located on the GC heap.</returns>
-Inline LexerPosition LexerPosition_Clone(LexerPosition position)
-{
-	LexerPosition newPosition = GC_MALLOC_STRUCT(struct LexerPositionStruct);
-	MemCpy(newPosition, position, sizeof(struct LexerPositionStruct));
-	return newPosition;
-}
 
 /// <summary>
 /// Create a position object for a token that describes that token's found location.
@@ -122,18 +114,6 @@ Inline LexerPosition LexerPosition_Clone(LexerPosition position)
 Inline LexerPosition Token_GetPosition(Token token)
 {
 	return LexerPosition_Clone(&token->_position);
-}
-
-/// <summary>
-/// Make a safe clone of a token on the heap.
-/// </summary>
-/// <param name="token">The token to clone.</param>
-/// <returns>A copy of the provided token, located on the GC heap.</returns>
-Inline Token Token_Clone(Token token)
-{
-	Token newToken = GC_MALLOC_STRUCT(struct TokenStruct);
-	MemCpy(newToken, token, sizeof(struct TokenStruct));
-	return newToken;
 }
 
 /// <summary>
@@ -178,25 +158,6 @@ Inline Int Lexer_Peek(Lexer lexer)
 	Int kind = Lexer_Next(lexer);
 	Lexer_Unget(lexer);
 	return kind;
-}
-
-/// <summary>
-/// Compare two lexer positions to see if they are identical/equivalent.
-/// </summary>
-/// <param name="a">The first position to compare.</param>
-/// <param name="b">The first position to compare.</param>
-/// <returns>True if they are identical positions, False if they are not identical.</returns>
-Inline Bool LexerPosition_Equals(LexerPosition a, LexerPosition b)
-{
-	if (a == NULL) return (b == NULL);
-	else if (b == NULL) return False;
-
-	return (a == b
-		|| a->line == b->line
-			&& a->column == b->column
-			&& a->lineStart == b->lineStart
-			&& a->length == b->length
-			&& String_Equals(a->filename, b->filename));
 }
 
 #endif

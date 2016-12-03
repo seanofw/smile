@@ -437,7 +437,7 @@ static Int ParseAndEval(CommandLineArgs options, String string, String filename,
 	Lexer lexer;
 	Parser parser;
 	ParseScope globalScope;
-	SmileList parsedScript;
+	SmileObject parsedScript;
 	SmileList list;
 
 	globalScope = ParseScope_CreateRoot();

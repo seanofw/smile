@@ -33,7 +33,7 @@ STATIC_STRING(TestFilename, "test.sm");
 START_TEST(CannotAddRulesToUnknownRootClasses)
 {
 	Parser parser = Parser_Create();
-	SmileList result = Parser_ParseFromC(parser, ParseScope_CreateRoot(), "#syntax FLERK: [math [EXPR x] plus [EXPR y]] => 123");
+	SmileObject result = Parser_ParseFromC(parser, ParseScope_CreateRoot(), "#syntax FLERK: [math [EXPR x] plus [EXPR y]] => 123");
 	ASSERT(SMILE_KIND(result) == SMILE_KIND_NULL);
 	ASSERT(Parser_GetErrorCount(parser) > 0);
 }
@@ -43,7 +43,7 @@ START_TEST(StmtMustStartWithAKeyword)
 {
 	Parser parser;
 	ParseScope parseScope;
-	SmileList result;
+	SmileObject result;
 
 	parser = Parser_Create();
 	parseScope = ParseScope_CreateRoot();
@@ -66,7 +66,7 @@ START_TEST(ExprMustStartWithAKeyword)
 {
 	Parser parser;
 	ParseScope parseScope;
-	SmileList result;
+	SmileObject result;
 
 	parser = Parser_Create();
 	parseScope = ParseScope_CreateRoot();
@@ -89,7 +89,7 @@ START_TEST(CmpExprRequiresComplexSyntaxPatternRules)
 {
 	Parser parser;
 	ParseScope parseScope;
-	SmileList result;
+	SmileObject result;
 	Int expectedErrorCount;
 
 	parser = Parser_Create();
@@ -138,7 +138,7 @@ START_TEST(AddExprRequiresComplexSyntaxPatternRules)
 {
 	Parser parser;
 	ParseScope parseScope;
-	SmileList result;
+	SmileObject result;
 	Int expectedErrorCount;
 
 	parser = Parser_Create();
@@ -173,7 +173,7 @@ START_TEST(MulExprRequiresComplexSyntaxPatternRules)
 {
 	Parser parser;
 	ParseScope parseScope;
-	SmileList result;
+	SmileObject result;
 	Int expectedErrorCount;
 
 	parser = Parser_Create();
@@ -208,7 +208,7 @@ START_TEST(BinaryExprRequiresComplexSyntaxPatternRules)
 {
 	Parser parser;
 	ParseScope parseScope;
-	SmileList result;
+	SmileObject result;
 	Int expectedErrorCount;
 
 	parser = Parser_Create();
@@ -241,7 +241,7 @@ START_TEST(PrefixExprMustStartWithAKeyword)
 {
 	Parser parser;
 	ParseScope parseScope;
-	SmileList result;
+	SmileObject result;
 
 	parser = Parser_Create();
 	parseScope = ParseScope_CreateRoot();
@@ -264,7 +264,7 @@ START_TEST(PostfixExprRequiresComplexSyntaxPatternRules)
 {
 	Parser parser;
 	ParseScope parseScope;
-	SmileList result;
+	SmileObject result;
 	Int expectedErrorCount;
 
 	parser = Parser_Create();
@@ -297,7 +297,7 @@ START_TEST(TermMustStartWithAKeyword)
 {
 	Parser parser;
 	ParseScope parseScope;
-	SmileList result;
+	SmileObject result;
 
 	parser = Parser_Create();
 	parseScope = ParseScope_CreateRoot();
