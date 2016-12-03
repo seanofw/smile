@@ -34,7 +34,7 @@ START_TEST(CanEmitNop)
 
 	ByteCodeSegment_Emit(segment, Op_Nop);
 
-	result = ByteCodeSegment_ToString(segment, compiledTables);
+	result = ByteCodeSegment_ToString(segment, NULL, compiledTables);
 	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
 }
 END_TEST
@@ -56,7 +56,7 @@ START_TEST(CanEmitIntegerLoads)
 	ByteCodeSegment_Emit(segment, Op_Ld32)->u.int32 = 12345678;
 	ByteCodeSegment_Emit(segment, Op_Ld64)->u.int64 = 1234567890;
 
-	result = ByteCodeSegment_ToString(segment, compiledTables);
+	result = ByteCodeSegment_ToString(segment, NULL, compiledTables);
 	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
 }
 END_TEST
@@ -67,15 +67,17 @@ START_TEST(CanEmitBranches)
 	CompiledTables compiledTables = CompiledTables_Create();
 	String result;
 
-	const char *expectedResult =
+	String expectedResult = String_Format(
 		"\tLd32 123\n"
 		"\tJmp >L5\n"
 		"L2:\n"
 		"\tLd32 1\n"
-		"\tBinary `-\n"
+		"\tBinary %d\t; -\n"
 		"L5:\n"
 		"\tDup1\n"
-		"\tBt L2\n";
+		"\tBt L2\n",
+		Smile_KnownSymbols.minus
+	);
 
 	ByteCodeSegment_Emit(segment, Op_Ld32)->u.int32 = 123;
 	ByteCodeSegment_Emit(segment, Op_Jmp)->u.index = +4;
@@ -86,8 +88,8 @@ START_TEST(CanEmitBranches)
 	ByteCodeSegment_Emit(segment, Op_Dup1);
 	ByteCodeSegment_Emit(segment, Op_Bt)->u.index = -5;
 
-	result = ByteCodeSegment_ToString(segment, compiledTables);
-	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
+	result = ByteCodeSegment_ToString(segment, NULL, compiledTables);
+	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
 END_TEST
 

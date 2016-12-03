@@ -49,8 +49,9 @@ typedef struct CompiledFunctionStruct {
 	Int functionIndex;	// The index of this function in the compiled-function list.
 	Int functionDepth;	// The number of functions deep in which this function was declared.
 	Int numArgs;	// The number of arguments to this function (derived from 'args').
-	Int currentLocalDepth;	// The current depth of the local variables.
-	Int localSize;	// The total number of locals required by this function.
+	Int32 localSize;	// The total number of locals required by this function.
+	Int32 localMax;	// The current maximum number of locals in the localNames array.
+	Symbol *localNames;	// The names of all the locals in this function, in order.
 	Int currentStackDepth;	// The current depth of the temporary stack.
 	Int stackSize;	// The total number of stack temporaries required by this function.
 	Bool isCompiled;	// Whether this function is fully or only partially compiled.

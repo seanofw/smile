@@ -93,11 +93,75 @@ Inline Int ApplyStackDelta(CompiledFunction compiledFunction, Int stackDelta)
 
 static void EmitPop1(Compiler compiler)
 {
+	Int lastOpcode, newOpcode;
 	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
-	Int lastOpcode = RECENT_BYTECODE(-1).opcode;
-	Int newOpcode;
+	ByteCode byteCode;
+
+	if (segment->numByteCodes <= 0) {
+		EMIT0(Op_Pop1, -1);
+		return;
+	}
+
+	lastOpcode = RECENT_BYTECODE(-1).opcode;
 	
 	switch (lastOpcode) {
+		case Op_Ld8: case Op_Ld16: case Op_Ld32: case Op_Ld64: case Op_Ld128:
+		case Op_LdR16: case Op_LdR32: case Op_LdR64: case Op_LdR128:
+		case Op_LdF16: case Op_LdF32: case Op_LdF64: case Op_LdF128:
+		case Op_LdBool:
+		case Op_LdNull:
+		case Op_LdCh: case Op_LdUCh:
+		case Op_LdStr:
+		case Op_LdObj:
+		case Op_LdSym:
+		case Op_LdClos:
+		case Op_Dup: case Op_Dup1: case Op_Dup2:
+		case Op_LdX:
+		case Op_LdArg:
+		case Op_LdArg0: case Op_LdArg1: case Op_LdArg2: case Op_LdArg3:
+		case Op_LdArg4: case Op_LdArg5: case Op_LdArg6: case Op_LdArg7:
+		case Op_LdLoc:
+		case Op_LdLoc0: case Op_LdLoc1: case Op_LdLoc2: case Op_LdLoc3:
+		case Op_LdLoc4: case Op_LdLoc5: case Op_LdLoc6: case Op_LdLoc7:
+			// Delete last instruction, since it's a simple load and wasn't actually needed.
+			segment->numByteCodes--;
+			ApplyStackDelta(compiler->currentFunction, -1);
+			return;
+
+		case Op_LdProp:
+			// Delete last instruction, and pop the object before it.
+			segment->numByteCodes--;
+			ApplyStackDelta(compiler->currentFunction, -1);
+			EmitPop1(compiler);
+			return;
+		
+		case Op_LdMember:
+			// Delete last instruction, and pop the two objects before it.
+			segment->numByteCodes--;
+			ApplyStackDelta(compiler->currentFunction, -1);
+			EmitPop1(compiler);
+			EmitPop1(compiler);
+			return;
+		
+		case Op_Pop1:
+			// Upgrade this to a Pop2.
+			RECENT_BYTECODE(-1).opcode = Op_Pop2;
+			ApplyStackDelta(compiler->currentFunction, -1);
+			return;
+
+		case Op_Pop2:
+			// Upgrade this to a PopN.
+			RECENT_BYTECODE(-1).opcode = Op_Pop;
+			RECENT_BYTECODE(-1).u.index = 3;
+			ApplyStackDelta(compiler->currentFunction, -1);
+			return;
+
+		case Op_Pop:
+			// Upgrade this to a PopN+1.
+			RECENT_BYTECODE(-1).u.index++;
+			ApplyStackDelta(compiler->currentFunction, -1);
+			return;
+
 		case Op_StX:	newOpcode = Op_StpX;	break;
 		case Op_StArg:	newOpcode = Op_StpArg;	break;
 		case Op_StArg0:	newOpcode = Op_StpArg0;	break;
@@ -129,8 +193,7 @@ static void EmitPop1(Compiler compiler)
 	}
 	else {
 		// The last opcode wasn't a store, so just pop whatever it was.
-		ByteCodeSegment_Emit(segment, Op_Pop1);
-		ApplyStackDelta(compiler->currentFunction, -1);
+		EMIT0(Op_Pop1, -1);
 	}
 }
 
@@ -208,8 +271,9 @@ CompiledFunction Compiler_BeginFunction(Compiler compiler, SmileList args, Smile
 	newFunction->numArgs = 0;
 	newFunction->isCompiled = False;
 	newFunction->parent = compiler->currentFunction;
-	newFunction->currentLocalDepth = 0;
+	newFunction->localNames = GC_MALLOC_ATOMIC(sizeof(Symbol) * 16);
 	newFunction->localSize = 0;
+	newFunction->localMax = 16;
 	newFunction->stackSize = 0;
 	newFunction->functionDepth = compiler->currentFunction != NULL ? compiler->currentFunction->functionDepth + 1 : 0;
 
@@ -1537,12 +1601,33 @@ static void Compiler_CompileProgN(Compiler compiler, SmileList args)
 	}
 }
 
+static Int CompiledFunction_AddLocal(CompiledFunction compiledFunction, Symbol local)
+{
+	Int localIndex, newMax;
+	Symbol *newLocals;
+
+	// If we're out of space, grow the array.
+	if (compiledFunction->localSize >= compiledFunction->localMax) {
+		newMax = compiledFunction->localMax * 2;
+		newLocals = (Symbol *)GC_MALLOC_ATOMIC(sizeof(Symbol) * newMax);
+		MemCpy(newLocals, compiledFunction->localNames, sizeof(Symbol) * compiledFunction->localSize);
+		compiledFunction->localMax = newMax;
+		compiledFunction->localNames = newLocals;
+	}
+
+	localIndex = compiledFunction->localSize++;
+
+	compiledFunction->localNames[localIndex] = local;
+
+	return localIndex;
+}
+
 // Form: [$scope [vars...] a b c ...]
 static void Compiler_CompileScope(Compiler compiler, SmileList args)
 {
 	CompileScope scope;
 	SmileList scopeVars, temp;
-	Int numScopeVars, localDepth;
+	Int numScopeVars, localIndex;
 	ByteCode byteCode;
 
 	// The [$scope] expression must be of the form:  [$scope [locals...] ...].
@@ -1558,7 +1643,6 @@ static void Compiler_CompileScope(Compiler compiler, SmileList args)
 	// Declare the [locals...] list, which must be well-formed, and must consist only of symbols.
 	scopeVars = (SmileList)args->a;
 	numScopeVars = 0;
-	localDepth = compiler->currentFunction->currentLocalDepth;
 	for (temp = scopeVars; SMILE_KIND(temp) == SMILE_KIND_LIST; temp = (SmileList)temp->d) {
 		if (SMILE_KIND(temp->a) != SMILE_KIND_SYMBOL) {
 			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(temp),
@@ -1566,7 +1650,8 @@ static void Compiler_CompileScope(Compiler compiler, SmileList args)
 		}
 
 		Symbol symbol = ((SmileSymbol)temp->a)->symbol;
-		CompileScope_DefineSymbol(scope, symbol, PARSEDECL_VARIABLE, localDepth + numScopeVars++);
+		localIndex = CompiledFunction_AddLocal(compiler->currentFunction, symbol);
+		CompileScope_DefineSymbol(scope, symbol, PARSEDECL_VARIABLE, localIndex);
 	}
 	if (SMILE_KIND(temp) != SMILE_KIND_NULL) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
@@ -1575,18 +1660,17 @@ static void Compiler_CompileScope(Compiler compiler, SmileList args)
 	}
 
 	// Allocate more space on the stack for these locals.
-	EMIT1(Op_LAlloc, 0, index = numScopeVars);
-	compiler->currentFunction->currentLocalDepth += numScopeVars;
-	if (compiler->currentFunction->currentLocalDepth > compiler->currentFunction->localSize) {
-		compiler->currentFunction->localSize = compiler->currentFunction->currentLocalDepth;
+	if (numScopeVars > 0) {
+		EMIT1(Op_LAlloc, 0, index = numScopeVars);
 	}
 
 	// Compile the rest of the [scope] as though it was just a [progn].
 	Compiler_CompileProgN(compiler, (SmileList)args->d);
 
-	// Free the local variables, now that we no longer need them.
-	EMIT1(Op_LFree, 0, index = numScopeVars);
-	compiler->currentFunction->currentLocalDepth -= numScopeVars;
+	if (numScopeVars > 0) {
+		// Free the local variables, now that we no longer need them.
+		EMIT1(Op_LFree, 0, index = numScopeVars);
+	}
 
 	Compiler_EndScope(compiler);
 }

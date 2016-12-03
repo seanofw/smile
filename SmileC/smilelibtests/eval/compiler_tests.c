@@ -71,7 +71,7 @@ START_TEST(CanCompileNull)
 	const char *expectedResult =
 		"\tLdNull\n";
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, compiler->compiledTables);
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
 }
 END_TEST
@@ -88,7 +88,7 @@ START_TEST(CanCompileByte)
 	const char *expectedResult =
 		"\tLd8 123\n";
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, compiler->compiledTables);
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
 }
 END_TEST
@@ -105,7 +105,7 @@ START_TEST(CanCompileInt16)
 	const char *expectedResult =
 		"\tLd16 123\n";
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, compiler->compiledTables);
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
 }
 END_TEST
@@ -122,7 +122,7 @@ START_TEST(CanCompileInt32)
 	const char *expectedResult =
 		"\tLd32 123\n";
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, compiler->compiledTables);
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
 }
 END_TEST
@@ -139,7 +139,7 @@ START_TEST(CanCompileInt64)
 	const char *expectedResult =
 		"\tLd64 123\n";
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, compiler->compiledTables);
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
 }
 END_TEST
@@ -153,13 +153,15 @@ START_TEST(CanCompileBasicArithmetic)
 	Int offset = Compiler_CompileExpr(compiler, expr->a);
 	String result;
 
-	const char *expectedResult =
+	String expectedResult = String_Format(
 		"\tLd32 123\n"
 		"\tLd32 456\n"
-		"\tBinary `+\n";
+		"\tBinary %d\t; +\n",
+		Smile_KnownSymbols.plus
+	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, compiler->compiledTables);
-	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
+	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
 END_TEST
 
@@ -172,16 +174,20 @@ START_TEST(CanCompileMildlyInterestingArithmetic)
 	Int offset = Compiler_CompileExpr(compiler, expr->a);
 	String result;
 
-	const char *expectedResult =
+	String expectedResult = String_Format(
 		"\tLd32 123\n"
 		"\tLd32 456\n"
-		"\tUnary `-\n"
-		"\tBinary `+\n"
+		"\tUnary %d\t; -\n"
+		"\tBinary %d\t; +\n"
 		"\tLd32 50\n"
-		"\tBinary `*\n";
+		"\tBinary %d\t; *\n",
+		Smile_KnownSymbols.minus,
+		Smile_KnownSymbols.plus,
+		Smile_KnownSymbols.star
+	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, compiler->compiledTables);
-	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
+	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
 END_TEST
 
@@ -197,12 +203,15 @@ START_TEST(CanCompileGlobalReadsAndWrites)
 	Int offset = Compiler_CompileExpr(compiler, expr->a);
 	String result;
 
-	const char *expectedResult =
-		"\tLdX `gb\n"
-		"\tStX `ga\n";
+	String expectedResult = String_Format(
+		"\tLdX %d\t; gb\n"
+		"\tStX %d\t; ga\n",
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "gb"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "ga")
+	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, compiler->compiledTables);
-	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
+	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
 END_TEST
 
@@ -215,13 +224,17 @@ START_TEST(CanCompileReadsFromProperties)
 	Int offset = Compiler_CompileExpr(compiler, expr->a);
 	String result;
 
-	const char *expectedResult =
-		"\tLdX `gb\n"
-		"\tLdProp `foo\n"
-		"\tStX `ga\n";
+	String expectedResult = String_Format(
+		"\tLdX %d\t; gb\n"
+		"\tLdProp %d\t; foo\n"
+		"\tStX %d\t; ga\n",
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "gb"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "foo"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "ga")
+	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, compiler->compiledTables);
-	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
+	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
 END_TEST
 
@@ -234,13 +247,17 @@ START_TEST(CanCompileWritesToProperties)
 	Int offset = Compiler_CompileExpr(compiler, expr->a);
 	String result;
 
-	const char *expectedResult =
-		"\tLdX `ga\n"
-		"\tLdX `gb\n"
-		"\tStProp `foo\n";
+	String expectedResult = String_Format(
+		"\tLdX %d\t; ga\n"
+		"\tLdX %d\t; gb\n"
+		"\tStProp %d\t; foo\n",
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "ga"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "gb"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "foo")
+	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, compiler->compiledTables);
-	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
+	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
 END_TEST
 
@@ -253,14 +270,17 @@ START_TEST(CanCompileReadsFromMembers)
 	Int offset = Compiler_CompileExpr(compiler, expr->a);
 	String result;
 
-	const char *expectedResult =
-		"\tLdX `gb\n"
+	String expectedResult = String_Format(
+		"\tLdX %d\t; gb\n"
 		"\tLd32 10\n"
 		"\tLdMember\n"
-		"\tStX `ga\n";
+		"\tStX %d\t; ga\n",
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "gb"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "ga")
+	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, compiler->compiledTables);
-	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
+	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
 END_TEST
 
@@ -273,14 +293,17 @@ START_TEST(CanCompileWritesToMembers)
 	Int offset = Compiler_CompileExpr(compiler, expr->a);
 	String result;
 
-	const char *expectedResult =
-		"\tLdX `ga\n"
+	String expectedResult = String_Format(
+		"\tLdX %d\t; ga\n"
 		"\tLd32 10\n"
-		"\tLdX `gb\n"
-		"\tStMember\n";
+		"\tLdX %d\t; gb\n"
+		"\tStMember\n",
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "ga"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "gb")
+	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, compiler->compiledTables);
-	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
+	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
 END_TEST
 
@@ -296,14 +319,17 @@ START_TEST(CanCompileScopeVariableReads)
 	Int offset = Compiler_CompileExpr(compiler, expr->a);
 	String result;
 
-	const char *expectedResult =
-		"\tLAlloc 1\n"
-		"\tLdX `gb\n"
-		"\tStLoc0 0\n"
-		"\tLFree 1\n";
+	String expectedResult = String_Format(
+		"\tLdX %d\t; gb\n"
+		"\tStLoc0 0\t; a\n",
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "gb"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "a")
+	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, compiler->compiledTables);
-	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
+	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
+
+	ASSERT(globalFunction->localSize == 1);
 }
 END_TEST
 
@@ -316,22 +342,22 @@ START_TEST(CanCompileNestedScopeVariableReads)
 	Int offset = Compiler_CompileExpr(compiler, expr->a);
 	String result;
 
-	const char *expectedResult =
-		"\tLAlloc 1\n"
+	String expectedResult = String_Format(
 		"\tLd32 10\n"
-		"\tStpLoc0 0\n"
-		"\tLAlloc 2\n"
-		"\tLdLoc0 0\n"
-		"\tStpLoc0 1\n"
-		"\tLdLoc0 1\n"
-		"\tLdLoc0 0\n"
-		"\tBinary `+\n"
-		"\tStLoc0 2\n"
-		"\tLFree 2\n"
-		"\tLFree 1\n";
+		"\tStpLoc0 0\t; b\n"
+		"\tLdLoc0 0\t; b\n"
+		"\tStpLoc0 1\t; a\n"
+		"\tLdLoc0 1\t; a\n"
+		"\tLdLoc0 0\t; b\n"
+		"\tBinary %d\t; +\n"
+		"\tStLoc0 2\t; c\n",
+		Smile_KnownSymbols.plus
+	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, compiler->compiledTables);
-	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
+	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
+
+	ASSERT(globalFunction->localSize == 3);
 }
 END_TEST
 
@@ -346,19 +372,23 @@ START_TEST(CanCompileSimpleConditionals)
 	Int offset = Compiler_CompileExpr(compiler, expr->a);
 	String result;
 
-	const char *expectedResult =
+	String expectedResult = String_Format(
 		"\tLd32 1\n"
 		"\tLd32 10\n"
-		"\tBinary `<\n"
+		"\tBinary %d\t; <\n"
 		"\tBf >L6\n"
-		"\tLdSym `then-side\n"
+		"\tLdSym %d\t; then-side\n"
 		"\tJmp >L8\n"
 		"L6:\n"
-		"\tLdSym `else-side\n"
-		"L8:\n";
+		"\tLdSym %d\t; else-side\n"
+		"L8:\n",
+		Smile_KnownSymbols.lt,
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "then-side"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "else-side")
+	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, compiler->compiledTables);
-	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
+	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
 END_TEST
 
@@ -379,23 +409,23 @@ START_TEST(CanCompileConditionalsAllTheWay)
 	Int offset = Compiler_CompileExprs(compiler, exprs);
 	String result;
 
-	const char *expectedResult =
-		"\tLdObj @0\n"
-		"\tPop1\n"
-		"\tLdObj @1\n"
-		"\tPop1\n"
+	String expectedResult = String_Format(
 		"\tLd32 1\n"
 		"\tLd32 10\n"
-		"\tBinary `<\n"
-		"\tBf >L10\n"
-		"\tLdSym `then-side\n"
-		"\tJmp >L12\n"
-		"L10:\n"
-		"\tLdSym `else-side\n"
-		"L12:\n";
+		"\tBinary %d\t; <\n"
+		"\tBf >L6\n"
+		"\tLdSym %d\t; then-side\n"
+		"\tJmp >L8\n"
+		"L6:\n"
+		"\tLdSym %d\t; else-side\n"
+		"L8:\n",
+		Smile_KnownSymbols.lt,
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "then-side"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "else-side")
+	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, compiler->compiledTables);
-	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
+	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
 END_TEST
 

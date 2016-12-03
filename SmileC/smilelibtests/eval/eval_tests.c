@@ -66,7 +66,7 @@ START_TEST(CanEvalAConstant)
 {
 	Compiler compiler = Compile("1");
 
-	String string = ByteCodeSegment_ToString(compiler->compiledTables->compiledFunctions[0]->byteCodeSegment, compiler->compiledTables);
+	String string = ByteCodeSegment_ToString(compiler->compiledTables->compiledFunctions[0]->byteCodeSegment, NULL, compiler->compiledTables);
 
 }
 END_TEST
