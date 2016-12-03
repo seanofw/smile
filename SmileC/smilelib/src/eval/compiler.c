@@ -58,6 +58,8 @@ static void Compiler_CompileAnd(Compiler compiler, SmileList args);
 static void Compiler_CompileOr(Compiler compiler, SmileList args);
 static void Compiler_CompileNot(Compiler compiler, SmileList args);
 
+static void EmitPop1(Compiler compiler);
+
 #define EMIT0(__opcode__, __stackDelta__) \
 	((byteCode = ByteCodeSegment_Emit(compiler->currentFunction->byteCodeSegment, (__opcode__))), \
 		ApplyStackDelta(compiler->currentFunction, __stackDelta__), \
@@ -85,6 +87,51 @@ Inline Int ApplyStackDelta(CompiledFunction compiledFunction, Int stackDelta)
 	}
 
 	return 0;
+}
+
+#define RECENT_BYTECODE(__delta__) (segment->byteCodes[segment->numByteCodes + (__delta__)])
+
+static void EmitPop1(Compiler compiler)
+{
+	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
+	Int lastOpcode = RECENT_BYTECODE(-1).opcode;
+	Int newOpcode;
+	
+	switch (lastOpcode) {
+		case Op_StX:	newOpcode = Op_StpX;	break;
+		case Op_StArg:	newOpcode = Op_StpArg;	break;
+		case Op_StArg0:	newOpcode = Op_StpArg0;	break;
+		case Op_StArg1:	newOpcode = Op_StpArg1;	break;
+		case Op_StArg2:	newOpcode = Op_StpArg2;	break;
+		case Op_StArg3:	newOpcode = Op_StpArg3;	break;
+		case Op_StArg4:	newOpcode = Op_StpArg4;	break;
+		case Op_StArg5:	newOpcode = Op_StpArg5;	break;
+		case Op_StArg6:	newOpcode = Op_StpArg6;	break;
+		case Op_StArg7:	newOpcode = Op_StpArg7;	break;
+		case Op_StLoc:	newOpcode = Op_StpLoc;	break;
+		case Op_StLoc0:	newOpcode = Op_StpLoc0;	break;
+		case Op_StLoc1:	newOpcode = Op_StpLoc1;	break;
+		case Op_StLoc2:	newOpcode = Op_StpLoc2;	break;
+		case Op_StLoc3:	newOpcode = Op_StpLoc3;	break;
+		case Op_StLoc4:	newOpcode = Op_StpLoc4;	break;
+		case Op_StLoc5:	newOpcode = Op_StpLoc5;	break;
+		case Op_StLoc6:	newOpcode = Op_StpLoc6;	break;
+		case Op_StLoc7:	newOpcode = Op_StpLoc7;	break;
+		case Op_StProp:	newOpcode = Op_StpProp;	break;
+		case Op_StMember:	newOpcode = Op_StpMember;	break;
+		default:	newOpcode = lastOpcode;	break;
+	}
+
+	if (newOpcode != lastOpcode) {
+		// Rewrite the most recent store as a store-and-pop.
+		RECENT_BYTECODE(-1).opcode = newOpcode;
+		return;
+	}
+	else {
+		// The last opcode wasn't a store, so just pop whatever it was.
+		ByteCodeSegment_Emit(segment, Op_Pop1);
+		ApplyStackDelta(compiler->currentFunction, -1);
+	}
 }
 
 /// <summary>
@@ -523,6 +570,7 @@ Int Compiler_CompileExpr(Compiler compiler, SmileObject expr)
 	return startIndex;
 }
 
+// Form: expr.symbol
 static void Compiler_CompileProperty(Compiler compiler, SmilePair pair, Bool store)
 {
 	Symbol symbol;
@@ -542,10 +590,40 @@ static void Compiler_CompileProperty(Compiler compiler, SmilePair pair, Bool sto
 		EMIT1(Op_StProp, -2, symbol = symbol);
 	}
 	else {
-		EMIT1(Op_LdProp, -1+1, symbol = symbol);
+		// If this is one of the special common properties of one of the built-in core shapes,
+		// emit a short property-load instruction for it.  Otherwise, emit a general-purpose
+		// propery-load instruction. 
+		if (symbol == Smile_KnownSymbols.a) {
+			EMIT0(Op_LdA, -1 + 1);
+		}
+		else if (symbol == Smile_KnownSymbols.d) {
+			EMIT0(Op_LdD, -1 + 1);
+		}
+		else if (symbol == Smile_KnownSymbols.left) {
+			EMIT0(Op_LdLeft, -1 + 1);
+		}
+		else if (symbol == Smile_KnownSymbols.right) {
+			EMIT0(Op_LdRight, -1 + 1);
+		}
+		else if (symbol == Smile_KnownSymbols.start) {
+			EMIT0(Op_LdStart, -1 + 1);
+		}
+		else if (symbol == Smile_KnownSymbols.end) {
+			EMIT0(Op_LdEnd, -1 + 1);
+		}
+		else if (symbol == Smile_KnownSymbols.count) {
+			EMIT0(Op_LdCount, -1 + 1);
+		}
+		else if (symbol == Smile_KnownSymbols.length) {
+			EMIT0(Op_LdLength, -1 + 1);
+		}
+		else {
+			EMIT1(Op_LdProp, -1 + 1, symbol = symbol);
+		}
 	}
 }
 
+// Form: symbol
 static void Compiler_CompileVariable(Compiler compiler, Symbol symbol, Bool store)
 {
 	ByteCode byteCode;
@@ -654,6 +732,11 @@ static void Compiler_CompileMethodCall(Compiler compiler, SmilePair pair, SmileL
 	}
 }
 
+/// <summary>
+/// Compile the standard 20 well-known forms, like [$set] and [$fn] and [$quote].
+/// If this matches a well-known form, compile it and return true; if it's an unknown form
+/// (i.e., a call to a user function), do nothing and return false.
+/// </summary>
 static Bool Compiler_CompileStandardForm(Compiler compiler, Symbol symbol, SmileList args)
 {
 	switch (symbol) {
@@ -736,6 +819,7 @@ static Bool Compiler_CompileStandardForm(Compiler compiler, Symbol symbol, Smile
 	}
 }
 
+// Form: [$set lvalue rvalue]
 static void Compiler_CompileSetf(Compiler compiler, SmileList args)
 {
 	Int length;
@@ -784,7 +868,7 @@ static void Compiler_CompileSetf(Compiler compiler, SmileList args)
 			pair = (SmilePair)dest;
 			if (SMILE_KIND(pair->right) != SMILE_KIND_SYMBOL) {
 				Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
-					String_FromC("Cannot compile [=]: Expression is not well-formed.")));
+					String_FromC("Cannot compile [$set]: Expression is not well-formed.")));
 				return;
 			}
 			symbol = ((SmileSymbol)pair->right)->symbol;
@@ -806,13 +890,13 @@ static void Compiler_CompileSetf(Compiler compiler, SmileList args)
 			// side of the first element is the special symbol "get-member".
 			if (SmileList_Length((SmileList)dest) != 2 || SMILE_KIND(((SmileList)dest)->a) != SMILE_KIND_PAIR) {
 				Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
-					String_FromC("Cannot compile [=]: Expression is not well-formed.")));
+					String_FromC("Cannot compile [$set]: Expression is not well-formed.")));
 				return;
 			}
 			pair = (SmilePair)(((SmileList)dest)->a);
 			if (SMILE_KIND(pair->right) != SMILE_KIND_SYMBOL) {
 				Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
-					String_FromC("Cannot compile [=]: Expression is not well-formed.")));
+					String_FromC("Cannot compile [$set]: Expression is not well-formed.")));
 				return;
 			}
 			index = LIST_SECOND((SmileList)dest);
@@ -826,15 +910,142 @@ static void Compiler_CompileSetf(Compiler compiler, SmileList args)
 		
 		default:
 			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
-				String_FromC("Cannot compile [=]: Expression is not well-formed.")));
+				String_FromC("Cannot compile [$set]: Expression is not well-formed.")));
 			return;
 	}
 }
 
+// Form: [$opset operator lvalue rvalue]
 static void Compiler_CompileOpEquals(Compiler compiler, SmileList args)
 {
-	UNUSED(compiler);
-	UNUSED(args);
+	Int length;
+	SmileObject dest, value, index;
+	SmilePair pair;
+	Symbol symbol, op;
+	ByteCode byteCode;
+
+	// There are three possible legal forms for the arguments:
+	//
+	//   [$opset operator symbol value]
+	//   [$opset operator obj.property value]
+	//   [$opset operator [(obj.get-member) index] value]
+	//
+	// We have to determine which one of these we have, and compile an appropriate
+	// assignment (or method invocation) accordingly.
+
+	// Make sure this is a well-formed list of exactly three elements.
+	length = SmileList_Length(args);
+	if (length != 3) {
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+			String_FromC("Cannot compile [$opset]: Expression is not well-formed.")));
+		return;
+	}
+
+	// Get the operator symbol.
+	if (SMILE_KIND(args->a) != SMILE_KIND_SYMBOL) {
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+			String_FromC("Cannot compile [$opset]: First argument must be an operator (method) name.")));
+		return;
+	}
+	op = ((SmileSymbol)args->a)->symbol;
+	args = (SmileList)args->d;
+
+	// Get the destination object, and the value to be assigned.
+	dest = args->a;
+	value = ((SmileList)args->d)->a;
+
+	switch (SMILE_KIND(dest)) {
+
+	case SMILE_KIND_SYMBOL:
+		// This is of the form [$opset op symbol value].
+		symbol = ((SmileSymbol)dest)->symbol;
+
+		// Load the source variable.
+		Compiler_CompileVariable(compiler, symbol, False);
+
+		// Load the value to store.
+		Compiler_CompileExpr(compiler, value);
+	
+		// Apply the operator.
+		EMIT1(Op_Met1, -2 + 1, symbol = op);
+	
+		// Store the result back, leaving a duplicate on the stack.
+		Compiler_CompileVariable(compiler, symbol, True);
+		break;
+
+	case SMILE_KIND_PAIR:
+		// This is probably of the form [$opset op obj.property value].  Make sure the right side
+		// of the pair is a symbol.
+		pair = (SmilePair)dest;
+		if (SMILE_KIND(pair->right) != SMILE_KIND_SYMBOL) {
+			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+				String_FromC("Cannot compile [$opset]: Expression is not well-formed.")));
+			return;
+		}
+		symbol = ((SmileSymbol)pair->right)->symbol;
+
+		// Evaluate the left side first.
+		Compiler_CompileExpr(compiler, pair->left);
+
+		// Duplicate it for later.
+		EMIT0(Op_Dup1, +1);
+	
+		// Load the source property.
+		EMIT1(Op_LdProp, -1, symbol = symbol);
+	
+		// Evaluate the value.
+		Compiler_CompileExpr(compiler, value);
+
+		// Apply the operator.
+		EMIT1(Op_Met1, -2 + 1, symbol = op);
+	
+		// Assign the property.
+		EMIT1(Op_StProp, -1, symbol = symbol);	// Leaves the value on the stack.
+		break;
+
+	case SMILE_KIND_LIST:
+		// This is probably of the form [$set [(obj.get-member) index] value].  Make sure that the
+		// inner list is well-formed, has two elements, the first element is a pair, and the right
+		// side of the first element is the special symbol "get-member".
+		if (SmileList_Length((SmileList)dest) != 2 || SMILE_KIND(((SmileList)dest)->a) != SMILE_KIND_PAIR) {
+			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+				String_FromC("Cannot compile [$opset]: Expression is not well-formed.")));
+			return;
+		}
+		pair = (SmilePair)(((SmileList)dest)->a);
+		if (SMILE_KIND(pair->right) != SMILE_KIND_SYMBOL) {
+			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+				String_FromC("Cannot compile [$opset]: Expression is not well-formed.")));
+			return;
+		}
+		index = LIST_SECOND((SmileList)dest);
+
+		// Okay.  We now have pair->left, pair->right, index, and value.  Let's compile the get-member call first.
+		Compiler_CompileExpr(compiler, pair->left);
+		Compiler_CompileExpr(compiler, index);
+	
+		// Duplicate pair->left and index.
+		EMIT0(Op_Dup2, +1);
+		EMIT0(Op_Dup2, +1);
+
+		// Load the source from the given member.
+		EMIT0(Op_LdMember, -2);
+	
+		// Evaluate the value.
+		Compiler_CompileExpr(compiler, value);
+
+		// Apply the operator.
+		EMIT1(Op_Met1, -2 + 1, symbol = op);
+
+		// Store the result.
+		EMIT0(Op_StMember, -3);	// Leaves the value on the stack.
+		break;
+
+	default:
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+			String_FromC("Cannot compile [$opset]: Expression is not well-formed.")));
+		return;
+	}
 }
 
 static Bool StripNots(SmileObject *objPtr)
@@ -857,6 +1068,7 @@ static Bool StripNots(SmileObject *objPtr)
 	return not;
 }
 
+// Form: [$if cond then-clause else-clause]
 static void Compiler_CompileIf(Compiler compiler, SmileList args)
 {
 	SmileObject condition, thenClause, elseClause, temp;
@@ -943,6 +1155,7 @@ static void Compiler_CompileIf(Compiler compiler, SmileList args)
 	jmpLabel->u.index = -jmpDelta;
 }
 
+// Form: [$while pre-body cond post-body]
 static void Compiler_CompileWhile(Compiler compiler, SmileList args)
 {
 	SmileObject condition, preClause, postClause;
@@ -1026,10 +1239,10 @@ static void Compiler_CompileWhile(Compiler compiler, SmileList args)
 		bOffset = segment->numByteCodes;
 		b = EMIT0(not ? Op_Bf : Op_Bt, -1);
 	
-		EMIT0(Op_Pop1, -1);
+		EmitPop1(compiler);
 
 		Compiler_CompileExpr(compiler, postClause);
-		EMIT0(Op_Pop1, -1);
+		EmitPop1(compiler);
 
 		jmpOffset = segment->numByteCodes;
 		jmp = EMIT0(Op_Jmp, 0);
@@ -1064,7 +1277,7 @@ static void Compiler_CompileWhile(Compiler compiler, SmileList args)
 		bLabelOffset = segment->numByteCodes;
 		bLabel = EMIT0(Op_Label, 0);
 	
-		EMIT0(Op_Pop1, -1);
+		EmitPop1(compiler);
 
 		jmpLabelOffset = segment->numByteCodes;
 		jmpLabel = EMIT0(Op_Label, 0);
@@ -1106,7 +1319,7 @@ static void Compiler_CompileWhile(Compiler compiler, SmileList args)
 		bLabelOffset = segment->numByteCodes;
 		bLabel = EMIT0(Op_Label, 0);
 	
-		EMIT0(Op_Pop1, -1);
+		EmitPop1(compiler);
 
 		Compiler_CompileExpr(compiler, postClause);
 
@@ -1162,6 +1375,7 @@ static void Compiler_CompileCatch(Compiler compiler, SmileList args)
 	UNUSED(args);
 }
 
+// Form: [$return] or [$return value]
 static void Compiler_CompileReturn(Compiler compiler, SmileList args)
 {
 	ByteCode byteCode;
@@ -1185,6 +1399,7 @@ static void Compiler_CompileReturn(Compiler compiler, SmileList args)
 	}
 }
 
+// Form: [$fn [args...] body]
 static void Compiler_CompileFn(Compiler compiler, SmileList args)
 {
 	CompiledFunction compiledFunction;
@@ -1245,6 +1460,7 @@ static void Compiler_CompileFn(Compiler compiler, SmileList args)
 	EMIT1(Op_NewFn, 1, index = compiledFunction->functionIndex);
 }
 
+// Form: [$quote expr]
 static void Compiler_CompileQuote(Compiler compiler, SmileList args)
 {
 	Int objectIndex;
@@ -1274,10 +1490,9 @@ static void Compiler_CompileQuote(Compiler compiler, SmileList args)
 	EMIT1(Op_LdObj, +1, index = objectIndex);
 }
 
+// Form: [$prog1 a b c ...]
 static void Compiler_CompileProg1(Compiler compiler, SmileList args)
 {
-	ByteCode byteCode;
-
 	if (SMILE_KIND(args) != SMILE_KIND_LIST)
 		return;
 
@@ -1291,10 +1506,11 @@ static void Compiler_CompileProg1(Compiler compiler, SmileList args)
 		Compiler_CompileExpr(compiler, args->a);
 	
 		// ...and discard its result.
-		EMIT0(Op_Pop1, -1);
+		EmitPop1(compiler);
 	}
 }
 
+// Form:  [a b c ...]   (This is intended to be used for the global scope.)
 Int Compiler_CompileExprs(Compiler compiler, SmileList exprs)
 {
 	Int offset = compiler->currentFunction->byteCodeSegment->numByteCodes;
@@ -1302,10 +1518,9 @@ Int Compiler_CompileExprs(Compiler compiler, SmileList exprs)
 	return offset;
 }
 
+// Form: [$progn a b c ...]
 static void Compiler_CompileProgN(Compiler compiler, SmileList args)
 {
-	ByteCode byteCode;
-
 	if (SMILE_KIND(args) != SMILE_KIND_LIST)
 		return;
 
@@ -1318,15 +1533,16 @@ static void Compiler_CompileProgN(Compiler compiler, SmileList args)
 		if (SMILE_KIND(args) != SMILE_KIND_LIST) break;
 
 		// Otherwise, discard it and move to the next expression.
-		EMIT0(Op_Pop1, -1);
+		EmitPop1(compiler);
 	}
 }
 
+// Form: [$scope [vars...] a b c ...]
 static void Compiler_CompileScope(Compiler compiler, SmileList args)
 {
 	CompileScope scope;
 	SmileList scopeVars, temp;
-	Int numScopeVars;
+	Int numScopeVars, localDepth;
 	ByteCode byteCode;
 
 	// The [$scope] expression must be of the form:  [$scope [locals...] ...].
@@ -1342,6 +1558,7 @@ static void Compiler_CompileScope(Compiler compiler, SmileList args)
 	// Declare the [locals...] list, which must be well-formed, and must consist only of symbols.
 	scopeVars = (SmileList)args->a;
 	numScopeVars = 0;
+	localDepth = compiler->currentFunction->currentLocalDepth;
 	for (temp = scopeVars; SMILE_KIND(temp) == SMILE_KIND_LIST; temp = (SmileList)temp->d) {
 		if (SMILE_KIND(temp->a) != SMILE_KIND_SYMBOL) {
 			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(temp),
@@ -1349,7 +1566,7 @@ static void Compiler_CompileScope(Compiler compiler, SmileList args)
 		}
 
 		Symbol symbol = ((SmileSymbol)temp->a)->symbol;
-		CompileScope_DefineSymbol(scope, symbol, PARSEDECL_VARIABLE, numScopeVars++);
+		CompileScope_DefineSymbol(scope, symbol, PARSEDECL_VARIABLE, localDepth + numScopeVars++);
 	}
 	if (SMILE_KIND(temp) != SMILE_KIND_NULL) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
@@ -1358,7 +1575,7 @@ static void Compiler_CompileScope(Compiler compiler, SmileList args)
 	}
 
 	// Allocate more space on the stack for these locals.
-	EMIT1(Op_LocalAlloc, 0, index = numScopeVars);
+	EMIT1(Op_LAlloc, 0, index = numScopeVars);
 	compiler->currentFunction->currentLocalDepth += numScopeVars;
 	if (compiler->currentFunction->currentLocalDepth > compiler->currentFunction->localSize) {
 		compiler->currentFunction->localSize = compiler->currentFunction->currentLocalDepth;
@@ -1368,12 +1585,13 @@ static void Compiler_CompileScope(Compiler compiler, SmileList args)
 	Compiler_CompileProgN(compiler, (SmileList)args->d);
 
 	// Free the local variables, now that we no longer need them.
-	EMIT1(Op_LocalFree, 0, index = numScopeVars);
+	EMIT1(Op_LFree, 0, index = numScopeVars);
 	compiler->currentFunction->currentLocalDepth -= numScopeVars;
 
 	Compiler_EndScope(compiler);
 }
 
+// Form: [$new base [[sym1 val1] [sym2 val2] [sym3 val3] ...]]
 static void Compiler_CompileNew(Compiler compiler, SmileList args)
 {
 	Int numPairs;
@@ -1420,6 +1638,7 @@ static void Compiler_CompileNew(Compiler compiler, SmileList args)
 	EMIT1(Op_NewObj, +1 - (numPairs * 2 + 1), int32 = numPairs);
 }
 
+// Form: [$is x y]
 static void Compiler_CompileIs(Compiler compiler, SmileList args)
 {
 	ByteCode byteCode;
@@ -1442,6 +1661,7 @@ static void Compiler_CompileIs(Compiler compiler, SmileList args)
 	EMIT0(Op_Is, -2 + 1);
 }
 
+// Form: [$typeof x]
 static void Compiler_CompileTypeOf(Compiler compiler, SmileList args)
 {
 	ByteCode byteCode;
@@ -1460,6 +1680,7 @@ static void Compiler_CompileTypeOf(Compiler compiler, SmileList args)
 	EMIT0(Op_TypeOf, -1 + 1);
 }
 
+// Form: [$eq x y]
 static void Compiler_CompileSuperEq(Compiler compiler, SmileList args)
 {
 	ByteCode byteCode;
@@ -1482,6 +1703,7 @@ static void Compiler_CompileSuperEq(Compiler compiler, SmileList args)
 	EMIT0(Op_SuperEq, -2 + 1);
 }
 
+// Form: [$ne x y]
 static void Compiler_CompileSuperNe(Compiler compiler, SmileList args)
 {
 	ByteCode byteCode;
@@ -1504,6 +1726,7 @@ static void Compiler_CompileSuperNe(Compiler compiler, SmileList args)
 	EMIT0(Op_SuperNe, -2 + 1);
 }
 
+// Form: [$and x y z ...]
 static void Compiler_CompileAnd(Compiler compiler, SmileList args)
 {
 	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
@@ -1583,6 +1806,7 @@ static void Compiler_CompileAnd(Compiler compiler, SmileList args)
 	compiler->currentFunction->currentStackDepth--;	// We actually have one fewer on the stack than the automatic count.
 }
 
+// Form: [$or x y z ...]
 static void Compiler_CompileOr(Compiler compiler, SmileList args)
 {
 	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
@@ -1662,6 +1886,7 @@ static void Compiler_CompileOr(Compiler compiler, SmileList args)
 	compiler->currentFunction->currentStackDepth--;	// We actually have one fewer on the stack than the automatic count.
 }
 
+// Form: [$not x]
 static void Compiler_CompileNot(Compiler compiler, SmileList args)
 {
 	ByteCode byteCode;

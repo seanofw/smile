@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 1109e0e4d556a1344def4bdf5b98950e
+// SourceHash: 42770a6496ff55947e836c042ce62029
 
 START_TEST_SUITE(CompilerTests)
 {
@@ -11,6 +11,13 @@ START_TEST_SUITE(CompilerTests)
 	CanCompileInt64,
 	CanCompileBasicArithmetic,
 	CanCompileMildlyInterestingArithmetic,
+	CanCompileGlobalReadsAndWrites,
+	CanCompileReadsFromProperties,
+	CanCompileWritesToProperties,
+	CanCompileReadsFromMembers,
+	CanCompileWritesToMembers,
+	CanCompileScopeVariableReads,
+	CanCompileNestedScopeVariableReads,
 	CanCompileSimpleConditionals,
 	CanCompileConditionalsAllTheWay,
 }

@@ -265,9 +265,8 @@ static String ByteCode_OperandsToString(ByteCode byteCode, Int address, struct C
 			return String_Format("`%S, %d", SymbolTable_GetName(Smile_SymbolTable, (Symbol)byteCode->u.i2.a), byteCode->u.i2.b);
 		case Op_Call:
 		case Op_TCall:
-		case Op_CallEsc:
-		case Op_LocalAlloc:
-		case Op_LocalFree:
+		case Op_LAlloc:
+		case Op_LFree:
 		case Op_Args:
 			return String_Format("%d", byteCode->u.int32);
 		

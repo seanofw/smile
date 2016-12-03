@@ -47,6 +47,13 @@ static SmileList Parse(const char *text)
 
 	parser = Parser_Create();
 	scope = ParseScope_CreateRoot();
+
+	ParseScope_Declare(scope, SymbolTable_GetSymbolC(Smile_SymbolTable, "ga"), PARSEDECL_GLOBAL, NULL, NULL);
+	ParseScope_Declare(scope, SymbolTable_GetSymbolC(Smile_SymbolTable, "gb"), PARSEDECL_GLOBAL, NULL, NULL);
+	ParseScope_Declare(scope, SymbolTable_GetSymbolC(Smile_SymbolTable, "gc"), PARSEDECL_GLOBAL, NULL, NULL);
+	ParseScope_Declare(scope, SymbolTable_GetSymbolC(Smile_SymbolTable, "gd"), PARSEDECL_GLOBAL, NULL, NULL);
+	ParseScope_Declare(scope, SymbolTable_GetSymbolC(Smile_SymbolTable, "ge"), PARSEDECL_GLOBAL, NULL, NULL);
+
 	expr = Parser_Parse(parser, lexer, scope);
 
 	return SMILE_KIND(parser->firstMessage) == SMILE_KIND_NULL ? expr : NullList;
@@ -177,6 +184,158 @@ START_TEST(CanCompileMildlyInterestingArithmetic)
 	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
 }
 END_TEST
+
+//-------------------------------------------------------------------------------------------------
+// Read/write of global variables, properties, and members.
+
+START_TEST(CanCompileGlobalReadsAndWrites)
+{
+	SmileList expr = Parse("ga = gb");
+
+	Compiler compiler = Compiler_Create();
+	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
+	Int offset = Compiler_CompileExpr(compiler, expr->a);
+	String result;
+
+	const char *expectedResult =
+		"\tLdX `gb\n"
+		"\tStX `ga\n";
+
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, compiler->compiledTables);
+	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
+}
+END_TEST
+
+START_TEST(CanCompileReadsFromProperties)
+{
+	SmileList expr = Parse("ga = gb.foo");
+
+	Compiler compiler = Compiler_Create();
+	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
+	Int offset = Compiler_CompileExpr(compiler, expr->a);
+	String result;
+
+	const char *expectedResult =
+		"\tLdX `gb\n"
+		"\tLdProp `foo\n"
+		"\tStX `ga\n";
+
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, compiler->compiledTables);
+	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
+}
+END_TEST
+
+START_TEST(CanCompileWritesToProperties)
+{
+	SmileList expr = Parse("ga.foo = gb");
+
+	Compiler compiler = Compiler_Create();
+	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
+	Int offset = Compiler_CompileExpr(compiler, expr->a);
+	String result;
+
+	const char *expectedResult =
+		"\tLdX `ga\n"
+		"\tLdX `gb\n"
+		"\tStProp `foo\n";
+
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, compiler->compiledTables);
+	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
+}
+END_TEST
+
+START_TEST(CanCompileReadsFromMembers)
+{
+	SmileList expr = Parse("ga = gb:10");
+
+	Compiler compiler = Compiler_Create();
+	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
+	Int offset = Compiler_CompileExpr(compiler, expr->a);
+	String result;
+
+	const char *expectedResult =
+		"\tLdX `gb\n"
+		"\tLd32 10\n"
+		"\tLdMember\n"
+		"\tStX `ga\n";
+
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, compiler->compiledTables);
+	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
+}
+END_TEST
+
+START_TEST(CanCompileWritesToMembers)
+{
+	SmileList expr = Parse("ga:10 = gb");
+
+	Compiler compiler = Compiler_Create();
+	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
+	Int offset = Compiler_CompileExpr(compiler, expr->a);
+	String result;
+
+	const char *expectedResult =
+		"\tLdX `ga\n"
+		"\tLd32 10\n"
+		"\tLdX `gb\n"
+		"\tStMember\n";
+
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, compiler->compiledTables);
+	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
+}
+END_TEST
+
+//-------------------------------------------------------------------------------------------------
+// Read/write of global variables, properties, and members.
+
+START_TEST(CanCompileScopeVariableReads)
+{
+	SmileList expr = Parse("{ a = gb }");
+
+	Compiler compiler = Compiler_Create();
+	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
+	Int offset = Compiler_CompileExpr(compiler, expr->a);
+	String result;
+
+	const char *expectedResult =
+		"\tLAlloc 1\n"
+		"\tLdX `gb\n"
+		"\tStLoc0 0\n"
+		"\tLFree 1\n";
+
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, compiler->compiledTables);
+	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
+}
+END_TEST
+
+START_TEST(CanCompileNestedScopeVariableReads)
+{
+	SmileList expr = Parse("{ var b = 10 { var a = b, c = a + b } }");
+
+	Compiler compiler = Compiler_Create();
+	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
+	Int offset = Compiler_CompileExpr(compiler, expr->a);
+	String result;
+
+	const char *expectedResult =
+		"\tLAlloc 1\n"
+		"\tLd32 10\n"
+		"\tStpLoc0 0\n"
+		"\tLAlloc 2\n"
+		"\tLdLoc0 0\n"
+		"\tStpLoc0 1\n"
+		"\tLdLoc0 1\n"
+		"\tLdLoc0 0\n"
+		"\tBinary `+\n"
+		"\tStLoc0 2\n"
+		"\tLFree 2\n"
+		"\tLFree 1\n";
+
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, compiler->compiledTables);
+	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
+}
+END_TEST
+
+//-------------------------------------------------------------------------------------------------
 
 START_TEST(CanCompileSimpleConditionals)
 {
