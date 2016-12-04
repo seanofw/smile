@@ -485,8 +485,8 @@ START_TEST(CanCompileAWhileLoopThatComputesLogarithms)
 		"n = 12345678\n"
 		"log = 0\n"
 		"while n do {\n"
-		"\tn = n >>> 1\n"
-		"\tlog = log + 1\n"
+		"\tn >>>= 1\n"
+		"\tlog += 1\n"
 		"}\n"
 	);
 

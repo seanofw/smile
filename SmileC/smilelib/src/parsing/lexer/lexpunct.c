@@ -121,7 +121,10 @@ Int Lexer_ParseHyphenOrEquals(Lexer lexer, Int initialChar, Bool isFirstContentO
 
 	// Anything else is a punctuation form, with '=' treated specially.
 	tokenKind = Lexer_ParsePunctuation(lexer, isFirstContentOnLine);
-	return (tokenKind == TOKEN_EQUAL && !hasPrecedingWhitespace) ? TOKEN_EQUALWITHOUTWHITESPACE : tokenKind;
+	if (tokenKind == TOKEN_EQUAL && !hasPrecedingWhitespace) {
+		lexer->token->kind = tokenKind = TOKEN_EQUALWITHOUTWHITESPACE;
+	}
+	return tokenKind;
 }
 
 /// <summary>

@@ -302,6 +302,11 @@ ParseError Parser_ParseCmpExpr(Parser parser, SmileObject *expr, Int modeFlags)
 
 parseNextOperator:
 
+	if (Parser_Has2Lookahead(parser, TOKEN_UNKNOWNPUNCTNAME, TOKEN_EQUALWITHOUTWHITESPACE)) {
+		// This might not be possible, but if this is something like >==, then don't allow it to be consumed as a binary operator.
+		return NULL;
+	}
+
 	if ((customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_CMPEXPR, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_ADDEXPR, &parseError))
 		!= CustomSyntaxResult_NotMatchedAndNoTokensConsumed) {
 		
@@ -372,6 +377,11 @@ ParseError Parser_ParseAddExpr(Parser parser, SmileObject *expr, Int modeFlags)
 
 parseNextOperator:
 
+	if (Parser_Has2Lookahead(parser, TOKEN_UNKNOWNPUNCTNAME, TOKEN_EQUALWITHOUTWHITESPACE)) {
+		// If this is something like +=, then don't allow it to be consumed as a binary operator.
+		return NULL;
+	}
+
 	if ((customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_ADDEXPR, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_MULEXPR, &parseError))
 		!= CustomSyntaxResult_NotMatchedAndNoTokensConsumed) {
 
@@ -428,6 +438,11 @@ ParseError Parser_ParseMulExpr(Parser parser, SmileObject *expr, Int modeFlags)
 		return parseError;
 
 parseNextOperator:
+
+	if (Parser_Has2Lookahead(parser, TOKEN_UNKNOWNPUNCTNAME, TOKEN_EQUALWITHOUTWHITESPACE)) {
+		// If this is something like *=, then don't allow it to be consumed as a binary operator.
+		return NULL;
+	}
 
 	if ((customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_MULEXPR, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_BINARYEXPR, &parseError))
 		!= CustomSyntaxResult_NotMatchedAndNoTokensConsumed) {
@@ -527,6 +542,11 @@ ParseError Parser_ParseBinaryExpr(Parser parser, SmileObject *expr, Int modeFlag
 		return parseError;
 
 parseNextOperator:
+
+	if (Parser_Has2Lookahead(parser, TOKEN_UNKNOWNPUNCTNAME, TOKEN_EQUALWITHOUTWHITESPACE)) {
+		// If this is something like +=, then don't allow it to be consumed as a binary operator.
+		return NULL;
+	}
 
 	if ((customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_BINARYEXPR, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_COLONEXPR, &parseError))
 		!= CustomSyntaxResult_NotMatchedAndNoTokensConsumed) {
