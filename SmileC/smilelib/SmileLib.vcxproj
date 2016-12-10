@@ -136,7 +136,6 @@
     <ClInclude Include="include\smile\env\symboltable.h" />
     <ClInclude Include="include\smile\eval\bytecode.h" />
     <ClInclude Include="include\smile\eval\compiler.h" />
-    <ClInclude Include="include\smile\eval\costack.h" />
     <ClInclude Include="include\smile\eval\eval.h" />
     <ClInclude Include="include\smile\eval\opcode.h" />
     <ClInclude Include="include\smile\gc.h" />
@@ -762,7 +761,6 @@
     <ClCompile Include="src\env\symboltable.c" />
     <ClCompile Include="src\eval\bytecode.c" />
     <ClCompile Include="src\eval\compiler.c" />
-    <ClCompile Include="src\eval\costack.c" />
     <ClCompile Include="src\eval\eval.c" />
     <ClCompile Include="src\fnvhash.c" />
     <ClCompile Include="src\init.c">

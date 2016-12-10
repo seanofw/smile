@@ -14,9 +14,6 @@
 #ifndef __SMILE_ENV_ENV_H__
 #include <smile/env/env.h>
 #endif
-#ifndef __SMILE_EVAL_COSTACK_H__
-#include <smile/eval/costack.h>
-#endif
 
 struct CompiledFunctionStruct;
 
@@ -36,7 +33,7 @@ typedef struct ClosureInfoStruct {
 
 	struct ClosureInfoStruct *parent;	// A pointer to the parent info struct, if any.
 		
-	Int32Int32Dict argsDictionary;	// A shared dictionary that maps Symbol IDs to args before the frame.
+	Int32Int32Dict argsDictionary;	// A shared dictionary that maps Symbol IDs to indices in the frame.
 	Int32Int32Dict localsDictionary;	// A shared dictionary that maps Symbol IDs to indices in the frame.
 		
 	Symbol *locals;	// The names of the variables in the 'locals' array.
@@ -59,9 +56,7 @@ typedef struct ClosureInfoStruct {
 typedef struct ClosureStruct {
 
 	ClosureInfo closureInfo;	// Shared metadata about this closure.
-		
-	CoStack costack;	// A back-pointer to the costack that contains this closure.
-		
+
 	Int32 parentClosureOffset;	// The offset of the parent (lexically-containing) closure on the stack, if any.
 	Int32 callingClosureOffset;	// The offset of the calling closure on the stack, if any.
 		
