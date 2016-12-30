@@ -148,4 +148,48 @@ START_TEST(NewWithMembersAllowsColonsInNestedFunctionsIfWrapped2)
 }
 END_TEST
 
+START_TEST(CanElideNewKeywordWhenInAnRValue)
+{
+	Lexer lexer = SetupLexer("\t z = { x:10 y:20 } \n");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	ParseError declError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "z"), PARSEDECL_GLOBAL, NULL, NULL);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedResult = SimpleParse("[$set z [$new Object [ [x 10] [y 20] ]]]");
+
+	ASSERT(RecursiveEquals(result, expectedResult));
+}
+END_TEST
+
+START_TEST(MemberExpressionsUseOrScope)
+{
+	Lexer lexer = SetupLexer("\t z = new { x:(y = 10) } \n");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	ParseError declError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "z"), PARSEDECL_GLOBAL, NULL, NULL);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedResult = SimpleParse("[$set z [$new Object [ [x [$set y 10]] ]]]");
+
+	String foo = SmileObject_Stringify(result);
+
+	ASSERT(parser->firstMessage == NullList);
+	ASSERT(SMILE_KIND(result) == SMILE_KIND_LIST);
+	// First is $scope, second is [y], and third is $set.
+	ASSERT(RecursiveEquals(LIST_THIRD((SmileList)result), expectedResult));
+
+	// Now try the same thing, but without the parentheses recursing to the top
+	// of the grammar:  This version should fail with a bunch of errors, since 'var'
+	// is not allowed deeper in the grammar.
+	lexer = SetupLexer("\t z = new { x:y = 10 } \n");
+	parser = Parser_Create();
+	parseScope = ParseScope_CreateRoot();
+	declError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "z"), PARSEDECL_GLOBAL, NULL, NULL);
+	result = Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(parser->firstMessage != NullList);
+}
+END_TEST
+
 #include "parsernew_tests.generated.inc"

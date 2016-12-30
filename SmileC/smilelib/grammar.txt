@@ -138,6 +138,7 @@ prefixexpr ::=	  UNKNOWN_PUNCT_NAME prefixexpr | UNKNOWN_ALPHA_NAME prefixexpr
 
 newexpr ::=	  NEW LBRACE members_opt RBRACE	// See note above about binary operators (no breaking allowed in 'members_opt').
 	| NEW dotexpr LBRACE members_opt RBRACE	// See note above about binary operators (no breaking allowed in 'members_opt').
+	| LBRACE members_opt RBRACE	// Shorthand new-object form
 	| consexpr
 
 consexpr ::= dotexpr DOUBLEHASH consexpr | dotexpr
@@ -145,7 +146,6 @@ consexpr ::= dotexpr DOUBLEHASH consexpr | dotexpr
 dotexpr ::= dotexpr DOT any_name | term
 
 term ::= LPAREN expr RPAREN							// See note above about binary operators (breaking allowed in 'expr').
-       | scope
        | func
        | LBRACKET exprs_opt RBRACKET				// See note above about binary operators (no breaking allowed in 'exprs_opt').
        | BACKTICK LPAREN expr RPAREN
@@ -168,7 +168,7 @@ semi_opt ::= SEMICOLON |
 
 members_opt ::= members |
 members ::= members member | member
-member ::= name COLON expr
+member ::= name COLON orexpr
 
 params_opt ::= params |
 params ::= params param | params ',' param | param

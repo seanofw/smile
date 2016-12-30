@@ -792,6 +792,7 @@ ParseError Parser_ParsePrefixExpr(Parser parser, SmileObject *expr, Int modeFlag
 
 // newexpr ::=	  . NEW LBRACE members_opt RBRACE
 // 	| . NEW dotexpr LBRACE members_opt RBRACE
+//	| . LBRACE members_opt RBRACE
 // 	| . consexpr
 ParseError Parser_ParseNewExpr(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting)
 {
@@ -801,6 +802,14 @@ ParseError Parser_ParseNewExpr(Parser parser, SmileObject *expr, Int modeFlags, 
 	LexerPosition newTokenPosition;
 
 	token = Parser_NextToken(parser);
+	if (token->kind == TOKEN_LEFTBRACE) {
+		// If we got here, that means it's a curly brace in an rvalue position, so we treat it
+		// as a shorthand object instantiation, same as JavaScript does.
+		newTokenPosition = Token_GetPosition(token);
+		base = (SmileObject)Smile_KnownObjects.ObjectSymbol;
+		goto shorthandForm;
+	}
+
 	if (!((token->kind == TOKEN_ALPHANAME || token->kind == TOKEN_UNKNOWNALPHANAME)
 		&& token->data.symbol == Smile_KnownSymbols.new_)) {
 		Lexer_Unget(parser->lexer);
@@ -833,6 +842,7 @@ ParseError Parser_ParseNewExpr(Parser parser, SmileObject *expr, Int modeFlags, 
 		return parseError;
 	}
 
+shorthandForm:
 	if (!Parser_ParseMembers(parser, &body)) {
 		token = Parser_Recover(parser, Parser_RightBracesBracketsParentheses_Recovery, Parser_RightBracesBracketsParentheses_Count);
 		if (token->kind != TOKEN_RIGHTBRACE) {
@@ -875,7 +885,7 @@ static Int Parser_RightBracesColons_Count = sizeof(Parser_RightBracesColons_Reco
 
 // members_opt :: = . members | .
 // members :: = . members member | . member
-// member :: = . name COLON expr
+// member :: = . name COLON orexpr
 Bool Parser_ParseMembers(Parser parser, SmileObject *expr)
 {
 	SmileList head = NullList, tail = NullList;
@@ -902,8 +912,8 @@ Bool Parser_ParseMembers(Parser parser, SmileObject *expr)
 				return False;
 			}
 		}
-
-		parseError = Parser_ParseExpr(parser, &valueExpr, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERDECL);
+	
+		parseError = Parser_ParseOrExpr(parser, &valueExpr, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERDECL);
 		if (parseError != NULL) {
 			Parser_AddMessage(parser, parseError);
 			hasErrors = True;
