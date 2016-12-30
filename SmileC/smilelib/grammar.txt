@@ -48,6 +48,7 @@ expr ::= arith
 		| var_decl
 		| const_decl
 		| auto_decl
+		| keyword_decl
 		| scope
 		| return
 		| LOANWORD_INCLUDE include_expr
@@ -85,6 +86,9 @@ auto_decl ::= AUTO adecls
 const_decl ::= CONST adecls
 adecls ::= adecl | adecls COMMA adecl
 adecl ::= name EQUAL arith | name EQUAL_NOSPACE arith
+
+keyword_decl ::= KEYWORD kdecls
+kdecls ::= name | kdecls COMMA name
 
 any_name ::= name | EQ | NE | LE | GE | LT | GT | SUPEREQ | SUPERNE | PLUS | MINUS | STAR | SLASH
 		| IF | THEN | ELSE | WHILE | UNTIL | DO | TILL | WHEN | RETURN | VAR | CATCH | NEW

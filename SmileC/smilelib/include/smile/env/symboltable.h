@@ -24,17 +24,17 @@
 /// The internal implementation of the Smile shared symbol table.
 /// </summary>
 struct SymbolTableInt {
-	String *symbolNames;			// This is the set of known symbols, in registration order.
-	Int count;						// The number of registered symbols.
-	Int max;						// The current maximum size of the symbol arrays.
-	StringIntDict symbolLookup;		// A lookup table for finding symbol IDs by their names, quickly.
+	String *symbolNames;	// This is the set of known symbols, in registration order.
+	Int count;	// The number of registered symbols.
+	Int max;	// The current maximum size of the symbol arrays.
+	StringIntDict symbolLookup;	// A lookup table for finding symbol IDs by their names, quickly.
 };
 
 //-------------------------------------------------------------------------------------------------
 //  Public type declarations
 
 // A symbol is (currently) a magic integer that is not zero (zero is an invalid symbol ID).
-typedef Int Symbol;
+typedef Int32 Symbol;
 
 typedef struct SymbolTableStruct {
 	struct SymbolTableInt _opaque;

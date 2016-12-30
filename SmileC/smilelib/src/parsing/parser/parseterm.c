@@ -47,7 +47,8 @@
 //         | . REAL
 ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, Token firstUnaryTokenForErrorReporting)
 {
-	Token token = Parser_NextToken(parser);
+	ParseDecl parseDecl;
+	Token token = Parser_NextTokenWithDeclaration(parser, &parseDecl);
 	LexerPosition startPosition;
 	ParseError error;
 
@@ -115,6 +116,12 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, T
 
 	case TOKEN_ALPHANAME:
 	case TOKEN_PUNCTNAME:
+		if (parseDecl->declKind == PARSEDECL_KEYWORD) {
+			error = ParseMessage_Create(PARSEMESSAGE_ERROR,
+				firstUnaryTokenForErrorReporting != NULL ? Token_GetPosition(firstUnaryTokenForErrorReporting) : Token_GetPosition(token),
+				String_Format("\"%S\" is a keyword and cannot be used as a variable or operator", token->text));
+			return error;
+		}
 		*result = (SmileObject)SmileSymbol_Create(token->data.symbol);
 		return NULL;
 
@@ -152,7 +159,7 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, T
 			firstUnaryTokenForErrorReporting != NULL ? Token_GetPosition(firstUnaryTokenForErrorReporting) : Token_GetPosition(token),
 			String_Format("\"%S\" is not a known variable name", token->text));
 		return error;
-
+	
 	case TOKEN_LOANWORD_SYNTAX:
 		// Parse the new syntax rule.
 		error = Parser_ParseSyntax(parser, result, modeFlags);

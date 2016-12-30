@@ -192,7 +192,20 @@ SmileObject Parser_ParseScopeBody(Parser parser)
 
 	Parser_EndScope(parser);
 
-	if (numDecls == 0) {
+	LIST_INIT(declHead, declTail);
+	for (i = 0; i < numDecls; i++) {
+		switch (decls[i]->declKind) {
+			case PARSEDECL_VARIABLE:
+			case PARSEDECL_CONST:
+			case PARSEDECL_AUTO:
+				LIST_APPEND(declHead, declTail, SmileSymbol_Create(decls[i]->symbol));
+				break;
+		}
+	}
+
+	if (SMILE_KIND(declHead) == SMILE_KIND_NULL) {
+		// No declarations that require runtime scope space.
+	
 		if (SMILE_KIND(head) == SMILE_KIND_NULL) {
 			// Empty body, so we got nothin'.
 			return NullObject;
@@ -208,10 +221,6 @@ SmileObject Parser_ParseScopeBody(Parser parser)
 	}
 	else {
 		// We have declarations, so we need to wrap whatever we got in a [$scope].
-		LIST_INIT(declHead, declTail);
-		for (i = 0; i < numDecls; i++) {
-			LIST_APPEND(declHead, declTail, SmileSymbol_Create(decls[i]->symbol));
-		}
 		return (SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects._scopeSymbol,
 			(SmileObject)SmileList_ConsWithSource((SmileObject)declHead, (SmileObject)head, startPosition), startPosition);
 	}

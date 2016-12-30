@@ -30,8 +30,9 @@
 // Fixed forms within their scope.
 #define PARSEDECL_CONST	5	// A local variable declared with a single static assignment.
 #define PARSEDECL_AUTO	6	// A local variable declared to have auto-cleanup.
-#define PARSEDECL_POSTCONDITION	7	// The special variable 'result' in a post: condition.
-#define PARSEDECL_TILL	8	// A till-name declared for a till...do loop.
+#define PARSEDECL_KEYWORD	7	// A name that cannot be used as an implicit variable or unary/binary operator.
+#define PARSEDECL_POSTCONDITION	8	// The special variable 'result' in a post: condition.
+#define PARSEDECL_TILL	9	// A till-name declared for a till...do loop.
 
 //-------------------------------------------------------------------------------------------------
 //  Parse declarations.

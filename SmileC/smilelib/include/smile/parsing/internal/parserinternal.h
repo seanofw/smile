@@ -46,6 +46,7 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseExpr(Parser parser, SmileObject *expr
 SMILE_INTERNAL_FUNC ParseError Parser_ParseStmt(Parser parser, SmileObject *expr, Int modeFlags);
 
 SMILE_INTERNAL_FUNC ParseError Parser_ParseVarDecls(Parser parser, SmileObject *expr, Int modeFlags, Int declKind);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseKeywordList(Parser parser, SmileObject *expr);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseDecl(Parser parser, SmileObject *expr, Int modeFlags, Int declKind);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseOpEquals(Parser parser, SmileObject *expr, Int modeFlags);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseEquals(Parser parser, SmileObject *expr, Int modeFlags);
@@ -156,6 +157,58 @@ Inline Token Parser_NextToken(Parser parser)
 			}
 			token->kind = ParseScope_IsDeclared(parser->currentScope, token->data.symbol) ? TOKEN_PUNCTNAME : TOKEN_UNKNOWNPUNCTNAME;
 			break;
+	}
+
+	return token;
+}
+
+/// <summary>
+/// Read the next token from the input stream.  If the token is an identifier, correctly map
+/// it to its declaration (or lack thereof) in the current scope.
+/// </summary>
+/// <param name="parser">The parser instance.</param>
+/// <param name="parseDecl">The declaration for this token, if it is a declared token.</param>
+/// <returns>The next token in the input stream.</returns>
+Inline Token Parser_NextTokenWithDeclaration(Parser parser, ParseDecl *parseDecl)
+{
+	Token token;
+	Symbol symbol;
+	ParseDecl decl;
+
+	Lexer_Next(parser->lexer);
+	token = parser->lexer->token;
+
+	switch (token->kind) {
+
+	case TOKEN_ALPHANAME:
+	case TOKEN_UNKNOWNALPHANAME:
+		if (token->data.symbol == 0) {
+			token->data.symbol = symbol = SymbolTable_GetSymbol(Smile_SymbolTable, token->text);
+		}
+		else {
+			symbol = token->data.symbol;
+		}
+		decl = ParseScope_FindDeclaration(parser->currentScope, token->data.symbol);
+		token->kind = decl != NULL ? TOKEN_ALPHANAME : TOKEN_UNKNOWNALPHANAME;
+		*parseDecl = decl;
+		break;
+
+	case TOKEN_PUNCTNAME:
+	case TOKEN_UNKNOWNPUNCTNAME:
+		if (token->data.symbol == 0) {
+			token->data.symbol = symbol = SymbolTable_GetSymbol(Smile_SymbolTable, token->text);
+		}
+		else {
+			symbol = token->data.symbol;
+		}
+		decl = ParseScope_FindDeclaration(parser->currentScope, token->data.symbol);
+		token->kind = decl != NULL ? TOKEN_PUNCTNAME : TOKEN_UNKNOWNPUNCTNAME;
+		*parseDecl = decl;
+		break;
+	
+	default:
+		*parseDecl = NULL;
+		break;
 	}
 
 	return token;

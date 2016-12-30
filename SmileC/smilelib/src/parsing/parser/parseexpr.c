@@ -66,6 +66,8 @@ ParseError Parser_ParseStmt(Parser parser, SmileObject *expr, Int modeFlags)
 					return Parser_ParseVarDecls(parser, expr, modeFlags, PARSEDECL_CONST);
 				case SMILE_SPECIAL_SYMBOL_AUTO:
 					return Parser_ParseVarDecls(parser, expr, modeFlags, PARSEDECL_AUTO);
+				case SMILE_SPECIAL_SYMBOL_KEYWORD:
+					return Parser_ParseKeywordList(parser, expr);
 			}
 			// Fall through to default case if not a declaration.
 

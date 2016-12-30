@@ -27,10 +27,48 @@ STATIC_STRING(MissingConstNameMessage, "Expected a constant name after 'const'")
 STATIC_STRING(MissingAutoNameMessage, "Expected a auto-cleanup variable name after 'auto'");
 STATIC_STRING(MissingConstRValueMessage, "Expected a constant-value assignment after 'const'");
 STATIC_STRING(MissingAutoRValueMessage, "Expected an auto-value assignment after 'auto'");
+STATIC_STRING(MissingKeywordNameMessage, "Expected a keyword name after 'keyword'");
 STATIC_STRING(InternalErrorMessage, "Internal error while parsing variable declarations");
 
 //-------------------------------------------------------------------------------------------------
 // Assignment, opequals, and variable declarations
+
+//  var_decl ::= KEYWORD . keyword_decls
+//  keyword_decls ::= name | keyword_decls COMMA name
+ParseError Parser_ParseKeywordList(Parser parser, SmileObject *expr)
+{
+	ParseError error;
+	SmileList head, tail;
+	Token token;
+
+	head = tail = NullList;
+
+	do {
+		token = Parser_NextToken(parser);
+		if (token->kind != TOKEN_ALPHANAME && token->kind != TOKEN_UNKNOWNALPHANAME
+			&& token->kind != TOKEN_PUNCTNAME && token->kind != TOKEN_UNKNOWNPUNCTNAME) {
+
+			// No keyword name?  That's an error.
+			*expr = NullObject;
+			error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
+				MissingKeywordNameMessage);
+			return error;
+		}
+
+		error = ParseScope_DeclareHere(parser->currentScope, token->data.symbol, PARSEDECL_KEYWORD, Token_GetPosition(token), NULL);
+		if (error != NULL) {
+			*expr = NullObject;
+			return error;
+		}
+	
+	} while (Lexer_Next(parser->lexer) == TOKEN_COMMA);
+
+	Lexer_Unget(parser->lexer);
+
+	// There's literally nothing to return on a successful parse.
+	*expr = NullObject;
+	return NULL;
+}
 
 //  var_decl ::= VAR . decls
 //  decls ::= decl | decls COMMA decl
@@ -91,7 +129,7 @@ ParseError Parser_ParseDecl(Parser parser, SmileObject *expr, Int modeFlags, Int
 		&& token->kind != TOKEN_PUNCTNAME) {
 
 		// No variable name?  That's an error.
-		*expr = NULL;
+		*expr = NullObject;
 		error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
 			declKind == PARSEDECL_AUTO ? MissingAutoNameMessage
 			: declKind == PARSEDECL_CONST ? MissingConstNameMessage
@@ -132,7 +170,7 @@ ParseError Parser_ParseDecl(Parser parser, SmileObject *expr, Int modeFlags, Int
 
 		// It's 'auto' or 'const', but with no assignment.  That's an error.
 		Lexer_Unget(parser->lexer);
-		*expr = NULL;
+		*expr = NullObject;
 		error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
 			declKind == PARSEDECL_AUTO ? MissingAutoRValueMessage : MissingConstRValueMessage);
 		return error;
@@ -157,7 +195,7 @@ ParseError Parser_ParseOpEquals(Parser parser, SmileObject *expr, Int modeFlags)
 
 	error = Parser_ParseEquals(parser, &lvalue, modeFlags);
 	if (error != NULL) {
-		*expr = NULL;
+		*expr = NullObject;
 		return error;
 	}
 

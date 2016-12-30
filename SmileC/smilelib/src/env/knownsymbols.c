@@ -46,6 +46,7 @@ STATIC_STRING(_Typeof, "$typeof");
 STATIC_STRING(Var_, "var");
 STATIC_STRING(Const_, "const");
 STATIC_STRING(Auto_, "auto");
+STATIC_STRING(Keyword_, "keyword");
 STATIC_STRING(Try_, "try");
 STATIC_STRING(Catch_, "catch");
 STATIC_STRING(Return_, "return");
@@ -148,6 +149,7 @@ static void KnownSymbolsInt_PreloadSpecials(SymbolTable symbolTable, KnownSymbol
 	knownSymbols->var_ = AddSpecialSymbol(symbolTable, Var_, SMILE_SPECIAL_SYMBOL_VAR);
 	knownSymbols->const_ = AddSpecialSymbol(symbolTable, Const_, SMILE_SPECIAL_SYMBOL_CONST);
 	knownSymbols->auto_ = AddSpecialSymbol(symbolTable, Auto_, SMILE_SPECIAL_SYMBOL_AUTO);
+	knownSymbols->keyword_ = AddSpecialSymbol(symbolTable, Keyword_, SMILE_SPECIAL_SYMBOL_KEYWORD);
 	knownSymbols->return_ = AddSpecialSymbol(symbolTable, Return_, SMILE_SPECIAL_SYMBOL_RETURN);
 	knownSymbols->try_ = AddSpecialSymbol(symbolTable, Try_, SMILE_SPECIAL_SYMBOL_TRY);
 	knownSymbols->catch_ = AddSpecialSymbol(symbolTable, Catch_, SMILE_SPECIAL_SYMBOL_CATCH);

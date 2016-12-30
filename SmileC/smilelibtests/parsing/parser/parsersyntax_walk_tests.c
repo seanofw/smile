@@ -295,4 +295,80 @@ START_TEST(CanExtendExprWithKeywordRoots)
 }
 END_TEST
 
+//-------------------------------------------------------------------------------------------------
+// Keyword tests
+
+START_TEST(CanDeclareKeywords)
+{
+	Lexer lexer = SetupLexer(
+		"keyword if, then, else\n"
+		"#syntax STMT: [if [EXPR x] then [STMT y]] => [$if x y]\n"
+		"#syntax STMT: [if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
+		"4 + 5\n"
+		"if 1 < 2 then 10\n"
+		"if 3 < 4 then 30 else 40\n"
+		"6 + 7\n"
+	);
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = (SmileList)Parser_Parse(parser, lexer, parseScope);
+
+	String foo = SmileObject_Stringify((SmileObject)result);
+
+	ASSERT(RecursiveEquals(LIST_FIRST(result), SimpleParse("$progn")));
+	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("[(4 . +) 5]")));
+	ASSERT(RecursiveEquals(LIST_FIFTH(result), SimpleParse("[$if [(1 . <) 2] 10]")));
+	ASSERT(RecursiveEquals(LIST_SIXTH(result), SimpleParse("[$if [(3 . <) 4] 30 40]")));
+	ASSERT(RecursiveEquals(LIST_SEVENTH(result), SimpleParse("[(6 . +) 7]")));
+}
+END_TEST
+
+START_TEST(DeclaringKeywordsChangesParsingBehavior)
+{
+	// Without the keyword declaration, this is a series of operators.
+	Lexer lexer = SetupLexer(
+		"if 4 then 5 else 6\n"
+	);
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = (SmileList)Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedResult = SimpleParse("[([([(4 . if)] . then) 5] . else) 6]");
+
+	ASSERT(parser->firstMessage == NullList);
+	ASSERT(RecursiveEquals((SmileObject)result, expectedResult));
+
+	// With the keyword declaration, this is a syntax error, because 'if' and 'then' and 'else'
+	// cannot be used as unary or binary operators.
+	lexer = SetupLexer(
+		"keyword if, then, else\n"
+		"if 4 then 5 else 6\n"
+	);
+	parser = Parser_Create();
+	parseScope = ParseScope_CreateRoot();
+	result = (SmileList)Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(parser->firstMessage != NullList);
+
+	// And now the kicker:  *With* the keyword declaration, *and* a syntax rule, this is allowed again,
+	// because 'if' and 'then' and 'else' are still valid for use as syntax keywords.
+	lexer = SetupLexer(
+		"#syntax STMT: [if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
+		"keyword if, then, else\n"
+		"if 4 then 5 else 6\n"
+	);
+	parser = Parser_Create();
+	parseScope = ParseScope_CreateRoot();
+	result = (SmileList)Parser_Parse(parser, lexer, parseScope);
+
+	String foo = SmileObject_Stringify((SmileObject)result);
+
+	expectedResult = SimpleParse("[$if 4 5 6]");
+
+	ASSERT(parser->firstMessage == NullList);
+	ASSERT(RecursiveEquals(LIST_FIRST(result), SimpleParse("$progn")));
+	ASSERT(RecursiveEquals(LIST_THIRD(result), expectedResult));
+}
+END_TEST
+
 #include "parsersyntax_walk_tests.generated.inc"

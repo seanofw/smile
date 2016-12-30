@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 0022670733340aa032e737863bf1fae3
+// SourceHash: 3252740fc00dc6952ddec121ddb7c04b
 
 START_TEST_SUITE(ParserSyntaxWalkTests)
 {
@@ -17,6 +17,8 @@ START_TEST_SUITE(ParserSyntaxWalkTests)
 	SimpleCustomDslTest,
 	CanExtendStmtWithKeywordRoots,
 	CanExtendExprWithKeywordRoots,
+	CanDeclareKeywords,
+	DeclaringKeywordsChangesParsingBehavior,
 }
 END_TEST_SUITE(ParserSyntaxWalkTests)
 
