@@ -37,6 +37,10 @@
 #include <smile/eval/opcode.h>
 #endif
 
+#ifndef __SMILE_EVAL_CLOSURE_H__
+#include <smile/eval/closure.h>
+#endif
+
 //-------------------------------------------------------------------------------------------------
 //  Type declarations.
 
@@ -58,6 +62,7 @@ typedef struct CompiledFunctionStruct {
 	SmileList args;	// This function's arguments, from its raw expression.
 	SmileObject body;	// This function's body, from its raw expression.
 	ByteCodeSegment byteCodeSegment;	// The byte-code segment that holds this function's instructions.
+	ClosureInfo closureInfo;	// The ClosureInfo object needed to actually eval this function.
 } *CompiledFunction;
 
 typedef struct CompileScopeStruct {
@@ -78,6 +83,9 @@ typedef struct CompiledLocalSymbolStruct {
 /// This represents all of the different tables of data collected during a compile.
 /// </summary>
 typedef struct CompiledTablesStruct {
+	CompiledFunction globalFunction;	// The global (outermost) function.
+	ClosureInfo globalClosureInfo;	// The global ClosureInfo object that contains all of the external variables.
+		
 	String *strings;	// The constant strings collected during the compile (unordered).
 	Int numStrings;	// The number of strings in the array.
 	Int maxStrings;	// The maximum number of strings in the array.
@@ -109,6 +117,7 @@ SMILE_API_FUNC CompiledTables CompiledTables_Create(void);
 
 SMILE_API_FUNC Compiler Compiler_Create(void);
 SMILE_API_FUNC CompiledFunction Compiler_BeginFunction(Compiler compiler, SmileList args, SmileObject body);
+SMILE_API_FUNC void Compiler_EndFunction(Compiler compiler);
 SMILE_API_FUNC Int Compiler_CompileExpr(Compiler compiler, SmileObject expr);
 SMILE_API_FUNC CompiledFunction Compiler_CompileGlobal(Compiler compiler, SmileObject expr);
 SMILE_API_FUNC Int Compiler_AddString(Compiler compiler, String string);
@@ -117,13 +126,14 @@ SMILE_API_FUNC CompileScope Compiler_BeginScope(Compiler compiler, Int kind);
 SMILE_API_FUNC void CompileScope_DefineSymbol(CompileScope scope, Symbol symbol, Int kind, Int index);
 SMILE_API_FUNC CompiledLocalSymbol CompileScope_FindSymbol(CompileScope compileScope, Symbol symbol);
 SMILE_API_FUNC CompiledLocalSymbol CompileScope_FindSymbolHere(CompileScope compileScope, Symbol symbol);
+SMILE_API_FUNC ClosureInfo Compiler_MakeClosureInfoForCompiledFunction(Compiler compiler, CompiledFunction compiledFunction);
 
 //-------------------------------------------------------------------------------------------------
 //  Inline functions.
 
-Inline void Compiler_EndFunction(Compiler compiler)
+Inline void Compiler_SetGlobalClosureInfo(Compiler compiler, ClosureInfo globalClosureInfo)
 {
-	compiler->currentFunction = compiler->currentFunction->parent;
+	compiler->compiledTables->globalClosureInfo = globalClosureInfo;
 }
 
 Inline void Compiler_EndScope(Compiler compiler)

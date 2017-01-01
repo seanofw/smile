@@ -70,6 +70,8 @@ void KnownObjects_Preload(struct KnownObjectsStruct *knownObjects, struct KnownS
 
 	knownObjects->TrueObj = SmileBool_Create(True);
 	knownObjects->FalseObj = SmileBool_Create(False);
+	knownObjects->BooleanObjs[0] = knownObjects->FalseObj;
+	knownObjects->BooleanObjs[1] = knownObjects->TrueObj;
 
 	knownObjects->ObjectSymbol = SmileSymbol_Create(knownSymbols->Object_);
 	knownObjects->ListSymbol = SmileSymbol_Create(knownSymbols->List_);

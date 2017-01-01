@@ -21,6 +21,7 @@
 #include <smile/eval/bytecode.h>
 #include <smile/eval/opcode.h>
 #include <smile/eval/compiler.h>
+#include <smile/eval/eval.h>
 #include <smile/parsing/parser.h>
 #include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
@@ -52,22 +53,60 @@ static SmileObject Parse(const char *text)
 	return SMILE_KIND(parser->firstMessage) == SMILE_KIND_NULL ? expr : NullObject;
 }
 
-static Compiler Compile(const char *text)
+static CompiledTables Compile(const char *text)
 {
-	SmileObject expr = Parse(text);
+	SmileObject expr;
+	Compiler compiler;
+	ClosureInfo globalClosureInfo;
+	CompiledFunction globalFunction;
 
-	Compiler compiler = Compiler_Create();
-	CompiledFunction globalFunction = Compiler_CompileGlobal(compiler, expr);
-	
-	return compiler;
+	expr = Parse(text);
+
+	compiler = Compiler_Create();
+	globalClosureInfo = ClosureInfo_Create(NULL, CLOSURE_KIND_GLOBAL);
+	Compiler_SetGlobalClosureInfo(compiler, globalClosureInfo);
+	globalFunction = Compiler_CompileGlobal(compiler, expr);
+
+	return compiler->compiledTables;
 }
 
-START_TEST(CanEvalAConstant)
+START_TEST(CanEvalAConstantInteger)
 {
-	Compiler compiler = Compile("1");
+	CompiledTables compiledTables = Compile("1");
 
-	String string = ByteCodeSegment_ToString(compiler->compiledTables->compiledFunctions[0]->byteCodeSegment, NULL, compiler->compiledTables);
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunction);
 
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER32);
+	ASSERT(((SmileInteger32)result->value)->value == 1);
+}
+END_TEST
+
+START_TEST(CanEvalAConstantSymbol)
+{
+	CompiledTables compiledTables = Compile("`a");
+
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunction);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_SYMBOL);
+	ASSERT(((SmileSymbol)result->value)->symbol == Smile_KnownSymbols.a);
+}
+END_TEST
+
+START_TEST(CanEvalLocalVariableAssignments)
+{
+	CompiledTables compiledTables = Compile(
+		"x = `a\n"
+		"y = `b\n"
+		"x"
+	);
+
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunction);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_SYMBOL);
+	ASSERT(((SmileSymbol)result->value)->symbol == Smile_KnownSymbols.a);
 }
 END_TEST
 

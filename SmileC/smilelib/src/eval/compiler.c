@@ -212,6 +212,9 @@ CompiledTables CompiledTables_Create(void)
 	if (compiledTables == NULL)
 		Smile_Abort_OutOfMemory();
 
+	compiledTables->globalFunction = NULL;
+	compiledTables->globalClosureInfo = NULL;
+
 	compiledTables->strings = GC_MALLOC_STRUCT_ARRAY(String, 16);
 	if (compiledTables->strings == NULL)
 		Smile_Abort_OutOfMemory();
@@ -305,6 +308,20 @@ CompiledFunction Compiler_BeginFunction(Compiler compiler, SmileList args, Smile
 	compiler->currentFunction = newFunction;
 
 	return newFunction;
+}
+
+/// <summary>
+/// Finish compiling the current function, and return the compiler to working on
+/// its previous (outer) function.
+/// </summary>
+/// <param name="compiler">The compiler that has compiled a function.</param>
+void Compiler_EndFunction(Compiler compiler)
+{
+	CompiledFunction compiledFunction = compiler->currentFunction;
+
+	compiledFunction->closureInfo = Compiler_MakeClosureInfoForCompiledFunction(compiler, compiledFunction);
+
+	compiler->currentFunction = compiledFunction->parent;
 }
 
 CompileScope Compiler_BeginScope(Compiler compiler, Int kind)
@@ -441,6 +458,8 @@ CompiledFunction Compiler_CompileGlobal(Compiler compiler, SmileObject expr)
 	ByteCodeSegment segment;
 
 	compiledFunction = Compiler_BeginFunction(compiler, NullList, expr);
+	compiler->compiledTables->globalFunction = compiledFunction;
+
 	segment = compiler->currentFunction->byteCodeSegment;
 
 	Compiler_CompileExpr(compiler, expr);
@@ -450,6 +469,62 @@ CompiledFunction Compiler_CompileGlobal(Compiler compiler, SmileObject expr)
 	Compiler_EndFunction(compiler);
 
 	return compiledFunction;
+}
+
+/// <summary>
+/// Prepare a ClosureInfo object, which is the compact runtime equivalent of a CompiledFunction.
+/// </summary>
+/// <param name="compiledFunction">The compiled function to compact into a ClosureInfo object.</param>
+/// <returns>The compiled function's data, as a ClosureInfo object.</returns>
+ClosureInfo Compiler_MakeClosureInfoForCompiledFunction(Compiler compiler, CompiledFunction compiledFunction)
+{
+	ClosureInfo closureInfo;
+	Int numVariables, src, dest;
+	Symbol *variableNames;
+	Symbol symbol;
+	struct VarInfoStruct varInfo;
+	
+	closureInfo = ClosureInfo_Create(compiledFunction->parent != NULL ? compiledFunction->parent->closureInfo : compiler->compiledTables->globalClosureInfo,
+		CLOSURE_KIND_LOCAL);
+
+	closureInfo->global = closureInfo->parent != NULL ? closureInfo->parent->global : compiler->compiledTables->globalClosureInfo;
+	
+	numVariables = compiledFunction->numArgs + compiledFunction->localSize;
+	closureInfo->numVariables = (Int16)numVariables;
+	closureInfo->tempSize = compiledFunction->stackSize;
+
+	variableNames = (Symbol *)GC_MALLOC_ATOMIC(sizeof(Symbol) * numVariables);
+	if (variableNames == NULL)
+		Smile_Abort_OutOfMemory();
+
+	closureInfo->variableNames = variableNames;
+	dest = 0;
+
+	for (SmileList args = compiledFunction->args; SMILE_KIND(args) != SMILE_KIND_NULL; args = LIST_REST(args)) {
+		symbol = ((SmileSymbol)args->a)->symbol;
+
+		varInfo.kind = VAR_KIND_ARG;
+		varInfo.offset = dest;
+		varInfo.symbol = symbol;
+		varInfo.value = NullObject;
+		VarDict_SetValue(closureInfo->variableDictionary, symbol, &varInfo);
+	
+		variableNames[dest++] = symbol;
+	}
+
+	for (src = 0; src < compiledFunction->localSize; src++) {
+		symbol = compiledFunction->localNames[src];
+	
+		varInfo.kind = VAR_KIND_VAR;
+		varInfo.offset = dest;
+		varInfo.symbol = symbol;
+		varInfo.value = NullObject;
+		VarDict_SetValue(closureInfo->variableDictionary, symbol, &varInfo);
+
+		variableNames[dest++] = symbol;
+	}
+
+	return closureInfo;
 }
 
 /// <summary>

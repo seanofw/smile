@@ -43,9 +43,10 @@ typedef struct EvalResultStruct {
 
 SMILE_API_FUNC EvalResult Smile_Eval(SmileObject expr, Closure closure);
 
-SMILE_API_FUNC EvalResult Eval_RunOuter(CompiledTables tables, CompiledFunction function,
-	ByteCodeSegment segment, Int pc, Closure globalClosure);
-SMILE_API_FUNC void Eval_Run(Int pc);
+SMILE_API_FUNC EvalResult Eval_Run(CompiledTables tables, CompiledFunction function);
+SMILE_API_FUNC EvalResult Eval_Continue(void);
+
+SMILE_API_FUNC Bool Eval_RunCore(void);
 
 SMILE_API_FUNC void Smile_Throw(SmileObject expr);
 

@@ -84,6 +84,8 @@ START_TEST(CanCompileNull)
 	const char *expectedResult =
 		"\tLdNull\n";
 
+	Compiler_EndFunction(compiler);
+
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
 }
@@ -100,6 +102,8 @@ START_TEST(CanCompileByte)
 
 	const char *expectedResult =
 		"\tLd8 123\n";
+
+	Compiler_EndFunction(compiler);
 
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
@@ -118,6 +122,8 @@ START_TEST(CanCompileInt16)
 	const char *expectedResult =
 		"\tLd16 123\n";
 
+	Compiler_EndFunction(compiler);
+
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
 }
@@ -135,6 +141,8 @@ START_TEST(CanCompileInt32)
 	const char *expectedResult =
 		"\tLd32 123\n";
 
+	Compiler_EndFunction(compiler);
+
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
 }
@@ -151,6 +159,8 @@ START_TEST(CanCompileInt64)
 
 	const char *expectedResult =
 		"\tLd64 123\n";
+
+	Compiler_EndFunction(compiler);
 
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
@@ -172,6 +182,8 @@ START_TEST(CanCompileBasicArithmetic)
 		"\tBinary %d\t; +\n",
 		Smile_KnownSymbols.plus
 	);
+
+	Compiler_EndFunction(compiler);
 
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
@@ -199,6 +211,8 @@ START_TEST(CanCompileMildlyInterestingArithmetic)
 		Smile_KnownSymbols.star
 	);
 
+	Compiler_EndFunction(compiler);
+
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
@@ -223,6 +237,8 @@ START_TEST(CanCompileGlobalReadsAndWrites)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "ga")
 	);
 
+	Compiler_EndFunction(compiler);
+
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
@@ -245,6 +261,8 @@ START_TEST(CanCompileReadsFromProperties)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "foo"),
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "ga")
 	);
+
+	Compiler_EndFunction(compiler);
 
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
@@ -269,6 +287,8 @@ START_TEST(CanCompileWritesToProperties)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "foo")
 	);
 
+	Compiler_EndFunction(compiler);
+
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
@@ -291,6 +311,8 @@ START_TEST(CanCompileReadsFromMembers)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "gb"),
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "ga")
 	);
+
+	Compiler_EndFunction(compiler);
 
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
@@ -315,6 +337,8 @@ START_TEST(CanCompileWritesToMembers)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "gb")
 	);
 
+	Compiler_EndFunction(compiler);
+
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
@@ -338,6 +362,8 @@ START_TEST(CanCompileScopeVariableReads)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "gb"),
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "a")
 	);
+
+	Compiler_EndFunction(compiler);
 
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
@@ -366,6 +392,8 @@ START_TEST(CanCompileNestedScopeVariableReads)
 		"\tStLoc0 2\t; c\n",
 		Smile_KnownSymbols.plus
 	);
+
+	Compiler_EndFunction(compiler);
 
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
@@ -400,6 +428,8 @@ START_TEST(NestedScopesVariablesDontOverlap)
 		Smile_KnownSymbols.star
 	);
 
+	Compiler_EndFunction(compiler);
+
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 
@@ -432,6 +462,8 @@ START_TEST(CanCompileSimpleConditionals)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "then-side"),
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "else-side")
 	);
+
+	Compiler_EndFunction(compiler);
 
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
@@ -469,6 +501,8 @@ START_TEST(CanCompileConditionalsAllTheWay)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "then-side"),
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "else-side")
 	);
+
+	Compiler_EndFunction(compiler);
 
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
@@ -518,6 +552,8 @@ START_TEST(CanCompileAWhileLoopThatComputesLogarithms)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, ">>>"),
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "+")
 	);
+
+	Compiler_EndFunction(compiler);
 
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 

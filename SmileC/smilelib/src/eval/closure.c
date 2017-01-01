@@ -38,8 +38,8 @@ ClosureInfo ClosureInfo_Create(ClosureInfo parent, Int kind)
 	closureInfo->variableDictionary = VarDict_Create();
 	closureInfo->kind = (Int16)kind;
 	closureInfo->tempSize = 0;
-	closureInfo->numVars = 0;
-	closureInfo->localNames = NULL;
+	closureInfo->numVariables = 0;
+	closureInfo->variableNames = NULL;
 
 	return closureInfo;
 }
@@ -53,7 +53,8 @@ Closure Closure_CreateGlobal(ClosureInfo closureInfo, Closure parent)
 	closure->closureInfo = closureInfo;
 	closure->parent = parent;
 	closure->global = closure;
-	closure->stackTop = 0;
+	closure->stackTop = NULL;
+	closure->frame = closure->variables;
 
 	return closure;
 }
@@ -61,14 +62,15 @@ Closure Closure_CreateGlobal(ClosureInfo closureInfo, Closure parent)
 Closure Closure_CreateLocal(ClosureInfo closureInfo, Closure parent)
 {
 	Closure closure = (Closure)GC_MALLOC(sizeof(struct ClosureStruct)
-		+ sizeof(SmileObject) * (closureInfo->numVars + closureInfo->tempSize - 1));
+		+ sizeof(SmileObject) * (closureInfo->numVariables + closureInfo->tempSize - 1));
 	if (closure == NULL)
 		Smile_Abort_OutOfMemory();
 
 	closure->closureInfo = closureInfo;
 	closure->parent = parent;
 	closure->global = parent->global;
-	closure->stackTop = closureInfo->numVars;
+	closure->frame = closure->variables;
+	closure->stackTop = closure->variables + closureInfo->numVariables;
 
 	return closure;
 }
@@ -121,7 +123,46 @@ void Closure_SetGlobalVariable(Closure closure, Symbol name, SmileObject value)
 	}
 }
 
-SmileObject Closure_GetVariableInScope(Closure closure, Int scope, Int index)
+SmileObject Closure_GetArgumentInScope(Closure closure, Int scope, Int index)
+{
+	switch (scope) {
+	case 0: return Closure_GetArgument(closure, index);
+	case 1: return Closure_GetArgument(closure->parent, index);
+	case 2: return Closure_GetArgument(closure->parent->parent, index);
+	case 3: return Closure_GetArgument(closure->parent->parent->parent, index);
+	default:
+		while (scope--) {
+			closure = closure->parent;
+		}
+		return Closure_GetArgument(closure, index);
+	}
+}
+
+void Closure_SetArgumentInScope(Closure closure, Int scope, Int index, SmileObject value)
+{
+	switch (scope) {
+	case 0:
+		Closure_SetArgument(closure, index, value);
+		break;
+	case 1:
+		Closure_SetArgument(closure->parent, index, value);
+		break;
+	case 2:
+		Closure_SetArgument(closure->parent->parent, index, value);
+		break;
+	case 3:
+		Closure_SetArgument(closure->parent->parent->parent, index, value);
+		break;
+	default:
+		while (scope--) {
+			closure = closure->parent;
+		}
+		Closure_SetArgument(closure, index, value);
+		break;
+	}
+}
+
+SmileObject Closure_GetLocalVariableInScope(Closure closure, Int scope, Int index)
 {
 	switch (scope) {
 	case 0: return Closure_GetLocalVariable(closure, index);
@@ -136,7 +177,7 @@ SmileObject Closure_GetVariableInScope(Closure closure, Int scope, Int index)
 	}
 }
 
-void Closure_SetVariableInScope(Closure closure, Int scope, Int index, SmileObject value)
+void Closure_SetLocalVariableInScope(Closure closure, Int scope, Int index, SmileObject value)
 {
 	switch (scope) {
 	case 0:

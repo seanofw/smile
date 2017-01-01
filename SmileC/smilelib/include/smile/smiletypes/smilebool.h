@@ -42,4 +42,7 @@ SMILE_API_FUNC Int32 SmileBool_ToInteger32(SmileBool self);
 SMILE_API_FUNC Real64 SmileBool_ToReal64(SmileBool self);
 SMILE_API_FUNC String SmileBool_ToString(SmileBool self);
 
+#define SmileBool_FromBool(__value__) \
+	(Smile_KnownObjects.BooleanObjs[(__value__)])
+
 #endif

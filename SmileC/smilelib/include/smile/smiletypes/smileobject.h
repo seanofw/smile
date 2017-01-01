@@ -289,6 +289,15 @@ SMILE_API_FUNC Bool SmileObject_ContainsNestedList(SmileObject obj);
 //-------------------------------------------------------------------------------------------------
 //  Inline operations on SmileObject.
 
+Inline Bool SmileObject_Is(SmileObject self, SmileObject possibleParentOrSelf)
+{
+	for (;;) {
+		if (self == possibleParentOrSelf) return True;
+		if (SMILE_KIND(self) == SMILE_KIND_OBJECT) return False;
+		self = self->base;
+	}
+}
+
 Inline Bool SmileObject_IsList(SmileObject self)
 {
 	register UInt32 kind = SMILE_KIND(self);
