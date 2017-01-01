@@ -29,8 +29,8 @@
 #ifndef __SMILE_PARSING_PARSEMESSAGE_H__
 #include <smile/parsing/parsemessage.h>
 #endif
-#ifndef __SMILE_ENV_CLOSURE_H__
-#include <smile/env/closure.h>
+#ifndef __SMILE_EVAL_CLOSURE_H__
+#include <smile/eval/closure.h>
 #endif
 
 //-------------------------------------------------------------------------------------------------

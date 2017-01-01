@@ -127,7 +127,7 @@
     <ClInclude Include="include\smile\atomic.h" />
     <ClInclude Include="include\smile\bittwiddling.h" />
     <ClInclude Include="include\smile\dict\int32int32dict.h" />
-    <ClInclude Include="include\smile\env\closure.h" />
+    <ClInclude Include="include\smile\dict\vardict.h" />
     <ClInclude Include="include\smile\env\env.h" />
     <ClInclude Include="include\smile\env\knownbases.h" />
     <ClInclude Include="include\smile\env\knownobjects.h" />
@@ -135,6 +135,7 @@
     <ClInclude Include="include\smile\env\knownsymbols.h" />
     <ClInclude Include="include\smile\env\symboltable.h" />
     <ClInclude Include="include\smile\eval\bytecode.h" />
+    <ClInclude Include="include\smile\eval\closure.h" />
     <ClInclude Include="include\smile\eval\compiler.h" />
     <ClInclude Include="include\smile\eval\eval.h" />
     <ClInclude Include="include\smile\eval\opcode.h" />
@@ -751,7 +752,7 @@
     </Text>
     <ClCompile Include="src\dict\dictstats.c" />
     <ClCompile Include="src\dict\int32int32dict.c" />
-    <ClCompile Include="src\env\closure.c" />
+    <ClCompile Include="src\dict\vardict.c" />
     <ClCompile Include="src\env\env.c" />
     <ClCompile Include="src\env\knownbases.c" />
     <ClCompile Include="src\env\knownobjects.c" />
@@ -760,6 +761,7 @@
     <ClCompile Include="src\env\parsedecl.c" />
     <ClCompile Include="src\env\symboltable.c" />
     <ClCompile Include="src\eval\bytecode.c" />
+    <ClCompile Include="src\eval\closure.c" />
     <ClCompile Include="src\eval\compiler.c" />
     <ClCompile Include="src\eval\eval.c" />
     <ClCompile Include="src\fnvhash.c" />

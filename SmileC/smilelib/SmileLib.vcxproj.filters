@@ -702,9 +702,6 @@
     <ClCompile Include="src\dict\int32int32dict.c">
       <Filter>src\dict</Filter>
     </ClCompile>
-    <ClCompile Include="src\env\closure.c">
-      <Filter>src\env</Filter>
-    </ClCompile>
     <ClCompile Include="src\env\parsedecl.c">
       <Filter>src\parsing\parser</Filter>
     </ClCompile>
@@ -788,6 +785,12 @@
     </ClCompile>
     <ClCompile Include="src\smiletypes\numeric\smileinteger128.c">
       <Filter>src\smiletypes\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dict\vardict.c">
+      <Filter>src\dict</Filter>
+    </ClCompile>
+    <ClCompile Include="src\eval\closure.c">
+      <Filter>src\eval</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1067,9 +1070,6 @@
     <ClInclude Include="include\smile\parsing\internal\parsedecl.h">
       <Filter>include\parsing\internal</Filter>
     </ClInclude>
-    <ClInclude Include="include\smile\env\closure.h">
-      <Filter>include\env</Filter>
-    </ClInclude>
     <ClInclude Include="include\smile\dict\int32int32dict.h">
       <Filter>include\dict</Filter>
     </ClInclude>
@@ -1116,6 +1116,12 @@
       <Filter>include\eval</Filter>
     </ClInclude>
     <ClInclude Include="include\smile\eval\bytecode.h">
+      <Filter>include\eval</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\dict\vardict.h">
+      <Filter>include\dict</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\eval\closure.h">
       <Filter>include\eval</Filter>
     </ClInclude>
   </ItemGroup>
