@@ -28,6 +28,7 @@ SMILE_EASY_OBJECT_VTABLE(SmilePair);
 
 SMILE_EASY_OBJECT_NO_SECURITY(SmilePair);
 SMILE_EASY_OBJECT_NO_REALS(SmilePair);
+SMILE_EASY_OBJECT_NO_CALL(SmilePair);
 
 SmilePair SmilePair_Create(SmileObject left, SmileObject right)
 {

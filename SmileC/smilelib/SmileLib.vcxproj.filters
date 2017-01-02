@@ -1124,6 +1124,9 @@
     <ClInclude Include="include\smile\eval\closure.h">
       <Filter>include\eval</Filter>
     </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\smilefunction.h">
+      <Filter>include\smiletypes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\smile\array.h">

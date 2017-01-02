@@ -120,6 +120,16 @@ String SmileInteger32_ToString(SmileInteger32 self)
 	return String_Format("%d", self->value);
 }
 
+Bool SmileInteger32_Call(SmileInteger32 self, Int argc)
+{
+	UNUSED(self);
+	UNUSED(argc);
+
+	Smile_ThrowException(Smile_KnownSymbols.eval_error, Smile_KnownStrings.invalidFunctionError);
+
+	return True;
+}
+
 SMILE_VTABLE(SmileInteger32_VTable, SmileInteger32)
 {
 	SmileInteger32_CompareEqual,
@@ -139,4 +149,6 @@ SMILE_VTABLE(SmileInteger32_VTable, SmileInteger32)
 	SmileInteger32_ToFloat64,
 	SmileInteger32_ToReal64,
 	SmileInteger32_ToString,
+
+	SmileInteger32_Call,
 };

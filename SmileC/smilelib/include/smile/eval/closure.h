@@ -33,18 +33,37 @@ struct CompiledFunctionStruct;
 // arguments, and a trailing temporary stack.
 #define CLOSURE_KIND_LOCAL	1
 
+// An external (calling-only) closure is an array of function arguments, and is only used for
+// calling external C functions.
+#define CLOSURE_KIND_EXTERNAL	2
+
+/// <summary>
+/// A ClosureInfo structure is a reusable object that provides all of the metadata about the
+/// information stored in similarly-shaped closures.
+/// </summary>
+struct ClosureInfoBaseStruct {
+
+	struct ClosureInfoStruct *parent;	// A pointer to the parent info struct, if any.
+	struct ClosureInfoStruct *global;	// A pointer to the closest global info struct, if any.
+		
+	Int16 kind;	// What kind of closure this is (see the CLOSURE_KIND enum).
+	Int16 reserved1;	// Reserved for use by other closure-info types.
+	Int32 reserved2;	// Reserved for use by other closure-info types.
+
+};
+
 /// <summary>
 /// A ClosureInfo structure is a reusable object that provides all of the metadata about the
 /// information stored in similarly-shaped closures.
 /// </summary>
 typedef struct ClosureInfoStruct {
 
+	struct ClosureInfoStruct *parent;	// A pointer to the parent info struct, if any.
+	struct ClosureInfoStruct *global;	// A pointer to the closest global info struct, if any.
+		
 	Int16 kind;	// What kind of closure this is (see the CLOSURE_KIND enum).
 	Int16 numVariables;	// The number of variables in this closure.
 	Int32 tempSize;	// The maximum amount of temporary variables required by this closure.
-		
-	struct ClosureInfoStruct *parent;	// A pointer to the parent info struct, if any.
-	struct ClosureInfoStruct *global;	// A pointer to the closest global info struct, if any.
 		
 	VarDict variableDictionary;	// A dictionary that maps Symbol IDs to VarInfo objects.
 		// For local closures, this is used only for debugging, and the values are always null;

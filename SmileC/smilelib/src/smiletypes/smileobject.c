@@ -120,6 +120,16 @@ String SmileObject_ToString(SmileObject self)
 	return KNOWN_STRING(Object);
 }
 
+Bool SmileObject_Call(SmileObject self, Int argc)
+{
+	UNUSED(self);
+	UNUSED(argc);
+
+	Smile_ThrowException(Smile_KnownSymbols.eval_error, Smile_KnownStrings.invalidFunctionError);
+
+	return True;
+}
+
 SMILE_VTABLE(SmileObject_VTable, SmileObject)
 {
 	SmileObject_CompareEqual,
@@ -139,4 +149,6 @@ SMILE_VTABLE(SmileObject_VTable, SmileObject)
 	SmileObject_ToFloat64,
 	SmileObject_ToReal64,
 	SmileObject_ToString,
+
+	SmileObject_Call,
 };

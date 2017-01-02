@@ -37,6 +37,7 @@ SMILE_EASY_OBJECT_VTABLE(SmileSyntax);
 
 SMILE_EASY_OBJECT_NO_SECURITY(SmileSyntax);
 SMILE_EASY_OBJECT_NO_REALS(SmileSyntax);
+SMILE_EASY_OBJECT_NO_CALL(SmileSyntax);
 
 SmileSyntax SmileSyntax_Create(Symbol nonterminal, SmileList pattern, SmileObject replacement, LexerPosition position)
 {

@@ -120,6 +120,16 @@ String SmileInteger16_ToString(SmileInteger16 self)
 	return String_Format("%dh", (Int32)self->value);
 }
 
+Bool SmileInteger16_Call(SmileInteger16 self, Int argc)
+{
+	UNUSED(self);
+	UNUSED(argc);
+
+	Smile_ThrowException(Smile_KnownSymbols.eval_error, Smile_KnownStrings.invalidFunctionError);
+
+	return True;
+}
+
 SMILE_VTABLE(SmileInteger16_VTable, SmileInteger16)
 {
 	SmileInteger16_CompareEqual,
@@ -139,4 +149,6 @@ SMILE_VTABLE(SmileInteger16_VTable, SmileInteger16)
 	SmileInteger16_ToFloat64,
 	SmileInteger16_ToReal64,
 	SmileInteger16_ToString,
+
+	SmileInteger16_Call,
 };

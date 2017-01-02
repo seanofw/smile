@@ -120,6 +120,16 @@ String SmileUChar_ToString(SmileUChar self)
 	return String_Format("\\u%04X", (UInt32)self->value);
 }
 
+Bool SmileUChar_Call(SmileUChar self, Int argc)
+{
+	UNUSED(self);
+	UNUSED(argc);
+
+	Smile_ThrowException(Smile_KnownSymbols.eval_error, Smile_KnownStrings.invalidFunctionError);
+
+	return True;
+}
+
 SMILE_VTABLE(SmileUChar_VTable, SmileUChar)
 {
 	SmileUChar_CompareEqual,
@@ -139,4 +149,6 @@ SMILE_VTABLE(SmileUChar_VTable, SmileUChar)
 	SmileUChar_ToFloat64,
 	SmileUChar_ToReal64,
 	SmileUChar_ToString,
+
+	SmileUChar_Call,
 };

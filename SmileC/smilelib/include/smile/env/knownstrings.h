@@ -15,6 +15,8 @@ struct KnownStringsStruct {
 	SmileString true_;
 	SmileString false_;
 	SmileString InvalidSecurityKey;
+	
+	String invalidFunctionError;
 };
 
 #define KNOWN_STRING(__name__) \

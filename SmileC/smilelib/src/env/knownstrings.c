@@ -23,6 +23,7 @@ STATIC_STRING(ObjectString, "Object");
 STATIC_STRING(true_, "true");
 STATIC_STRING(false_, "false");
 STATIC_STRING(InvalidSecurityKey, "Invalid security key.");
+STATIC_STRING(invalidFunctionError, "Object is not a callable function.");
 
 void KnownStrings_Preload(struct KnownStringsStruct *knownStrings)
 {
@@ -30,4 +31,6 @@ void KnownStrings_Preload(struct KnownStringsStruct *knownStrings)
 	knownStrings->true_ = SmileString_Create(true_);
 	knownStrings->false_ = SmileString_Create(false_);
 	knownStrings->InvalidSecurityKey = SmileString_Create(InvalidSecurityKey);
+
+	knownStrings->invalidFunctionError = invalidFunctionError;
 }

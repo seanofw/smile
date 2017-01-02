@@ -120,6 +120,16 @@ String SmileByte_ToString(SmileByte self)
 	return String_Format("%ux", (UInt32)self->value);
 }
 
+Bool SmileByte_Call(SmileByte self, Int argc)
+{
+	UNUSED(self);
+	UNUSED(argc);
+
+	Smile_ThrowException(Smile_KnownSymbols.eval_error, Smile_KnownStrings.invalidFunctionError);
+
+	return True;
+}
+
 SMILE_VTABLE(SmileByte_VTable, SmileByte)
 {
 	SmileByte_CompareEqual,
@@ -139,4 +149,6 @@ SMILE_VTABLE(SmileByte_VTable, SmileByte)
 	SmileByte_ToFloat64,
 	SmileByte_ToReal64,
 	SmileByte_ToString,
+
+	SmileByte_Call,
 };

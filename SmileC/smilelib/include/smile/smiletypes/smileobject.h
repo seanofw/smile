@@ -165,6 +165,13 @@ struct SmileObjectInt {
 ///	is used by all of the <code>print</code> methods for outputting objects to streams.
 ///	Despite the fact that is it not intended to be a serialization method, many of the standard
 ///	built-in objects produce strings that are equivalent to a serialized form.</p>
+///	
+/// <code>call</code>:	<p>Invoke this object as a function.  The number of arguments will be provided directly, and
+///	the arguments themselves will be on the temporary stack of the current closure.  If this
+///	invocation fully performs the action, it should pop the arguments off the temporary stack,
+///	push its result, and return True.  If this invocation only updates the byte-code interpreter
+///	to continue execution inside the new function, this should return False.</p>
+///	
 /// </remarks>
 #define SMILE_VTABLE_TYPE(__name__, __type__) \
 	__name__ { \
@@ -185,6 +192,8 @@ struct SmileObjectInt {
 		Float64 (*toFloat64)(__type__ self); \
 		Real64 (*toReal64)(__type__ self); \
 		String (*toString)(__type__ self); \
+		\
+		Bool (*call)(__type__ self, Int argc); \
 	}
 
 /// <summary>
@@ -274,6 +283,7 @@ SMILE_API_FUNC Int32 SmileObject_ToInteger32(SmileObject self);
 SMILE_API_FUNC Float64 SmileObject_ToFloat64(SmileObject self);
 SMILE_API_FUNC Real64 SmileObject_ToReal64(SmileObject self);
 SMILE_API_FUNC String SmileObject_ToString(SmileObject self);
+SMILE_API_FUNC Bool SmileObject_InvokeFunction(SmileObject self, Int argc);
 
 SMILE_API_FUNC SmileObject SmileObject_Create(void);
 

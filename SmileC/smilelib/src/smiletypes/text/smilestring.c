@@ -143,6 +143,16 @@ Real64 SmileString_ToReal64(SmileString self)
 	return String_ParseReal(SmileString_ToString(self), 10, &result) ? Real128_ToReal64(result) : Real64_Zero;
 }
 
+Bool SmileString_Call(SmileString self, Int argc)
+{
+	UNUSED(self);
+	UNUSED(argc);
+
+	Smile_ThrowException(Smile_KnownSymbols.eval_error, Smile_KnownStrings.invalidFunctionError);
+
+	return True;
+}
+
 SMILE_VTABLE(SmileString_VTable, SmileString)
 {
 	SmileString_CompareEqual,
@@ -162,4 +172,6 @@ SMILE_VTABLE(SmileString_VTable, SmileString)
 	SmileString_ToFloat64,
 	SmileString_ToReal64,
 	SmileString_ToString,
+
+	SmileString_Call,
 };

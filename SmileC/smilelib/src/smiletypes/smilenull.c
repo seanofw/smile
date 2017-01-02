@@ -126,6 +126,16 @@ String SmileNull_ToString(SmileNull self)
 	return String_Format("null");
 }
 
+Bool SmileNull_Call(SmileNull self, Int argc)
+{
+	UNUSED(self);
+	UNUSED(argc);
+
+	Smile_ThrowException(Smile_KnownSymbols.eval_error, Smile_KnownStrings.invalidFunctionError);
+
+	return True;
+}
+
 SMILE_VTABLE(SmileNull_VTable, SmileNull)
 {
 	SmileNull_CompareEqual,
@@ -145,4 +155,6 @@ SMILE_VTABLE(SmileNull_VTable, SmileNull)
 	SmileNull_ToFloat64,
 	SmileNull_ToReal64,
 	SmileNull_ToString,
+
+	SmileNull_Call,
 };

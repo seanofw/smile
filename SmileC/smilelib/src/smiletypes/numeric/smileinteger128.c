@@ -153,6 +153,16 @@ String SmileInteger128_ToString(SmileInteger128 self)
 	return String_Format("%ldL", self->value.lo);
 }
 
+Bool SmileInteger128_Call(SmileInteger128 self, Int argc)
+{
+	UNUSED(self);
+	UNUSED(argc);
+
+	Smile_ThrowException(Smile_KnownSymbols.eval_error, Smile_KnownStrings.invalidFunctionError);
+
+	return True;
+}
+
 SMILE_VTABLE(SmileInteger128_VTable, SmileInteger128)
 {
 	SmileInteger128_CompareEqual,
@@ -172,4 +182,6 @@ SMILE_VTABLE(SmileInteger128_VTable, SmileInteger128)
 	SmileInteger128_ToFloat64,
 	SmileInteger128_ToReal64,
 	SmileInteger128_ToString,
+
+	SmileInteger128_Call,
 };

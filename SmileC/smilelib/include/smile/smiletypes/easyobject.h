@@ -34,6 +34,7 @@
 	static Float64 __type__##_ToFloat64(__type__ obj); \
 	static Real64 __type__##_ToReal64(__type__ obj); \
 	static String __type__##_ToString(__type__ obj); \
+	static Bool __type__##_Call(__type__ obj, Int argc); \
 	\
 	/* The virtual table that glues it all together and that's needed by the type system. */ \
 	SMILE_VTABLE(__type__##_VTable, __type__) { \
@@ -51,6 +52,7 @@
 		__type__##_ToFloat64, \
 		__type__##_ToReal64, \
 		__type__##_ToString, \
+		__type__##_Call, \
 	}
 
 /// <summary>
@@ -148,6 +150,15 @@
 	static Real64 __type__##_ToReal64(__type__ obj) { return Real64_FromInt32(__type__##_ToInteger32(obj)); }
 
 /// <summary>
+/// This macro can be used to declare virtual functions for a type that can't be readily invoked as a function.
+/// </summary>
+/// <param name="__type__">The type of the object you want to declare virtual functions for.</param>
+#define SMILE_EASY_OBJECT_NO_CALL(__type__) \
+	static Bool __type__##_Call(__type__ obj, Int argc) { \
+		UNUSED(obj); UNUSED(argc); \
+		Smile_ThrowException(Smile_KnownSymbols.eval_error, Smile_KnownStrings.invalidFunctionError); return True; }
+
+/// <summary>
 /// This macro can be used to declare virtual functions for a type that has no properties.
 /// </summary>
 /// <param name="__type__">The type of the object you want to declare virtual functions for.</param>
@@ -181,5 +192,6 @@
 	SMILE_EASY_OBJECT_NO_SECURITY(__type__); \
 	SMILE_EASY_OBJECT_NO_COMPARE(__type__); \
 	SMILE_EASY_OBJECT_NO_PROPERTIES(__type__); \
+	SMILE_EASY_OBJECT_NO_CALL(__type__); \
 
 #endif

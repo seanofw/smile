@@ -122,6 +122,16 @@ String SmileChar_ToString(SmileChar self)
 	return (String)_charStringTable[self->value];
 }
 
+Bool SmileChar_Call(SmileChar self, Int argc)
+{
+	UNUSED(self);
+	UNUSED(argc);
+
+	Smile_ThrowException(Smile_KnownSymbols.eval_error, Smile_KnownStrings.invalidFunctionError);
+
+	return True;
+}
+
 SMILE_VTABLE(SmileChar_VTable, SmileChar)
 {
 	SmileChar_CompareEqual,
@@ -141,8 +151,9 @@ SMILE_VTABLE(SmileChar_VTable, SmileChar)
 	SmileChar_ToFloat64,
 	SmileChar_ToReal64,
 	SmileChar_ToString,
-};
 
+	SmileChar_Call,
+};
 
 STATIC_STRING(Char00, "\\x00");
 STATIC_STRING(Char01, "\\x01");

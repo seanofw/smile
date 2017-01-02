@@ -28,6 +28,7 @@ SMILE_EASY_OBJECT_VTABLE(SmileList);
 
 SMILE_EASY_OBJECT_NO_SECURITY(SmileList);
 SMILE_EASY_OBJECT_NO_REALS(SmileList);
+SMILE_EASY_OBJECT_NO_CALL(SmileList);
 
 SmileList SmileList_Cons(SmileObject a, SmileObject d)
 {

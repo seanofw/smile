@@ -28,6 +28,7 @@ SMILE_EASY_OBJECT_VTABLE(SmileNonterminal);
 
 SMILE_EASY_OBJECT_NO_SECURITY(SmileNonterminal);
 SMILE_EASY_OBJECT_NO_REALS(SmileNonterminal);
+SMILE_EASY_OBJECT_NO_CALL(SmileNonterminal);
 
 SmileNonterminal SmileNonterminal_Create(Symbol nonterminal, Symbol name, Symbol repeat, Symbol separator)
 {

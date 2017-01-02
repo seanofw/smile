@@ -201,6 +201,20 @@ String SmileUserObject_ToString(SmileUserObject self)
 	return String_Format("user object");
 }
 
+Bool SmileUserObject_Call(SmileUserObject self, Int argc)
+{
+	SmileObject fn;
+	if (Int32Dict_TryGetValue((Int32Dict)&self->dict, (Int32)Smile_KnownSymbols._fn, &fn)
+		&& SMILE_KIND(fn) == SMILE_KIND_FUNCTION) {
+		// This has a 'fn' property that is a function.  Invoke that instead, with the same args.
+		return SMILE_VCALL1(fn, call, argc);
+	}
+	else {
+		// This has no 'fn' property, so go ask the base object to do the call instead, since this isn't itself callable.
+		return SMILE_VCALL1(self->base, call, argc);
+	}
+}
+
 SMILE_VTABLE(SmileUserObject_VTable_ReadWriteAppend, SmileUserObject)
 {
 	SmileUserObject_CompareEqual,
@@ -220,6 +234,8 @@ SMILE_VTABLE(SmileUserObject_VTable_ReadWriteAppend, SmileUserObject)
 	SmileUserObject_ToFloat64,
 	SmileUserObject_ToReal64,
 	SmileUserObject_ToString,
+
+	SmileUserObject_Call,
 };
 
 SMILE_VTABLE(SmileUserObject_VTable_ReadWrite, SmileUserObject)
@@ -241,6 +257,8 @@ SMILE_VTABLE(SmileUserObject_VTable_ReadWrite, SmileUserObject)
 	SmileUserObject_ToFloat64,
 	SmileUserObject_ToReal64,
 	SmileUserObject_ToString,
+
+	SmileUserObject_Call,
 };
 
 SMILE_VTABLE(SmileUserObject_VTable_ReadAppend, SmileUserObject)
@@ -262,6 +280,8 @@ SMILE_VTABLE(SmileUserObject_VTable_ReadAppend, SmileUserObject)
 	SmileUserObject_ToFloat64,
 	SmileUserObject_ToReal64,
 	SmileUserObject_ToString,
+
+	SmileUserObject_Call,
 };
 
 SMILE_VTABLE(SmileUserObject_VTable_ReadOnly, SmileUserObject)
@@ -283,4 +303,6 @@ SMILE_VTABLE(SmileUserObject_VTable_ReadOnly, SmileUserObject)
 	SmileUserObject_ToFloat64,
 	SmileUserObject_ToReal64,
 	SmileUserObject_ToString,
+
+	SmileUserObject_Call,
 };

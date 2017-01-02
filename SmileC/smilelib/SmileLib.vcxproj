@@ -168,6 +168,7 @@
     <ClInclude Include="include\smile\simplestats.h" />
     <ClInclude Include="include\smile\smiletypes\easyobject.h" />
     <ClInclude Include="include\smile\smiletypes\smilebool.h" />
+    <ClInclude Include="include\smile\smiletypes\smilefunction.h" />
     <ClInclude Include="include\smile\smiletypes\smilelist.h" />
     <ClInclude Include="include\smile\smiletypes\smilemacro.h" />
     <ClInclude Include="include\smile\smiletypes\smilenull.h" />
