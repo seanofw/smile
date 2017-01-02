@@ -110,4 +110,24 @@ START_TEST(CanEvalLocalVariableAssignments)
 }
 END_TEST
 
+START_TEST(CanEvalIfThenElse)
+{
+	CompiledTables compiledTables = Compile(
+		"#syntax STMT: [if [EXPR x] then [STMT y]] => [$if x y]\n"
+		"#syntax STMT: [if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
+		"x = 1\n"
+		"if x then y = 123\n"
+		"else y = 456\n"
+		"y\n"
+	);
+
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunction);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER32);
+	ASSERT(((SmileInteger32)result->value)->value == 123);
+}
+
+END_TEST
+
 #include "eval_tests.generated.inc"

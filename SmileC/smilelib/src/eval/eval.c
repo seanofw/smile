@@ -755,6 +755,13 @@ next:
 			goto next;
 		
 		//-------------------------------------------------------
+		// F0-FF: Miscellaneous internal constructs
+		
+		case Op_Label:
+			byteCode++;
+			goto next;
+			
+		//-------------------------------------------------------
 		
 		default:
 			Smile_Abort_FatalError(String_ToC(String_Format("Eval error: Unknown opcode 0x%02X", byteCode->opcode)));

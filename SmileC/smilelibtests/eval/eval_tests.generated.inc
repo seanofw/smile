@@ -1,12 +1,13 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 69044340447d941e1d8a91c9663a413c
+// SourceHash: cd460099a0db8623e59b035baababe22
 
 START_TEST_SUITE(EvalTests)
 {
 	CanEvalAConstantInteger,
 	CanEvalAConstantSymbol,
 	CanEvalLocalVariableAssignments,
+	CanEvalIfThenElse,
 }
 END_TEST_SUITE(EvalTests)
 
