@@ -71,14 +71,19 @@ void Smile_ResetEnvironment(void)
 	// Preload the known symbols into this environment.
 	KnownSymbols_PreloadSymbolTable(Smile_SymbolTable, &Smile_KnownSymbols);
 
+	// Preload the known bases into this environment.  This must come first, or we can't
+	// correctly instantiate any other Smile types.
+	KnownBases_Preload(&Smile_KnownBases);
+
 	// Preload the known strings into this environment.
-	KnownStrings_Preload(&Smile_KnownStrings);
+	KnownStrings_Setup(&Smile_KnownStrings);
 
 	// Preload the known objects into this environment.
-	KnownObjects_Preload(&Smile_KnownObjects, &Smile_KnownSymbols);
+	KnownObjects_Setup(&Smile_KnownObjects, &Smile_KnownSymbols);
 
-	// Preload the known bases into this environment.
-	KnownBases_Preload(&Smile_KnownBases, Smile_KnownObjects.Object);
+	// Now that we have enough of a usable environment to make real objects, it's time to populate
+	// all of the methods on the base objects, and to set up any other shared data they may need.
+	KnownBases_Setup(&Smile_KnownBases);
 }
 
 /// <summary>

@@ -22,6 +22,6 @@ struct KnownStringsStruct {
 #define KNOWN_STRING(__name__) \
 	((String)&(Smile_KnownStrings.__name__->string))
 
-void KnownStrings_Preload(struct KnownStringsStruct *knownStrings);
+void KnownStrings_Setup(struct KnownStringsStruct *knownStrings);
 
 #endif

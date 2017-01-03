@@ -24,7 +24,7 @@ SmileUChar SmileUChar_CreateInternal(UInt32 value)
 {
 	SmileUChar smileUChar = GC_MALLOC_STRUCT(struct SmileUCharInt);
 	if (smileUChar == NULL) Smile_Abort_OutOfMemory();
-	smileUChar->base = Smile_KnownObjects.Object;
+	smileUChar->base = (SmileObject)Smile_KnownBases.UChar;
 	smileUChar->kind = SMILE_KIND_BYTE;
 	smileUChar->vtable = SmileUChar_VTable;
 	smileUChar->value = value;

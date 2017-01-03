@@ -26,7 +26,7 @@ SmileChar SmileChar_CreateInternal(Byte value)
 {
 	SmileChar smileChar = GC_MALLOC_STRUCT(struct SmileCharInt);
 	if (smileChar == NULL) Smile_Abort_OutOfMemory();
-	smileChar->base = Smile_KnownObjects.Object;
+	smileChar->base = (SmileObject)Smile_KnownBases.Char;
 	smileChar->kind = SMILE_KIND_CHAR;
 	smileChar->vtable = SmileChar_VTable;
 	smileChar->value = value;

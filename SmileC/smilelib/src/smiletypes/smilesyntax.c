@@ -43,7 +43,7 @@ SmileSyntax SmileSyntax_Create(Symbol nonterminal, SmileList pattern, SmileObjec
 {
 	SmileSyntax smileSyntax = GC_MALLOC_STRUCT(struct SmileSyntaxInt);
 	if (smileSyntax == NULL) Smile_Abort_OutOfMemory();
-	smileSyntax->base = Smile_KnownObjects.Object;
+	smileSyntax->base = Smile_KnownBases.Primitive;
 	smileSyntax->kind = SMILE_KIND_SYNTAX | SMILE_SECURITY_READONLY;
 	smileSyntax->vtable = SmileSyntax_VTable;
 

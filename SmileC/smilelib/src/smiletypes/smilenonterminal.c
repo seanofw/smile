@@ -34,7 +34,7 @@ SmileNonterminal SmileNonterminal_Create(Symbol nonterminal, Symbol name, Symbol
 {
 	SmileNonterminal smileSyntax = GC_MALLOC_STRUCT(struct SmileNonterminalInt);
 	if (smileSyntax == NULL) Smile_Abort_OutOfMemory();
-	smileSyntax->base = Smile_KnownObjects.Object;
+	smileSyntax->base = Smile_KnownBases.Primitive;
 	smileSyntax->kind = SMILE_KIND_NONTERMINAL | SMILE_SECURITY_READONLY;
 	smileSyntax->vtable = SmileNonterminal_VTable;
 

@@ -22,7 +22,7 @@
 SmileObject SmileObject_Create(void)
 {
 	SmileObject obj = GC_MALLOC_STRUCT(struct SmileObjectInt);
-	obj->kind = SMILE_KIND_OBJECT;
+	obj->kind = SMILE_KIND_PRIMITIVE;
 	obj->base = NULL;
 	obj->vtable = SmileObject_VTable;
 	return obj;

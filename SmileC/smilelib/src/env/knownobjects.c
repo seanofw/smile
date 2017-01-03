@@ -32,12 +32,11 @@
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/numeric/smileinteger128.h>
 
-void KnownObjects_Preload(struct KnownObjectsStruct *knownObjects, struct KnownSymbolsStruct *knownSymbols)
+void KnownObjects_Setup(struct KnownObjectsStruct *knownObjects, struct KnownSymbolsStruct *knownSymbols)
 {
 	Int32 i;
 	Int128 i128;
 
-	knownObjects->Object = SmileObject_Create();
 	knownObjects->NullInstance = SmileNull_Create();
 
 	for (i = 0; i <= 255; i++) {

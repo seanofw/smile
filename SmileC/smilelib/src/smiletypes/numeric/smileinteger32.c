@@ -24,7 +24,7 @@ SmileInteger32 SmileInteger32_CreateInternal(Int32 value)
 {
 	SmileInteger32 smileInt = GC_MALLOC_STRUCT(struct SmileInteger32Int);
 	if (smileInt == NULL) Smile_Abort_OutOfMemory();
-	smileInt->base = Smile_KnownObjects.Object;
+	smileInt->base = (SmileObject)Smile_KnownBases.Integer32;
 	smileInt->kind = SMILE_KIND_INTEGER32;
 	smileInt->vtable = SmileInteger32_VTable;
 	smileInt->value = value;

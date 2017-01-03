@@ -24,7 +24,7 @@ SmileInteger64 SmileInteger64_CreateInternal(Int64 value)
 {
 	SmileInteger64 smileInt = GC_MALLOC_STRUCT(struct SmileInteger64Int);
 	if (smileInt == NULL) Smile_Abort_OutOfMemory();
-	smileInt->base = Smile_KnownObjects.Object;
+	smileInt->base = (SmileObject)Smile_KnownBases.Integer64;
 	smileInt->kind = SMILE_KIND_INTEGER64;
 	smileInt->vtable = SmileInteger64_VTable;
 	smileInt->value = value;

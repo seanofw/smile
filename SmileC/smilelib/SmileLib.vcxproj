@@ -805,8 +805,10 @@
     <ClCompile Include="src\smiletypes\numeric\smileinteger128.c" />
     <ClCompile Include="src\smiletypes\numeric\smileinteger16.c" />
     <ClCompile Include="src\smiletypes\numeric\smileinteger32.c" />
+    <ClCompile Include="src\smiletypes\numeric\smileinteger32_base.c" />
     <ClCompile Include="src\smiletypes\numeric\smileinteger64.c" />
     <ClCompile Include="src\smiletypes\smilebool.c" />
+    <ClCompile Include="src\smiletypes\smilefunction.c" />
     <ClCompile Include="src\smiletypes\smilelist.c" />
     <ClCompile Include="src\smiletypes\smilenonterminal.c" />
     <ClCompile Include="src\smiletypes\smilenull.c" />

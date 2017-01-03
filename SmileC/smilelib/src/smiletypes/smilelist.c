@@ -34,7 +34,7 @@ SmileList SmileList_Cons(SmileObject a, SmileObject d)
 {
 	SmileList smileList = GC_MALLOC_STRUCT(struct SmileListInt);
 	if (smileList == NULL) Smile_Abort_OutOfMemory();
-	smileList->base = Smile_KnownObjects.Object;
+	smileList->base = (SmileObject)Smile_KnownBases.List;
 	smileList->kind = SMILE_KIND_LIST | SMILE_SECURITY_WRITABLE;
 	smileList->vtable = SmileList_VTable;
 	smileList->a = a;
@@ -46,7 +46,7 @@ SmileList SmileList_ConsWithSource(SmileObject a, SmileObject d, LexerPosition p
 {
 	struct SmileListWithSourceInt *smileList = GC_MALLOC_STRUCT(struct SmileListWithSourceInt);
 	if (smileList == NULL) Smile_Abort_OutOfMemory();
-	smileList->base = Smile_KnownObjects.Object;
+	smileList->base = (SmileObject)Smile_KnownBases.List;
 	smileList->kind = SMILE_KIND_LIST | SMILE_FLAG_WITHSOURCE | SMILE_SECURITY_WRITABLE;
 	smileList->vtable = SmileList_VTable;
 	smileList->a = a;

@@ -5,22 +5,22 @@
 // Object kind enumeration.
 
 // Special intrinsic types.
-#define SMILE_KIND_NULL					0x00		// Must be 0x00 or stuff will break!
-#define SMILE_KIND_LIST					0x01		// Must be 0x01 or stuff will break!
-#define SMILE_KIND_BOOL					0x02
+#define SMILE_KIND_NULL				0x00		// Must be 0x00 or stuff will break!
+#define SMILE_KIND_LIST				0x01		// Must be 0x01 or stuff will break!
+#define SMILE_KIND_BOOL				0x02
 #define SMILE_KIND_SYMBOL				0x03
-#define SMILE_KIND_CHAR					0x04
+#define SMILE_KIND_CHAR				0x04
 #define SMILE_KIND_UCHAR				0x05
 #define SMILE_KIND_STRING				0x06
-#define SMILE_KIND_OBJECT				0x07
+#define SMILE_KIND_PRIMITIVE				0x07	// The primitive object at the root of the object hierarchy
 
 // Other aggregations of data.
 #define SMILE_KIND_USEROBJECT			0x08
-#define SMILE_KIND_PAIR					0x09
+#define SMILE_KIND_PAIR			0x09
 
 // Opaque handles.
 #define SMILE_KIND_HANDLE				0x0A
-#define SMILE_KIND_BYTE					0x0B
+#define SMILE_KIND_BYTE				0x0B
 #define SMILE_KIND_CLOSURE				0x0C
 #define SMILE_KIND_FACADE				0x0D
 #define SMILE_KIND_MACRO				0x0E

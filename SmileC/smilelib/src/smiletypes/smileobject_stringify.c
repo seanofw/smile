@@ -144,8 +144,8 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 		}
 		return;
 
-	case SMILE_KIND_OBJECT:
-		StringBuilder_AppendC(stringBuilder, "Object", 0, 8);
+	case SMILE_KIND_PRIMITIVE:
+		StringBuilder_AppendC(stringBuilder, "Primitive", 0, 9);
 		return;
 
 	case SMILE_KIND_NULL:

@@ -34,7 +34,7 @@ SmilePair SmilePair_Create(SmileObject left, SmileObject right)
 {
 	SmilePair smilePair = GC_MALLOC_STRUCT(struct SmilePairInt);
 	if (smilePair == NULL) Smile_Abort_OutOfMemory();
-	smilePair->base = Smile_KnownObjects.Object;
+	smilePair->base = (SmileObject)Smile_KnownBases.Pair;
 	smilePair->kind = SMILE_KIND_PAIR | SMILE_SECURITY_WRITABLE;
 	smilePair->vtable = SmilePair_VTable;
 	smilePair->left = left;
@@ -46,7 +46,7 @@ SmilePair SmilePair_CreateWithSource(SmileObject left, SmileObject right, LexerP
 {
 	struct SmilePairWithSourceInt *smilePair = GC_MALLOC_STRUCT(struct SmilePairWithSourceInt);
 	if (smilePair == NULL) Smile_Abort_OutOfMemory();
-	smilePair->base = Smile_KnownObjects.Object;
+	smilePair->base = (SmileObject)Smile_KnownBases.Pair;
 	smilePair->kind = SMILE_KIND_PAIR | SMILE_SECURITY_WRITABLE | SMILE_FLAG_WITHSOURCE;
 	smilePair->vtable = SmilePair_VTable;
 	smilePair->left = left;

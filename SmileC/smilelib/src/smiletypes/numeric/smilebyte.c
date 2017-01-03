@@ -24,7 +24,7 @@ SmileByte SmileByte_CreateInternal(Byte value)
 {
 	SmileByte smileByte = GC_MALLOC_STRUCT(struct SmileByteInt);
 	if (smileByte == NULL) Smile_Abort_OutOfMemory();
-	smileByte->base = Smile_KnownObjects.Object;
+	smileByte->base = (SmileObject)Smile_KnownBases.Byte;
 	smileByte->kind = SMILE_KIND_BYTE;
 	smileByte->vtable = SmileByte_VTable;
 	smileByte->value = value;

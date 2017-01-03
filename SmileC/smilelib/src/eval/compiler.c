@@ -571,8 +571,8 @@ Int Compiler_CompileExpr(Compiler compiler, SmileObject expr)
 		case SMILE_KIND_STRING:
 			EMIT1(Op_LdStr, +1, index = Compiler_AddString(compiler, (String)&((SmileString)expr)->string));
 			break;
-		case SMILE_KIND_OBJECT:
-			EMIT1(Op_LdObj, +1, index = Compiler_AddObject(compiler, Smile_KnownObjects.Object));
+		case SMILE_KIND_PRIMITIVE:
+			EMIT1(Op_LdObj, +1, index = Compiler_AddObject(compiler, Smile_KnownBases.Primitive));
 			break;
 
 		// Integer constants evaluate to themselves.

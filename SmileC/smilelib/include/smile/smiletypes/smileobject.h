@@ -303,7 +303,7 @@ Inline Bool SmileObject_Is(SmileObject self, SmileObject possibleParentOrSelf)
 {
 	for (;;) {
 		if (self == possibleParentOrSelf) return True;
-		if (SMILE_KIND(self) == SMILE_KIND_OBJECT) return False;
+		if (SMILE_KIND(self) == SMILE_KIND_PRIMITIVE) return False;
 		self = self->base;
 	}
 }

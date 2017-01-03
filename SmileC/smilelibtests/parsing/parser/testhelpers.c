@@ -135,7 +135,7 @@ next:
 		b = ((SmileList)b)->d;
 		goto next;
 
-	case SMILE_KIND_OBJECT:
+	case SMILE_KIND_PRIMITIVE:
 		return True;
 
 	case SMILE_KIND_NULL:

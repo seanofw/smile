@@ -33,6 +33,10 @@
 #include <smile/env/knownobjects.h>
 #endif
 
+#ifndef __SMILE_ENV_KNOWNBASES_H__
+#include <smile/env/knownbases.h>
+#endif
+
 //-------------------------------------------------------------------------------------------------
 //  The core Smile implementation
 

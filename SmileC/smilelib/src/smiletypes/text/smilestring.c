@@ -26,7 +26,7 @@ SmileString SmileString_Create(String string)
 {
 	SmileString str = GC_MALLOC_STRUCT(struct SmileStringInt);
 	if (str == NULL) Smile_Abort_OutOfMemory();
-	str->base = Smile_KnownObjects.Object;
+	str->base = (SmileObject)Smile_KnownBases.String;
 	str->kind = SMILE_KIND_STRING;
 	str->vtable = SmileString_VTable;
 	str->string.text = ((struct StringInt *)string)->text;

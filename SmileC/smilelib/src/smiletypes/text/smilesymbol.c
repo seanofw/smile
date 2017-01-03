@@ -24,7 +24,7 @@ SmileSymbol SmileSymbol_Create(Symbol symbol)
 {
 	SmileSymbol smileInt = GC_MALLOC_STRUCT(struct SmileSymbolInt);
 	if (smileInt == NULL) Smile_Abort_OutOfMemory();
-	smileInt->base = Smile_KnownObjects.Object;
+	smileInt->base = (SmileObject)Smile_KnownBases.Symbol;
 	smileInt->kind = SMILE_KIND_SYMBOL;
 	smileInt->vtable = SmileSymbol_VTable;
 	smileInt->symbol = symbol;

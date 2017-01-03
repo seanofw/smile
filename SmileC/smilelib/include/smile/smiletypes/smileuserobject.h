@@ -42,4 +42,10 @@ Inline SmileUserObject SmileUserObject_Create(SmileObject base)
 	return SmileUserObject_CreateWithSize(base, 8);
 }
 
+Inline void SmileUserObject_QuickSet(SmileUserObject self, const char *name, SmileObject value)
+{
+	Symbol symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, name);
+	Int32Dict_SetValue((Int32Dict)&self->dict, symbol, value);
+}
+
 #endif

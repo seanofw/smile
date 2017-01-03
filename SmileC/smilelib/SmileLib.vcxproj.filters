@@ -792,6 +792,12 @@
     <ClCompile Include="src\eval\closure.c">
       <Filter>src\eval</Filter>
     </ClCompile>
+    <ClCompile Include="src\smiletypes\numeric\smileinteger32_base.c">
+      <Filter>src\smiletypes\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\smilefunction.c">
+      <Filter>src\smiletypes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">

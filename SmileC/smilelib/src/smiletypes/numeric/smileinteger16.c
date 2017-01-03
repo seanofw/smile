@@ -24,7 +24,7 @@ SmileInteger16 SmileInteger16_CreateInternal(Int16 value)
 {
 	SmileInteger16 smileInt = GC_MALLOC_STRUCT(struct SmileInteger16Int);
 	if (smileInt == NULL) Smile_Abort_OutOfMemory();
-	smileInt->base = Smile_KnownObjects.Object;
+	smileInt->base = (SmileObject)Smile_KnownBases.Integer16;
 	smileInt->kind = SMILE_KIND_INTEGER16;
 	smileInt->vtable = SmileInteger16_VTable;
 	smileInt->value = value;

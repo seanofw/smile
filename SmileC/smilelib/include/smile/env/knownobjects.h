@@ -8,7 +8,6 @@
 
 struct KnownObjectsStruct {
 
-	SmileObject Object;
 	SmileNull NullInstance;
 
 	SmileBool TrueObj;
@@ -63,6 +62,6 @@ struct KnownObjectsStruct {
 	SmileSymbol plusSymbol, minusSymbol, starSymbol, slashSymbol;
 };
 
-extern void KnownObjects_Preload(struct KnownObjectsStruct *knownObjects, struct KnownSymbolsStruct *knownSymbols);
+extern void KnownObjects_Setup(struct KnownObjectsStruct *knownObjects, struct KnownSymbolsStruct *knownSymbols);
 
 #endif

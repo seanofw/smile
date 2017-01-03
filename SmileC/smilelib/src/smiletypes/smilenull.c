@@ -26,7 +26,7 @@ SmileNull SmileNull_Create(void)
 {
 	SmileNull smileNull = GC_MALLOC_STRUCT(struct SmileListInt);
 	if (smileNull == NULL) Smile_Abort_OutOfMemory();
-	smileNull->base = Smile_KnownObjects.Object;
+	smileNull->base = (SmileObject)Smile_KnownBases.List;
 	smileNull->kind = SMILE_KIND_NULL;
 	smileNull->vtable = SmileNull_VTable;
 	smileNull->a = (SmileObject)smileNull;

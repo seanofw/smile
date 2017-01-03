@@ -24,7 +24,7 @@ SmileBool SmileBool_Create(Bool value)
 {
 	SmileBool smileInt = GC_MALLOC_STRUCT(struct SmileBoolInt);
 	if (smileInt == NULL) Smile_Abort_OutOfMemory();
-	smileInt->base = Smile_KnownObjects.Object;
+	smileInt->base = (SmileObject)Smile_KnownBases.Bool;
 	smileInt->kind = SMILE_KIND_BOOL;
 	smileInt->vtable = SmileBool_VTable;
 	smileInt->value = value;

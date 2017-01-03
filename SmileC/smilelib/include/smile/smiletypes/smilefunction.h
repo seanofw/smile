@@ -59,8 +59,8 @@ struct SmileFunctionInt {
 	SmileObject body;	// The body of this function (NullObject for a C function)
 		
 	union {	
-	   ClosureInfo *closureInfo;	// For Smile user functions
-	   ExternalFunctionInfo *externalFunctionInfo;	// For C external functions
+	   ClosureInfo closureInfo;	// For Smile user functions
+	   ExternalFunctionInfo externalFunctionInfo;	// For C external functions
 	} u;
 };
 

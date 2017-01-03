@@ -54,7 +54,7 @@ Inline ParseMessage ParseMessage_Create(Int messageKind, LexerPosition position,
 	ParseMessage parseMessage = GC_MALLOC_STRUCT(struct ParseMessageStruct);
 
 	parseMessage->kind = SMILE_KIND_PARSEMESSAGE;
-	parseMessage->base = Smile_KnownObjects.Object;
+	parseMessage->base = (SmileObject)Smile_KnownBases.Object;
 	parseMessage->vtable = ParseMessage_VTable;
 	parseMessage->assignedSymbol = 0;
 
