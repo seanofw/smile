@@ -73,7 +73,7 @@ Int SmileInteger128_GetSecurity(SmileInteger128 self)
 
 SmileObject SmileInteger128_GetProperty(SmileInteger128 self, Symbol propertyName)
 {
-	return self->base->vtable->getProperty((SmileObject)self, propertyName);
+	return self->base->vtable->getProperty(self->base, propertyName);
 }
 
 void SmileInteger128_SetProperty(SmileInteger128 self, Symbol propertyName, SmileObject value)

@@ -127,7 +127,56 @@ START_TEST(CanEvalIfThenElse)
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER32);
 	ASSERT(((SmileInteger32)result->value)->value == 123);
 }
+END_TEST
 
+START_TEST(CanEvalBinaryMethodCalls)
+{
+	CompiledTables compiledTables = Compile(
+		"x = 1 + 2\n"
+	);
+
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunction);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER32);
+	ASSERT(((SmileInteger32)result->value)->value == 3);
+}
+END_TEST
+
+START_TEST(CanEvalComplexPilesOfBinaryAndUnaryMethodCalls)
+{
+	CompiledTables compiledTables = Compile(
+		"x = (-3 + 2 * 5) * 7\n"
+	);
+
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunction);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER32);
+	ASSERT(((SmileInteger32)result->value)->value == 49);
+}
+END_TEST
+
+START_TEST(CanEvalSmileCodeThatComputesALogarithm)
+{
+	CompiledTables compiledTables = Compile(
+		"#syntax STMT: [while [EXPR x] do [STMT y]] => [$while [] x y]\n"
+		"\n"
+		"n = 12345678\n"
+		"log = 0\n"
+		"while n do {\n"
+		"\tn >>>= 1\n"
+		"\tlog += 1\n"
+		"}\n"
+		"log\n"
+	);
+
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunction);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER32);
+	ASSERT(((SmileInteger32)result->value)->value == 24);
+}
 END_TEST
 
 #include "eval_tests.generated.inc"

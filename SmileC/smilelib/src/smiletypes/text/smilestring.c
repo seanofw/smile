@@ -88,7 +88,7 @@ SmileObject SmileString_GetProperty(SmileString self, Symbol propertyName)
 			return (SmileObject)SmileInteger32_Create(length < Int32Max ? (Int32)length : Int32Max);
 		#endif
 	}
-	return self->base->vtable->getProperty((SmileObject)self, propertyName);
+	return self->base->vtable->getProperty(self->base, propertyName);
 }
 
 void SmileString_SetProperty(SmileString self, Symbol propertyName, SmileObject value)

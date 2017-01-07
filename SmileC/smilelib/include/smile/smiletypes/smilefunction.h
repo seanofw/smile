@@ -21,13 +21,10 @@
 //-------------------------------------------------------------------------------------------------
 //  Type declarations for external-function support
 
-#define ARG_CHECK_NOCOUNT	(0 << 0)
 #define ARG_CHECK_MIN	(1 << 0)
-#define ARG_CHECK_MAX	(2 << 0)
-#define ARG_CHECK_EXACT	(3 << 0)
-#define ARG_CHECK_COUNT_MASK	(3 << 0)
-	
-#define ARG_CHECK_TYPES	(1 << 2)
+#define ARG_CHECK_MAX	(1 << 1)
+#define ARG_CHECK_EXACT	(1 << 2)	
+#define ARG_CHECK_TYPES	(1 << 3)
 
 typedef SmileObject (*ExternalFunction)(Int argc, SmileObject *argv, void *param);
 
@@ -59,8 +56,8 @@ struct SmileFunctionInt {
 	SmileObject body;	// The body of this function (NullObject for a C function)
 		
 	union {	
-	   ClosureInfo closureInfo;	// For Smile user functions
-	   ExternalFunctionInfo externalFunctionInfo;	// For C external functions
+	   struct ClosureInfoStruct closureInfo;	// For Smile user functions
+	   struct ExternalFunctionInfoStruct externalFunctionInfo;	// For C external functions
 	} u;
 };
 
@@ -68,18 +65,17 @@ struct SmileFunctionInt {
 //  Public interface
 
 SMILE_API_DATA SmileVTable SmileUserFunction_VTable;
-SMILE_API_DATA SmileVTable SmileExternalFunction_VTable;
 
-SMILE_API_FUNC SmileFunction SmileFunction_CreateUserFunction(SmileList args, SmileObject body, struct ClosureInfoStruct *closureInfo);
+SMILE_API_FUNC SmileFunction SmileFunction_CreateUserFunction(SmileList args, SmileObject body, ClosureInfo closureInfo);
 SMILE_API_FUNC SmileFunction SmileFunction_CreateExternalFunction(ExternalFunction externalFunction, void *param,
-	const char *name, const char *argNames, Int argCheckFlags, Int minArgs, Int maxArgs, const Byte *argTypeChecks);
+	const char *name, const char *argNames, Int argCheckFlags, Int minArgs, Int maxArgs, Int numArgsToTypeCheck, const Byte *argTypeChecks);
 
 //-------------------------------------------------------------------------------------------------
 //  Inline functions
 
 Inline Bool SmileFunction_IsBuiltIn(SmileFunction fn)
 {
-	return (fn->vtable == SmileExternalFunction_VTable);
+	return (fn->vtable != SmileUserFunction_VTable);
 }
 
 #endif

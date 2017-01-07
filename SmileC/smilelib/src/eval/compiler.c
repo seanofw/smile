@@ -153,18 +153,38 @@ static void EmitPop1(Compiler compiler)
 			return;
 
 		case Op_Pop2:
-			// Upgrade this to a PopN.
+			// Upgrade this to a Pop 3.
 			RECENT_BYTECODE(-1).opcode = Op_Pop;
 			RECENT_BYTECODE(-1).u.index = 3;
 			ApplyStackDelta(compiler->currentFunction, -1);
 			return;
 
 		case Op_Pop:
-			// Upgrade this to a PopN+1.
+			// Upgrade this to a Pop N+1.
 			RECENT_BYTECODE(-1).u.index++;
 			ApplyStackDelta(compiler->currentFunction, -1);
 			return;
 
+		case Op_Rep1:
+			// Upgrade this to a Pop2.
+			RECENT_BYTECODE(-1).opcode = Op_Pop2;
+			ApplyStackDelta(compiler->currentFunction, -1);
+			return;
+
+		case Op_Rep2:
+			// Upgrade this to a Pop 3.
+			RECENT_BYTECODE(-1).opcode = Op_Pop;
+			RECENT_BYTECODE(-1).u.index = 3;
+			ApplyStackDelta(compiler->currentFunction, -1);
+			return;
+
+		case Op_Rep:
+			// Upgrade this to a Pop N+1.
+			RECENT_BYTECODE(-1).opcode = Op_Pop;
+			RECENT_BYTECODE(-1).u.index++;
+			ApplyStackDelta(compiler->currentFunction, -1);
+			return;
+		
 		case Op_StX:	newOpcode = Op_StpX;	break;
 		case Op_StArg:	newOpcode = Op_StpArg;	break;
 		case Op_StArg0:	newOpcode = Op_StpArg0;	break;
@@ -688,6 +708,7 @@ Int Compiler_CompileExpr(Compiler compiler, SmileObject expr)
 					//        [x.does-not-understand `fn ...] on it.
 					//   4.  Otherwise, if it does not have a 'does-not-understand' method, a run-time exception is thrown.
 					EMIT1(Op_Call, +1 - argCount, index = argCount);
+					EMIT0(Op_Rep1, -1);
 					break;
 			}
 			break;

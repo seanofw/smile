@@ -70,7 +70,7 @@ Int SmileUChar_GetSecurity(SmileUChar self)
 
 SmileObject SmileUChar_GetProperty(SmileUChar self, Symbol propertyName)
 {
-	return self->base->vtable->getProperty((SmileObject)self, propertyName);
+	return self->base->vtable->getProperty(self->base, propertyName);
 }
 
 void SmileUChar_SetProperty(SmileUChar self, Symbol propertyName, SmileObject value)

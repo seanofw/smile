@@ -190,6 +190,7 @@ static String ByteCode_OperandsToString(ByteCode byteCode, Int address, struct C
 		// 00-0F
 		case Op_Dup:
 		case Op_Pop:
+		case Op_Rep:
 			return String_Format("%d", byteCode->u.int32);
 		
 		// 10-17

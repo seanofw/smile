@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: cd460099a0db8623e59b035baababe22
+// SourceHash: 024c0d4a443b80454963c03c1ec09fb9
 
 START_TEST_SUITE(EvalTests)
 {
@@ -8,6 +8,9 @@ START_TEST_SUITE(EvalTests)
 	CanEvalAConstantSymbol,
 	CanEvalLocalVariableAssignments,
 	CanEvalIfThenElse,
+	CanEvalBinaryMethodCalls,
+	CanEvalComplexPilesOfBinaryAndUnaryMethodCalls,
+	CanEvalSmileCodeThatComputesALogarithm,
 }
 END_TEST_SUITE(EvalTests)
 

@@ -164,7 +164,7 @@
 /// <param name="__type__">The type of the object you want to declare virtual functions for.</param>
 #define SMILE_EASY_OBJECT_NO_PROPERTIES(__type__) \
 	static SmileObject __type__##_GetProperty(__type__ obj, Symbol symbol) \
-		{ UNUSED(obj); UNUSED(symbol); return obj->base->vtable->getProperty((SmileObject)obj, symbol); } \
+		{ UNUSED(obj); UNUSED(symbol); return obj->base->vtable->getProperty(obj->base, symbol); } \
 	static Bool __type__##_HasProperty(__type__ obj, Symbol symbol) \
 		{ UNUSED(obj); UNUSED(symbol); return False; } \
 	static void __type__##_SetProperty(__type__ obj, Symbol symbol, SmileObject value) \

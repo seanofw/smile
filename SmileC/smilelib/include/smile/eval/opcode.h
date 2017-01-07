@@ -23,6 +23,9 @@ enum Opcode {
 	Op_Pop1	= 0x05,	// -1	; Pop the top item off the work stack and discard it.
 	Op_Pop2	= 0x06,	// -2	; Pop the top two items off the work stack and discard them.
 	Op_Pop	= 0x07,	// -n | int32	; Pop the top N items off the work stack and discard them.
+	Op_Rep1	= 0x09,	// -1	; Pop the top 2 items, and then re-push what was previously the topmost item.
+	Op_Rep2	= 0x0A,	// -2	; Pop the top 3 items, and then re-push what was previously the topmost item.
+	Op_Rep	= 0x0B,	// -n | int32	; Pop the top N+1 items, and then re-push what was previously the topmost item.
 	Op_Brk	= 0x0F,	//  0	; Break into debugger immediately.
 				
 	Op_LdNull	= 0x10,	// +1	; Push null onto the work stack.

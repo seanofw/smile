@@ -95,7 +95,7 @@ SmileObject SmileUserObject_GetProperty(SmileUserObject self, Symbol propertyNam
 		return obj;
 	}
 	else {
-		return self->base->vtable->getProperty((SmileObject)self, propertyName);
+		return self->base->vtable->getProperty(self->base, propertyName);
 	}
 }
 

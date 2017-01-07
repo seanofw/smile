@@ -1,7 +1,7 @@
 
 // 00-0F
 Op(Nop), Op(Dup1), Op(Dup2), Op(Dup), NULL, Op(Pop1), Op(Pop2), Op(Pop),
-NULL, NULL, NULL, NULL, NULL, NULL, NULL, Op(Brk),
+NULL, Op(Rep1), Op(Rep2), Op(Rep), NULL, NULL, NULL, Op(Brk),
 
 // 10-1F
 Op(LdNull), Op(LdBool), Op(LdCh), Op(LdUCh), Op(LdStr), Op(LdSym), Op(LdObj), Op(LdClos),

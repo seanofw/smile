@@ -67,6 +67,11 @@ void KnownObjects_Setup(struct KnownObjectsStruct *knownObjects, struct KnownSym
 	knownObjects->OneInt64 = knownObjects->SmallInt64s[1 + 100];
 	knownObjects->OneInt128 = knownObjects->SmallInt128s[1 + 100];
 
+	knownObjects->NegOneInt16 = knownObjects->SmallInt16s[-1 + 100];
+	knownObjects->NegOneInt32 = knownObjects->SmallInt32s[-1 + 100];
+	knownObjects->NegOneInt64 = knownObjects->SmallInt64s[-1 + 100];
+	knownObjects->NegOneInt128 = knownObjects->SmallInt128s[-1 + 100];
+
 	knownObjects->TrueObj = SmileBool_Create(True);
 	knownObjects->FalseObj = SmileBool_Create(False);
 	knownObjects->BooleanObjs[0] = knownObjects->FalseObj;

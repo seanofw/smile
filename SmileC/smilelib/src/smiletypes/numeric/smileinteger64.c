@@ -71,7 +71,7 @@ Int SmileInteger64_GetSecurity(SmileInteger64 self)
 
 SmileObject SmileInteger64_GetProperty(SmileInteger64 self, Symbol propertyName)
 {
-	return self->base->vtable->getProperty((SmileObject)self, propertyName);
+	return self->base->vtable->getProperty(self->base, propertyName);
 }
 
 void SmileInteger64_SetProperty(SmileInteger64 self, Symbol propertyName, SmileObject value)

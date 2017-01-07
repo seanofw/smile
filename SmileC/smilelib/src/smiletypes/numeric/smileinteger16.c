@@ -70,7 +70,7 @@ Int SmileInteger16_GetSecurity(SmileInteger16 self)
 
 SmileObject SmileInteger16_GetProperty(SmileInteger16 self, Symbol propertyName)
 {
-	return self->base->vtable->getProperty((SmileObject)self, propertyName);
+	return self->base->vtable->getProperty(self->base, propertyName);
 }
 
 void SmileInteger16_SetProperty(SmileInteger16 self, Symbol propertyName, SmileObject value)

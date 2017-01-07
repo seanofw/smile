@@ -70,7 +70,7 @@ Int SmileNull_GetSecurity(SmileNull self)
 
 SmileObject SmileNull_GetProperty(SmileNull self, Symbol propertyName)
 {
-	return self->base->vtable->getProperty((SmileObject)self, propertyName);
+	return self->base->vtable->getProperty(self->base, propertyName);
 }
 
 void SmileNull_SetProperty(SmileNull self, Symbol propertyName, SmileObject value)

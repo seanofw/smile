@@ -21,18 +21,22 @@ struct KnownObjectsStruct {
 	SmileInteger16 SmallInt16s[201];
 	SmileInteger16 ZeroInt16;
 	SmileInteger16 OneInt16;
+	SmileInteger16 NegOneInt16;
 
 	SmileInteger32 SmallInt32s[201];
 	SmileInteger32 ZeroInt32;
 	SmileInteger32 OneInt32;
+	SmileInteger32 NegOneInt32;
 
 	SmileInteger64 SmallInt64s[201];
 	SmileInteger64 ZeroInt64;
 	SmileInteger64 OneInt64;
+	SmileInteger64 NegOneInt64;
 
 	SmileInteger128 SmallInt128s[201];
 	SmileInteger128 ZeroInt128;
 	SmileInteger128 OneInt128;
+	SmileInteger128 NegOneInt128;
 
 	SmileChar Chars[256];
 

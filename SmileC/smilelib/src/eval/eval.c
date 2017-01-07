@@ -19,6 +19,7 @@
 #include <smile/smiletypes/smilepair.h>
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/smilebool.h>
+#include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/text/smilechar.h>
 #include <smile/smiletypes/text/smileuchar.h>
 #include <smile/smiletypes/text/smilestring.h>
@@ -144,6 +145,24 @@ next:
 		
 		case Op_Pop:
 			Closure_PopCount(_closure, byteCode->u.index);
+			byteCode++;
+			goto next;
+
+		case Op_Rep1:
+			_closure->stackTop[-2] = _closure->stackTop[-1];
+			_closure->stackTop--;
+			byteCode++;
+			goto next;
+
+		case Op_Rep2:
+			_closure->stackTop[-3] = _closure->stackTop[-1];
+			_closure->stackTop -= 2;
+			byteCode++;
+			goto next;
+
+		case Op_Rep:
+			_closure->stackTop[-(byteCode->u.index + 1)] = _closure->stackTop[-1];
+			_closure->stackTop -= byteCode->u.index;
 			byteCode++;
 			goto next;
 
@@ -556,6 +575,113 @@ next:
 			goto next;
 
 		//-------------------------------------------------------
+		// 90-9F: Special-purpose function and method calls
+
+		case Op_Met0:
+			target = Closure_GetTemp(_closure, 0);	// Get the target object
+			target = SMILE_VCALL1(target, getProperty, byteCode->u.symbol);	// Turn it into a function (hopefully)
+			SMILE_VCALL1(target, call, 1);	// Invoke it, whatever it is.
+			byteCode++;
+			goto next;
+
+		case Op_Met1:
+			target = Closure_GetTemp(_closure, 1);	// Get the target object
+			target = SMILE_VCALL1(target, getProperty, byteCode->u.symbol);	// Turn it into a function (hopefully)
+			SMILE_VCALL1(target, call, 2);	// Invoke it, whatever it is.
+			byteCode++;
+			goto next;
+
+		case Op_Met2:
+			target = Closure_GetTemp(_closure, 2);	// Get the target object
+			target = SMILE_VCALL1(target, getProperty, byteCode->u.symbol);	// Turn it into a function (hopefully)
+			SMILE_VCALL1(target, call, 3);	// Invoke it, whatever it is.
+			byteCode++;
+			goto next;
+
+		case Op_Met3:
+			target = Closure_GetTemp(_closure, 3);	// Get the target object
+			target = SMILE_VCALL1(target, getProperty, byteCode->u.symbol);	// Turn it into a function (hopefully)
+			SMILE_VCALL1(target, call, 4);	// Invoke it, whatever it is.
+			byteCode++;
+			goto next;
+
+		case Op_Met4:
+			target = Closure_GetTemp(_closure, 4);	// Get the target object
+			target = SMILE_VCALL1(target, getProperty, byteCode->u.symbol);	// Turn it into a function (hopefully)
+			SMILE_VCALL1(target, call, 5);	// Invoke it, whatever it is.
+			byteCode++;
+			goto next;
+
+		case Op_Met5:
+			target = Closure_GetTemp(_closure, 5);	// Get the target object
+			target = SMILE_VCALL1(target, getProperty, byteCode->u.symbol);	// Turn it into a function (hopefully)
+			SMILE_VCALL1(target, call, 6);	// Invoke it, whatever it is.
+			byteCode++;
+			goto next;
+
+		case Op_Met6:
+			target = Closure_GetTemp(_closure, 6);	// Get the target object
+			target = SMILE_VCALL1(target, getProperty, byteCode->u.symbol);	// Turn it into a function (hopefully)
+			SMILE_VCALL1(target, call, 7);	// Invoke it, whatever it is.
+			byteCode++;
+			goto next;
+
+		case Op_Met7:
+			target = Closure_GetTemp(_closure, 7);	// Get the target object
+			target = SMILE_VCALL1(target, getProperty, byteCode->u.symbol);	// Turn it into a function (hopefully)
+			SMILE_VCALL1(target, call, 8);	// Invoke it, whatever it is.
+			byteCode++;
+			goto next;
+
+		case Op_Call0:
+			target = Closure_GetTemp(_closure, 0);
+			SMILE_VCALL1(target, call, 0);
+			byteCode++;
+			goto next;
+
+		case Op_Call1:
+			target = Closure_GetTemp(_closure, 1);
+			SMILE_VCALL1(target, call, 1);
+			byteCode++;
+			goto next;
+
+		case Op_Call2:
+			target = Closure_GetTemp(_closure, 2);
+			SMILE_VCALL1(target, call, 2);
+			byteCode++;
+			goto next;
+
+		case Op_Call3:
+			target = Closure_GetTemp(_closure, 3);
+			SMILE_VCALL1(target, call, 3);
+			byteCode++;
+			goto next;
+
+		case Op_Call4:
+			target = Closure_GetTemp(_closure, 4);
+			SMILE_VCALL1(target, call, 4);
+			byteCode++;
+			goto next;
+
+		case Op_Call5:
+			target = Closure_GetTemp(_closure, 5);
+			SMILE_VCALL1(target, call, 5);
+			byteCode++;
+			goto next;
+
+		case Op_Call6:
+			target = Closure_GetTemp(_closure, 6);
+			SMILE_VCALL1(target, call, 6);
+			byteCode++;
+			goto next;
+
+		case Op_Call7:
+			target = Closure_GetTemp(_closure, 7);
+			SMILE_VCALL1(target, call, 7);
+			byteCode++;
+			goto next;
+
+		//-------------------------------------------------------
 		// B0-BF: Flow control
 		
 		case Op_Jmp:
@@ -602,6 +728,19 @@ next:
 			}
 			goto next;
 
+		case Op_Met:
+			target = Closure_GetTemp(_closure, byteCode->u.i2.b + 1);	// Get the target object
+			target = SMILE_VCALL1(target, getProperty, byteCode->u.i2.a);	// Turn it into a function (hopefully)
+			SMILE_VCALL1(target, call, byteCode->u.i2.b + 1);	// Invoke it, whatever it is.
+			byteCode++;
+			goto next;
+
+		case Op_Call:
+			target = Closure_GetTemp(_closure, byteCode->u.index);
+			SMILE_VCALL1(target, call, byteCode->u.index);
+			byteCode++;
+			goto next;
+		
 		case Op_Ret:
 			return True;
 
@@ -774,4 +913,215 @@ void Smile_Throw(SmileObject thrownObject)
 {
 	_exceptionContinuation->result = thrownObject;
 	longjmp(_exceptionContinuation->jump, 1);
+}
+
+Bool SmileUserFunction_Call(SmileFunction self, Int argc)
+{
+	UNUSED(self);
+	UNUSED(argc);
+
+	return True;
+}
+
+static Bool PerformTypeChecks(Int argc, SmileObject *argv, Int numTypeChecks, const Byte *typeChecks)
+{
+	Int i;
+
+	if (argc > numTypeChecks) {
+		Byte mask, compare;
+	
+		// If there are more args than type checks, perform the type checks that are defined...
+		for (i = 0; i < numTypeChecks; i++) {
+			if ((argv[i]->kind & typeChecks[i * 2]) != typeChecks[i * 2 + 1])
+				return False;
+		}
+
+		mask = typeChecks[i * 2 - 2];
+		compare = typeChecks[i * 2 - 1];
+	
+		// ...and then repeatedly use the last type check for the rest of the arguments.
+		for (; i < argc; i++) {
+			if ((argv[i]->kind & mask) != compare)
+				return False;
+		}
+
+		return True;
+	}
+
+	// If there are fewer or equal args to type checks, perform the checks as-is,
+	// wherever they match positions.  We use a switch statement (computed goto) to
+	// optimize away the comparison loop if possible.
+	switch (argc) {
+	
+		default:
+			for (i = 0; i < argc; i++) {
+				if ((argv[i]->kind & typeChecks[i * 2]) != typeChecks[i * 2 + 1])
+					return False;
+			}
+			return True;
+		
+		case 7:
+			if ((argv[7]->kind & typeChecks[12]) != typeChecks[13])
+				return False;
+		case 6:
+			if ((argv[6]->kind & typeChecks[10]) != typeChecks[11])
+				return False;
+		case 5:
+			if ((argv[4]->kind & typeChecks[8]) != typeChecks[9])
+				return False;
+		case 4:
+			if ((argv[3]->kind & typeChecks[6]) != typeChecks[7])
+				return False;
+		case 3:
+			if ((argv[2]->kind & typeChecks[4]) != typeChecks[5])
+				return False;
+		case 2:
+			if ((argv[1]->kind & typeChecks[2]) != typeChecks[3])
+				return False;
+		case 1:
+			if ((argv[0]->kind & typeChecks[0]) != typeChecks[1])
+				return False;
+		
+		case 0:
+			return True;
+	}
+}
+
+Bool SmileExternalFunction_NoCheck_Call(SmileFunction self, Int argc)
+{
+	SmileObject *argv;
+
+	argv = _closure->stackTop -= argc;
+	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
+
+	return True;
+}
+
+Bool SmileExternalFunction_MinCheck_Call(SmileFunction self, Int argc)
+{
+	SmileObject *argv;
+
+	if (argc < self->u.externalFunctionInfo.minArgs)
+		Smile_Throw(NullObject);
+
+	argv = _closure->stackTop -= argc;
+	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
+
+	return True;
+}
+
+Bool SmileExternalFunction_MaxCheck_Call(SmileFunction self, Int argc)
+{
+	SmileObject *argv;
+
+	if (argc > self->u.externalFunctionInfo.maxArgs)
+		Smile_Throw(NullObject);
+
+	argv = _closure->stackTop -= argc;
+	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
+
+	return True;
+}
+
+Bool SmileExternalFunction_MinMaxCheck_Call(SmileFunction self, Int argc)
+{
+	SmileObject *argv;
+
+	if (argc < self->u.externalFunctionInfo.minArgs)
+		Smile_Throw(NullObject);
+	if (argc > self->u.externalFunctionInfo.maxArgs)
+		Smile_Throw(NullObject);
+
+	argv = _closure->stackTop -= argc;
+	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
+
+	return True;
+}
+
+Bool SmileExternalFunction_ExactCheck_Call(SmileFunction self, Int argc)
+{
+	SmileObject *argv;
+
+	if (argc != self->u.externalFunctionInfo.minArgs)
+		Smile_Throw(NullObject);
+
+	argv = _closure->stackTop -= argc;
+	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
+
+	return True;
+}
+
+Bool SmileExternalFunction_TypesCheck_Call(SmileFunction self, Int argc)
+{
+	SmileObject *argv = _closure->stackTop - argc;
+
+	if (!PerformTypeChecks(argc, argv, self->u.externalFunctionInfo.numArgsToTypeCheck, self->u.externalFunctionInfo.argTypeChecks))
+		Smile_Throw(NullObject);
+	
+	_closure->stackTop = argv;
+	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
+
+	return True;
+}
+
+Bool SmileExternalFunction_MinTypesCheck_Call(SmileFunction self, Int argc)
+{
+	SmileObject *argv = _closure->stackTop - argc;
+
+	if (argc < self->u.externalFunctionInfo.minArgs)
+		Smile_Throw(NullObject);
+	if (!PerformTypeChecks(argc, argv, self->u.externalFunctionInfo.numArgsToTypeCheck, self->u.externalFunctionInfo.argTypeChecks))
+		Smile_Throw(NullObject);
+
+	_closure->stackTop = argv;
+	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
+
+	return True;
+}
+
+Bool SmileExternalFunction_MaxTypesCheck_Call(SmileFunction self, Int argc)
+{
+	SmileObject *argv = _closure->stackTop - argc;
+
+	if (argc > self->u.externalFunctionInfo.maxArgs)
+		Smile_Throw(NullObject);
+	if (!PerformTypeChecks(argc, argv, self->u.externalFunctionInfo.numArgsToTypeCheck, self->u.externalFunctionInfo.argTypeChecks))
+		Smile_Throw(NullObject);
+
+	_closure->stackTop = argv;
+	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
+
+	return True;
+}
+
+Bool SmileExternalFunction_MinMaxTypesCheck_Call(SmileFunction self, Int argc)
+{
+	SmileObject *argv = _closure->stackTop - argc;
+
+	if (argc < self->u.externalFunctionInfo.minArgs)
+		Smile_Throw(NullObject);
+	if (argc > self->u.externalFunctionInfo.maxArgs)
+		Smile_Throw(NullObject);
+	if (!PerformTypeChecks(argc, argv, self->u.externalFunctionInfo.numArgsToTypeCheck, self->u.externalFunctionInfo.argTypeChecks))
+		Smile_Throw(NullObject);
+
+	_closure->stackTop = argv;
+	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
+
+	return True;
+}
+
+Bool SmileExternalFunction_ExactTypesCheck_Call(SmileFunction self, Int argc)
+{
+	SmileObject *argv = _closure->stackTop - argc;
+
+	if (argc != self->u.externalFunctionInfo.minArgs)
+		Smile_Throw(NullObject);
+	if (!PerformTypeChecks(argc, argv, self->u.externalFunctionInfo.numArgsToTypeCheck, self->u.externalFunctionInfo.argTypeChecks))
+		Smile_Throw(NullObject);
+
+	_closure->stackTop = argv;
+	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
+
+	return True;
 }
