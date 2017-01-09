@@ -19,7 +19,7 @@
 
 #include <smile/parsing/parser.h>
 #include <smile/smiletypes/text/smilestring.h>
-#include <smile/smiletypes/numeric/smileinteger32.h>
+#include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/smilepair.h>
 #include <smile/env/env.h>
 
@@ -46,13 +46,13 @@ END_TEST
 START_TEST(CanParseASequenceOfTerms)
 {
 	SmileList expectedResult = SmileList_CreateList(
-		(SmileObject)SmileInteger32_Create(12),
-		SmileInteger32_Create(12345),
-		SmileInteger32_Create(45),
-		SmileInteger32_Create(0x10),
-		SmileInteger32_Create(0x2B),
+		(SmileObject)SmileInteger64_Create(12),
+		SmileInteger64_Create(12345),
+		SmileInteger64_Create(45),
+		SmileInteger64_Create(0x10),
+		SmileInteger64_Create(0x2B),
 		SmileString_Create(String_FromC("or not")),
-		SmileInteger32_Create(0x2B),
+		SmileInteger64_Create(0x2B),
 		NULL
 	);
 
@@ -69,13 +69,13 @@ END_TEST
 START_TEST(ParenthesesHaveNoMeaningInASequenceOfTerms)
 {
 	SmileList expectedResult = SmileList_CreateList(
-		(SmileObject)SmileInteger32_Create(12),
-		SmileInteger32_Create(12345),
-		SmileInteger32_Create(45),
-		SmileInteger32_Create(0x10),
-		SmileInteger32_Create(0x2B),
+		(SmileObject)SmileInteger64_Create(12),
+		SmileInteger64_Create(12345),
+		SmileInteger64_Create(45),
+		SmileInteger64_Create(0x10),
+		SmileInteger64_Create(0x2B),
 		SmileString_Create(String_FromC("or not")),
-		SmileInteger32_Create(0x2B),
+		SmileInteger64_Create(0x2B),
 		NULL
 	);
 
@@ -445,7 +445,7 @@ START_TEST(CanParseTheSpecialDoubleHashOperator)
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
 	SmileObject expectedResult =
-		(SmileObject)SmileList_Cons((SmileObject)SmileInteger32_Create(1), (SmileObject)SmileInteger32_Create(2));
+		(SmileObject)SmileList_Cons((SmileObject)SmileInteger64_Create(1), (SmileObject)SmileInteger64_Create(2));
 
 	ASSERT(RecursiveEquals(result, expectedResult));
 
@@ -455,9 +455,9 @@ START_TEST(CanParseTheSpecialDoubleHashOperator)
 	result = Parser_Parse(parser, lexer, parseScope);
 
 	expectedResult =
-		(SmileObject)SmileList_Cons((SmileObject)SmileInteger32_Create(1),
-			(SmileObject)SmileList_Cons((SmileObject)SmileInteger32_Create(2),
-				(SmileObject)SmileList_Cons((SmileObject)SmileInteger32_Create(3), (SmileObject)SmileInteger32_Create(4))));
+		(SmileObject)SmileList_Cons((SmileObject)SmileInteger64_Create(1),
+			(SmileObject)SmileList_Cons((SmileObject)SmileInteger64_Create(2),
+				(SmileObject)SmileList_Cons((SmileObject)SmileInteger64_Create(3), (SmileObject)SmileInteger64_Create(4))));
 
 	ASSERT(RecursiveEquals(result, expectedResult));
 
@@ -467,10 +467,10 @@ START_TEST(CanParseTheSpecialDoubleHashOperator)
 	result = Parser_Parse(parser, lexer, parseScope);
 
 	expectedResult =
-		(SmileObject)SmileList_Cons((SmileObject)SmileInteger32_Create(1),
-			(SmileObject)SmileList_Cons((SmileObject)SmileInteger32_Create(2),
-				(SmileObject)SmileList_Cons((SmileObject)SmileInteger32_Create(3),
-					(SmileObject)SmileList_Cons((SmileObject)SmileInteger32_Create(4), NullObject))));
+		(SmileObject)SmileList_Cons((SmileObject)SmileInteger64_Create(1),
+			(SmileObject)SmileList_Cons((SmileObject)SmileInteger64_Create(2),
+				(SmileObject)SmileList_Cons((SmileObject)SmileInteger64_Create(3),
+					(SmileObject)SmileList_Cons((SmileObject)SmileInteger64_Create(4), NullObject))));
 
 	ASSERT(RecursiveEquals(result, expectedResult));
 
@@ -480,11 +480,11 @@ START_TEST(CanParseTheSpecialDoubleHashOperator)
 	result = Parser_Parse(parser, lexer, parseScope);
 
 	expectedResult =
-		(SmileObject)SmileList_Cons((SmileObject)SmileInteger32_Create(1),
+		(SmileObject)SmileList_Cons((SmileObject)SmileInteger64_Create(1),
 			(SmileObject)SmileList_Cons(NullObject,
-				(SmileObject)SmileList_Cons((SmileObject)SmileInteger32_Create(3),
+				(SmileObject)SmileList_Cons((SmileObject)SmileInteger64_Create(3),
 					(SmileObject)SmileList_Cons(NullObject,
-						(SmileObject)SmileList_Cons((SmileObject)SmileInteger32_Create(5), NullObject)))));
+						(SmileObject)SmileList_Cons((SmileObject)SmileInteger64_Create(5), NullObject)))));
 
 	ASSERT(RecursiveEquals(result, expectedResult));
 
@@ -494,10 +494,10 @@ START_TEST(CanParseTheSpecialDoubleHashOperator)
 	result = Parser_Parse(parser, lexer, parseScope);
 
 	expectedResult =
-		(SmileObject)SmileList_Cons((SmileObject)SmileInteger32_Create(1),
-			(SmileObject)SmileList_Cons((SmileObject)SmileList_Cons(NullObject, (SmileObject)SmileInteger32_Create(3)),
+		(SmileObject)SmileList_Cons((SmileObject)SmileInteger64_Create(1),
+			(SmileObject)SmileList_Cons((SmileObject)SmileList_Cons(NullObject, (SmileObject)SmileInteger64_Create(3)),
 				(SmileObject)SmileList_Cons(NullObject,
-					(SmileObject)SmileList_Cons((SmileObject)SmileInteger32_Create(5), NullObject))));
+					(SmileObject)SmileList_Cons((SmileObject)SmileInteger64_Create(5), NullObject))));
 
 	ASSERT(RecursiveEquals(result, expectedResult));
 }

@@ -95,64 +95,64 @@ static UInt64 AToIHex(const char *str)
 START_TEST(ShouldRecognizeZero)
 {
 	Lexer lexer = Setup("  \t  0  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
+	ASSERT(lexer->token->data.int64 == 0);
+
+	lexer = Setup("  \t  0t  \r\n");
 	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER32);
-	ASSERT(lexer->token->data.i == 0);
+	ASSERT(lexer->token->data.int32 == 0);
 
-	lexer = Setup("  \t  0l  \r\n");
-	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
-	ASSERT(lexer->token->data.int64 == 0);
+	lexer = Setup("  \t  0T  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER32);
+	ASSERT(lexer->token->data.int32 == 0);
 
-	lexer = Setup("  \t  0L  \r\n");
-	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
-	ASSERT(lexer->token->data.int64 == 0);
-
-	lexer = Setup("  \t  0h  \r\n");
+	lexer = Setup("  \t  0s  \r\n");
 	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER16);
-	ASSERT(lexer->token->data.i == 0);
+	ASSERT(lexer->token->data.int16 == 0);
 
-	lexer = Setup("  \t  0H  \r\n");
+	lexer = Setup("  \t  0S  \r\n");
 	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER16);
-	ASSERT(lexer->token->data.i == 0);
+	ASSERT(lexer->token->data.int16 == 0);
 
 	lexer = Setup("  \t  0x  \r\n");
 	ASSERT(Lexer_Next(lexer) == TOKEN_BYTE);
-	ASSERT(lexer->token->data.i == 0);
+	ASSERT(lexer->token->data.byte == 0);
 
 	lexer = Setup("  \t  0X  \r\n");
 	ASSERT(Lexer_Next(lexer) == TOKEN_BYTE);
-	ASSERT(lexer->token->data.i == 0);
+	ASSERT(lexer->token->data.byte == 0);
 }
 END_TEST
 
 START_TEST(ShouldRecognizeHexZero)
 {
 	Lexer lexer = Setup("  \t  0x0  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
+	ASSERT(lexer->token->data.int64 == 0);
+
+	lexer = Setup("  \t  0x0t  \r\n");
 	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER32);
-	ASSERT(lexer->token->data.i == 0);
+	ASSERT(lexer->token->data.int32 == 0);
 
-	lexer = Setup("  \t  0x0l  \r\n");
-	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
-	ASSERT(lexer->token->data.int64 == 0);
+	lexer = Setup("  \t  0x0T  \r\n");
+	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER32);
+	ASSERT(lexer->token->data.int32 == 0);
 
-	lexer = Setup("  \t  0x0L  \r\n");
-	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
-	ASSERT(lexer->token->data.int64 == 0);
-
-	lexer = Setup("  \t  0x0h  \r\n");
+	lexer = Setup("  \t  0x0s  \r\n");
 	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER16);
-	ASSERT(lexer->token->data.i == 0);
+	ASSERT(lexer->token->data.int16 == 0);
 
-	lexer = Setup("  \t  0x0H  \r\n");
+	lexer = Setup("  \t  0x0S  \r\n");
 	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER16);
-	ASSERT(lexer->token->data.i == 0);
+	ASSERT(lexer->token->data.int16 == 0);
 
 	lexer = Setup("  \t  0x0x  \r\n");
 	ASSERT(Lexer_Next(lexer) == TOKEN_BYTE);
-	ASSERT(lexer->token->data.i == 0);
+	ASSERT(lexer->token->data.byte == 0);
 
 	lexer = Setup("  \t  0x0X  \r\n");
 	ASSERT(Lexer_Next(lexer) == TOKEN_BYTE);
-	ASSERT(lexer->token->data.i == 0);
+	ASSERT(lexer->token->data.byte == 0);
 }
 END_TEST
 
@@ -166,11 +166,11 @@ START_TEST(ShouldRecognizeFloatZero)
 	ASSERT(Lexer_Next(lexer) == TOKEN_FLOAT64);
 	ASSERT(lexer->token->data.float64 == 0.0);
 
-	lexer = Setup("  \t  0.0hf  \r\n");
+	lexer = Setup("  \t  0.0tf  \r\n");
 	ASSERT(Lexer_Next(lexer) == TOKEN_FLOAT32);
 	ASSERT(lexer->token->data.float32 == 0.0f);
 
-	lexer = Setup("  \t  0.0HF  \r\n");
+	lexer = Setup("  \t  0.0TF  \r\n");
 	ASSERT(Lexer_Next(lexer) == TOKEN_FLOAT32);
 	ASSERT(lexer->token->data.float32 == 0.0f);
 
@@ -182,11 +182,11 @@ START_TEST(ShouldRecognizeFloatZero)
 	ASSERT(Lexer_Next(lexer) == TOKEN_FLOAT64);
 	ASSERT(lexer->token->data.float64 == 0.0);
 
-	lexer = Setup("  \t  .0hf  \r\n");
+	lexer = Setup("  \t  .0tf  \r\n");
 	ASSERT(Lexer_Next(lexer) == TOKEN_FLOAT32);
 	ASSERT(lexer->token->data.float32 == 0.0f);
 
-	lexer = Setup("  \t  .0HF  \r\n");
+	lexer = Setup("  \t  .0TF  \r\n");
 	ASSERT(Lexer_Next(lexer) == TOKEN_FLOAT32);
 	ASSERT(lexer->token->data.float32 == 0.0f);
 }
@@ -206,11 +206,11 @@ START_TEST(ShouldRecognizeRealZero)
 	ASSERT(Lexer_Next(lexer) == TOKEN_REAL128);
 	ASSERT(Real128_Eq(lexer->token->data.real128, Real128_Zero));
 
-	lexer = Setup("  \t  0.0h  \r\n");
+	lexer = Setup("  \t  0.0t  \r\n");
 	ASSERT(Lexer_Next(lexer) == TOKEN_REAL32);
 	ASSERT(Real32_Eq(lexer->token->data.real32, Real32_Zero));
 
-	lexer = Setup("  \t  0.0H  \r\n");
+	lexer = Setup("  \t  0.0T  \r\n");
 	ASSERT(Lexer_Next(lexer) == TOKEN_REAL32);
 	ASSERT(Real32_Eq(lexer->token->data.real32, Real32_Zero));
 
@@ -226,11 +226,11 @@ START_TEST(ShouldRecognizeRealZero)
 	ASSERT(Lexer_Next(lexer) == TOKEN_REAL128);
 	ASSERT(Real128_Eq(lexer->token->data.real128, Real128_Zero));
 
-	lexer = Setup("  \t  .0h  \r\n");
+	lexer = Setup("  \t  .0t  \r\n");
 	ASSERT(Lexer_Next(lexer) == TOKEN_REAL32);
 	ASSERT(Real32_Eq(lexer->token->data.real32, Real32_Zero));
 
-	lexer = Setup("  \t  .0H  \r\n");
+	lexer = Setup("  \t  .0T  \r\n");
 	ASSERT(Lexer_Next(lexer) == TOKEN_REAL32);
 	ASSERT(Real32_Eq(lexer->token->data.real32, Real32_Zero));
 }
@@ -246,32 +246,32 @@ START_TEST(ShouldRecognizeSingleDigits)
 
 	for (i = 1; i <= 9; i++) {
 		lexer = SetupString(String_Format("  \t  %c  \r\n", '0' + i));
+		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
+		ASSERT(lexer->token->data.int64 == (Int64)i);
+
+		lexer = SetupString(String_Format("  \t  %ct  \r\n", '0' + i));
 		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER32);
-		ASSERT(lexer->token->data.i == (Int32)i);
-
-		lexer = SetupString(String_Format("  \t  %cl  \r\n", '0' + i));
-		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
-		ASSERT(lexer->token->data.int64 == (Int64)i);
-
-		lexer = SetupString(String_Format("  \t  %cL  \r\n", '0' + i));
-		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
-		ASSERT(lexer->token->data.int64 == (Int64)i);
-
-		lexer = SetupString(String_Format("  \t  %ch  \r\n", '0' + i));
+		ASSERT(lexer->token->data.int32 == (Int32)i);
+	
+		lexer = SetupString(String_Format("  \t  %cT  \r\n", '0' + i));
+		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER32);
+		ASSERT(lexer->token->data.int32 == (Int32)i);
+	
+		lexer = SetupString(String_Format("  \t  %cs  \r\n", '0' + i));
 		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER16);
-		ASSERT(lexer->token->data.i == (Int16)i);
-
-		lexer = SetupString(String_Format("  \t  %cH  \r\n", '0' + i));
+		ASSERT(lexer->token->data.int16 == (Int16)i);
+	
+		lexer = SetupString(String_Format("  \t  %cS  \r\n", '0' + i));
 		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER16);
-		ASSERT(lexer->token->data.i == (Int16)i);
-
+		ASSERT(lexer->token->data.int16 == (Int16)i);
+	
 		lexer = SetupString(String_Format("  \t  %cx  \r\n", '0' + i));
 		ASSERT(Lexer_Next(lexer) == TOKEN_BYTE);
-		ASSERT(lexer->token->data.i == (Byte)i);
-
+		ASSERT(lexer->token->data.byte == (Byte)i);
+	
 		lexer = SetupString(String_Format("  \t  %cX  \r\n", '0' + i));
 		ASSERT(Lexer_Next(lexer) == TOKEN_BYTE);
-		ASSERT(lexer->token->data.i == (Byte)i);
+		ASSERT(lexer->token->data.byte == (Byte)i);
 	}
 }
 END_TEST
@@ -283,32 +283,32 @@ START_TEST(ShouldRecognizeSingleHexDigits)
 
 	for (i = 1; i <= 9; i++) {
 		lexer = SetupString(String_Format("  \t  0x%c  \r\n", '0' + i));
+		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
+		ASSERT(lexer->token->data.int64 == (Int64)i);
+	
+		lexer = SetupString(String_Format("  \t  0x%ct  \r\n", '0' + i));
 		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER32);
-		ASSERT(lexer->token->data.i == (Int32)i);
-
-		lexer = SetupString(String_Format("  \t  0x%cl  \r\n", '0' + i));
-		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
-		ASSERT(lexer->token->data.int64 == (Int64)i);
-
-		lexer = SetupString(String_Format("  \t  0x%cL  \r\n", '0' + i));
-		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
-		ASSERT(lexer->token->data.int64 == (Int64)i);
-
-		lexer = SetupString(String_Format("  \t  0x%ch  \r\n", '0' + i));
+		ASSERT(lexer->token->data.int32 == (Int32)i);
+	
+		lexer = SetupString(String_Format("  \t  0x%cT  \r\n", '0' + i));
+		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER32);
+		ASSERT(lexer->token->data.int32 == (Int32)i);
+	
+		lexer = SetupString(String_Format("  \t  0x%cs  \r\n", '0' + i));
 		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER16);
-		ASSERT(lexer->token->data.i == (Int16)i);
-
-		lexer = SetupString(String_Format("  \t  0x%cH  \r\n", '0' + i));
+		ASSERT(lexer->token->data.int16 == (Int16)i);
+	
+		lexer = SetupString(String_Format("  \t  0x%cS  \r\n", '0' + i));
 		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER16);
-		ASSERT(lexer->token->data.i == (Int16)i);
-
+		ASSERT(lexer->token->data.int16 == (Int16)i);
+	
 		lexer = SetupString(String_Format("  \t  0x%cx  \r\n", '0' + i));
 		ASSERT(Lexer_Next(lexer) == TOKEN_BYTE);
-		ASSERT(lexer->token->data.i == (Byte)i);
-
+		ASSERT(lexer->token->data.byte == (Byte)i);
+	
 		lexer = SetupString(String_Format("  \t  0x%cX  \r\n", '0' + i));
 		ASSERT(Lexer_Next(lexer) == TOKEN_BYTE);
-		ASSERT(lexer->token->data.i == (Byte)i);
+		ASSERT(lexer->token->data.byte == (Byte)i);
 	}
 }
 END_TEST
@@ -327,11 +327,11 @@ START_TEST(ShouldRecognizeSingleFloatDigits)
 		ASSERT(Lexer_Next(lexer) == TOKEN_FLOAT64);
 		ASSERT(lexer->token->data.float64 == (Float64)i);
 
-		lexer = SetupString(String_Format("  \t  %c.0hf  \r\n", '0' + i));
+		lexer = SetupString(String_Format("  \t  %c.0tf  \r\n", '0' + i));
 		ASSERT(Lexer_Next(lexer) == TOKEN_FLOAT32);
 		ASSERT(lexer->token->data.float32 == (Float32)i);
-
-		lexer = SetupString(String_Format("  \t  %c.0HF  \r\n", '0' + i));
+	
+		lexer = SetupString(String_Format("  \t  %c.0TF  \r\n", '0' + i));
 		ASSERT(Lexer_Next(lexer) == TOKEN_FLOAT32);
 		ASSERT(lexer->token->data.float32 == (Float32)i);
 	}
@@ -345,11 +345,11 @@ START_TEST(ShouldRecognizeSingleFloatDigits)
 		ASSERT(Lexer_Next(lexer) == TOKEN_FLOAT64);
 		ASSERT(lexer->token->data.float64 == (Float64)i / 10.0);
 
-		lexer = SetupString(String_Format("  \t  0.%chf  \r\n", '0' + i));
+		lexer = SetupString(String_Format("  \t  0.%ctf  \r\n", '0' + i));
 		ASSERT(Lexer_Next(lexer) == TOKEN_FLOAT32);
 		ASSERT(lexer->token->data.float32 == (Float32)i / 10.0f);
-
-		lexer = SetupString(String_Format("  \t  0.%cHF  \r\n", '0' + i));
+	
+		lexer = SetupString(String_Format("  \t  0.%cTF  \r\n", '0' + i));
 		ASSERT(Lexer_Next(lexer) == TOKEN_FLOAT32);
 		ASSERT(lexer->token->data.float32 == (Float32)i / 10.0f);
 	}
@@ -363,11 +363,11 @@ START_TEST(ShouldRecognizeSingleFloatDigits)
 		ASSERT(Lexer_Next(lexer) == TOKEN_FLOAT64);
 		ASSERT(lexer->token->data.float64 == (Float64)i / 10.0);
 
-		lexer = SetupString(String_Format("  \t  .%chf  \r\n", '0' + i));
+		lexer = SetupString(String_Format("  \t  .%ctf  \r\n", '0' + i));
 		ASSERT(Lexer_Next(lexer) == TOKEN_FLOAT32);
 		ASSERT(lexer->token->data.float32 == (Float32)i / 10.0f);
 
-		lexer = SetupString(String_Format("  \t  .%cHF  \r\n", '0' + i));
+		lexer = SetupString(String_Format("  \t  .%cTF  \r\n", '0' + i));
 		ASSERT(Lexer_Next(lexer) == TOKEN_FLOAT32);
 		ASSERT(lexer->token->data.float32 == (Float32)i / 10.0f);
 	}
@@ -392,11 +392,11 @@ START_TEST(ShouldRecognizeSingleRealDigits)
 		ASSERT(Lexer_Next(lexer) == TOKEN_REAL128);
 		ASSERT(Real128_Eq(lexer->token->data.real128, Real128_FromInt32((Int32)i)));
 
-		lexer = SetupString(String_Format("  \t  %c.0h  \r\n", '0' + i));
+		lexer = SetupString(String_Format("  \t  %c.0t  \r\n", '0' + i));
 		ASSERT(Lexer_Next(lexer) == TOKEN_REAL32);
 		ASSERT(Real32_Eq(lexer->token->data.real32, Real32_FromInt32((Int32)i)));
 
-		lexer = SetupString(String_Format("  \t  %c.0H  \r\n", '0' + i));
+		lexer = SetupString(String_Format("  \t  %c.0T  \r\n", '0' + i));
 		ASSERT(Lexer_Next(lexer) == TOKEN_REAL32);
 		ASSERT(Real32_Eq(lexer->token->data.real32, Real32_FromInt32((Int32)i)));
 	}
@@ -414,11 +414,11 @@ START_TEST(ShouldRecognizeSingleRealDigits)
 		ASSERT(Lexer_Next(lexer) == TOKEN_REAL128);
 		ASSERT(Real128_Eq(lexer->token->data.real128, Real128_Div(Real128_FromInt32((Int32)i), Real128_Ten)));
 
-		lexer = SetupString(String_Format("  \t  0.%ch  \r\n", '0' + i));
+		lexer = SetupString(String_Format("  \t  0.%ct  \r\n", '0' + i));
 		ASSERT(Lexer_Next(lexer) == TOKEN_REAL32);
 		ASSERT(Real32_Eq(lexer->token->data.real32, Real32_Div(Real32_FromInt32((Int32)i), Real32_Ten)));
 
-		lexer = SetupString(String_Format("  \t  0.%cH  \r\n", '0' + i));
+		lexer = SetupString(String_Format("  \t  0.%cT  \r\n", '0' + i));
 		ASSERT(Lexer_Next(lexer) == TOKEN_REAL32);
 		ASSERT(Real32_Eq(lexer->token->data.real32, Real32_Div(Real32_FromInt32((Int32)i), Real32_Ten)));
 	}
@@ -436,11 +436,11 @@ START_TEST(ShouldRecognizeSingleRealDigits)
 		ASSERT(Lexer_Next(lexer) == TOKEN_REAL128);
 		ASSERT(Real128_Eq(lexer->token->data.real128, Real128_Div(Real128_FromInt32((Int32)i), Real128_Ten)));
 
-		lexer = SetupString(String_Format("  \t  .%ch  \r\n", '0' + i));
+		lexer = SetupString(String_Format("  \t  .%ct  \r\n", '0' + i));
 		ASSERT(Lexer_Next(lexer) == TOKEN_REAL32);
 		ASSERT(Real32_Eq(lexer->token->data.real32, Real32_Div(Real32_FromInt32((Int32)i), Real32_Ten)));
 
-		lexer = SetupString(String_Format("  \t  .%cH  \r\n", '0' + i));
+		lexer = SetupString(String_Format("  \t  .%cT  \r\n", '0' + i));
 		ASSERT(Lexer_Next(lexer) == TOKEN_REAL32);
 		ASSERT(Real32_Eq(lexer->token->data.real32, Real32_Div(Real32_FromInt32((Int32)i), Real32_Ten)));
 	}
@@ -477,49 +477,41 @@ START_TEST(ShouldRecognizeDecimalIntegers)
 	for (i = 0; i < sizeof(_8BitDecimalIntegers) / sizeof(const char *); i++) {
 		lexer = SetupString(String_Format("  \t  %sx  \r\n", _8BitDecimalIntegers[i]));
 		ASSERT(Lexer_Next(lexer) == TOKEN_BYTE);
-		ASSERT(lexer->token->data.i == (Byte)AToIDecimal(_8BitDecimalIntegers[i]));
-
+		ASSERT(lexer->token->data.byte == (Byte)AToIDecimal(_8BitDecimalIntegers[i]));
+	
 		lexer = SetupString(String_Format("  \t  %sX  \r\n", _8BitDecimalIntegers[i]));
 		ASSERT(Lexer_Next(lexer) == TOKEN_BYTE);
-		ASSERT(lexer->token->data.i == (Byte)AToIDecimal(_8BitDecimalIntegers[i]));
+		ASSERT(lexer->token->data.byte == (Byte)AToIDecimal(_8BitDecimalIntegers[i]));
 	}
 
 	for (i = 0; i < sizeof(_15BitDecimalIntegers) / sizeof(const char *); i++) {
-		lexer = SetupString(String_Format("  \t  %sh  \r\n", _15BitDecimalIntegers[i]));
+		lexer = SetupString(String_Format("  \t  %ss  \r\n", _15BitDecimalIntegers[i]));
 		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER16);
-		ASSERT(lexer->token->data.i == (Int16)AToIDecimal(_15BitDecimalIntegers[i]));
+		ASSERT(lexer->token->data.int16 == (Int16)AToIDecimal(_15BitDecimalIntegers[i]));
+	
+		lexer = SetupString(String_Format("  \t  %sS  \r\n", _15BitDecimalIntegers[i]));
+		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER16);
+		ASSERT(lexer->token->data.int16 == (Int16)AToIDecimal(_15BitDecimalIntegers[i]));
+	}
 
-		lexer = SetupString(String_Format("  \t  %sH  \r\n", _15BitDecimalIntegers[i]));
-		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER16);
-		ASSERT(lexer->token->data.i == (Int16)AToIDecimal(_15BitDecimalIntegers[i]));
+	for (i = 0; i < sizeof(_31BitDecimalIntegers) / sizeof(const char *); i++) {
+		lexer = SetupString(String_Format("  \t  %st  \r\n", _31BitDecimalIntegers[i]));
+		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER32);
+		ASSERT(lexer->token->data.int32 == (Int32)AToIDecimal(_31BitDecimalIntegers[i]));
+
+		lexer = SetupString(String_Format("  \t  %sT  \r\n", _31BitDecimalIntegers[i]));
+		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER32);
+		ASSERT(lexer->token->data.int32 == (Int32)AToIDecimal(_31BitDecimalIntegers[i]));
 	}
 
 	for (i = 0; i < sizeof(_31BitDecimalIntegers) / sizeof(const char *); i++) {
 		lexer = SetupString(String_Format("  \t  %s  \r\n", _31BitDecimalIntegers[i]));
-		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER32);
-		ASSERT(lexer->token->data.i == (Int32)AToIDecimal(_31BitDecimalIntegers[i]));
-
-		lexer = SetupString(String_Format("  \t  %s  \r\n", _31BitDecimalIntegers[i]));
-		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER32);
-		ASSERT(lexer->token->data.i == (Int32)AToIDecimal(_31BitDecimalIntegers[i]));
-	}
-
-	for (i = 0; i < sizeof(_31BitDecimalIntegers) / sizeof(const char *); i++) {
-		lexer = SetupString(String_Format("  \t  %sl  \r\n", _31BitDecimalIntegers[i]));
 		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
 		ASSERT(lexer->token->data.int64 == (Int64)AToIDecimal(_31BitDecimalIntegers[i]));
-
-		lexer = SetupString(String_Format("  \t  %sL  \r\n", _31BitDecimalIntegers[i]));
+	
+		lexer = SetupString(String_Format("  \t  %s1234567  \r\n", _31BitDecimalIntegers[i]));
 		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
-		ASSERT(lexer->token->data.int64 == (Int64)AToIDecimal(_31BitDecimalIntegers[i]));
-
-		lexer = SetupString(String_Format("  \t  %s1234567l  \r\n", _31BitDecimalIntegers[i]));
-		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
-		ASSERT(lexer->token->data.int64 == (Int64)AToIDecimal(_31BitDecimalIntegers[i]) * 10000000 + 1234567);
-
-		lexer = SetupString(String_Format("  \t  %s1234567L  \r\n", _31BitDecimalIntegers[i]));
-		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
-		ASSERT(lexer->token->data.int64 == (Int64)AToIDecimal(_31BitDecimalIntegers[i]) * 10000000 + 1234567);
+		ASSERT(lexer->token->data.int64 == (Int64)AToIDecimal(_31BitDecimalIntegers[i]) * 10000000ULL + 1234567ULL);
 	}
 }
 END_TEST
@@ -550,47 +542,39 @@ START_TEST(ShouldRecognizeOctalIntegers)
 	for (i = 0; i < sizeof(_8BitOctalIntegers) / sizeof(const char *); i++) {
 		lexer = SetupString(String_Format("  \t  0%sx  \r\n", _8BitOctalIntegers[i]));
 		ASSERT(Lexer_Next(lexer) == TOKEN_BYTE);
-		ASSERT(lexer->token->data.i == (Byte)AToIOctal(_8BitOctalIntegers[i]));
-
+		ASSERT(lexer->token->data.byte == (Byte)AToIOctal(_8BitOctalIntegers[i]));
+	
 		lexer = SetupString(String_Format("  \t  0%sX  \r\n", _8BitOctalIntegers[i]));
 		ASSERT(Lexer_Next(lexer) == TOKEN_BYTE);
-		ASSERT(lexer->token->data.i == (Byte)AToIOctal(_8BitOctalIntegers[i]));
+		ASSERT(lexer->token->data.byte == (Byte)AToIOctal(_8BitOctalIntegers[i]));
 	}
 
 	for (i = 0; i < sizeof(_15BitOctalIntegers) / sizeof(const char *); i++) {
-		lexer = SetupString(String_Format("  \t  0%sh  \r\n", _15BitOctalIntegers[i]));
+		lexer = SetupString(String_Format("  \t  0%ss  \r\n", _15BitOctalIntegers[i]));
 		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER16);
-		ASSERT(lexer->token->data.i == (Int16)AToIOctal(_15BitOctalIntegers[i]));
+		ASSERT(lexer->token->data.int16 == (Int16)AToIOctal(_15BitOctalIntegers[i]));
+	
+		lexer = SetupString(String_Format("  \t  0%sS  \r\n", _15BitOctalIntegers[i]));
+		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER16);
+		ASSERT(lexer->token->data.int16 == (Int16)AToIOctal(_15BitOctalIntegers[i]));
+	}
 
-		lexer = SetupString(String_Format("  \t  0%sH  \r\n", _15BitOctalIntegers[i]));
-		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER16);
-		ASSERT(lexer->token->data.i == (Int16)AToIOctal(_15BitOctalIntegers[i]));
+	for (i = 0; i < sizeof(_31BitOctalIntegers) / sizeof(const char *); i++) {
+		lexer = SetupString(String_Format("  \t  0%st  \r\n", _31BitOctalIntegers[i]));
+		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER32);
+		ASSERT(lexer->token->data.int32 == (Int32)AToIOctal(_31BitOctalIntegers[i]));
+	
+		lexer = SetupString(String_Format("  \t  0%sT  \r\n", _31BitOctalIntegers[i]));
+		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER32);
+		ASSERT(lexer->token->data.int32 == (Int32)AToIOctal(_31BitOctalIntegers[i]));
 	}
 
 	for (i = 0; i < sizeof(_31BitOctalIntegers) / sizeof(const char *); i++) {
 		lexer = SetupString(String_Format("  \t  0%s  \r\n", _31BitOctalIntegers[i]));
-		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER32);
-		ASSERT(lexer->token->data.i == (Int32)AToIOctal(_31BitOctalIntegers[i]));
-
-		lexer = SetupString(String_Format("  \t  0%s  \r\n", _31BitOctalIntegers[i]));
-		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER32);
-		ASSERT(lexer->token->data.i == (Int32)AToIOctal(_31BitOctalIntegers[i]));
-	}
-
-	for (i = 0; i < sizeof(_31BitOctalIntegers) / sizeof(const char *); i++) {
-		lexer = SetupString(String_Format("  \t  0%sl  \r\n", _31BitOctalIntegers[i]));
 		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
 		ASSERT(lexer->token->data.int64 == (Int64)AToIOctal(_31BitOctalIntegers[i]));
-
-		lexer = SetupString(String_Format("  \t  0%sL  \r\n", _31BitOctalIntegers[i]));
-		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
-		ASSERT(lexer->token->data.int64 == (Int64)AToIOctal(_31BitOctalIntegers[i]));
-
-		lexer = SetupString(String_Format("  \t  0%s1234567l  \r\n", _31BitOctalIntegers[i]));
-		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
-		ASSERT(lexer->token->data.int64 == (Int64)AToIOctal(_31BitOctalIntegers[i]) * 010000000 + 01234567);
-
-		lexer = SetupString(String_Format("  \t  0%s1234567L  \r\n", _31BitOctalIntegers[i]));
+	
+		lexer = SetupString(String_Format("  \t  0%s1234567  \r\n", _31BitOctalIntegers[i]));
 		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
 		ASSERT(lexer->token->data.int64 == (Int64)AToIOctal(_31BitOctalIntegers[i]) * 010000000 + 01234567);
 	}
@@ -630,47 +614,39 @@ START_TEST(ShouldRecognizeHexIntegers)
 	for (i = 0; i < sizeof(_8BitHexIntegers) / sizeof(const char *); i++) {
 		lexer = SetupString(String_Format("  \t  0x%sx  \r\n", _8BitHexIntegers[i]));
 		ASSERT(Lexer_Next(lexer) == TOKEN_BYTE);
-		ASSERT(lexer->token->data.i == (Byte)AToIHex(_8BitHexIntegers[i]));
+		ASSERT(lexer->token->data.byte == (Byte)AToIHex(_8BitHexIntegers[i]));
 
 		lexer = SetupString(String_Format("  \t  0x%sX  \r\n", _8BitHexIntegers[i]));
 		ASSERT(Lexer_Next(lexer) == TOKEN_BYTE);
-		ASSERT(lexer->token->data.i == (Byte)AToIHex(_8BitHexIntegers[i]));
+		ASSERT(lexer->token->data.byte == (Byte)AToIHex(_8BitHexIntegers[i]));
 	}
 
 	for (i = 0; i < sizeof(_15BitHexIntegers) / sizeof(const char *); i++) {
-		lexer = SetupString(String_Format("  \t  0x%sh  \r\n", _15BitHexIntegers[i]));
+		lexer = SetupString(String_Format("  \t  0x%ss  \r\n", _15BitHexIntegers[i]));
 		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER16);
-		ASSERT(lexer->token->data.i == (Int16)AToIHex(_15BitHexIntegers[i]));
+		ASSERT(lexer->token->data.int16 == (Int16)AToIHex(_15BitHexIntegers[i]));
+	
+		lexer = SetupString(String_Format("  \t  0x%sS  \r\n", _15BitHexIntegers[i]));
+		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER16);
+		ASSERT(lexer->token->data.int16 == (Int16)AToIHex(_15BitHexIntegers[i]));
+	}
 
-		lexer = SetupString(String_Format("  \t  0x%sH  \r\n", _15BitHexIntegers[i]));
-		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER16);
-		ASSERT(lexer->token->data.i == (Int16)AToIHex(_15BitHexIntegers[i]));
+	for (i = 0; i < sizeof(_31BitHexIntegers) / sizeof(const char *); i++) {
+		lexer = SetupString(String_Format("  \t  0x%st  \r\n", _31BitHexIntegers[i]));
+		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER32);
+		ASSERT(lexer->token->data.int32 == (Int32)AToIHex(_31BitHexIntegers[i]));
+	
+		lexer = SetupString(String_Format("  \t  0x%sT  \r\n", _31BitHexIntegers[i]));
+		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER32);
+		ASSERT(lexer->token->data.int32 == (Int32)AToIHex(_31BitHexIntegers[i]));
 	}
 
 	for (i = 0; i < sizeof(_31BitHexIntegers) / sizeof(const char *); i++) {
 		lexer = SetupString(String_Format("  \t  0x%s  \r\n", _31BitHexIntegers[i]));
-		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER32);
-		ASSERT(lexer->token->data.i == (Int32)AToIHex(_31BitHexIntegers[i]));
-
-		lexer = SetupString(String_Format("  \t  0x%s  \r\n", _31BitHexIntegers[i]));
-		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER32);
-		ASSERT(lexer->token->data.i == (Int32)AToIHex(_31BitHexIntegers[i]));
-	}
-
-	for (i = 0; i < sizeof(_31BitHexIntegers) / sizeof(const char *); i++) {
-		lexer = SetupString(String_Format("  \t  0x%sl  \r\n", _31BitHexIntegers[i]));
 		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
 		ASSERT(lexer->token->data.int64 == (Int64)AToIHex(_31BitHexIntegers[i]));
-
-		lexer = SetupString(String_Format("  \t  0x%sL  \r\n", _31BitHexIntegers[i]));
-		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
-		ASSERT(lexer->token->data.int64 == (Int64)AToIHex(_31BitHexIntegers[i]));
-
-		lexer = SetupString(String_Format("  \t  0x%s1234567l  \r\n", _31BitHexIntegers[i]));
-		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
-		ASSERT(lexer->token->data.int64 == (Int64)AToIHex(_31BitHexIntegers[i]) * 0x10000000 + 0x1234567);
-
-		lexer = SetupString(String_Format("  \t  0x%s1234567L  \r\n", _31BitHexIntegers[i]));
+	
+		lexer = SetupString(String_Format("  \t  0x%s1234567  \r\n", _31BitHexIntegers[i]));
 		ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
 		ASSERT(lexer->token->data.int64 == (Int64)AToIHex(_31BitHexIntegers[i]) * 0x10000000 + 0x1234567);
 	}
@@ -714,11 +690,11 @@ START_TEST(ShouldRecognizeFloat32s)
 	int i;
 
 	for (i = 0; i < sizeof(_testReal32Values) / sizeof(const char *); i++) {
-		lexer = SetupString(String_Format("  \t  %shf  \r\n", _testReal32Values[i]));
+		lexer = SetupString(String_Format("  \t  %stf  \r\n", _testReal32Values[i]));
 		ASSERT(Lexer_Next(lexer) == TOKEN_FLOAT32);
 		ASSERT(lexer->token->data.float32 == _testFloat32Values[i]);
-
-		lexer = SetupString(String_Format("  \t  %sHF  \r\n", _testReal32Values[i]));
+	
+		lexer = SetupString(String_Format("  \t  %sTF  \r\n", _testReal32Values[i]));
 		ASSERT(Lexer_Next(lexer) == TOKEN_FLOAT32);
 		ASSERT(lexer->token->data.float32 == _testFloat32Values[i]);
 	}
@@ -748,11 +724,11 @@ START_TEST(ShouldRecognizeReal32s)
 	int i;
 
 	for (i = 0; i < sizeof(_testReal32Values) / sizeof(const char *); i++) {
-		lexer = SetupString(String_Format("  \t  %sh  \r\n", _testReal32Values[i]));
+		lexer = SetupString(String_Format("  \t  %st  \r\n", _testReal32Values[i]));
 		ASSERT(Lexer_Next(lexer) == TOKEN_REAL32);
 		ASSERT(Real32_Eq(lexer->token->data.real32, Real32_FromFloat32(_testFloat32Values[i])));
-
-		lexer = SetupString(String_Format("  \t  %sH  \r\n", _testReal32Values[i]));
+	
+		lexer = SetupString(String_Format("  \t  %sT  \r\n", _testReal32Values[i]));
 		ASSERT(Lexer_Next(lexer) == TOKEN_REAL32);
 		ASSERT(Real32_Eq(lexer->token->data.real32, Real32_FromFloat32(_testFloat32Values[i])));
 	}
@@ -794,10 +770,10 @@ END_TEST
 
 START_TEST(ShouldConsumeNumericSuffixes)
 {
-	Lexer lexer = SetupString(String_FromC("  \t  127x  64.0f  32.0L  16H  8L  0x2BH  0777H  0x  0L  \r\n"));
+	Lexer lexer = SetupString(String_FromC("  \t  127x  64.0f  32.0L  16S  8  0x2BS  0777s  0x  0  \r\n"));
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_BYTE);
-	ASSERT(lexer->token->data.i == 127);
+	ASSERT(lexer->token->data.byte == 127);
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_FLOAT64);
 	ASSERT(lexer->token->data.float64 == 64);
@@ -806,19 +782,19 @@ START_TEST(ShouldConsumeNumericSuffixes)
 	ASSERT(Real128_Eq(lexer->token->data.real128, Real128_FromInt32(32)));
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER16);
-	ASSERT(lexer->token->data.i == 16);
+	ASSERT(lexer->token->data.int16 == 16);
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
 	ASSERT(lexer->token->data.int64 == 8);
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER16);
-	ASSERT(lexer->token->data.i == 0x2B);
+	ASSERT(lexer->token->data.int16 == 0x2B);
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER16);
-	ASSERT(lexer->token->data.i == 0777);
+	ASSERT(lexer->token->data.int16 == 0777);
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_BYTE);
-	ASSERT(lexer->token->data.i == 0);
+	ASSERT(lexer->token->data.byte == 0);
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
 	ASSERT(lexer->token->data.int64 == 0);

@@ -25,6 +25,7 @@
 #include <smile/parsing/parser.h>
 #include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
+#include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/smilepair.h>
 
 STATIC_STRING(TestFilename, "test.sm");
@@ -77,8 +78,8 @@ START_TEST(CanEvalAConstantInteger)
 	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunction);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
-	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER32);
-	ASSERT(((SmileInteger32)result->value)->value == 1);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 1);
 }
 END_TEST
 
@@ -124,8 +125,8 @@ START_TEST(CanEvalIfThenElse)
 	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunction);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
-	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER32);
-	ASSERT(((SmileInteger32)result->value)->value == 123);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 123);
 }
 END_TEST
 
@@ -138,8 +139,8 @@ START_TEST(CanEvalBinaryMethodCalls)
 	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunction);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
-	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER32);
-	ASSERT(((SmileInteger32)result->value)->value == 3);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 3);
 }
 END_TEST
 
@@ -152,8 +153,8 @@ START_TEST(CanEvalComplexPilesOfBinaryAndUnaryMethodCalls)
 	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunction);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
-	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER32);
-	ASSERT(((SmileInteger32)result->value)->value == 49);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 49);
 }
 END_TEST
 
@@ -174,8 +175,8 @@ START_TEST(CanEvalSmileCodeThatComputesALogarithm)
 	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunction);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
-	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER32);
-	ASSERT(((SmileInteger32)result->value)->value == 24);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 24);
 }
 END_TEST
 

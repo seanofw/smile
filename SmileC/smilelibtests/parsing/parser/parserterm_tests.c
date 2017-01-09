@@ -49,7 +49,7 @@ END_TEST
 
 START_TEST(CanParseASingleInteger16)
 {
-	Lexer lexer = SetupLexer("16383h");
+	Lexer lexer = SetupLexer("16383s");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
@@ -61,7 +61,7 @@ END_TEST
 
 START_TEST(CanParseASingleInteger32)
 {
-	Lexer lexer = SetupLexer("12345");
+	Lexer lexer = SetupLexer("12345t");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
@@ -73,7 +73,7 @@ END_TEST
 
 START_TEST(CanParseASingleInteger64)
 {
-	Lexer lexer = SetupLexer("12345L");
+	Lexer lexer = SetupLexer("12345");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);

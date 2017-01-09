@@ -112,7 +112,7 @@ END_TEST
 
 START_TEST(CanCompileInt16)
 {
-	SmileObject expr = Parse("123h");
+	SmileObject expr = Parse("123s");
 
 	Compiler compiler = Compiler_Create();
 	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
@@ -131,7 +131,7 @@ END_TEST
 
 START_TEST(CanCompileInt32)
 {
-	SmileObject expr = Parse("123");
+	SmileObject expr = Parse("123t");
 
 	Compiler compiler = Compiler_Create();
 	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
@@ -150,7 +150,7 @@ END_TEST
 
 START_TEST(CanCompileInt64)
 {
-	SmileObject expr = Parse("123L");
+	SmileObject expr = Parse("123");
 
 	Compiler compiler = Compiler_Create();
 	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
@@ -177,8 +177,8 @@ START_TEST(CanCompileBasicArithmetic)
 	String result;
 
 	String expectedResult = String_Format(
-		"\tLd32 123\n"
-		"\tLd32 456\n"
+		"\tLd64 123\n"
+		"\tLd64 456\n"
 		"\tBinary %d\t; +\n",
 		Smile_KnownSymbols.plus
 	);
@@ -200,11 +200,11 @@ START_TEST(CanCompileMildlyInterestingArithmetic)
 	String result;
 
 	String expectedResult = String_Format(
-		"\tLd32 123\n"
-		"\tLd32 456\n"
+		"\tLd64 123\n"
+		"\tLd64 456\n"
 		"\tUnary %d\t; -\n"
 		"\tBinary %d\t; +\n"
-		"\tLd32 50\n"
+		"\tLd64 50\n"
 		"\tBinary %d\t; *\n",
 		Smile_KnownSymbols.minus,
 		Smile_KnownSymbols.plus,
@@ -305,7 +305,7 @@ START_TEST(CanCompileReadsFromMembers)
 
 	String expectedResult = String_Format(
 		"\tLdX %d\t; gb\n"
-		"\tLd32 10\n"
+		"\tLd64 10\n"
 		"\tLdMember\n"
 		"\tStX %d\t; ga\n",
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "gb"),
@@ -330,7 +330,7 @@ START_TEST(CanCompileWritesToMembers)
 
 	String expectedResult = String_Format(
 		"\tLdX %d\t; ga\n"
-		"\tLd32 10\n"
+		"\tLd64 10\n"
 		"\tLdX %d\t; gb\n"
 		"\tStMember\n",
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "ga"),
@@ -382,7 +382,7 @@ START_TEST(CanCompileNestedScopeVariableReads)
 	String result;
 
 	String expectedResult = String_Format(
-		"\tLd32 10\n"
+		"\tLd64 10\n"
 		"\tStpLoc0 0\t; b\n"
 		"\tLdLoc0 0\t; b\n"
 		"\tStpLoc0 1\t; a\n"
@@ -412,7 +412,7 @@ START_TEST(NestedScopesVariablesDontOverlap)
 	String result;
 
 	String expectedResult = String_Format(
-		"\tLd32 10\n"
+		"\tLd64 10\n"
 		"\tStpLoc0 0\t; b\n"
 		"\tLdLoc0 0\t; b\n"
 		"\tStpLoc0 1\t; a\n"
@@ -421,7 +421,7 @@ START_TEST(NestedScopesVariablesDontOverlap)
 		"\tBinary %d\t; +\n"
 		"\tStpLoc0 2\t; c\n"
 		"\tLdLoc0 0\t; b\n"
-		"\tLd32 20\n"
+		"\tLd64 20\n"
 		"\tBinary %d\t; *\n"
 		"\tStLoc0 3\t; d\n",
 		Smile_KnownSymbols.plus,
@@ -449,8 +449,8 @@ START_TEST(CanCompileSimpleConditionals)
 	String result;
 
 	String expectedResult = String_Format(
-		"\tLd32 1\n"
-		"\tLd32 10\n"
+		"\tLd64 1\n"
+		"\tLd64 10\n"
 		"\tBinary %d\t; <\n"
 		"\tBf >L6\n"
 		"\tLdSym %d\t; then-side\n"
@@ -488,8 +488,8 @@ START_TEST(CanCompileConditionalsAllTheWay)
 	String result;
 
 	String expectedResult = String_Format(
-		"\tLd32 1\n"
-		"\tLd32 10\n"
+		"\tLd64 1\n"
+		"\tLd64 10\n"
 		"\tBinary %d\t; <\n"
 		"\tBf >L6\n"
 		"\tLdSym %d\t; then-side\n"
@@ -530,20 +530,20 @@ START_TEST(CanCompileAWhileLoopThatComputesLogarithms)
 	String result;
 
 	String expectedResult = String_Format(
-		"\tLd32 12345678\n"
+		"\tLd64 12345678\n"
 		"\tStpLoc0 0\t; n\n"
-		"\tLd32 0\n"
+		"\tLd64 0\n"
 		"\tStpLoc0 1\t; log\n"
 		"\tLdNull\n"
 		"\tJmp >L16\n"
 		"L6:\n"
 		"\tPop1\n"
 		"\tLdLoc0 0\t; n\n"
-		"\tLd32 1\n"
+		"\tLd64 1\n"
 		"\tBinary %d\t; >>>\n"
 		"\tStpLoc0 0\t; n\n"
 		"\tLdLoc0 1\t; log\n"
-		"\tLd32 1\n"
+		"\tLd64 1\n"
 		"\tBinary %d\t; +\n"
 		"\tStLoc0 1\t; log\n"
 		"L16:\n"

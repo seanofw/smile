@@ -78,8 +78,17 @@ static SmileObject RecursiveSimpleParse(Lexer lexer)
 		else
 			return (SmileObject)SmileSymbol_Create(lexer->token->data.symbol);
 
+	case TOKEN_BYTE:
+		return (SmileObject)SmileByte_Create(lexer->token->data.byte);
+
+	case TOKEN_INTEGER16:
+		return (SmileObject)SmileInteger16_Create(lexer->token->data.int16);
+
 	case TOKEN_INTEGER32:
-		return (SmileObject)SmileInteger32_Create(lexer->token->data.i);
+		return (SmileObject)SmileInteger32_Create(lexer->token->data.int32);
+
+	case TOKEN_INTEGER64:
+		return (SmileObject)SmileInteger64_Create(lexer->token->data.int64);
 
 	case TOKEN_DYNSTRING:
 	case TOKEN_RAWSTRING:
@@ -153,8 +162,23 @@ next:
 			return False;
 		return True;
 
+	case SMILE_KIND_BYTE:
+		if (((SmileByte)a)->value != ((SmileByte)b)->value)
+			return False;
+		return True;
+
+	case SMILE_KIND_INTEGER16:
+		if (((SmileInteger16)a)->value != ((SmileInteger16)b)->value)
+			return False;
+		return True;
+
 	case SMILE_KIND_INTEGER32:
 		if (((SmileInteger32)a)->value != ((SmileInteger32)b)->value)
+			return False;
+		return True;
+
+	case SMILE_KIND_INTEGER64:
+		if (((SmileInteger64)a)->value != ((SmileInteger64)b)->value)
 			return False;
 		return True;
 

@@ -133,19 +133,19 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, T
 		return Parser_ParseDynamicString(parser, result, token->text, Token_GetPosition(token));
 
 	case TOKEN_CHAR:
-		*result = (SmileObject)SmileChar_Create((Byte)token->data.i);
+		*result = (SmileObject)SmileChar_Create(token->data.byte);
 		return NULL;
 
 	case TOKEN_BYTE:
-		*result = (SmileObject)SmileByte_Create((Byte)token->data.i);
+		*result = (SmileObject)SmileByte_Create(token->data.byte);
 		return NULL;
 
 	case TOKEN_INTEGER16:
-		*result = (SmileObject)SmileInteger16_Create((Int16)token->data.i);
+		*result = (SmileObject)SmileInteger16_Create(token->data.int16);
 		return NULL;
 
 	case TOKEN_INTEGER32:
-		*result = (SmileObject)SmileInteger32_Create(token->data.i);
+		*result = (SmileObject)SmileInteger32_Create(token->data.int32);
 		return NULL;
 
 	case TOKEN_INTEGER64:

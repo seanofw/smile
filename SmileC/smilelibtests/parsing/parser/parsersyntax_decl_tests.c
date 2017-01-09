@@ -44,7 +44,7 @@ START_TEST(CanParseSimpleSyntaxForms)
 	SmileSyntax expectedResult = SmileSyntax_Create(
 		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
 		(SmileList)SimpleParse("[a b c]"),
-		(SmileObject)SmileInteger32_Create(123),
+		(SmileObject)SmileInteger64_Create(123),
 		NULL
 	);
 

@@ -54,7 +54,9 @@ struct TokenStruct {
 	// The various kinds of data this token can represent ('kind' determines which of these is valid).
 	union {
 		Symbol symbol;	// The symbol for this token (for identifiers).
-		Int32 i;	// The integer value of this token (char/byte/int16/int32).
+		Byte byte;	// A 8-bit (unsigned) byte value for this token.
+		Int16 int16;	// A 16-bit integer value for this token.
+		Int32 int32;	// A 32-bit integer value for this token.
 		Int64 int64;	// A 64-bit integer value for this token.
 		Float32 float32;	// A 32-bit float value for this token.
 		Float64 float64;	// A 64-bit float value for this token.
