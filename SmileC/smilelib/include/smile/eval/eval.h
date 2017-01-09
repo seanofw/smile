@@ -29,6 +29,7 @@
 typedef struct EscapeContinuationStruct {
 	Int escapeKind;	// What kind of escape continuation this is, from the ESCAPE_KIND_* enumeration.
 	jmp_buf jump;	// The target stack frame to jump to.
+	Bool isValid;	// Whether the jmp_buf can safely be invoked.
 	SmileObject result;	// The resulting value from invoking the escape (a return value, or an exception object).
 } *EscapeContinuation;
 
@@ -48,13 +49,12 @@ SMILE_API_FUNC EvalResult Eval_Continue(void);
 
 SMILE_API_FUNC Bool Eval_RunCore(void);
 
-SMILE_API_FUNC void Smile_Throw(SmileObject expr);
-
 Inline EscapeContinuation EscapeContinuation_Create(Int escapeKind)
 {
 	EscapeContinuation escapeContinuation = GC_MALLOC_STRUCT(struct EscapeContinuationStruct);
 	escapeContinuation->escapeKind = escapeKind;
 	escapeContinuation->result = NullObject;
+	escapeContinuation->isValid = False;
 	return escapeContinuation;
 }
 

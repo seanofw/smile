@@ -25,6 +25,9 @@
 #include <smile/env/knownsymbols.h>
 #include <smile/env/knownobjects.h>
 #include <smile/env/knownbases.h>
+#include <smile/smiletypes/smileuserobject.h>
+#include <smile/smiletypes/text/smilesymbol.h>
+#include <smile/smiletypes/text/smilestring.h>
 
 extern void Smile_InitTicks(void);
 
@@ -110,10 +113,58 @@ void Smile_Abort_FatalError(const char *message)
 	exit(-1);
 }
 
+//-------------------------------------------------------------------------------------------------
+
 void Smile_ThrowException(Symbol exceptionKind, String message)
 {
-	UNUSED(exceptionKind);
-	UNUSED(message);
+	SmileObject exception = (SmileObject)Smile_CreateException(exceptionKind, message);
+	Smile_Throw(exception);
+}
 
-	Smile_Abort_FatalError(String_ToC(message));
+void Smile_ThrowExceptionCV(const char *exceptionKind, const char *format, va_list v)
+{
+	SmileObject exception = (SmileObject)Smile_CreateExceptionCV(exceptionKind, format, v);
+	Smile_Throw(exception);
+}
+
+void Smile_ThrowExceptionC(const char *exceptionKind, const char *format, ...)
+{
+	va_list v;
+	va_start(v, format);
+	Smile_ThrowExceptionCV(exceptionKind, format, v);
+	va_end(v);
+}
+
+SmileUserObject Smile_CreateException(Symbol exceptionKind, String message)
+{
+	SmileUserObject exception = SmileUserObject_Create((SmileObject)Smile_KnownBases.Exception);
+	SmileUserObject_Set(exception, Smile_KnownSymbols.kind, SmileSymbol_Create(exceptionKind));
+	SmileUserObject_Set(exception, Smile_KnownSymbols.message, SmileString_Create(message));
+	return exception;
+}
+
+SmileUserObject Smile_CreateExceptionC(const char *exceptionKind, const char *format, ...)
+{
+	va_list v;
+	Symbol symbol;
+	String message;
+
+	symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, exceptionKind);
+
+	va_start(v, format);
+	message = String_FormatV(format, v);
+	va_end(v);
+
+	return Smile_CreateException(symbol, message);
+}
+
+SmileUserObject Smile_CreateExceptionCV(const char *exceptionKind, const char *format, va_list v)
+{
+	Symbol symbol;
+	String message;
+
+	symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, exceptionKind);
+	message = String_FormatV(format, v);
+
+	return Smile_CreateException(symbol, message);
 }

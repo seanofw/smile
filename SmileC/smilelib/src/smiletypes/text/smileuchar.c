@@ -78,7 +78,7 @@ void SmileUChar_SetProperty(SmileUChar self, Symbol propertyName, SmileObject va
 	UNUSED(self);
 	UNUSED(value);
 	Smile_ThrowException(Smile_KnownSymbols.object_security_error,
-		String_Format("Cannot set property \"%S\" on an integer, which is read-only.",
+		String_Format("Cannot set property \"%S\" on a uchar, which is read-only.",
 		SymbolTable_GetName(Smile_SymbolTable, propertyName)));
 }
 

@@ -78,7 +78,7 @@ void SmileBool_SetProperty(SmileBool self, Symbol propertyName, SmileObject valu
 	UNUSED(self);
 	UNUSED(value);
 	Smile_ThrowException(Smile_KnownSymbols.object_security_error,
-		String_Format("Cannot set property \"%S\" on a Booleans, which is read-only.",
+		String_Format("Cannot set property \"%S\" on a bool, which is read-only.",
 		SymbolTable_GetName(Smile_SymbolTable, propertyName)));
 }
 
