@@ -44,6 +44,9 @@ SMILE_API_FUNC Real64 SmileString_ToReal64(SmileString self);
 //-------------------------------------------------------------------------------------------------
 //  Inline operations
 
+#define SmileString_GetString(__str__) \
+	((String)&((__str__)->string))
+
 Inline SmileString SmileString_CreateC(const char *text)
 {
 	String str = String_FromC(text);

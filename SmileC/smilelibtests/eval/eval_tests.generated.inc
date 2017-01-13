@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 28341cd07471662ebee781ba3f2bfdad
+// SourceHash: bc9cbe694566f69ad6679f1c8c391251
 
 START_TEST_SUITE(EvalTests)
 {
@@ -11,6 +11,7 @@ START_TEST_SUITE(EvalTests)
 	CanEvalBinaryMethodCalls,
 	CanEvalComplexPilesOfBinaryAndUnaryMethodCalls,
 	CanEvalSmileCodeThatComputesALogarithm,
+	CanEvalSmileCodeThatConvertsBetweenTypes,
 }
 END_TEST_SUITE(EvalTests)
 

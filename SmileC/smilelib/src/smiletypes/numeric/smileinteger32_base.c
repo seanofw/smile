@@ -17,7 +17,13 @@
 
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/smileuserobject.h>
+#include <smile/smiletypes/numeric/smilebyte.h>
+#include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
+#include <smile/smiletypes/numeric/smileinteger64.h>
+#include <smile/smiletypes/text/smilestring.h>
+#include <smile/smiletypes/text/smilechar.h>
+#include <smile/smiletypes/text/smileuchar.h>
 #include <smile/smiletypes/smilefunction.h>
 
 #define Setup(__name__, __value__) \
@@ -47,14 +53,188 @@ static Byte _integer32ComparisonChecks[] = {
 	0, 0,
 };
 
+static Byte _parseChecks[] = {
+	SMILE_KIND_MASK, SMILE_KIND_STRING,
+	SMILE_KIND_MASK, SMILE_KIND_INTEGER64,
+};
+
 STATIC_STRING(_divideByZero, "Divide by zero error");
 STATIC_STRING(_negativeLog, "Logarithm of negative or zero value");
 STATIC_STRING(_negativeSqrt, "Square root of negative number");
 
-STATIC_STRING(_invalidTypeError, "All arguments to 'Integer32.%s' must be of type 'Integer32'.");
+STATIC_STRING(_invalidTypeError, "All arguments to 'Integer32.%s' must be of type 'Integer32'");
+
+STATIC_STRING(_stringTypeError, "Second argument to 'string' must be of type 'Integer64'");
+STATIC_STRING(_numericBaseError, "Valid numeric base must be in the range of 2..36");
+STATIC_STRING(_parseArguments, "Illegal arguments to 'parse' function");
 
 //-------------------------------------------------------------------------------------------------
-// Type conversion
+// Generic type conversion
+
+static SmileObject ToBool(Int argc, SmileObject *argv, void *param)
+{
+	UNUSED(argc);
+	UNUSED(param);
+
+	if (SMILE_KIND(argv[0]) == SMILE_KIND_INTEGER32)
+		return ((SmileInteger32)argv[0])->value ? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
+
+	return (SmileObject)Smile_KnownObjects.TrueObj;
+}
+
+static SmileObject ToInt(Int argc, SmileObject *argv, void *param)
+{
+	UNUSED(argc);
+	UNUSED(param);
+
+	if (SMILE_KIND(argv[0]) == SMILE_KIND_INTEGER32)
+		return (SmileObject)SmileInteger64_Create(((SmileInteger32)argv[0])->value);
+
+	return (SmileObject)Smile_KnownObjects.ZeroInt64;
+}
+
+STATIC_STRING(_Integer32, "Integer32");
+
+static SmileObject ToString(Int argc, SmileObject *argv, void *param)
+{
+	Int64 numericBase;
+
+	UNUSED(param);
+
+	if (SMILE_KIND(argv[0]) == SMILE_KIND_INTEGER32) {
+		if (argc == 2) {
+			if (SMILE_KIND(argv[1]) != SMILE_KIND_INTEGER64)
+				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _stringTypeError);
+			numericBase = (Int)((SmileInteger64)argv[1])->value;
+			if (numericBase < 2 || numericBase > 36)
+				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _numericBaseError);
+		}
+		else numericBase = 10;
+
+		return (SmileObject)SmileString_Create(String_CreateFromInteger((Int64)((SmileInteger32)argv[0])->value, (Int)numericBase, False));
+	}
+
+	return (SmileObject)SmileString_Create(_Integer32);
+}
+
+static SmileObject Hash(Int argc, SmileObject *argv, void *param)
+{
+	UNUSED(argc);
+	UNUSED(param);
+
+	if (SMILE_KIND(argv[0]) == SMILE_KIND_INTEGER32)
+		return (SmileObject)SmileInteger64_Create(((SmileInteger32)argv[0])->value);
+
+	return (SmileObject)SmileInteger64_Create(((PtrInt)argv[0]) ^ Smile_HashOracle);
+}
+
+//-------------------------------------------------------------------------------------------------
+// Specialized type conversion
+
+static SmileObject ToInt64(Int argc, SmileObject *argv, void *param)
+{
+	UNUSED(argc);
+	UNUSED(param);
+
+	return (SmileObject)SmileInteger64_Create(((SmileInteger32)argv[0])->value);
+}
+
+static SmileObject ToInt32(Int argc, SmileObject *argv, void *param)
+{
+	UNUSED(argc);
+	UNUSED(param);
+
+	return argv[0];
+}
+
+static SmileObject ToInt16(Int argc, SmileObject *argv, void *param)
+{
+	UNUSED(argc);
+	UNUSED(param);
+
+	return (SmileObject)SmileInteger16_Create((UInt16)((SmileInteger32)argv[0])->value);
+}
+
+static SmileObject ToByte(Int argc, SmileObject *argv, void *param)
+{
+	UNUSED(argc);
+	UNUSED(param);
+
+	return (SmileObject)SmileByte_Create((Byte)((SmileInteger32)argv[0])->value);
+}
+
+static SmileObject ToChar(Int argc, SmileObject *argv, void *param)
+{
+	UNUSED(argc);
+	UNUSED(param);
+
+	return (SmileObject)SmileChar_Create((Byte)((SmileInteger32)argv[0])->value);
+}
+
+static SmileObject ToUChar(Int argc, SmileObject *argv, void *param)
+{
+	UNUSED(argc);
+	UNUSED(param);
+
+	return (SmileObject)SmileUChar_Create(((SmileInteger32)argv[0])->value);
+}
+
+//-------------------------------------------------------------------------------------------------
+// Parsing
+
+static SmileObject Parse(Int argc, SmileObject *argv, void *param)
+{
+	Int64 numericBase;
+	Int64 value;
+
+	UNUSED(param);
+
+	switch (argc) {
+
+		case 1:
+			// The form [parse string].
+			if (SMILE_KIND(argv[0]) != SMILE_KIND_STRING)
+				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _parseArguments);
+			if (!String_ParseInteger(SmileString_GetString((SmileString)argv[0]), 10, &value))
+				return NullObject;
+			return (SmileObject)SmileInteger32_Create((Int32)value);
+
+		case 2:
+			// Either the form [parse string base] or [obj.parse string].
+			if (SMILE_KIND(argv[0]) == SMILE_KIND_STRING && SMILE_KIND(argv[1]) == SMILE_KIND_INTEGER64) {
+				// The form [parse string base].
+				numericBase = (Int)((SmileInteger64)argv[1])->value;
+				if (numericBase < 2 || numericBase > 36)
+					Smile_ThrowException(Smile_KnownSymbols.native_method_error, _numericBaseError);
+				if (!String_ParseInteger(SmileString_GetString((SmileString)argv[0]), (Int)numericBase, &value))
+					return NullObject;
+				return (SmileObject)SmileInteger32_Create((Int32)value);
+			}
+			else if (SMILE_KIND(argv[1]) == SMILE_KIND_STRING) {
+				// The form [obj.parse string].
+				if (!String_ParseInteger(SmileString_GetString((SmileString)argv[1]), 10, &value))
+					return NullObject;
+				return (SmileObject)SmileInteger32_Create((Int32)value);
+			}
+			else {
+				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _parseArguments);
+			}
+
+		case 3:
+			// The form [obj.parse string base].
+			if (SMILE_KIND(argv[1]) != SMILE_KIND_STRING || SMILE_KIND(argv[2]) != SMILE_KIND_INTEGER64)
+				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _parseArguments);
+			numericBase = (Int)((SmileInteger64)argv[2])->value;
+			if (numericBase < 2 || numericBase > 36)
+				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _numericBaseError);
+			if (!String_ParseInteger(SmileString_GetString((SmileString)argv[1]), (Int)numericBase, &value))
+				return NullObject;
+			return (SmileObject)SmileInteger32_Create((Int32)value);
+	}
+
+	return NullObject;	// Can't get here, but the compiler doesn't know that.
+}
+
 
 //-------------------------------------------------------------------------------------------------
 // Arithmetic operators
@@ -1359,6 +1539,20 @@ static SmileObject UCompare(Int argc, SmileObject *argv, void *param)
 
 void SmileInteger32_Setup(SmileUserObject base)
 {
+	SetupFunction("bool", ToBool, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("int", ToInt, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("string", ToString, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX, 1, 2, 0, NULL);
+	SetupFunction("hash", Hash, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+
+	SetupFunction("int64", ToInt64, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+	SetupFunction("int32", ToInt32, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+	SetupFunction("int16", ToInt16, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+	SetupFunction("byte", ToByte, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+	SetupFunction("char", ToChar, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+	SetupFunction("uchar", ToUChar, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+
+	SetupFunction("parse", Parse, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 1, 1, _parseChecks);
+
 	SetupFunction("+", Plus, NULL, "augend addend", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _integer32Checks);
 	SetupFunction("~+", Plus, NULL, "augend addend", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _integer32Checks);
 	SetupFunction("-", Minus, NULL, "minuend subtrahend", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _integer32Checks);

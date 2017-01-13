@@ -180,4 +180,21 @@ START_TEST(CanEvalSmileCodeThatComputesALogarithm)
 }
 END_TEST
 
+START_TEST(CanEvalSmileCodeThatConvertsBetweenTypes)
+{
+	CompiledTables compiledTables = Compile(
+		"str = \"1234\"\n"
+		"n = 0 parse str\n"
+		"m = n + 0 parse \"1111\"\n"
+		"result = string m\n"
+	);
+
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunction);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_STRING);
+	ASSERT_STRING(SmileString_GetString((SmileString)result->value), "2345", 4);
+}
+END_TEST
+
 #include "eval_tests.generated.inc"
