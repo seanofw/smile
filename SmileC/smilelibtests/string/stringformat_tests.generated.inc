@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 36344720e3449dbc86859b0149b0f971
+// SourceHash: 56b42ce31648b93ca48771c8938c4154
 
 START_TEST_SUITE(StringFormatTests)
 {
