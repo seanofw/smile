@@ -535,6 +535,7 @@ STATIC_STRING(punctuation_initial_quote, "punctuation-initial-quote");
 STATIC_STRING(punctuation_open, "punctuation-open");
 STATIC_STRING(punctuation_other, "punctuation-other");
 STATIC_STRING(raw_reverse, "raw-reverse");
+STATIC_STRING(range_to, "range-to");
 STATIC_STRING(read_append, "read-append");
 STATIC_STRING(read_only, "read-only");
 STATIC_STRING(read_write, "read-write");
@@ -810,6 +811,7 @@ static void KnownSymbolsInt_PreloadGeneralSymbols(SymbolTable symbolTable, Known
 	knownSymbols->punctuation_initial_quote = SymbolTableInt_AddFast(symbolTable, punctuation_initial_quote);
 	knownSymbols->punctuation_open = SymbolTableInt_AddFast(symbolTable, punctuation_open);
 	knownSymbols->punctuation_other = SymbolTableInt_AddFast(symbolTable, punctuation_other);
+	knownSymbols->range_to = SymbolTableInt_AddFast(symbolTable, range_to);
 	knownSymbols->raw_reverse = SymbolTableInt_AddFast(symbolTable, raw_reverse);
 	knownSymbols->read_append = SymbolTableInt_AddFast(symbolTable, read_append);
 	knownSymbols->read_only = SymbolTableInt_AddFast(symbolTable, read_only);

@@ -80,7 +80,6 @@ void KnownObjects_Setup(struct KnownObjectsStruct *knownObjects, struct KnownSym
 	knownObjects->ObjectSymbol = SmileSymbol_Create(knownSymbols->Object_);
 	knownObjects->ListSymbol = SmileSymbol_Create(knownSymbols->List_);
 	knownObjects->PairSymbol = SmileSymbol_Create(knownSymbols->Pair_);
-	knownObjects->RangeSymbol = SmileSymbol_Create(knownSymbols->Range_);
 
 	knownObjects->_setSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__SET);
 	knownObjects->_opsetSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__OPSET);
@@ -108,6 +107,7 @@ void KnownObjects_Setup(struct KnownObjectsStruct *knownObjects, struct KnownSym
 	knownObjects->ofSymbol = SmileSymbol_Create(knownSymbols->of);
 	knownObjects->typeSymbol = SmileSymbol_Create(knownSymbols->type);
 	knownObjects->joinSymbol = SmileSymbol_Create(knownSymbols->join);
+	knownObjects->rangeToSymbol = SmileSymbol_Create(knownSymbols->range_to);
 
 	knownObjects->eqSymbol = SmileSymbol_Create(knownSymbols->eq);
 	knownObjects->neSymbol = SmileSymbol_Create(knownSymbols->ne);

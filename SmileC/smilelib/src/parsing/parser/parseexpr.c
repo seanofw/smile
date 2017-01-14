@@ -666,11 +666,9 @@ ParseError Parser_ParseRangeExpr(Parser parser, SmileObject *expr, Int modeFlags
 			return parseError;
 
 		*expr = (SmileObject)SmileList_ConsWithSource(
-			(SmileObject)SmilePair_Create((SmileObject)Smile_KnownObjects.RangeSymbol, (SmileObject)Smile_KnownObjects.ofSymbol),
-			(SmileObject)SmileList_ConsWithSource(*expr,
-				(SmileObject)SmileList_ConsWithSource(rvalue,
-					NullObject,
-					lexerPosition),
+			(SmileObject)SmilePair_Create((SmileObject)*expr, (SmileObject)Smile_KnownObjects.rangeToSymbol),
+			(SmileObject)SmileList_ConsWithSource(rvalue,
+				NullObject,
 				lexerPosition),
 			lexerPosition
 		);

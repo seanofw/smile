@@ -195,7 +195,6 @@ enum Opcode {
 	Op_Right	= 0xC6,	// -1, +1	; Retrieve the 'right' property from the Pair on the stack top (UNDEFINED if not a Pair).
 	Op_NewFn	= 0xC8,	// +1 | int32	; Push a new function instance that comes from the given compiled function (by function table index).
 	Op_NewObj	= 0xC9,	// -(n*2+1), +1 | int32	; Create a new object from the 'n' property decls and base object on the work stack.
-	Op_NewRange	= 0xCA,	// -2, +1	; Create a new Range object from the given start/end points on the work stack.
 				
 	Op_LdA	= 0xD0,	// -1, +1	; Retrieve the 'a' property from the object on the stack top.
 	Op_LdD	= 0xD1,	// -1, +1	; Retrieve the 'd' property from the object on the stack top.

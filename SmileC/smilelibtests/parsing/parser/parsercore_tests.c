@@ -431,7 +431,7 @@ START_TEST(CanParseTheRangeOperator)
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedResult = SimpleParse("[$progn [(Range . of) 1 10] [(Range . of) [(5 . -)] [(5 . +)]] ]");
+	SmileObject expectedResult = SimpleParse("[$progn [(1 . range-to) 10] [([(5 . -)] . range-to) [(5 . +)]] ]");
 
 	ASSERT(RecursiveEquals(result, expectedResult));
 }

@@ -49,7 +49,7 @@ NULL, NULL, NULL, NULL, Op(LAlloc), Op(LFree), Op(Args), Op(Ret),
 
 // C0-CF
 Op(Cons), Op(Car), Op(Cdr), NULL, Op(NewPair), Op(Left), Op(Right), NULL,
-Op(NewFn), Op(NewObj), Op(NewRange), NULL, NULL, NULL, NULL, NULL,
+Op(NewFn), Op(NewObj), NULL, NULL, NULL, NULL, NULL, NULL,
 
 // D0-DF
 Op(LdA), Op(LdD), Op(LdLeft), Op(LdRight), Op(LdStart), Op(LdEnd), Op(LdCount), Op(LdLength),

@@ -45,7 +45,6 @@ struct KnownObjectsStruct {
 	SmileSymbol ObjectSymbol;
 	SmileSymbol ListSymbol;
 	SmileSymbol PairSymbol;
-	SmileSymbol RangeSymbol;
 
 	// The twenty core special forms.
 	SmileSymbol _setSymbol, _opsetSymbol;
@@ -60,6 +59,7 @@ struct KnownObjectsStruct {
 	SmileSymbol ofSymbol;
 	SmileSymbol typeSymbol;
 	SmileSymbol joinSymbol;
+	SmileSymbol rangeToSymbol;
 
 	// Operator names used at parse-time.
 	SmileSymbol eqSymbol, neSymbol, ltSymbol, gtSymbol, leSymbol, geSymbol;
