@@ -30,8 +30,6 @@ static Lexer SetupString(String source)
 {
 	Lexer lexer;
 
-	Smile_ResetEnvironment();
-
 	lexer = Lexer_Create(source, 0, String_Length(source), TestFilename, 1, 1);
 	lexer->symbolTable = Smile_SymbolTable;
 
