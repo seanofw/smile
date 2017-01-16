@@ -30,12 +30,10 @@ enum Opcode {
 				
 	Op_LdNull	= 0x10,	// +1	; Push null onto the work stack.
 	Op_LdBool	= 0x11,	// +1 | bool	; Push the given boolean value onto the work stack.
-	Op_LdCh	= 0x12,	// +1 | char	; Push the given char value onto the work stack.
-	Op_LdUCh	= 0x13,	// +1 | uchar	; Push the given uchar value onto the work stack.
-	Op_LdStr	= 0x14,	// +1 | int32	; Push the given string value onto the work stack (by string table index).
-	Op_LdSym	= 0x15,	// +1 | int32	; Push the given symbol value onto the work stack.
-	Op_LdObj	= 0x16,	// +1 | int32	; Push the given literal object onto the work stack (by object table index).
-	Op_LdClos	= 0x17,	// +1	; Push the current-closure object onto the work stack.
+	Op_LdStr	= 0x12,	// +1 | int32	; Push the given string value onto the work stack (by string table index).
+	Op_LdSym	= 0x13,	// +1 | int32	; Push the given symbol value onto the work stack.
+	Op_LdObj	= 0x14,	// +1 | int32	; Push the given literal object onto the work stack (by object table index).
+	Op_LdClos	= 0x15,	// +1	; Push the current-closure object onto the work stack.
 				
 	Op_Ld8	= 0x18,	// +1 | byte	; Push the given byte value onto the work stack.
 	Op_Ld16	= 0x19,	// +1 | int16	; Push the given int16 value onto the work stack.

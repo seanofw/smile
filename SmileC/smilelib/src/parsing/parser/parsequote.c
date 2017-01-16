@@ -24,7 +24,6 @@
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/text/smilesymbol.h>
-#include <smile/smiletypes/text/smilechar.h>
 #include <smile/parsing/parser.h>
 #include <smile/parsing/internal/parserinternal.h>
 #include <smile/parsing/internal/parsedecl.h>
@@ -149,7 +148,7 @@ ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Bool *isT
 		return NULL;
 
 	case TOKEN_CHAR:
-		*result = (SmileObject)SmileChar_Create(token->data.byte);
+		*result = (SmileObject)SmileByte_Create(token->data.byte);
 		*isTemplate = False;
 		return NULL;
 

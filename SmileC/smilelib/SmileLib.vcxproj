@@ -182,11 +182,9 @@
     <ClInclude Include="include\smile\smiletypes\predecl.h" />
     <ClInclude Include="include\smile\smiletypes\smilepair.h" />
     <ClInclude Include="include\smile\smiletypes\smilesyntax.h" />
-    <ClInclude Include="include\smile\smiletypes\text\smilechar.h" />
     <ClInclude Include="include\smile\smiletypes\text\smilestring.h" />
     <ClInclude Include="include\smile\smiletypes\text\smilesymbol.h" />
     <ClInclude Include="include\smile\smiletypes\smileuserobject.h" />
-    <ClInclude Include="include\smile\smiletypes\text\smileuchar.h" />
     <ClInclude Include="include\smile\string.h" />
     <ClInclude Include="include\smile\stringbuilder.h" />
     <ClInclude Include="include\smile\types.h" />
@@ -818,10 +816,8 @@
     <ClCompile Include="src\smiletypes\smilepair.c" />
     <ClCompile Include="src\smiletypes\smilesyntax.c" />
     <ClCompile Include="src\smiletypes\smileuserobject.c" />
-    <ClCompile Include="src\smiletypes\text\smilechar.c" />
     <ClCompile Include="src\smiletypes\text\smilestring.c" />
     <ClCompile Include="src\smiletypes\text\smilesymbol.c" />
-    <ClCompile Include="src\smiletypes\text\smileuchar.c" />
     <ClCompile Include="src\string\html_entitytable.c" />
     <ClCompile Include="src\string\html_entitytovalue.c" />
     <ClCompile Include="src\string\html_valuetoentity.c" />

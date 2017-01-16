@@ -19,8 +19,6 @@
 #include <smile/smiletypes/smilebool.h>
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/smilepair.h>
-#include <smile/smiletypes/text/smilechar.h>
-#include <smile/smiletypes/text/smileuchar.h>
 #include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/numeric/smilebyte.h>
@@ -113,7 +111,6 @@ static void EmitPop1(Compiler compiler)
 		case Op_LdF16: case Op_LdF32: case Op_LdF64: case Op_LdF128:
 		case Op_LdBool:
 		case Op_LdNull:
-		case Op_LdCh: case Op_LdUCh:
 		case Op_LdStr:
 		case Op_LdObj:
 		case Op_LdSym:
@@ -581,12 +578,6 @@ Int Compiler_CompileExpr(Compiler compiler, SmileObject expr)
 			break;
 		case SMILE_KIND_BOOL:
 			EMIT1(Op_LdBool, +1, boolean = ((SmileBool)expr)->value);
-			break;
-		case SMILE_KIND_CHAR:
-			EMIT1(Op_LdCh, +1, ch = ((SmileChar)expr)->value);
-			break;
-		case SMILE_KIND_UCHAR:
-			EMIT1(Op_LdUCh, +1, uch = ((SmileUChar)expr)->value);
 			break;
 		case SMILE_KIND_STRING:
 			EMIT1(Op_LdStr, +1, index = Compiler_AddString(compiler, (String)&((SmileString)expr)->string));

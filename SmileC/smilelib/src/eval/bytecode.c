@@ -196,14 +196,6 @@ static String ByteCode_OperandsToString(ByteCode byteCode, Int address, struct C
 		// 10-17
 		case Op_LdBool:
 			return String_Format("%s", byteCode->u.boolean ? "true" : "false");
-		case Op_LdCh:
-			return byteCode->u.ch < 32 || byteCode->u.uch > 126
-				? String_Format("LdCh %d\t;'\\x%02X'", (UInt32)byteCode->u.ch, (UInt32)byteCode->u.ch)
-				: String_Format("LdCh %d\t;'%c'", (UInt32)byteCode->u.ch, (UInt32)byteCode->u.ch);
-		case Op_LdUCh:
-			return byteCode->u.uch < 32 || byteCode->u.uch > 126
-				? String_Format("LdUCh %d\t;'\\x%X'", (UInt32)byteCode->u.uch, (UInt32)byteCode->u.uch)
-				: String_Format("LdUCh %d\t;'%c'", (UInt32)byteCode->u.uch, (UInt32)byteCode->u.uch);
 		case Op_LdStr:
 			return String_Format("%d\t; \"%S\"", byteCode->u.index, String_AddCSlashes(compiledTables->strings[byteCode->u.index]));
 		case Op_LdSym:

@@ -23,7 +23,6 @@
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/text/smilesymbol.h>
-#include <smile/smiletypes/text/smilechar.h>
 #include <smile/parsing/parser.h>
 #include <smile/parsing/internal/parserinternal.h>
 #include <smile/parsing/internal/parsedecl.h>
@@ -133,7 +132,7 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, T
 		return Parser_ParseDynamicString(parser, result, token->text, Token_GetPosition(token));
 
 	case TOKEN_CHAR:
-		*result = (SmileObject)SmileChar_Create(token->data.byte);
+		*result = (SmileObject)SmileByte_Create(token->data.byte);
 		return NULL;
 
 	case TOKEN_BYTE:

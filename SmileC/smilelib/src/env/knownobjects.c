@@ -24,8 +24,6 @@
 #include <smile/smiletypes/smilebool.h>
 #include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/text/smilesymbol.h>
-#include <smile/smiletypes/text/smilechar.h>
-#include <smile/smiletypes/text/smileuchar.h>
 #include <smile/smiletypes/numeric/smilebyte.h>
 #include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
@@ -41,8 +39,6 @@ void KnownObjects_Setup(struct KnownObjectsStruct *knownObjects, struct KnownSym
 
 	for (i = 0; i <= 255; i++) {
 		knownObjects->Bytes[i] = SmileByte_CreateInternal((Byte)i);
-		knownObjects->Chars[i] = SmileChar_CreateInternal((Byte)i);
-		knownObjects->UChars[i] = SmileUChar_CreateInternal(i);
 	}
 
 	knownObjects->ZeroByte = knownObjects->Bytes[0];

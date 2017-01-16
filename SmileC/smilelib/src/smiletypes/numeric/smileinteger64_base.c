@@ -22,8 +22,6 @@
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/text/smilestring.h>
-#include <smile/smiletypes/text/smilechar.h>
-#include <smile/smiletypes/text/smileuchar.h>
 #include <smile/smiletypes/smilefunction.h>
 
 #define Setup(__name__, __value__) \
@@ -156,22 +154,6 @@ static SmileObject ToByte(Int argc, SmileObject *argv, void *param)
 	UNUSED(param);
 
 	return (SmileObject)SmileByte_Create((Byte)((SmileInteger64)argv[0])->value);
-}
-
-static SmileObject ToChar(Int argc, SmileObject *argv, void *param)
-{
-	UNUSED(argc);
-	UNUSED(param);
-
-	return (SmileObject)SmileChar_Create((Byte)((SmileInteger64)argv[0])->value);
-}
-
-static SmileObject ToUChar(Int argc, SmileObject *argv, void *param)
-{
-	UNUSED(argc);
-	UNUSED(param);
-
-	return (SmileObject)SmileUChar_Create((UInt32)((SmileInteger64)argv[0])->value);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1560,8 +1542,6 @@ void SmileInteger64_Setup(SmileUserObject base)
 	SetupFunction("int32", ToInt32, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
 	SetupFunction("int16", ToInt16, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
 	SetupFunction("byte", ToByte, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
-	SetupFunction("char", ToChar, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
-	SetupFunction("uchar", ToUChar, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
 
 	SetupFunction("parse", Parse, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX, 1, 3, 0, NULL);
 

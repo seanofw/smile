@@ -21,8 +21,6 @@
 #include <smile/smiletypes/smilebool.h>
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/smileuserobject.h>
-#include <smile/smiletypes/text/smilechar.h>
-#include <smile/smiletypes/text/smileuchar.h>
 #include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/numeric/smilebyte.h>
@@ -195,16 +193,6 @@ next:
 
 		case Op_LdBool:
 			Closure_PushTemp(_closure, Smile_KnownObjects.BooleanObjs[byteCode->u.boolean]);
-			byteCode++;
-			goto next;
-
-		case Op_LdCh:
-			Closure_PushTemp(_closure, SmileChar_Create((Byte)byteCode->u.ch));
-			byteCode++;
-			goto next;
-
-		case Op_LdUCh:
-			Closure_PushTemp(_closure, SmileUChar_Create(byteCode->u.uch));
 			byteCode++;
 			goto next;
 

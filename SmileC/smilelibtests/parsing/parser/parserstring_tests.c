@@ -18,8 +18,8 @@
 #include "../../stdafx.h"
 
 #include <smile/parsing/parser.h>
-#include <smile/smiletypes/text/smilechar.h>
 #include <smile/smiletypes/text/smilestring.h>
+#include <smile/smiletypes/numeric/smilebyte.h>
 #include <smile/smiletypes/smilepair.h>
 #include <smile/env/env.h>
 
@@ -36,8 +36,8 @@ START_TEST(CanParseASingleChar)
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
-	ASSERT(SMILE_KIND(result) == SMILE_KIND_CHAR);
-	ASSERT(((SmileChar)result)->value == 'a');
+	ASSERT(SMILE_KIND(result) == SMILE_KIND_BYTE);
+	ASSERT(((SmileByte)result)->value == 'a');
 }
 END_TEST
 

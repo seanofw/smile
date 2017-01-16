@@ -38,10 +38,6 @@ struct KnownObjectsStruct {
 	SmileInteger128 OneInt128;
 	SmileInteger128 NegOneInt128;
 
-	SmileChar Chars[256];
-
-	SmileUChar UChars[256];
-
 	SmileSymbol ObjectSymbol;
 	SmileSymbol ListSymbol;
 	SmileSymbol PairSymbol;
