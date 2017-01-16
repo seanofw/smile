@@ -176,6 +176,66 @@ static void PrintTestFailure(const char *message, const char *file, int line)
 	fflush(stdout);
 }
 
+static void AddTimingResult(TestSuiteResults *results, const char *name, UInt64 ticks)
+{
+	Int i;
+	const Int numSlowestTests = sizeof(results->slowestTests) / sizeof(TestResult);
+
+	// If this was faster than the fastest of the slow tests, get rid of it.
+	if (ticks < results->slowestTests[numSlowestTests - 1].duration)
+		return;
+
+	// Add it to the set, in descending sorted order.
+	for (i = numSlowestTests - 2; i >= 0; i--) {
+		if (ticks > results->slowestTests[i].duration) {
+			results->slowestTests[i + 1].name = results->slowestTests[i].name;
+			results->slowestTests[i + 1].suiteName = results->slowestTests[i].suiteName;
+			results->slowestTests[i + 1].duration = results->slowestTests[i].duration;
+		}
+		else {
+			results->slowestTests[i + 1].name = name;
+			results->slowestTests[i + 1].suiteName = results->name;
+			results->slowestTests[i + 1].duration = ticks;
+			break;
+		}
+	}
+	if (i < 0) {
+		results->slowestTests[0].name = name;
+		results->slowestTests[0].suiteName = results->name;
+		results->slowestTests[0].duration = ticks;
+	}
+}
+
+/// <summary>
+/// Given a new set of test results, merge its slowest tests in with the existing set of slowest
+/// tests to get a combined set of the "most" slowest tests.
+/// </summary>
+void MergeSlowTests(TestResult *dest, const TestResult *src)
+{
+	TestResult temp[20];
+	TestResult *src2 = temp;
+	Int i;
+
+	MemCpy(temp, dest, sizeof(TestResult) * 20);
+
+	for (i = 0; i < 20; i++) {
+		if (src2->duration > src->duration) {
+			dest->duration = src2->duration;
+			dest->name = src2->name;
+			dest->suiteName = src2->suiteName;
+			dest++;
+			src2++;
+		}
+		else {
+			dest->duration = src->duration;
+			dest->name = src->name;
+			dest->suiteName = src->suiteName;
+			dest++;
+			src++;
+		}
+	}
+}
+
 /// <summary>
 /// Run the given test.
 /// </summary>
@@ -183,7 +243,7 @@ static void PrintTestFailure(const char *message, const char *file, int line)
 /// <param name="expectedString">The expected contents of that string.</param>
 /// <param name="expectedLength">The expected length of that string.</param>
 /// <param name="message">A message to display to the user to explain why the test failed.</param>
-int RunTestInternal(const char *name, const char *file, int line, TestFuncInternal testFuncInternal)
+int RunTestInternal(TestSuiteResults *results, const char *name, const char *file, int line, TestFuncInternal testFuncInternal)
 {
 	UInt64 startTicks, endTicks;
 
@@ -229,6 +289,8 @@ int RunTestInternal(const char *name, const char *file, int line, TestFuncIntern
 	// Test succeeded, so print "OK", and return that it succeeded.
 	if (!QuietMode)
 		PrintTestSuccess(endTicks - startTicks);
+
+	AddTimingResult(results, name, endTicks - startTicks);
 
 	return 1;
 }
@@ -406,14 +468,12 @@ TestSuiteResults *RunTestSuiteInternal(const char *name, TestFunc *funcs, int nu
 {
 	int numSuccesses, numFailures, succeeded, i;
 	TestSuiteResults *results;
+	
+	results = CreateEmptyTestSuiteResults();
+	results->name = name;
 
-	if (!IsTestSuiteRequested(name)) {
-		results = GC_MALLOC_STRUCT(TestSuiteResults);
-		if (results == NULL) Smile_Abort_OutOfMemory();
-		results->numFailures = 0;
-		results->numSuccesses = 0;
+	if (!IsTestSuiteRequested(name))
 		return results;
-	}
 
 	if (!QuietMode) {
 		printf("\x1B[0;1;37m Test suite %s: \x1B[0m\n", name);
@@ -422,7 +482,7 @@ TestSuiteResults *RunTestSuiteInternal(const char *name, TestFunc *funcs, int nu
 
 	numSuccesses = 0, numFailures = 0;
 	for (i = 0; i < numFuncs; i++, funcs++) {
-		succeeded = (*funcs)();
+		succeeded = (*funcs)(results);
 		if (succeeded) numSuccesses++;
 		else numFailures++;
 	}
@@ -430,8 +490,6 @@ TestSuiteResults *RunTestSuiteInternal(const char *name, TestFunc *funcs, int nu
 	if (!QuietMode)
 		printf("\n");
 
-	results = GC_MALLOC_STRUCT(TestSuiteResults);
-	if (results == NULL) Smile_Abort_OutOfMemory();
 	results->numFailures = numFailures;
 	results->numSuccesses = numSuccesses;
 	return results;
@@ -443,10 +501,21 @@ TestSuiteResults *RunTestSuiteInternal(const char *name, TestFunc *funcs, int nu
 /// <param name="results">The results to print.</param>
 void DisplayTestSuiteResults(TestSuiteResults *results)
 {
+	Int i;
+
 	if (!QuietMode || results->numFailures > 0) {
 		printf("\x1B[0;1;37m Test suite results:  \x1B[32m%d\x1B[37m tests succeeded,%s %d\x1B[37m tests failed. \x1B[0m\n\n",
 			results->numSuccesses, results->numFailures > 0 ? " \x1B[1;33;41m" : "\x1B[1;32m", results->numFailures);
 		fflush(stdout);
+	}
+
+	if (!QuietMode && results->numFailures == 0) {
+		printf("\x1B[0;1;37m All tests pass.  Slowest tests were: \x1B[0m\n");
+		for (i = 0; i < sizeof(results->slowestTests) / sizeof(TestResult); i++) {
+			UInt64 time = Smile_TicksToMicroseconds(results->slowestTests[i].duration);
+			printf("%6llu ms  %s.%s\n", (time + 500) / 1000, results->slowestTests[i].suiteName, results->slowestTests[i].name);
+		}
+		printf("\n");
 	}
 }
 
