@@ -317,7 +317,7 @@ START_TEST(SymbolTablePerformanceTest)
 	struct KnownSymbolsStruct knownSymbols;
 	Int counter;
 
-	for (counter = 0; counter < 1000; counter++) {
+	for (counter = 0; counter < 100; counter++) {
 		symbolTable = SymbolTable_Create();
 		KnownSymbols_PreloadSymbolTable(symbolTable, &knownSymbols);
 	}
