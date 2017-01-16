@@ -116,10 +116,29 @@ Inline SmileVTable GetVTableByFlags(Int argCheckFlags)
 	}
 }
 
+static int WrapFunctionName(char *dest, const char *name)
+{
+	Int maxlen = 256;
+	char *start = dest;
+
+	*dest++ = '<';
+
+	while (*name && maxlen--) {
+		*dest++ = *name++;
+	}
+
+	*dest++ = '>';
+	*dest = '\0';
+
+	return dest - start;
+}
+
 SmileFunction SmileFunction_CreateExternalFunction(ExternalFunction externalFunction, void *param,
 	const char *name, const char *argNames, Int argCheckFlags, Int minArgs, Int maxArgs, Int numArgsToTypeCheck, const Byte *argTypeChecks)
 {
+	char nameBuffer[260];
 	SmileFunction smileFunction;
+	Int nameLen;
 
 	// First, correct for degenerate configurations.
 	if (minArgs == 0)
@@ -140,10 +159,11 @@ SmileFunction SmileFunction_CreateExternalFunction(ExternalFunction externalFunc
 	smileFunction->base = (SmileObject)Smile_KnownBases.Function;
 	smileFunction->assignedSymbol = 0;
 
-	smileFunction->body = (SmileObject)SmileString_Create(String_Format("<%s>", name));
+	nameLen = WrapFunctionName(nameBuffer, name);
+	smileFunction->body = (SmileObject)SmileString_Create(String_Create(nameBuffer, nameLen));
 	smileFunction->args = SplitArgNames(argNames);
 
-	smileFunction->u.externalFunctionInfo.name = String_FromC(name);
+	smileFunction->u.externalFunctionInfo.name = String_Create(nameBuffer + 1, nameLen - 2);
 	smileFunction->u.externalFunctionInfo.externalFunction = externalFunction;
 	smileFunction->u.externalFunctionInfo.param = param;
 	smileFunction->u.externalFunctionInfo.argCheckFlags = (UInt16)argCheckFlags;
