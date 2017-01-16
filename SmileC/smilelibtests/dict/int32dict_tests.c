@@ -89,15 +89,15 @@ START_TEST(CanAddALotOfDataIntoADictionaryReliably)
 	// Fill up the dictionary with a whole bunch of values.  We use a simple PRNG to
 	// generate evenly-distributed values.
 	seed = 31415;
-	for (i = 0; i < 100000; i++) {
+	for (i = 0; i < 10000; i++) {
 		Int32Dict_Add(dict, seed, (void *)i);
 		seed = (seed * 69069) + 127;
 	}
-	ASSERT(Int32Dict_Count(dict) == 100000);
+	ASSERT(Int32Dict_Count(dict) == 10000);
 
 	// Verify the dictionary still has all those values.
 	seed = 31415;
-	for (i = 0; i < 100000; i++) {
+	for (i = 0; i < 10000; i++) {
 		ptr = Int32Dict_GetValue(dict, seed);
 		ASSERT(ptr == (void *)i);
 		seed = (seed * 69069) + 127;
