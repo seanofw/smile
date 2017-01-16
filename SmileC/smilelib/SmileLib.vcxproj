@@ -800,8 +800,10 @@
     <ClCompile Include="src\parsing\parser\parseterm.c" />
     <ClCompile Include="src\siphash.c" />
     <ClCompile Include="src\smiletypes\numeric\smilebyte.c" />
+    <ClCompile Include="src\smiletypes\numeric\smilebyte_base.c" />
     <ClCompile Include="src\smiletypes\numeric\smileinteger128.c" />
     <ClCompile Include="src\smiletypes\numeric\smileinteger16.c" />
+    <ClCompile Include="src\smiletypes\numeric\smileinteger16_base.c" />
     <ClCompile Include="src\smiletypes\numeric\smileinteger32.c" />
     <ClCompile Include="src\smiletypes\numeric\smileinteger32_base.c" />
     <ClCompile Include="src\smiletypes\numeric\smileinteger64.c" />

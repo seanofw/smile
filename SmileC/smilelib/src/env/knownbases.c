@@ -198,11 +198,15 @@ void KnownBases_Preload(struct KnownBasesStruct *knownBases)
 
 //-------------------------------------------------------------------------------------------------
 
+extern void SmileByte_Setup(SmileUserObject base);
+extern void SmileInteger16_Setup(SmileUserObject base);
 extern void SmileInteger32_Setup(SmileUserObject base);
 extern void SmileInteger64_Setup(SmileUserObject base);
 
 void KnownBases_Setup(struct KnownBasesStruct *knownBases)
 {
+	SmileByte_Setup(knownBases->Byte);
+	SmileInteger16_Setup(knownBases->Integer16);
 	SmileInteger32_Setup(knownBases->Integer32);
 	SmileInteger64_Setup(knownBases->Integer64);
 }

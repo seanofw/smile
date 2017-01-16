@@ -17,6 +17,7 @@ struct KnownObjectsStruct {
 	SmileByte Bytes[256];
 	SmileByte ZeroByte;
 	SmileByte OneByte;
+	SmileByte NegOneByte;
 
 	SmileInteger16 SmallInt16s[201];
 	SmileInteger16 ZeroInt16;

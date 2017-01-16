@@ -43,6 +43,7 @@ void KnownObjects_Setup(struct KnownObjectsStruct *knownObjects, struct KnownSym
 
 	knownObjects->ZeroByte = knownObjects->Bytes[0];
 	knownObjects->OneByte = knownObjects->Bytes[1];
+	knownObjects->NegOneByte = knownObjects->Bytes[255];
 
 	for (i = -100; i <= 100; i++) {
 		knownObjects->SmallInt16s[i + 100] = SmileInteger16_CreateInternal((Int16)i);
