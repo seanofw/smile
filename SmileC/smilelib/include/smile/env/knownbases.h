@@ -22,8 +22,6 @@ struct KnownBasesStruct {
 	SmileUserObject       List;
 	SmileUserObject       String;
 	SmileUserObject       Range;
-	SmileUserObject         CharRange;
-	SmileUserObject         UCharRange;
 	SmileUserObject         NumericRange;
 	SmileUserObject           IntegerRangeBase;
 	SmileUserObject             ByteRange, Integer16Range, Integer32Range, Integer64Range, Integer128Range;
@@ -36,8 +34,6 @@ struct KnownBasesStruct {
 	SmileUserObject         BoolArray;
 	SmileUserObject         SymbolArray;
 	SmileUserObject         StringArray;
-	SmileUserObject         CharArray;
-	SmileUserObject         UCharArray;
 	SmileUserObject         NumericArray;
 	SmileUserObject           IntegerArrayBase;
 	SmileUserObject             ByteArray, Integer16Array, Integer32Array, Integer64Array, Integer128Array;
@@ -60,8 +56,6 @@ struct KnownBasesStruct {
 	SmileUserObject     Function;
 	SmileUserObject     Bool;
 	SmileUserObject     Symbol;
-	SmileUserObject     Char;
-	SmileUserObject     UChar;
 	SmileUserObject     Exception;
 };
 

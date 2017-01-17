@@ -37,10 +37,14 @@ static CompiledFunction _function;
 static ByteCodeSegment _segment;
 static Int _pc;
 
-Inline EvalResult EvalResult_Create(Int kind)
+EvalResult EvalResult_Create(Int kind)
 {
 	EvalResult result = GC_MALLOC_STRUCT(struct EvalResultStruct);
 	result->evalResultKind = kind;
+	result->value = NullObject;
+	result->exception = NullObject;
+	result->parseMessages = NULL;
+	result->numMessages = 0;
 	return result;
 }
 

@@ -28,5 +28,6 @@
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/parsing/lexer.h>
 #include <smile/parsing/parser.h>
+#include <smile/eval/eval.h>
 
 #endif

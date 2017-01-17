@@ -222,9 +222,6 @@
     <ClCompile Include="src\env\symboltable.c">
       <Filter>src\env</Filter>
     </ClCompile>
-    <ClCompile Include="src\env\env.c">
-      <Filter>src\env</Filter>
-    </ClCompile>
     <ClCompile Include="src\env\knownsymbols.c">
       <Filter>src\env</Filter>
     </ClCompile>
@@ -803,6 +800,9 @@
     </ClCompile>
     <ClCompile Include="src\smiletypes\numeric\smileinteger16_base.c">
       <Filter>src\smiletypes\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\env\global.c">
+      <Filter>src\env</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

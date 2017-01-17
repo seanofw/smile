@@ -691,6 +691,12 @@ Int Compiler_CompileExpr(Compiler compiler, SmileObject expr)
 						Compiler_CompileExpr(compiler, list->a);
 					}
 					
+					if (argCount == 0) {
+						// [] just becomes null.
+						EMIT0(Op_LdNull, +1);
+						break;
+					}
+				
 					// Under the hood, Call does some magic:
 					//   1.  If the would-be function is actually a function, it is called directly;
 					//   2.  Otherwise, if it is not a function, but it is an object that has an 'fn' method,
@@ -698,7 +704,7 @@ Int Compiler_CompileExpr(Compiler compiler, SmileObject expr)
 					//   3.  Otherwise, if it does not have an 'fn' method, then Call attempts to invoke
 					//        [x.does-not-understand `fn ...] on it.
 					//   4.  Otherwise, if it does not have a 'does-not-understand' method, a run-time exception is thrown.
-					EMIT1(Op_Call, +1 - argCount, index = argCount);
+					EMIT1(Op_Call, +1 - argCount, index = argCount - 1);
 					EMIT0(Op_Rep1, -1);
 					break;
 			}
@@ -774,8 +780,8 @@ static void Compiler_CompileVariable(Compiler compiler, Symbol symbol, Bool stor
 	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 	CompiledLocalSymbol localSymbol = CompileScope_FindSymbol(compiler->currentScope, symbol);
 
-	if (localSymbol == NULL) {
-		// Don't know what this is, so it comes from an outer closure.
+	if (localSymbol == NULL || localSymbol->kind == PARSEDECL_GLOBAL || localSymbol->kind == PARSEDECL_PRIMITIVE) {
+		// Don't know what this is, or it's explictly global, so it comes from a dictionary load from an outer closure.
 		if (store) {
 			EMIT1(Op_StX, -1, symbol = symbol);
 		}

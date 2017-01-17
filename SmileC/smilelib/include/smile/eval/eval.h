@@ -25,6 +25,7 @@
 #define EVAL_RESULT_VALUE	0
 #define EVAL_RESULT_EXCEPTION	1
 #define EVAL_RESULT_BREAK	2
+#define EVAL_RESULT_PARSEERRORS	3
 
 typedef struct EscapeContinuationStruct {
 	Int escapeKind;	// What kind of escape continuation this is, from the ESCAPE_KIND_* enumeration.
@@ -35,14 +36,18 @@ typedef struct EscapeContinuationStruct {
 
 typedef struct EvalResultStruct {
 	Int evalResultKind;	// How eval() exited, from the EVAL_RESULT_* enumeration.
+		
 	SmileObject value;	// The value resulting from the evaluation.
 	SmileObject exception;	// The exception thrown.
+		
+	ParseMessage *parseMessages;	// For "wrapper" functions, this holds an array of any parse errors/warnings that were generated (NULL if none).
+	Int numMessages;	// For "wrapper" functions, this is the number of parse errors/warnings that were generated.
 } *EvalResult;
 
 //-------------------------------------------------------------------------------------------------
 //  The core Smile eval() function
 
-SMILE_API_FUNC EvalResult Smile_Eval(SmileObject expr, Closure closure);
+SMILE_API_FUNC EvalResult EvalResult_Create(Int kind);
 
 SMILE_API_FUNC EvalResult Eval_Run(CompiledTables tables, CompiledFunction function);
 SMILE_API_FUNC EvalResult Eval_Continue(void);

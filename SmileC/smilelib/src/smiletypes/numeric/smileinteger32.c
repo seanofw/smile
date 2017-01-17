@@ -117,7 +117,7 @@ Real64 SmileInteger32_ToReal64(SmileInteger32 self)
 
 String SmileInteger32_ToString(SmileInteger32 self)
 {
-	return String_Format("%d", self->value);
+	return String_Format("%dt", self->value);
 }
 
 Bool SmileInteger32_Call(SmileInteger32 self, Int argc)

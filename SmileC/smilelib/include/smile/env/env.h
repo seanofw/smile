@@ -53,6 +53,64 @@ SMILE_API_FUNC void Smile_ResetEnvironment(void);
 #define NullObject ((SmileObject)Smile_KnownObjects.NullInstance)
 
 //-------------------------------------------------------------------------------------------------
+//  Global-variable and global-evaluation helper functions.
+
+struct ParseMessageStruct;
+struct EvalResultStruct;
+struct ClosureInfoStruct;
+
+SMILE_API_FUNC void Smile_InitCommonGlobals(struct ClosureInfoStruct *globalClosureInfo);
+
+SMILE_API_FUNC struct ClosureInfoStruct *Smile_GetGlobalClosureInfo(void);
+SMILE_API_FUNC void Smile_SetGlobalClosureInfo(struct ClosureInfoStruct *globalClosureInfo);
+SMILE_API_FUNC void Smile_SetGlobalVariable(Symbol name, SmileObject value);
+SMILE_API_FUNC Bool Smile_HasGlobalVariable(Symbol name);
+SMILE_API_FUNC void Smile_DeleteGlobalVariable(Symbol name);
+SMILE_API_FUNC SmileObject Smile_GetGlobalVariable(Symbol name);
+SMILE_API_FUNC SmileObject Smile_GetGlobalVariableC(const char *name);
+
+SMILE_API_FUNC SmileObject Smile_Parse(String text, String filename, struct ParseMessageStruct ***parseMessages, Int *numParseMessages);
+SMILE_API_FUNC SmileObject Smile_ParseInScope(struct ClosureInfoStruct *globalClosureInfo, String text, String filename, struct ParseMessageStruct ***parseMessages, Int *numParseMessages);
+SMILE_API_FUNC struct EvalResultStruct *Smile_Eval(SmileObject expression);
+SMILE_API_FUNC struct EvalResultStruct *Smile_EvalInScope(struct ClosureInfoStruct *globalClosureInfo, SmileObject expression);
+SMILE_API_FUNC struct EvalResultStruct *Smile_ParseAndEval(String text, String filename);
+SMILE_API_FUNC struct EvalResultStruct *Smile_ParseAndEvalInScope(struct ClosureInfoStruct *globalClosureInfo, String text, String filename);
+
+/// <summary>
+/// Assign a variable in the global closure.
+/// </summary>
+/// <param name="name">The name of the variable to assign, as a symbol.</param>
+/// <param name="value">The value for the variable to assign.</param>
+Inline void Smile_SetGlobalVariableC(const char *name, SmileObject value)
+{
+	Smile_SetGlobalVariable(SymbolTable_GetSymbolC(Smile_SymbolTable, name), value);
+}
+
+/// <summary>
+/// Parse the given source code (text) into a complete object structure with all of its syntax resolved.
+/// <summary>
+/// <param name="text">The actual Smile source code to parse.</param>
+/// <param name="filename">The name of the file that source code came from (for error-reporting).</param>
+/// <param name="parseMessages">This will be set to an array of any errors or warnings that were generated while parsing.</param>
+/// <param name="numParseMessages">This will be set to the number of entries in the parseMessages array.</param>
+/// <returns>The fully-parsed source code, or NullObject if there was a parsing error.</returns>
+Inline SmileObject Smile_ParseC(const char *text, const char *filename, struct ParseMessageStruct ***parseMessages, Int *numParseMessages)
+{
+	return Smile_Parse(String_Create((const Byte *)text, StrLen(text)), String_Create((const Byte *)filename, StrLen(filename)), parseMessages, numParseMessages);
+}
+
+/// <summary>
+/// Parse and evaluate the given source code in the global scope.
+/// </summary>
+/// <param name="text">The actual Smile source code to parse.</param>
+/// <param name="filename">The name of the file that source code came from (for error-reporting).</param>
+/// <returns>The result of parsing, compiling, and evaluating the given expression in the given global scope.</returns>
+Inline struct EvalResultStruct *Smile_ParseAndEvalC(const char *text, const char *filename)
+{
+	return Smile_ParseAndEval(String_Create((const Byte *)text, StrLen(text)), String_Create((const Byte *)filename, StrLen(filename)));
+}
+
+//-------------------------------------------------------------------------------------------------
 //  Exception support
 
 SMILE_API_FUNC void Smile_Throw(SmileObject object);

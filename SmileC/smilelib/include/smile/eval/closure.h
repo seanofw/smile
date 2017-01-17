@@ -33,10 +33,6 @@ struct CompiledFunctionStruct;
 // arguments, and a trailing temporary stack.
 #define CLOSURE_KIND_LOCAL	1
 
-// An external (calling-only) closure is an array of function arguments, and is only used for
-// calling external C functions.
-#define CLOSURE_KIND_EXTERNAL	2
-
 /// <summary>
 /// A ClosureInfo structure is a reusable object that provides all of the metadata about the
 /// information stored in similarly-shaped closures.

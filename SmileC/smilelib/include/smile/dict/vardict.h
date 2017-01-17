@@ -90,6 +90,8 @@ SMILE_API_FUNC VarDict VarDict_Clone(VarDict varDict);
 
 SMILE_API_FUNC DictStats VarDict_ComputeStats(VarDict varDict);
 
+SMILE_API_FUNC Bool VarDict_ForEach(VarDict varDict, Bool (*func)(VarInfo varInfo, void *param), void *param);
+
 //-------------------------------------------------------------------------------------------------
 //  Inline parts of the implementation
 

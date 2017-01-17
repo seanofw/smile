@@ -66,6 +66,52 @@ ParseScope ParseScope_CreateRoot(void)
 	return parseScope;
 }
 
+// Helper struct for ParseScope_DeclareVariablesFromClosureInfo, used while walking the VarDict.
+struct DeclareVariablesInfo {
+	ParseScope scope;
+	ParseError error;
+};
+
+// Helper function for ParseScope_DeclareVariablesFromClosureInfo, used while walking the VarDict.
+static Bool AddVariablesToScope(VarInfo varInfo, void *param)
+{
+	struct DeclareVariablesInfo *declareVariablesInfo = (struct DeclareVariablesInfo *)param;
+	ParseError error;
+
+	error = ParseScope_DeclareHere(declareVariablesInfo->scope, varInfo->symbol, PARSEDECL_GLOBAL, NULL, NULL);
+	declareVariablesInfo->error = error;
+
+	return (error == NULL);
+}
+
+/// <summary>
+/// Declare all of the global variables found in the given ClosureInfo in the given scope.
+/// This recursively walks the ClosureInfo to any parent ClosureInfos, declaring everything
+/// that the given ClosureInfo can see all the way back to its root.
+/// </summary>
+/// <param name="scope">The scope in which to declare all the global variables.</param>
+/// <param name="closureInfo">A ClosureInfo object that identifies all the names of the global variables to
+/// declare (their values will be ignored during parsing).</param>
+/// <returns>The first parse error that results from declaring these variables, or NULL if no errors were
+/// produced.  (An error could result from a duplicate variable declaration.)</returns>
+ParseError ParseScope_DeclareVariablesFromClosureInfo(ParseScope scope, ClosureInfo closureInfo)
+{
+	ParseError error;
+	struct DeclareVariablesInfo declareVariablesInfo;
+
+	declareVariablesInfo.scope = scope;
+	declareVariablesInfo.error = NULL;
+
+	if (closureInfo->parent != NULL) {
+		error = ParseScope_DeclareVariablesFromClosureInfo(scope, closureInfo->parent);
+		if (error != NULL) return error;
+	}
+
+	VarDict_ForEach(closureInfo->variableDictionary, AddVariablesToScope, &declareVariablesInfo);
+
+	return declareVariablesInfo.error;
+}
+
 /// <summary>
 /// Declare the eighteen-or-so global operators in the given (presumably root-level) scope.
 /// This also declares 'null', 'true', and 'false'; even though they're not operators,
@@ -97,11 +143,11 @@ static ParseError ParseScope_DeclareGlobalOperators(ParseScope parseScope)
 	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__NEW, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
 	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__IS, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
 	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__TYPEOF, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-
+/*
 	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.null_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
 	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.true_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
 	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.false_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-
+*/
 	return NULL;
 }
 

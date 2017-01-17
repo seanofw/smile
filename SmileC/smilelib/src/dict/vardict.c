@@ -335,6 +335,31 @@ VarInfo *VarDict_GetValues(VarDict varDict)
 	return values;
 }
 
+Bool VarDict_ForEach(VarDict varDict, Bool (*func)(VarInfo varInfo, void *param), void *param)
+{
+	struct VarDictInt *self;
+	Int32 bucket, nodeIndex;
+	Int32 *buckets;
+	struct VarDictNode *heap, *node;
+
+	self = (struct VarDictInt *)varDict;
+
+	buckets = self->buckets;
+	heap = self->heap;
+
+	for (bucket = 0; bucket <= self->mask; bucket++) {
+		nodeIndex = buckets[bucket];
+		while (nodeIndex >= 0) {
+			node = heap + nodeIndex;
+			if (!func(&node->varInfo, param))
+				return False;
+			nodeIndex = node->next;
+		}
+	}
+
+	return True;
+}
+
 /// <summary>
 /// Delete all key/value pairs in the dictionary, resetting it back to its initial state.
 /// </summary>

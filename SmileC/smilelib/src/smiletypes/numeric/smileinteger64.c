@@ -118,7 +118,7 @@ Real64 SmileInteger64_ToReal64(SmileInteger64 self)
 
 String SmileInteger64_ToString(SmileInteger64 self)
 {
-	return String_Format("%ldL", self->value);
+	return String_Format("%ld", self->value);
 }
 
 SMILE_VTABLE(SmileInteger64_VTable, SmileInteger64)

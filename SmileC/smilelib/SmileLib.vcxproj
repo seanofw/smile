@@ -752,7 +752,7 @@
     <ClCompile Include="src\dict\dictstats.c" />
     <ClCompile Include="src\dict\int32int32dict.c" />
     <ClCompile Include="src\dict\vardict.c" />
-    <ClCompile Include="src\env\env.c" />
+    <ClCompile Include="src\env\global.c" />
     <ClCompile Include="src\env\knownbases.c" />
     <ClCompile Include="src\env\knownobjects.c" />
     <ClCompile Include="src\env\knownstrings.c" />

@@ -108,6 +108,8 @@ START_TEST(CanParseAndExpr)
 	Lexer lexer = SetupLexer("\t true and false and true and gronk\n");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
+	ParseError trueDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "true"), PARSEDECL_VARIABLE, NULL, NULL);
+	ParseError falseDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "false"), PARSEDECL_VARIABLE, NULL, NULL);
 	ParseError parseDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "gronk"), PARSEDECL_VARIABLE, NULL, NULL);
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
@@ -122,6 +124,8 @@ START_TEST(CanParseOrExpr)
 	Lexer lexer = SetupLexer("\t true or false or true or gronk\n");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
+	ParseError trueDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "true"), PARSEDECL_VARIABLE, NULL, NULL);
+	ParseError falseDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "false"), PARSEDECL_VARIABLE, NULL, NULL);
 	ParseError parseDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "gronk"), PARSEDECL_VARIABLE, NULL, NULL);
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
@@ -136,6 +140,8 @@ START_TEST(CanParseAMixOfAndAndOrAndNot)
 	Lexer lexer = SetupLexer("\t true or not false and true and foo or not not gronk\n");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
+	ParseError trueDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "true"), PARSEDECL_VARIABLE, NULL, NULL);
+	ParseError falseDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "false"), PARSEDECL_VARIABLE, NULL, NULL);
 	ParseError parseDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "gronk"), PARSEDECL_VARIABLE, NULL, NULL);
 	ParseError parseDeclError2 = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "foo"), PARSEDECL_VARIABLE, NULL, NULL);
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
@@ -151,6 +157,8 @@ START_TEST(CanParseAMixOfAndAndOrAndNotWithParentheses)
 	Lexer lexer = SetupLexer("\t (true or not false) and true and (foo or not not gronk)\n");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
+	ParseError trueDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "true"), PARSEDECL_VARIABLE, NULL, NULL);
+	ParseError falseDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "false"), PARSEDECL_VARIABLE, NULL, NULL);
 	ParseError parseDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "gronk"), PARSEDECL_VARIABLE, NULL, NULL);
 	ParseError parseDeclError2 = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "foo"), PARSEDECL_VARIABLE, NULL, NULL);
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
@@ -398,6 +406,7 @@ START_TEST(CanParseTheDotOperator)
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	Symbol stdoutSymbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "Stdout");
+	ParseError trueDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "true"), PARSEDECL_VARIABLE, NULL, NULL);
 	ParseError declError = ParseScope_DeclareHere(parseScope, stdoutSymbol, PARSEDECL_VARIABLE, NULL, NULL);
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 

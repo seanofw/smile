@@ -187,6 +187,7 @@ static SmileObject ParseOneConstantValue(CommandLineArgs options, const char *te
 
 	string = String_FromC(text);
 	lexer = Lexer_Create(string, 0, String_Length(string), _commandLineArgument, 1, 1);
+	lexer->symbolTable = Smile_SymbolTable;
 	parser = Parser_Create();
 
 	result = Parser_ParseConstant(parser, lexer, ParseScope_CreateRoot());
@@ -403,20 +404,37 @@ static String LoadFile(String filename)
 	return StringBuilder_ToString(stringBuilder);
 }
 
+static ClosureInfo SetupGlobalClosureInfo(CommandLineArgs options)
+{
+	SmileList list;
+	ClosureInfo closureInfo = ClosureInfo_Create(NULL, CLOSURE_KIND_GLOBAL);
+
+	Smile_SetGlobalClosureInfo(closureInfo);
+
+	Smile_InitCommonGlobals(closureInfo);
+
+	for (list = options->globalDefinitions; SMILE_KIND(list) != SMILE_KIND_NULL; list = LIST_REST(list)) {
+		SmileSymbol symbol = (SmileSymbol)LIST_FIRST((SmileList)LIST_FIRST(list));
+		SmileObject value = (SmileObject)LIST_SECOND((SmileList)LIST_FIRST(list));
+		Smile_SetGlobalVariable(symbol->symbol, value);
+	}
+
+	return closureInfo;
+}
+
 static Int ParseOnly(CommandLineArgs options, String string, String filename, Int line)
 {
 	Lexer lexer;
 	Parser parser;
 	ParseScope globalScope;
-	SmileList list;
+	ClosureInfo closureInfo;
 
+	closureInfo = SetupGlobalClosureInfo(options);
 	globalScope = ParseScope_CreateRoot();
-
-	for (list = options->globalDefinitions; SMILE_KIND(list) != SMILE_KIND_NULL; list = LIST_REST(list)) {
-		ParseScope_Declare(globalScope, ((SmileSymbol)((SmileList)list->a)->a)->symbol, PARSEDECL_GLOBAL, NULL, NULL);
-	}
+	ParseScope_DeclareVariablesFromClosureInfo(globalScope, closureInfo);
 
 	lexer = Lexer_Create(string, 0, String_Length(string), filename, line, 1);
+	lexer->symbolTable = Smile_SymbolTable;
 	parser = Parser_Create();
 
 	if (options->verbose) {
@@ -437,16 +455,16 @@ static Int ParseAndEval(CommandLineArgs options, String string, String filename,
 	Lexer lexer;
 	Parser parser;
 	ParseScope globalScope;
+	ClosureInfo closureInfo;
 	SmileObject parsedScript;
-	SmileList list;
+	EvalResult evalResult;
 
+	closureInfo = SetupGlobalClosureInfo(options);
 	globalScope = ParseScope_CreateRoot();
-
-	for (list = options->globalDefinitions; SMILE_KIND(list) != SMILE_KIND_NULL; list = LIST_REST(list)) {
-		ParseScope_Declare(globalScope, ((SmileSymbol)((SmileList)list->a)->a)->symbol, PARSEDECL_GLOBAL, NULL, NULL);
-	}
+	ParseScope_DeclareVariablesFromClosureInfo(globalScope, closureInfo);
 
 	lexer = Lexer_Create(string, 0, String_Length(string), filename, line, 1);
+	lexer->symbolTable = Smile_SymbolTable;
 	parser = Parser_Create();
 
 	if (options->verbose) {
@@ -457,16 +475,43 @@ static Int ParseAndEval(CommandLineArgs options, String string, String filename,
 
 	if (parser->firstMessage != NullList) {
 		Bool hasErrors = PrintParseMessages(options, parser);
-		if (hasErrors) return 1;
+		if (hasErrors) {
+			*result = NullObject;
+			return 1;
+		}
 	}
 
 	if (options->verbose) {
 		Verbose("Evaluating parsed script.");
 	}
 
-	*result = (SmileObject)parsedScript;
+	evalResult = Smile_EvalInScope(closureInfo, parsedScript);
 
-	return 0;
+	switch (evalResult->evalResultKind) {
+
+		case EVAL_RESULT_EXCEPTION:
+			{
+				String stringified = SMILE_VCALL(evalResult->exception, toString);
+				String message = String_Format("%S: Uncaught exception thrown: %S\r\n", filename, stringified);
+				fwrite(String_GetBytes(message), 1, String_Length(message), stderr);
+				fflush(stderr);
+				*result = NullObject;
+			}
+			return 1;
+
+		case EVAL_RESULT_BREAK:
+			{
+				String message = String_Format("%S: Stopped at breakpoint.\r\n", filename);
+				fwrite(String_GetBytes(message), 1, String_Length(message), stderr);
+				fflush(stderr);
+				*result = NullObject;
+			}
+			return 2;
+		
+		default:
+			*result = evalResult->value;
+			return 0;
+	}
 }
 
 int main(int argc, const char **argv)
@@ -589,6 +634,7 @@ int main(int argc, const char **argv)
 		// Convert the object to a string by a virtual call to its toString() method.
 		String stringResult = SMILE_VCALL(result, toString);
 		fwrite(String_GetBytes(stringResult), 1, String_Length(stringResult), stdout);
+		fwrite("\n", 1, 1, stdout);
 		fflush(stdout);
 	}
 

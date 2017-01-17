@@ -130,9 +130,6 @@ static void SetupRangeTypes(struct KnownBasesStruct *knownBases)
 {
 	knownBases->Range = SmileUserObject_Create((SmileObject)knownBases->Enumerable);
 
-	knownBases->CharRange = SmileUserObject_Create((SmileObject)knownBases->Range);
-	knownBases->UCharRange = SmileUserObject_Create((SmileObject)knownBases->Range);
-
 	SetupNumericRangeTypes(knownBases);
 }
 
@@ -145,8 +142,6 @@ static void SetupArrayTypes(struct KnownBasesStruct *knownBases)
 	knownBases->BoolArray = SmileUserObject_Create((SmileObject)knownBases->ArrayBase);
 	knownBases->StringArray = SmileUserObject_Create((SmileObject)knownBases->ArrayBase);
 	knownBases->SymbolArray = SmileUserObject_Create((SmileObject)knownBases->ArrayBase);
-	knownBases->CharArray = SmileUserObject_Create((SmileObject)knownBases->ArrayBase);
-	knownBases->UCharArray = SmileUserObject_Create((SmileObject)knownBases->ArrayBase);
 
 	SetupNumericArrayTypes(knownBases);
 }
@@ -180,8 +175,6 @@ static void SetupMiscTypes(struct KnownBasesStruct *knownBases)
 	knownBases->Function = SmileUserObject_Create((SmileObject)knownBases->Object);
 	knownBases->Bool = SmileUserObject_Create((SmileObject)knownBases->Object);
 	knownBases->Symbol = SmileUserObject_Create((SmileObject)knownBases->Object);
-	knownBases->Char = SmileUserObject_Create((SmileObject)knownBases->Object);
-	knownBases->UChar = SmileUserObject_Create((SmileObject)knownBases->Object);
 	knownBases->Exception = SmileUserObject_Create((SmileObject)knownBases->Object);
 }
 

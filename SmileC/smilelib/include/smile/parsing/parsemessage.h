@@ -15,10 +15,10 @@
 //-------------------------------------------------------------------------------------------------
 //  Parse-message kinds.
 
-#define PARSEMESSAGE_INFO		0		// A helpful informational message
-#define PARSEMESSAGE_WARNING	1		// A warning about possible undesirable behavior
-#define PARSEMESSAGE_ERROR		2		// An error in source code
-#define PARSEMESSAGE_FATAL		3		// A fatal error that has caused the parser to abort
+#define PARSEMESSAGE_INFO	0	// A helpful informational message
+#define PARSEMESSAGE_WARNING	1	// A warning about possible undesirable behavior
+#define PARSEMESSAGE_ERROR	2	// An error in source code
+#define PARSEMESSAGE_FATAL	3	// A fatal error that has caused the parser to abort
 
 //-------------------------------------------------------------------------------------------------
 //  Parse messages.

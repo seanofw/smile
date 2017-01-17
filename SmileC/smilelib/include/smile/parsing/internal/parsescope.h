@@ -80,6 +80,7 @@ struct ParseScopeStruct {
 
 SMILE_API_FUNC ParseScope ParseScope_CreateRoot(void);
 SMILE_API_FUNC ParseScope ParseScope_CreateChild(ParseScope parentScope, Int kind);
+SMILE_API_FUNC ParseError ParseScope_DeclareVariablesFromClosureInfo(ParseScope scope, ClosureInfo closureInfo);
 SMILE_API_FUNC ParseError ParseScope_DeclareHere(ParseScope scope, Symbol symbol, Int kind, LexerPosition position, ParseDecl *decl);
 SMILE_API_FUNC void ParseScope_Finish(ParseScope currentScope);
 
