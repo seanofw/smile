@@ -19,6 +19,7 @@
 #include <smile/smiletypes/smilebool.h>
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/smilepair.h>
+#include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/numeric/smilebyte.h>
@@ -79,12 +80,12 @@ static void EmitPop1(Compiler compiler);
 #define FIX_BRANCH(__offset__, __delta__) \
 	(segment->byteCodes[(__offset__)].u.index = (__delta__))
 
-Inline Int ApplyStackDelta(CompiledFunction compiledFunction, Int stackDelta)
+Inline Int ApplyStackDelta(CompilerFunction compilerFunction, Int stackDelta)
 {
-	compiledFunction->currentStackDepth += stackDelta;
+	compilerFunction->currentStackDepth += stackDelta;
 
-	if (compiledFunction->currentStackDepth > compiledFunction->stackSize) {
-		compiledFunction->stackSize = compiledFunction->currentStackDepth;
+	if (compilerFunction->currentStackDepth > compilerFunction->stackSize) {
+		compilerFunction->stackSize = compilerFunction->currentStackDepth;
 	}
 
 	return 0;
@@ -229,7 +230,7 @@ CompiledTables CompiledTables_Create(void)
 	if (compiledTables == NULL)
 		Smile_Abort_OutOfMemory();
 
-	compiledTables->globalFunction = NULL;
+	compiledTables->globalFunctionInfo = NULL;
 	compiledTables->globalClosureInfo = NULL;
 
 	compiledTables->strings = GC_MALLOC_STRUCT_ARRAY(String, 16);
@@ -240,11 +241,11 @@ CompiledTables CompiledTables_Create(void)
 
 	compiledTables->stringLookup = StringIntDict_Create();
 
-	compiledTables->compiledFunctions = GC_MALLOC_STRUCT_ARRAY(CompiledFunction, 16);
-	if (compiledTables->compiledFunctions == NULL)
+	compiledTables->userFunctions = GC_MALLOC_STRUCT_ARRAY(UserFunctionInfo, 16);
+	if (compiledTables->userFunctions == NULL)
 		Smile_Abort_OutOfMemory();
-	compiledTables->numCompiledFunctions = 0;
-	compiledTables->maxCompiledFunctions = 16;
+	compiledTables->numUserFunctions = 0;
+	compiledTables->maxUserFunctions = 16;
 
 	return compiledTables;
 }
@@ -271,21 +272,48 @@ Compiler Compiler_Create(void)
 }
 
 /// <summary>
+/// Add a UserFunctionInfo object to the compiler's collection, and return its index.
+/// </summary>
+Int Compiler_AddUserFunctionInfo(Compiler compiler, UserFunctionInfo userFunctionInfo)
+{
+	CompiledTables compiledTables = compiler->compiledTables;
+	Int index;
+
+	// Do we have enough space to add it?  If not, reallocate.
+	if (compiledTables->numUserFunctions >= compiledTables->maxUserFunctions) {
+		UserFunctionInfo *newUserFunctions;
+		Int newMax;
+	
+		newMax = compiledTables->maxUserFunctions * 2;
+		newUserFunctions = GC_MALLOC_STRUCT_ARRAY(UserFunctionInfo, newMax);
+		if (newUserFunctions == NULL)
+			Smile_Abort_OutOfMemory();
+		MemCpy(newUserFunctions, compiledTables->userFunctions, compiledTables->numUserFunctions);
+		compiledTables->userFunctions = newUserFunctions;
+		compiledTables->maxUserFunctions = newMax;
+	}
+
+	// Okay, we have enough space, and it's not there yet, so add it.
+	index = compiledTables->numUserFunctions++;
+	compiledTables->userFunctions[index] = userFunctionInfo;
+
+	return index;
+}
+
+/// <summary>
 /// Begin compiling a function.
 /// </summary>
 /// <param name="compiler">The compiler that will be compiling this function.</param>
 /// <param name="args">The function argument list.</param>
 /// <param name="body">The function body.</param>
-/// <returns>A new CompiledFunction object, which has its args/body assigned, but which is not yet
+/// <returns>A new CompilerFunction object, which has its args/body assigned, but which is not yet
 /// populated with any instructions.</returns>
-CompiledFunction Compiler_BeginFunction(Compiler compiler, SmileList args, SmileObject body)
+CompilerFunction Compiler_BeginFunction(Compiler compiler, SmileList args, SmileObject body)
 {
-	CompiledFunction newFunction;
-	CompiledTables compiledTables = compiler->compiledTables;
-	Int index;
+	CompilerFunction newFunction;
 
 	// Create the new function.
-	newFunction = GC_MALLOC_STRUCT(struct CompiledFunctionStruct);
+	newFunction = GC_MALLOC_STRUCT(struct CompilerFunctionStruct);
 	if (newFunction == NULL)
 		Smile_Abort_OutOfMemory();
 	newFunction->args = args;
@@ -300,27 +328,6 @@ CompiledFunction Compiler_BeginFunction(Compiler compiler, SmileList args, Smile
 	newFunction->stackSize = 0;
 	newFunction->functionDepth = compiler->currentFunction != NULL ? compiler->currentFunction->functionDepth + 1 : 0;
 
-	// Do we have enough space to add it?  If not, reallocate.
-	if (compiledTables->numCompiledFunctions >= compiledTables->maxCompiledFunctions) {
-		CompiledFunction *newCompiledFunctions;
-		Int newMax;
-
-		newMax = compiledTables->maxCompiledFunctions * 2;
-		newCompiledFunctions = GC_MALLOC_STRUCT_ARRAY(CompiledFunction, newMax);
-		if (newCompiledFunctions == NULL)
-			Smile_Abort_OutOfMemory();
-		MemCpy(newCompiledFunctions, compiledTables->compiledFunctions, compiledTables->numCompiledFunctions);
-		compiledTables->compiledFunctions = newCompiledFunctions;
-		compiledTables->maxCompiledFunctions = newMax;
-	}
-
-	// Okay, we have enough space, and it's not there yet, so add it.
-	index = compiledTables->numCompiledFunctions++;
-	compiledTables->compiledFunctions[index] = newFunction;
-
-	// Assign this function its index in the list.
-	newFunction->functionIndex = index;
-
 	// Finally, make the new function the current function.
 	compiler->currentFunction = newFunction;
 
@@ -334,11 +341,11 @@ CompiledFunction Compiler_BeginFunction(Compiler compiler, SmileList args, Smile
 /// <param name="compiler">The compiler that has compiled a function.</param>
 void Compiler_EndFunction(Compiler compiler)
 {
-	CompiledFunction compiledFunction = compiler->currentFunction;
+	CompilerFunction compilerFunction = compiler->currentFunction;
 
-	compiledFunction->closureInfo = Compiler_MakeClosureInfoForCompiledFunction(compiler, compiledFunction);
+	compilerFunction->closureInfo = Compiler_MakeClosureInfoForCompilerFunction(compiler, compilerFunction);
 
-	compiler->currentFunction = compiledFunction->parent;
+	compiler->currentFunction = compilerFunction->parent;
 }
 
 CompileScope Compiler_BeginScope(Compiler compiler, Int kind)
@@ -468,14 +475,17 @@ Int Compiler_AddObject(Compiler compiler, SmileObject obj)
 /// <param name="compiler">The compiler that will be compiling these expressions.</param>
 /// <param name="expr">The expression to compile.</param>
 /// <returns>The resulting compiled function.</returns>
-CompiledFunction Compiler_CompileGlobal(Compiler compiler, SmileObject expr)
+UserFunctionInfo Compiler_CompileGlobal(Compiler compiler, SmileObject expr)
 {
-	CompiledFunction compiledFunction;
+	CompilerFunction compilerFunction;
 	Int offset;
 	ByteCodeSegment segment;
+	UserFunctionInfo userFunctionInfo;
+	ClosureInfo closureInfo;
 
-	compiledFunction = Compiler_BeginFunction(compiler, NullList, expr);
-	compiler->compiledTables->globalFunction = compiledFunction;
+	userFunctionInfo = UserFunctionInfo_Create(NullList, expr);
+	compilerFunction = Compiler_BeginFunction(compiler, NullList, expr);
+	compiler->compiledTables->globalFunctionInfo = userFunctionInfo;
 
 	segment = compiler->currentFunction->byteCodeSegment;
 
@@ -485,15 +495,19 @@ CompiledFunction Compiler_CompileGlobal(Compiler compiler, SmileObject expr)
 
 	Compiler_EndFunction(compiler);
 
-	return compiledFunction;
+	closureInfo = Compiler_MakeClosureInfoForCompilerFunction(compiler, compilerFunction);
+	MemCpy(&userFunctionInfo->closureInfo, closureInfo, sizeof(struct ClosureInfoStruct));
+	userFunctionInfo->byteCodeSegment = compilerFunction->byteCodeSegment;
+
+	return userFunctionInfo;
 }
 
 /// <summary>
-/// Prepare a ClosureInfo object, which is the compact runtime equivalent of a CompiledFunction.
+/// Prepare a ClosureInfo object, which is the compact runtime equivalent of a CompilerFunction.
 /// </summary>
-/// <param name="compiledFunction">The compiled function to compact into a ClosureInfo object.</param>
+/// <param name="compilerFunction">The compiled function to compact into a ClosureInfo object.</param>
 /// <returns>The compiled function's data, as a ClosureInfo object.</returns>
-ClosureInfo Compiler_MakeClosureInfoForCompiledFunction(Compiler compiler, CompiledFunction compiledFunction)
+ClosureInfo Compiler_MakeClosureInfoForCompilerFunction(Compiler compiler, CompilerFunction compilerFunction)
 {
 	ClosureInfo closureInfo;
 	Int numVariables, src, dest;
@@ -501,14 +515,14 @@ ClosureInfo Compiler_MakeClosureInfoForCompiledFunction(Compiler compiler, Compi
 	Symbol symbol;
 	struct VarInfoStruct varInfo;
 	
-	closureInfo = ClosureInfo_Create(compiledFunction->parent != NULL ? compiledFunction->parent->closureInfo : compiler->compiledTables->globalClosureInfo,
+	closureInfo = ClosureInfo_Create(compilerFunction->parent != NULL ? compilerFunction->parent->closureInfo : compiler->compiledTables->globalClosureInfo,
 		CLOSURE_KIND_LOCAL);
 
 	closureInfo->global = closureInfo->parent != NULL ? closureInfo->parent->global : compiler->compiledTables->globalClosureInfo;
 	
-	numVariables = compiledFunction->numArgs + compiledFunction->localSize;
+	numVariables = compilerFunction->numArgs + compilerFunction->localSize;
 	closureInfo->numVariables = (Int16)numVariables;
-	closureInfo->tempSize = compiledFunction->stackSize;
+	closureInfo->tempSize = compilerFunction->stackSize;
 
 	variableNames = (Symbol *)GC_MALLOC_ATOMIC(sizeof(Symbol) * numVariables);
 	if (variableNames == NULL)
@@ -517,7 +531,7 @@ ClosureInfo Compiler_MakeClosureInfoForCompiledFunction(Compiler compiler, Compi
 	closureInfo->variableNames = variableNames;
 	dest = 0;
 
-	for (SmileList args = compiledFunction->args; SMILE_KIND(args) != SMILE_KIND_NULL; args = LIST_REST(args)) {
+	for (SmileList args = compilerFunction->args; SMILE_KIND(args) != SMILE_KIND_NULL; args = LIST_REST(args)) {
 		symbol = ((SmileSymbol)args->a)->symbol;
 
 		varInfo.kind = VAR_KIND_ARG;
@@ -529,8 +543,8 @@ ClosureInfo Compiler_MakeClosureInfoForCompiledFunction(Compiler compiler, Compi
 		variableNames[dest++] = symbol;
 	}
 
-	for (src = 0; src < compiledFunction->localSize; src++) {
-		symbol = compiledFunction->localNames[src];
+	for (src = 0; src < compilerFunction->localSize; src++) {
+		symbol = compilerFunction->localNames[src];
 	
 		varInfo.kind = VAR_KIND_VAR;
 		varInfo.offset = dest;
@@ -561,7 +575,7 @@ ClosureInfo Compiler_MakeClosureInfoForCompiledFunction(Compiler compiler, Compi
 /// but it compiles that [$scope] as-is, and does not evaluate macros.
 ///
 /// Note also that this function does not compile nested functions:  It merely creates new
-/// CompiledFunction objects for them, with their 'isCompiled' flags set to False.
+/// CompilerFunction objects for them, with their 'isCompiled' flags set to False.
 /// </remarks>
 Int Compiler_CompileExpr(Compiler compiler, SmileObject expr)
 {
@@ -1536,13 +1550,16 @@ static void Compiler_CompileReturn(Compiler compiler, SmileList args)
 // Form: [$fn [args...] body]
 static void Compiler_CompileFn(Compiler compiler, SmileList args)
 {
-	CompiledFunction compiledFunction;
+	CompilerFunction compilerFunction;
 	CompileScope scope;
 	SmileList functionArgs, temp;
 	SmileObject functionBody;
 	Int numFunctionArgs;
 	Int offset;
 	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
+	ClosureInfo closureInfo;
+	UserFunctionInfo userFunctionInfo;
+	Int functionIndex;
 
 	// The [$fn] expression must be of the form:  [$fn [args...] body].
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->a) != SMILE_KIND_LIST
@@ -1574,13 +1591,10 @@ static void Compiler_CompileFn(Compiler compiler, SmileList args)
 
 	// Create the function.
 	functionBody = ((SmileList)args->d)->a;
-	compiledFunction = Compiler_BeginFunction(compiler, functionArgs, functionBody);
-	compiledFunction->numArgs = numFunctionArgs;
-
-	// If this function has arguments, emit an 'args' instruction to ensure at least that many arguments exist.
-	if (numFunctionArgs > 0) {
-		EMIT1(Op_Args, 0, index = numFunctionArgs);
-	}
+	userFunctionInfo = UserFunctionInfo_Create(functionArgs, functionBody);
+	functionIndex = Compiler_AddUserFunctionInfo(compiler, userFunctionInfo);
+	compilerFunction = Compiler_BeginFunction(compiler, functionArgs, functionBody);
+	compilerFunction->numArgs = numFunctionArgs;
 
 	// Compile the body.
 	Compiler_CompileExpr(compiler, functionBody);
@@ -1591,8 +1605,13 @@ static void Compiler_CompileFn(Compiler compiler, SmileList args)
 	// We're done compiling this function.
 	Compiler_EndFunction(compiler);
 
+	// Make a suitable closure decriptor for it, and an actual function object.
+	closureInfo = Compiler_MakeClosureInfoForCompilerFunction(compiler, compilerFunction);
+	MemCpy(&userFunctionInfo->closureInfo, closureInfo, sizeof(struct ClosureInfoStruct));
+	userFunctionInfo->byteCodeSegment = compilerFunction->byteCodeSegment;
+
 	// Finally, emit an instruction to load a new instance of this function onto its parent's stack.
-	EMIT1(Op_NewFn, 1, index = compiledFunction->functionIndex);
+	EMIT1(Op_NewFn, 1, index = functionIndex);
 }
 
 // Form: [$quote expr]
@@ -1665,23 +1684,23 @@ static void Compiler_CompileProgN(Compiler compiler, SmileList args)
 	}
 }
 
-static Int CompiledFunction_AddLocal(CompiledFunction compiledFunction, Symbol local)
+static Int CompilerFunction_AddLocal(CompilerFunction compilerFunction, Symbol local)
 {
 	Int localIndex, newMax;
 	Symbol *newLocals;
 
 	// If we're out of space, grow the array.
-	if (compiledFunction->localSize >= compiledFunction->localMax) {
-		newMax = compiledFunction->localMax * 2;
+	if (compilerFunction->localSize >= compilerFunction->localMax) {
+		newMax = compilerFunction->localMax * 2;
 		newLocals = (Symbol *)GC_MALLOC_ATOMIC(sizeof(Symbol) * newMax);
-		MemCpy(newLocals, compiledFunction->localNames, sizeof(Symbol) * compiledFunction->localSize);
-		compiledFunction->localMax = newMax;
-		compiledFunction->localNames = newLocals;
+		MemCpy(newLocals, compilerFunction->localNames, sizeof(Symbol) * compilerFunction->localSize);
+		compilerFunction->localMax = newMax;
+		compilerFunction->localNames = newLocals;
 	}
 
-	localIndex = compiledFunction->localSize++;
+	localIndex = compilerFunction->localSize++;
 
-	compiledFunction->localNames[localIndex] = local;
+	compilerFunction->localNames[localIndex] = local;
 
 	return localIndex;
 }
@@ -1715,7 +1734,7 @@ static void Compiler_CompileScope(Compiler compiler, SmileList args)
 		}
 
 		Symbol symbol = ((SmileSymbol)temp->a)->symbol;
-		localIndex = CompiledFunction_AddLocal(compiler->currentFunction, symbol);
+		localIndex = CompilerFunction_AddLocal(compiler->currentFunction, symbol);
 		CompileScope_DefineSymbol(scope, symbol, PARSEDECL_VARIABLE, localIndex);
 	}
 	if (SMILE_KIND(temp) != SMILE_KIND_NULL) {

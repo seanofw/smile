@@ -103,6 +103,8 @@ void KnownObjects_Setup(struct KnownObjectsStruct *knownObjects, struct KnownSym
 	knownObjects->setMemberSymbol = SmileSymbol_Create(knownSymbols->set_member);
 	knownObjects->ofSymbol = SmileSymbol_Create(knownSymbols->of);
 	knownObjects->typeSymbol = SmileSymbol_Create(knownSymbols->type);
+	knownObjects->defaultSymbol = SmileSymbol_Create(knownSymbols->default_);
+	knownObjects->restSymbol = SmileSymbol_Create(knownSymbols->rest);
 	knownObjects->joinSymbol = SmileSymbol_Create(knownSymbols->join);
 	knownObjects->rangeToSymbol = SmileSymbol_Create(knownSymbols->range_to);
 

@@ -32,13 +32,16 @@ STATIC_STRING(TestFilename, "test.sm");
 
 TEST_SUITE(EvalTests)
 
-static SmileObject Parse(const char *text)
+static CompiledTables Compile(const char *text)
 {
 	String source;
 	Lexer lexer;
 	Parser parser;
-	ParseScope scope;
+	ParseScope globalScope;
 	SmileObject expr;
+	Compiler compiler;
+	ClosureInfo globalClosureInfo;
+	UserFunctionInfo globalFunction;
 
 	Smile_ResetEnvironment();
 
@@ -47,24 +50,15 @@ static SmileObject Parse(const char *text)
 	lexer = Lexer_Create(source, 0, String_Length(source), TestFilename, 1, 1);
 	lexer->symbolTable = Smile_SymbolTable;
 
+	globalClosureInfo = ClosureInfo_Create(NULL, CLOSURE_KIND_GLOBAL);
+	Smile_InitCommonGlobals(globalClosureInfo);
+
 	parser = Parser_Create();
-	scope = ParseScope_CreateRoot();
-	expr = Parser_Parse(parser, lexer, scope);
-
-	return SMILE_KIND(parser->firstMessage) == SMILE_KIND_NULL ? expr : NullObject;
-}
-
-static CompiledTables Compile(const char *text)
-{
-	SmileObject expr;
-	Compiler compiler;
-	ClosureInfo globalClosureInfo;
-	CompiledFunction globalFunction;
-
-	expr = Parse(text);
+	globalScope = ParseScope_CreateRoot();
+	ParseScope_DeclareVariablesFromClosureInfo(globalScope, globalClosureInfo);
+	expr = Parser_Parse(parser, lexer, globalScope);
 
 	compiler = Compiler_Create();
-	globalClosureInfo = ClosureInfo_Create(NULL, CLOSURE_KIND_GLOBAL);
 	Compiler_SetGlobalClosureInfo(compiler, globalClosureInfo);
 	globalFunction = Compiler_CompileGlobal(compiler, expr);
 
@@ -75,7 +69,7 @@ START_TEST(CanEvalAConstantInteger)
 {
 	CompiledTables compiledTables = Compile("1");
 
-	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunction);
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
@@ -87,7 +81,7 @@ START_TEST(CanEvalAConstantSymbol)
 {
 	CompiledTables compiledTables = Compile("`a");
 
-	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunction);
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_SYMBOL);
@@ -103,7 +97,7 @@ START_TEST(CanEvalLocalVariableAssignments)
 		"x"
 	);
 
-	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunction);
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_SYMBOL);
@@ -122,7 +116,7 @@ START_TEST(CanEvalIfThenElse)
 		"y\n"
 	);
 
-	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunction);
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
@@ -136,7 +130,7 @@ START_TEST(CanEvalBinaryMethodCalls)
 		"x = 1 + 2\n"
 	);
 
-	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunction);
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
@@ -150,7 +144,7 @@ START_TEST(CanEvalComplexPilesOfBinaryAndUnaryMethodCalls)
 		"x = (-3 + 2 * 5) * 7\n"
 	);
 
-	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunction);
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
@@ -172,7 +166,7 @@ START_TEST(CanEvalSmileCodeThatComputesALogarithm)
 		"log\n"
 	);
 
-	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunction);
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
@@ -189,11 +183,44 @@ START_TEST(CanEvalSmileCodeThatConvertsBetweenTypes)
 		"result = string m\n"
 	);
 
-	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunction);
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_STRING);
 	ASSERT_STRING(SmileString_GetString((SmileString)result->value), "2345", 4);
+}
+END_TEST
+
+START_TEST(CanEvalDirectCallsToNativeFunctions)
+{
+	CompiledTables compiledTables = Compile(
+		"n = 12345\n"
+		"m = 11111\n"
+		"f = Integer64.+\n"
+		"sum = [f n m]\n"
+	);
+
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 23456);
+}
+END_TEST
+
+START_TEST(CanEvalCallsToUserFunctions)
+{
+	CompiledTables compiledTables = Compile(
+		"f = |x| x + 111\n"
+		"n = 123\n"
+		"m = [f n]\n"
+	);
+
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 234);
 }
 END_TEST
 

@@ -104,7 +104,7 @@ static ParseError Parser_ParseSyntaxTerminal(Parser parser, SmileList **tailRef)
 static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailRef);
 static void Parser_DeclareNonterminals(SmileList pattern, ParseScope scope, LexerPosition position);
 
-// syntax_expr :: = . syntax_level COLON LBRACKET syntax_pattern RBRACKET IMPLIES expr
+// syntax_expr :: = . syntax_level COLON LBRACKET syntax_pattern RBRACKET IMPLIES raw_list_term
 SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *expr, Int modeFlags)
 {
 	Token token;

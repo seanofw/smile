@@ -29,6 +29,10 @@
 #include <smile/smiletypes/smilelist.h>
 #endif
 
+#ifndef __SMILE_SMILETYPES_SMILEFUNCTION_H__
+#include <smile/smiletypes/smilefunction.h>
+#endif
+
 #ifndef __SMILE_EVAL_BYTECODE_H__
 #include <smile/eval/bytecode.h>
 #endif
@@ -48,9 +52,8 @@
 /// This represents a single compiled function (i.e., a [fn ...] expression).  It may be
 /// incomplete, which is what the 'isCompiled' flag answers.
 /// </summary>
-typedef struct CompiledFunctionStruct {
-	struct CompiledFunctionStruct *parent;	// The parent function that contains this function (NULL if none).
-	Int functionIndex;	// The index of this function in the compiled-function list.
+typedef struct CompilerFunctionStruct {
+	struct CompilerFunctionStruct *parent;	// The parent function that contains this function (NULL if none).
 	Int functionDepth;	// The number of functions deep in which this function was declared.
 	Int numArgs;	// The number of arguments to this function (derived from 'args').
 	Int32 localSize;	// The total number of locals required by this function.
@@ -63,13 +66,13 @@ typedef struct CompiledFunctionStruct {
 	SmileObject body;	// This function's body, from its raw expression.
 	ByteCodeSegment byteCodeSegment;	// The byte-code segment that holds this function's instructions.
 	ClosureInfo closureInfo;	// The ClosureInfo object needed to actually eval this function.
-} *CompiledFunction;
+} *CompilerFunction;
 
 typedef struct CompileScopeStruct {
 	struct CompileScopeStruct *parent;	// The parent scope (NULL if none).
 	Int32Dict symbolDict;	// How to resolve symbols in this current scope.
 	Int kind;	// What kind of scope this is (using the PARSESCOPE_* enumeration).
-	CompiledFunction function;	// The function that directly contains this scope.
+	CompilerFunction function;	// The function that directly contains this scope.
 } *CompileScope;
 
 typedef struct CompiledLocalSymbolStruct {
@@ -83,7 +86,7 @@ typedef struct CompiledLocalSymbolStruct {
 /// This represents all of the different tables of data collected during a compile.
 /// </summary>
 typedef struct CompiledTablesStruct {
-	CompiledFunction globalFunction;	// The global (outermost) function.
+	UserFunctionInfo globalFunctionInfo;	// The global (outermost) function.
 	ClosureInfo globalClosureInfo;	// The global ClosureInfo object that contains all of the external variables.
 		
 	String *strings;	// The constant strings collected during the compile (unordered).
@@ -91,9 +94,9 @@ typedef struct CompiledTablesStruct {
 	Int maxStrings;	// The maximum number of strings in the array.
 	StringIntDict stringLookup;	// A lookup table for de-duping constant strings.
 		
-	CompiledFunction *compiledFunctions;	// The function definitions collected during the compile (unordered).
-	Int numCompiledFunctions;	// The number of functions in the array.
-	Int maxCompiledFunctions;	// The maximum number of functions in the array.
+	UserFunctionInfo *userFunctions;	// The function definitions collected during the compile (unordered).
+	Int numUserFunctions;	// The number of functions in the array.
+	Int maxUserFunctions;	// The maximum number of functions in the array.
 		
 	SmileObject *objects;	// The constant objects collected during the compile.
 	Int numObjects;	// The number of constant objects collected.
@@ -105,7 +108,7 @@ typedef struct CompiledTablesStruct {
 /// </summary>
 typedef struct CompilerStruct {
 	CompiledTables compiledTables;	// The tables collected during the parse.
-	CompiledFunction currentFunction;	// The current function being compiled (all code exists in a function).
+	CompilerFunction currentFunction;	// The current function being compiled (all code exists in a function).
 	CompileScope currentScope;	// The current compile scope (for resolving symbols).
 	SmileList firstMessage, lastMessage;	// Any errors/warnings encountered while compiling.
 } *Compiler;
@@ -116,17 +119,18 @@ typedef struct CompilerStruct {
 SMILE_API_FUNC CompiledTables CompiledTables_Create(void);
 
 SMILE_API_FUNC Compiler Compiler_Create(void);
-SMILE_API_FUNC CompiledFunction Compiler_BeginFunction(Compiler compiler, SmileList args, SmileObject body);
+SMILE_API_FUNC CompilerFunction Compiler_BeginFunction(Compiler compiler, SmileList args, SmileObject body);
 SMILE_API_FUNC void Compiler_EndFunction(Compiler compiler);
 SMILE_API_FUNC Int Compiler_CompileExpr(Compiler compiler, SmileObject expr);
-SMILE_API_FUNC CompiledFunction Compiler_CompileGlobal(Compiler compiler, SmileObject expr);
+SMILE_API_FUNC UserFunctionInfo Compiler_CompileGlobal(Compiler compiler, SmileObject expr);
 SMILE_API_FUNC Int Compiler_AddString(Compiler compiler, String string);
 SMILE_API_FUNC Int Compiler_AddObject(Compiler compiler, SmileObject obj);
+SMILE_API_FUNC Int Compiler_AddUserFunctionInfo(Compiler compiler, UserFunctionInfo userFunctionInfo);
 SMILE_API_FUNC CompileScope Compiler_BeginScope(Compiler compiler, Int kind);
 SMILE_API_FUNC void CompileScope_DefineSymbol(CompileScope scope, Symbol symbol, Int kind, Int index);
 SMILE_API_FUNC CompiledLocalSymbol CompileScope_FindSymbol(CompileScope compileScope, Symbol symbol);
 SMILE_API_FUNC CompiledLocalSymbol CompileScope_FindSymbolHere(CompileScope compileScope, Symbol symbol);
-SMILE_API_FUNC ClosureInfo Compiler_MakeClosureInfoForCompiledFunction(Compiler compiler, CompiledFunction compiledFunction);
+SMILE_API_FUNC ClosureInfo Compiler_MakeClosureInfoForCompilerFunction(Compiler compiler, CompilerFunction compilerFunction);
 
 //-------------------------------------------------------------------------------------------------
 //  Inline functions.

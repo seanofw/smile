@@ -30,7 +30,8 @@ typedef SmileObject (*ExternalFunction)(Int argc, SmileObject *argv, void *param
 
 typedef struct ExternalFunctionInfoStruct {
 
-	String name;	// The given full name of this function, like "File.open".
+	String name;	// The given full name of this function, like "open".
+	String argNames;	// The names of the arguments to this function, space-separated, like "x y z".
 		
 	ExternalFunction externalFunction;	// The actual external C function to call.
 	void *param;	// An optional parameter that will be passed to the external function.
@@ -44,7 +45,41 @@ typedef struct ExternalFunctionInfoStruct {
 
 } *ExternalFunctionInfo;
 
-struct ExternalFunctionInfoStruct;
+//-------------------------------------------------------------------------------------------------
+//  Type declarations for user-function support
+
+#define USER_ARG_NORMAL	0	// A normal argument
+#define USER_ARG_REST	(1 << 0)	// This is a "rest" argument
+#define USER_ARG_TYPECHECK	(1 << 1)	// This argument requires a type check
+#define USER_ARG_OPTIONAL	(1 << 2)	// This argument is optional (and has an assigned default value)
+
+typedef struct UserFunctionArgStruct {
+
+	Int32 flags;	// Flags describing what kind of argument this is, from the FUNCTION_ARG_* flags above
+	Symbol name;	// The name of this argument, as it appears in the body of the function
+	Symbol typeName;	// The object this argument must inherit from (which must be a variable name in scope).
+	SmileObject defaultValue;	// A default value for this argument, if it was omitted by the caller
+
+} *UserFunctionArg;
+
+struct ByteCodeSegmentStruct;
+
+typedef struct UserFunctionInfoStruct {
+
+	Int16 flags;	// A union (bitwise or) of all the flags for all the arguments.
+	Int16 numArgs;	// The number of args in the args array below.
+	Int16 minArgs;	// The minimum number of args that must be provided (or an error will be thrown).
+	Int16 maxArgs;	// The maximum number of args that may be provided (or an error will be thrown).
+	UserFunctionArg args;	// Pointer to an array of UserFunctionArgs describing the arguments.
+		
+	SmileList argList;	// The original list of arguments to this function
+	SmileObject body;	// The original body of this function
+
+	struct ClosureInfoStruct closureInfo;	// The ClosureInfo that describes this function's stack behavior. 
+		
+	struct ByteCodeSegmentStruct *byteCodeSegment;	// The byte-code instructions that describe this function's compiled body.
+
+} *UserFunctionInfo;
 
 //-------------------------------------------------------------------------------------------------
 //  Core type declarations
@@ -52,11 +87,11 @@ struct ExternalFunctionInfoStruct;
 struct SmileFunctionInt {
 	DECLARE_BASE_OBJECT_PROPERTIES;
 
-	SmileList args;	// A list of argument names for this function
-	SmileObject body;	// The body of this function (NullObject for a C function)
-		
-	union {	
-	   struct ClosureInfoStruct closureInfo;	// For Smile user functions
+	union {
+	   struct {
+	      Closure declaringClosure;	// The closure in which this user function was instantiated
+	      UserFunctionInfo userFunctionInfo;	// Static information about this function
+	   } u;	// For custom user functions
 	   struct ExternalFunctionInfoStruct externalFunctionInfo;	// For C external functions
 	} u;
 };
@@ -66,7 +101,8 @@ struct SmileFunctionInt {
 
 SMILE_API_DATA SmileVTable SmileUserFunction_VTable;
 
-SMILE_API_FUNC SmileFunction SmileFunction_CreateUserFunction(SmileList args, SmileObject body, ClosureInfo closureInfo);
+SMILE_API_FUNC UserFunctionInfo UserFunctionInfo_Create(SmileList args, SmileObject body);
+SMILE_API_FUNC SmileFunction SmileFunction_CreateUserFunction(UserFunctionInfo userFunctionInfo, Closure declaringClosure);
 SMILE_API_FUNC SmileFunction SmileFunction_CreateExternalFunction(ExternalFunction externalFunction, void *param,
 	const char *name, const char *argNames, Int argCheckFlags, Int minArgs, Int maxArgs, Int numArgsToTypeCheck, const Byte *argTypeChecks);
 

@@ -23,7 +23,7 @@
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 
-static String ByteCode_OperandsToString(ByteCode byteCode, Int address, struct CompiledFunctionStruct *compiledFunction, struct CompiledTablesStruct *compiledTables);
+static String ByteCode_OperandsToString(ByteCode byteCode, Int address, struct CompilerFunctionStruct *compilerFunction, struct CompiledTablesStruct *compiledTables);
 
 /// <summary>
 /// Create a new byte-code segment, with room for 'size' instructions initially.
@@ -85,7 +85,7 @@ STATIC_STRING(_colonString, ":");
 /// <param name="compiledTables">The compiled tables of objects and functions and strings
 /// that this segment may reference.</param>
 /// <returns>The byte-code segment's instructions, as a string.</returns>
-String ByteCodeSegment_ToString(ByteCodeSegment segment, struct CompiledFunctionStruct *compiledFunction, struct CompiledTablesStruct *compiledTables)
+String ByteCodeSegment_ToString(ByteCodeSegment segment, struct CompilerFunctionStruct *compilerFunction, struct CompiledTablesStruct *compiledTables)
 {
 	Int i, end;
 	DECLARE_INLINE_STRINGBUILDER(stringBuilder, 256);
@@ -96,7 +96,7 @@ String ByteCodeSegment_ToString(ByteCodeSegment segment, struct CompiledFunction
 
 	for (i = 0, end = segment->numByteCodes; i < end; i++) {
 		byteCode = segment->byteCodes + i;
-		string = ByteCode_ToString(byteCode, i, compiledFunction, compiledTables);
+		string = ByteCode_ToString(byteCode, i, compilerFunction, compiledTables);
 		if (byteCode->opcode != Op_Label) {
 			StringBuilder_AppendByte(stringBuilder, '\t');
 		}
@@ -116,7 +116,7 @@ String ByteCodeSegment_ToString(ByteCodeSegment segment, struct CompiledFunction
 /// <param name="compiledTables">The compiled tables of objects and functions and strings
 /// that this byte code may reference.</param>
 /// <returns>The byte code's contents, as a string.</returns>
-String ByteCode_ToString(ByteCode byteCode, Int address, struct CompiledFunctionStruct *compiledFunction, struct CompiledTablesStruct *compiledTables)
+String ByteCode_ToString(ByteCode byteCode, Int address, struct CompilerFunctionStruct *compilerFunction, struct CompiledTablesStruct *compiledTables)
 {
 	String opcode, operands;
 	DECLARE_INLINE_STRINGBUILDER(stringBuilder, 64);
@@ -127,7 +127,7 @@ String ByteCode_ToString(ByteCode byteCode, Int address, struct CompiledFunction
 	opcode = Opcode_Names[byteCode->opcode];
 	if (opcode == NULL) opcode = String_Format("Op%02X", byteCode->opcode);
 
-	operands = ByteCode_OperandsToString(byteCode, address, compiledFunction, compiledTables);
+	operands = ByteCode_OperandsToString(byteCode, address, compilerFunction, compiledTables);
 	if (operands == NULL)
 		return opcode;
 
@@ -138,7 +138,7 @@ String ByteCode_ToString(ByteCode byteCode, Int address, struct CompiledFunction
 	return StringBuilder_ToString(stringBuilder);
 }
 
-static CompiledFunction GetFunctionByDepth(CompiledFunction currentFunction, Int depth)
+static CompilerFunction GetFunctionByDepth(CompilerFunction currentFunction, Int depth)
 {
 	while (depth-- > 0 && currentFunction != NULL) {
 		currentFunction = currentFunction->parent;
@@ -146,7 +146,7 @@ static CompiledFunction GetFunctionByDepth(CompiledFunction currentFunction, Int
 	return currentFunction;
 }
 
-static Symbol GetSymbolForLocalVariable(CompiledFunction currentFunction, Int scope, Int index)
+static Symbol GetSymbolForLocalVariable(CompilerFunction currentFunction, Int scope, Int index)
 {
 	currentFunction = GetFunctionByDepth(currentFunction, scope);
 	if (currentFunction == NULL) return 0;
@@ -154,7 +154,7 @@ static Symbol GetSymbolForLocalVariable(CompiledFunction currentFunction, Int sc
 	return index < currentFunction->localSize ? currentFunction->localNames[index] : 0;
 }
 
-static Symbol GetSymbolForArgument(CompiledFunction currentFunction, Int scope, Int index)
+static Symbol GetSymbolForArgument(CompilerFunction currentFunction, Int scope, Int index)
 {
 	SmileList args;
 
@@ -178,7 +178,7 @@ static Symbol GetSymbolForArgument(CompiledFunction currentFunction, Int scope, 
 /// <param name="compiledTables">The compiled tables of objects and functions and strings
 /// that this byte code may reference.</param>
 /// <returns>The byte code's operands, as a string.</returns>
-static String ByteCode_OperandsToString(ByteCode byteCode, Int address, struct CompiledFunctionStruct *compiledFunction, struct CompiledTablesStruct *compiledTables)
+static String ByteCode_OperandsToString(ByteCode byteCode, Int address, struct CompilerFunctionStruct *compilerFunction, struct CompiledTablesStruct *compiledTables)
 {
 	Int opcode = byteCode->opcode;
 	Symbol symbol;
@@ -239,14 +239,14 @@ static String ByteCode_OperandsToString(ByteCode byteCode, Int address, struct C
 		case Op_LdLoc:
 		case Op_StLoc:
 		case Op_StpLoc:
-			symbol = GetSymbolForLocalVariable(compiledFunction, (Int32)byteCode->u.i2.a, (Int32)byteCode->u.i2.b);
+			symbol = GetSymbolForLocalVariable(compilerFunction, (Int32)byteCode->u.i2.a, (Int32)byteCode->u.i2.b);
 			return String_Format("%d, %d\t; %S", (Int32)byteCode->u.i2.a, (Int32)byteCode->u.i2.b);
 
 		// 34-37
 		case Op_LdArg:
 		case Op_StArg:
 		case Op_StpArg:
-			symbol = GetSymbolForArgument(compiledFunction, (Int32)byteCode->u.i2.a, (Int32)byteCode->u.i2.b);
+			symbol = GetSymbolForArgument(compilerFunction, (Int32)byteCode->u.i2.a, (Int32)byteCode->u.i2.b);
 			return String_Format("%d, %d\t; %S", (Int32)byteCode->u.i2.a, (Int32)byteCode->u.i2.b);
 
 		// 38-3F
@@ -262,7 +262,7 @@ static String ByteCode_OperandsToString(ByteCode byteCode, Int address, struct C
 		case Op_StArg4: case Op_StArg5: case Op_StArg6: case Op_StArg7:
 		case Op_StpArg0: case Op_StpArg1: case Op_StpArg2: case Op_StpArg3:
 		case Op_StpArg4: case Op_StpArg5: case Op_StpArg6: case Op_StpArg7:
-			symbol = GetSymbolForArgument(compiledFunction, (Int32)byteCode->opcode & 7, (Int32)byteCode->u.int32);
+			symbol = GetSymbolForArgument(compilerFunction, (Int32)byteCode->opcode & 7, (Int32)byteCode->u.int32);
 			return String_Format("%d\t; %S", (Int32)byteCode->u.int32, SymbolTable_GetName(Smile_SymbolTable, symbol));
 		
 		// 40-6F (Locals)
@@ -272,7 +272,7 @@ static String ByteCode_OperandsToString(ByteCode byteCode, Int address, struct C
 		case Op_StLoc4: case Op_StLoc5: case Op_StLoc6: case Op_StLoc7:
 		case Op_StpLoc0: case Op_StpLoc1: case Op_StpLoc2: case Op_StpLoc3:
 		case Op_StpLoc4: case Op_StpLoc5: case Op_StpLoc6: case Op_StpLoc7:
-			symbol = GetSymbolForLocalVariable(compiledFunction, (Int32)byteCode->opcode & 7, (Int32)byteCode->u.int32);
+			symbol = GetSymbolForLocalVariable(compilerFunction, (Int32)byteCode->opcode & 7, (Int32)byteCode->u.int32);
 			return String_Format("%d\t; %S", (Int32)byteCode->u.int32, SymbolTable_GetName(Smile_SymbolTable, symbol));
 
 		// 70-7F

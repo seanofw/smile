@@ -68,6 +68,16 @@ void Smile_Init(void)
 
 void Smile_ResetEnvironment(void)
 {
+	// Clear out as many GC roots as we know about.
+	Smile_SymbolTable = NULL;
+	MemZero(&Smile_KnownSymbols, sizeof(struct KnownSymbolsStruct));
+	MemZero(&Smile_KnownBases, sizeof(struct KnownBasesStruct));
+	MemZero(&Smile_KnownStrings, sizeof(struct KnownStringsStruct));
+	MemZero(&Smile_KnownObjects, sizeof(struct KnownObjectsStruct));
+
+	// Now give the garbage collector a chance to make the world as clean as possible.
+	GC_gcollect();
+
 	// Make a symbol table for this environment.
 	Smile_SymbolTable = SymbolTable_Create();
 

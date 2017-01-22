@@ -264,7 +264,7 @@ EvalResult Smile_EvalInScope(ClosureInfo globalClosureInfo, SmileObject expressi
 {
 	Compiler compiler;
 	CompileScope compileScope;
-	CompiledFunction globalFunction;
+	UserFunctionInfo globalFunction;
 	EvalResult result;
 
 	// Set up the compiler...

@@ -33,7 +33,7 @@ static EscapeContinuation _returnContinuation;
 static EscapeContinuation _exceptionContinuation;
 static Closure _closure;
 static CompiledTables _compiledTables;
-static CompiledFunction _function;
+static UserFunctionInfo _functionInfo;
 static ByteCodeSegment _segment;
 static Int _pc;
 
@@ -48,15 +48,15 @@ EvalResult EvalResult_Create(Int kind)
 	return result;
 }
 
-EvalResult Eval_Run(CompiledTables tables, CompiledFunction function)
+EvalResult Eval_Run(CompiledTables tables, UserFunctionInfo functionInfo)
 {
 	_compiledTables = tables;
-	_function = function;
-	_segment = function->byteCodeSegment;
+	_functionInfo = functionInfo;
+	_segment = functionInfo->byteCodeSegment;
 	_closure = Closure_CreateGlobal(tables->globalClosureInfo, NULL);
 	_pc = 0;
 
-	_closure = Closure_CreateLocal(function->closureInfo, _closure);
+	_closure = Closure_CreateLocal(&functionInfo->closureInfo, _closure);
 
 	_exceptionContinuation = EscapeContinuation_Create(ESCAPE_KIND_EXCEPTION);
 	_returnContinuation = EscapeContinuation_Create(ESCAPE_KIND_RETURN);
@@ -899,7 +899,7 @@ next:
 			Closure_SetTop(_closure, value);
 			byteCode++;
 			goto next;
-		
+	
 		//-------------------------------------------------------
 		// F0-FF: Miscellaneous internal constructs
 		
@@ -1191,4 +1191,102 @@ Bool SmileExternalFunction_ExactTypesCheck_Call(SmileFunction self, Int argc)
 	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
 
 	return True;
+}
+
+Bool SmileUserFunction_NoArgs_Call(SmileFunction self, Int argc)
+{
+	UNUSED(self);
+	UNUSED(argc);
+	return False;
+}
+
+Bool SmileUserFunction_Fast1_Call(SmileFunction self, Int argc)
+{
+	UNUSED(self);
+	UNUSED(argc);
+	return False;
+}
+
+Bool SmileUserFunction_Fast2_Call(SmileFunction self, Int argc)
+{
+	UNUSED(self);
+	UNUSED(argc);
+	return False;
+}
+
+Bool SmileUserFunction_Fast3_Call(SmileFunction self, Int argc)
+{
+	UNUSED(self);
+	UNUSED(argc);
+	return False;
+}
+
+Bool SmileUserFunction_Fast4_Call(SmileFunction self, Int argc)
+{
+	UNUSED(self);
+	UNUSED(argc);
+	return False;
+}
+
+Bool SmileUserFunction_Fast5_Call(SmileFunction self, Int argc)
+{
+	UNUSED(self);
+	UNUSED(argc);
+	return False;
+}
+
+Bool SmileUserFunction_Fast6_Call(SmileFunction self, Int argc)
+{
+	UNUSED(self);
+	UNUSED(argc);
+	return False;
+}
+
+Bool SmileUserFunction_Fast7_Call(SmileFunction self, Int argc)
+{
+	UNUSED(self);
+	UNUSED(argc);
+	return False;
+}
+
+Bool SmileUserFunction_Fast8_Call(SmileFunction self, Int argc)
+{
+	UNUSED(self);
+	UNUSED(argc);
+	return False;
+}
+
+Bool SmileUserFunction_Slow_Call(SmileFunction self, Int argc)
+{
+	UNUSED(self);
+	UNUSED(argc);
+	return False;
+}
+
+Bool SmileUserFunction_Optional_Call(SmileFunction self, Int argc)
+{
+	UNUSED(self);
+	UNUSED(argc);
+	return False;
+}
+
+Bool SmileUserFunction_Rest_Call(SmileFunction self, Int argc)
+{
+	UNUSED(self);
+	UNUSED(argc);
+	return False;
+}
+
+Bool SmileUserFunction_Checked_Call(SmileFunction self, Int argc)
+{
+	UNUSED(self);
+	UNUSED(argc);
+	return False;
+}
+
+Bool SmileUserFunction_CheckedRest_Call(SmileFunction self, Int argc)
+{
+	UNUSED(self);
+	UNUSED(argc);
+	return False;
 }

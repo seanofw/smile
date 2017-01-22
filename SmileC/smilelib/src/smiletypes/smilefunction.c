@@ -22,6 +22,21 @@
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/text/smilestring.h>
 
+extern SmileVTable SmileUserFunction_NoArgs_VTable;
+extern SmileVTable SmileUserFunction_Fast1_VTable;
+extern SmileVTable SmileUserFunction_Fast2_VTable;
+extern SmileVTable SmileUserFunction_Fast3_VTable;
+extern SmileVTable SmileUserFunction_Fast4_VTable;
+extern SmileVTable SmileUserFunction_Fast5_VTable;
+extern SmileVTable SmileUserFunction_Fast6_VTable;
+extern SmileVTable SmileUserFunction_Fast7_VTable;
+extern SmileVTable SmileUserFunction_Fast8_VTable;
+extern SmileVTable SmileUserFunction_Slow_VTable;
+extern SmileVTable SmileUserFunction_Optional_VTable;
+extern SmileVTable SmileUserFunction_Rest_VTable;
+extern SmileVTable SmileUserFunction_Checked_VTable;
+extern SmileVTable SmileUserFunction_CheckedRest_VTable;
+
 extern SmileVTable SmileExternalFunction_NoCheck_VTable;
 extern SmileVTable SmileExternalFunction_MinCheck_VTable;
 extern SmileVTable SmileExternalFunction_MaxCheck_VTable;
@@ -37,7 +52,58 @@ extern Bool SmileUserFunction_Call(SmileFunction self, Int argc);
 
 SMILE_EASY_OBJECT_NO_SECURITY(SmileFunction);
 
-SmileFunction SmileFunction_CreateUserFunction(SmileList args, SmileObject body, ClosureInfo closureInfo)
+UserFunctionInfo UserFunctionInfo_Create(SmileList args, SmileObject body)
+{
+	UserFunctionInfo userFunctionInfo;
+
+	userFunctionInfo = GC_MALLOC_STRUCT(struct UserFunctionInfoStruct);
+	if (userFunctionInfo == NULL)
+		Smile_Abort_OutOfMemory();
+
+	MemZero(userFunctionInfo, sizeof(struct UserFunctionInfoStruct));
+
+	userFunctionInfo->argList = args;
+	userFunctionInfo->body = body;
+
+	
+
+	return userFunctionInfo;
+}
+
+Inline SmileVTable GetUserFunctionVTableByFlags(Int flags, Int numArgs)
+{
+	switch (flags) {
+		case 0:
+			switch (numArgs) {
+				case 0:	return SmileUserFunction_NoArgs_VTable;
+				case 1:	return SmileUserFunction_Fast1_VTable;
+				case 2:	return SmileUserFunction_Fast2_VTable;
+				case 3:	return SmileUserFunction_Fast3_VTable;
+				case 4:	return SmileUserFunction_Fast4_VTable;
+				case 5:	return SmileUserFunction_Fast5_VTable;
+				case 6:	return SmileUserFunction_Fast6_VTable;
+				case 7:	return SmileUserFunction_Fast7_VTable;
+				case 8:	return SmileUserFunction_Fast8_VTable;
+				default:	return SmileUserFunction_Slow_VTable;
+			}
+
+		case USER_ARG_OPTIONAL:
+			return SmileUserFunction_Optional_VTable;
+		case USER_ARG_REST:
+		case USER_ARG_REST | USER_ARG_OPTIONAL:
+			return SmileUserFunction_Rest_VTable;
+		case USER_ARG_TYPECHECK:
+		case USER_ARG_TYPECHECK | USER_ARG_OPTIONAL:
+			return SmileUserFunction_Checked_VTable;
+		case USER_ARG_REST | USER_ARG_TYPECHECK:
+		case USER_ARG_REST | USER_ARG_TYPECHECK | USER_ARG_OPTIONAL:
+			return SmileUserFunction_CheckedRest_VTable;
+	}
+
+	return NULL;	// Shouldn't be able to get here.
+}
+
+SmileFunction SmileFunction_CreateUserFunction(UserFunctionInfo userFunctionInfo, Closure declaringClosure)
 {
 	SmileFunction smileFunction;
 
@@ -46,49 +112,17 @@ SmileFunction SmileFunction_CreateUserFunction(SmileList args, SmileObject body,
 		Smile_Abort_OutOfMemory();
 
 	smileFunction->kind = SMILE_KIND_FUNCTION;
-	smileFunction->vtable = SmileUserFunction_VTable;
+	smileFunction->vtable = GetUserFunctionVTableByFlags(userFunctionInfo->flags, userFunctionInfo->numArgs);
 	smileFunction->base = (SmileObject)Smile_KnownBases.Function;
 	smileFunction->assignedSymbol = 0;
 
-	smileFunction->args = args;
-	smileFunction->body = body;
-
-	smileFunction->u.closureInfo.parent = closureInfo->parent;
-	smileFunction->u.closureInfo.global = closureInfo->global;
-	smileFunction->u.closureInfo.kind = closureInfo->kind;
-	smileFunction->u.closureInfo.numVariables = closureInfo->numVariables;
-	smileFunction->u.closureInfo.tempSize = closureInfo->tempSize;
-	smileFunction->u.closureInfo.variableDictionary = closureInfo->variableDictionary;
-	smileFunction->u.closureInfo.variableNames = closureInfo->variableNames;
+	smileFunction->u.u.userFunctionInfo = userFunctionInfo;
+	smileFunction->u.u.declaringClosure = declaringClosure;
 
 	return smileFunction;
 }
 
-static SmileList SplitArgNames(const char *argNames)
-{
-	const char *start, *ptr;
-	SmileList head, tail;
-	SmileString arg;
-	char ch;
-
-	LIST_INIT(head, tail);
-
-	for (start = ptr = argNames; ; ptr++) {
-		if ((ch = *ptr) == ' ' || ch == '\0') {
-			if (ptr > start) {
-				arg = SmileString_Create(String_Create((Byte *)start, ptr - start));
-				LIST_APPEND(head, tail, arg);
-			}
-			start = ptr;
-			if (ch == '\0')
-				break;
-		}
-	}
-
-	return head;
-}
-
-Inline SmileVTable GetVTableByFlags(Int argCheckFlags)
+Inline SmileVTable GetExternalFunctionVTableByFlags(Int argCheckFlags)
 {
 	// Choose a VTable with a function that has optimized hardwired argument checks
 	// for the types of checks they want.
@@ -136,9 +170,7 @@ static int WrapFunctionName(char *dest, const char *name)
 SmileFunction SmileFunction_CreateExternalFunction(ExternalFunction externalFunction, void *param,
 	const char *name, const char *argNames, Int argCheckFlags, Int minArgs, Int maxArgs, Int numArgsToTypeCheck, const Byte *argTypeChecks)
 {
-	char nameBuffer[260];
 	SmileFunction smileFunction;
-	Int nameLen;
 
 	// First, correct for degenerate configurations.
 	if (minArgs == 0)
@@ -155,15 +187,12 @@ SmileFunction SmileFunction_CreateExternalFunction(ExternalFunction externalFunc
 		Smile_Abort_OutOfMemory();
 
 	smileFunction->kind = SMILE_KIND_FUNCTION;
-	smileFunction->vtable = GetVTableByFlags(argCheckFlags);
+	smileFunction->vtable = GetExternalFunctionVTableByFlags(argCheckFlags);
 	smileFunction->base = (SmileObject)Smile_KnownBases.Function;
 	smileFunction->assignedSymbol = 0;
 
-	nameLen = WrapFunctionName(nameBuffer, name);
-	smileFunction->body = (SmileObject)SmileString_Create(String_Create(nameBuffer, nameLen));
-	smileFunction->args = SplitArgNames(argNames);
-
-	smileFunction->u.externalFunctionInfo.name = String_Create(nameBuffer + 1, nameLen - 2);
+	smileFunction->u.externalFunctionInfo.argNames = String_FromC(argNames);
+	smileFunction->u.externalFunctionInfo.name = String_FromC(name);
 	smileFunction->u.externalFunctionInfo.externalFunction = externalFunction;
 	smileFunction->u.externalFunctionInfo.param = param;
 	smileFunction->u.externalFunctionInfo.argCheckFlags = (UInt16)argCheckFlags;
@@ -179,8 +208,8 @@ Bool SmileUserFunction_CompareEqual(SmileFunction self, SmileObject other)
 {
 	return (SMILE_KIND(other) == SMILE_KIND_FUNCTION
 		&& self->vtable == other->vtable
-		&& self->u.closureInfo.global == ((SmileFunction)other)->u.closureInfo.global
-		&& self->u.closureInfo.parent == ((SmileFunction)other)->u.closureInfo.parent);
+		&& self->u.u.userFunctionInfo == ((SmileFunction)other)->u.u.userFunctionInfo
+		&& self->u.u.declaringClosure == ((SmileFunction)other)->u.u.declaringClosure);
 }
 
 Bool SmileExternalFunction_CompareEqual(SmileFunction self, SmileObject other)
@@ -193,7 +222,7 @@ Bool SmileExternalFunction_CompareEqual(SmileFunction self, SmileObject other)
 
 UInt32 SmileUserFunction_Hash(SmileFunction self)
 {
-	return ((PtrInt)(self->u.closureInfo.parent) & 0xFFFFFFFF) ^ Smile_HashOracle;
+	return ((PtrInt)(self->u.u.userFunctionInfo) & 0xFFFFFFFF) ^ Smile_HashOracle;
 }
 
 UInt32 SmileExternalFunction_Hash(SmileFunction self)
@@ -204,20 +233,34 @@ UInt32 SmileExternalFunction_Hash(SmileFunction self)
 SmileObject SmileUserFunction_GetProperty(SmileFunction self, Symbol propertyName)
 {
 	if (propertyName == Smile_KnownSymbols.arguments)
-		return (SmileObject)self->args;
+		return (SmileObject)self->u.u.userFunctionInfo->argList;
 	else if (propertyName == Smile_KnownSymbols.body)
-		return self->body;
+		return self->u.u.userFunctionInfo->body;
 	else {
 		return self->base->vtable->getProperty(self->base, propertyName);
 	}
 }
 
+STATIC_STRING(_spaceSplitter, " ");
+
 SmileObject SmileExternalFunction_GetProperty(SmileFunction self, Symbol propertyName)
 {
-	if (propertyName == Smile_KnownSymbols.arguments)
-		return (SmileObject)self->args;
-	else if (propertyName == Smile_KnownSymbols.body)
+	if (propertyName == Smile_KnownSymbols.arguments) {
+		SmileList head, tail;
+		String *pieces;
+		Int numPieces = String_Split(self->u.externalFunctionInfo.argNames, _spaceSplitter, &pieces);
+		Int i;
+	
+		LIST_INIT(head, tail);
+		for (i = 0; i < numPieces; i++) {
+			LIST_APPEND(head, tail, SmileString_Create(pieces[i]));
+		}
+	
+		return (SmileObject)head;
+	}
+	else if (propertyName == Smile_KnownSymbols.body) {
 		return (SmileObject)SmileString_Create(String_Format("<%S>", self->u.externalFunctionInfo.name));
+	}
 	else {
 		return self->base->vtable->getProperty(self->base, propertyName);
 	}
@@ -288,28 +331,47 @@ String SmileExternalFunction_ToString(SmileFunction self)
 	return String_Format("<%S>", self->u.externalFunctionInfo.name);
 }
 
-SMILE_VTABLE(SmileUserFunction_VTable, SmileFunction)
-{
-	SmileUserFunction_CompareEqual,
-	SmileUserFunction_Hash,
+#define USER_FUNCTION_VTABLE(__checkKind__) \
+	\
+	extern Bool SmileUserFunction_##__checkKind__##_Call(SmileFunction self, Int argc); \
+	\
+	SMILE_VTABLE(SmileUserFunction_##__checkKind__##_VTable, SmileFunction) \
+	{ \
+		SmileUserFunction_CompareEqual, \
+		SmileUserFunction_Hash, \
+		\
+		SmileFunction_SetSecurityKey, \
+		SmileFunction_SetSecurity, \
+		SmileFunction_GetSecurity, \
+		\
+		SmileUserFunction_GetProperty, \
+		SmileFunction_SetProperty, \
+		SmileFunction_HasProperty, \
+		SmileFunction_GetPropertyNames, \
+		\
+		SmileFunction_ToBool, \
+		SmileFunction_ToInteger32, \
+		SmileFunction_ToFloat64, \
+		SmileFunction_ToReal64, \
+		SmileUserFunction_ToString, \
+		\
+		SmileUserFunction_##__checkKind__##_Call, \
+	}
 
-	SmileFunction_SetSecurityKey,
-	SmileFunction_SetSecurity,
-	SmileFunction_GetSecurity,
-
-	SmileUserFunction_GetProperty,
-	SmileFunction_SetProperty,
-	SmileFunction_HasProperty,
-	SmileFunction_GetPropertyNames,
-
-	SmileFunction_ToBool,
-	SmileFunction_ToInteger32,
-	SmileFunction_ToFloat64,
-	SmileFunction_ToReal64,
-	SmileUserFunction_ToString,
-
-	SmileUserFunction_Call,
-};
+USER_FUNCTION_VTABLE(NoArgs);	// Function with no arguments
+USER_FUNCTION_VTABLE(Fast1);	// Function of exactly 1 argument, no rest, no type checks
+USER_FUNCTION_VTABLE(Fast2);	// Function of exactly 2 arguments, no rest, no type checks
+USER_FUNCTION_VTABLE(Fast3);	// Function of exactly 3 arguments, no rest, no type checks
+USER_FUNCTION_VTABLE(Fast4);	// Function of exactly 4 arguments, no rest, no type checks
+USER_FUNCTION_VTABLE(Fast5);	// Function of exactly 5 arguments, no rest, no type checks
+USER_FUNCTION_VTABLE(Fast6);	// Function of exactly 6 arguments, no rest, no type checks
+USER_FUNCTION_VTABLE(Fast7);	// Function of exactly 7 arguments, no rest, no type checks
+USER_FUNCTION_VTABLE(Fast8);	// Function of exactly 8 arguments, no rest, no type checks
+USER_FUNCTION_VTABLE(Slow);	// Function of 9+ arguments, no rest, no type checks
+USER_FUNCTION_VTABLE(Optional);	// Function with optional arguments, no rest, no type checks
+USER_FUNCTION_VTABLE(Rest);	// Function with a 'rest' argument, no type checks
+USER_FUNCTION_VTABLE(Checked);	// Function with at least one type-checked argument, no rest
+USER_FUNCTION_VTABLE(CheckedRest);	// Function with at least one type-checked argument, and a 'rest' argument
 
 #define EXTERNAL_FUNCTION_VTABLE(__checkKind__) \
 	\

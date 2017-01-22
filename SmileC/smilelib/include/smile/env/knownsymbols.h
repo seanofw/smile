@@ -154,7 +154,7 @@ typedef struct KnownSymbolsStruct {
 	Symbol call, call_method, camelCase, CamelCase, case_fold, case_insensitive, case_sensitive, category, ceil, char_, chip, chop;
 	Symbol cident_q, clip, clone, code_at, code_length, compare, compare_i, compose, composed_q, cons, contains, contains_i, control_q, context, cos, count, count64;
 	Symbol count_left_ones, count_left_zeros, count_of, count_of_i, count_ones, count_right_ones, count_right_zeros, count_zeros, crc32, create, create_child_closure;
-	Symbol d, decompose, diacritic_q, digit_q, div, divide_by_zero, does_not_understand;
+	Symbol d, decompose, default_, diacritic_q, digit_q, div, divide_by_zero, does_not_understand;
 	Symbol each, end, ends_with, ends_with_i, escape, eval, even_q, exit, exp, extend_object, extend_where_new;
 	Symbol false_, filename_mode, first, floor, fold, from_seed;
 	Symbol get_member, get_object_security, get_property;

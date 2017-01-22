@@ -15,7 +15,7 @@
 #include <smile/env/env.h>
 #endif
 
-struct CompiledFunctionStruct;
+struct CompilerFunctionStruct;
 
 //-------------------------------------------------------------------------------------------------
 // Closure Structures.

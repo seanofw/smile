@@ -85,8 +85,9 @@ ParseError Parser_ParseFunc(Parser parser, SmileObject *expr, Int modeFlags)
 	return NULL;
 }
 
-// params_opt :: = . params | .
-// params :: = . params param | . params ',' param | . param
+// params_opt :: = params param_rest | param_rest |
+// param_rest :: = param_name ELLIPSIS
+// params :: = params param | params ',' param | param
 ParseError Parser_ParseParamsOpt(Parser parser, SmileList *params)
 {
 	SmileList head = NullList, tail = NullList;
@@ -95,6 +96,9 @@ ParseError Parser_ParseParamsOpt(Parser parser, SmileList *params)
 	Int tokenKind;
 	Bool isFirst;
 	LexerPosition paramPosition;
+	SmileList paramList;
+	Symbol paramMetaSymbol;
+	Symbol paramName;
 
 	isFirst = True;
 	for (;;) {
@@ -128,96 +132,213 @@ ParseError Parser_ParseParamsOpt(Parser parser, SmileList *params)
 			*params = head;
 			return parseError;
 		}
-
+	
+		// Is this the trailing "rest" parameter?
+		if (Lexer_Peek(parser->lexer) == TOKEN_DOTDOTDOT) {
+			
+			// It is the rest parameter.  Make sure it doesn't have a default value assigned, because
+			// such things are nonsensical for the "rest" parameter.
+			if (SMILE_KIND(param) == SMILE_KIND_LIST) {
+				paramName = ((SmileSymbol)((SmileList)param)->a)->symbol;
+				for (paramList = (SmileList)((SmileList)param)->d; SMILE_KIND(paramList) == SMILE_KIND_LIST; paramList = LIST_REST(LIST_REST(paramList))) {
+					paramMetaSymbol = ((SmileSymbol)paramList->a)->symbol;
+					if (paramMetaSymbol == Smile_KnownSymbols.default_) {
+						if (parseError != NULL)
+							Parser_AddMessage(parser, parseError);
+						parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
+							String_Format("Rest argument '%S' cannot have a default value assigned to it.",
+								SymbolTable_GetName(Smile_SymbolTable, paramName)));
+						// Recover by simply continuing.
+					}
+				}
+			}
+			else {
+				paramName = ((SmileSymbol)param)->symbol;
+			}
+		
+			// Consume the ellipsis.
+			Lexer_Next(parser->lexer);
+		
+			// If the next token isn't a bar, we have an error.
+			if (Lexer_Peek(parser->lexer) != TOKEN_BAR) {
+				if (parseError != NULL)
+					Parser_AddMessage(parser, parseError);
+				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
+					String_Format("Rest argument '%S' must be the last argument in the function declaration.",
+						SymbolTable_GetName(Smile_SymbolTable, paramName)));
+					// Recover by simply continuing.
+			}
+		
+			// This is an annotated argument, so if it was previously a plain symbol, turn it into a list.
+			if (SMILE_KIND(param) != SMILE_KIND_LIST) {
+				param = (SmileObject)SmileList_ConsWithSource(
+					param,
+					NullObject,
+					paramPosition
+				);
+			}
+	
+			// Now append [... rest] to the argument's annotation list.
+			for (paramList = (SmileList)param; SMILE_KIND(paramList->d) == SMILE_KIND_LIST; paramList = LIST_REST(paramList)) ;
+			paramList->d =
+				(SmileObject)SmileList_ConsWithSource(
+					(SmileObject)Smile_KnownObjects.restSymbol,
+					NullObject,
+					paramPosition
+				);
+		}
+	
 		LIST_APPEND_WITH_SOURCE(head, tail, param, paramPosition);
 
 		isFirst = False;
 	}
 }
 
-// param :: = . name | . param_type COLON name
+// param :: = param_name | param_name '=' raw_list_term
+// param_name :: = name | param_type COLON name
 ParseError Parser_ParseParam(Parser parser, SmileObject *param, LexerPosition *position)
 {
 	Int tokenKind, nextTokenKind;
 	SmileObject type;
 	ParseError parseError;
-	LexerPosition paramPosition;
+	LexerPosition paramPosition, typePosition, defaultPosition;
 	Token token;
-	Symbol symbol;
+	Symbol nameSymbol;
 	ParseDecl decl;
+	SmileObject defaultValue;
+	Bool isTemplate;
+	SmileList tail = NullList;
 
 	tokenKind = Lexer_Next(parser->lexer);
 	token = parser->lexer->token;
 	*position = paramPosition = Token_GetPosition(token);
 
-	if (tokenKind == TOKEN_ALPHANAME || tokenKind == TOKEN_UNKNOWNALPHANAME
-		|| tokenKind == TOKEN_PUNCTNAME || tokenKind == TOKEN_UNKNOWNPUNCTNAME) {
-
-		nextTokenKind = Lexer_Next(parser->lexer);
-		if (nextTokenKind != TOKEN_COLON && nextTokenKind != TOKEN_DOT) {
-			Lexer_Unget(parser->lexer);
-
-			// Just a plain function argument.
-			symbol = token->data.symbol;
-			ParseScope_DeclareHere(parser->currentScope, symbol, PARSEDECL_ARGUMENT, paramPosition, &decl);
-			*param = (SmileObject)SmileSymbol_Create(symbol);
-			return NULL;
-		}
-		else {
-
-			// This looks like a type assertion, so parse it as a type form, and then get the name that follows it.
-			Lexer_Unget(parser->lexer);
-			Lexer_Unget(parser->lexer);
-
-			parseError = Parser_ParseParamType(parser, &type);
-			if (parseError != NULL) {
-				*param = NullObject;
-				return parseError;
-			}
-
-			tokenKind = Lexer_Next(parser->lexer);
-			if (tokenKind != TOKEN_COLON) {
-				*param = NullObject;
-				return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
-					String_Format("Expected a ':' after function argument type"));
-			}
-
-			tokenKind = Lexer_Next(parser->lexer);
-			token = parser->lexer->token;
-			paramPosition = Token_GetPosition(token);
-			if (!(tokenKind == TOKEN_ALPHANAME || tokenKind == TOKEN_UNKNOWNALPHANAME
-				|| tokenKind == TOKEN_PUNCTNAME || tokenKind == TOKEN_UNKNOWNPUNCTNAME)) {
-				*param = NullObject;
-				return ParseMessage_Create(PARSEMESSAGE_ERROR, paramPosition,
-					String_Format("Invalid function argument name after function argument type"));
-			}
-
-			symbol = token->data.symbol;
-			ParseScope_DeclareHere(parser->currentScope, symbol, PARSEDECL_ARGUMENT, paramPosition, &decl);
-
-			*param =
-				(SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects.typeSymbol,
-					(SmileObject)SmileList_ConsWithSource((SmileObject)SmileSymbol_Create(symbol),
-						type, paramPosition
-					), *position
-				);
-			return NULL;
-		}
-	}
-	else {
+	// Make sure this starts with a valid name for the new function argument.
+	if (tokenKind != TOKEN_ALPHANAME && tokenKind != TOKEN_UNKNOWNALPHANAME
+		&& tokenKind != TOKEN_PUNCTNAME && tokenKind != TOKEN_UNKNOWNPUNCTNAME) {
 		*param = NullObject;
 		return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
 			String_Format("Invalid function argument name"));
 	}
+
+	// Is it followed by a colon? If so, this isn't the argument's name; it's actually the type.
+	nextTokenKind = Lexer_Next(parser->lexer);
+	if (nextTokenKind != TOKEN_COLON) {
+		Lexer_Unget(parser->lexer);
+
+		// Just a plain function argument.
+		nameSymbol = token->data.symbol;
+		ParseScope_DeclareHere(parser->currentScope, nameSymbol, PARSEDECL_ARGUMENT, paramPosition, &decl);
+		*param = (SmileObject)SmileSymbol_Create(nameSymbol);
+	}
+	else {
+
+		// This looks like a type assertion, so parse it as a type form, and then get the name that follows it.
+		Lexer_Unget(parser->lexer);
+		Lexer_Unget(parser->lexer);
+	
+		// First, get the type.
+		parseError = Parser_ParseParamType(parser, &type);
+		if (parseError != NULL) {
+			*param = NullObject;
+			return parseError;
+		}
+		typePosition = Token_GetPosition(parser->lexer->token);
+
+		// Make sure there's a colon after it.
+		tokenKind = Lexer_Next(parser->lexer);
+		if (tokenKind != TOKEN_COLON) {
+			*param = NullObject;
+			return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
+				String_Format("Expected a ':' after function argument type"));
+		}
+	
+		// Now get the real function argument name.
+		tokenKind = Lexer_Next(parser->lexer);
+		token = parser->lexer->token;
+		paramPosition = Token_GetPosition(token);
+		if (!(tokenKind == TOKEN_ALPHANAME || tokenKind == TOKEN_UNKNOWNALPHANAME
+			|| tokenKind == TOKEN_PUNCTNAME || tokenKind == TOKEN_UNKNOWNPUNCTNAME)) {
+			*param = NullObject;
+			return ParseMessage_Create(PARSEMESSAGE_ERROR, paramPosition,
+				String_Format("Invalid function argument name after function argument type"));
+		}
+	
+		nameSymbol = token->data.symbol;
+		ParseScope_DeclareHere(parser->currentScope, nameSymbol, PARSEDECL_ARGUMENT, paramPosition, &decl);
+
+		// This is an annotated argument, so if it was previously a plain symbol, turn it into a list.
+		if (SMILE_KIND(*param) != SMILE_KIND_LIST) {
+			*param = (SmileObject)SmileList_ConsWithSource(
+				(SmileObject)SmileSymbol_Create(nameSymbol),
+				NullObject,
+				paramPosition
+			);
+			tail = (SmileList)*param;
+		}
+	
+		// Now append [... type foo] to the argument's annotation list.
+		tail->d =
+			(SmileObject)SmileList_ConsWithSource(
+				(SmileObject)Smile_KnownObjects.typeSymbol,
+				(SmileObject)SmileList_ConsWithSource(
+					type,
+					NullObject,
+					typePosition
+				),
+				typePosition
+			);
+		tail = (SmileList)((SmileList)tail->d)->d;
+	}
+
+	// Next, see if this has a default value assigned after it.
+	if (Lexer_Peek(parser->lexer) == TOKEN_EQUAL) {
+	
+		// Optional parameter, with an assigned default value.
+		Lexer_Next(parser->lexer);
+		defaultPosition = Lexer_GetPosition(parser->lexer);
+		parseError = Parser_ParseRawListTerm(parser, &defaultValue, &isTemplate, 0);
+		if (parseError != NULL) {
+			*param = NullObject;
+			return parseError;
+		}
+		if (isTemplate) {
+			*param = NullObject;
+			return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
+				String_Format("Default value for argument '%S' is not a constant value.", SymbolTable_GetName(Smile_SymbolTable, nameSymbol)));
+		}
+	
+		// This is an annotated argument, so if it was previously a plain symbol, turn it into a list.
+		if (SMILE_KIND(*param) != SMILE_KIND_LIST) {
+			*param = (SmileObject)SmileList_ConsWithSource(
+				(SmileObject)SmileSymbol_Create(nameSymbol),
+				NullObject,
+				paramPosition
+			);
+		}
+
+		// Now append [... default foo] to the argument's annotation list.
+		tail->d =
+			(SmileObject)SmileList_ConsWithSource(
+				(SmileObject)Smile_KnownObjects.defaultSymbol,
+				(SmileObject)SmileList_ConsWithSource(
+					defaultValue,
+					NullObject,
+					defaultPosition
+				),
+				defaultPosition
+			);
+		tail = (SmileList)((SmileList)tail->d)->d;
+	}
+
+	// Success!
+	return NULL;
 }
 
-// param_type ::= . param_type_dot
-// param_type_dot ::= . param_type_dot DOT param_type_term | . param_type_term
-// param_type_term ::= . ALPHA_NAME | . PUNCT_NAME
+// param_type ::= . ALPHA_NAME | . PUNCT_NAME
 ParseError Parser_ParseParamType(Parser parser, SmileObject *type)
 {
 	Token token;
-	SmileSymbol propertySymbol;
 
 	token = Parser_NextToken(parser);
 
@@ -233,18 +354,6 @@ ParseError Parser_ParseParamType(Parser parser, SmileObject *type)
 	}
 
 	*type = (SmileObject)SmileSymbol_Create(parser->lexer->token->data.symbol);
-
-	while (Lexer_Next(parser->lexer) == TOKEN_DOT) {
-		token = Parser_NextToken(parser);
-		if (token->kind != TOKEN_ALPHANAME && token->kind != TOKEN_PUNCTNAME
-			&& token->kind != TOKEN_UNKNOWNALPHANAME && token->kind != TOKEN_UNKNOWNPUNCTNAME) {
-			return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
-				String_Format("Illegal function argument type name"));
-		}
-
-		propertySymbol = SmileSymbol_Create(token->data.symbol);
-		*type = (SmileObject)SmilePair_CreateWithSource(*type, (SmileObject)propertySymbol, Token_GetPosition(token));
-	}
 
 	Lexer_Unget(parser->lexer);
 	return NULL;

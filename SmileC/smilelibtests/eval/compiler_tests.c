@@ -77,7 +77,7 @@ START_TEST(CanCompileNull)
 	SmileObject expr = Parse("[]");
 
 	Compiler compiler = Compiler_Create();
-	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
+	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
 	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
@@ -96,7 +96,7 @@ START_TEST(CanCompileByte)
 	SmileObject expr = Parse("123x");
 
 	Compiler compiler = Compiler_Create();
-	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
+	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
 	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
@@ -115,7 +115,7 @@ START_TEST(CanCompileInt16)
 	SmileObject expr = Parse("123s");
 
 	Compiler compiler = Compiler_Create();
-	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
+	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
 	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
@@ -134,7 +134,7 @@ START_TEST(CanCompileInt32)
 	SmileObject expr = Parse("123t");
 
 	Compiler compiler = Compiler_Create();
-	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
+	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
 	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
@@ -153,7 +153,7 @@ START_TEST(CanCompileInt64)
 	SmileObject expr = Parse("123");
 
 	Compiler compiler = Compiler_Create();
-	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
+	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
 	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
@@ -172,7 +172,7 @@ START_TEST(CanCompileBasicArithmetic)
 	SmileObject expr = Parse("123 + 456");
 
 	Compiler compiler = Compiler_Create();
-	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
+	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
 	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
@@ -195,7 +195,7 @@ START_TEST(CanCompileMildlyInterestingArithmetic)
 	SmileObject expr = Parse("(123 + -456) * 50");
 
 	Compiler compiler = Compiler_Create();
-	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
+	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
 	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
@@ -226,7 +226,7 @@ START_TEST(CanCompileGlobalReadsAndWrites)
 	SmileObject expr = Parse("ga = gb");
 
 	Compiler compiler = Compiler_Create();
-	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
+	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
 	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
@@ -249,7 +249,7 @@ START_TEST(CanCompileReadsFromProperties)
 	SmileObject expr = Parse("ga = gb.foo");
 
 	Compiler compiler = Compiler_Create();
-	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
+	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
 	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
@@ -274,7 +274,7 @@ START_TEST(CanCompileWritesToProperties)
 	SmileObject expr = Parse("ga.foo = gb");
 
 	Compiler compiler = Compiler_Create();
-	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
+	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
 	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
@@ -299,7 +299,7 @@ START_TEST(CanCompileReadsFromMembers)
 	SmileObject expr = Parse("ga = gb:10");
 
 	Compiler compiler = Compiler_Create();
-	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
+	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
 	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
@@ -324,7 +324,7 @@ START_TEST(CanCompileWritesToMembers)
 	SmileObject expr = Parse("ga:10 = gb");
 
 	Compiler compiler = Compiler_Create();
-	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
+	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
 	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
@@ -352,7 +352,7 @@ START_TEST(CanCompileScopeVariableReads)
 	SmileObject expr = Parse("{ a = gb }");
 
 	Compiler compiler = Compiler_Create();
-	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
+	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
 	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
@@ -377,7 +377,7 @@ START_TEST(CanCompileNestedScopeVariableReads)
 	SmileObject expr = Parse("{ var b = 10 { var a = b, c = a + b } }");
 
 	Compiler compiler = Compiler_Create();
-	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
+	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
 	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
@@ -407,7 +407,7 @@ START_TEST(NestedScopesVariablesDontOverlap)
 	SmileObject expr = Parse("{ var b = 10 { var a = b, c = a + b } { var d = b * 20 } }");
 
 	Compiler compiler = Compiler_Create();
-	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
+	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
 	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
@@ -444,7 +444,7 @@ START_TEST(CanCompileSimpleConditionals)
 	SmileObject expr = Parse("[$if 1 < 10 `then-side `else-side]");
 
 	Compiler compiler = Compiler_Create();
-	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
+	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
 	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
@@ -483,7 +483,7 @@ START_TEST(CanCompileConditionalsAllTheWay)
 	);
 
 	Compiler compiler = Compiler_Create();
-	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
+	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
 	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 
@@ -525,7 +525,7 @@ START_TEST(CanCompileAWhileLoopThatComputesLogarithms)
 	);
 
 	Compiler compiler = Compiler_Create();
-	CompiledFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
+	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
 	Int offset = Compiler_CompileExpr(compiler, expr);
 	String result;
 

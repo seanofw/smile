@@ -408,6 +408,7 @@ STATIC_STRING(create, "create");
 STATIC_STRING(create_child_closure, "create-child-closure");
 STATIC_STRING(d, "d");
 STATIC_STRING(decompose, "decompose");
+STATIC_STRING(default_, "default");
 STATIC_STRING(diacritic_q, "diacritic?");
 STATIC_STRING(digit_q, "digit?");
 STATIC_STRING(div, "div");
@@ -685,6 +686,7 @@ static void KnownSymbolsInt_PreloadGeneralSymbols(SymbolTable symbolTable, Known
 	knownSymbols->create_child_closure = SymbolTableInt_AddFast(symbolTable, create_child_closure);
 	knownSymbols->d = SymbolTableInt_AddFast(symbolTable, d);
 	knownSymbols->decompose = SymbolTableInt_AddFast(symbolTable, decompose);
+	knownSymbols->default_ = SymbolTableInt_AddFast(symbolTable, default_);
 	knownSymbols->diacritic_q = SymbolTableInt_AddFast(symbolTable, diacritic_q);
 	knownSymbols->digit_q = SymbolTableInt_AddFast(symbolTable, digit_q);
 	knownSymbols->div = SymbolTableInt_AddFast(symbolTable, div);

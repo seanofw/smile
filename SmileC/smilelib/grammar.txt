@@ -174,12 +174,12 @@ members_opt ::= members |
 members ::= members member | member
 member ::= name COLON orexpr
 
-params_opt ::= params |
+params_opt ::= params param_rest | param_rest |
+param_rest ::= param_name ELLIPSIS
 params ::= params param | params ',' param | param
-param ::= name | param_type COLON name
-param_type ::= param_type_dot
-param_type_dot ::= param_type_dot DOT param_type_term | param_type_term
-param_type_term ::= ALPHA_NAME | PUNCT_NAME
+param ::= param_name | param_name '=' raw_list_term
+param_name ::= name | param_type COLON name
+param_type ::= ALPHA_NAME | PUNCT_NAME
 
 raw_list_item ::= raw_list_dotexpr
 raw_list_dotexpr ::= raw_list_dotexpr DOT any_name | raw_list_term
@@ -196,7 +196,7 @@ raw_list ::= LBRACKET raw_list_items_opt RBRACKET
 raw_list_items_opt ::= raw_list_items |
 raw_list_items ::= raw_list_items raw_list_item | raw_list_item
 
-syntax_expr ::= syntax_level COLON LBRACKET syntax_pattern RBRACKET IMPLIES raw_list_item
+syntax_expr ::= syntax_level COLON LBRACKET syntax_pattern RBRACKET IMPLIES raw_list_term
 syntax_level ::= any_name
 syntax_pattern ::= syntax_element | syntax_element syntax_pattern
 syntax_element ::= syntax_term | syntax_nonterm
