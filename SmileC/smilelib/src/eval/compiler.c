@@ -49,29 +49,31 @@ static void Compiler_CompileProg1(Compiler compiler, SmileList args);
 static void Compiler_CompileProgN(Compiler compiler, SmileList args);
 static void Compiler_CompileScope(Compiler compiler, SmileList args);
 static void Compiler_CompileNew(Compiler compiler, SmileList args);
-static void Compiler_CompileIs(Compiler compiler, SmileList args);
 static void Compiler_CompileTypeOf(Compiler compiler, SmileList args);
-static void Compiler_CompileSuperEq(Compiler compiler, SmileList args);
-static void Compiler_CompileSuperNe(Compiler compiler, SmileList args);
 static void Compiler_CompileAnd(Compiler compiler, SmileList args);
 static void Compiler_CompileOr(Compiler compiler, SmileList args);
 static void Compiler_CompileNot(Compiler compiler, SmileList args);
 
-static void EmitPop1(Compiler compiler);
+static Int Compiler_SetSourceLocationFromList(Compiler compiler, SmileList list);
+static Int Compiler_SetSourceLocationFromPair(Compiler compiler, SmilePair pair);
+static Int Compiler_CompileOneArgument(Compiler compiler, SmileList args, const char *name);
+static Int Compiler_CompileTwoArguments(Compiler compiler, SmileList args, const char *name);
+
+static void Compiler_EmitPop1(Compiler compiler);
 
 #define EMIT0(__opcode__, __stackDelta__) \
-	((offset = ByteCodeSegment_Emit(segment, (__opcode__))), \
+	((offset = ByteCodeSegment_Emit(segment, (__opcode__), compiler->currentFunction->currentSourceLocation)), \
 		ApplyStackDelta(compiler->currentFunction, __stackDelta__), \
 		offset)
 		
 #define EMIT1(__opcode__, __stackDelta__, __operand1__) \
-	((offset = ByteCodeSegment_Emit(segment, (__opcode__))), \
+	((offset = ByteCodeSegment_Emit(segment, (__opcode__), compiler->currentFunction->currentSourceLocation)), \
 		segment->byteCodes[offset].u.__operand1__, \
 		ApplyStackDelta(compiler->currentFunction, __stackDelta__), \
 		offset)
 
 #define EMIT2(__opcode__, __stackDelta__, __operand1__, __operand2__) \
-	((offset = ByteCodeSegment_Emit(segment, (__opcode__))), \
+	((offset = ByteCodeSegment_Emit(segment, (__opcode__), compiler->currentFunction->currentSourceLocation)), \
 		segment->byteCodes[offset].u.__operand1__, \
 		segment->byteCodes[offset].u.__operand2__, \
 		ApplyStackDelta(compiler->currentFunction, __stackDelta__), \
@@ -93,9 +95,9 @@ Inline Int ApplyStackDelta(CompilerFunction compilerFunction, Int stackDelta)
 
 #define RECENT_BYTECODE(__delta__) (segment->byteCodes[segment->numByteCodes + (__delta__)])
 
-static void EmitPop1(Compiler compiler)
+static void Compiler_EmitPop1(Compiler compiler)
 {
-	Int lastOpcode, newOpcode;
+	Byte lastOpcode, newOpcode;
 	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 	Int offset;
 
@@ -133,15 +135,15 @@ static void EmitPop1(Compiler compiler)
 			// Delete last instruction, and pop the object before it.
 			segment->numByteCodes--;
 			ApplyStackDelta(compiler->currentFunction, -1);
-			EmitPop1(compiler);
+			Compiler_EmitPop1(compiler);
 			return;
 		
 		case Op_LdMember:
 			// Delete last instruction, and pop the two objects before it.
 			segment->numByteCodes--;
 			ApplyStackDelta(compiler->currentFunction, -1);
-			EmitPop1(compiler);
-			EmitPop1(compiler);
+			Compiler_EmitPop1(compiler);
+			Compiler_EmitPop1(compiler);
 			return;
 		
 		case Op_Pop1:
@@ -218,6 +220,36 @@ static void EmitPop1(Compiler compiler)
 	}
 }
 
+static Int Compiler_SetSourceLocation(Compiler compiler, LexerPosition lexerPosition)
+{
+	Int oldSourceLocation = compiler->currentFunction->currentSourceLocation;
+
+	// Update the source-location tracking to include a new lexer position.
+	CompiledSourceLocation sourceLocation = &compiler->compiledTables->sourcelocations[oldSourceLocation];
+	compiler->currentFunction->currentSourceLocation =
+		Compiler_AddNewSourceLocation(compiler, lexerPosition->filename, lexerPosition->line, lexerPosition->column, sourceLocation->assignedName);
+
+	return oldSourceLocation;
+}
+
+static Int Compiler_SetAssignedSymbol(Compiler compiler, Symbol symbol)
+{
+	Int oldSourceLocation = compiler->currentFunction->currentSourceLocation;
+
+	// Update the source-location tracking to indicate that whatever expression we're building,
+	// it's being assigned to something with this name.
+	CompiledSourceLocation sourceLocation = &compiler->compiledTables->sourcelocations[oldSourceLocation];
+	compiler->currentFunction->currentSourceLocation =
+		Compiler_AddNewSourceLocation(compiler, sourceLocation->filename, sourceLocation->line, sourceLocation->column, symbol);
+
+	return oldSourceLocation;
+}
+
+static void Compiler_RevertSourceLocation(Compiler compiler, Int oldSourceLocation)
+{
+	compiler->currentFunction->currentSourceLocation = oldSourceLocation;
+}
+
 /// <summary>
 /// Create a new CompiledTables object.
 /// </summary>
@@ -246,6 +278,18 @@ CompiledTables CompiledTables_Create(void)
 		Smile_Abort_OutOfMemory();
 	compiledTables->numUserFunctions = 0;
 	compiledTables->maxUserFunctions = 16;
+
+	compiledTables->sourcelocations = GC_MALLOC_STRUCT_ARRAY(struct CompiledSourceLocationStruct, 256);
+	if (compiledTables->sourcelocations == NULL)
+		Smile_Abort_OutOfMemory();
+	compiledTables->numSourceLocations = 1;
+	compiledTables->maxSourceLocations = 256;
+
+	// Preallocate the zeroth entry so we can use '0' to mean 'none'.
+	compiledTables->sourcelocations[0].filename = NULL;
+	compiledTables->sourcelocations[0].line = 0;
+	compiledTables->sourcelocations[0].column = 0;
+	compiledTables->sourcelocations[0].assignedName = 0;
 
 	return compiledTables;
 }
@@ -293,9 +337,51 @@ Int Compiler_AddUserFunctionInfo(Compiler compiler, UserFunctionInfo userFunctio
 		compiledTables->maxUserFunctions = newMax;
 	}
 
-	// Okay, we have enough space, and it's not there yet, so add it.
+	// Okay, we have enough space, so add it.
 	index = compiledTables->numUserFunctions++;
 	compiledTables->userFunctions[index] = userFunctionInfo;
+
+	return index;
+}
+
+/// <summary>
+/// Add a new SourceLocation object to the compiler's collection, and return its index.
+/// </summary>
+Int Compiler_AddNewSourceLocation(Compiler compiler, String filename, Int line, Int column, Symbol assignedName)
+{
+	CompiledSourceLocation sourceLocation;
+	CompiledTables compiledTables = compiler->compiledTables;
+	Int index;
+
+	// Simple and dumb optimization:  See if we have one of these already as the last one added.
+	index = compiledTables->numSourceLocations - 1;
+	sourceLocation = &compiledTables->sourcelocations[index];
+	if (filename == sourceLocation->filename    // Note that this is a pointer test, not a deep test.
+		&& line == sourceLocation->line && column == sourceLocation->column
+		&& assignedName == sourceLocation->assignedName)
+		return index;
+
+	// Do we have enough space to add it?  If not, reallocate.
+	if (compiledTables->numSourceLocations >= compiledTables->maxSourceLocations) {
+		struct CompiledSourceLocationStruct *newSourceLocations;
+		Int newMax;
+
+		newMax = compiledTables->maxSourceLocations * 2;
+		newSourceLocations = GC_MALLOC_STRUCT_ARRAY(struct CompiledSourceLocationStruct, newMax);
+		if (newSourceLocations == NULL)
+			Smile_Abort_OutOfMemory();
+		MemCpy(newSourceLocations, compiledTables->sourcelocations, compiledTables->numSourceLocations);
+		compiledTables->sourcelocations = newSourceLocations;
+		compiledTables->maxSourceLocations = newMax;
+	}
+
+	// Okay, we have enough space, and it's not there yet, so add it.
+	index = compiledTables->numSourceLocations++;
+	sourceLocation = &compiledTables->sourcelocations[index];
+	sourceLocation->assignedName = assignedName;
+	sourceLocation->filename = filename;
+	sourceLocation->line = line;
+	sourceLocation->column = column;
 
 	return index;
 }
@@ -327,6 +413,7 @@ CompilerFunction Compiler_BeginFunction(Compiler compiler, SmileList args, Smile
 	newFunction->localMax = 16;
 	newFunction->stackSize = 0;
 	newFunction->functionDepth = compiler->currentFunction != NULL ? compiler->currentFunction->functionDepth + 1 : 0;
+	newFunction->currentSourceLocation = 0;
 
 	// Finally, make the new function the current function.
 	compiler->currentFunction = newFunction;
@@ -491,6 +578,7 @@ UserFunctionInfo Compiler_CompileGlobal(Compiler compiler, SmileObject expr)
 
 	Compiler_CompileExpr(compiler, expr);
 
+	compiler->currentFunction->currentSourceLocation = 0;
 	EMIT0(Op_Ret, -1);
 
 	Compiler_EndFunction(compiler);
@@ -582,7 +670,7 @@ Int Compiler_CompileExpr(Compiler compiler, SmileObject expr)
 	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 	Int startIndex = segment->numByteCodes;
 	SmileList list;
-	Int argCount, index, offset;
+	Int argCount, index, offset, oldSourceLocation;
 
 	switch (SMILE_KIND(expr)) {
 
@@ -658,7 +746,10 @@ Int Compiler_CompileExpr(Compiler compiler, SmileObject expr)
 		// Simple pairs resolve by performing a property lookup on the object in question,
 		// which may walk up the base chain for that object.
 		case SMILE_KIND_PAIR:
+			oldSourceLocation = compiler->currentFunction->currentSourceLocation;
+			Compiler_SetSourceLocationFromPair(compiler, (SmilePair)expr);
 			Compiler_CompileProperty(compiler, (SmilePair)expr, False);
+			compiler->currentFunction->currentSourceLocation = oldSourceLocation;
 			break;
 		
 		// Symbols (variables) resolve to whatever the current closure (or any base closure) says they are.
@@ -677,6 +768,8 @@ Int Compiler_CompileExpr(Compiler compiler, SmileObject expr)
 		// evaluate specially, more forms than McCarthy's Lisp had, but still relatively few overall.
 		case SMILE_KIND_LIST:
 			list = (SmileList)expr;
+			oldSourceLocation = Compiler_SetSourceLocationFromList(compiler, list);
+
 			switch (SMILE_KIND(list->a)) {
 
 				// Invocation of a method on an object, of the form [obj.method ...].
@@ -702,9 +795,12 @@ Int Compiler_CompileExpr(Compiler compiler, SmileObject expr)
 					// and the rest will become the arguments.
 					argCount = 0;
 					for (; SMILE_KIND(list) == SMILE_KIND_LIST; list = LIST_REST(list), argCount++) {
+						Compiler_SetSourceLocationFromList(compiler, list);
 						Compiler_CompileExpr(compiler, list->a);
 					}
 					
+					Compiler_RevertSourceLocation(compiler, oldSourceLocation);
+				
 					if (argCount == 0) {
 						// [] just becomes null.
 						EMIT0(Op_LdNull, +1);
@@ -722,6 +818,8 @@ Int Compiler_CompileExpr(Compiler compiler, SmileObject expr)
 					EMIT0(Op_Rep1, -1);
 					break;
 			}
+		
+			compiler->currentFunction->currentSourceLocation = oldSourceLocation;
 			break;
 		
 		default:
@@ -730,6 +828,15 @@ Int Compiler_CompileExpr(Compiler compiler, SmileObject expr)
 	}
 
 	return startIndex;
+}
+
+static Symbol Compiler_GetPropertyNameFromPair(Compiler compiler, SmilePair pair)
+{
+	UNUSED(compiler);
+
+	if (SMILE_KIND(pair->right) != SMILE_KIND_SYMBOL)
+		return 0;
+	return ((SmileSymbol)(pair->right))->symbol;
 }
 
 // Form: expr.symbol
@@ -861,6 +968,7 @@ static void Compiler_CompileMethodCall(Compiler compiler, SmilePair pair, SmileL
 	Int offset;
 	Symbol symbol;
 	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
+	Int oldSourceLocation = compiler->currentFunction->currentSourceLocation;
 
 	// First, make sure the args are well-formed, and count how many of them there are.
 	length = SmileList_Length(args);
@@ -873,13 +981,17 @@ static void Compiler_CompileMethodCall(Compiler compiler, SmilePair pair, SmileL
 	}
 
 	// Evaluate the left side of the pair (the object to invoke).
+	Compiler_SetSourceLocationFromPair(compiler, pair);
 	Compiler_CompileExpr(compiler, pair->left);
 	symbol = ((SmileSymbol)pair->right)->symbol;
 
 	// Evaluate all of the arguments.
 	for (temp = args; SMILE_KIND(temp) == SMILE_KIND_LIST; temp = (SmileList)temp->d) {
+		Compiler_SetSourceLocationFromList(compiler, temp);
 		Compiler_CompileExpr(compiler, temp->a);
 	}
+
+	Compiler_RevertSourceLocation(compiler, oldSourceLocation);
 
 	// Invoke the method by symbol name.
 	if (length <= 7) {
@@ -904,6 +1016,10 @@ static void Compiler_CompileMethodCall(Compiler compiler, SmilePair pair, SmileL
 /// </summary>
 static Bool Compiler_CompileStandardForm(Compiler compiler, Symbol symbol, SmileList args)
 {
+	Int offset;
+	Int oldSourceLocation;
+	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
+
 	switch (symbol) {
 
 		// Assignment.
@@ -953,18 +1069,26 @@ static Bool Compiler_CompileStandardForm(Compiler compiler, Symbol symbol, Smile
 			Compiler_CompileNew(compiler, args);
 			return True;
 		case SMILE_SPECIAL_SYMBOL__IS:
-			Compiler_CompileIs(compiler, args);
+			oldSourceLocation = Compiler_CompileTwoArguments(compiler, args, "$is");
+			EMIT0(Op_Is, -2 + 1);
+			Compiler_RevertSourceLocation(compiler, oldSourceLocation);
 			return True;
 		case SMILE_SPECIAL_SYMBOL__TYPEOF:
-			Compiler_CompileTypeOf(compiler, args);
+			oldSourceLocation = Compiler_CompileOneArgument(compiler, args, "$typeof");
+			EMIT0(Op_TypeOf, -1 + 1);
+			Compiler_RevertSourceLocation(compiler, oldSourceLocation);
 			return True;
 
 		// Reference comparison.
 		case SMILE_SPECIAL_SYMBOL__EQ:
-			Compiler_CompileSuperEq(compiler, args);
+			oldSourceLocation = Compiler_CompileTwoArguments(compiler, args, "===");
+			EMIT0(Op_SuperEq, -2 + 1);
+			Compiler_RevertSourceLocation(compiler, oldSourceLocation);
 			return True;
 		case SMILE_SPECIAL_SYMBOL__NE:
-			Compiler_CompileSuperNe(compiler, args);
+			oldSourceLocation = Compiler_CompileTwoArguments(compiler, args, "!==");
+			EMIT0(Op_SuperNe, -2 + 1);
+			Compiler_RevertSourceLocation(compiler, oldSourceLocation);
 			return True;
 		
 		// Logical operations.
@@ -975,7 +1099,9 @@ static Bool Compiler_CompileStandardForm(Compiler compiler, Symbol symbol, Smile
 			Compiler_CompileOr(compiler, args);
 			return True;
 		case SMILE_SPECIAL_SYMBOL__NOT:
-			Compiler_CompileNot(compiler, args);
+			oldSourceLocation = Compiler_CompileOneArgument(compiler, args, "$not");
+			EMIT0(Op_Not, -1 + 1);
+			Compiler_RevertSourceLocation(compiler, oldSourceLocation);
 			return True;
 
 		// Don't know what this is, so it's likely an evaluation of whatever's in scope.
@@ -993,6 +1119,7 @@ static void Compiler_CompileSetf(Compiler compiler, SmileList args)
 	Symbol symbol;
 	Int offset;
 	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
+	Int oldSourceLocation = compiler->currentFunction->currentSourceLocation;
 
 	// There are three possible legal forms for the arguments:
 	//
@@ -1020,12 +1147,16 @@ static void Compiler_CompileSetf(Compiler compiler, SmileList args)
 		case SMILE_KIND_SYMBOL:
 			// This is of the form [$set symbol value].
 			symbol = ((SmileSymbol)dest)->symbol;
+			oldSourceLocation = Compiler_SetAssignedSymbol(compiler, symbol);
+			Compiler_SetSourceLocationFromList(compiler, (SmileList)args->d);
 		
 			// Load the value to store.
 			Compiler_CompileExpr(compiler, value);
 
 			// Store it, leaving a duplicate on the stack.
+			Compiler_SetSourceLocationFromList(compiler, args);
 			Compiler_CompileVariable(compiler, symbol, True);
+			Compiler_RevertSourceLocation(compiler, oldSourceLocation);
 			break;
 
 		case SMILE_KIND_PAIR:
@@ -1039,15 +1170,21 @@ static void Compiler_CompileSetf(Compiler compiler, SmileList args)
 			}
 			symbol = ((SmileSymbol)pair->right)->symbol;
 		
+			Compiler_SetSourceLocationFromList(compiler, (SmileList)args->d);
+
 			// Evaluate the left side first.
 			Compiler_CompileExpr(compiler, pair->left);
-		
+
+			Compiler_SetAssignedSymbol(compiler, symbol);
+			Compiler_SetSourceLocationFromList(compiler, args);
+
 			// Evaluate the value second.  (Doing this second ensures that everything always
 			// evaluates left-to-right, the order in which it was written.)
 			Compiler_CompileExpr(compiler, value);
 		
 			// Assign the property.
 			EMIT1(Op_StProp, -1, symbol = symbol);	// Leaves the value on the stack.
+			Compiler_RevertSourceLocation(compiler, oldSourceLocation);
 			break;
 		
 		case SMILE_KIND_LIST:
@@ -1068,9 +1205,13 @@ static void Compiler_CompileSetf(Compiler compiler, SmileList args)
 			index = LIST_SECOND((SmileList)dest);
 		
 			// Okay.  We now have pair->left, pair->right, index, and value.  Let's compile them.
+			Compiler_SetSourceLocationFromPair(compiler, pair);
 			Compiler_CompileExpr(compiler, pair->left);
+			Compiler_SetSourceLocationFromList(compiler, (SmileList)((SmileList)dest)->d);
 			Compiler_CompileExpr(compiler, index);
+			Compiler_SetSourceLocationFromList(compiler, (SmileList)args->d);
 			Compiler_CompileExpr(compiler, value);
+			Compiler_SetSourceLocationFromList(compiler, args);
 			EMIT0(Op_StMember, -3);	// Leaves the value on the stack.
 			break;
 		
@@ -1090,6 +1231,7 @@ static void Compiler_CompileOpEquals(Compiler compiler, SmileList args)
 	Symbol symbol, op;
 	Int offset;
 	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
+	Int oldSourceLocation;
 
 	// There are three possible legal forms for the arguments:
 	//
@@ -1130,6 +1272,8 @@ static void Compiler_CompileOpEquals(Compiler compiler, SmileList args)
 		// Load the source variable.
 		Compiler_CompileVariable(compiler, symbol, False);
 
+		oldSourceLocation = Compiler_SetAssignedSymbol(compiler, symbol);
+
 		// Load the value to store.
 		Compiler_CompileExpr(compiler, value);
 	
@@ -1138,6 +1282,7 @@ static void Compiler_CompileOpEquals(Compiler compiler, SmileList args)
 	
 		// Store the result back, leaving a duplicate on the stack.
 		Compiler_CompileVariable(compiler, symbol, True);
+		Compiler_RevertSourceLocation(compiler, oldSourceLocation);
 		break;
 
 	case SMILE_KIND_PAIR:
@@ -1159,7 +1304,9 @@ static void Compiler_CompileOpEquals(Compiler compiler, SmileList args)
 	
 		// Load the source property.
 		EMIT1(Op_LdProp, -1, symbol = symbol);
-	
+
+		oldSourceLocation = Compiler_SetAssignedSymbol(compiler, symbol);
+
 		// Evaluate the value.
 		Compiler_CompileExpr(compiler, value);
 
@@ -1168,6 +1315,7 @@ static void Compiler_CompileOpEquals(Compiler compiler, SmileList args)
 	
 		// Assign the property.
 		EMIT1(Op_StProp, -1, symbol = symbol);	// Leaves the value on the stack.
+		Compiler_RevertSourceLocation(compiler, oldSourceLocation);
 		break;
 
 	case SMILE_KIND_LIST:
@@ -1398,11 +1546,11 @@ static void Compiler_CompileWhile(Compiler compiler, SmileList args)
 
 		b = EMIT0(not ? Op_Bf : Op_Bt, -1);
 	
-		EmitPop1(compiler);
+		Compiler_EmitPop1(compiler);
 
 		Compiler_CompileExpr(compiler, postClause);
-		EmitPop1(compiler);
-
+		Compiler_EmitPop1(compiler);
+	
 		jmp = EMIT0(Op_Jmp, 0);
 	
 		bLabel = EMIT0(Op_Label, 0);
@@ -1432,8 +1580,8 @@ static void Compiler_CompileWhile(Compiler compiler, SmileList args)
 
 		bLabel = EMIT0(Op_Label, 0);
 	
-		EmitPop1(compiler);
-
+		Compiler_EmitPop1(compiler);
+	
 		jmpLabel = EMIT0(Op_Label, 0);
 
 		Compiler_CompileExpr(compiler, preClause);
@@ -1470,8 +1618,8 @@ static void Compiler_CompileWhile(Compiler compiler, SmileList args)
 	
 		bLabel = EMIT0(Op_Label, 0);
 	
-		EmitPop1(compiler);
-
+		Compiler_EmitPop1(compiler);
+	
 		Compiler_CompileExpr(compiler, postClause);
 
 		jmpLabel = EMIT0(Op_Label, 0);
@@ -1528,23 +1676,27 @@ static void Compiler_CompileReturn(Compiler compiler, SmileList args)
 	Int offset;
 	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 
+	Int oldSourceLocation = Compiler_SetAssignedSymbol(compiler, 0);
+	Compiler_SetSourceLocationFromList(compiler, args);
+
 	if (SMILE_KIND(args) == SMILE_KIND_NULL) {
 		// Naked [$return], so we're implicitly returning null.
 		EMIT0(Op_LdNull, +1);
 		EMIT0(Op_Ret, -1);
 	}
-	else if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_NULL) {
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
-			String_FromC("Cannot compile [return]: Expression is not well-formed.")));
-		return;
-	}
-	else {
+	else if (SMILE_KIND(args) == SMILE_KIND_LIST && SMILE_KIND(args->d) == SMILE_KIND_NULL) {
 		// Compile the return expression...
 		Compiler_CompileExpr(compiler, args->a);
-	
+
 		// ...and return it.
 		EMIT0(Op_Ret, -1);
 	}
+	else {
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+			String_FromC("Cannot compile [return]: Expression is not well-formed.")));
+	}
+
+	Compiler_RevertSourceLocation(compiler, oldSourceLocation);
 }
 
 // Form: [$fn [args...] body]
@@ -1560,6 +1712,8 @@ static void Compiler_CompileFn(Compiler compiler, SmileList args)
 	ClosureInfo closureInfo;
 	UserFunctionInfo userFunctionInfo;
 	Int functionIndex;
+
+	Int oldSourceLocation = Compiler_SetAssignedSymbol(compiler, 0);
 
 	// The [$fn] expression must be of the form:  [$fn [args...] body].
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->a) != SMILE_KIND_LIST
@@ -1597,9 +1751,11 @@ static void Compiler_CompileFn(Compiler compiler, SmileList args)
 	compilerFunction->numArgs = numFunctionArgs;
 
 	// Compile the body.
+	Compiler_SetSourceLocationFromList(compiler, (SmileList)args->d);
 	Compiler_CompileExpr(compiler, functionBody);
 
 	// Emit a return instruction at the end.
+	Compiler_SetSourceLocationFromList(compiler, args);
 	EMIT0(Op_Ret, -1);
 
 	// We're done compiling this function.
@@ -1609,6 +1765,8 @@ static void Compiler_CompileFn(Compiler compiler, SmileList args)
 	closureInfo = Compiler_MakeClosureInfoForCompilerFunction(compiler, compilerFunction);
 	MemCpy(&userFunctionInfo->closureInfo, closureInfo, sizeof(struct ClosureInfoStruct));
 	userFunctionInfo->byteCodeSegment = compilerFunction->byteCodeSegment;
+
+	Compiler_RevertSourceLocation(compiler, oldSourceLocation);
 
 	// Finally, emit an instruction to load a new instance of this function onto its parent's stack.
 	EMIT1(Op_NewFn, 1, index = functionIndex);
@@ -1648,40 +1806,67 @@ static void Compiler_CompileQuote(Compiler compiler, SmileList args)
 // Form: [$prog1 a b c ...]
 static void Compiler_CompileProg1(Compiler compiler, SmileList args)
 {
+	Int oldSourceLocation;
+
 	if (SMILE_KIND(args) != SMILE_KIND_LIST)
 		return;
+
+	oldSourceLocation = Compiler_SetAssignedSymbol(compiler, 0);
 
 	// Compile this expression, and keep it.
 	Compiler_CompileExpr(compiler, args->a);
 	args = LIST_REST(args);
 
+	Compiler_RevertSourceLocation(compiler, oldSourceLocation);
+
 	for (; SMILE_KIND(args) == SMILE_KIND_LIST; args = LIST_REST(args)) {
 	
 		// Compile this next expression...
+		Compiler_RevertSourceLocation(compiler, oldSourceLocation);
+		Compiler_SetSourceLocationFromList(compiler, args);
 		Compiler_CompileExpr(compiler, args->a);
 	
 		// ...and discard its result.
-		EmitPop1(compiler);
+		Compiler_SetSourceLocationFromList(compiler, args);
+		Compiler_EmitPop1(compiler);
 	}
+
+	Compiler_RevertSourceLocation(compiler, oldSourceLocation);
 }
 
 // Form: [$progn a b c ...]
 static void Compiler_CompileProgN(Compiler compiler, SmileList args)
 {
+	Int namedSourceLocation, namelessSourceLocation;
+	SmileList next;
+	Bool isLast;
+
 	if (SMILE_KIND(args) != SMILE_KIND_LIST)
 		return;
 
+	namedSourceLocation = Compiler_SetAssignedSymbol(compiler, 0);
+	namelessSourceLocation = compiler->currentFunction->currentSourceLocation;
+	Compiler_RevertSourceLocation(compiler, namedSourceLocation);
+
 	for (;;) {
+		next = LIST_REST(args);
+		isLast = (SMILE_KIND(next) != SMILE_KIND_LIST);
+	
 		// Compile this next expression...
+		Compiler_RevertSourceLocation(compiler, isLast ? namedSourceLocation : namelessSourceLocation);
+		Compiler_SetSourceLocationFromList(compiler, args);
 		Compiler_CompileExpr(compiler, args->a);
 		
 		// ...and if it's the last one, keep its value.
-		args = LIST_REST(args);
-		if (SMILE_KIND(args) != SMILE_KIND_LIST) break;
+		if (isLast) break;
 
 		// Otherwise, discard it and move to the next expression.
-		EmitPop1(compiler);
+		Compiler_SetSourceLocationFromList(compiler, args);
+		Compiler_EmitPop1(compiler);
+		args = next;
 	}
+
+	Compiler_RevertSourceLocation(compiler, namedSourceLocation);
 }
 
 static Int CompilerFunction_AddLocal(CompilerFunction compilerFunction, Symbol local)
@@ -1768,6 +1953,7 @@ static void Compiler_CompileNew(Compiler compiler, SmileList args)
 	SmileObject value;
 	Int offset;
 	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
+	Int oldSourceLocation;
 
 	// Must be an expression of the form: [$new base [[sym1 val1] [sym2 val2] [sym3 val3] ...]]
 	if (SmileList_Length(args) != 2) {
@@ -1777,7 +1963,10 @@ static void Compiler_CompileNew(Compiler compiler, SmileList args)
 	}
 
 	// Compile the base object reference.
+	oldSourceLocation = Compiler_SetAssignedSymbol(compiler, 0);
+	Compiler_SetSourceLocationFromList(compiler, args);
 	Compiler_CompileExpr(compiler, LIST_FIRST(args));
+	Compiler_RevertSourceLocation(compiler, oldSourceLocation);
 
 	// Compile all the pairs.
 	for (pairs = (SmileList)LIST_SECOND(args), numPairs = 0; SMILE_KIND(pairs) == SMILE_KIND_LIST; pairs = (SmileList)pairs->d, numPairs++) {
@@ -1794,8 +1983,11 @@ static void Compiler_CompileNew(Compiler compiler, SmileList args)
 		}
 		symbol = ((SmileSymbol)pair->a)->symbol;
 		value = LIST_SECOND(pair);
+		oldSourceLocation = Compiler_SetAssignedSymbol(compiler, symbol);
+		Compiler_SetSourceLocationFromList(compiler, pair);
 		EMIT1(Op_LdSym, +1, symbol = symbol);
 		Compiler_CompileExpr(compiler, value);
+		Compiler_RevertSourceLocation(compiler, oldSourceLocation);
 	}
 	if (SMILE_KIND(pairs) != SMILE_KIND_NULL) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
@@ -1807,35 +1999,12 @@ static void Compiler_CompileNew(Compiler compiler, SmileList args)
 	EMIT1(Op_NewObj, +1 - (numPairs * 2 + 1), int32 = numPairs);
 }
 
-// Form: [$is x y]
-static void Compiler_CompileIs(Compiler compiler, SmileList args)
-{
-	Int offset;
-	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
-
-	// Must be an expression of the form [$is x y].
-	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_LIST
-		|| SMILE_KIND(((SmileList)args->d)->d) != SMILE_KIND_NULL) {
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
-			String_FromC("Cannot compile [is]: Expression is not well-formed.")));
-		return;
-	}
-
-	// Compile the first expression.
-	Compiler_CompileExpr(compiler, args->a);
-
-	// Compile the second expression.
-	Compiler_CompileExpr(compiler, ((SmileList)args->d)->a);
-
-	// Add an instruction to perform inheritance comparison on the result.
-	EMIT0(Op_Is, -2 + 1);
-}
-
 // Form: [$typeof x]
 static void Compiler_CompileTypeOf(Compiler compiler, SmileList args)
 {
 	Int offset;
 	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
+	Int oldSourceLocation;
 
 	// Must be an expression of the form [$typeof x].
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_NULL) {
@@ -1844,59 +2013,16 @@ static void Compiler_CompileTypeOf(Compiler compiler, SmileList args)
 		return;
 	}
 
+	oldSourceLocation = Compiler_SetAssignedSymbol(compiler, 0);
+	Compiler_SetSourceLocationFromList(compiler, args);
+
 	// Compile the expression.
 	Compiler_CompileExpr(compiler, args->a);
 
 	// Add an instruction to get the type symbol for this object.
 	EMIT0(Op_TypeOf, -1 + 1);
-}
 
-// Form: [$eq x y]
-static void Compiler_CompileSuperEq(Compiler compiler, SmileList args)
-{
-	Int offset;
-	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
-
-	// Must be an expression of the form [$eq x y].
-	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_LIST
-		|| SMILE_KIND(((SmileList)args->d)->d) != SMILE_KIND_NULL) {
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
-			String_FromC("Cannot compile [===]: Expression is not well-formed.")));
-		return;
-	}
-
-	// Compile the first expression.
-	Compiler_CompileExpr(compiler, args->a);
-
-	// Compile the second expression.
-	Compiler_CompileExpr(compiler, ((SmileList)args->d)->a);
-
-	// Add an instruction to perform reference comparison on the result.
-	EMIT0(Op_SuperEq, -2 + 1);
-}
-
-// Form: [$ne x y]
-static void Compiler_CompileSuperNe(Compiler compiler, SmileList args)
-{
-	Int offset;
-	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
-
-	// Must be an expression of the form [$ne x y].
-	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_LIST
-		|| SMILE_KIND(((SmileList)args->d)->d) != SMILE_KIND_NULL) {
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
-			String_FromC("Cannot compile [!==]: Expression is not well-formed.")));
-		return;
-	}
-
-	// Compile the first expression.
-	Compiler_CompileExpr(compiler, args->a);
-
-	// Compile the second expression.
-	Compiler_CompileExpr(compiler, ((SmileList)args->d)->a);
-
-	// Add an instruction to perform reference comparison on the result.
-	EMIT0(Op_SuperNe, -2 + 1);
+	Compiler_RevertSourceLocation(compiler, oldSourceLocation);
 }
 
 // Form: [$and x y z ...]
@@ -2043,22 +2169,79 @@ static void Compiler_CompileOr(Compiler compiler, SmileList args)
 	compiler->currentFunction->currentStackDepth--;	// We actually have one fewer on the stack than the automatic count.
 }
 
-// Form: [$not x]
-static void Compiler_CompileNot(Compiler compiler, SmileList args)
+static Int Compiler_SetSourceLocationFromList(Compiler compiler, SmileList list)
 {
-	Int offset;
-	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
+	if (!(list->kind & SMILE_FLAG_WITHSOURCE))
+		return compiler->currentFunction->currentSourceLocation;
 
-	// Must be an expression of the form [$not x].
+	return Compiler_SetSourceLocation(compiler, ((struct SmileListWithSourceInt *)list)->position);
+}
+
+static Int Compiler_SetSourceLocationFromPair(Compiler compiler, SmilePair pair)
+{
+	if (!(pair->kind & SMILE_FLAG_WITHSOURCE))
+		return compiler->currentFunction->currentSourceLocation;
+
+	return Compiler_SetSourceLocation(compiler, ((struct SmilePairWithSourceInt *)pair)->position);
+}
+
+static Int Compiler_CompileOneArgument(Compiler compiler, SmileList args, const char *name)
+{
+	Int oldSourceLocation;
+
+	// Must be an expression of the form [op x].
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_NULL) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
-			String_FromC("Cannot compile [not]: Expression is not well-formed.")));
-		return;
+			String_Format("Cannot compile [%s]: Expression is not well-formed.", name)));
+		return compiler->currentFunction->currentSourceLocation;
 	}
+
+	// Return value is a derivative value, so anything we may construct in the next expression has no name.
+	oldSourceLocation = Compiler_SetAssignedSymbol(compiler, 0);
+
+	// Make sure the first argument's instructions get tagged with the correct source line.
+	Compiler_SetSourceLocationFromList(compiler, args);
 
 	// Compile the expression.
 	Compiler_CompileExpr(compiler, args->a);
 
-	// Add an instruction to convert to boolean and then invert the result.
-	EMIT0(Op_Not, -1 + 1);
+	// Make sure the operation instruction is tagged with the correct source line, and with the original assignment symbol.
+	Compiler_RevertSourceLocation(compiler, oldSourceLocation);
+	Compiler_SetSourceLocationFromList(compiler, args);
+
+	return oldSourceLocation;
+}
+
+static Int Compiler_CompileTwoArguments(Compiler compiler, SmileList args, const char *name)
+{
+	Int oldSourceLocation;
+
+	// Must be an expression of the form [op x y].
+	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_LIST
+		|| SMILE_KIND(((SmileList)args->d)->d) != SMILE_KIND_NULL) {
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+			String_Format("Cannot compile [%s]: Expression is not well-formed.", name)));
+		return compiler->currentFunction->currentSourceLocation;
+	}
+
+	// Return value is a derivative value, so anything we may construct in the next expression has no name.
+	oldSourceLocation = Compiler_SetAssignedSymbol(compiler, 0);
+
+	// Make sure the first argument's instructions get tagged with the correct source line.
+	Compiler_SetSourceLocationFromList(compiler, args);
+
+	// Compile the first expression.
+	Compiler_CompileExpr(compiler, args->a);
+
+	// Make sure the second argument's instructions get tagged with the correct source line.
+	Compiler_SetSourceLocationFromList(compiler, (SmileList)args->d);
+
+	// Compile the second expression.
+	Compiler_CompileExpr(compiler, ((SmileList)args->d)->a);
+
+	// Make sure the operation instruction is tagged with the correct source line, and with the original assignment symbol.
+	Compiler_RevertSourceLocation(compiler, oldSourceLocation);
+	Compiler_SetSourceLocationFromList(compiler, args);
+
+	return oldSourceLocation;
 }

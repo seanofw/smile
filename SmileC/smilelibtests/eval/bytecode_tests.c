@@ -32,7 +32,7 @@ START_TEST(CanEmitNop)
 
 	const char *expectedResult = "\tNop\n";
 
-	ByteCodeSegment_Emit(segment, Op_Nop);
+	ByteCodeSegment_Emit(segment, Op_Nop, 0);
 
 	result = ByteCodeSegment_ToString(segment, NULL, compiledTables);
 	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
@@ -51,10 +51,10 @@ START_TEST(CanEmitIntegerLoads)
 		"\tLd32 12345678\n"
 		"\tLd64 1234567890\n";
 
-	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Ld8)].u.byte = 123;
-	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Ld16)].u.int16 = 12345;
-	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Ld32)].u.int32 = 12345678;
-	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Ld64)].u.int64 = 1234567890;
+	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Ld8, 0)].u.byte = 123;
+	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Ld16, 0)].u.int16 = 12345;
+	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Ld32, 0)].u.int32 = 12345678;
+	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Ld64, 0)].u.int64 = 1234567890;
 
 	result = ByteCodeSegment_ToString(segment, NULL, compiledTables);
 	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
@@ -79,14 +79,14 @@ START_TEST(CanEmitBranches)
 		Smile_KnownSymbols.minus
 	);
 
-	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Ld32)].u.int32 = 123;
-	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Jmp)].u.index = +4;
-	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Label)].u.index = +5;
-	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Ld32)].u.int32 = 1;
-	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Met1)].u.symbol = Smile_KnownSymbols.minus;
-	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Label)].u.index = -4;
-	ByteCodeSegment_Emit(segment, Op_Dup1);
-	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Bt)].u.index = -5;
+	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Ld32, 0)].u.int32 = 123;
+	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Jmp, 0)].u.index = +4;
+	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Label, 0)].u.index = +5;
+	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Ld32, 0)].u.int32 = 1;
+	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Met1, 0)].u.symbol = Smile_KnownSymbols.minus;
+	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Label, 0)].u.index = -4;
+	ByteCodeSegment_Emit(segment, Op_Dup1, 0);
+	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Bt, 0)].u.index = -5;
 
 	result = ByteCodeSegment_ToString(segment, NULL, compiledTables);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));

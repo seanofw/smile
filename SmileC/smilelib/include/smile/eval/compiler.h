@@ -66,6 +66,7 @@ typedef struct CompilerFunctionStruct {
 	SmileObject body;	// This function's body, from its raw expression.
 	ByteCodeSegment byteCodeSegment;	// The byte-code segment that holds this function's instructions.
 	ClosureInfo closureInfo;	// The ClosureInfo object needed to actually eval this function.
+	Int currentSourceLocation;	// The current source location, if any.
 } *CompilerFunction;
 
 typedef struct CompileScopeStruct {
@@ -81,6 +82,13 @@ typedef struct CompiledLocalSymbolStruct {
 	Int index;	// The index of this symbol in its collection.
 	CompileScope scope;	// The scope that contains this symbol.
 } *CompiledLocalSymbol;
+
+typedef struct CompiledSourceLocationStruct {
+	String filename;	// The source filename this code came from.
+	Int32 line;	// The source line this code started on.
+	Int32 column;	// The source column (character index) this code started on.
+	Symbol assignedName;	// The name of the symbol(s) being constructed, if any.
+} *CompiledSourceLocation;
 
 /// <summary>
 /// This represents all of the different tables of data collected during a compile.
@@ -101,6 +109,10 @@ typedef struct CompiledTablesStruct {
 	SmileObject *objects;	// The constant objects collected during the compile.
 	Int numObjects;	// The number of constant objects collected.
 	Int maxObjects;	// The maximum number of constant objects in the array.
+		
+	struct CompiledSourceLocationStruct *sourcelocations;	// Source code locations.
+	Int numSourceLocations;	// The number of source-code locations in the struct.
+	Int maxSourceLocations;	// The maximum number of source-code locations in the struct.
 } *CompiledTables;
 
 /// <summary>
@@ -126,6 +138,7 @@ SMILE_API_FUNC UserFunctionInfo Compiler_CompileGlobal(Compiler compiler, SmileO
 SMILE_API_FUNC Int Compiler_AddString(Compiler compiler, String string);
 SMILE_API_FUNC Int Compiler_AddObject(Compiler compiler, SmileObject obj);
 SMILE_API_FUNC Int Compiler_AddUserFunctionInfo(Compiler compiler, UserFunctionInfo userFunctionInfo);
+SMILE_API_FUNC Int Compiler_AddNewSourceLocation(Compiler compiler, String filename, Int line, Int column, Symbol assignedName);
 SMILE_API_FUNC CompileScope Compiler_BeginScope(Compiler compiler, Int kind);
 SMILE_API_FUNC void CompileScope_DefineSymbol(CompileScope scope, Symbol symbol, Int kind, Int index);
 SMILE_API_FUNC CompiledLocalSymbol CompileScope_FindSymbol(CompileScope compileScope, Symbol symbol);

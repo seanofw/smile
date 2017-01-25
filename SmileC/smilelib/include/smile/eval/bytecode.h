@@ -22,13 +22,15 @@
 
 /// <summary>
 /// This is the shape of a single byte-code instruction:  It has an opcode (see 'opcode.h'), which
-/// is 32 bits on a 32-bit architecture or 64 bits on a 64-bit architecture, and one or two
-/// operands, taking at most 64 bits for the operand.
+/// is 32 bits; a source location, which is 32 bits; and one or two operands, taking at most 64 bits
+/// for the combined operand.
 ///
-/// Total size:  12 bytes on a 32-bit architecture, or 16 bytes on a 64-bit architecture.
+/// Total size:  16 bytes.
 /// </summary>
 typedef struct ByteCodeStruct {
-	Int opcode;
+	Byte opcode;	// The opcode for this instruction.
+	Byte reserved[3];	
+	Int32 sourceLocation;	// The index of the source location that generated this (for debugging).
 
 	union {
 		Int64 int64;
@@ -103,14 +105,15 @@ Inline void ByteCodeSegment_More(ByteCodeSegment segment, Int count)
 /// <param name="opcode">The opcode of the instruction to append.</param>
 /// <returns>A pointer to the instruction that was added.  The operator will be
 /// set to the given opcode, and the operand(s) will be zeroed out.</returns>
-Inline Int ByteCodeSegment_Emit(ByteCodeSegment segment, Int opcode)
+Inline Int ByteCodeSegment_Emit(ByteCodeSegment segment, Int opcode, Int location)
 {
 	ByteCode byteCode;
 	Int offset;
 
 	ByteCodeSegment_More(segment, 1);
 	byteCode = segment->byteCodes + (offset = segment->numByteCodes++);
-	byteCode->opcode = opcode;
+	byteCode->opcode = (Byte)opcode;
+	byteCode->sourceLocation = (Int32)location;
 	byteCode->u.int64 = 0;
 
 	return offset;
