@@ -1290,7 +1290,7 @@ void SmileUserFunction_Slow_Call(SmileFunction self, Int argc)
 
 	// Copy the arguments.
 	for (i = 0; i < numArgs; i++) {
-		childClosure->variables[i] = _closure->stackTop[-1 - argc + i];
+		childClosure->variables[i] = _closure->stackTop[-argc + i];
 	}
 	Closure_PopCount(_closure, 1 + argc);
 
@@ -1325,7 +1325,7 @@ void SmileUserFunction_Optional_Call(SmileFunction self, Int argc)
 
 	// Copy the provided arguments.
 	for (i = 0; i < argc; i++) {
-		childClosure->variables[i] = _closure->stackTop[-1 - argc + i];
+		childClosure->variables[i] = _closure->stackTop[-argc + i];
 	}
 	Closure_PopCount(_closure, 1 + argc);
 
@@ -1365,7 +1365,7 @@ void SmileUserFunction_Rest_Call(SmileFunction self, Int argc)
 
 		// Fewer arguments given than we have slots, so copy what we were given.
 		for (i = 0; i < argc; i++) {
-			childClosure->variables[i] = _closure->stackTop[-1 - argc + i];
+			childClosure->variables[i] = _closure->stackTop[-argc + i];
 		}
 	
 		// Fill in any missing default values in the remaining slots.
@@ -1381,13 +1381,13 @@ void SmileUserFunction_Rest_Call(SmileFunction self, Int argc)
 		// We're going to have at least one 'rest' argument.  So copy everything
 		// provided before it.
 		for (i = 0; i < numArgs - 1; i++) {
-			childClosure->variables[i] = _closure->stackTop[-1 - argc + i];
+			childClosure->variables[i] = _closure->stackTop[-argc + i];
 		}
 	
 		// Now turn the rest of the provided arguments, however many there may be, into a List.
 		restHead = restTail = NullList;
 		for (; i < argc; i++) {
-			LIST_APPEND(restHead, restTail, _closure->stackTop[-1 - argc + i]);
+			LIST_APPEND(restHead, restTail, _closure->stackTop[-argc + i]);
 		}
 		childClosure->variables[i] = (SmileObject)restHead;
 	}

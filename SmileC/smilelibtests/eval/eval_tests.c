@@ -240,6 +240,178 @@ START_TEST(CanEvalRecursiveCallsToUserFunctions)
 		"n = [factorial 10]\n"
 	);
 
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 3628800);
+}
+END_TEST
+
+START_TEST(UserFunctionsCanInfluenceTheirParentScope)
+{
+	CompiledTables compiledTables = Compile(
+		"var x, y\n"
+		"x = 10\n"
+		"f = |z| y = x + z\n"
+		"x = 5\n"
+		"[f 30]\n"
+		"y\n"
+	);
+
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 35);
+}
+END_TEST
+
+START_TEST(UserFunctionsCanHaveZeroParameters)
+{
+	CompiledTables compiledTables = Compile(
+		"var x, y\n"
+		"x = 10\n"
+		"f = || x + 100\n"
+		"x = 5\n"
+		"[f]\n"
+	);
+
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 105);
+}
+END_TEST
+
+START_TEST(UserFunctionsCanHaveTwoParameters)
+{
+	CompiledTables compiledTables = Compile(
+		"f = |a b| a + b\n"
+		"[f 10 20]\n"
+	);
+
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 30);
+}
+END_TEST
+
+START_TEST(UserFunctionsCanHaveThreeParameters)
+{
+	CompiledTables compiledTables = Compile(
+		"f = |a b c| a + b * c\n"
+		"[f 10 20 30]\n"
+	);
+
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 610);
+}
+END_TEST
+
+START_TEST(UserFunctionsCanHaveFourParameters)
+{
+	CompiledTables compiledTables = Compile(
+		"f = |a b c d| a * b + c * d\n"
+		"[f 10 20 30 40]\n"
+	);
+
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 1400);
+}
+END_TEST
+
+START_TEST(UserFunctionsCanHaveFiveParameters)
+{
+	CompiledTables compiledTables = Compile(
+		"f = |a b c d e| a * b + c * d + e\n"
+		"[f 10 20 30 40 50]\n"
+	);
+
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 1450);
+}
+END_TEST
+
+START_TEST(UserFunctionsCanHaveSixParameters)
+{
+	CompiledTables compiledTables = Compile(
+		"f = |a b c d e f| a * b + c * d + e * f\n"
+		"[f 10 20 30 40 50 60]\n"
+	);
+
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 4400);
+}
+END_TEST
+
+START_TEST(UserFunctionsCanHaveSevenParameters)
+{
+	CompiledTables compiledTables = Compile(
+		"f = |a b c d e f g| a * b + c * d + e * f + g\n"
+		"[f 10 20 30 40 50 60 70]\n"
+	);
+
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 4470);
+}
+END_TEST
+
+START_TEST(UserFunctionsCanHaveEightParameters)
+{
+	CompiledTables compiledTables = Compile(
+		"f = |a b c d e f g h| a * b + c * d + e * f + g * h\n"
+		"[f 10 20 30 40 50 60 70 80]\n"
+	);
+
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 10000);
+}
+END_TEST
+
+START_TEST(UserFunctionsCanHaveNineParameters)
+{
+	CompiledTables compiledTables = Compile(
+		"f = |a b c d e f g h i| a * b + c * d + e * f + g * h + i\n"
+		"[f 10 20 30 40 50 60 70 80 90]\n"
+	);
+
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 10090);
+}
+END_TEST
+
+START_TEST(UserFunctionsCanHaveTenParameters)
+{
+	CompiledTables compiledTables = Compile(
+		"f = |a b c d e f g h i j| a * b + c * d + e * f + g * h + i * j\n"
+		"[f 10 20 30 40 50 60 70 80 90 100]\n"
+	);
+
 	String global = ByteCodeSegment_ToString(compiledTables->globalFunctionInfo->byteCodeSegment, compiledTables->globalFunctionInfo, compiledTables);
 	String f = ByteCodeSegment_ToString(compiledTables->userFunctions[0]->byteCodeSegment, compiledTables->userFunctions[0], compiledTables);
 
@@ -247,7 +419,7 @@ START_TEST(CanEvalRecursiveCallsToUserFunctions)
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
-	ASSERT(((SmileInteger64)result->value)->value == 3628800);
+	ASSERT(((SmileInteger64)result->value)->value == 19000);
 }
 END_TEST
 

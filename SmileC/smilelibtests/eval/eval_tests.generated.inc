@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: b1a7b46319805d9eef7f17bbba40500c
+// SourceHash: 706b4288514e6c435ba716d13314b166
 
 START_TEST_SUITE(EvalTests)
 {
@@ -15,6 +15,17 @@ START_TEST_SUITE(EvalTests)
 	CanEvalDirectCallsToNativeFunctions,
 	CanEvalCallsToUserFunctions,
 	CanEvalRecursiveCallsToUserFunctions,
+	UserFunctionsCanInfluenceTheirParentScope,
+	UserFunctionsCanHaveZeroParameters,
+	UserFunctionsCanHaveTwoParameters,
+	UserFunctionsCanHaveThreeParameters,
+	UserFunctionsCanHaveFourParameters,
+	UserFunctionsCanHaveFiveParameters,
+	UserFunctionsCanHaveSixParameters,
+	UserFunctionsCanHaveSevenParameters,
+	UserFunctionsCanHaveEightParameters,
+	UserFunctionsCanHaveNineParameters,
+	UserFunctionsCanHaveTenParameters,
 }
 END_TEST_SUITE(EvalTests)
 

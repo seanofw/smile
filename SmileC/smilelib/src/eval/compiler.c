@@ -922,10 +922,10 @@ static void Compiler_CompileVariable(Compiler compiler, Symbol symbol, Bool stor
 		case PARSEDECL_ARGUMENT:
 			if (functionDepth <= 7) {
 				if (store) {
-					EMIT0(Op_StArg0 + functionDepth, 0);	// Leaves the value on the stack.
+					EMIT1(Op_StArg0 + functionDepth, 0, index = localSymbol->index);	// Leaves the value on the stack.
 				}
 				else {
-					EMIT0(Op_LdArg0 + functionDepth, +1);
+					EMIT1(Op_LdArg0 + functionDepth, +1, index = localSymbol->index);
 				}
 			}
 			else {
@@ -1719,7 +1719,8 @@ static void Compiler_CompileFn(Compiler compiler, SmileList args)
 	Int oldSourceLocation = Compiler_SetAssignedSymbol(compiler, 0);
 
 	// The [$fn] expression must be of the form:  [$fn [args...] body].
-	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->a) != SMILE_KIND_LIST
+	if (SMILE_KIND(args) != SMILE_KIND_LIST
+		|| (SMILE_KIND(args->a) != SMILE_KIND_LIST && SMILE_KIND(args->a) != SMILE_KIND_NULL)
 		|| SMILE_KIND(args->d) != SMILE_KIND_LIST || SMILE_KIND(((SmileList)args->d)->d) != SMILE_KIND_NULL) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
 			String_FromC("Cannot compile [fn]: Expression is not well-formed.")));
