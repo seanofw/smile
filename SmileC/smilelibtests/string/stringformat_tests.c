@@ -50,6 +50,13 @@ START_TEST(FormatCanInsertCStyleStrings)
 }
 END_TEST
 
+START_TEST(FormatCanInsertNullCStyleStrings)
+{
+	const char *expectedResult = "This is a test. Pack my  with five dozen liquor jugs.";
+	ASSERT_STRING(String_Format("This is a test. Pack my %s with five dozen %s jugs.", NULL, "liquor"), expectedResult, StrLen(expectedResult));
+}
+END_TEST
+
 START_TEST(FormatCanInsertStringObjects)
 {
 	const char *expectedResult = "This is a test. Pack my box with five dozen liquor jugs.";
@@ -61,6 +68,13 @@ START_TEST(FormatCanInsertStringObjectsWithWeirdCharactersInThem)
 {
 	String expectedResult = String_Create("This is a test. Pack my bo\0x with five dozen li\rq\0u\nor jugs.", 60);
 	ASSERT_STRING(String_Format("This is a test. Pack my %S with five dozen %S jugs.", String_Create("bo\0x", 4), String_Create("li\rq\0u\nor", 9)), String_ToC(expectedResult), String_Length(expectedResult));
+}
+END_TEST
+
+START_TEST(FormatCanInsertNullStringObjects)
+{
+	const char *expectedResult = "This is a test. Pack my  with five dozen liquor jugs.";
+	ASSERT_STRING(String_Format("This is a test. Pack my %S with five dozen %S jugs.", NULL, String_FromC("liquor")), expectedResult, StrLen(expectedResult));
 }
 END_TEST
 

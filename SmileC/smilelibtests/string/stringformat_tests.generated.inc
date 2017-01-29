@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 56b42ce31648b93ca48771c8938c4154
+// SourceHash: 08ebf7763264c16d926f0b72a79245e1
 
 START_TEST_SUITE(StringFormatTests)
 {
@@ -8,8 +8,10 @@ START_TEST_SUITE(StringFormatTests)
 	FormatStringsWithoutFormatCharactersInThemResultInTheSameOutput,
 	FormatTreatsUnusualCharactersLikeAllOtherCharacters,
 	FormatCanInsertCStyleStrings,
+	FormatCanInsertNullCStyleStrings,
 	FormatCanInsertStringObjects,
 	FormatCanInsertStringObjectsWithWeirdCharactersInThem,
+	FormatCanInsertNullStringObjects,
 	FormatCanInsertCharacters,
 	FormatCanInsertSpecialCharacters,
 	FormatReplacesDoublePercentWithSinglePercent,
