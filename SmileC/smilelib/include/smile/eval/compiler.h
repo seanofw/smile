@@ -67,6 +67,7 @@ typedef struct CompilerFunctionStruct {
 	ByteCodeSegment byteCodeSegment;	// The byte-code segment that holds this function's instructions.
 	ClosureInfo closureInfo;	// The ClosureInfo object needed to actually eval this function.
 	Int currentSourceLocation;	// The current source location, if any.
+	UserFunctionInfo userFunctionInfo;	// The UserFunctionInfo object that is being generated from this.
 } *CompilerFunction;
 
 typedef struct CompileScopeStruct {

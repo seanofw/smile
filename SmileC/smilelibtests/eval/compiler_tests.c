@@ -77,14 +77,12 @@ START_TEST(CanCompileNull)
 	SmileObject expr = Parse("[]");
 
 	Compiler compiler = Compiler_Create();
-	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
 	String result;
 
 	const char *expectedResult =
-		"\tLdNull\n";
-
-	Compiler_EndFunction(compiler);
+		"\tLdNull\n"
+		"\tRet\n";
 
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
@@ -96,14 +94,12 @@ START_TEST(CanCompileByte)
 	SmileObject expr = Parse("123x");
 
 	Compiler compiler = Compiler_Create();
-	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
 	String result;
 
 	const char *expectedResult =
-		"\tLd8 123\n";
-
-	Compiler_EndFunction(compiler);
+		"\tLd8 123\n"
+		"\tRet\n";
 
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
@@ -115,14 +111,12 @@ START_TEST(CanCompileInt16)
 	SmileObject expr = Parse("123s");
 
 	Compiler compiler = Compiler_Create();
-	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
 	String result;
 
 	const char *expectedResult =
-		"\tLd16 123\n";
-
-	Compiler_EndFunction(compiler);
+		"\tLd16 123\n"
+		"\tRet\n";
 
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
@@ -134,14 +128,12 @@ START_TEST(CanCompileInt32)
 	SmileObject expr = Parse("123t");
 
 	Compiler compiler = Compiler_Create();
-	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
 	String result;
 
 	const char *expectedResult =
-		"\tLd32 123\n";
-
-	Compiler_EndFunction(compiler);
+		"\tLd32 123\n"
+		"\tRet\n";
 
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
@@ -153,14 +145,12 @@ START_TEST(CanCompileInt64)
 	SmileObject expr = Parse("123");
 
 	Compiler compiler = Compiler_Create();
-	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
 	String result;
 
 	const char *expectedResult =
-		"\tLd64 123\n";
-
-	Compiler_EndFunction(compiler);
+		"\tLd64 123\n"
+		"\tRet\n";
 
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
@@ -172,18 +162,16 @@ START_TEST(CanCompileBasicArithmetic)
 	SmileObject expr = Parse("123 + 456");
 
 	Compiler compiler = Compiler_Create();
-	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
 		"\tLd64 123\n"
 		"\tLd64 456\n"
-		"\tBinary %d\t; +\n",
+		"\tBinary %d\t; +\n"
+		"\tRet\n",
 		Smile_KnownSymbols.plus
 	);
-
-	Compiler_EndFunction(compiler);
 
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
@@ -195,8 +183,7 @@ START_TEST(CanCompileMildlyInterestingArithmetic)
 	SmileObject expr = Parse("(123 + -456) * 50");
 
 	Compiler compiler = Compiler_Create();
-	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -205,13 +192,12 @@ START_TEST(CanCompileMildlyInterestingArithmetic)
 		"\tUnary %d\t; -\n"
 		"\tBinary %d\t; +\n"
 		"\tLd64 50\n"
-		"\tBinary %d\t; *\n",
+		"\tBinary %d\t; *\n"
+		"\tRet\n",
 		Smile_KnownSymbols.minus,
 		Smile_KnownSymbols.plus,
 		Smile_KnownSymbols.star
 	);
-
-	Compiler_EndFunction(compiler);
 
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
@@ -226,18 +212,16 @@ START_TEST(CanCompileGlobalReadsAndWrites)
 	SmileObject expr = Parse("ga = gb");
 
 	Compiler compiler = Compiler_Create();
-	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
 		"\tLdX %d\t; gb\n"
-		"\tStX %d\t; ga\n",
+		"\tStX %d\t; ga\n"
+		"\tRet\n",
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "gb"),
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "ga")
 	);
-
-	Compiler_EndFunction(compiler);
 
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
@@ -249,20 +233,18 @@ START_TEST(CanCompileReadsFromProperties)
 	SmileObject expr = Parse("ga = gb.foo");
 
 	Compiler compiler = Compiler_Create();
-	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
 		"\tLdX %d\t; gb\n"
 		"\tLdProp %d\t; foo\n"
-		"\tStX %d\t; ga\n",
+		"\tStX %d\t; ga\n"
+		"\tRet\n",
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "gb"),
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "foo"),
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "ga")
 	);
-
-	Compiler_EndFunction(compiler);
 
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
@@ -274,20 +256,18 @@ START_TEST(CanCompileWritesToProperties)
 	SmileObject expr = Parse("ga.foo = gb");
 
 	Compiler compiler = Compiler_Create();
-	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
 		"\tLdX %d\t; ga\n"
 		"\tLdX %d\t; gb\n"
-		"\tStProp %d\t; foo\n",
+		"\tStProp %d\t; foo\n"
+		"\tRet\n",
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "ga"),
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "gb"),
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "foo")
 	);
-
-	Compiler_EndFunction(compiler);
 
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
@@ -299,20 +279,18 @@ START_TEST(CanCompileReadsFromMembers)
 	SmileObject expr = Parse("ga = gb:10");
 
 	Compiler compiler = Compiler_Create();
-	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
 		"\tLdX %d\t; gb\n"
 		"\tLd64 10\n"
 		"\tLdMember\n"
-		"\tStX %d\t; ga\n",
+		"\tStX %d\t; ga\n"
+		"\tRet\n",
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "gb"),
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "ga")
 	);
-
-	Compiler_EndFunction(compiler);
 
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
@@ -324,20 +302,18 @@ START_TEST(CanCompileWritesToMembers)
 	SmileObject expr = Parse("ga:10 = gb");
 
 	Compiler compiler = Compiler_Create();
-	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
 		"\tLdX %d\t; ga\n"
 		"\tLd64 10\n"
 		"\tLdX %d\t; gb\n"
-		"\tStMember\n",
+		"\tStMember\n"
+		"\tRet\n",
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "ga"),
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "gb")
 	);
-
-	Compiler_EndFunction(compiler);
 
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
@@ -352,23 +328,22 @@ START_TEST(CanCompileScopeVariableReads)
 	SmileObject expr = Parse("{ a = gb }");
 
 	Compiler compiler = Compiler_Create();
-	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
 		"\tLdX %d\t; gb\n"
-		"\tStLoc0 0\t; a\n",
+		"\tStLoc0 0\t; a\n"
+		"\tRet\n",
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "gb"),
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "a")
 	);
 
-	Compiler_EndFunction(compiler);
-
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 
-	ASSERT(globalFunction->localSize == 1);
+	ASSERT(globalFunction->closureInfo.numVariables == 1);
+	ASSERT(globalFunction->closureInfo.tempSize == 1);
 }
 END_TEST
 
@@ -377,8 +352,7 @@ START_TEST(CanCompileNestedScopeVariableReads)
 	SmileObject expr = Parse("{ var b = 10 { var a = b, c = a + b } }");
 
 	Compiler compiler = Compiler_Create();
-	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -389,16 +363,16 @@ START_TEST(CanCompileNestedScopeVariableReads)
 		"\tLdLoc0 1\t; a\n"
 		"\tLdLoc0 0\t; b\n"
 		"\tBinary %d\t; +\n"
-		"\tStLoc0 2\t; c\n",
+		"\tStLoc0 2\t; c\n"
+		"\tRet\n",
 		Smile_KnownSymbols.plus
 	);
-
-	Compiler_EndFunction(compiler);
 
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 
-	ASSERT(globalFunction->localSize == 3);
+	ASSERT(globalFunction->closureInfo.numVariables == 3);
+	ASSERT(globalFunction->closureInfo.tempSize == 2);
 }
 END_TEST
 
@@ -407,8 +381,7 @@ START_TEST(NestedScopesVariablesDontOverlap)
 	SmileObject expr = Parse("{ var b = 10 { var a = b, c = a + b } { var d = b * 20 } }");
 
 	Compiler compiler = Compiler_Create();
-	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -423,17 +396,17 @@ START_TEST(NestedScopesVariablesDontOverlap)
 		"\tLdLoc0 0\t; b\n"
 		"\tLd64 20\n"
 		"\tBinary %d\t; *\n"
-		"\tStLoc0 3\t; d\n",
+		"\tStLoc0 3\t; d\n"
+		"\tRet\n",
 		Smile_KnownSymbols.plus,
 		Smile_KnownSymbols.star
 	);
 
-	Compiler_EndFunction(compiler);
-
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 
-	ASSERT(globalFunction->localSize == 4);
+	ASSERT(globalFunction->closureInfo.numVariables == 4);
+	ASSERT(globalFunction->closureInfo.tempSize == 2);
 }
 END_TEST
 
@@ -444,8 +417,7 @@ START_TEST(CanCompileSimpleConditionals)
 	SmileObject expr = Parse("[$if 1 < 10 `then-side `else-side]");
 
 	Compiler compiler = Compiler_Create();
-	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -457,16 +429,17 @@ START_TEST(CanCompileSimpleConditionals)
 		"\tJmp >L8\n"
 		"L6:\n"
 		"\tLdSym %d\t; else-side\n"
-		"L8:\n",
+		"L8:\n"
+		"\tRet\n",
 		Smile_KnownSymbols.lt,
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "then-side"),
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "else-side")
 	);
 
-	Compiler_EndFunction(compiler);
-
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
+
+	ASSERT(globalFunction->closureInfo.tempSize == 2);
 }
 END_TEST
 
@@ -483,8 +456,7 @@ START_TEST(CanCompileConditionalsAllTheWay)
 	);
 
 	Compiler compiler = Compiler_Create();
-	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -496,16 +468,16 @@ START_TEST(CanCompileConditionalsAllTheWay)
 		"\tJmp >L8\n"
 		"L6:\n"
 		"\tLdSym %d\t; else-side\n"
-		"L8:\n",
+		"L8:\n"
+		"\tRet\n",
 		Smile_KnownSymbols.lt,
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "then-side"),
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "else-side")
 	);
 
-	Compiler_EndFunction(compiler);
-
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
+	ASSERT(globalFunction->closureInfo.tempSize == 2);
 }
 END_TEST
 
@@ -525,8 +497,7 @@ START_TEST(CanCompileAWhileLoopThatComputesLogarithms)
 	);
 
 	Compiler compiler = Compiler_Create();
-	CompilerFunction globalFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	Int offset = Compiler_CompileExpr(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -548,12 +519,11 @@ START_TEST(CanCompileAWhileLoopThatComputesLogarithms)
 		"\tStLoc0 1\t; log\n"
 		"L16:\n"
 		"\tLdLoc0 0\t; n\n"
-		"\tBt L6\n",
+		"\tBt L6\n"
+		"\tRet\n",
 		SymbolTable_GetSymbolC(Smile_SymbolTable, ">>>"),
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "+")
 	);
-
-	Compiler_EndFunction(compiler);
 
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 

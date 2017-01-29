@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 055a61b946382fca356c02690aa82703
+// SourceHash: b1a7b46319805d9eef7f17bbba40500c
 
 START_TEST_SUITE(EvalTests)
 {
@@ -14,6 +14,7 @@ START_TEST_SUITE(EvalTests)
 	CanEvalSmileCodeThatConvertsBetweenTypes,
 	CanEvalDirectCallsToNativeFunctions,
 	CanEvalCallsToUserFunctions,
+	CanEvalRecursiveCallsToUserFunctions,
 }
 END_TEST_SUITE(EvalTests)
 

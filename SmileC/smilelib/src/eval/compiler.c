@@ -212,6 +212,7 @@ static void Compiler_EmitPop1(Compiler compiler)
 	if (newOpcode != lastOpcode) {
 		// Rewrite the most recent store as a store-and-pop.
 		RECENT_BYTECODE(-1).opcode = newOpcode;
+		ApplyStackDelta(compiler->currentFunction, -1);
 		return;
 	}
 	else {
@@ -414,6 +415,7 @@ CompilerFunction Compiler_BeginFunction(Compiler compiler, SmileList args, Smile
 	newFunction->stackSize = 0;
 	newFunction->functionDepth = compiler->currentFunction != NULL ? compiler->currentFunction->functionDepth + 1 : 0;
 	newFunction->currentSourceLocation = 0;
+	newFunction->userFunctionInfo = NULL;
 
 	// Finally, make the new function the current function.
 	compiler->currentFunction = newFunction;
@@ -569,9 +571,11 @@ UserFunctionInfo Compiler_CompileGlobal(Compiler compiler, SmileObject expr)
 	ByteCodeSegment segment;
 	UserFunctionInfo userFunctionInfo;
 	ClosureInfo closureInfo;
+	String errorMessage;
 
-	userFunctionInfo = UserFunctionInfo_Create(NullList, expr);
+	userFunctionInfo = UserFunctionInfo_Create(NULL, NullList, expr, &errorMessage);
 	compilerFunction = Compiler_BeginFunction(compiler, NullList, expr);
+	compilerFunction->userFunctionInfo = userFunctionInfo;
 	compiler->compiledTables->globalFunctionInfo = userFunctionInfo;
 
 	segment = compiler->currentFunction->byteCodeSegment;
@@ -815,7 +819,6 @@ Int Compiler_CompileExpr(Compiler compiler, SmileObject expr)
 					//        [x.does-not-understand `fn ...] on it.
 					//   4.  Otherwise, if it does not have a 'does-not-understand' method, a run-time exception is thrown.
 					EMIT1(Op_Call, +1 - argCount, index = argCount - 1);
-					EMIT0(Op_Rep1, -1);
 					break;
 			}
 		
@@ -1704,14 +1707,14 @@ static void Compiler_CompileFn(Compiler compiler, SmileList args)
 {
 	CompilerFunction compilerFunction;
 	CompileScope scope;
-	SmileList functionArgs, temp;
+	SmileList functionArgs;
 	SmileObject functionBody;
-	Int numFunctionArgs;
-	Int offset;
+	Int i, offset;
 	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 	ClosureInfo closureInfo;
 	UserFunctionInfo userFunctionInfo;
 	Int functionIndex;
+	String errorMessage;
 
 	Int oldSourceLocation = Compiler_SetAssignedSymbol(compiler, 0);
 
@@ -1723,32 +1726,28 @@ static void Compiler_CompileFn(Compiler compiler, SmileList args)
 		return;
 	}
 
-	// Begin a new symbol scope.
+	// Create the function.
+	functionArgs = (SmileList)args->a;
+	functionBody = ((SmileList)args->d)->a;
+	userFunctionInfo = UserFunctionInfo_Create(compiler->currentFunction->userFunctionInfo, functionArgs, functionBody, &errorMessage);
+	if (userFunctionInfo == NULL) {
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(functionArgs), errorMessage));
+		return;
+	}
+	functionIndex = Compiler_AddUserFunctionInfo(compiler, userFunctionInfo);
+	compilerFunction = Compiler_BeginFunction(compiler, functionArgs, functionBody);
+	compilerFunction->userFunctionInfo = userFunctionInfo;
+	compilerFunction->numArgs = userFunctionInfo->numArgs;
+	segment = compiler->currentFunction->byteCodeSegment;
+
+	// Begin a new symbol scope for this function.
 	scope = Compiler_BeginScope(compiler, PARSESCOPE_FUNCTION);
 
 	// Declare the argument symbols, so that they can be correctly resolved.
-	functionArgs = (SmileList)args->a;
-	numFunctionArgs = 0;
-	for (temp = functionArgs; SMILE_KIND(temp) == SMILE_KIND_LIST; temp = (SmileList)temp->d) {
-		if (SMILE_KIND(temp->a) != SMILE_KIND_SYMBOL) {
-			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(temp),
-				String_Format("Cannot compile [fn]: Argument #%d is not a valid argument name.", numFunctionArgs + 1)));
-		}
-		Symbol symbol = ((SmileSymbol)temp->a)->symbol;
-		CompileScope_DefineSymbol(scope, symbol, PARSEDECL_ARGUMENT, numFunctionArgs++);
+	for (i = 0; i < userFunctionInfo->numArgs; i++) {
+		Symbol name = userFunctionInfo->args[i].name;
+		CompileScope_DefineSymbol(scope, name, PARSEDECL_ARGUMENT, i);
 	}
-	if (SMILE_KIND(temp) != SMILE_KIND_NULL) {
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
-			String_FromC("Cannot compile [fn]: Arguments are not well-formed.")));
-		return;
-	}
-
-	// Create the function.
-	functionBody = ((SmileList)args->d)->a;
-	userFunctionInfo = UserFunctionInfo_Create(functionArgs, functionBody);
-	functionIndex = Compiler_AddUserFunctionInfo(compiler, userFunctionInfo);
-	compilerFunction = Compiler_BeginFunction(compiler, functionArgs, functionBody);
-	compilerFunction->numArgs = numFunctionArgs;
 
 	// Compile the body.
 	Compiler_SetSourceLocationFromList(compiler, (SmileList)args->d);
@@ -1759,9 +1758,11 @@ static void Compiler_CompileFn(Compiler compiler, SmileList args)
 	EMIT0(Op_Ret, -1);
 
 	// We're done compiling this function.
+	Compiler_EndScope(compiler);
 	Compiler_EndFunction(compiler);
 
 	// Make a suitable closure decriptor for it, and an actual function object.
+	segment = compiler->currentFunction->byteCodeSegment;
 	closureInfo = Compiler_MakeClosureInfoForCompilerFunction(compiler, compilerFunction);
 	MemCpy(&userFunctionInfo->closureInfo, closureInfo, sizeof(struct ClosureInfoStruct));
 	userFunctionInfo->byteCodeSegment = compilerFunction->byteCodeSegment;

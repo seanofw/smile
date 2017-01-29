@@ -48,11 +48,144 @@ extern SmileVTable SmileExternalFunction_MaxTypesCheck_VTable;
 extern SmileVTable SmileExternalFunction_MinMaxTypesCheck_VTable;
 extern SmileVTable SmileExternalFunction_ExactTypesCheck_VTable;
 
-extern Bool SmileUserFunction_Call(SmileFunction self, Int argc);
-
 SMILE_EASY_OBJECT_NO_SECURITY(SmileFunction);
 
-UserFunctionInfo UserFunctionInfo_Create(SmileList args, SmileObject body)
+static Bool UserFunctionArg_Init(UserFunctionArg arg, SmileObject obj, String *errorMessage)
+{
+	SmileList argList;
+
+	arg->defaultValue = NullObject;
+	arg->flags = USER_ARG_NORMAL;
+	arg->typeName = 0;
+
+	if (SMILE_KIND(obj) == SMILE_KIND_SYMBOL) {
+		// Common shorthand:  The argument is just a symbol.
+		arg->name = ((SmileSymbol)obj)->symbol;
+		*errorMessage = NULL;
+		return True;
+	}
+	
+	if (SMILE_KIND(obj) != SMILE_KIND_LIST) {
+		// The argument must be a list, if it's not a symbol.
+		*errorMessage = String_Format("Invalid argument form.");
+		return False;
+	}
+
+	// The first element of the list must be a symbol:  The argument's name.
+	argList = (SmileList)obj;
+	if (SMILE_KIND(argList->a) != SMILE_KIND_SYMBOL) {
+		*errorMessage = String_Format("Argument sub-list must start with a symbol.");
+		return False;
+	}
+	arg->name = ((SmileSymbol)argList->a)->symbol;
+
+	// Walk the list of optional modifiers on this argument.
+	for (argList = LIST_REST(argList); SMILE_KIND(argList) != SMILE_KIND_NULL; ) {
+		Symbol modifier;
+	
+		if (SMILE_KIND(argList->a) != SMILE_KIND_SYMBOL) {
+			*errorMessage = String_Format("Argument modifier for '%S' must start with 'type', 'default', or 'rest'.",
+					SymbolTable_GetName(Smile_SymbolTable, arg->name));
+			return False;
+		}
+	
+		modifier = ((SmileSymbol)argList->a)->symbol;
+		if (modifier == Smile_KnownSymbols.type) {
+			// Handle the [type name] modifier.
+			argList = LIST_REST(argList);
+			if (SMILE_KIND(argList) != SMILE_KIND_LIST || SMILE_KIND(argList->a) != SMILE_KIND_SYMBOL) {
+				*errorMessage = String_Format("Argument 'type' modifier for '%S' must be followed by a name of a type.",
+					SymbolTable_GetName(Smile_SymbolTable, arg->name));
+				return False;
+			}
+			arg->typeName = ((SmileSymbol)argList->a)->symbol;
+			argList = LIST_REST(argList);
+		}
+		else if (modifier == Smile_KnownSymbols.default_) {
+			// Handle the [default value] modifier.
+			argList = LIST_REST(argList);
+			if (SMILE_KIND(argList) != SMILE_KIND_LIST) {
+				*errorMessage = String_Format("Argument 'default' modifier for '%S' must be followed by a default value.",
+					SymbolTable_GetName(Smile_SymbolTable, arg->name));
+				return False;
+			}
+			arg->defaultValue = argList->a;
+			argList = LIST_REST(argList);
+		}
+		else if (modifier == Smile_KnownSymbols.rest) {
+			// Handle the [rest] modifier.
+			arg->flags |= USER_ARG_REST;
+			argList = LIST_REST(argList);
+		}
+		else {
+			*errorMessage = String_Format("Argument modifier for '%S' must be 'type', 'default', or 'rest', not '%S'.",
+				SymbolTable_GetName(Smile_SymbolTable, arg->name), SymbolTable_GetName(Smile_SymbolTable, modifier));
+			return False;
+		}
+	}
+
+	*errorMessage = NULL;
+	return True;
+}
+
+static Bool UserFunctionInfo_ApplyArgs(UserFunctionInfo userFunctionInfo, SmileList argList, String *errorMessage)
+{
+	UserFunctionArg arg, argArray;
+	Int numArgs, minArgs, maxArgs, argIndex;
+	Bool haveRest = False, haveOptional = False;
+
+	numArgs = SmileList_Length(argList);
+	minArgs = 0;
+	maxArgs = 0;
+
+	if (numArgs <= 0) {
+		argArray = NULL;
+	}
+	else {
+		argArray = GC_MALLOC_STRUCT_ARRAY(struct UserFunctionArgStruct, numArgs);
+
+		for (argIndex = 0; SMILE_KIND(argList) != SMILE_KIND_NULL; argList = LIST_REST(argList), argIndex++) {
+
+			arg = &argArray[argIndex];
+
+			if (!UserFunctionArg_Init(arg, argList->a, errorMessage))
+				return False;
+
+			if (haveRest) {
+				*errorMessage = String_Format("Function argument '%S' cannot appear after the 'rest...' argument.",
+					SymbolTable_GetName(Smile_SymbolTable, arg->name));
+				return False;
+			}
+
+			if (arg->flags & USER_ARG_OPTIONAL) {
+				haveOptional = True;
+				maxArgs++;
+			}
+			else if (arg->flags & USER_ARG_REST) {
+				haveRest = True;
+				maxArgs = Int16Max;
+			}
+			else {
+				if (haveOptional) {
+					*errorMessage = String_Format("Required function argument '%S' cannot appear after an optional argument.",
+						SymbolTable_GetName(Smile_SymbolTable, arg->name));
+					return False;
+				}
+				maxArgs = ++minArgs;
+			}
+		}
+	}
+
+	userFunctionInfo->args = argArray;
+	userFunctionInfo->numArgs = (Int16)numArgs;
+	userFunctionInfo->minArgs = (Int16)minArgs;
+	userFunctionInfo->maxArgs = (Int16)maxArgs;
+
+	*errorMessage = NULL;
+	return True;
+}
+
+UserFunctionInfo UserFunctionInfo_Create(UserFunctionInfo parent, SmileList args, SmileObject body, String *errorMessage)
 {
 	UserFunctionInfo userFunctionInfo;
 
@@ -62,12 +195,11 @@ UserFunctionInfo UserFunctionInfo_Create(SmileList args, SmileObject body)
 
 	MemZero(userFunctionInfo, sizeof(struct UserFunctionInfoStruct));
 
+	userFunctionInfo->parent = parent;
 	userFunctionInfo->argList = args;
 	userFunctionInfo->body = body;
 
-	
-
-	return userFunctionInfo;
+	return UserFunctionInfo_ApplyArgs(userFunctionInfo, args, errorMessage) ? userFunctionInfo : NULL;
 }
 
 Inline SmileVTable GetUserFunctionVTableByFlags(Int flags, Int numArgs)
@@ -333,7 +465,7 @@ String SmileExternalFunction_ToString(SmileFunction self)
 
 #define USER_FUNCTION_VTABLE(__checkKind__) \
 	\
-	extern Bool SmileUserFunction_##__checkKind__##_Call(SmileFunction self, Int argc); \
+	extern void SmileUserFunction_##__checkKind__##_Call(SmileFunction self, Int argc); \
 	\
 	SMILE_VTABLE(SmileUserFunction_##__checkKind__##_VTable, SmileFunction) \
 	{ \
@@ -375,7 +507,7 @@ USER_FUNCTION_VTABLE(CheckedRest);	// Function with at least one type-checked ar
 
 #define EXTERNAL_FUNCTION_VTABLE(__checkKind__) \
 	\
-	extern Bool SmileExternalFunction_##__checkKind__##_Call(SmileFunction self, Int argc); \
+	extern void SmileExternalFunction_##__checkKind__##_Call(SmileFunction self, Int argc); \
 	\
 	SMILE_VTABLE(SmileExternalFunction_##__checkKind__##_VTable, SmileFunction) \
 	{ \

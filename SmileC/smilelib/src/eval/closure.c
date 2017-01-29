@@ -53,13 +53,19 @@ Closure Closure_CreateGlobal(ClosureInfo closureInfo, Closure parent)
 	closure->closureInfo = closureInfo;
 	closure->parent = parent;
 	closure->global = closure;
-	closure->stackTop = NULL;
+
+	closure->returnClosure = NULL;
+	closure->returnSegment = NULL;
+	closure->returnPc = 0;
+
 	closure->frame = closure->variables;
+	closure->stackTop = NULL;
 
 	return closure;
 }
 
-Closure Closure_CreateLocal(ClosureInfo closureInfo, Closure parent)
+Closure Closure_CreateLocal(ClosureInfo closureInfo, Closure parent,
+	Closure returnClosure, struct ByteCodeSegmentStruct *returnSegment, Int returnPc)
 {
 	Closure closure = (Closure)GC_MALLOC(sizeof(struct ClosureStruct)
 		+ sizeof(SmileObject) * (closureInfo->numVariables + closureInfo->tempSize - 1));
@@ -69,6 +75,11 @@ Closure Closure_CreateLocal(ClosureInfo closureInfo, Closure parent)
 	closure->closureInfo = closureInfo;
 	closure->parent = parent;
 	closure->global = parent->global;
+
+	closure->returnClosure = returnClosure;
+	closure->returnSegment = returnSegment;
+	closure->returnPc = returnPc;
+
 	closure->frame = closure->variables;
 	closure->stackTop = closure->variables + closureInfo->numVariables;
 

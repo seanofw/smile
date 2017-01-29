@@ -16,6 +16,7 @@
 #endif
 
 struct CompilerFunctionStruct;
+struct ByteCodeSegmentStruct;
 
 //-------------------------------------------------------------------------------------------------
 // Closure Structures.
@@ -82,6 +83,10 @@ typedef struct ClosureStruct {
 		
 	ClosureInfo closureInfo;	// Shared metadata about this closure.
 		
+	struct ClosureStruct *returnClosure;	// The continuation's closure.
+	struct ByteCodeSegmentStruct *returnSegment;	// The segment that contains the continuation's code.
+	Int returnPc;	// The continuation's program counter.
+		
 	SmileObject *frame;	// The offset of the stack frame (- for args, + for local vars).
 	SmileObject *stackTop;	// The current address of the top of the temporary variables (NULL for global closures).
 	SmileObject variables[1];	// The array of variables (matches the ClosureInfo's numVariables + tempSize; size 0 for global closures).
@@ -94,7 +99,8 @@ typedef struct ClosureStruct {
 SMILE_API_FUNC ClosureInfo ClosureInfo_Create(ClosureInfo parent, Int kind);
 
 SMILE_API_FUNC Closure Closure_CreateGlobal(ClosureInfo info, Closure parent);
-SMILE_API_FUNC Closure Closure_CreateLocal(ClosureInfo info, Closure parent);
+SMILE_API_FUNC Closure Closure_CreateLocal(ClosureInfo info, Closure parent,
+	Closure returnClosure, struct ByteCodeSegmentStruct *returnSegment, Int returnPc);
 
 SMILE_API_FUNC SmileObject Closure_GetGlobalVariable(Closure closure, Symbol name);
 SMILE_API_FUNC Bool Closure_HasGlobalVariable(Closure closure, Symbol name);

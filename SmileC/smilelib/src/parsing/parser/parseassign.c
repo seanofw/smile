@@ -243,6 +243,7 @@ ParseError Parser_ParseEquals(Parser parser, SmileObject *expr, Int modeFlags)
 	LexerPosition position, position2;
 	SmileObject lvalue, rvalue;
 	ParseError error;
+	Symbol name;
 
 	// Handle the "implicit variable declaration" production:
 	//   assign ::= . unknown_name EQUAL assign | . unknown_name EQUAL_NOSPACE assign
@@ -259,7 +260,7 @@ ParseError Parser_ParseEquals(Parser parser, SmileObject *expr, Int modeFlags)
 		position2 = Token_GetPosition(token2);
 
 		// Declare the variable name in this scope.
-		error = ParseScope_Declare(parser->currentScope, token->data.symbol, PARSEDECL_VARIABLE, position, NULL);
+		error = ParseScope_Declare(parser->currentScope, name = token->data.symbol, PARSEDECL_VARIABLE, position, NULL);
 		if (error != NULL)
 			return error;
 
@@ -276,7 +277,7 @@ ParseError Parser_ParseEquals(Parser parser, SmileObject *expr, Int modeFlags)
 		// annotated with source locations.
 		*expr =
 			(SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects._setSymbol,
-				(SmileObject)SmileList_ConsWithSource((SmileObject)SmileSymbol_Create(token->data.symbol),
+				(SmileObject)SmileList_ConsWithSource((SmileObject)SmileSymbol_Create(name),
 					(SmileObject)SmileList_ConsWithSource(rvalue, NullObject,
 					position2),
 				position2),

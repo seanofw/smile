@@ -33,9 +33,8 @@ static EscapeContinuation _returnContinuation;
 static EscapeContinuation _exceptionContinuation;
 static Closure _closure;
 static CompiledTables _compiledTables;
-static UserFunctionInfo _functionInfo;
 static ByteCodeSegment _segment;
-static Int _pc;
+static ByteCode _byteCode;
 
 EvalResult EvalResult_Create(Int kind)
 {
@@ -51,12 +50,11 @@ EvalResult EvalResult_Create(Int kind)
 EvalResult Eval_Run(CompiledTables tables, UserFunctionInfo functionInfo)
 {
 	_compiledTables = tables;
-	_functionInfo = functionInfo;
 	_segment = functionInfo->byteCodeSegment;
 	_closure = Closure_CreateGlobal(tables->globalClosureInfo, NULL);
-	_pc = 0;
+	_byteCode = &_segment->byteCodes[0];
 
-	_closure = Closure_CreateLocal(&functionInfo->closureInfo, _closure);
+	_closure = Closure_CreateLocal(&functionInfo->closureInfo, _closure, NULL, NULL, 0);
 
 	_exceptionContinuation = EscapeContinuation_Create(ESCAPE_KIND_EXCEPTION);
 	_returnContinuation = EscapeContinuation_Create(ESCAPE_KIND_RETURN);
@@ -119,72 +117,70 @@ EvalResult Eval_Continue(void)
 
 Bool Eval_RunCore(void)
 {
-	register ByteCode byteCode = _segment->byteCodes + _pc;
 	SmileObject target, value;
 
 next:
-	switch (byteCode->opcode) {
+	switch (_byteCode->opcode) {
 	
 		//-------------------------------------------------------
 		// 00-0F: Miscellaneous stack- and state-management
 
 		case Op_Nop:
-			byteCode++;
+			_byteCode++;
 			goto next;
 		
 		case Op_Dup1:
 			_closure->stackTop[0] = _closure->stackTop[-1];
 			_closure->stackTop++;
-			byteCode++;
+			_byteCode++;
 			goto next;
 
 		case Op_Dup2:
 			_closure->stackTop[0] = _closure->stackTop[-2];
 			_closure->stackTop++;
-			byteCode++;
+			_byteCode++;
 			goto next;
 
 		case Op_Dup:
-			_closure->stackTop[0] = _closure->stackTop[-byteCode->u.index];
+			_closure->stackTop[0] = _closure->stackTop[-_byteCode->u.index];
 			_closure->stackTop++;
-			byteCode++;
+			_byteCode++;
 			goto next;
 		
 		case Op_Pop1:
 			Closure_PopCount(_closure, 1);
-			byteCode++;
+			_byteCode++;
 			goto next;
 
 		case Op_Pop2:
 			Closure_PopCount(_closure, 2);
-			byteCode++;
+			_byteCode++;
 			goto next;
 		
 		case Op_Pop:
-			Closure_PopCount(_closure, byteCode->u.index);
-			byteCode++;
+			Closure_PopCount(_closure, _byteCode->u.index);
+			_byteCode++;
 			goto next;
 
 		case Op_Rep1:
 			_closure->stackTop[-2] = _closure->stackTop[-1];
 			_closure->stackTop--;
-			byteCode++;
+			_byteCode++;
 			goto next;
 
 		case Op_Rep2:
 			_closure->stackTop[-3] = _closure->stackTop[-1];
 			_closure->stackTop -= 2;
-			byteCode++;
+			_byteCode++;
 			goto next;
 
 		case Op_Rep:
-			_closure->stackTop[-(byteCode->u.index + 1)] = _closure->stackTop[-1];
-			_closure->stackTop -= byteCode->u.index;
-			byteCode++;
+			_closure->stackTop[-(_byteCode->u.index + 1)] = _closure->stackTop[-1];
+			_closure->stackTop -= _byteCode->u.index;
+			_byteCode++;
 			goto next;
 
 		case Op_Brk:
-			_pc = byteCode - _segment->byteCodes;
 			return False;
 		
 		//-------------------------------------------------------
@@ -192,55 +188,55 @@ next:
 		
 		case Op_LdNull:
 			Closure_PushTemp(_closure, NullObject);
-			byteCode++;
+			_byteCode++;
 			goto next;
 
 		case Op_LdBool:
-			Closure_PushTemp(_closure, Smile_KnownObjects.BooleanObjs[byteCode->u.boolean]);
-			byteCode++;
+			Closure_PushTemp(_closure, Smile_KnownObjects.BooleanObjs[_byteCode->u.boolean]);
+			_byteCode++;
 			goto next;
 
 		case Op_LdStr:
-			Closure_PushTemp(_closure, SmileString_Create(_compiledTables->strings[byteCode->u.index]));
-			byteCode++;
+			Closure_PushTemp(_closure, SmileString_Create(_compiledTables->strings[_byteCode->u.index]));
+			_byteCode++;
 			goto next;
 
 		case Op_LdSym:
-			Closure_PushTemp(_closure, SmileSymbol_Create(byteCode->u.symbol));
-			byteCode++;
+			Closure_PushTemp(_closure, SmileSymbol_Create(_byteCode->u.symbol));
+			_byteCode++;
 			goto next;
 
 		case Op_LdObj:
-			Closure_PushTemp(_closure, _compiledTables->objects[byteCode->u.index]);
-			byteCode++;
+			Closure_PushTemp(_closure, _compiledTables->objects[_byteCode->u.index]);
+			_byteCode++;
 			goto next;
 		
 		//-------------------------------------------------------
 		// 18-1F: Integer load instructions
 		
 		case Op_Ld8:
-			Closure_PushTemp(_closure, SmileByte_Create(byteCode->u.byte));
-			byteCode++;
+			Closure_PushTemp(_closure, SmileByte_Create(_byteCode->u.byte));
+			_byteCode++;
 			goto next;
 
 		case Op_Ld16:
-			Closure_PushTemp(_closure, SmileInteger16_Create(byteCode->u.int16));
-			byteCode++;
+			Closure_PushTemp(_closure, SmileInteger16_Create(_byteCode->u.int16));
+			_byteCode++;
 			goto next;
 
 		case Op_Ld32:
-			Closure_PushTemp(_closure, SmileInteger32_Create(byteCode->u.int32));
-			byteCode++;
+			Closure_PushTemp(_closure, SmileInteger32_Create(_byteCode->u.int32));
+			_byteCode++;
 			goto next;
 
 		case Op_Ld64:
-			Closure_PushTemp(_closure, SmileInteger64_Create(byteCode->u.int64));
-			byteCode++;
+			Closure_PushTemp(_closure, SmileInteger64_Create(_byteCode->u.int64));
+			_byteCode++;
 			goto next;
 
 		case Op_Ld128:
-			Closure_PushTemp(_closure, _compiledTables->objects[byteCode->u.index]);
-			byteCode++;
+			Closure_PushTemp(_closure, _compiledTables->objects[_byteCode->u.index]);
+			_byteCode++;
 			goto next;
 		
 		//-------------------------------------------------------
@@ -253,258 +249,258 @@ next:
 		// 30-37: General-purpose local-variable/argument instructions
 		
 		case Op_LdLoc:
-			Closure_PushTemp(_closure, Closure_GetLocalVariableInScope(_closure, byteCode->u.i2.a, byteCode->u.i2.b));
-			byteCode++;
+			Closure_PushTemp(_closure, Closure_GetLocalVariableInScope(_closure, _byteCode->u.i2.a, _byteCode->u.i2.b));
+			_byteCode++;
 			goto next;
 
 		case Op_StLoc:
-			Closure_SetLocalVariableInScope(_closure, byteCode->u.i2.a, byteCode->u.i2.b, Closure_GetTop(_closure));
-			byteCode++;
+			Closure_SetLocalVariableInScope(_closure, _byteCode->u.i2.a, _byteCode->u.i2.b, Closure_GetTop(_closure));
+			_byteCode++;
 			goto next;
 
 		case Op_StpLoc:
-			Closure_SetLocalVariableInScope(_closure, byteCode->u.i2.a, byteCode->u.i2.b, Closure_PopTemp(_closure));
-			byteCode++;
+			Closure_SetLocalVariableInScope(_closure, _byteCode->u.i2.a, _byteCode->u.i2.b, Closure_PopTemp(_closure));
+			_byteCode++;
 			goto next;
 
 		case Op_LdArg:
-			Closure_PushTemp(_closure, Closure_GetArgumentInScope(_closure, byteCode->u.i2.a, byteCode->u.i2.b));
-			byteCode++;
+			Closure_PushTemp(_closure, Closure_GetArgumentInScope(_closure, _byteCode->u.i2.a, _byteCode->u.i2.b));
+			_byteCode++;
 			goto next;
 
 		case Op_StArg:
-			Closure_SetArgumentInScope(_closure, byteCode->u.i2.a, byteCode->u.i2.b, Closure_GetTop(_closure));
-			byteCode++;
+			Closure_SetArgumentInScope(_closure, _byteCode->u.i2.a, _byteCode->u.i2.b, Closure_GetTop(_closure));
+			_byteCode++;
 			goto next;
 
 		case Op_StpArg:
-			Closure_SetArgumentInScope(_closure, byteCode->u.i2.a, byteCode->u.i2.b, Closure_PopTemp(_closure));
-			byteCode++;
+			Closure_SetArgumentInScope(_closure, _byteCode->u.i2.a, _byteCode->u.i2.b, Closure_PopTemp(_closure));
+			_byteCode++;
 			goto next;
 
 		//-------------------------------------------------------
 		// 38-3F: Global variable instructions
 
 		case Op_LdX:
-			Closure_PushTemp(_closure, Closure_GetGlobalVariable(_closure, byteCode->u.symbol));
-			byteCode++;
+			Closure_PushTemp(_closure, Closure_GetGlobalVariable(_closure, _byteCode->u.symbol));
+			_byteCode++;
 			goto next;
 
 		case Op_StX:
-			Closure_SetGlobalVariable(_closure, byteCode->u.symbol, Closure_GetTop(_closure));
-			byteCode++;
+			Closure_SetGlobalVariable(_closure, _byteCode->u.symbol, Closure_GetTop(_closure));
+			_byteCode++;
 			goto next;
 
 		case Op_StpX:
-			Closure_SetGlobalVariable(_closure, byteCode->u.symbol, Closure_PopTemp(_closure));
-			byteCode++;
+			Closure_SetGlobalVariable(_closure, _byteCode->u.symbol, Closure_PopTemp(_closure));
+			_byteCode++;
 			goto next;
 
 		//-------------------------------------------------------
 		// 40-4F: Optimized local-variable/argument load instructions
 		
 		case Op_LdArg0:
-			Closure_PushTemp(_closure, Closure_GetArgumentInScope0(_closure, byteCode->u.index));
-			byteCode++;
+			Closure_PushTemp(_closure, Closure_GetArgumentInScope0(_closure, _byteCode->u.index));
+			_byteCode++;
 			goto next;
 		case Op_LdArg1:
-			Closure_PushTemp(_closure, Closure_GetArgumentInScope1(_closure, byteCode->u.index));
-			byteCode++;
+			Closure_PushTemp(_closure, Closure_GetArgumentInScope1(_closure, _byteCode->u.index));
+			_byteCode++;
 			goto next;
 		case Op_LdArg2:
-			Closure_PushTemp(_closure, Closure_GetArgumentInScope2(_closure, byteCode->u.index));
-			byteCode++;
+			Closure_PushTemp(_closure, Closure_GetArgumentInScope2(_closure, _byteCode->u.index));
+			_byteCode++;
 			goto next;
 		case Op_LdArg3:
-			Closure_PushTemp(_closure, Closure_GetArgumentInScope3(_closure, byteCode->u.index));
-			byteCode++;
+			Closure_PushTemp(_closure, Closure_GetArgumentInScope3(_closure, _byteCode->u.index));
+			_byteCode++;
 			goto next;
 		case Op_LdArg4:
-			Closure_PushTemp(_closure, Closure_GetArgumentInScope4(_closure, byteCode->u.index));
-			byteCode++;
+			Closure_PushTemp(_closure, Closure_GetArgumentInScope4(_closure, _byteCode->u.index));
+			_byteCode++;
 			goto next;
 		case Op_LdArg5:
-			Closure_PushTemp(_closure, Closure_GetArgumentInScope5(_closure, byteCode->u.index));
-			byteCode++;
+			Closure_PushTemp(_closure, Closure_GetArgumentInScope5(_closure, _byteCode->u.index));
+			_byteCode++;
 			goto next;
 		case Op_LdArg6:
-			Closure_PushTemp(_closure, Closure_GetArgumentInScope6(_closure, byteCode->u.index));
-			byteCode++;
+			Closure_PushTemp(_closure, Closure_GetArgumentInScope6(_closure, _byteCode->u.index));
+			_byteCode++;
 			goto next;
 		case Op_LdArg7:
-			Closure_PushTemp(_closure, Closure_GetArgumentInScope7(_closure, byteCode->u.index));
-			byteCode++;
+			Closure_PushTemp(_closure, Closure_GetArgumentInScope7(_closure, _byteCode->u.index));
+			_byteCode++;
 			goto next;
 		
 		case Op_LdLoc0:
-			Closure_PushTemp(_closure, Closure_GetLocalVariableInScope0(_closure, byteCode->u.index));
-			byteCode++;
+			Closure_PushTemp(_closure, Closure_GetLocalVariableInScope0(_closure, _byteCode->u.index));
+			_byteCode++;
 			goto next;
 		case Op_LdLoc1:
-			Closure_PushTemp(_closure, Closure_GetLocalVariableInScope1(_closure, byteCode->u.index));
-			byteCode++;
+			Closure_PushTemp(_closure, Closure_GetLocalVariableInScope1(_closure, _byteCode->u.index));
+			_byteCode++;
 			goto next;
 		case Op_LdLoc2:
-			Closure_PushTemp(_closure, Closure_GetLocalVariableInScope2(_closure, byteCode->u.index));
-			byteCode++;
+			Closure_PushTemp(_closure, Closure_GetLocalVariableInScope2(_closure, _byteCode->u.index));
+			_byteCode++;
 			goto next;
 		case Op_LdLoc3:
-			Closure_PushTemp(_closure, Closure_GetLocalVariableInScope3(_closure, byteCode->u.index));
-			byteCode++;
+			Closure_PushTemp(_closure, Closure_GetLocalVariableInScope3(_closure, _byteCode->u.index));
+			_byteCode++;
 			goto next;
 		case Op_LdLoc4:
-			Closure_PushTemp(_closure, Closure_GetLocalVariableInScope4(_closure, byteCode->u.index));
-			byteCode++;
+			Closure_PushTemp(_closure, Closure_GetLocalVariableInScope4(_closure, _byteCode->u.index));
+			_byteCode++;
 			goto next;
 		case Op_LdLoc5:
-			Closure_PushTemp(_closure, Closure_GetLocalVariableInScope5(_closure, byteCode->u.index));
-			byteCode++;
+			Closure_PushTemp(_closure, Closure_GetLocalVariableInScope5(_closure, _byteCode->u.index));
+			_byteCode++;
 			goto next;
 		case Op_LdLoc6:
-			Closure_PushTemp(_closure, Closure_GetLocalVariableInScope6(_closure, byteCode->u.index));
-			byteCode++;
+			Closure_PushTemp(_closure, Closure_GetLocalVariableInScope6(_closure, _byteCode->u.index));
+			_byteCode++;
 			goto next;
 		case Op_LdLoc7:
-			Closure_PushTemp(_closure, Closure_GetLocalVariableInScope7(_closure, byteCode->u.index));
-			byteCode++;
+			Closure_PushTemp(_closure, Closure_GetLocalVariableInScope7(_closure, _byteCode->u.index));
+			_byteCode++;
 			goto next;
 		
 		//-------------------------------------------------------
 		// 50-5F: Optimized local-variable/argument store instructions
 
 		case Op_StArg0:
-			Closure_SetArgumentInScope0(_closure, byteCode->u.index, Closure_GetTop(_closure));
-			byteCode++;
+			Closure_SetArgumentInScope0(_closure, _byteCode->u.index, Closure_GetTop(_closure));
+			_byteCode++;
 			goto next;
 		case Op_StArg1:
-			Closure_SetArgumentInScope1(_closure, byteCode->u.index, Closure_GetTop(_closure));
-			byteCode++;
+			Closure_SetArgumentInScope1(_closure, _byteCode->u.index, Closure_GetTop(_closure));
+			_byteCode++;
 			goto next;
 		case Op_StArg2:
-			Closure_SetArgumentInScope2(_closure, byteCode->u.index, Closure_GetTop(_closure));
-			byteCode++;
+			Closure_SetArgumentInScope2(_closure, _byteCode->u.index, Closure_GetTop(_closure));
+			_byteCode++;
 			goto next;
 		case Op_StArg3:
-			Closure_SetArgumentInScope3(_closure, byteCode->u.index, Closure_GetTop(_closure));
-			byteCode++;
+			Closure_SetArgumentInScope3(_closure, _byteCode->u.index, Closure_GetTop(_closure));
+			_byteCode++;
 			goto next;
 		case Op_StArg4:
-			Closure_SetArgumentInScope4(_closure, byteCode->u.index, Closure_GetTop(_closure));
-			byteCode++;
+			Closure_SetArgumentInScope4(_closure, _byteCode->u.index, Closure_GetTop(_closure));
+			_byteCode++;
 			goto next;
 		case Op_StArg5:
-			Closure_SetArgumentInScope5(_closure, byteCode->u.index, Closure_GetTop(_closure));
-			byteCode++;
+			Closure_SetArgumentInScope5(_closure, _byteCode->u.index, Closure_GetTop(_closure));
+			_byteCode++;
 			goto next;
 		case Op_StArg6:
-			Closure_SetArgumentInScope6(_closure, byteCode->u.index, Closure_GetTop(_closure));
-			byteCode++;
+			Closure_SetArgumentInScope6(_closure, _byteCode->u.index, Closure_GetTop(_closure));
+			_byteCode++;
 			goto next;
 		case Op_StArg7:
-			Closure_SetArgumentInScope7(_closure, byteCode->u.index, Closure_GetTop(_closure));
-			byteCode++;
+			Closure_SetArgumentInScope7(_closure, _byteCode->u.index, Closure_GetTop(_closure));
+			_byteCode++;
 			goto next;
 
 		case Op_StLoc0:
-			Closure_SetLocalVariableInScope0(_closure, byteCode->u.index, Closure_GetTop(_closure));
-			byteCode++;
+			Closure_SetLocalVariableInScope0(_closure, _byteCode->u.index, Closure_GetTop(_closure));
+			_byteCode++;
 			goto next;
 		case Op_StLoc1:
-			Closure_SetLocalVariableInScope1(_closure, byteCode->u.index, Closure_GetTop(_closure));
-			byteCode++;
+			Closure_SetLocalVariableInScope1(_closure, _byteCode->u.index, Closure_GetTop(_closure));
+			_byteCode++;
 			goto next;
 		case Op_StLoc2:
-			Closure_SetLocalVariableInScope2(_closure, byteCode->u.index, Closure_GetTop(_closure));
-			byteCode++;
+			Closure_SetLocalVariableInScope2(_closure, _byteCode->u.index, Closure_GetTop(_closure));
+			_byteCode++;
 			goto next;
 		case Op_StLoc3:
-			Closure_SetLocalVariableInScope3(_closure, byteCode->u.index, Closure_GetTop(_closure));
-			byteCode++;
+			Closure_SetLocalVariableInScope3(_closure, _byteCode->u.index, Closure_GetTop(_closure));
+			_byteCode++;
 			goto next;
 		case Op_StLoc4:
-			Closure_SetLocalVariableInScope4(_closure, byteCode->u.index, Closure_GetTop(_closure));
-			byteCode++;
+			Closure_SetLocalVariableInScope4(_closure, _byteCode->u.index, Closure_GetTop(_closure));
+			_byteCode++;
 			goto next;
 		case Op_StLoc5:
-			Closure_SetLocalVariableInScope5(_closure, byteCode->u.index, Closure_GetTop(_closure));
-			byteCode++;
+			Closure_SetLocalVariableInScope5(_closure, _byteCode->u.index, Closure_GetTop(_closure));
+			_byteCode++;
 			goto next;
 		case Op_StLoc6:
-			Closure_SetLocalVariableInScope6(_closure, byteCode->u.index, Closure_GetTop(_closure));
-			byteCode++;
+			Closure_SetLocalVariableInScope6(_closure, _byteCode->u.index, Closure_GetTop(_closure));
+			_byteCode++;
 			goto next;
 		case Op_StLoc7:
-			Closure_SetLocalVariableInScope7(_closure, byteCode->u.index, Closure_GetTop(_closure));
-			byteCode++;
+			Closure_SetLocalVariableInScope7(_closure, _byteCode->u.index, Closure_GetTop(_closure));
+			_byteCode++;
 			goto next;
 		
 		//-------------------------------------------------------
 		// 60-6F: Optimized local-variable/argument store-and-pop instructions
 
 		case Op_StpArg0:
-			Closure_SetArgumentInScope0(_closure, byteCode->u.index, Closure_PopTemp(_closure));
-			byteCode++;
+			Closure_SetArgumentInScope0(_closure, _byteCode->u.index, Closure_PopTemp(_closure));
+			_byteCode++;
 			goto next;
 		case Op_StpArg1:
-			Closure_SetArgumentInScope1(_closure, byteCode->u.index, Closure_PopTemp(_closure));
-			byteCode++;
+			Closure_SetArgumentInScope1(_closure, _byteCode->u.index, Closure_PopTemp(_closure));
+			_byteCode++;
 			goto next;
 		case Op_StpArg2:
-			Closure_SetArgumentInScope2(_closure, byteCode->u.index, Closure_PopTemp(_closure));
-			byteCode++;
+			Closure_SetArgumentInScope2(_closure, _byteCode->u.index, Closure_PopTemp(_closure));
+			_byteCode++;
 			goto next;
 		case Op_StpArg3:
-			Closure_SetArgumentInScope3(_closure, byteCode->u.index, Closure_PopTemp(_closure));
-			byteCode++;
+			Closure_SetArgumentInScope3(_closure, _byteCode->u.index, Closure_PopTemp(_closure));
+			_byteCode++;
 			goto next;
 		case Op_StpArg4:
-			Closure_SetArgumentInScope4(_closure, byteCode->u.index, Closure_PopTemp(_closure));
-			byteCode++;
+			Closure_SetArgumentInScope4(_closure, _byteCode->u.index, Closure_PopTemp(_closure));
+			_byteCode++;
 			goto next;
 		case Op_StpArg5:
-			Closure_SetArgumentInScope5(_closure, byteCode->u.index, Closure_PopTemp(_closure));
-			byteCode++;
+			Closure_SetArgumentInScope5(_closure, _byteCode->u.index, Closure_PopTemp(_closure));
+			_byteCode++;
 			goto next;
 		case Op_StpArg6:
-			Closure_SetArgumentInScope6(_closure, byteCode->u.index, Closure_PopTemp(_closure));
-			byteCode++;
+			Closure_SetArgumentInScope6(_closure, _byteCode->u.index, Closure_PopTemp(_closure));
+			_byteCode++;
 			goto next;
 		case Op_StpArg7:
-			Closure_SetArgumentInScope7(_closure, byteCode->u.index, Closure_PopTemp(_closure));
-			byteCode++;
+			Closure_SetArgumentInScope7(_closure, _byteCode->u.index, Closure_PopTemp(_closure));
+			_byteCode++;
 			goto next;
 
 		case Op_StpLoc0:
-			Closure_SetLocalVariableInScope0(_closure, byteCode->u.index, Closure_PopTemp(_closure));
-			byteCode++;
+			Closure_SetLocalVariableInScope0(_closure, _byteCode->u.index, Closure_PopTemp(_closure));
+			_byteCode++;
 			goto next;
 		case Op_StpLoc1:
-			Closure_SetLocalVariableInScope1(_closure, byteCode->u.index, Closure_PopTemp(_closure));
-			byteCode++;
+			Closure_SetLocalVariableInScope1(_closure, _byteCode->u.index, Closure_PopTemp(_closure));
+			_byteCode++;
 			goto next;
 		case Op_StpLoc2:
-			Closure_SetLocalVariableInScope2(_closure, byteCode->u.index, Closure_PopTemp(_closure));
-			byteCode++;
+			Closure_SetLocalVariableInScope2(_closure, _byteCode->u.index, Closure_PopTemp(_closure));
+			_byteCode++;
 			goto next;
 		case Op_StpLoc3:
-			Closure_SetLocalVariableInScope3(_closure, byteCode->u.index, Closure_PopTemp(_closure));
-			byteCode++;
+			Closure_SetLocalVariableInScope3(_closure, _byteCode->u.index, Closure_PopTemp(_closure));
+			_byteCode++;
 			goto next;
 		case Op_StpLoc4:
-			Closure_SetLocalVariableInScope4(_closure, byteCode->u.index, Closure_PopTemp(_closure));
-			byteCode++;
+			Closure_SetLocalVariableInScope4(_closure, _byteCode->u.index, Closure_PopTemp(_closure));
+			_byteCode++;
 			goto next;
 		case Op_StpLoc5:
-			Closure_SetLocalVariableInScope5(_closure, byteCode->u.index, Closure_PopTemp(_closure));
-			byteCode++;
+			Closure_SetLocalVariableInScope5(_closure, _byteCode->u.index, Closure_PopTemp(_closure));
+			_byteCode++;
 			goto next;
 		case Op_StpLoc6:
-			Closure_SetLocalVariableInScope6(_closure, byteCode->u.index, Closure_PopTemp(_closure));
-			byteCode++;
+			Closure_SetLocalVariableInScope6(_closure, _byteCode->u.index, Closure_PopTemp(_closure));
+			_byteCode++;
 			goto next;
 		case Op_StpLoc7:
-			Closure_SetLocalVariableInScope7(_closure, byteCode->u.index, Closure_PopTemp(_closure));
-			byteCode++;
+			Closure_SetLocalVariableInScope7(_closure, _byteCode->u.index, Closure_PopTemp(_closure));
+			_byteCode++;
 			goto next;
 		
 		//-------------------------------------------------------
@@ -512,24 +508,24 @@ next:
 
 		case Op_LdProp:
 			target = Closure_GetTop(_closure);
-			value = SMILE_VCALL1(target, getProperty, byteCode->u.symbol);
+			value = SMILE_VCALL1(target, getProperty, _byteCode->u.symbol);
 			Closure_SetTop(_closure, value);
-			byteCode++;
+			_byteCode++;
 			goto next;
 		case Op_StProp:
 			target = Closure_GetTemp(_closure, 1);
 			value = Closure_GetTemp(_closure, 0);
-			SMILE_VCALL2(target, setProperty, byteCode->u.symbol, value);
+			SMILE_VCALL2(target, setProperty, _byteCode->u.symbol, value);
 			Closure_PopCount(_closure, 1);
 			Closure_SetTop(_closure, value);
-			byteCode++;
+			_byteCode++;
 			goto next;
 		case Op_StpProp:
 			target = Closure_GetTemp(_closure, 1);
 			value = Closure_GetTemp(_closure, 0);
-			SMILE_VCALL2(target, setProperty, byteCode->u.symbol, value);
+			SMILE_VCALL2(target, setProperty, _byteCode->u.symbol, value);
 			Closure_PopCount(_closure, 2);
-			byteCode++;
+			_byteCode++;
 			goto next;
 
 		//-------------------------------------------------------
@@ -541,7 +537,7 @@ next:
 			Closure_PopCount(_closure, 1);
 			value = (SmileObject)SmileBool_FromBool(SMILE_VCALL1(target, compareEqual, value));
 			Closure_SetTop(_closure, value);
-			byteCode++;
+			_byteCode++;
 			goto next;
 
 		case Op_SuperNe:
@@ -550,7 +546,7 @@ next:
 			Closure_PopCount(_closure, 1);
 			value = (SmileObject)SmileBool_FromBool(1 - SMILE_VCALL1(target, compareEqual, value));
 			Closure_SetTop(_closure, value);
-			byteCode++;
+			_byteCode++;
 			goto next;
 		
 		case Op_Bool:
@@ -559,7 +555,7 @@ next:
 				value = (SmileObject)SmileBool_FromBool(SMILE_VCALL(value, toBool));
 				Closure_SetTop(_closure, value);
 			}
-			byteCode++;
+			_byteCode++;
 			goto next;
 
 		case Op_Not:
@@ -570,7 +566,7 @@ next:
 			else {
 				Closure_SetTop(_closure, SmileBool_FromBool(1 - ((SmileBool)value)->value));
 			}
-			byteCode++;
+			_byteCode++;
 			goto next;
 
 		case Op_Is:
@@ -578,7 +574,7 @@ next:
 			value = Closure_GetTemp(_closure, 1);
 			Closure_PopCount(_closure, 1);
 			Closure_SetTop(_closure, SmileBool_FromBool(SmileObject_Is(target, value)));
-			byteCode++;
+			_byteCode++;
 			goto next;
 
 		//-------------------------------------------------------
@@ -586,131 +582,131 @@ next:
 
 		case Op_Met0:
 			target = Closure_GetTemp(_closure, 0);	// Get the target object
-			target = SMILE_VCALL1(target, getProperty, byteCode->u.symbol);	// Turn it into a function (hopefully)
+			target = SMILE_VCALL1(target, getProperty, _byteCode->u.symbol);	// Turn it into a function (hopefully)
+			_byteCode++;	
 			SMILE_VCALL1(target, call, 1);	// Invoke it, whatever it is.
-			byteCode++;
 			goto next;
 
 		case Op_Met1:
 			target = Closure_GetTemp(_closure, 1);	// Get the target object
-			target = SMILE_VCALL1(target, getProperty, byteCode->u.symbol);	// Turn it into a function (hopefully)
+			target = SMILE_VCALL1(target, getProperty, _byteCode->u.symbol);	// Turn it into a function (hopefully)
+			_byteCode++;	
 			SMILE_VCALL1(target, call, 2);	// Invoke it, whatever it is.
-			byteCode++;
 			goto next;
 
 		case Op_Met2:
 			target = Closure_GetTemp(_closure, 2);	// Get the target object
-			target = SMILE_VCALL1(target, getProperty, byteCode->u.symbol);	// Turn it into a function (hopefully)
+			target = SMILE_VCALL1(target, getProperty, _byteCode->u.symbol);	// Turn it into a function (hopefully)
+			_byteCode++;	
 			SMILE_VCALL1(target, call, 3);	// Invoke it, whatever it is.
-			byteCode++;
 			goto next;
 
 		case Op_Met3:
 			target = Closure_GetTemp(_closure, 3);	// Get the target object
-			target = SMILE_VCALL1(target, getProperty, byteCode->u.symbol);	// Turn it into a function (hopefully)
+			target = SMILE_VCALL1(target, getProperty, _byteCode->u.symbol);	// Turn it into a function (hopefully)
+			_byteCode++;	
 			SMILE_VCALL1(target, call, 4);	// Invoke it, whatever it is.
-			byteCode++;
 			goto next;
 
 		case Op_Met4:
 			target = Closure_GetTemp(_closure, 4);	// Get the target object
-			target = SMILE_VCALL1(target, getProperty, byteCode->u.symbol);	// Turn it into a function (hopefully)
+			target = SMILE_VCALL1(target, getProperty, _byteCode->u.symbol);	// Turn it into a function (hopefully)
+			_byteCode++;	
 			SMILE_VCALL1(target, call, 5);	// Invoke it, whatever it is.
-			byteCode++;
 			goto next;
 
 		case Op_Met5:
 			target = Closure_GetTemp(_closure, 5);	// Get the target object
-			target = SMILE_VCALL1(target, getProperty, byteCode->u.symbol);	// Turn it into a function (hopefully)
+			target = SMILE_VCALL1(target, getProperty, _byteCode->u.symbol);	// Turn it into a function (hopefully)
+			_byteCode++;	
 			SMILE_VCALL1(target, call, 6);	// Invoke it, whatever it is.
-			byteCode++;
 			goto next;
 
 		case Op_Met6:
 			target = Closure_GetTemp(_closure, 6);	// Get the target object
-			target = SMILE_VCALL1(target, getProperty, byteCode->u.symbol);	// Turn it into a function (hopefully)
+			target = SMILE_VCALL1(target, getProperty, _byteCode->u.symbol);	// Turn it into a function (hopefully)
+			_byteCode++;	
 			SMILE_VCALL1(target, call, 7);	// Invoke it, whatever it is.
-			byteCode++;
 			goto next;
 
 		case Op_Met7:
 			target = Closure_GetTemp(_closure, 7);	// Get the target object
-			target = SMILE_VCALL1(target, getProperty, byteCode->u.symbol);	// Turn it into a function (hopefully)
+			target = SMILE_VCALL1(target, getProperty, _byteCode->u.symbol);	// Turn it into a function (hopefully)
+			_byteCode++;	
 			SMILE_VCALL1(target, call, 8);	// Invoke it, whatever it is.
-			byteCode++;
 			goto next;
 
 		case Op_Call0:
 			target = Closure_GetTemp(_closure, 0);
+			_byteCode++;
 			SMILE_VCALL1(target, call, 0);
-			byteCode++;
 			goto next;
 
 		case Op_Call1:
 			target = Closure_GetTemp(_closure, 1);
+			_byteCode++;
 			SMILE_VCALL1(target, call, 1);
-			byteCode++;
 			goto next;
 
 		case Op_Call2:
 			target = Closure_GetTemp(_closure, 2);
+			_byteCode++;
 			SMILE_VCALL1(target, call, 2);
-			byteCode++;
 			goto next;
 
 		case Op_Call3:
 			target = Closure_GetTemp(_closure, 3);
+			_byteCode++;
 			SMILE_VCALL1(target, call, 3);
-			byteCode++;
 			goto next;
 
 		case Op_Call4:
 			target = Closure_GetTemp(_closure, 4);
+			_byteCode++;
 			SMILE_VCALL1(target, call, 4);
-			byteCode++;
 			goto next;
 
 		case Op_Call5:
 			target = Closure_GetTemp(_closure, 5);
+			_byteCode++;
 			SMILE_VCALL1(target, call, 5);
-			byteCode++;
 			goto next;
 
 		case Op_Call6:
 			target = Closure_GetTemp(_closure, 6);
+			_byteCode++;
 			SMILE_VCALL1(target, call, 6);
-			byteCode++;
 			goto next;
 
 		case Op_Call7:
 			target = Closure_GetTemp(_closure, 7);
+			_byteCode++;
 			SMILE_VCALL1(target, call, 7);
-			byteCode++;
 			goto next;
 
 		//-------------------------------------------------------
 		// B0-BF: Flow control
 		
 		case Op_Jmp:
-			byteCode += byteCode->u.index;
+			_byteCode += _byteCode->u.index;
 			goto next;
 
 		case Op_Bt:
 			value = Closure_PopTemp(_closure);
 			if (SMILE_KIND(value) != SMILE_KIND_BOOL) {
 				if (SMILE_VCALL(value, toBool)) {
-					byteCode += byteCode->u.index;
+					_byteCode += _byteCode->u.index;
 				}
 				else {
-					byteCode++;
+					_byteCode++;
 				}
 			}
 			else {
 				if (((SmileBool)value)->value) {
-					byteCode += byteCode->u.index;
+					_byteCode += _byteCode->u.index;
 				}
 				else {
-					byteCode++;
+					_byteCode++;
 				}
 			}
 			goto next;
@@ -719,37 +715,52 @@ next:
 			value = Closure_PopTemp(_closure);
 			if (SMILE_KIND(value) != SMILE_KIND_BOOL) {
 				if (SMILE_VCALL(value, toBool)) {
-					byteCode++;
+					_byteCode++;
 				}
 				else {
-					byteCode += byteCode->u.index;
+					_byteCode += _byteCode->u.index;
 				}
 			}
 			else {
 				if (((SmileBool)value)->value) {
-					byteCode++;
+					_byteCode++;
 				}
 				else {
-					byteCode += byteCode->u.index;
+					_byteCode += _byteCode->u.index;
 				}
 			}
 			goto next;
 
 		case Op_Met:
-			target = Closure_GetTemp(_closure, byteCode->u.i2.b + 1);	// Get the target object
-			target = SMILE_VCALL1(target, getProperty, byteCode->u.i2.a);	// Turn it into a function (hopefully)
-			SMILE_VCALL1(target, call, byteCode->u.i2.b + 1);	// Invoke it, whatever it is.
-			byteCode++;
+			target = Closure_GetTemp(_closure, _byteCode->u.i2.b + 1);	// Get the target object
+			target = SMILE_VCALL1(target, getProperty, _byteCode->u.i2.a);	// Turn it into a function (hopefully)
+			_byteCode++;
+			SMILE_VCALL1(target, call, _byteCode[-1].u.i2.b + 1);
 			goto next;
 
 		case Op_Call:
-			target = Closure_GetTemp(_closure, byteCode->u.index);
-			SMILE_VCALL1(target, call, byteCode->u.index);
-			byteCode++;
+			target = Closure_GetTemp(_closure, _byteCode->u.index);
+			_byteCode++;
+			SMILE_VCALL1(target, call, _byteCode[-1].u.index);
 			goto next;
-		
+
 		case Op_Ret:
-			return True;
+			if (_closure->returnClosure == NULL) {
+				return True;
+			}
+			else {
+				// Get the return value off the top of the closure.
+				value = Closure_GetTop(_closure);
+			
+				// Reset which closure we're running against.
+				_segment = _closure->returnSegment;
+				_byteCode = _segment->byteCodes + _closure->returnPc;
+				_closure = _closure->returnClosure;
+			
+				// Push the function's return value onto the current closure.
+				Closure_PushTemp(_closure, value);
+				goto next;
+			}
 
 		//-------------------------------------------------------
 		// C0-CF: Object construction, and special property access
@@ -758,7 +769,7 @@ next:
 			value = (SmileObject)SmileList_Cons(Closure_GetTemp(_closure, 1), Closure_GetTemp(_closure, 0));
 			Closure_PopCount(_closure, 1);
 			Closure_SetTop(_closure, value);
-			byteCode++;
+			_byteCode++;
 			goto next;
 
 		case Op_Car:
@@ -770,7 +781,7 @@ next:
 				value = NullObject;
 			}
 			Closure_SetTop(_closure, value);
-			byteCode++;
+			_byteCode++;
 			goto next;
 
 		case Op_Cdr:
@@ -782,14 +793,14 @@ next:
 				value = NullObject;
 			}
 			Closure_SetTop(_closure, value);
-			byteCode++;
+			_byteCode++;
 			goto next;
 
 		case Op_NewPair:
 			value = (SmileObject)SmilePair_Create(Closure_GetTemp(_closure, 1), Closure_GetTemp(_closure, 0));
 			Closure_PopCount(_closure, 1);
 			Closure_SetTop(_closure, value);
-			byteCode++;
+			_byteCode++;
 			goto next;
 
 		case Op_Left:
@@ -801,7 +812,7 @@ next:
 				value = NullObject;
 			}
 			Closure_SetTop(_closure, value);
-			byteCode++;
+			_byteCode++;
 			goto next;
 
 		case Op_Right:
@@ -813,9 +824,15 @@ next:
 				value = NullObject;
 			}
 			Closure_SetTop(_closure, value);
-			byteCode++;
+			_byteCode++;
 			goto next;
 
+		case Op_NewFn:
+			value = (SmileObject)SmileFunction_CreateUserFunction(_compiledTables->userFunctions[_byteCode->u.index], _closure);
+			Closure_PushTemp(_closure, value);
+			_byteCode++;
+			goto next;
+		
 		//-------------------------------------------------------
 		// D0-DF: Special-purpose optimized property access
 
@@ -828,7 +845,7 @@ next:
 				value = SMILE_VCALL1(target, getProperty, Smile_KnownSymbols.a);
 			}
 			Closure_SetTop(_closure, value);
-			byteCode++;
+			_byteCode++;
 			goto next;
 
 		case Op_LdD:
@@ -840,7 +857,7 @@ next:
 				value = SMILE_VCALL1(target, getProperty, Smile_KnownSymbols.d);
 			}
 			Closure_SetTop(_closure, value);
-			byteCode++;
+			_byteCode++;
 			goto next;
 		
 		case Op_LdLeft:
@@ -852,7 +869,7 @@ next:
 				value = SMILE_VCALL1(target, getProperty, Smile_KnownSymbols.left);
 			}
 			Closure_SetTop(_closure, value);
-			byteCode++;
+			_byteCode++;
 			goto next;
 
 		case Op_LdRight:
@@ -864,28 +881,28 @@ next:
 				value = SMILE_VCALL1(target, getProperty, Smile_KnownSymbols.right);
 			}
 			Closure_SetTop(_closure, value);
-			byteCode++;
+			_byteCode++;
 			goto next;
 
 		case Op_LdStart:
 			target = Closure_GetTop(_closure);
 			value = SMILE_VCALL1(target, getProperty, Smile_KnownSymbols.start);
 			Closure_SetTop(_closure, value);
-			byteCode++;
+			_byteCode++;
 			goto next;
 
 		case Op_LdEnd:
 			target = Closure_GetTop(_closure);
 			value = SMILE_VCALL1(target, getProperty, Smile_KnownSymbols.end);
 			Closure_SetTop(_closure, value);
-			byteCode++;
+			_byteCode++;
 			goto next;
 
 		case Op_LdCount:
 			target = Closure_GetTop(_closure);
 			value = SMILE_VCALL1(target, getProperty, Smile_KnownSymbols.count);
 			Closure_SetTop(_closure, value);
-			byteCode++;
+			_byteCode++;
 			goto next;
 		
 		case Op_LdLength:
@@ -897,20 +914,20 @@ next:
 				value = SMILE_VCALL1(target, getProperty, Smile_KnownSymbols.length);
 			}
 			Closure_SetTop(_closure, value);
-			byteCode++;
+			_byteCode++;
 			goto next;
 	
 		//-------------------------------------------------------
 		// F0-FF: Miscellaneous internal constructs
 		
 		case Op_Label:
-			byteCode++;
+			_byteCode++;
 			goto next;
 			
 		//-------------------------------------------------------
 		
 		default:
-			Smile_Abort_FatalError(String_ToC(String_Format("Eval error: Unknown opcode 0x%02X", byteCode->opcode)));
+			Smile_Abort_FatalError(String_ToC(String_Format("Eval error: Unknown opcode 0x%02X", _byteCode->opcode)));
 	}
 
 	return True;
@@ -939,16 +956,6 @@ void Smile_Throw(SmileObject thrownObject)
 		
 		Smile_Abort_FatalError(String_ToC(message));
 	}
-}
-
-//-------------------------------------------------------------------------------------------------
-
-Bool SmileUserFunction_Call(SmileFunction self, Int argc)
-{
-	UNUSED(self);
-	UNUSED(argc);
-
-	return True;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1019,17 +1026,15 @@ static Int PerformTypeChecks(Int argc, SmileObject *argv, Int numTypeChecks, con
 
 //-------------------------------------------------------------------------------------------------
 
-Bool SmileExternalFunction_NoCheck_Call(SmileFunction self, Int argc)
+void SmileExternalFunction_NoCheck_Call(SmileFunction self, Int argc)
 {
 	SmileObject *argv;
 
 	argv = _closure->stackTop -= argc;
 	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
-
-	return True;
 }
 
-Bool SmileExternalFunction_MinCheck_Call(SmileFunction self, Int argc)
+void SmileExternalFunction_MinCheck_Call(SmileFunction self, Int argc)
 {
 	SmileObject *argv;
 
@@ -1040,11 +1045,9 @@ Bool SmileExternalFunction_MinCheck_Call(SmileFunction self, Int argc)
 
 	argv = _closure->stackTop -= argc;
 	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
-
-	return True;
 }
 
-Bool SmileExternalFunction_MaxCheck_Call(SmileFunction self, Int argc)
+void SmileExternalFunction_MaxCheck_Call(SmileFunction self, Int argc)
 {
 	SmileObject *argv;
 
@@ -1055,11 +1058,9 @@ Bool SmileExternalFunction_MaxCheck_Call(SmileFunction self, Int argc)
 
 	argv = _closure->stackTop -= argc;
 	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
-
-	return True;
 }
 
-Bool SmileExternalFunction_MinMaxCheck_Call(SmileFunction self, Int argc)
+void SmileExternalFunction_MinMaxCheck_Call(SmileFunction self, Int argc)
 {
 	SmileObject *argv;
 
@@ -1074,11 +1075,9 @@ Bool SmileExternalFunction_MinMaxCheck_Call(SmileFunction self, Int argc)
 
 	argv = _closure->stackTop -= argc;
 	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
-
-	return True;
 }
 
-Bool SmileExternalFunction_ExactCheck_Call(SmileFunction self, Int argc)
+void SmileExternalFunction_ExactCheck_Call(SmileFunction self, Int argc)
 {
 	SmileObject *argv;
 
@@ -1089,11 +1088,9 @@ Bool SmileExternalFunction_ExactCheck_Call(SmileFunction self, Int argc)
 
 	argv = _closure->stackTop -= argc;
 	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
-
-	return True;
 }
 
-Bool SmileExternalFunction_TypesCheck_Call(SmileFunction self, Int argc)
+void SmileExternalFunction_TypesCheck_Call(SmileFunction self, Int argc)
 {
 	SmileObject *argv = _closure->stackTop - argc;
 	Int failingArg;
@@ -1105,11 +1102,9 @@ Bool SmileExternalFunction_TypesCheck_Call(SmileFunction self, Int argc)
 	
 	_closure->stackTop = argv;
 	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
-
-	return True;
 }
 
-Bool SmileExternalFunction_MinTypesCheck_Call(SmileFunction self, Int argc)
+void SmileExternalFunction_MinTypesCheck_Call(SmileFunction self, Int argc)
 {
 	SmileObject *argv = _closure->stackTop - argc;
 	Int failingArg;
@@ -1125,11 +1120,9 @@ Bool SmileExternalFunction_MinTypesCheck_Call(SmileFunction self, Int argc)
 
 	_closure->stackTop = argv;
 	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
-
-	return True;
 }
 
-Bool SmileExternalFunction_MaxTypesCheck_Call(SmileFunction self, Int argc)
+void SmileExternalFunction_MaxTypesCheck_Call(SmileFunction self, Int argc)
 {
 	SmileObject *argv = _closure->stackTop - argc;
 	Int failingArg;
@@ -1145,11 +1138,9 @@ Bool SmileExternalFunction_MaxTypesCheck_Call(SmileFunction self, Int argc)
 
 	_closure->stackTop = argv;
 	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
-
-	return True;
 }
 
-Bool SmileExternalFunction_MinMaxTypesCheck_Call(SmileFunction self, Int argc)
+void SmileExternalFunction_MinMaxTypesCheck_Call(SmileFunction self, Int argc)
 {
 	SmileObject *argv = _closure->stackTop - argc;
 	Int failingArg;
@@ -1169,11 +1160,9 @@ Bool SmileExternalFunction_MinMaxTypesCheck_Call(SmileFunction self, Int argc)
 
 	_closure->stackTop = argv;
 	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
-
-	return True;
 }
 
-Bool SmileExternalFunction_ExactTypesCheck_Call(SmileFunction self, Int argc)
+void SmileExternalFunction_ExactTypesCheck_Call(SmileFunction self, Int argc)
 {
 	SmileObject *argv = _closure->stackTop - argc;
 	Int failingArg;
@@ -1189,104 +1178,125 @@ Bool SmileExternalFunction_ExactTypesCheck_Call(SmileFunction self, Int argc)
 
 	_closure->stackTop = argv;
 	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
-
-	return True;
 }
 
-Bool SmileUserFunction_NoArgs_Call(SmileFunction self, Int argc)
+void SmileUserFunction_NoArgs_Call(SmileFunction self, Int argc)
 {
 	UNUSED(self);
 	UNUSED(argc);
-	return False;
+
+	Closure_PopCount(_closure, 1 + 0);
 }
 
-Bool SmileUserFunction_Fast1_Call(SmileFunction self, Int argc)
+void SmileUserFunction_Fast1_Call(SmileFunction self, Int argc)
+{
+	UNUSED(argc);
+
+	// Create a new child closure for this function.
+	UserFunctionInfo userFunctionInfo = self->u.u.userFunctionInfo;
+	Closure childClosure = Closure_CreateLocal(&userFunctionInfo->closureInfo, self->u.u.declaringClosure,
+		_closure, _segment, _byteCode - _segment->byteCodes);
+	
+	// Copy the arguments into the new empty child closure, since the parent's closure may change during the child's execution.
+	Closure_SetArgument(childClosure, 0, Closure_GetTemp(_closure, 0));
+	Closure_PopCount(_closure, 1 + 1);
+
+	// We're now in the child, so set up the globals for running inside it.
+	_closure = childClosure;
+	_segment = userFunctionInfo->byteCodeSegment;
+	_byteCode = &_segment->byteCodes[0];
+}
+
+void SmileUserFunction_Fast2_Call(SmileFunction self, Int argc)
 {
 	UNUSED(self);
 	UNUSED(argc);
-	return False;
+
+	Closure_PopCount(_closure, 1 + 2);
 }
 
-Bool SmileUserFunction_Fast2_Call(SmileFunction self, Int argc)
+void SmileUserFunction_Fast3_Call(SmileFunction self, Int argc)
 {
 	UNUSED(self);
 	UNUSED(argc);
-	return False;
+
+	Closure_PopCount(_closure, 1 + 3);
 }
 
-Bool SmileUserFunction_Fast3_Call(SmileFunction self, Int argc)
+void SmileUserFunction_Fast4_Call(SmileFunction self, Int argc)
 {
 	UNUSED(self);
 	UNUSED(argc);
-	return False;
+
+	Closure_PopCount(_closure, 1 + 4);
 }
 
-Bool SmileUserFunction_Fast4_Call(SmileFunction self, Int argc)
+void SmileUserFunction_Fast5_Call(SmileFunction self, Int argc)
 {
 	UNUSED(self);
 	UNUSED(argc);
-	return False;
+
+	Closure_PopCount(_closure, 1 + 5);
 }
 
-Bool SmileUserFunction_Fast5_Call(SmileFunction self, Int argc)
+void SmileUserFunction_Fast6_Call(SmileFunction self, Int argc)
 {
 	UNUSED(self);
 	UNUSED(argc);
-	return False;
+
+	Closure_PopCount(_closure, 1 + 6);
 }
 
-Bool SmileUserFunction_Fast6_Call(SmileFunction self, Int argc)
+void SmileUserFunction_Fast7_Call(SmileFunction self, Int argc)
 {
 	UNUSED(self);
 	UNUSED(argc);
-	return False;
+
+	Closure_PopCount(_closure, 1 + 7);
 }
 
-Bool SmileUserFunction_Fast7_Call(SmileFunction self, Int argc)
+void SmileUserFunction_Fast8_Call(SmileFunction self, Int argc)
 {
 	UNUSED(self);
 	UNUSED(argc);
-	return False;
+
+	Closure_PopCount(_closure, 1 + 8);
 }
 
-Bool SmileUserFunction_Fast8_Call(SmileFunction self, Int argc)
+void SmileUserFunction_Slow_Call(SmileFunction self, Int argc)
+{
+	UNUSED(self);
+
+	Closure_PopCount(_closure, 1 + argc);
+}
+
+void SmileUserFunction_Optional_Call(SmileFunction self, Int argc)
+{
+	UNUSED(self);
+
+	Closure_PopCount(_closure, 1 + argc);
+}
+
+void SmileUserFunction_Rest_Call(SmileFunction self, Int argc)
 {
 	UNUSED(self);
 	UNUSED(argc);
-	return False;
+
+	Closure_PopCount(_closure, 1 + argc);
 }
 
-Bool SmileUserFunction_Slow_Call(SmileFunction self, Int argc)
+void SmileUserFunction_Checked_Call(SmileFunction self, Int argc)
 {
 	UNUSED(self);
 	UNUSED(argc);
-	return False;
+
+	Closure_PopCount(_closure, 1 + argc);
 }
 
-Bool SmileUserFunction_Optional_Call(SmileFunction self, Int argc)
+void SmileUserFunction_CheckedRest_Call(SmileFunction self, Int argc)
 {
 	UNUSED(self);
 	UNUSED(argc);
-	return False;
-}
 
-Bool SmileUserFunction_Rest_Call(SmileFunction self, Int argc)
-{
-	UNUSED(self);
-	UNUSED(argc);
-	return False;
-}
-
-Bool SmileUserFunction_Checked_Call(SmileFunction self, Int argc)
-{
-	UNUSED(self);
-	UNUSED(argc);
-	return False;
-}
-
-Bool SmileUserFunction_CheckedRest_Call(SmileFunction self, Int argc)
-{
-	UNUSED(self);
-	UNUSED(argc);
-	return False;
+	Closure_PopCount(_closure, 1 + argc);
 }

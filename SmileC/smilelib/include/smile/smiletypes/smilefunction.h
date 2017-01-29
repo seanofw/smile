@@ -55,7 +55,7 @@ typedef struct ExternalFunctionInfoStruct {
 
 typedef struct UserFunctionArgStruct {
 
-	Int32 flags;	// Flags describing what kind of argument this is, from the FUNCTION_ARG_* flags above
+	Int32 flags;	// Flags describing what kind of argument this is, from the USER_ARG_* flags above
 	Symbol name;	// The name of this argument, as it appears in the body of the function
 	Symbol typeName;	// The object this argument must inherit from (which must be a variable name in scope).
 	SmileObject defaultValue;	// A default value for this argument, if it was omitted by the caller
@@ -66,6 +66,8 @@ struct ByteCodeSegmentStruct;
 
 typedef struct UserFunctionInfoStruct {
 
+	struct UserFunctionInfoStruct *parent;	// The parent (declaring) user function, if any.
+		
 	Int16 flags;	// A union (bitwise or) of all the flags for all the arguments.
 	Int16 numArgs;	// The number of args in the args array below.
 	Int16 minArgs;	// The minimum number of args that must be provided (or an error will be thrown).
@@ -74,7 +76,7 @@ typedef struct UserFunctionInfoStruct {
 		
 	SmileList argList;	// The original list of arguments to this function
 	SmileObject body;	// The original body of this function
-
+		
 	struct ClosureInfoStruct closureInfo;	// The ClosureInfo that describes this function's stack behavior. 
 		
 	struct ByteCodeSegmentStruct *byteCodeSegment;	// The byte-code instructions that describe this function's compiled body.
@@ -101,7 +103,7 @@ struct SmileFunctionInt {
 
 SMILE_API_DATA SmileVTable SmileUserFunction_VTable;
 
-SMILE_API_FUNC UserFunctionInfo UserFunctionInfo_Create(SmileList args, SmileObject body);
+SMILE_API_FUNC UserFunctionInfo UserFunctionInfo_Create(UserFunctionInfo parent, SmileList args, SmileObject body, String *errorMessage);
 SMILE_API_FUNC SmileFunction SmileFunction_CreateUserFunction(UserFunctionInfo userFunctionInfo, Closure declaringClosure);
 SMILE_API_FUNC SmileFunction SmileFunction_CreateExternalFunction(ExternalFunction externalFunction, void *param,
 	const char *name, const char *argNames, Int argCheckFlags, Int minArgs, Int maxArgs, Int numArgsToTypeCheck, const Byte *argTypeChecks);
