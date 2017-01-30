@@ -811,6 +811,7 @@
     <ClCompile Include="src\smiletypes\smilebool.c" />
     <ClCompile Include="src\smiletypes\smilefunction.c" />
     <ClCompile Include="src\smiletypes\smilelist.c" />
+    <ClCompile Include="src\smiletypes\smilelist_class.c" />
     <ClCompile Include="src\smiletypes\smilenonterminal.c" />
     <ClCompile Include="src\smiletypes\smilenull.c" />
     <ClCompile Include="src\smiletypes\smileobject.c" />

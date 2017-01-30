@@ -804,6 +804,9 @@
     <ClCompile Include="src\env\global.c">
       <Filter>src\env</Filter>
     </ClCompile>
+    <ClCompile Include="src\smiletypes\smilelist_class.c">
+      <Filter>src\smiletypes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">

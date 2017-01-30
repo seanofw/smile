@@ -147,7 +147,7 @@ static SmileObject SmileList_GetProperty(SmileList self, Symbol propertyName)
 	else if (propertyName == Smile_KnownSymbols.d)
 		return self->d;
 	else
-		return NullObject;
+		return self->base->vtable->getProperty(self->base, propertyName);
 }
 
 static void SmileList_SetProperty(SmileList self, Symbol propertyName, SmileObject value)
@@ -201,6 +201,102 @@ static Bool IsNormallyStructuredList(SmileList list)
 	}
 
 	return SMILE_KIND(list) == SMILE_KIND_NULL;
+}
+
+Int SmileList_SafeLength(SmileList list)
+{
+	Int length = 0;
+	SmileList tortoise = list, hare;
+
+	if (SMILE_KIND(tortoise) != SMILE_KIND_LIST)
+		return 0;
+	hare = tortoise = (SmileList)tortoise->d;
+	length++;
+
+	hare = LIST_REST(hare);
+
+	while (tortoise != hare && SMILE_KIND(tortoise) == SMILE_KIND_LIST) {
+		tortoise = (SmileList)tortoise->d;
+		hare = LIST_REST(LIST_REST(hare));
+		length++;
+	}
+
+	if (tortoise == hare)
+		return -1;
+
+	return length;
+}
+
+// If this list has no cycles and ends in a Null, then it is well-formed.  If it contains a cycle, or
+// it has some ->d pointer that points at anything other than a List or Null object, then it is not well-formed.
+Bool SmileList_IsWellFormed(SmileObject probableList)
+{
+	SmileList tortoise = (SmileList)probableList, hare;
+
+	if (SMILE_KIND(tortoise) != SMILE_KIND_LIST)
+		return SMILE_KIND(tortoise) == SMILE_KIND_NULL;
+	hare = tortoise = (SmileList)tortoise->d;
+
+	hare = LIST_REST(hare);
+
+	while (tortoise != hare && SMILE_KIND(tortoise) == SMILE_KIND_LIST) {
+		tortoise = (SmileList)tortoise->d;
+		hare = LIST_REST(LIST_REST(hare));
+	}
+
+	return SMILE_KIND(tortoise) == SMILE_KIND_NULL;
+}
+
+// Determine if this list contains a cycle, using the straightforward Floyd tortoise-and-hare algorithm.
+Bool SmileList_HasCycle(SmileObject probableList)
+{
+	SmileList tortoise = (SmileList)probableList, hare;
+
+	if (SMILE_KIND(tortoise) != SMILE_KIND_LIST)
+		return False;
+	hare = tortoise = (SmileList)tortoise->d;
+
+	hare = LIST_REST(hare);
+
+	while (tortoise != hare && SMILE_KIND(tortoise) == SMILE_KIND_LIST) {
+		tortoise = (SmileList)tortoise->d;
+		hare = LIST_REST(LIST_REST(hare));
+	}
+
+	return SMILE_KIND(tortoise) == SMILE_KIND_LIST && tortoise == hare;
+}
+
+String SmileList_Join(SmileList list, String glue)
+{
+	SmileList tortoise = list, hare;
+	String piece;
+	Bool hasGlue = String_Length(glue) > 0;
+	DECLARE_INLINE_STRINGBUILDER(stringBuilder, 256);
+
+	if (SMILE_KIND(tortoise) != SMILE_KIND_LIST)
+		return String_Empty;
+
+	INIT_INLINE_STRINGBUILDER(stringBuilder);
+
+	piece = SMILE_VCALL(tortoise->a, toString);
+	StringBuilder_AppendString(stringBuilder, piece);
+
+	hare = tortoise = (SmileList)tortoise->d;
+	hare = LIST_REST(hare);
+
+	while (tortoise != hare && SMILE_KIND(tortoise) == SMILE_KIND_LIST) {
+		if (hasGlue) {
+			StringBuilder_AppendString(stringBuilder, glue);
+		}
+	
+		piece = SMILE_VCALL(tortoise->a, toString);
+		StringBuilder_AppendString(stringBuilder, piece);
+
+		tortoise = (SmileList)tortoise->d;
+		hare = LIST_REST(LIST_REST(hare));
+	}
+
+	return SMILE_KIND(tortoise) == SMILE_KIND_NULL ? StringBuilder_ToString(stringBuilder) : NULL;
 }
 
 static int _indent = 0;
