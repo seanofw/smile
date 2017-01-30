@@ -423,4 +423,22 @@ START_TEST(UserFunctionsCanHaveTenParameters)
 }
 END_TEST
 
+START_TEST(UserFunctionsCanHaveRestParameters)
+{
+	CompiledTables compiledTables = Compile(
+		"f = |a b c rest...| rest join \" \"\n"
+		"[f 10 20 30 40 50 60]\n"
+	);
+
+	String global = ByteCodeSegment_ToString(compiledTables->globalFunctionInfo->byteCodeSegment, compiledTables->globalFunctionInfo, compiledTables);
+	String f = ByteCodeSegment_ToString(compiledTables->userFunctions[0]->byteCodeSegment, compiledTables->userFunctions[0], compiledTables);
+
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_STRING);
+	ASSERT_STRING((String)&((SmileString)result->value)->string, "40 50 60", 8);
+}
+END_TEST
+
 #include "eval_tests.generated.inc"

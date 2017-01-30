@@ -132,6 +132,7 @@ static Bool UserFunctionInfo_ApplyArgs(UserFunctionInfo userFunctionInfo, SmileL
 {
 	UserFunctionArg arg, argArray;
 	Int numArgs, minArgs, maxArgs, argIndex;
+	Int16 flags = 0;
 	Bool haveRest = False, haveOptional = False;
 
 	numArgs = SmileList_Length(argList);
@@ -150,7 +151,9 @@ static Bool UserFunctionInfo_ApplyArgs(UserFunctionInfo userFunctionInfo, SmileL
 
 			if (!UserFunctionArg_Init(arg, argList->a, errorMessage))
 				return False;
-
+		
+			flags |= (Int16)arg->flags;
+		
 			if (haveRest) {
 				*errorMessage = String_Format("Function argument '%S' cannot appear after the 'rest...' argument.",
 					SymbolTable_GetName(Smile_SymbolTable, arg->name));
@@ -176,6 +179,7 @@ static Bool UserFunctionInfo_ApplyArgs(UserFunctionInfo userFunctionInfo, SmileL
 		}
 	}
 
+	userFunctionInfo->flags = flags;
 	userFunctionInfo->args = argArray;
 	userFunctionInfo->numArgs = (Int16)numArgs;
 	userFunctionInfo->minArgs = (Int16)minArgs;

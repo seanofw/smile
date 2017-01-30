@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 706b4288514e6c435ba716d13314b166
+// SourceHash: c2ee0a631c40e17dff1795c3fcbb2bb6
 
 START_TEST_SUITE(EvalTests)
 {
@@ -26,6 +26,7 @@ START_TEST_SUITE(EvalTests)
 	UserFunctionsCanHaveEightParameters,
 	UserFunctionsCanHaveNineParameters,
 	UserFunctionsCanHaveTenParameters,
+	UserFunctionsCanHaveRestParameters,
 }
 END_TEST_SUITE(EvalTests)
 

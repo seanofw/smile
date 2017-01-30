@@ -1389,7 +1389,7 @@ void SmileUserFunction_Rest_Call(SmileFunction self, Int argc)
 		for (; i < argc; i++) {
 			LIST_APPEND(restHead, restTail, _closure->stackTop[-argc + i]);
 		}
-		childClosure->variables[i] = (SmileObject)restHead;
+		childClosure->variables[numArgs - 1] = (SmileObject)restHead;
 	}
 
 	// Clean up the calling stack.
