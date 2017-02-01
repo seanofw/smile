@@ -93,6 +93,30 @@ typedef struct ClosureStruct {
 
 } *Closure;
 
+struct ClosureStateMachineStruct;
+
+typedef Int (*StateMachine)(struct ClosureStateMachineStruct *closure);
+
+typedef struct ClosureStateMachineStruct {
+
+	struct ClosureStruct *parent;	// A pointer to the parent closure, if any.
+	struct ClosureStruct *global;	// A pointer to the closest global closure, if any.
+		
+	ClosureInfo closureInfo;	// Shared metadata about this closure.
+		
+	struct ClosureStruct *returnClosure;	// The continuation's closure.
+	struct ByteCodeSegmentStruct *returnSegment;	// The segment that contains the continuation's code.
+	Int returnPc;	// The continuation's program counter.
+		
+	SmileObject *frame;	// The offset of the stack frame (- for args, + for local vars).
+	SmileObject *stackTop;	// The current address of the top of the temporary variables.
+	SmileObject variables[16];	// Always a max of 16 variables for a C state machine.
+		
+	StateMachine stateMachine;	// The state machine to repeatedly invoke.
+	Byte state[sizeof(void*) * 4];	// The state of this machine, with enough space to store it inline for most machines.
+
+} *ClosureStateMachine;
+
 //-------------------------------------------------------------------------------------------------
 // External Implementation.
 
@@ -100,6 +124,8 @@ SMILE_API_FUNC ClosureInfo ClosureInfo_Create(ClosureInfo parent, Int kind);
 
 SMILE_API_FUNC Closure Closure_CreateGlobal(ClosureInfo info, Closure parent);
 SMILE_API_FUNC Closure Closure_CreateLocal(ClosureInfo info, Closure parent,
+	Closure returnClosure, struct ByteCodeSegmentStruct *returnSegment, Int returnPc);
+SMILE_API_FUNC ClosureStateMachine Closure_CreateStateMachine(StateMachine stateMachine,
 	Closure returnClosure, struct ByteCodeSegmentStruct *returnSegment, Int returnPc);
 
 SMILE_API_FUNC SmileObject Closure_GetGlobalVariable(Closure closure, Symbol name);

@@ -322,7 +322,7 @@ SmileFunction SmileFunction_CreateExternalFunction(ExternalFunction externalFunc
 	if (smileFunction == NULL)
 		Smile_Abort_OutOfMemory();
 
-	smileFunction->kind = SMILE_KIND_FUNCTION;
+	smileFunction->kind = SMILE_KIND_FUNCTION | SMILE_FLAG_EXTERNAL_FUNCTION;
 	smileFunction->vtable = GetExternalFunctionVTableByFlags(argCheckFlags);
 	smileFunction->base = (SmileObject)Smile_KnownBases.Function;
 	smileFunction->assignedSymbol = 0;

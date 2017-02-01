@@ -15,6 +15,8 @@
 //  limitations under the License.
 //---------------------------------------------------------------------------------------
 
+#include <stdio.h>
+
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/smileuserobject.h>
 #include <smile/smiletypes/numeric/smilebyte.h>

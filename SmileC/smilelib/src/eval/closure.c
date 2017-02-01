@@ -86,6 +86,29 @@ Closure Closure_CreateLocal(ClosureInfo closureInfo, Closure parent,
 	return closure;
 }
 
+ClosureStateMachine Closure_CreateStateMachine(StateMachine stateMachine,
+	Closure returnClosure, struct ByteCodeSegmentStruct *returnSegment, Int returnPc)
+{
+	ClosureStateMachine closure = GC_MALLOC_STRUCT(struct ClosureStateMachineStruct);
+	if (closure == NULL)
+		Smile_Abort_OutOfMemory();
+
+	closure->closureInfo = NULL;
+	closure->parent = NULL;
+	closure->global = NULL;
+
+	closure->returnClosure = returnClosure;
+	closure->returnSegment = returnSegment;
+	closure->returnPc = returnPc;
+
+	closure->frame = closure->variables;
+	closure->stackTop = closure->variables;
+
+	closure->stateMachine = stateMachine;
+
+	return closure;
+}
+
 SmileObject Closure_GetGlobalVariable(Closure closure, Symbol name)
 {
 	VarInfo varInfo;

@@ -101,8 +101,6 @@ struct SmileFunctionInt {
 //-------------------------------------------------------------------------------------------------
 //  Public interface
 
-SMILE_API_DATA SmileVTable SmileUserFunction_VTable;
-
 SMILE_API_FUNC UserFunctionInfo UserFunctionInfo_Create(UserFunctionInfo parent, SmileList args, SmileObject body, String *errorMessage);
 SMILE_API_FUNC SmileFunction SmileFunction_CreateUserFunction(UserFunctionInfo userFunctionInfo, Closure declaringClosure);
 SMILE_API_FUNC SmileFunction SmileFunction_CreateExternalFunction(ExternalFunction externalFunction, void *param,
@@ -113,7 +111,19 @@ SMILE_API_FUNC SmileFunction SmileFunction_CreateExternalFunction(ExternalFuncti
 
 Inline Bool SmileFunction_IsBuiltIn(SmileFunction fn)
 {
-	return (fn->vtable != SmileUserFunction_VTable);
+	return (fn->kind & SMILE_FLAG_EXTERNAL_FUNCTION) != 0;
+}
+
+Inline void SmileFunction_GetArgCounts(SmileFunction fn, Int *minArgs, Int *maxArgs)
+{
+	if (SmileFunction_IsBuiltIn(fn)) {
+		*minArgs = fn->u.externalFunctionInfo.minArgs;
+		*maxArgs = fn->u.externalFunctionInfo.maxArgs;
+	}
+	else {
+		*minArgs = fn->u.u.userFunctionInfo->minArgs;
+		*maxArgs = fn->u.u.userFunctionInfo->maxArgs;
+	}
 }
 
 #endif

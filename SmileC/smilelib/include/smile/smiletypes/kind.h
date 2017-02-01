@@ -76,6 +76,7 @@
 //-----------------------------------------------------------------------------
 // Miscellaneous flags.
 
-#define SMILE_FLAG_WITHSOURCE			(1 << 11)
+#define SMILE_FLAG_WITHSOURCE	(1 << 11)
+#define SMILE_FLAG_EXTERNAL_FUNCTION	(1 << 12)
 
 #endif

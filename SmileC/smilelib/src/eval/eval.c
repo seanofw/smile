@@ -118,6 +118,7 @@ EvalResult Eval_Continue(void)
 Bool Eval_RunCore(void)
 {
 	SmileObject target, value;
+	Int argc;
 
 next:
 	switch (_byteCode->opcode) {
@@ -745,6 +746,7 @@ next:
 			goto next;
 
 		case Op_Ret:
+		do_return:
 			if (_closure->returnClosure == NULL) {
 				return True;
 			}
@@ -920,6 +922,28 @@ next:
 		//-------------------------------------------------------
 		// F0-FF: Miscellaneous internal constructs
 		
+		case Op_StateMach:
+			// Repeatedly invoke the Smile function on the top of the stack, calling the given C
+			// function in between.  This provides a way for things like List.each and List.map
+			// to do their job while not recursing deeper on the C stack, which makes many
+			// externally-looping C things able to be safely interrupted (like by a cofunction).
+			// It also means that after compile, the C stack size is finite (more-or-less, depending
+			// on what external things you may call).
+		
+			// Call the given C state-machine function.  If it returns a SmileFunction, we need to
+			// then invoke that, which may involve switching closures and running user code for a while.
+			// But while in this closure, we continue to hold on this instruction until the state
+			// machine tells us it is done.  This all ends up forming a much tighter loop than it may
+			// initially look; it's not as tight as something like `while (cond) { Eval(fn); }`, but
+			// it's still pretty tight, and unlike that loop, it is safely interruptible.
+			if ((argc = ((ClosureStateMachine)_closure)->stateMachine((ClosureStateMachine)_closure)) >= 0) {
+				SMILE_VCALL1(Closure_GetTemp(_closure, argc), call, argc);
+			}
+			else {
+				goto do_return;
+			}
+			goto next;
+		
 		case Op_Label:
 			_byteCode++;
 			goto next;
@@ -934,6 +958,29 @@ next:
 }
 
 //-------------------------------------------------------------------------------------------------
+
+static struct ByteCodeStruct _stateMachineByteCode = { Op_StateMach };
+
+static struct ByteCodeSegmentStruct _stateMachineSegment = {
+	&_stateMachineByteCode, 1, 1,
+};
+
+ClosureStateMachine Eval_BeginStateMachine(StateMachine stateMachine)
+{
+	ClosureStateMachine closureStateMachine;
+
+	// Create a new state-machine closure.
+	closureStateMachine = Closure_CreateStateMachine(stateMachine,
+		_closure, _segment, _byteCode - _segment->byteCodes);
+
+	// We now have the state machine, so set up the globals for running inside it.
+	// We'll loop over the one instruction inside it forever.
+	_closure = (Closure)closureStateMachine;
+	_segment = &_stateMachineSegment;
+	_byteCode = &_segment->byteCodes[0];
+
+	return closureStateMachine;
+}
 
 void Smile_Throw(SmileObject thrownObject)
 {

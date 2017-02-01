@@ -21,6 +21,7 @@
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/smilefunction.h>
+#include <smile/eval/eval.h>
 
 #define Setup(__name__, __value__) \
 	(SmileUserObject_QuickSet(base, (__name__), (__value__)))
@@ -47,6 +48,11 @@ static Byte _listChecks[] = {
 static Byte _joinChecks[] = {
 	SMILE_KIND_MASK, SMILE_KIND_LIST,
 	SMILE_KIND_MASK, SMILE_KIND_STRING,
+};
+
+static Byte _eachChecks[] = {
+	SMILE_KIND_MASK, SMILE_KIND_LIST,
+	SMILE_KIND_MASK, SMILE_KIND_FUNCTION,
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -189,6 +195,82 @@ static SmileObject Join(Int argc, SmileObject *argv, void *param)
 	}
 
 	return (SmileObject)SmileString_Create(result);
+}
+
+typedef struct EachInfoStruct {
+	SmileList initialList;
+	SmileList list;
+	SmileFunction function;
+	Int index;
+} *EachInfo;
+
+static Int EachWithOneArg(ClosureStateMachine closure)
+{
+	EachInfo eachInfo = (EachInfo)closure->state;
+	SmileList list = eachInfo->list;
+
+	// If we've run out of list nodes, we're done.
+	if (SMILE_KIND(list) != SMILE_KIND_LIST) {
+		Closure_SetTop(closure, eachInfo->initialList);	// Pop the previous return value and push 'initialList'.
+		return -1;
+	}
+
+	// Set up to call the user's function with the next list item.
+	Closure_PopTemp(closure);
+	Closure_PushTemp(closure, eachInfo->function);
+	Closure_PushTemp(closure, list->a);
+
+	eachInfo->list = (SmileList)list->d;	// Move the iterator to the next item.
+	eachInfo->index++;
+
+	return 1;
+}
+
+static Int EachWithTwoArgs(ClosureStateMachine closure)
+{
+	EachInfo eachInfo = (EachInfo)closure->state;
+	SmileList list = eachInfo->list;
+
+	// If we've run out of list nodes, we're done.
+	if (SMILE_KIND(list) != SMILE_KIND_LIST) {
+		Closure_SetTop(closure, eachInfo->initialList);	// Pop the previous return value and push 'initialList'.
+		return -1;
+	}
+
+	// Set up to call the user's function with the next list item and index.
+	Closure_PopTemp(closure);
+	Closure_PushTemp(closure, eachInfo->function);
+	Closure_PushTemp(closure, list->a);
+	Closure_PushTemp(closure, SmileInteger64_Create(eachInfo->index));
+
+	eachInfo->list = (SmileList)list->d;	// Move the iterator to the next item.
+	eachInfo->index++;
+
+	return 2;
+}
+
+static SmileObject Each(Int argc, SmileObject *argv, void *param)
+{
+	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
+	SmileList list = (SmileList)argv[0];
+	SmileFunction function = (SmileFunction)argv[1];
+	Int minArgs, maxArgs;
+	EachInfo eachInfo;
+	ClosureStateMachine closure;
+
+	UNUSED(param);
+	UNUSED(argc);
+
+	SmileFunction_GetArgCounts(function, &minArgs, &maxArgs);
+
+	closure = Eval_BeginStateMachine(maxArgs <= 1 ? EachWithOneArg : EachWithTwoArgs);
+
+	eachInfo = (EachInfo)closure->state;
+	eachInfo->function = function;
+	eachInfo->list = eachInfo->initialList = list;
+	eachInfo->index = 0;
+
+	return NullObject;	// This will get pushed onto the new state machine's stack.
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -424,6 +506,8 @@ void SmileList_Setup(SmileUserObject base)
 	SetupFunction("cons", Cons, NULL, "a b", ARG_CHECK_MIN | ARG_CHECK_MAX, 2, 3, 0, NULL);
 
 	SetupFunction("join", Join, NULL, "list", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _joinChecks);
+
+	SetupFunction("each", Each, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _eachChecks);
 
 	SetupFunction("length", Length, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _listChecks);
 	SetupFunction("cycle?", HasCycle, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _listChecks);

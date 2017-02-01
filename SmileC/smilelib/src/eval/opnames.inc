@@ -60,5 +60,5 @@ Op(Add8), Op(Sub8), Op(Add16), Op(Sub16), Op(Add32), Op(Sub32), Op(Add64), Op(Su
 Op(AddR32), Op(SubR32), Op(AddR64), Op(SubR64), Op(AddF32), Op(SubF32), Op(AddF64), Op(SubF64),
 
 // F0-FF
-NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+Op(StateMach), NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 NULL, NULL, NULL, NULL, NULL, NULL, NULL, Op(Label),

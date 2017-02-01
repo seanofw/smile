@@ -441,4 +441,23 @@ START_TEST(UserFunctionsCanHaveRestParameters)
 }
 END_TEST
 
+START_TEST(CanUseStateMachinesToIterateLists)
+{
+	CompiledTables compiledTables = Compile(
+		"y = 0\n"
+		"`[1 2 3 4 5 6 7 8 9 10] each |x| y += x * x\n"
+		"y\n"
+	);
+
+	String global = ByteCodeSegment_ToString(compiledTables->globalFunctionInfo->byteCodeSegment, compiledTables->globalFunctionInfo, compiledTables);
+	String f = ByteCodeSegment_ToString(compiledTables->userFunctions[0]->byteCodeSegment, compiledTables->userFunctions[0], compiledTables);
+
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 385);
+}
+END_TEST
+
 #include "eval_tests.generated.inc"

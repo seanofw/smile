@@ -220,6 +220,8 @@ enum Opcode {
 	Op_AddF64	= 0xEE,	// -1, +1 | float64	; Add the given literal Float64 to the Float64 on the stack top.
 	Op_SubF64	= 0xEF,	// -1, +1 | float64	; Subtract the given literal Float64 from the Float64 on the stack top.
 				
+	Op_StateMach	= 0xF0,	//  0	; Special repeatedly-invoke-the-state-machine instruction.
+				
 	Op_Label	= 0xFF,	//  0	; Branch target
 };
 
