@@ -48,6 +48,11 @@ extern SmileVTable SmileExternalFunction_MaxTypesCheck_VTable;
 extern SmileVTable SmileExternalFunction_MinMaxTypesCheck_VTable;
 extern SmileVTable SmileExternalFunction_ExactTypesCheck_VTable;
 
+extern SmileVTable SmileExternalFunction_StateMachineNoCheck_VTable;
+extern SmileVTable SmileExternalFunction_StateMachineExactCheck_VTable;
+extern SmileVTable SmileExternalFunction_StateMachineTypesCheck_VTable;
+extern SmileVTable SmileExternalFunction_StateMachineExactTypesCheck_VTable;
+
 SMILE_EASY_OBJECT_NO_SECURITY(SmileFunction);
 
 static Bool UserFunctionArg_Init(UserFunctionArg arg, SmileObject obj, String *errorMessage)
@@ -263,7 +268,8 @@ Inline SmileVTable GetExternalFunctionVTableByFlags(Int argCheckFlags)
 	// Choose a VTable with a function that has optimized hardwired argument checks
 	// for the types of checks they want.
 	switch (argCheckFlags) {
-		default:
+
+		case 0:
 			return SmileExternalFunction_NoCheck_VTable;
 		case ARG_CHECK_MIN:
 			return SmileExternalFunction_MinCheck_VTable;
@@ -273,6 +279,7 @@ Inline SmileVTable GetExternalFunctionVTableByFlags(Int argCheckFlags)
 			return SmileExternalFunction_MinMaxCheck_VTable;
 		case ARG_CHECK_EXACT:
 			return SmileExternalFunction_ExactCheck_VTable;
+
 		case ARG_CHECK_TYPES:
 			return SmileExternalFunction_TypesCheck_VTable;
 		case ARG_CHECK_TYPES | ARG_CHECK_MIN:
@@ -283,6 +290,19 @@ Inline SmileVTable GetExternalFunctionVTableByFlags(Int argCheckFlags)
 			return SmileExternalFunction_MinMaxTypesCheck_VTable;
 		case ARG_CHECK_TYPES | ARG_CHECK_EXACT:
 			return SmileExternalFunction_ExactTypesCheck_VTable;
+
+		case ARG_STATE_MACHINE:
+			return SmileExternalFunction_StateMachineNoCheck_VTable;
+		case ARG_STATE_MACHINE | ARG_CHECK_EXACT:
+			return SmileExternalFunction_StateMachineExactCheck_VTable;
+		case ARG_STATE_MACHINE | ARG_CHECK_TYPES:
+			return SmileExternalFunction_StateMachineTypesCheck_VTable;
+		case ARG_STATE_MACHINE | ARG_CHECK_TYPES | ARG_CHECK_EXACT:
+			return SmileExternalFunction_StateMachineExactTypesCheck_VTable;
+
+		default:
+			Smile_Abort_FatalError("Unsupported external function argument configuration.");
+			return NULL;
 	}
 }
 
@@ -541,8 +561,14 @@ EXTERNAL_FUNCTION_VTABLE(MinCheck);
 EXTERNAL_FUNCTION_VTABLE(MaxCheck);
 EXTERNAL_FUNCTION_VTABLE(MinMaxCheck);
 EXTERNAL_FUNCTION_VTABLE(ExactCheck);
+
 EXTERNAL_FUNCTION_VTABLE(TypesCheck);
 EXTERNAL_FUNCTION_VTABLE(MinTypesCheck);
 EXTERNAL_FUNCTION_VTABLE(MaxTypesCheck);
 EXTERNAL_FUNCTION_VTABLE(MinMaxTypesCheck);
 EXTERNAL_FUNCTION_VTABLE(ExactTypesCheck);
+
+EXTERNAL_FUNCTION_VTABLE(StateMachineNoCheck);
+EXTERNAL_FUNCTION_VTABLE(StateMachineExactCheck);
+EXTERNAL_FUNCTION_VTABLE(StateMachineTypesCheck);
+EXTERNAL_FUNCTION_VTABLE(StateMachineExactTypesCheck);

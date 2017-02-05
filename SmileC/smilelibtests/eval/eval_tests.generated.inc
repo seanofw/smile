@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 25050952aa66929bfe2affaf92fd2e28
+// SourceHash: 7de105991abbd5d6001aca1719c8feb8
 
 START_TEST_SUITE(EvalTests)
 {
@@ -28,6 +28,33 @@ START_TEST_SUITE(EvalTests)
 	UserFunctionsCanHaveTenParameters,
 	UserFunctionsCanHaveRestParameters,
 	CanUseStateMachinesToIterateLists,
+	CanUseStateMachinesToProjectLists,
+	MapReturnsNullForAnEmptyList,
+	CanUseStateMachinesToFilterLists,
+	WhereReturnsNullForAnEmptyList,
+	CanUseStateMachinesToTestAny,
+	CanUseStateMachinesToTestAnyWithPredicates,
+	AnyHasWeirdCornerCasesForEmptyLists,
+	AnyInUnaryFormAnswersWhetherTheListIsEmpty,
+	EmptyAnswersWhetherTheListIsEmpty,
+	NullAnswersWhetherTheListIsEmpty,
+	CanUseStateMachinesToTestContains,
+	CanUseStateMachinesToTestContainsWithPredicates,
+	ContainsHasWeirdCornerCasesForEmptyLists,
+	CanUseStateMachinesToTestAll,
+	CanUseStateMachinesToTestAllWithPredicates,
+	AllHasWeirdCornerCasesForEmptyLists,
+	CanUseStateMachinesToFindFirst,
+	CanUseStateMachinesToFindFirstWithPredicates,
+	FirstReturnsNullForEmptyLists,
+	FirstInUnaryFormReturnsTheFirstItem,
+	CanUseStateMachinesToFindIndexOf,
+	CanUseStateMachinesToFindIndexOfWithPredicates,
+	IndexOfReturnsNegativeOneForEmptyLists,
+	CanUseStateMachinesToCountItems,
+	CanUseStateMachinesToCountWithPredicates,
+	CountReturnsZeroForEmptyLists,
+	CountInUnaryFormCountsAllItems,
 }
 END_TEST_SUITE(EvalTests)
 

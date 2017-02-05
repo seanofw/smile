@@ -26,6 +26,9 @@
 #define Setup(__name__, __value__) \
 	(SmileUserObject_QuickSet(base, (__name__), (__value__)))
 
+#define SetupSynonym(__newName__, __oldName__) \
+	(Setup((__newName__), SmileUserObject_Get(base, SymbolTable_GetSymbolC(Smile_SymbolTable, (__oldName__)))))
+
 #define SetupFunction(__name__, __function__, __param__, __argNames__, __argCheckFlags__, __minArgs__, __maxArgs__, __numArgsToTypeCheck__, __argTypeChecks__) \
 	(Setup((__name__), (SmileObject)SmileFunction_CreateExternalFunction((__function__), (__param__), \
 		(__name__), (__argNames__), (__argCheckFlags__), (__minArgs__), (__maxArgs__), (__numArgsToTypeCheck__), (__argTypeChecks__))))
@@ -35,24 +38,29 @@
 		(__name__), (__argNames__), ARG_CHECK_EXACT, (__numArgs__), (__numArgs__), NULL)))
 
 static Byte _listChecks[] = {
-	SMILE_KIND_MASK, SMILE_KIND_LIST,
-	SMILE_KIND_MASK, SMILE_KIND_LIST,
-	SMILE_KIND_MASK, SMILE_KIND_LIST,
-	SMILE_KIND_MASK, SMILE_KIND_LIST,
-	SMILE_KIND_MASK, SMILE_KIND_LIST,
-	SMILE_KIND_MASK, SMILE_KIND_LIST,
-	SMILE_KIND_MASK, SMILE_KIND_LIST,
-	SMILE_KIND_MASK, SMILE_KIND_LIST,
+	SMILE_KIND_MASK & ~SMILE_KIND_LIST, SMILE_KIND_NULL,
+	SMILE_KIND_MASK & ~SMILE_KIND_LIST, SMILE_KIND_NULL,
+	SMILE_KIND_MASK & ~SMILE_KIND_LIST, SMILE_KIND_NULL,
+	SMILE_KIND_MASK & ~SMILE_KIND_LIST, SMILE_KIND_NULL,
+	SMILE_KIND_MASK & ~SMILE_KIND_LIST, SMILE_KIND_NULL,
+	SMILE_KIND_MASK & ~SMILE_KIND_LIST, SMILE_KIND_NULL,
+	SMILE_KIND_MASK & ~SMILE_KIND_LIST, SMILE_KIND_NULL,
+	SMILE_KIND_MASK & ~SMILE_KIND_LIST, SMILE_KIND_NULL,
 };
 
 static Byte _joinChecks[] = {
-	SMILE_KIND_MASK, SMILE_KIND_LIST,
+	SMILE_KIND_MASK & ~SMILE_KIND_LIST, SMILE_KIND_NULL,
 	SMILE_KIND_MASK, SMILE_KIND_STRING,
 };
 
 static Byte _eachChecks[] = {
-	SMILE_KIND_MASK, SMILE_KIND_LIST,
+	SMILE_KIND_MASK & ~SMILE_KIND_LIST, SMILE_KIND_NULL,
 	SMILE_KIND_MASK, SMILE_KIND_FUNCTION,
+};
+
+static Byte _indexOfChecks[] = {
+	SMILE_KIND_MASK & ~SMILE_KIND_LIST, SMILE_KIND_NULL,
+	0, 0,
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -197,6 +205,8 @@ static SmileObject Join(Int argc, SmileObject *argv, void *param)
 	return (SmileObject)SmileString_Create(result);
 }
 
+//-------------------------------------------------------------------------------------------------
+
 typedef struct EachInfoStruct {
 	SmileList initialList;
 	SmileList list;
@@ -257,20 +267,724 @@ static SmileObject Each(Int argc, SmileObject *argv, void *param)
 	Int minArgs, maxArgs;
 	EachInfo eachInfo;
 	ClosureStateMachine closure;
+	StateMachine stateMachine;
 
 	UNUSED(param);
 	UNUSED(argc);
 
 	SmileFunction_GetArgCounts(function, &minArgs, &maxArgs);
 
-	closure = Eval_BeginStateMachine(maxArgs <= 1 ? EachWithOneArg : EachWithTwoArgs);
+	stateMachine = maxArgs <= 1 ? EachWithOneArg : EachWithTwoArgs;
+	closure = Eval_BeginStateMachine(stateMachine, stateMachine);
 
 	eachInfo = (EachInfo)closure->state;
 	eachInfo->function = function;
 	eachInfo->list = eachInfo->initialList = list;
 	eachInfo->index = 0;
 
-	return NullObject;	// This will get pushed onto the new state machine's stack.
+	Closure_PushTemp(closure, NullObject);	// Initial "return" value from 'each'.
+
+	return NULL;	// We have to return something, but this value will be ignored.
+}
+
+//-------------------------------------------------------------------------------------------------
+
+typedef struct MapInfoStruct {
+	SmileList resultHead, resultTail;
+	SmileList list;
+	SmileFunction function;
+	Int index;
+} *MapInfo;
+
+static Int MapWithOneArgStart(ClosureStateMachine closure)
+{
+	register MapInfo loopInfo = (MapInfo)closure->state;
+
+	//---------- begin first for-loop iteration ----------
+
+	// Condition: If we've run out of list nodes, we're done.
+	if (SMILE_KIND(loopInfo->list) != SMILE_KIND_LIST) {
+		Closure_PushTemp(closure, loopInfo->resultHead);	// Push 'resultHead' as the output.
+		return -1;
+	}
+
+	// Body: Set up to call the user's function with the first list item.
+	Closure_PushTemp(closure, loopInfo->function);
+	Closure_PushTemp(closure, loopInfo->list->a);
+	return 1;
+}
+
+static Int MapWithOneArgBody(ClosureStateMachine closure)
+{
+	register MapInfo loopInfo = (MapInfo)closure->state;
+
+	// Body: Append the user function's most recent result to the output list.
+	SmileObject fnResult = Closure_PopTemp(closure);
+	LIST_APPEND(loopInfo->resultHead, loopInfo->resultTail, fnResult);
+
+	// Next: Move the iterator to the next item.
+	loopInfo->list = (SmileList)loopInfo->list->d;
+	loopInfo->index++;
+
+	//---------- end previous for-loop iteration ----------
+
+	//---------- begin next for-loop iteration ----------
+
+	// Condition: If we've run out of list nodes, we're done.
+	if (SMILE_KIND(loopInfo->list) != SMILE_KIND_LIST) {
+		Closure_PushTemp(closure, loopInfo->resultHead);	// Push 'resultHead' as the output.
+		return -1;
+	}
+
+	// Body: Set up to call the user's function with the next list item.
+	Closure_PushTemp(closure, loopInfo->function);
+	Closure_PushTemp(closure, loopInfo->list->a);
+	return 1;
+}
+
+static Int MapWithTwoArgsStart(ClosureStateMachine closure)
+{
+	register MapInfo loopInfo = (MapInfo)closure->state;
+
+	//---------- begin first for-loop iteration ----------
+
+	// Condition: If we've run out of list nodes, we're done.
+	if (SMILE_KIND(loopInfo->list) != SMILE_KIND_LIST) {
+		Closure_PushTemp(closure, loopInfo->resultHead);	// Push 'resultHead' as the output.
+		return -1;
+	}
+
+	// Body: Set up to call the user's function with the first list item.
+	Closure_PushTemp(closure, loopInfo->function);
+	Closure_PushTemp(closure, loopInfo->list->a);
+	Closure_PushTemp(closure, SmileInteger64_Create(loopInfo->index));
+	return 2;
+}
+
+static Int MapWithTwoArgsBody(ClosureStateMachine closure)
+{
+	register MapInfo loopInfo = (MapInfo)closure->state;
+
+	// Body: Append the user function's most recent result to the output list.
+	SmileObject fnResult = Closure_PopTemp(closure);
+	LIST_APPEND(loopInfo->resultHead, loopInfo->resultTail, fnResult);
+
+	// Next: Move the iterator to the next item.
+	loopInfo->list = (SmileList)loopInfo->list->d;
+	loopInfo->index++;
+
+	//---------- end previous for-loop iteration ----------
+
+	//---------- begin next for-loop iteration ----------
+
+	// Condition: If we've run out of list nodes, we're done.
+	if (SMILE_KIND(loopInfo->list) != SMILE_KIND_LIST) {
+		Closure_PushTemp(closure, loopInfo->resultHead);	// Push 'resultHead' as the output.
+		return -1;
+	}
+
+	// Body: Set up to call the user's function with the next list item.
+	Closure_PushTemp(closure, loopInfo->function);
+	Closure_PushTemp(closure, loopInfo->list->a);
+	Closure_PushTemp(closure, SmileInteger64_Create(loopInfo->index));
+	return 2;
+}
+
+static SmileObject Map(Int argc, SmileObject *argv, void *param)
+{
+	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
+	SmileList list = (SmileList)argv[0];
+	SmileFunction function = (SmileFunction)argv[1];
+	Int minArgs, maxArgs;
+	MapInfo loopInfo;
+	ClosureStateMachine closure;
+
+	UNUSED(param);
+	UNUSED(argc);
+
+	SmileFunction_GetArgCounts(function, &minArgs, &maxArgs);
+
+	closure = Eval_BeginStateMachine(
+		maxArgs <= 1 ? MapWithOneArgStart : MapWithTwoArgsStart,
+		maxArgs <= 1 ? MapWithOneArgBody : MapWithTwoArgsBody);
+
+	loopInfo = (MapInfo)closure->state;
+	loopInfo->function = function;
+	loopInfo->list = list;
+	loopInfo->resultHead = loopInfo->resultTail = NullList;
+	loopInfo->index = 0;
+
+	return NULL;	// We have to return something, but this value will be ignored.
+}
+
+//-------------------------------------------------------------------------------------------------
+
+typedef struct WhereInfoStruct {
+	SmileList resultHead, resultTail;
+	SmileList list;
+	SmileFunction function;
+	Int index;
+} *WhereInfo;
+
+static Int WhereWithOneArgStart(ClosureStateMachine closure)
+{
+	register WhereInfo loopInfo = (WhereInfo)closure->state;
+
+	//---------- begin first for-loop iteration ----------
+
+	// Condition: If we've run out of list nodes, we're done.
+	if (SMILE_KIND(loopInfo->list) != SMILE_KIND_LIST) {
+		Closure_PushTemp(closure, loopInfo->resultHead);	// Push 'resultHead' as the output.
+		return -1;
+	}
+
+	// Body: Set up to call the user's function with the first list item.
+	Closure_PushTemp(closure, loopInfo->function);
+	Closure_PushTemp(closure, loopInfo->list->a);
+	return 1;
+}
+
+static Int WhereWithOneArgBody(ClosureStateMachine closure)
+{
+	register WhereInfo loopInfo = (WhereInfo)closure->state;
+
+	// Body: Append the user function's most recent result to the output list.
+	SmileObject fnResult = Closure_PopTemp(closure);
+	Bool booleanResult = SMILE_VCALL(fnResult, toBool);
+
+	// If it's truthy, keep this list element.
+	if (booleanResult) {
+		LIST_APPEND(loopInfo->resultHead, loopInfo->resultTail, loopInfo->list->a);
+	}
+
+	// Next: Move the iterator to the next item.
+	loopInfo->list = (SmileList)loopInfo->list->d;
+	loopInfo->index++;
+
+	//---------- end previous for-loop iteration ----------
+
+	//---------- begin next for-loop iteration ----------
+
+	// Condition: If we've run out of list nodes, we're done.
+	if (SMILE_KIND(loopInfo->list) != SMILE_KIND_LIST) {
+		Closure_PushTemp(closure, loopInfo->resultHead);	// Push 'resultHead' as the output.
+		return -1;
+	}
+
+	// Body: Set up to call the user's function with the next list item.
+	Closure_PushTemp(closure, loopInfo->function);
+	Closure_PushTemp(closure, loopInfo->list->a);
+	return 1;
+}
+
+static Int WhereWithTwoArgsStart(ClosureStateMachine closure)
+{
+	register WhereInfo loopInfo = (WhereInfo)closure->state;
+
+	//---------- begin first for-loop iteration ----------
+
+	// Condition: If we've run out of list nodes, we're done.
+	if (SMILE_KIND(loopInfo->list) != SMILE_KIND_LIST) {
+		Closure_PushTemp(closure, loopInfo->resultHead);	// Push 'resultHead' as the output.
+		return -1;
+	}
+
+	// Body: Set up to call the user's function with the first list item.
+	Closure_PushTemp(closure, loopInfo->function);
+	Closure_PushTemp(closure, loopInfo->list->a);
+	Closure_PushTemp(closure, SmileInteger64_Create(loopInfo->index));
+	return 2;
+}
+
+static Int WhereWithTwoArgsBody(ClosureStateMachine closure)
+{
+	register WhereInfo loopInfo = (WhereInfo)closure->state;
+
+	// Body: Append the user function's most recent result to the output list.
+	SmileObject fnResult = Closure_PopTemp(closure);
+	Bool booleanResult = SMILE_VCALL(fnResult, toBool);
+
+	// If it's truthy, keep this list element.
+	if (booleanResult) {
+		LIST_APPEND(loopInfo->resultHead, loopInfo->resultTail, loopInfo->list->a);
+	}
+
+	// Next: Move the iterator to the next item.
+	loopInfo->list = (SmileList)loopInfo->list->d;
+	loopInfo->index++;
+
+	//---------- end previous for-loop iteration ----------
+
+	//---------- begin next for-loop iteration ----------
+
+	// Condition: If we've run out of list nodes, we're done.
+	if (SMILE_KIND(loopInfo->list) != SMILE_KIND_LIST) {
+		Closure_PushTemp(closure, loopInfo->resultHead);	// Push 'resultHead' as the output.
+		return -1;
+	}
+
+	// Body: Set up to call the user's function with the next list item.
+	Closure_PushTemp(closure, loopInfo->function);
+	Closure_PushTemp(closure, loopInfo->list->a);
+	Closure_PushTemp(closure, SmileInteger64_Create(loopInfo->index));
+	return 2;
+}
+
+static SmileObject Where(Int argc, SmileObject *argv, void *param)
+{
+	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
+	SmileList list = (SmileList)argv[0];
+	SmileFunction function = (SmileFunction)argv[1];
+	Int minArgs, maxArgs;
+	WhereInfo whereInfo;
+	ClosureStateMachine closure;
+
+	UNUSED(param);
+	UNUSED(argc);
+
+	SmileFunction_GetArgCounts(function, &minArgs, &maxArgs);
+
+	closure = Eval_BeginStateMachine(
+		maxArgs <= 1 ? WhereWithOneArgStart : WhereWithTwoArgsStart,
+		maxArgs <= 1 ? WhereWithOneArgBody : WhereWithTwoArgsBody);
+
+	whereInfo = (WhereInfo)closure->state;
+	whereInfo->function = function;
+	whereInfo->list = list;
+	whereInfo->resultHead = whereInfo->resultTail = NullList;
+	whereInfo->index = 0;
+
+	return NULL;	// We have to return something, but this value will be ignored.
+}
+
+//-------------------------------------------------------------------------------------------------
+
+typedef struct AnyAllInfoStruct {
+	SmileList list;
+	SmileFunction function;
+	Bool complement;
+} *AnyAllInfo;
+
+static Int AnyAllStart(ClosureStateMachine closure)
+{
+	register AnyAllInfo loopInfo = (AnyAllInfo)closure->state;
+
+	//---------- begin first for-loop iteration ----------
+
+	// Condition: If we've run out of list nodes, we're done.
+	if (SMILE_KIND(loopInfo->list) != SMILE_KIND_LIST) {
+		Closure_PushTemp(closure, loopInfo->complement ? Smile_KnownObjects.TrueObj : Smile_KnownObjects.FalseObj);
+		return -1;
+	}
+
+	// Body: Set up to call the user's function with the first list item.
+	Closure_PushTemp(closure, loopInfo->function);
+	Closure_PushTemp(closure, loopInfo->list->a);
+	return 1;
+}
+
+static Int AnyAllBody(ClosureStateMachine closure)
+{
+	register AnyAllInfo loopInfo = (AnyAllInfo)closure->state;
+
+	// Body: Get the value from the user's condition.
+	SmileObject fnResult = Closure_PopTemp(closure);
+	Bool booleanResult = SMILE_VCALL(fnResult, toBool);
+
+	if (booleanResult ^ loopInfo->complement) {
+		// We found a hit (for any, or a miss for all).  Stop now.
+		Closure_PushTemp(closure, loopInfo->complement ? Smile_KnownObjects.FalseObj : Smile_KnownObjects.TrueObj);
+		return -1;
+	}
+
+	// Next: Move the iterator to the next item.
+	loopInfo->list = (SmileList)loopInfo->list->d;
+
+	//---------- end previous for-loop iteration ----------
+
+	//---------- begin next for-loop iteration ----------
+
+	// Condition: If we've run out of list nodes, we're done.
+	if (SMILE_KIND(loopInfo->list) != SMILE_KIND_LIST) {
+		Closure_PushTemp(closure, loopInfo->complement ? Smile_KnownObjects.TrueObj : Smile_KnownObjects.FalseObj);
+		return -1;
+	}
+
+	// Body: Set up to call the user's function with the next list item.
+	Closure_PushTemp(closure, loopInfo->function);
+	Closure_PushTemp(closure, loopInfo->list->a);
+	return 1;
+}
+
+static SmileObject Contains(Int argc, SmileObject *argv, void *param)
+{
+	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
+	SmileList list = (SmileList)argv[0];
+	SmileFunction function = (SmileFunction)argv[1];
+	AnyAllInfo anyAllInfo;
+	ClosureStateMachine closure;
+	SmileObject value;
+
+	UNUSED(param);
+	UNUSED(argc);
+
+	if (SMILE_KIND(argv[1]) != SMILE_KIND_FUNCTION) {
+		// Degenerate form:  Check to see if any values are super-equal to the given value.
+		value = argv[1];
+		for (; SMILE_KIND(list) == SMILE_KIND_LIST; list = LIST_REST(list)) {
+			if (list->a == value || SMILE_VCALL1(list->a, compareEqual, value)) {
+				return (SmileObject)Smile_KnownObjects.TrueObj;
+			}
+		}
+		return (SmileObject)Smile_KnownObjects.FalseObj;
+	}
+
+	closure = Eval_BeginStateMachine(AnyAllStart, AnyAllBody);
+
+	anyAllInfo = (AnyAllInfo)closure->state;
+	anyAllInfo->function = function;
+	anyAllInfo->list = list;
+	anyAllInfo->complement = False;
+
+	return NULL;	// We have to return something, but this value will be ignored.
+}
+
+static SmileObject Empty(Int argc, SmileObject *argv, void *param)
+{
+	UNUSED(param);
+	UNUSED(argc);
+
+	return SMILE_KIND(argv[0]) == SMILE_KIND_NULL ? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
+}
+
+static SmileObject Any(Int argc, SmileObject *argv, void *param)
+{
+	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
+	SmileList list = (SmileList)argv[0];
+	SmileFunction function = (SmileFunction)argv[1];
+	AnyAllInfo anyAllInfo;
+	ClosureStateMachine closure;
+	SmileObject value;
+
+	UNUSED(param);
+
+	if (argc < 1) {
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'any?' requires at least 1 argument, but was called with %d.", argc));
+	}
+	if ((SMILE_KIND(argv[0]) & ~SMILE_KIND_LIST) != SMILE_KIND_NULL) {
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FromC("Argument 1 to 'any?' is of the wrong type."));
+	}
+
+	if (argc == 1) {
+		return SMILE_KIND(argv[0]) != SMILE_KIND_NULL ? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
+	}
+
+	if (argc > 2) {
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'any?' allows at most 2 arguments, but was called with %d.", argc));
+	}
+
+	if (SMILE_KIND(argv[1]) != SMILE_KIND_FUNCTION) {
+		// Degenerate form:  Check to see if any values are super-equal to the given value.
+		value = argv[1];
+		for (; SMILE_KIND(list) == SMILE_KIND_LIST; list = LIST_REST(list)) {
+			if (list->a == value || SMILE_VCALL1(list->a, compareEqual, value)) {
+				return (SmileObject)Smile_KnownObjects.TrueObj;
+			}
+		}
+		return (SmileObject)Smile_KnownObjects.FalseObj;
+	}
+
+	closure = Eval_BeginStateMachine(AnyAllStart, AnyAllBody);
+
+	anyAllInfo = (AnyAllInfo)closure->state;
+	anyAllInfo->function = function;
+	anyAllInfo->list = list;
+	anyAllInfo->complement = False;
+
+	return NULL;	// We have to return something, but this value will be ignored.
+}
+
+static SmileObject All(Int argc, SmileObject *argv, void *param)
+{
+	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
+	SmileList list = (SmileList)argv[0];
+	SmileFunction function = (SmileFunction)argv[1];
+	AnyAllInfo anyAllInfo;
+	ClosureStateMachine closure;
+	SmileObject value;
+
+	UNUSED(param);
+	UNUSED(argc);
+
+	if (SMILE_KIND(argv[1]) != SMILE_KIND_FUNCTION) {
+		// Degenerate form:  Check to make sure that all values are super-equal to the given value.
+		value = argv[1];
+		for (; SMILE_KIND(list) == SMILE_KIND_LIST; list = LIST_REST(list)) {
+			if (list->a != value && !SMILE_VCALL1(list->a, compareEqual, value)) {
+				return (SmileObject)Smile_KnownObjects.FalseObj;
+			}
+		}
+		return (SmileObject)Smile_KnownObjects.TrueObj;
+	}
+
+	closure = Eval_BeginStateMachine(AnyAllStart, AnyAllBody);
+
+	anyAllInfo = (AnyAllInfo)closure->state;
+	anyAllInfo->function = function;
+	anyAllInfo->list = list;
+	anyAllInfo->complement = True;
+
+	return NULL;	// We have to return something, but this value will be ignored.
+}
+
+//-------------------------------------------------------------------------------------------------
+
+typedef struct CountInfoStruct {
+	SmileList list;
+	SmileFunction function;
+	Int count;
+} *CountInfo;
+
+static Int CountStart(ClosureStateMachine closure)
+{
+	register CountInfo loopInfo = (CountInfo)closure->state;
+
+	//---------- begin first for-loop iteration ----------
+
+	// Condition: If we've run out of list nodes, we're done.
+	if (SMILE_KIND(loopInfo->list) != SMILE_KIND_LIST) {
+		Closure_PushTemp(closure, SmileInteger64_Create(loopInfo->count));
+		return -1;
+	}
+
+	// Body: Set up to call the user's function with the first list item.
+	Closure_PushTemp(closure, loopInfo->function);
+	Closure_PushTemp(closure, loopInfo->list->a);
+	return 1;
+}
+
+static Int CountBody(ClosureStateMachine closure)
+{
+	register CountInfo loopInfo = (CountInfo)closure->state;
+
+	// Body: Get the value from the user's condition.
+	SmileObject fnResult = Closure_PopTemp(closure);
+	Bool booleanResult = SMILE_VCALL(fnResult, toBool);
+
+	// If we found a hit, add it to the count.  (We always add here to avoid the possibility
+	// of a branch misprediction from an if-statement.)
+	loopInfo->count += booleanResult;
+
+	// Next: Move the iterator to the next item.
+	loopInfo->list = (SmileList)loopInfo->list->d;
+
+	//---------- end previous for-loop iteration ----------
+
+	//---------- begin next for-loop iteration ----------
+
+	// Condition: If we've run out of list nodes, we're done.
+	if (SMILE_KIND(loopInfo->list) != SMILE_KIND_LIST) {
+		Closure_PushTemp(closure, SmileInteger64_Create(loopInfo->count));
+		return -1;
+	}
+
+	// Body: Set up to call the user's function with the next list item.
+	Closure_PushTemp(closure, loopInfo->function);
+	Closure_PushTemp(closure, loopInfo->list->a);
+	return 1;
+}
+
+static SmileObject Count(Int argc, SmileObject *argv, void *param)
+{
+	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
+	SmileList list = (SmileList)argv[0];
+	CountInfo countInfo;
+	ClosureStateMachine closure;
+	SmileObject value;
+	Int count;
+
+	UNUSED(param);
+
+	if (argc < 1) {
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'count' requires at least 1 argument, but was called with %d.", argc));
+	}
+	if ((SMILE_KIND(argv[0]) & ~SMILE_KIND_LIST) != SMILE_KIND_NULL) {
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FromC("Argument 1 to 'count' is of the wrong type."));
+	}
+
+	if (argc == 1) {
+		// Degenerate form: Just count the list nodes, as fast as possible.
+		return (SmileObject)SmileInteger64_Create(SmileList_Length(list));
+	}
+
+	if (argc > 2) {
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'count' allows at most 2 arguments, but was called with %d.", argc));
+	}
+
+	if (SMILE_KIND(argv[1]) != SMILE_KIND_FUNCTION) {
+		// Degenerate form:  Count up any values that are super-equal to the given value.
+		value = argv[1];
+		for (count = 0; SMILE_KIND(list) == SMILE_KIND_LIST; list = LIST_REST(list)) {
+			if (list->a == value || SMILE_VCALL1(list->a, compareEqual, value)) {
+				count++;
+			}
+		}
+		return (SmileObject)SmileInteger64_Create(count);
+	}
+
+	closure = Eval_BeginStateMachine(CountStart, CountBody);
+
+	countInfo = (CountInfo)closure->state;
+	countInfo->function = (SmileFunction)argv[1];
+	countInfo->list = list;
+
+	return NULL;	// We have to return something, but this value will be ignored.
+}
+
+//-------------------------------------------------------------------------------------------------
+
+typedef struct FirstInfoStruct {
+	SmileList list;
+	SmileFunction function;
+	Int index;
+	Bool indexOfMode;
+} *FirstInfo;
+
+static Int FirstStart(ClosureStateMachine closure)
+{
+	register FirstInfo loopInfo = (FirstInfo)closure->state;
+
+	//---------- begin first for-loop iteration ----------
+
+	// Condition: If we've run out of list nodes, we're done.
+	if (SMILE_KIND(loopInfo->list) != SMILE_KIND_LIST) {
+		Closure_PushTemp(closure, loopInfo->indexOfMode ? (SmileObject)Smile_KnownObjects.NegOneInt64 : NullObject);
+		return -1;
+	}
+
+	// Body: Set up to call the user's function with the first list item.
+	Closure_PushTemp(closure, loopInfo->function);
+	Closure_PushTemp(closure, loopInfo->list->a);
+	return 1;
+}
+
+static Int FirstBody(ClosureStateMachine closure)
+{
+	register FirstInfo loopInfo = (FirstInfo)closure->state;
+
+	// Body: Get the value from the user's condition.
+	SmileObject fnResult = Closure_PopTemp(closure);
+	Bool booleanResult = SMILE_VCALL(fnResult, toBool);
+
+	if (booleanResult) {
+		// We found a hit.  Stop now.
+		Closure_PushTemp(closure, loopInfo->indexOfMode
+			? (SmileObject)SmileInteger64_Create(loopInfo->index) : loopInfo->list->a);
+		return -1;
+	}
+
+	// Next: Move the iterator to the next item.
+	loopInfo->list = (SmileList)loopInfo->list->d;
+	loopInfo->index++;
+
+	//---------- end previous for-loop iteration ----------
+
+	//---------- begin next for-loop iteration ----------
+
+	// Condition: If we've run out of list nodes, we're done.
+	if (SMILE_KIND(loopInfo->list) != SMILE_KIND_LIST) {
+		Closure_PushTemp(closure, loopInfo->indexOfMode ? (SmileObject)Smile_KnownObjects.NegOneInt64 : NullObject);
+		return -1;
+	}
+
+	// Body: Set up to call the user's function with the next list item.
+	Closure_PushTemp(closure, loopInfo->function);
+	Closure_PushTemp(closure, loopInfo->list->a);
+	return 1;
+}
+
+static SmileObject First(Int argc, SmileObject *argv, void *param)
+{
+	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
+	SmileList list = (SmileList)argv[0];
+	FirstInfo firstInfo;
+	ClosureStateMachine closure;
+	SmileObject value;
+
+	UNUSED(param);
+
+	if (argc < 1) {
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'first' requires at least 1 argument, but was called with %d.", argc));
+	}
+	if ((SMILE_KIND(argv[0]) & ~SMILE_KIND_LIST) != SMILE_KIND_NULL) {
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FromC("Argument 1 to 'first' is of the wrong type."));
+	}
+
+	if (argc == 1) {
+		// Degenerate form:  This is a synonym for 'car'.
+		return list->a;
+	}
+
+	if (argc > 2) {
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'first' allows at most 2 arguments, but was called with %d.", argc));
+	}
+
+	if (SMILE_KIND(argv[1]) != SMILE_KIND_FUNCTION) {
+		// Degenerate form:  Return the first matching item if a matching item exists, null if none exists.
+		value = argv[1];
+		for (; SMILE_KIND(list) == SMILE_KIND_LIST; list = LIST_REST(list)) {
+			if (list->a == value || SMILE_VCALL1(list->a, compareEqual, value)) {
+				return list->a;
+			}
+		}
+		return NullObject;
+	}
+
+	// Iterating with a search predicate.
+	closure = Eval_BeginStateMachine(FirstStart, FirstBody);
+
+	firstInfo = (FirstInfo)closure->state;
+	firstInfo->function = (SmileFunction)argv[1];
+	firstInfo->list = list;
+	firstInfo->indexOfMode = False;
+
+	return NULL;	// We have to return something, but this value will be ignored.
+}
+
+static SmileObject IndexOf(Int argc, SmileObject *argv, void *param)
+{
+	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
+	SmileList list = (SmileList)argv[0];
+	SmileFunction function = (SmileFunction)argv[1];
+	FirstInfo firstInfo;
+	ClosureStateMachine closure;
+	SmileObject value;
+	Int index;
+
+	UNUSED(param);
+	UNUSED(argc);
+
+	if (SMILE_KIND(argv[1]) != SMILE_KIND_FUNCTION) {
+		// Degenerate form:  Return the index of the first matching item if a matching item exists, -1 if none exists.
+		value = argv[1];
+		index = 0;
+		for (; SMILE_KIND(list) == SMILE_KIND_LIST; list = LIST_REST(list), index++) {
+			if (list->a == value || SMILE_VCALL1(list->a, compareEqual, value)) {
+				return (SmileObject)SmileInteger64_Create(index);
+			}
+		}
+		return (SmileObject)Smile_KnownObjects.NegOneInt64;
+	}
+
+	// Iterating with a search predicate.
+	closure = Eval_BeginStateMachine(FirstStart, FirstBody);
+
+	firstInfo = (FirstInfo)closure->state;
+	firstInfo->function = function;
+	firstInfo->list = list;
+	firstInfo->indexOfMode = True;
+
+	return NULL;	// We have to return something, but this value will be ignored.
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -507,7 +1221,19 @@ void SmileList_Setup(SmileUserObject base)
 
 	SetupFunction("join", Join, NULL, "list", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _joinChecks);
 
-	SetupFunction("each", Each, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _eachChecks);
+	SetupFunction("each", Each, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
+	SetupFunction("map", Map, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
+	SetupFunction("where", Where, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
+
+	SetupFunction("empty?", Empty, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _listChecks);
+	SetupFunction("null?", Empty, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _listChecks);
+
+	SetupFunction("any?", Any, NULL, "list", ARG_STATE_MACHINE, 0, 0, 0, NULL);
+	SetupFunction("contains?", Contains, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _indexOfChecks);
+	SetupFunction("all?", All, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _indexOfChecks);
+	SetupFunction("first", First, NULL, "list", ARG_STATE_MACHINE, 0, 0, 0, NULL);
+	SetupFunction("index-of", IndexOf, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _indexOfChecks);
+	SetupFunction("count", Count, NULL, "list", ARG_STATE_MACHINE, 0, 0, 0, NULL);
 
 	SetupFunction("length", Length, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _listChecks);
 	SetupFunction("cycle?", HasCycle, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _listChecks);
@@ -515,8 +1241,7 @@ void SmileList_Setup(SmileUserObject base)
 
 	SetupFunction("car", Car, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _listChecks);
 	SetupFunction("cdr", Cdr, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _listChecks);
-	SetupFunction("first", Car, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _listChecks);
-	SetupFunction("rest", Cdr, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _listChecks);
+	SetupSynonym("rest", "cdr");
 
 	SetupFunction("caar", Caar, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _listChecks);
 	SetupFunction("cadr", Cadr, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _listChecks);

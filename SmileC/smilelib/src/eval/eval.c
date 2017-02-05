@@ -922,27 +922,38 @@ next:
 		//-------------------------------------------------------
 		// F0-FF: Miscellaneous internal constructs
 		
-		case Op_StateMach:
+		case Op_StateMachStart:
 			// Repeatedly invoke the Smile function on the top of the stack, calling the given C
 			// function in between.  This provides a way for things like List.each and List.map
 			// to do their job while not recursing deeper on the C stack, which makes many
 			// externally-looping C things able to be safely interrupted (like by a cofunction).
 			// It also means that after compile, the C stack size is finite (more-or-less, depending
 			// on what external things you may call).
-		
-			// Call the given C state-machine function.  If it returns a SmileFunction, we need to
+
+			// Call the given C state-machine startup function first (same semantics as the body call below).
+			_byteCode++;
+			if ((argc = ((ClosureStateMachine)_closure)->stateMachineStart((ClosureStateMachine)_closure)) >= 0) {
+				SMILE_VCALL1(Closure_GetTemp(_closure, argc), call, argc);
+				goto next;
+			}
+			else {
+				goto do_return;
+			}
+
+		case Op_StateMachBody:
+			// Call the given C state-machine function body.  If it returns a SmileFunction, we need to
 			// then invoke that, which may involve switching closures and running user code for a while.
 			// But while in this closure, we continue to hold on this instruction until the state
 			// machine tells us it is done.  This all ends up forming a much tighter loop than it may
 			// initially look; it's not as tight as something like `while (cond) { Eval(fn); }`, but
 			// it's still pretty tight, and unlike that loop, it is safely interruptible.
-			if ((argc = ((ClosureStateMachine)_closure)->stateMachine((ClosureStateMachine)_closure)) >= 0) {
+			if ((argc = ((ClosureStateMachine)_closure)->stateMachineBody((ClosureStateMachine)_closure)) >= 0) {
 				SMILE_VCALL1(Closure_GetTemp(_closure, argc), call, argc);
+				goto next;
 			}
 			else {
 				goto do_return;
 			}
-			goto next;
 		
 		case Op_Label:
 			_byteCode++;
@@ -959,18 +970,21 @@ next:
 
 //-------------------------------------------------------------------------------------------------
 
-static struct ByteCodeStruct _stateMachineByteCode = { Op_StateMach };
-
-static struct ByteCodeSegmentStruct _stateMachineSegment = {
-	&_stateMachineByteCode, 1, 1,
+static struct ByteCodeStruct _stateMachineByteCode[] = {
+	{ Op_StateMachStart },
+	{ Op_StateMachBody },
 };
 
-ClosureStateMachine Eval_BeginStateMachine(StateMachine stateMachine)
+static struct ByteCodeSegmentStruct _stateMachineSegment = {
+	_stateMachineByteCode, 2, 2,
+};
+
+ClosureStateMachine Eval_BeginStateMachine(StateMachine stateMachineStart, StateMachine stateMachineBody)
 {
 	ClosureStateMachine closureStateMachine;
 
 	// Create a new state-machine closure.
-	closureStateMachine = Closure_CreateStateMachine(stateMachine,
+	closureStateMachine = Closure_CreateStateMachine(stateMachineStart, stateMachineBody,
 		_closure, _segment, _byteCode - _segment->byteCodes);
 
 	// We now have the state machine, so set up the globals for running inside it.
@@ -1075,42 +1089,31 @@ static Int PerformTypeChecks(Int argc, SmileObject *argv, Int numTypeChecks, con
 
 void SmileExternalFunction_NoCheck_Call(SmileFunction self, Int argc)
 {
-	SmileObject *argv;
-
-	argv = _closure->stackTop -= argc;
-	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
+	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, (_closure->stackTop -= argc), self->u.externalFunctionInfo.param);
 }
 
 void SmileExternalFunction_MinCheck_Call(SmileFunction self, Int argc)
 {
-	SmileObject *argv;
-
 	if (argc < self->u.externalFunctionInfo.minArgs) {
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'%S' requires at least %d arguments, but was called with %d.",
 			self->u.externalFunctionInfo.name, (int)self->u.externalFunctionInfo.minArgs, argc));
 	}
 
-	argv = _closure->stackTop -= argc;
-	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
+	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, (_closure->stackTop -= argc), self->u.externalFunctionInfo.param);
 }
 
 void SmileExternalFunction_MaxCheck_Call(SmileFunction self, Int argc)
 {
-	SmileObject *argv;
-
 	if (argc > self->u.externalFunctionInfo.maxArgs) {
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'%S' allows at most %d arguments, but was called with %d.",
 			self->u.externalFunctionInfo.name, (int)self->u.externalFunctionInfo.maxArgs, argc));
 	}
 
-	argv = _closure->stackTop -= argc;
-	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
+	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, (_closure->stackTop -= argc), self->u.externalFunctionInfo.param);
 }
 
 void SmileExternalFunction_MinMaxCheck_Call(SmileFunction self, Int argc)
 {
-	SmileObject *argv;
-
 	if (argc < self->u.externalFunctionInfo.minArgs) {
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'%S' requires at least %d arguments, but was called with %d.",
 			self->u.externalFunctionInfo.name, (int)self->u.externalFunctionInfo.minArgs, argc));
@@ -1120,21 +1123,17 @@ void SmileExternalFunction_MinMaxCheck_Call(SmileFunction self, Int argc)
 			self->u.externalFunctionInfo.name, (int)self->u.externalFunctionInfo.maxArgs, argc));
 	}
 
-	argv = _closure->stackTop -= argc;
-	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
+	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, (_closure->stackTop -= argc), self->u.externalFunctionInfo.param);
 }
 
 void SmileExternalFunction_ExactCheck_Call(SmileFunction self, Int argc)
 {
-	SmileObject *argv;
-
 	if (argc != self->u.externalFunctionInfo.minArgs) {
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'%S' requires exactly %d arguments, but was called with %d.",
 			self->u.externalFunctionInfo.name, (int)self->u.externalFunctionInfo.minArgs, argc));
 	}
 
-	argv = _closure->stackTop -= argc;
-	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
+	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, (_closure->stackTop -= argc), self->u.externalFunctionInfo.param);
 }
 
 void SmileExternalFunction_TypesCheck_Call(SmileFunction self, Int argc)
@@ -1147,8 +1146,7 @@ void SmileExternalFunction_TypesCheck_Call(SmileFunction self, Int argc)
 			failingArg+1, self->u.externalFunctionInfo.name));
 	}
 	
-	_closure->stackTop = argv;
-	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
+	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, (_closure->stackTop = argv), self->u.externalFunctionInfo.param);
 }
 
 void SmileExternalFunction_MinTypesCheck_Call(SmileFunction self, Int argc)
@@ -1165,8 +1163,7 @@ void SmileExternalFunction_MinTypesCheck_Call(SmileFunction self, Int argc)
 			failingArg + 1, self->u.externalFunctionInfo.name));
 	}
 
-	_closure->stackTop = argv;
-	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
+	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, (_closure->stackTop = argv), self->u.externalFunctionInfo.param);
 }
 
 void SmileExternalFunction_MaxTypesCheck_Call(SmileFunction self, Int argc)
@@ -1183,8 +1180,7 @@ void SmileExternalFunction_MaxTypesCheck_Call(SmileFunction self, Int argc)
 			failingArg + 1, self->u.externalFunctionInfo.name));
 	}
 
-	_closure->stackTop = argv;
-	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
+	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, (_closure->stackTop = argv), self->u.externalFunctionInfo.param);
 }
 
 void SmileExternalFunction_MinMaxTypesCheck_Call(SmileFunction self, Int argc)
@@ -1205,8 +1201,7 @@ void SmileExternalFunction_MinMaxTypesCheck_Call(SmileFunction self, Int argc)
 			failingArg + 1, self->u.externalFunctionInfo.name));
 	}
 
-	_closure->stackTop = argv;
-	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
+	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, (_closure->stackTop = argv), self->u.externalFunctionInfo.param);
 }
 
 void SmileExternalFunction_ExactTypesCheck_Call(SmileFunction self, Int argc)
@@ -1223,8 +1218,78 @@ void SmileExternalFunction_ExactTypesCheck_Call(SmileFunction self, Int argc)
 			failingArg + 1, self->u.externalFunctionInfo.name));
 	}
 
-	_closure->stackTop = argv;
-	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, argv, self->u.externalFunctionInfo.param);
+	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, (_closure->stackTop = argv), self->u.externalFunctionInfo.param);
+}
+
+void SmileExternalFunction_StateMachineNoCheck_Call(SmileFunction self, Int argc)
+{
+	SmileObject stateMachineResult;
+
+	stateMachineResult = self->u.externalFunctionInfo.externalFunction(argc, (_closure->stackTop -= argc), self->u.externalFunctionInfo.param);
+
+	if (stateMachineResult != NULL) {
+		// Didn't start the state machine, and instead produced a result directly.
+		*_closure->stackTop++ = stateMachineResult;
+	}
+}
+
+void SmileExternalFunction_StateMachineExactCheck_Call(SmileFunction self, Int argc)
+{
+	SmileObject stateMachineResult;
+
+	if (argc != self->u.externalFunctionInfo.minArgs) {
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'%S' requires exactly %d arguments, but was called with %d.",
+			self->u.externalFunctionInfo.name, (int)self->u.externalFunctionInfo.minArgs, argc));
+	}
+
+	stateMachineResult = self->u.externalFunctionInfo.externalFunction(argc, (_closure->stackTop -= argc), self->u.externalFunctionInfo.param);
+
+	if (stateMachineResult != NULL) {
+		// Didn't start the state machine, and instead produced a result directly.
+		*_closure->stackTop++ = stateMachineResult;
+	}
+}
+
+void SmileExternalFunction_StateMachineTypesCheck_Call(SmileFunction self, Int argc)
+{
+	SmileObject *argv = _closure->stackTop - argc;
+	Int failingArg;
+	SmileObject stateMachineResult;
+
+	if ((failingArg = PerformTypeChecks(argc, argv, self->u.externalFunctionInfo.numArgsToTypeCheck, self->u.externalFunctionInfo.argTypeChecks)) >= 0) {
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("Argument %d to '%S' is of the wrong type.",
+			failingArg + 1, self->u.externalFunctionInfo.name));
+	}
+
+	stateMachineResult = self->u.externalFunctionInfo.externalFunction(argc, (_closure->stackTop = argv), self->u.externalFunctionInfo.param);
+
+	if (stateMachineResult != NULL) {
+		// Didn't start the state machine, and instead produced a result directly.
+		*_closure->stackTop++ = stateMachineResult;
+	}
+}
+
+void SmileExternalFunction_StateMachineExactTypesCheck_Call(SmileFunction self, Int argc)
+{
+	SmileObject *argv = _closure->stackTop - argc;
+	Int failingArg;
+	SmileObject stateMachineResult;
+
+	if (argc != self->u.externalFunctionInfo.minArgs) {
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'%S' requires exactly %d arguments, but was called with %d.",
+			self->u.externalFunctionInfo.name, (int)self->u.externalFunctionInfo.minArgs, argc));
+	}
+	if ((failingArg = PerformTypeChecks(argc, argv, self->u.externalFunctionInfo.numArgsToTypeCheck, self->u.externalFunctionInfo.argTypeChecks)) >= 0) {
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("Argument %d to '%S' is of the wrong type.",
+			failingArg + 1, self->u.externalFunctionInfo.name));
+	}
+
+	stateMachineResult = self->u.externalFunctionInfo.externalFunction(argc, (_closure->stackTop = argv), self->u.externalFunctionInfo.param);
+
+	if (stateMachineResult != NULL) {
+		// Didn't start the state machine, and instead produced a result directly.
+		*_closure->stackTop++ = stateMachineResult;
+	}
 }
 
 //-------------------------------------------------------------------------------------------------

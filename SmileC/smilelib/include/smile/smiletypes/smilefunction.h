@@ -25,6 +25,7 @@
 #define ARG_CHECK_MAX	(1 << 1)
 #define ARG_CHECK_EXACT	(1 << 2)	
 #define ARG_CHECK_TYPES	(1 << 3)
+#define ARG_STATE_MACHINE	(1 << 4)	// This is a special "state machine" function.
 
 typedef SmileObject (*ExternalFunction)(Int argc, SmileObject *argv, void *param);
 

@@ -86,7 +86,7 @@ Closure Closure_CreateLocal(ClosureInfo closureInfo, Closure parent,
 	return closure;
 }
 
-ClosureStateMachine Closure_CreateStateMachine(StateMachine stateMachine,
+ClosureStateMachine Closure_CreateStateMachine(StateMachine stateMachineStart, StateMachine stateMachineBody,
 	Closure returnClosure, struct ByteCodeSegmentStruct *returnSegment, Int returnPc)
 {
 	ClosureStateMachine closure = GC_MALLOC_STRUCT(struct ClosureStateMachineStruct);
@@ -104,7 +104,8 @@ ClosureStateMachine Closure_CreateStateMachine(StateMachine stateMachine,
 	closure->frame = closure->variables;
 	closure->stackTop = closure->variables;
 
-	closure->stateMachine = stateMachine;
+	closure->stateMachineStart = stateMachineStart;
+	closure->stateMachineBody = stateMachineBody;
 
 	return closure;
 }

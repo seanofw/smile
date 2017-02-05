@@ -112,8 +112,9 @@ typedef struct ClosureStateMachineStruct {
 	SmileObject *stackTop;	// The current address of the top of the temporary variables.
 	SmileObject variables[16];	// Always a max of 16 variables for a C state machine.
 		
-	StateMachine stateMachine;	// The state machine to repeatedly invoke.
-	Byte state[sizeof(void*) * 4];	// The state of this machine, with enough space to store it inline for most machines.
+	StateMachine stateMachineStart;	// The startup function for the state machine.
+	StateMachine stateMachineBody;	// The body function to repeatedly invoke for the state machine.
+	Byte state[sizeof(void*) * 8];	// The state of this machine, with enough space to store it inline for most machines.
 
 } *ClosureStateMachine;
 
@@ -125,7 +126,7 @@ SMILE_API_FUNC ClosureInfo ClosureInfo_Create(ClosureInfo parent, Int kind);
 SMILE_API_FUNC Closure Closure_CreateGlobal(ClosureInfo info, Closure parent);
 SMILE_API_FUNC Closure Closure_CreateLocal(ClosureInfo info, Closure parent,
 	Closure returnClosure, struct ByteCodeSegmentStruct *returnSegment, Int returnPc);
-SMILE_API_FUNC ClosureStateMachine Closure_CreateStateMachine(StateMachine stateMachine,
+SMILE_API_FUNC ClosureStateMachine Closure_CreateStateMachine(StateMachine stateMachineStart, StateMachine stateMachineBody,
 	Closure returnClosure, struct ByteCodeSegmentStruct *returnSegment, Int returnPc);
 
 SMILE_API_FUNC SmileObject Closure_GetGlobalVariable(Closure closure, Symbol name);

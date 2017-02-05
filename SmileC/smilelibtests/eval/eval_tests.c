@@ -27,6 +27,7 @@
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/smilepair.h>
+#include <smile/smiletypes/smilebool.h>
 
 STATIC_STRING(TestFilename, "test.sm");
 
@@ -412,9 +413,6 @@ START_TEST(UserFunctionsCanHaveTenParameters)
 		"[f 10 20 30 40 50 60 70 80 90 100]\n"
 	);
 
-	String global = ByteCodeSegment_ToString(compiledTables->globalFunctionInfo->byteCodeSegment, compiledTables->globalFunctionInfo, compiledTables);
-	String f = ByteCodeSegment_ToString(compiledTables->userFunctions[0]->byteCodeSegment, compiledTables->userFunctions[0], compiledTables);
-
 	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
@@ -429,9 +427,6 @@ START_TEST(UserFunctionsCanHaveRestParameters)
 		"f = |a b c rest...| rest join \" \"\n"
 		"[f 10 20 30 40 50 60]\n"
 	);
-
-	String global = ByteCodeSegment_ToString(compiledTables->globalFunctionInfo->byteCodeSegment, compiledTables->globalFunctionInfo, compiledTables);
-	String f = ByteCodeSegment_ToString(compiledTables->userFunctions[0]->byteCodeSegment, compiledTables->userFunctions[0], compiledTables);
 
 	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
 
@@ -449,14 +444,433 @@ START_TEST(CanUseStateMachinesToIterateLists)
 		"y\n"
 	);
 
-	String global = ByteCodeSegment_ToString(compiledTables->globalFunctionInfo->byteCodeSegment, compiledTables->globalFunctionInfo, compiledTables);
-	String f = ByteCodeSegment_ToString(compiledTables->userFunctions[0]->byteCodeSegment, compiledTables->userFunctions[0], compiledTables);
-
 	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
 	ASSERT(((SmileInteger64)result->value)->value == 385);
+}
+END_TEST
+
+START_TEST(CanUseStateMachinesToProjectLists)
+{
+	static Int64 expectedResult[] = { 1, 4, 9, 16, 25, 36, 49, 64, 81, 100 };
+	Int i;
+	SmileList list;
+	
+	CompiledTables compiledTables = Compile(
+		"`[1 2 3 4 5 6 7 8 9 10] map |x| x * x\n"
+	);
+
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_LIST);
+
+	for (i = 0, list = (SmileList)result->value; SMILE_KIND(list) == SMILE_KIND_LIST; list = LIST_REST(list), i++) {
+		ASSERT(SMILE_KIND(list->a) == SMILE_KIND_INTEGER64);
+		ASSERT(((SmileInteger64)list->a)->value == expectedResult[i]);
+	}
+}
+END_TEST
+
+START_TEST(MapReturnsNullForAnEmptyList)
+{
+	CompiledTables compiledTables = Compile(
+		"`[] map |x| x + 1\n"
+		);
+
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_NULL);
+}
+END_TEST
+
+START_TEST(CanUseStateMachinesToFilterLists)
+{
+	static Int64 expectedResult[] = { 1, 2, 4, 5, 7, 8, 10 };
+	Int i;
+	SmileList list;
+
+	CompiledTables compiledTables = Compile(
+		"`[1 2 3 4 5 6 7 8 9 10] where |x| x mod 3 != 0\n"
+	);
+
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_LIST);
+
+	for (i = 0, list = (SmileList)result->value; SMILE_KIND(list) == SMILE_KIND_LIST; list = LIST_REST(list), i++) {
+		ASSERT(SMILE_KIND(list->a) == SMILE_KIND_INTEGER64);
+		ASSERT(((SmileInteger64)list->a)->value == expectedResult[i]);
+	}
+}
+END_TEST
+
+START_TEST(WhereReturnsNullForAnEmptyList)
+{
+	CompiledTables compiledTables = Compile(
+		"`[] where |x| x mod 3 != 0\n"
+	);
+
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_NULL);
+}
+END_TEST
+
+START_TEST(CanUseStateMachinesToTestAny)
+{
+	CompiledTables compiledTables = Compile("`[1 2 4 8 16 32 64 128] any? 15\n");
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == (SmileObject)Smile_KnownObjects.FalseObj);
+
+	compiledTables = Compile("`[1 2 4 8 15 16 32 64 128] any? 15\n");
+	result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == (SmileObject)Smile_KnownObjects.TrueObj);
+}
+END_TEST
+
+START_TEST(CanUseStateMachinesToTestAnyWithPredicates)
+{
+	CompiledTables compiledTables = Compile("`[1 2 4 8 16 32 64 128] any? |x| x mod 3 == 0\n");
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == (SmileObject)Smile_KnownObjects.FalseObj);
+
+	compiledTables = Compile("`[1 2 4 8 15 16 32 64 128] any? |x| x mod 3 == 0\n");
+	result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == (SmileObject)Smile_KnownObjects.TrueObj);
+}
+END_TEST
+
+START_TEST(AnyHasWeirdCornerCasesForEmptyLists)
+{
+	CompiledTables compiledTables = Compile("`[] any? |x| x mod 3 == 0\n");
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == (SmileObject)Smile_KnownObjects.FalseObj);
+}
+END_TEST
+
+START_TEST(AnyInUnaryFormAnswersWhetherTheListIsEmpty)
+{
+	CompiledTables compiledTables = Compile("any? `[]\n");
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == (SmileObject)Smile_KnownObjects.FalseObj);
+
+	compiledTables = Compile("any? `[1 2 3]\n");
+	result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == (SmileObject)Smile_KnownObjects.TrueObj);
+}
+END_TEST
+
+START_TEST(EmptyAnswersWhetherTheListIsEmpty)
+{
+	CompiledTables compiledTables = Compile("empty? `[]\n");
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == (SmileObject)Smile_KnownObjects.TrueObj);
+
+	compiledTables = Compile("empty? `[1 2 3]\n");
+	result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == (SmileObject)Smile_KnownObjects.FalseObj);
+}
+END_TEST
+
+START_TEST(NullAnswersWhetherTheListIsEmpty)
+{
+	CompiledTables compiledTables = Compile("null? `[]\n");
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == (SmileObject)Smile_KnownObjects.TrueObj);
+
+	compiledTables = Compile("null? `[1 2 3]\n");
+	result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == (SmileObject)Smile_KnownObjects.FalseObj);
+}
+END_TEST
+
+START_TEST(CanUseStateMachinesToTestContains)
+{
+	CompiledTables compiledTables = Compile("`[1 2 4 8 16 32 64 128] contains? 15\n");
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == (SmileObject)Smile_KnownObjects.FalseObj);
+
+	compiledTables = Compile("`[1 2 4 8 15 16 32 64 128] contains? 15\n");
+	result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == (SmileObject)Smile_KnownObjects.TrueObj);
+}
+END_TEST
+
+START_TEST(CanUseStateMachinesToTestContainsWithPredicates)
+{
+	CompiledTables compiledTables = Compile("`[1 2 4 8 16 32 64 128] contains? |x| x mod 3 == 0\n");
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == (SmileObject)Smile_KnownObjects.FalseObj);
+
+	compiledTables = Compile("`[1 2 4 8 15 16 32 64 128] contains? |x| x mod 3 == 0\n");
+	result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == (SmileObject)Smile_KnownObjects.TrueObj);
+}
+END_TEST
+
+START_TEST(ContainsHasWeirdCornerCasesForEmptyLists)
+{
+	CompiledTables compiledTables = Compile("`[] contains? |x| x mod 3 == 0\n");
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == (SmileObject)Smile_KnownObjects.FalseObj);
+}
+END_TEST
+
+START_TEST(CanUseStateMachinesToTestAll)
+{
+	CompiledTables compiledTables = Compile("`[1 2 4 8 16 32 64 128] all? 15\n");
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == (SmileObject)Smile_KnownObjects.FalseObj);
+
+	compiledTables = Compile("`[15 15 15 15 15 15] all? 15\n");
+	result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == (SmileObject)Smile_KnownObjects.TrueObj);
+}
+END_TEST
+
+START_TEST(CanUseStateMachinesToTestAllWithPredicates)
+{
+	CompiledTables compiledTables = Compile("`[3 6 9 10 11 12 13 14 15] all? |x| x mod 3 == 0\n");
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == (SmileObject)Smile_KnownObjects.FalseObj);
+
+	compiledTables = Compile("`[3 6 9 12 15 18 21] all? |x| x mod 3 == 0\n");
+	result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == (SmileObject)Smile_KnownObjects.TrueObj);
+}
+END_TEST
+
+START_TEST(AllHasWeirdCornerCasesForEmptyLists)
+{
+	CompiledTables compiledTables = Compile("`[] all? |x| x mod 3 == 0\n");
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == (SmileObject)Smile_KnownObjects.TrueObj);
+}
+END_TEST
+
+START_TEST(CanUseStateMachinesToFindFirst)
+{
+	CompiledTables compiledTables = Compile("`[1 2 4 8 16 32 64 128] first 15\n");
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == NullObject);
+
+	compiledTables = Compile("`[1 2 4 8 15 16 32 64 128] first 15\n");
+	result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 15);
+}
+END_TEST
+
+START_TEST(CanUseStateMachinesToFindFirstWithPredicates)
+{
+	CompiledTables compiledTables = Compile("`[1 2 4 8 16 32 64 128] first |x| x mod 3 == 0\n");
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == NullObject);
+
+	compiledTables = Compile("`[1 2 4 8 15 16 32 64 128] first |x| x mod 3 == 0\n");
+	result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 15);
+}
+END_TEST
+
+START_TEST(FirstReturnsNullForEmptyLists)
+{
+	CompiledTables compiledTables = Compile("`[] first 15\n");
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == NullObject);
+
+	compiledTables = Compile("`[] first |x| x mod 3 == 0\n");
+	result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == NullObject);
+}
+END_TEST
+
+START_TEST(FirstInUnaryFormReturnsTheFirstItem)
+{
+	CompiledTables compiledTables = Compile("first `[]\n");
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == NullObject);
+
+	compiledTables = Compile("first `[8 16 32 64 128]\n");
+	result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 8);
+}
+END_TEST
+
+START_TEST(CanUseStateMachinesToFindIndexOf)
+{
+	CompiledTables compiledTables = Compile("`[1 2 4 8 16 32 64 128] index-of 15\n");
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == (SmileObject)Smile_KnownObjects.NegOneInt64);
+
+	compiledTables = Compile("`[1 2 4 8 15 16 32 64 128] index-of 15\n");
+	result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 4);
+}
+END_TEST
+
+START_TEST(CanUseStateMachinesToFindIndexOfWithPredicates)
+{
+	CompiledTables compiledTables = Compile("`[1 2 4 8 16 32 64 128] index-of |x| x mod 3 == 0\n");
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == (SmileObject)Smile_KnownObjects.NegOneInt64);
+
+	compiledTables = Compile("`[1 2 4 8 15 16 32 64 128] index-of |x| x mod 3 == 0\n");
+	result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 4);
+}
+END_TEST
+
+START_TEST(IndexOfReturnsNegativeOneForEmptyLists)
+{
+	CompiledTables compiledTables = Compile("`[] index-of 15\n");
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == (SmileObject)Smile_KnownObjects.NegOneInt64);
+
+	compiledTables = Compile("`[] index-of |x| x mod 3 == 0\n");
+	result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == (SmileObject)Smile_KnownObjects.NegOneInt64);
+}
+END_TEST
+
+START_TEST(CanUseStateMachinesToCountItems)
+{
+	CompiledTables compiledTables = Compile("`[1 2 3 1 2 3 3 9 5 1 3] count 3\n");
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 4);
+}
+END_TEST
+
+START_TEST(CanUseStateMachinesToCountWithPredicates)
+{
+	CompiledTables compiledTables = Compile("`[1 2 4 8 16 32 64 128] count |x| x mod 3 == 0\n");
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == (SmileObject)Smile_KnownObjects.ZeroInt64);
+
+	compiledTables = Compile("`[1 2 3 4 5 8 15 16 32 60 64 90 93 128] count |x| x mod 3 == 0\n");
+	result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 5);
+}
+END_TEST
+
+START_TEST(CountReturnsZeroForEmptyLists)
+{
+	CompiledTables compiledTables = Compile("`[] count 15\n");
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == (SmileObject)Smile_KnownObjects.ZeroInt64);
+
+	compiledTables = Compile("`[] count |x| x mod 3 == 0\n");
+	result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == (SmileObject)Smile_KnownObjects.ZeroInt64);
+}
+END_TEST
+
+START_TEST(CountInUnaryFormCountsAllItems)
+{
+	CompiledTables compiledTables = Compile("count `[]\n");
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(result->value == (SmileObject)Smile_KnownObjects.ZeroInt64);
+
+	compiledTables = Compile("count `[9 8 7 6 5 4 3]\n");
+	result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 7);
 }
 END_TEST
 
