@@ -763,6 +763,8 @@
     <ClCompile Include="src\eval\closure.c" />
     <ClCompile Include="src\eval\compiler.c" />
     <ClCompile Include="src\eval\eval.c" />
+    <ClCompile Include="src\eval\eval_fn_ext.c" />
+    <ClCompile Include="src\eval\eval_fn_user.c" />
     <ClCompile Include="src\fnvhash.c" />
     <ClCompile Include="src\init.c">
       <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</PreprocessToFile>

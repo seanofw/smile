@@ -1,0 +1,263 @@
+//---------------------------------------------------------------------------------------
+//  Smile Programming Language Interpreter
+//  Copyright 2004-2017 Sean Werkema
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//---------------------------------------------------------------------------------------
+
+#include <smile/eval/eval.h>
+#include <smile/smiletypes/smilepair.h>
+#include <smile/smiletypes/smilelist.h>
+#include <smile/smiletypes/smilebool.h>
+#include <smile/smiletypes/smilefunction.h>
+#include <smile/smiletypes/smileuserobject.h>
+#include <smile/smiletypes/text/smilestring.h>
+#include <smile/smiletypes/text/smilesymbol.h>
+
+extern Closure _closure;
+extern CompiledTables _compiledTables;
+extern ByteCodeSegment _segment;
+extern ByteCode _byteCode;
+
+//-------------------------------------------------------------------------------------------------
+// User functions, with a fixed small count of arguments.
+
+static const char *_argCountErrorMessage = "'%S' requires %d arguments, but was called with %d.";
+static const char *_minArgCountErrorMessage = "'%S' requires at least %d arguments, but was called with %d.";
+static const char *_maxArgCountErrorMessage = "'%S' allows at most %d arguments, but was called with %d.";
+
+#define FAST_USER_FUNCTION(__name__, __numArgs__, __copyArgs__) \
+	void __name__(SmileFunction self, Int argc) \
+	{ \
+		UserFunctionInfo userFunctionInfo; \
+		Closure childClosure; \
+		\
+		if (argc != (__numArgs__)) { \
+			Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format(_argCountErrorMessage, \
+				SMILE_VCALL(self, toString), (__numArgs__), argc)); \
+				} \
+		\
+		/* Create a new child closure for this function. */ \
+		userFunctionInfo = self->u.u.userFunctionInfo; \
+		childClosure = Closure_CreateLocal(&userFunctionInfo->closureInfo, self->u.u.declaringClosure, \
+			_closure, _segment, _byteCode - _segment->byteCodes); \
+		\
+		/* Copy the arguments. */ \
+		__copyArgs__; \
+		Closure_PopCount(_closure, 1 + (__numArgs__)); \
+		\
+		/* We're now in the child, so set up the globals for running inside it. */ \
+		_closure = childClosure; \
+		_segment = userFunctionInfo->byteCodeSegment; \
+		_byteCode = &_segment->byteCodes[0]; \
+	}
+
+FAST_USER_FUNCTION(SmileUserFunction_NoArgs_Call, 0, )
+
+FAST_USER_FUNCTION(SmileUserFunction_Fast1_Call, 1,
+(childClosure->variables[0] = _closure->stackTop[-1]))
+
+FAST_USER_FUNCTION(SmileUserFunction_Fast2_Call, 2,
+(childClosure->variables[0] = _closure->stackTop[-2],
+childClosure->variables[1] = _closure->stackTop[-1]))
+
+FAST_USER_FUNCTION(SmileUserFunction_Fast3_Call, 3,
+(childClosure->variables[0] = _closure->stackTop[-3],
+childClosure->variables[1] = _closure->stackTop[-2],
+childClosure->variables[2] = _closure->stackTop[-1]))
+
+FAST_USER_FUNCTION(SmileUserFunction_Fast4_Call, 4,
+(childClosure->variables[0] = _closure->stackTop[-4],
+childClosure->variables[1] = _closure->stackTop[-3],
+childClosure->variables[2] = _closure->stackTop[-2],
+childClosure->variables[3] = _closure->stackTop[-1]))
+
+FAST_USER_FUNCTION(SmileUserFunction_Fast5_Call, 5,
+(childClosure->variables[0] = _closure->stackTop[-5],
+childClosure->variables[1] = _closure->stackTop[-4],
+childClosure->variables[2] = _closure->stackTop[-3],
+childClosure->variables[3] = _closure->stackTop[-2],
+childClosure->variables[4] = _closure->stackTop[-1]))
+
+FAST_USER_FUNCTION(SmileUserFunction_Fast6_Call, 6,
+(childClosure->variables[0] = _closure->stackTop[-6],
+childClosure->variables[1] = _closure->stackTop[-5],
+childClosure->variables[2] = _closure->stackTop[-4],
+childClosure->variables[3] = _closure->stackTop[-3],
+childClosure->variables[4] = _closure->stackTop[-2],
+childClosure->variables[5] = _closure->stackTop[-1]))
+
+FAST_USER_FUNCTION(SmileUserFunction_Fast7_Call, 7,
+(childClosure->variables[0] = _closure->stackTop[-7],
+childClosure->variables[1] = _closure->stackTop[-6],
+childClosure->variables[2] = _closure->stackTop[-5],
+childClosure->variables[3] = _closure->stackTop[-4],
+childClosure->variables[4] = _closure->stackTop[-3],
+childClosure->variables[5] = _closure->stackTop[-2],
+childClosure->variables[6] = _closure->stackTop[-1]))
+
+FAST_USER_FUNCTION(SmileUserFunction_Fast8_Call, 8,
+(childClosure->variables[0] = _closure->stackTop[-8],
+childClosure->variables[1] = _closure->stackTop[-7],
+childClosure->variables[2] = _closure->stackTop[-6],
+childClosure->variables[3] = _closure->stackTop[-5],
+childClosure->variables[4] = _closure->stackTop[-4],
+childClosure->variables[5] = _closure->stackTop[-3],
+childClosure->variables[6] = _closure->stackTop[-2],
+childClosure->variables[7] = _closure->stackTop[-1]))
+
+//-------------------------------------------------------------------------------------------------
+// User functions, with optional arguments, rest arguments, or type-checked arguments.
+
+// This handles the case where the number of arguments is fixed, but larger than 8.
+void SmileUserFunction_Slow_Call(SmileFunction self, Int argc)
+{
+	Int numArgs = self->u.u.userFunctionInfo->numArgs;
+	Int i;
+	UserFunctionInfo userFunctionInfo;
+	Closure childClosure;
+
+	if (argc != numArgs) {
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format(_argCountErrorMessage,
+			SMILE_VCALL(self, toString), numArgs, argc));
+	}
+
+	// Create a new child closure for this function.
+	userFunctionInfo = self->u.u.userFunctionInfo;
+	childClosure = Closure_CreateLocal(&userFunctionInfo->closureInfo, self->u.u.declaringClosure,
+		_closure, _segment, _byteCode - _segment->byteCodes);
+
+	// Copy the arguments.
+	for (i = 0; i < numArgs; i++) {
+		childClosure->variables[i] = _closure->stackTop[-argc + i];
+	}
+	Closure_PopCount(_closure, 1 + argc);
+
+	// We're now in the child, so set up the globals for running inside it.
+	_closure = childClosure;
+	_segment = userFunctionInfo->byteCodeSegment;
+	_byteCode = &_segment->byteCodes[0];
+}
+
+// This handles the case where the number of arguments is variable, because
+// there are trailing optional arguments with default values assigned.
+void SmileUserFunction_Optional_Call(SmileFunction self, Int argc)
+{
+	UserFunctionInfo userFunctionInfo = self->u.u.userFunctionInfo;
+	UserFunctionArg argInfo = userFunctionInfo->args;
+	Int numArgs = userFunctionInfo->numArgs;
+	Int i;
+	Closure childClosure;
+
+	if (argc < userFunctionInfo->minArgs) {
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format(_minArgCountErrorMessage,
+			SMILE_VCALL(self, toString), userFunctionInfo->minArgs, argc));
+	}
+	if (argc > userFunctionInfo->maxArgs) {
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format(_maxArgCountErrorMessage,
+			SMILE_VCALL(self, toString), userFunctionInfo->maxArgs, argc));
+	}
+
+	// Create a new child closure for this function.
+	childClosure = Closure_CreateLocal(&userFunctionInfo->closureInfo, self->u.u.declaringClosure,
+		_closure, _segment, _byteCode - _segment->byteCodes);
+
+	// Copy the provided arguments.
+	for (i = 0; i < argc; i++) {
+		childClosure->variables[i] = _closure->stackTop[-argc + i];
+	}
+	Closure_PopCount(_closure, 1 + argc);
+
+	// Fill in any missing default values.
+	for (; i < numArgs; i++) {
+		childClosure->variables[i] = argInfo[i].defaultValue;
+	}
+
+	// We're now in the child, so set up the globals for running inside it.
+	_closure = childClosure;
+	_segment = userFunctionInfo->byteCodeSegment;
+	_byteCode = &_segment->byteCodes[0];
+}
+
+// This handles the case where the number of arguments is variable, because there
+// is a 'rest' list that will collect the leftover (and possibly optional arguments too).
+void SmileUserFunction_Rest_Call(SmileFunction self, Int argc)
+{
+	UserFunctionInfo userFunctionInfo = self->u.u.userFunctionInfo;
+	UserFunctionArg argInfo = userFunctionInfo->args;
+	Int numArgs = userFunctionInfo->numArgs;
+	Int i;
+	SmileList restHead, restTail;
+	Closure childClosure;
+
+	if (argc < userFunctionInfo->minArgs) {
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format(_minArgCountErrorMessage,
+			SMILE_VCALL(self, toString), userFunctionInfo->minArgs, argc));
+	}
+
+	// Create a new child closure for this function.
+	childClosure = Closure_CreateLocal(&userFunctionInfo->closureInfo, self->u.u.declaringClosure,
+		_closure, _segment, _byteCode - _segment->byteCodes);
+
+	// Copy the provided arguments.
+	if (argc < numArgs) {
+
+		// Fewer arguments given than we have slots, so copy what we were given.
+		for (i = 0; i < argc; i++) {
+			childClosure->variables[i] = _closure->stackTop[-argc + i];
+		}
+
+		// Fill in any missing default values in the remaining slots.
+		for (; i < numArgs - 1; i++) {
+			childClosure->variables[i] = argInfo[i].defaultValue;
+		}
+
+		// The 'rest' argument is an empty list.
+		childClosure->variables[i] = NullObject;
+	}
+	else {
+
+		// We're going to have at least one 'rest' argument.  So copy everything
+		// provided before it.
+		for (i = 0; i < numArgs - 1; i++) {
+			childClosure->variables[i] = _closure->stackTop[-argc + i];
+		}
+
+		// Now turn the rest of the provided arguments, however many there may be, into a List.
+		restHead = restTail = NullList;
+		for (; i < argc; i++) {
+			LIST_APPEND(restHead, restTail, _closure->stackTop[-argc + i]);
+		}
+		childClosure->variables[numArgs - 1] = (SmileObject)restHead;
+	}
+
+	// Clean up the calling stack.
+	Closure_PopCount(_closure, 1 + argc);
+
+	// We're now in the child, so set up the globals for running inside it.
+	_closure = childClosure;
+	_segment = userFunctionInfo->byteCodeSegment;
+	_byteCode = &_segment->byteCodes[0];
+}
+
+void SmileUserFunction_Checked_Call(SmileFunction self, Int argc)
+{
+	// TODO: FIXME: There is no type-checking currently.
+	SmileUserFunction_Slow_Call(self, argc);
+}
+
+void SmileUserFunction_CheckedRest_Call(SmileFunction self, Int argc)
+{
+	// TODO: FIXME: There is no type-checking currently.
+	SmileUserFunction_Rest_Call(self, argc);
+}

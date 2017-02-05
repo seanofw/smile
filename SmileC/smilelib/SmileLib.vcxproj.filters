@@ -807,6 +807,12 @@
     <ClCompile Include="src\smiletypes\smilelist_class.c">
       <Filter>src\smiletypes</Filter>
     </ClCompile>
+    <ClCompile Include="src\eval\eval_fn_ext.c">
+      <Filter>src\eval</Filter>
+    </ClCompile>
+    <ClCompile Include="src\eval\eval_fn_user.c">
+      <Filter>src\eval</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">
