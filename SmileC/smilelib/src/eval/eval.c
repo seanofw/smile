@@ -1086,210 +1086,249 @@ static Int PerformTypeChecks(Int argc, SmileObject *argv, Int numTypeChecks, con
 }
 
 //-------------------------------------------------------------------------------------------------
+// External function helpers
+
+static void ThrowMinCheckError(SmileFunction self, Int argc)
+{
+	Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'%S' requires at least %d arguments, but was called with %d.",
+		self->u.externalFunctionInfo.name, (int)self->u.externalFunctionInfo.minArgs, argc));
+}
+
+static void ThrowMaxCheckError(SmileFunction self, Int argc)
+{
+	Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'%S' allows at most %d arguments, but was called with %d.",
+		self->u.externalFunctionInfo.name, (int)self->u.externalFunctionInfo.maxArgs, argc));
+}
+
+static void ThrowExactCheckError(SmileFunction self, Int argc)
+{
+	Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'%S' requires exactly %d arguments, but was called with %d.",
+		self->u.externalFunctionInfo.name, (int)self->u.externalFunctionInfo.minArgs, argc));
+}
+
+static void ThrowTypeMismatchException(SmileFunction self, Int failingArg)
+{
+	Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("Argument %d to '%S' is of the wrong type.",
+		failingArg + 1, self->u.externalFunctionInfo.name));
+}
+
+// Declare the local variables required for this external function invocation to work.
+#define INVOKE_DECL(__closure__, __argv__) \
+	SmileObject *__argv__; \
+	Int failingArg; \
+	SmileObject stateMachineResult; \
+	\
+	UNUSED(failingArg); \
+	UNUSED(stateMachineResult); \
+	\
+	((__argv__) = ((__closure__)->stackTop - argc))
+
+// Check the given argument count against the external function's required minimum number of arguments.
+#define DO_MIN_CHECK(__self__, __argc__) \
+	if ((__argc__) < (__self__)->u.externalFunctionInfo.minArgs) ThrowMinCheckError((__self__), (__argc__))
+
+// Check the given argument count against the external function's allowed maximum number of arguments.
+#define DO_MAX_CHECK(__self__, __argc__) \
+	if ((__argc__) > (__self__)->u.externalFunctionInfo.maxArgs) ThrowMaxCheckError((__self__), (__argc__))
+
+// Check the given argument count against the external function's exact required number of arguments.
+#define DO_EXACT_CHECK(__self__, __argc__) \
+	if ((__argc__) != (__self__)->u.externalFunctionInfo.minArgs) ThrowExactCheckError((__self__), (__argc__))
+
+// Check the given arguments against this external function's required argument types.
+#define DO_TYPE_CHECK(__self__, __argc__, __argv__) \
+	if ((failingArg = PerformTypeChecks((__argc__), (__argv__), (__self__)->u.externalFunctionInfo.numArgsToTypeCheck, (__self__)->u.externalFunctionInfo.argTypeChecks)) >= 0) \
+		ThrowTypeMismatchException((__self__), failingArg)
+
+// Invoke the function itself, passing the stack from the closure, and pushing the result back on the stack.
+#define INVOKE(__self__, __argc__, __argv__, __closure__) \
+	( ((__closure__)->stackTop = (__argv__)), \
+	  (*(__closure__)->stackTop++ = (__self__)->u.externalFunctionInfo.externalFunction((__argc__), (__argv__), (__self__)->u.externalFunctionInfo.param)) )
+
+// Invoke the function as a state machine initiator, pushing onto the stack only if the state machine returns non-NULL.
+#define INVOKE_STATE_MACHINE(__self__, __argc__, __argv__, __closure__) \
+	(__closure__)->stackTop = (__argv__); \
+	stateMachineResult = (__self__)->u.externalFunctionInfo.externalFunction((__argc__), (__argv__), (__self__)->u.externalFunctionInfo.param); \
+	if (stateMachineResult != NULL) { \
+		/* Didn't start the state machine, and instead produced a result directly. */ \
+		*(__closure__)->stackTop++ = stateMachineResult; \
+	}
+
+//-------------------------------------------------------------------------------------------------
+// External functions
 
 void SmileExternalFunction_NoCheck_Call(SmileFunction self, Int argc)
 {
-	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, (_closure->stackTop -= argc), self->u.externalFunctionInfo.param);
+	INVOKE_DECL(_closure, argv);
+
+	INVOKE(self, argc, argv, _closure);
 }
 
 void SmileExternalFunction_MinCheck_Call(SmileFunction self, Int argc)
 {
-	if (argc < self->u.externalFunctionInfo.minArgs) {
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'%S' requires at least %d arguments, but was called with %d.",
-			self->u.externalFunctionInfo.name, (int)self->u.externalFunctionInfo.minArgs, argc));
-	}
+	INVOKE_DECL(_closure, argv);
 
-	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, (_closure->stackTop -= argc), self->u.externalFunctionInfo.param);
+	DO_MIN_CHECK(self, argc);
+	INVOKE(self, argc, argv, _closure);
 }
 
 void SmileExternalFunction_MaxCheck_Call(SmileFunction self, Int argc)
 {
-	if (argc > self->u.externalFunctionInfo.maxArgs) {
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'%S' allows at most %d arguments, but was called with %d.",
-			self->u.externalFunctionInfo.name, (int)self->u.externalFunctionInfo.maxArgs, argc));
-	}
+	INVOKE_DECL(_closure, argv);
 
-	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, (_closure->stackTop -= argc), self->u.externalFunctionInfo.param);
+	DO_MAX_CHECK(self, argc);
+	INVOKE(self, argc, argv, _closure);
 }
 
 void SmileExternalFunction_MinMaxCheck_Call(SmileFunction self, Int argc)
 {
-	if (argc < self->u.externalFunctionInfo.minArgs) {
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'%S' requires at least %d arguments, but was called with %d.",
-			self->u.externalFunctionInfo.name, (int)self->u.externalFunctionInfo.minArgs, argc));
-	}
-	if (argc > self->u.externalFunctionInfo.maxArgs) {
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'%S' allows at most %d arguments, but was called with %d.",
-			self->u.externalFunctionInfo.name, (int)self->u.externalFunctionInfo.maxArgs, argc));
-	}
+	INVOKE_DECL(_closure, argv);
 
-	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, (_closure->stackTop -= argc), self->u.externalFunctionInfo.param);
+	DO_MIN_CHECK(self, argc);
+	DO_MAX_CHECK(self, argc);
+
+	INVOKE(self, argc, argv, _closure);
 }
 
 void SmileExternalFunction_ExactCheck_Call(SmileFunction self, Int argc)
 {
-	if (argc != self->u.externalFunctionInfo.minArgs) {
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'%S' requires exactly %d arguments, but was called with %d.",
-			self->u.externalFunctionInfo.name, (int)self->u.externalFunctionInfo.minArgs, argc));
-	}
+	INVOKE_DECL(_closure, argv);
 
-	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, (_closure->stackTop -= argc), self->u.externalFunctionInfo.param);
+	DO_EXACT_CHECK(self, argc);
+	INVOKE(self, argc, argv, _closure);
 }
 
 void SmileExternalFunction_TypesCheck_Call(SmileFunction self, Int argc)
 {
-	SmileObject *argv = _closure->stackTop - argc;
-	Int failingArg;
+	INVOKE_DECL(_closure, argv);
 
-	if ((failingArg = PerformTypeChecks(argc, argv, self->u.externalFunctionInfo.numArgsToTypeCheck, self->u.externalFunctionInfo.argTypeChecks)) >= 0) {
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("Argument %d to '%S' is of the wrong type.",
-			failingArg+1, self->u.externalFunctionInfo.name));
-	}
-	
-	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, (_closure->stackTop = argv), self->u.externalFunctionInfo.param);
+	DO_TYPE_CHECK(self, argc, argv);
+	INVOKE(self, argc, argv, _closure);
 }
 
 void SmileExternalFunction_MinTypesCheck_Call(SmileFunction self, Int argc)
 {
-	SmileObject *argv = _closure->stackTop - argc;
-	Int failingArg;
+	INVOKE_DECL(_closure, argv);
 
-	if (argc < self->u.externalFunctionInfo.minArgs) {
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'%S' requires at least %d arguments, but was called with %d.",
-			self->u.externalFunctionInfo.name, (int)self->u.externalFunctionInfo.minArgs, argc));
-	}
-	if ((failingArg = PerformTypeChecks(argc, argv, self->u.externalFunctionInfo.numArgsToTypeCheck, self->u.externalFunctionInfo.argTypeChecks)) >= 0) {
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("Argument %d to '%S' is of the wrong type.",
-			failingArg + 1, self->u.externalFunctionInfo.name));
-	}
-
-	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, (_closure->stackTop = argv), self->u.externalFunctionInfo.param);
+	DO_MIN_CHECK(self, argc);
+	DO_TYPE_CHECK(self, argc, argv);
+	INVOKE(self, argc, argv, _closure);
 }
 
 void SmileExternalFunction_MaxTypesCheck_Call(SmileFunction self, Int argc)
 {
-	SmileObject *argv = _closure->stackTop - argc;
-	Int failingArg;
+	INVOKE_DECL(_closure, argv);
 
-	if (argc > self->u.externalFunctionInfo.maxArgs) {
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'%S' allows at most %d arguments, but was called with %d.",
-			self->u.externalFunctionInfo.name, (int)self->u.externalFunctionInfo.maxArgs, argc));
-	}
-	if ((failingArg = PerformTypeChecks(argc, argv, self->u.externalFunctionInfo.numArgsToTypeCheck, self->u.externalFunctionInfo.argTypeChecks)) >= 0) {
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("Argument %d to '%S' is of the wrong type.",
-			failingArg + 1, self->u.externalFunctionInfo.name));
-	}
-
-	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, (_closure->stackTop = argv), self->u.externalFunctionInfo.param);
+	DO_MAX_CHECK(self, argc);
+	DO_TYPE_CHECK(self, argc, argv);
+	INVOKE(self, argc, argv, _closure);
 }
 
 void SmileExternalFunction_MinMaxTypesCheck_Call(SmileFunction self, Int argc)
 {
-	SmileObject *argv = _closure->stackTop - argc;
-	Int failingArg;
+	INVOKE_DECL(_closure, argv);
 
-	if (argc < self->u.externalFunctionInfo.minArgs) {
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'%S' requires at least %d arguments, but was called with %d.",
-			self->u.externalFunctionInfo.name, (int)self->u.externalFunctionInfo.minArgs, argc));
-	}
-	if (argc > self->u.externalFunctionInfo.maxArgs) {
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'%S' allows at most %d arguments, but was called with %d.",
-			self->u.externalFunctionInfo.name, (int)self->u.externalFunctionInfo.maxArgs, argc));
-	}
-	if ((failingArg = PerformTypeChecks(argc, argv, self->u.externalFunctionInfo.numArgsToTypeCheck, self->u.externalFunctionInfo.argTypeChecks)) >= 0) {
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("Argument %d to '%S' is of the wrong type.",
-			failingArg + 1, self->u.externalFunctionInfo.name));
-	}
-
-	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, (_closure->stackTop = argv), self->u.externalFunctionInfo.param);
+	DO_MIN_CHECK(self, argc);
+	DO_MAX_CHECK(self, argc);
+	DO_TYPE_CHECK(self, argc, argv);
+	INVOKE(self, argc, argv, _closure);
 }
 
 void SmileExternalFunction_ExactTypesCheck_Call(SmileFunction self, Int argc)
 {
-	SmileObject *argv = _closure->stackTop - argc;
-	Int failingArg;
+	INVOKE_DECL(_closure, argv);
 
-	if (argc != self->u.externalFunctionInfo.minArgs) {
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'%S' requires exactly %d arguments, but was called with %d.",
-			self->u.externalFunctionInfo.name, (int)self->u.externalFunctionInfo.minArgs, argc));
-	}
-	if ((failingArg = PerformTypeChecks(argc, argv, self->u.externalFunctionInfo.numArgsToTypeCheck, self->u.externalFunctionInfo.argTypeChecks)) >= 0) {
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("Argument %d to '%S' is of the wrong type.",
-			failingArg + 1, self->u.externalFunctionInfo.name));
-	}
-
-	*_closure->stackTop++ = self->u.externalFunctionInfo.externalFunction(argc, (_closure->stackTop = argv), self->u.externalFunctionInfo.param);
+	DO_EXACT_CHECK(self, argc);
+	DO_TYPE_CHECK(self, argc, argv);
+	INVOKE(self, argc, argv, _closure);
 }
+
+//-------------------------------------------------------------------------------------------------
+// State-machine external functions
 
 void SmileExternalFunction_StateMachineNoCheck_Call(SmileFunction self, Int argc)
 {
-	SmileObject stateMachineResult;
+	INVOKE_DECL(_closure, argv);
 
-	stateMachineResult = self->u.externalFunctionInfo.externalFunction(argc, (_closure->stackTop -= argc), self->u.externalFunctionInfo.param);
+	INVOKE_STATE_MACHINE(self, argc, argv, _closure);
+}
 
-	if (stateMachineResult != NULL) {
-		// Didn't start the state machine, and instead produced a result directly.
-		*_closure->stackTop++ = stateMachineResult;
-	}
+void SmileExternalFunction_StateMachineMinCheck_Call(SmileFunction self, Int argc)
+{
+	INVOKE_DECL(_closure, argv);
+
+	DO_MIN_CHECK(self, argc);
+	INVOKE_STATE_MACHINE(self, argc, argv, _closure);
+}
+
+void SmileExternalFunction_StateMachineMaxCheck_Call(SmileFunction self, Int argc)
+{
+	INVOKE_DECL(_closure, argv);
+
+	DO_MAX_CHECK(self, argc);
+	INVOKE_STATE_MACHINE(self, argc, argv, _closure);
+}
+
+void SmileExternalFunction_StateMachineMinMaxCheck_Call(SmileFunction self, Int argc)
+{
+	INVOKE_DECL(_closure, argv);
+
+	DO_MIN_CHECK(self, argc);
+	DO_MAX_CHECK(self, argc);
+	INVOKE_STATE_MACHINE(self, argc, argv, _closure);
 }
 
 void SmileExternalFunction_StateMachineExactCheck_Call(SmileFunction self, Int argc)
 {
-	SmileObject stateMachineResult;
+	INVOKE_DECL(_closure, argv);
 
-	if (argc != self->u.externalFunctionInfo.minArgs) {
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'%S' requires exactly %d arguments, but was called with %d.",
-			self->u.externalFunctionInfo.name, (int)self->u.externalFunctionInfo.minArgs, argc));
-	}
-
-	stateMachineResult = self->u.externalFunctionInfo.externalFunction(argc, (_closure->stackTop -= argc), self->u.externalFunctionInfo.param);
-
-	if (stateMachineResult != NULL) {
-		// Didn't start the state machine, and instead produced a result directly.
-		*_closure->stackTop++ = stateMachineResult;
-	}
+	DO_EXACT_CHECK(self, argc);
+	INVOKE_STATE_MACHINE(self, argc, argv, _closure);
 }
 
 void SmileExternalFunction_StateMachineTypesCheck_Call(SmileFunction self, Int argc)
 {
-	SmileObject *argv = _closure->stackTop - argc;
-	Int failingArg;
-	SmileObject stateMachineResult;
+	INVOKE_DECL(_closure, argv);
 
-	if ((failingArg = PerformTypeChecks(argc, argv, self->u.externalFunctionInfo.numArgsToTypeCheck, self->u.externalFunctionInfo.argTypeChecks)) >= 0) {
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("Argument %d to '%S' is of the wrong type.",
-			failingArg + 1, self->u.externalFunctionInfo.name));
-	}
+	DO_TYPE_CHECK(self, argc, argv);
+	INVOKE_STATE_MACHINE(self, argc, argv, _closure);
+}
 
-	stateMachineResult = self->u.externalFunctionInfo.externalFunction(argc, (_closure->stackTop = argv), self->u.externalFunctionInfo.param);
+void SmileExternalFunction_StateMachineMinTypesCheck_Call(SmileFunction self, Int argc)
+{
+	INVOKE_DECL(_closure, argv);
 
-	if (stateMachineResult != NULL) {
-		// Didn't start the state machine, and instead produced a result directly.
-		*_closure->stackTop++ = stateMachineResult;
-	}
+	DO_MIN_CHECK(self, argc);
+	DO_TYPE_CHECK(self, argc, argv);
+	INVOKE_STATE_MACHINE(self, argc, argv, _closure);
+}
+
+void SmileExternalFunction_StateMachineMaxTypesCheck_Call(SmileFunction self, Int argc)
+{
+	INVOKE_DECL(_closure, argv);
+
+	DO_MAX_CHECK(self, argc);
+	DO_TYPE_CHECK(self, argc, argv);
+	INVOKE_STATE_MACHINE(self, argc, argv, _closure);
+}
+
+void SmileExternalFunction_StateMachineMinMaxTypesCheck_Call(SmileFunction self, Int argc)
+{
+	INVOKE_DECL(_closure, argv);
+
+	DO_MIN_CHECK(self, argc);
+	DO_MAX_CHECK(self, argc);
+	DO_TYPE_CHECK(self, argc, argv);
+	INVOKE_STATE_MACHINE(self, argc, argv, _closure);
 }
 
 void SmileExternalFunction_StateMachineExactTypesCheck_Call(SmileFunction self, Int argc)
 {
-	SmileObject *argv = _closure->stackTop - argc;
-	Int failingArg;
-	SmileObject stateMachineResult;
+	INVOKE_DECL(_closure, argv);
 
-	if (argc != self->u.externalFunctionInfo.minArgs) {
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'%S' requires exactly %d arguments, but was called with %d.",
-			self->u.externalFunctionInfo.name, (int)self->u.externalFunctionInfo.minArgs, argc));
-	}
-	if ((failingArg = PerformTypeChecks(argc, argv, self->u.externalFunctionInfo.numArgsToTypeCheck, self->u.externalFunctionInfo.argTypeChecks)) >= 0) {
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("Argument %d to '%S' is of the wrong type.",
-			failingArg + 1, self->u.externalFunctionInfo.name));
-	}
-
-	stateMachineResult = self->u.externalFunctionInfo.externalFunction(argc, (_closure->stackTop = argv), self->u.externalFunctionInfo.param);
-
-	if (stateMachineResult != NULL) {
-		// Didn't start the state machine, and instead produced a result directly.
-		*_closure->stackTop++ = stateMachineResult;
-	}
+	DO_EXACT_CHECK(self, argc);
+	DO_TYPE_CHECK(self, argc, argv);
+	INVOKE_STATE_MACHINE(self, argc, argv, _closure);
 }
 
 //-------------------------------------------------------------------------------------------------

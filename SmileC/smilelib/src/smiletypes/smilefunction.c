@@ -42,6 +42,7 @@ extern SmileVTable SmileExternalFunction_MinCheck_VTable;
 extern SmileVTable SmileExternalFunction_MaxCheck_VTable;
 extern SmileVTable SmileExternalFunction_MinMaxCheck_VTable;
 extern SmileVTable SmileExternalFunction_ExactCheck_VTable;
+
 extern SmileVTable SmileExternalFunction_TypesCheck_VTable;
 extern SmileVTable SmileExternalFunction_MinTypesCheck_VTable;
 extern SmileVTable SmileExternalFunction_MaxTypesCheck_VTable;
@@ -49,8 +50,15 @@ extern SmileVTable SmileExternalFunction_MinMaxTypesCheck_VTable;
 extern SmileVTable SmileExternalFunction_ExactTypesCheck_VTable;
 
 extern SmileVTable SmileExternalFunction_StateMachineNoCheck_VTable;
+extern SmileVTable SmileExternalFunction_StateMachineMinCheck_VTable;
+extern SmileVTable SmileExternalFunction_StateMachineMaxCheck_VTable;
+extern SmileVTable SmileExternalFunction_StateMachineMinMaxCheck_VTable;
 extern SmileVTable SmileExternalFunction_StateMachineExactCheck_VTable;
+
 extern SmileVTable SmileExternalFunction_StateMachineTypesCheck_VTable;
+extern SmileVTable SmileExternalFunction_StateMachineMinTypesCheck_VTable;
+extern SmileVTable SmileExternalFunction_StateMachineMaxTypesCheck_VTable;
+extern SmileVTable SmileExternalFunction_StateMachineMinMaxTypesCheck_VTable;
 extern SmileVTable SmileExternalFunction_StateMachineExactTypesCheck_VTable;
 
 SMILE_EASY_OBJECT_NO_SECURITY(SmileFunction);
@@ -293,10 +301,23 @@ Inline SmileVTable GetExternalFunctionVTableByFlags(Int argCheckFlags)
 
 		case ARG_STATE_MACHINE:
 			return SmileExternalFunction_StateMachineNoCheck_VTable;
+		case ARG_STATE_MACHINE | ARG_CHECK_MIN:
+			return SmileExternalFunction_StateMachineMinCheck_VTable;
+		case ARG_STATE_MACHINE | ARG_CHECK_MAX:
+			return SmileExternalFunction_StateMachineMaxCheck_VTable;
+		case ARG_STATE_MACHINE | ARG_CHECK_MIN | ARG_CHECK_MAX:
+			return SmileExternalFunction_StateMachineMinMaxCheck_VTable;
 		case ARG_STATE_MACHINE | ARG_CHECK_EXACT:
 			return SmileExternalFunction_StateMachineExactCheck_VTable;
+
 		case ARG_STATE_MACHINE | ARG_CHECK_TYPES:
 			return SmileExternalFunction_StateMachineTypesCheck_VTable;
+		case ARG_STATE_MACHINE | ARG_CHECK_TYPES | ARG_CHECK_MIN:
+			return SmileExternalFunction_StateMachineMinTypesCheck_VTable;
+		case ARG_STATE_MACHINE | ARG_CHECK_TYPES | ARG_CHECK_MAX:
+			return SmileExternalFunction_StateMachineMaxTypesCheck_VTable;
+		case ARG_STATE_MACHINE | ARG_CHECK_TYPES | ARG_CHECK_MIN | ARG_CHECK_MAX:
+			return SmileExternalFunction_StateMachineMinMaxTypesCheck_VTable;
 		case ARG_STATE_MACHINE | ARG_CHECK_TYPES | ARG_CHECK_EXACT:
 			return SmileExternalFunction_StateMachineExactTypesCheck_VTable;
 
@@ -569,6 +590,13 @@ EXTERNAL_FUNCTION_VTABLE(MinMaxTypesCheck);
 EXTERNAL_FUNCTION_VTABLE(ExactTypesCheck);
 
 EXTERNAL_FUNCTION_VTABLE(StateMachineNoCheck);
+EXTERNAL_FUNCTION_VTABLE(StateMachineMinCheck);
+EXTERNAL_FUNCTION_VTABLE(StateMachineMaxCheck);
+EXTERNAL_FUNCTION_VTABLE(StateMachineMinMaxCheck);
 EXTERNAL_FUNCTION_VTABLE(StateMachineExactCheck);
+
 EXTERNAL_FUNCTION_VTABLE(StateMachineTypesCheck);
+EXTERNAL_FUNCTION_VTABLE(StateMachineMinTypesCheck);
+EXTERNAL_FUNCTION_VTABLE(StateMachineMaxTypesCheck);
+EXTERNAL_FUNCTION_VTABLE(StateMachineMinMaxTypesCheck);
 EXTERNAL_FUNCTION_VTABLE(StateMachineExactTypesCheck);
