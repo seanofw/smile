@@ -1408,7 +1408,7 @@ static SmileObject Eq(Int argc, SmileObject *argv, void *param)
 	UNUSED(argc);
 	UNUSED(param);
 
-	if (SMILE_KIND(argv[1]) != SMILE_KIND_INTEGER32
+	if (SMILE_KIND(argv[1]) != SMILE_KIND_INTEGER64
 		|| ((SmileInteger64)argv[0])->value != ((SmileInteger64)argv[1])->value)
 		return (SmileObject)Smile_KnownObjects.FalseObj;
 
@@ -1420,7 +1420,7 @@ static SmileObject Ne(Int argc, SmileObject *argv, void *param)
 	UNUSED(argc);
 	UNUSED(param);
 
-	if (SMILE_KIND(argv[1]) != SMILE_KIND_INTEGER32
+	if (SMILE_KIND(argv[1]) != SMILE_KIND_INTEGER64
 		|| ((SmileInteger64)argv[0])->value != ((SmileInteger64)argv[1])->value)
 		return (SmileObject)Smile_KnownObjects.TrueObj;
 
