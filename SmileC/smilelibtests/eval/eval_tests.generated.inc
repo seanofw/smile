@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 7de105991abbd5d6001aca1719c8feb8
+// SourceHash: 7a19cbecc9ce99b87d8ce9b29b3935ea
 
 START_TEST_SUITE(EvalTests)
 {
@@ -55,6 +55,11 @@ START_TEST_SUITE(EvalTests)
 	CanUseStateMachinesToCountWithPredicates,
 	CountReturnsZeroForEmptyLists,
 	CountInUnaryFormCountsAllItems,
+	CanConcatenateStrings,
+	CanConcatenateManyStrings,
+	CanConcatenateManyStringsMoreEfficiently1,
+	CanConcatenateManyStringsMoreEfficiently2,
+	CanConcatenateManyStringsMoreEfficiently3,
 }
 END_TEST_SUITE(EvalTests)
 

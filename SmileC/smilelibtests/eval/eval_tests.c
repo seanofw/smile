@@ -874,4 +874,60 @@ START_TEST(CountInUnaryFormCountsAllItems)
 }
 END_TEST
 
+START_TEST(CanConcatenateStrings)
+{
+	CompiledTables compiledTables = Compile("\"foo\" + \"bar\"\n");
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_STRING);
+	ASSERT_STRING(SmileString_GetString((SmileString)result->value), "foobar", 6);
+}
+END_TEST
+
+START_TEST(CanConcatenateManyStrings)
+{
+	CompiledTables compiledTables = Compile("\"You\" + \" say\" + \" goodbye,\" + \" and\" + \" I\" + \" say\" + \" hello.\"\n");
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_STRING);
+	ASSERT_STRING(SmileString_GetString((SmileString)result->value), "You say goodbye, and I say hello.", 33);
+}
+END_TEST
+
+START_TEST(CanConcatenateManyStringsMoreEfficiently1)
+{
+	CompiledTables compiledTables = Compile("[\"You\".+ \" say\" \" goodbye,\" \" and\" \" I\" \" say\" \" hello.\"]\n");
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_STRING);
+	ASSERT_STRING(SmileString_GetString((SmileString)result->value), "You say goodbye, and I say hello.", 33);
+}
+END_TEST
+
+START_TEST(CanConcatenateManyStringsMoreEfficiently2)
+{
+	CompiledTables compiledTables = Compile("[String.+ \"You\" \" say\" \" goodbye,\" \" and\" \" I\" \" say\" \" hello.\"]\n");
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_STRING);
+	ASSERT_STRING(SmileString_GetString((SmileString)result->value), "You say goodbye, and I say hello.", 33);
+}
+END_TEST
+
+START_TEST(CanConcatenateManyStringsMoreEfficiently3)
+{
+	CompiledTables compiledTables = Compile("concat = String.+\n"
+		"[concat \"You\" \" say\" \" goodbye,\" \" and\" \" I\" \" say\" \" hello.\"]\n");
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_STRING);
+	ASSERT_STRING(SmileString_GetString((SmileString)result->value), "You say goodbye, and I say hello.", 33);
+}
+END_TEST
+
 #include "eval_tests.generated.inc"
