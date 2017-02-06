@@ -166,6 +166,7 @@
     <ClInclude Include="include\smile\platform\windows-msvc-x64\platform.h" />
     <ClInclude Include="include\smile\platform\windows-msvc-x86\platform.h" />
     <ClInclude Include="include\smile\simplestats.h" />
+    <ClInclude Include="include\smile\smiletypes\base.h" />
     <ClInclude Include="include\smile\smiletypes\easyobject.h" />
     <ClInclude Include="include\smile\smiletypes\smilebool.h" />
     <ClInclude Include="include\smile\smiletypes\smilefunction.h" />
@@ -822,6 +823,7 @@
     <ClCompile Include="src\smiletypes\smilesyntax.c" />
     <ClCompile Include="src\smiletypes\smileuserobject.c" />
     <ClCompile Include="src\smiletypes\text\smilestring.c" />
+    <ClCompile Include="src\smiletypes\text\smilestring_base.c" />
     <ClCompile Include="src\smiletypes\text\smilesymbol.c" />
     <ClCompile Include="src\string\html_entitytable.c" />
     <ClCompile Include="src\string\html_entitytovalue.c" />

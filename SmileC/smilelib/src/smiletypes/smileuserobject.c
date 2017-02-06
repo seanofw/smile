@@ -231,7 +231,7 @@ void SmileUserObject_SetupFunction(SmileUserObject self, ExternalFunction functi
 	Int32Dict_SetValue((Int32Dict)&self->dict, symbol, (SmileObject)smileFunction);
 }
 
-void SmileUserObject_SetupSynonym(SmileUserObject self, const char *newName, const char *oldName)
+void SmileUserObject_SetupSynonym(SmileUserObject self, const char *oldName, const char *newName)
 {
 	Symbol oldSymbol = SymbolTable_GetSymbolC(Smile_SymbolTable, oldName);
 	Symbol newSymbol = SymbolTable_GetSymbolC(Smile_SymbolTable, newName);

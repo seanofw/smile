@@ -30,7 +30,7 @@ SMILE_API_FUNC SmileUserObject SmileUserObject_CreateWithSize(SmileObject base, 
 SMILE_API_FUNC void SmileUserObject_SetC(SmileUserObject self, const char *name, SmileObject value);
 SMILE_API_FUNC void SmileUserObject_SetupFunction(SmileUserObject base, ExternalFunction function, void *param,
 	const char *name, const char *argNames, Int argCheckFlags, Int minArgs, Int maxArgs, Int numArgsToTypeCheck, const Byte *argTypeChecks);
-SMILE_API_FUNC void SmileUserObject_SetupSynonym(SmileUserObject base, const char *newName, const char *oldName);
+SMILE_API_FUNC void SmileUserObject_SetupSynonym(SmileUserObject base, const char *oldName, const char *newName);
 
 #define SmileUserObject_Set(__obj__, __symbol__, __value__) \
 	(SMILE_VCALL2((__obj__), setProperty, (__symbol__), (SmileObject)(__value__)))

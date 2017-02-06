@@ -1228,7 +1228,7 @@ void SmileList_Setup(SmileUserObject base)
 
 	SetupFunction("car", Car, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _listChecks);
 	SetupFunction("cdr", Cdr, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _listChecks);
-	SetupSynonym("rest", "cdr");
+	SetupSynonym("cdr", "rest");
 
 	SetupFunction("caar", Caar, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _listChecks);
 	SetupFunction("cadr", Cadr, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _listChecks);

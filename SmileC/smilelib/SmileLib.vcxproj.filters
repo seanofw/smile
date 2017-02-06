@@ -813,6 +813,9 @@
     <ClCompile Include="src\eval\eval_fn_user.c">
       <Filter>src\eval</Filter>
     </ClCompile>
+    <ClCompile Include="src\smiletypes\text\smilestring_base.c">
+      <Filter>src\smiletypes\text</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">
@@ -1140,6 +1143,9 @@
       <Filter>include\eval</Filter>
     </ClInclude>
     <ClInclude Include="include\smile\smiletypes\smilefunction.h">
+      <Filter>include\smiletypes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\base.h">
       <Filter>include\smiletypes</Filter>
     </ClInclude>
   </ItemGroup>
