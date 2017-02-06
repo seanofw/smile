@@ -19,6 +19,7 @@
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/smileuserobject.h>
+#include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/text/smilestring.h>
 
@@ -213,6 +214,29 @@ void SmileUserObject_Call(SmileUserObject self, Int argc)
 		// This has no 'fn' property, so go ask the base object to do the call instead, since this isn't itself callable.
 		SMILE_VCALL1(self->base, call, argc);
 	}
+}
+
+void SmileUserObject_SetC(SmileUserObject self, const char *name, SmileObject value)
+{
+	Symbol symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, name);
+	Int32Dict_SetValue((Int32Dict)&self->dict, symbol, value);
+}
+
+void SmileUserObject_SetupFunction(SmileUserObject self, ExternalFunction function, void *param,
+	const char *name, const char *argNames, Int argCheckFlags, Int minArgs, Int maxArgs, Int numArgsToTypeCheck, const Byte *argTypeChecks)
+{
+	SmileFunction smileFunction = SmileFunction_CreateExternalFunction(function, param,
+		name, argNames, argCheckFlags, minArgs, maxArgs, numArgsToTypeCheck, argTypeChecks);
+	Symbol symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, name);
+	Int32Dict_SetValue((Int32Dict)&self->dict, symbol, (SmileObject)smileFunction);
+}
+
+void SmileUserObject_SetupSynonym(SmileUserObject self, const char *newName, const char *oldName)
+{
+	Symbol oldSymbol = SymbolTable_GetSymbolC(Smile_SymbolTable, oldName);
+	Symbol newSymbol = SymbolTable_GetSymbolC(Smile_SymbolTable, newName);
+	SmileObject oldObject = SmileUserObject_Get(self, oldSymbol);
+	Int32Dict_SetValue((Int32Dict)&self->dict, newSymbol, (SmileObject)oldObject);
 }
 
 SMILE_VTABLE(SmileUserObject_VTable_ReadWriteAppend, SmileUserObject)

@@ -22,20 +22,7 @@
 #include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/eval/eval.h>
-
-#define Setup(__name__, __value__) \
-	(SmileUserObject_QuickSet(base, (__name__), (__value__)))
-
-#define SetupSynonym(__newName__, __oldName__) \
-	(Setup((__newName__), SmileUserObject_Get(base, SymbolTable_GetSymbolC(Smile_SymbolTable, (__oldName__)))))
-
-#define SetupFunction(__name__, __function__, __param__, __argNames__, __argCheckFlags__, __minArgs__, __maxArgs__, __numArgsToTypeCheck__, __argTypeChecks__) \
-	(Setup((__name__), (SmileObject)SmileFunction_CreateExternalFunction((__function__), (__param__), \
-		(__name__), (__argNames__), (__argCheckFlags__), (__minArgs__), (__maxArgs__), (__numArgsToTypeCheck__), (__argTypeChecks__))))
-
-#define SetupSimpleFunction(__name__, __function__, __argNames__, __numArgs__) \
-	(Setup((__name__), (SmileObject)SmileFunction_CreateExternalFunction((__function__), (__param__), \
-		(__name__), (__argNames__), ARG_CHECK_EXACT, (__numArgs__), (__numArgs__), NULL)))
+#include <smile/smiletypes/base.h>
 
 static Byte _listChecks[] = {
 	SMILE_KIND_MASK & ~SMILE_KIND_LIST, SMILE_KIND_NULL,

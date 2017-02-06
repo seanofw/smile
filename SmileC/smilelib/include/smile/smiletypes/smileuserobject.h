@@ -10,6 +10,10 @@
 #include <smile/dict/int32dict.h>
 #endif
 
+#ifndef __SMILE_SMILETYPES_SMILEFUNCTION_H__
+#include <smile/smiletypes/smilefunction.h>
+#endif
+
 //-------------------------------------------------------------------------------------------------
 //  Type declarations
 
@@ -23,6 +27,10 @@ struct SmileUserObjectInt {
 //  Public interface
 
 SMILE_API_FUNC SmileUserObject SmileUserObject_CreateWithSize(SmileObject base, Int initialSize);
+SMILE_API_FUNC void SmileUserObject_SetC(SmileUserObject self, const char *name, SmileObject value);
+SMILE_API_FUNC void SmileUserObject_SetupFunction(SmileUserObject base, ExternalFunction function, void *param,
+	const char *name, const char *argNames, Int argCheckFlags, Int minArgs, Int maxArgs, Int numArgsToTypeCheck, const Byte *argTypeChecks);
+SMILE_API_FUNC void SmileUserObject_SetupSynonym(SmileUserObject base, const char *newName, const char *oldName);
 
 #define SmileUserObject_Set(__obj__, __symbol__, __value__) \
 	(SMILE_VCALL2((__obj__), setProperty, (__symbol__), (SmileObject)(__value__)))
@@ -32,12 +40,6 @@ SMILE_API_FUNC SmileUserObject SmileUserObject_CreateWithSize(SmileObject base, 
 Inline SmileUserObject SmileUserObject_Create(SmileObject base)
 {
 	return SmileUserObject_CreateWithSize(base, 8);
-}
-
-Inline void SmileUserObject_QuickSet(SmileUserObject self, const char *name, SmileObject value)
-{
-	Symbol symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, name);
-	Int32Dict_SetValue((Int32Dict)&self->dict, symbol, value);
 }
 
 #endif

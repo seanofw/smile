@@ -23,17 +23,7 @@
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/smilefunction.h>
-
-#define Setup(__name__, __value__) \
-	(SmileUserObject_QuickSet(base, (__name__), (__value__)))
-
-#define SetupFunction(__name__, __function__, __param__, __argNames__, __argCheckFlags__, __minArgs__, __maxArgs__, __numArgsToTypeCheck__, __argTypeChecks__) \
-	(Setup((__name__), (SmileObject)SmileFunction_CreateExternalFunction((__function__), (__param__), \
-		(__name__), (__argNames__), (__argCheckFlags__), (__minArgs__), (__maxArgs__), (__numArgsToTypeCheck__), (__argTypeChecks__))))
-
-#define SetupSimpleFunction(__name__, __function__, __argNames__, __numArgs__) \
-	(Setup((__name__), (SmileObject)SmileFunction_CreateExternalFunction((__function__), (__param__), \
-		(__name__), (__argNames__), ARG_CHECK_EXACT, (__numArgs__), (__numArgs__), NULL)))
+#include <smile/smiletypes/base.h>
 
 static Byte _byteChecks[] = {
 	SMILE_KIND_MASK, SMILE_KIND_BYTE,
@@ -1476,11 +1466,11 @@ static SmileObject Compare(Int argc, SmileObject *argv, void *param)
 	SByte y = ((SmileByte)argv[1])->value;
 
 	if (x == y)
-		return (SmileObject)Smile_KnownObjects.ZeroByte;
+		return (SmileObject)Smile_KnownObjects.ZeroInt64;
 	else if (x < y)
-		return (SmileObject)Smile_KnownObjects.NegOneByte;
+		return (SmileObject)Smile_KnownObjects.NegOneInt64;
 	else
-		return (SmileObject)Smile_KnownObjects.OneByte;
+		return (SmileObject)Smile_KnownObjects.OneInt64;
 }
 
 static SmileObject UCompare(Int argc, SmileObject *argv, void *param)
@@ -1492,11 +1482,11 @@ static SmileObject UCompare(Int argc, SmileObject *argv, void *param)
 	Byte y = ((SmileByte)argv[1])->value;
 
 	if (x == y)
-		return (SmileObject)Smile_KnownObjects.ZeroByte;
+		return (SmileObject)Smile_KnownObjects.ZeroInt64;
 	else if (x < y)
-		return (SmileObject)Smile_KnownObjects.NegOneByte;
+		return (SmileObject)Smile_KnownObjects.NegOneInt64;
 	else
-		return (SmileObject)Smile_KnownObjects.OneByte;
+		return (SmileObject)Smile_KnownObjects.OneInt64;
 }
 
 //-------------------------------------------------------------------------------------------------
