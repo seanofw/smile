@@ -531,4 +531,44 @@ START_TEST(CanCompileAWhileLoopThatComputesLogarithms)
 }
 END_TEST
 
+//-------------------------------------------------------------------------------------------------
+
+START_TEST(CanCompileASimpleTillLoop)
+{
+/*
+	SmileObject expr = Parse(
+		"#syntax STMT: [if [EXPR x] then [STMT y]] => [$if x y]\n"
+		"\n"
+		"[$till [found not-found] {\n"
+		"\tif 1 then found\n"
+		"\tif 2 then not-found\n"
+		"}]\n"
+	);
+
+	Compiler compiler = Compiler_Create();
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	String result;
+
+	String expectedResult = String_FromC(
+		"L0:\n"
+		"\tLd64 1\n"
+		"\tBf >L4\n"
+		"\tJmp >L10\n"
+		"L4:\n"
+		"\tLd64 2\n"
+		"\tBf >L8\n"
+		"\tJmp >L10\n"
+		"L8:\n"
+		"\tJmp L0\n"
+		"L10:\n"
+		"\tRet\n"
+	);
+
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
+
+	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
+*/
+}
+END_TEST
+
 #include "compiler_tests.generated.inc"

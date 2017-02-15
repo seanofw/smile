@@ -45,7 +45,7 @@ Op(TUnary), Op(TBinary), Op(TMet2), Op(TMet3), Op(TMet4), Op(TMet5), Op(TMet6), 
 
 // B0-BF
 Op(Jmp), Op(Bt), Op(Bf), NULL, Op(Met), Op(TMet), Op(Call), Op(TCall),
-NULL, NULL, NULL, NULL, Op(LAlloc), Op(LFree), Op(Args), Op(Ret),
+Op(LdTill), NULL, NULL, NULL, NULL, NULL, NULL, Op(Ret),
 
 // C0-CF
 Op(Cons), Op(Car), Op(Cdr), NULL, Op(NewPair), Op(Left), Op(Right), NULL,

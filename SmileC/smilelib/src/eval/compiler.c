@@ -295,6 +295,27 @@ CompiledTables CompiledTables_Create(void)
 	return compiledTables;
 }
 
+static Int CompilerFunction_AddLocal(CompilerFunction compilerFunction, Symbol local)
+{
+	Int localIndex, newMax;
+	Symbol *newLocals;
+
+	// If we're out of space, grow the array.
+	if (compilerFunction->localSize >= compilerFunction->localMax) {
+		newMax = compilerFunction->localMax * 2;
+		newLocals = (Symbol *)GC_MALLOC_ATOMIC(sizeof(Symbol) * newMax);
+		MemCpy(newLocals, compilerFunction->localNames, sizeof(Symbol) * compilerFunction->localSize);
+		compilerFunction->localMax = newMax;
+		compilerFunction->localNames = newLocals;
+	}
+
+	localIndex = compilerFunction->localSize++;
+
+	compilerFunction->localNames[localIndex] = local;
+
+	return localIndex;
+}
+
 /// <summary>
 /// Create a new Compiler object.
 /// </summary>
@@ -455,9 +476,16 @@ CompileScope Compiler_BeginScope(Compiler compiler, Int kind)
 	return newScope;
 }
 
-void CompileScope_DefineSymbol(CompileScope scope, Symbol symbol, Int kind, Int index)
+CompiledLocalSymbol CompileScope_DefineSymbol(CompileScope scope, Symbol symbol, Int kind, Int index)
 {
-	CompiledLocalSymbol localSymbol = (CompiledLocalSymbol)GC_MALLOC_ATOMIC(sizeof(struct CompiledLocalSymbolStruct));
+	Int size;
+	CompiledLocalSymbol localSymbol;
+
+	size = sizeof(struct CompiledLocalSymbolStruct);
+	if (kind == PARSEDECL_TILL)
+		size = sizeof(struct CompiledTillSymbolStruct);
+	
+	localSymbol = (CompiledLocalSymbol)GC_MALLOC(size);
 	if (localSymbol == NULL)
 		Smile_Abort_OutOfMemory();
 
@@ -465,8 +493,14 @@ void CompileScope_DefineSymbol(CompileScope scope, Symbol symbol, Int kind, Int 
 	localSymbol->index = index;
 	localSymbol->symbol = symbol;
 	localSymbol->scope = scope;
+	localSymbol->wasRead = False;
+	localSymbol->wasReadDeep = False;
+	localSymbol->wasWritten = False;
+	localSymbol->wasWrittenDeep = False;
 
 	Int32Dict_SetValue(scope->symbolDict, symbol, localSymbol);
+
+	return localSymbol;
 }
 
 CompiledLocalSymbol CompileScope_FindSymbol(CompileScope compileScope, Symbol symbol)
@@ -524,6 +558,45 @@ Int Compiler_AddString(Compiler compiler, String string)
 	StringIntDict_Add(compiledTables->stringLookup, string, index);
 
 	return index;
+}
+
+/// <summary>
+/// Add a new TillContinuationInfo object to the compiler's till-object table.
+/// </summary>
+/// <param name="compiler">The compiler that has the till-object table that the new till-object will be added to.</param>
+/// <param name="obj">The till-object to add.</param>
+/// <returns>A pointer to the new till-object.</returns>
+TillContinuationInfo Compiler_AddTillContinuationInfo(Compiler compiler, UserFunctionInfo userFunctionInfo, Int numOffsets)
+{
+	CompiledTables compiledTables = compiler->compiledTables;
+	Int index;
+	TillContinuationInfo tillInfo;
+
+	// Do we have enough space to add a new one?  If not, reallocate.
+	if (compiledTables->numTillInfos >= compiledTables->maxTillInfos) {
+		TillContinuationInfo *newTillInfos;
+		Int newMax;
+
+		newMax = compiledTables->maxTillInfos * 2;
+		newTillInfos = GC_MALLOC_STRUCT_ARRAY(TillContinuationInfo, newMax);
+		if (newTillInfos == NULL)
+			Smile_Abort_OutOfMemory();
+		MemCpy(newTillInfos, compiledTables->tillInfos, compiledTables->numTillInfos);
+		compiledTables->tillInfos = newTillInfos;
+		compiledTables->maxTillInfos = newMax;
+	}
+
+	// Okay, we have enough space, and it's not there yet, so add it.
+	index = compiledTables->numTillInfos++;
+	tillInfo = (TillContinuationInfo)GC_MALLOC(sizeof(struct TillContinuationInfoStruct) + (sizeof(Int) * (numOffsets - 1)));
+	if (tillInfo == NULL)
+		Smile_Abort_OutOfMemory();
+	tillInfo->tillIndex = index;
+	tillInfo->userFunctionInfo = userFunctionInfo;
+	tillInfo->numOffsets = numOffsets;
+	compiledTables->tillInfos[index] = tillInfo;
+
+	return tillInfo;
 }
 
 /// <summary>
@@ -908,9 +981,13 @@ static void Compiler_CompileVariable(Compiler compiler, Symbol symbol, Bool stor
 		// Don't know what this is, or it's explictly global, so it comes from a dictionary load from an outer closure.
 		if (store) {
 			EMIT1(Op_StX, -1, symbol = symbol);
+			if (localSymbol != NULL)
+				localSymbol->wasWrittenDeep = True;
 		}
 		else {
 			EMIT1(Op_LdX, +1, symbol = symbol);
+			if (localSymbol != NULL)
+				localSymbol->wasReadDeep = True;
 		}
 		return;
 	}
@@ -923,9 +1000,13 @@ static void Compiler_CompileVariable(Compiler compiler, Symbol symbol, Bool stor
 			if (functionDepth <= 7) {
 				if (store) {
 					EMIT1(Op_StArg0 + functionDepth, 0, index = localSymbol->index);	// Leaves the value on the stack.
+					if (functionDepth == 0) localSymbol->wasWritten = True;
+					else localSymbol->wasWrittenDeep = True;
 				}
 				else {
 					EMIT1(Op_LdArg0 + functionDepth, +1, index = localSymbol->index);
+					if (functionDepth == 0) localSymbol->wasRead = True;
+					else localSymbol->wasReadDeep = True;
 				}
 			}
 			else {
@@ -942,9 +1023,13 @@ static void Compiler_CompileVariable(Compiler compiler, Symbol symbol, Bool stor
 			if (functionDepth <= 7) {
 				if (store) {
 					EMIT1(Op_StLoc0 + functionDepth, 0, index = localSymbol->index);	// Leaves the value on the stack.
+					if (functionDepth == 0) localSymbol->wasWritten = True;
+					else localSymbol->wasWrittenDeep = True;
 				}
 				else {
 					EMIT1(Op_LdLoc0 + functionDepth, +1, index = localSymbol->index);
+					if (functionDepth == 0) localSymbol->wasRead = True;
+					else localSymbol->wasReadDeep = True;
 				}
 			}
 			else {
@@ -1663,8 +1748,251 @@ static void Compiler_CompileWhile(Compiler compiler, SmileList args)
 
 static void Compiler_CompileTill(Compiler compiler, SmileList args)
 {
-	UNUSED(compiler);
-	UNUSED(args);
+	// [$till [flag1 flag2 flag3 ...] body [[flag1 when1] [flag2 when2] ...]]
+	//
+	// args[0] is the list of till flags. (required)
+	// args[1] is the till body. (required)
+	// args[2] is a list of whens. (optional)
+	SmileList flags;
+	SmileObject body;
+	SmileList whens;
+	CompileScope compileScope;
+	SmileSymbol smileSymbol;
+	Int offset;
+	Int tillContinuationVariableIndex, index;
+	Int loopLabel, loopJmp;
+	Int nullLabel, exitLabel;
+	Int numFlags, numWhens;
+	Int loadTill;
+	Int initialStackDepth;
+	CompiledTillSymbol *flagSymbols;
+	CompiledTillSymbol compiledLocalSymbol;
+	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
+	TillContinuationInfo tillInfo;
+	Bool realContinuationNeeded;
+
+	//---------------------------------------------------------
+	// Phase 1.  Validation.
+
+	// Make sure it's at least of the form [$till [flags...] body ...]
+	if (SMILE_KIND(args) != SMILE_KIND_LIST
+		|| (SMILE_KIND(args->a) != SMILE_KIND_LIST && SMILE_KIND(args->a) != SMILE_KIND_NULL)
+		|| SMILE_KIND(args->d) != SMILE_KIND_LIST) {
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+			String_FromC("Cannot compile [$till]: Expression is not well-formed.")));
+		return;
+	}
+
+	// Get the list of flags.
+	flags = (SmileList)args->a;
+	args = (SmileList)args->d;
+
+	// Get the body object.
+	body = args->a;
+	args = (SmileList)args->d;
+
+	// Get the list of whens.
+	if (SMILE_KIND(args) == SMILE_KIND_LIST) {
+		whens = (SmileList)args->a;
+		args = (SmileList)args->d;
+	}
+	else whens = NullList;
+
+	// Make sure there are no other arguments.
+	if (SMILE_KIND(args) != SMILE_KIND_NULL) {
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+			String_FromC("Cannot compile [$till]: Expression is not well-formed.")));
+		return;
+	}
+
+	//---------------------------------------------------------
+	// Phase 2.  Setup.
+
+	// Construct a compiler scope for the flag declarations.
+	compileScope = Compiler_BeginScope(compiler, PARSESCOPE_TILLDO);
+
+	// Allocate an invisible local variable to hold the special till-escape-continuation object.
+	tillContinuationVariableIndex = CompilerFunction_AddLocal(compiler->currentFunction, 0);
+
+	// Allocate an array to hold information for each of the till-loop's flags.
+	numFlags = SmileList_Length(flags);
+	if (numFlags <= 0) {
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(flags),
+			String_FromC("Cannot compile [$till]: List of terminating flags must not be empty.")));
+	}
+	flagSymbols = GC_MALLOC_STRUCT_ARRAY(CompiledTillSymbol, numFlags);
+	if (flagSymbols == NULL)
+		Smile_Abort_OutOfMemory();
+
+	// Populate the flags array with a CompiledTillSymbol object for each flag.
+	index = 0;
+	for (; SMILE_KIND(flags) == SMILE_KIND_LIST; flags = LIST_REST(flags)) {
+		if (SMILE_KIND(flags->a) != SMILE_KIND_SYMBOL) {
+			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(flags),
+				String_FromC("Cannot compile [$till]: List of flags must contain only symbols.")));
+		}
+		smileSymbol = (SmileSymbol)flags->a;
+	
+		compiledLocalSymbol = (CompiledTillSymbol)CompileScope_DefineSymbol(compileScope, smileSymbol->symbol, PARSEDECL_TILL, tillContinuationVariableIndex);
+		compiledLocalSymbol->tillIndex = index;
+		compiledLocalSymbol->whenLabelAddress = 0;
+		compiledLocalSymbol->exitJmpAddress = 0;
+		compiledLocalSymbol->firstJmp = NULL;
+	
+		flagSymbols[index++] = compiledLocalSymbol;
+	}
+
+	// Record the initial stack depth.  The 'when' clauses all start at this depth,
+	// and leave exactly one object on the stack.
+	initialStackDepth = compiler->currentFunction->currentStackDepth;
+
+	//---------------------------------------------------------
+	// Phase 3.  Core loop.
+
+	// Construct the till's continuation metadata.
+	tillInfo = Compiler_AddTillContinuationInfo(compiler, compiler->currentFunction->userFunctionInfo, numFlags);
+
+	// Load a "till continuation" into the variable we reserved for it.  The till continuation
+	// is only used if child functions need to escape to it.  If no children invoke it, these
+	// two instructions will be replaced with simple NOP instructions at the end of all this.
+	// (Subsequent peephole optimizations can remove the NOPs.)
+	loadTill = EMIT1(Op_LdTill, +1, index = tillInfo->tillIndex);
+	EMIT1(Op_StpLoc0, -1, index = tillContinuationVariableIndex);
+
+	// The real "till loop" starts here.
+	loopLabel = EMIT0(Op_Label, 0);
+
+	// Evaluate the till loop's body.
+	Compiler_CompileExpr(compiler, body);
+	Compiler_EmitPop1(compiler);	// We don't care about the result of eval'ing the body.
+
+	// Loop back up and do it again.
+	loopJmp = EMIT0(Op_Jmp, 0);
+	FIX_BRANCH(loopJmp, loopJmp - loopLabel);
+
+	Compiler_EndScope(compiler);
+
+	//---------------------------------------------------------
+	// Phase 4.  When clauses and the implicit default clause.
+
+	numWhens = 0;
+	if (SMILE_KIND(whens) == SMILE_KIND_LIST) {
+		// Emit all the [when] bodies, and for each, go back and update any branches, and the till continuation,
+		// to match their addresses.  Any near branches will get relative offsets, and the till continuation will
+		// get an absolute address.
+
+		for (; SMILE_KIND(whens) == SMILE_KIND_LIST; whens = LIST_REST(whens)) {
+		
+			// Reset the stack.
+			compiler->currentFunction->currentStackDepth = initialStackDepth;
+
+			// Make sure this [when] is well-formed.
+			if (SMILE_KIND(whens->a) != SMILE_KIND_LIST
+				|| SMILE_KIND(((SmileList)whens->a)->a) != SMILE_KIND_SYMBOL
+				|| SMILE_KIND(((SmileList)whens->a)->d) != SMILE_KIND_LIST
+				|| SMILE_KIND(((SmileList)((SmileList)whens->a)->d)->d) != SMILE_KIND_NULL) {
+				Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(whens),
+					String_FromC("Cannot compile [$till]: Whens must be sub-lists of the form [symbol body].")));
+				continue;
+			}
+		
+			// Get the flag object for this [when].  The flag object will have any nearby branches attached to it.
+			smileSymbol = (SmileSymbol)((SmileList)whens->a)->a;
+			compiledLocalSymbol = (CompiledTillSymbol)CompileScope_FindSymbolHere(compileScope, smileSymbol->symbol);
+			if (compiledLocalSymbol == NULL) {
+				Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(whens),
+					String_Format("Cannot compile [$till]: When clause '%S' does not match any of the loop's flags.",
+					SymbolTable_GetName(Smile_SymbolTable, smileSymbol->symbol))));
+				continue;
+			}
+			if (compiledLocalSymbol->whenLabelAddress) {
+				Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(whens),
+					String_Format("Cannot compile [$till]: When clause '%S' is defined multiple times.",
+						SymbolTable_GetName(Smile_SymbolTable, smileSymbol->symbol))));
+				continue;
+			}
+
+			// Emit the label that will be branched to, either by escape continuation or, if possible, by local Jmp.
+			compiledLocalSymbol->whenLabelAddress = EMIT0(Op_Label, 0);
+		
+			// Compile the body of the [when], and leave it on the stack as the output.
+			Compiler_CompileExpr(compiler, ((SmileList)((SmileList)whens->a)->d)->a);
+		
+			// Branch to the exit label for this till-loop.
+			compiledLocalSymbol->exitJmpAddress = EMIT0(Op_Jmp, 0);
+		
+			numWhens++;
+		}
+	}
+	
+	// Reset the stack.
+	compiler->currentFunction->currentStackDepth = initialStackDepth;
+
+	// If we emitted fewer when-clauses than we have flags, emit the null case.
+	// (This loads 'null' on the stack, and is used for any flag without a 'when'.)
+	if (numWhens < numFlags) {
+		nullLabel = EMIT0(Op_Label, 0);
+		EMIT0(Op_LdNull, +1);
+	}
+	else nullLabel = -1;
+
+	// Finally, if we at least one when clause, then also emit the exit label, which continues
+	// the program past this point.
+	if (numWhens > 0) {
+		exitLabel = EMIT0(Op_Label, 0);
+	}
+	else exitLabel = -1;
+
+	//---------------------------------------------------------
+	// Phase 5.  Branch resolution.
+
+	// Finalize each of the flags.
+	realContinuationNeeded = False;
+	for (; SMILE_KIND(flags) == SMILE_KIND_LIST; flags = LIST_REST(flags)) {
+		TillFlagJmp jumps;
+
+		smileSymbol = (SmileSymbol)flags->a;
+		compiledLocalSymbol = (CompiledTillSymbol)CompileScope_FindSymbolHere(compileScope, smileSymbol->symbol);
+
+		if (compiledLocalSymbol->base.wasReadDeep || compiledLocalSymbol->base.wasWrittenDeep) {
+			// Deep access (i.e., from within a child closure).  So we can't just use a simple
+			// jump for all the till-loop's branches at this point; we have no choice but to
+			// allocate a true continuation for at least one of the flags.
+			realContinuationNeeded = True;
+		}
+
+		if (!compiledLocalSymbol->whenLabelAddress) {
+			// Update any flags that don't point to a [when] to point to the nullLabel instead, so
+			// that everything has a defined branch target.
+			compiledLocalSymbol->whenLabelAddress = exitLabel;
+			compiledLocalSymbol->exitJmpAddress = 0;
+		}
+		else {
+			// Go back and update any [when] branches' tail jumps to point to the exit label.
+			segment->byteCodes[compiledLocalSymbol->exitJmpAddress].u.index = exitLabel - compiledLocalSymbol->exitJmpAddress;
+		}
+	
+		// Go to any emitted unconditional jumps in this segment and correct them to point to
+		// their respective when/null targets.
+		for (jumps = compiledLocalSymbol->firstJmp; jumps != NULL; jumps = jumps->next) {
+			segment->byteCodes[jumps->offset].u.index = compiledLocalSymbol->whenLabelAddress - jumps->offset;
+		}
+	
+		// Update the till's continuation metadata to point to the appropriate exit clause for this flag.
+		tillInfo->offsets[compiledLocalSymbol->tillIndex] = compiledLocalSymbol->whenLabelAddress;
+	}
+
+	//---------------------------------------------------------
+	// Phase 6.  Cleanup.
+
+	// If we really don't need a true escape-continuation for this till (i.e., all exits are through
+	// simple jump instructions in the same closure), then remove (using NOPs) the initial instructions
+	// that would allocate a true escape-continuation.  (The substituted NOPs will still be much faster
+	// than the escape-continuation's heap allocation would be.)
+	if (!realContinuationNeeded) {
+		segment->byteCodes[loadTill  ].opcode = Op_Nop;
+		segment->byteCodes[loadTill+1].opcode = Op_Nop;
+	}
 }
 
 static void Compiler_CompileCatch(Compiler compiler, SmileList args)
@@ -1696,7 +2024,7 @@ static void Compiler_CompileReturn(Compiler compiler, SmileList args)
 	}
 	else {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
-			String_FromC("Cannot compile [return]: Expression is not well-formed.")));
+			String_FromC("Cannot compile [$return]: Expression is not well-formed.")));
 	}
 
 	Compiler_RevertSourceLocation(compiler, oldSourceLocation);
@@ -1723,7 +2051,7 @@ static void Compiler_CompileFn(Compiler compiler, SmileList args)
 		|| (SMILE_KIND(args->a) != SMILE_KIND_LIST && SMILE_KIND(args->a) != SMILE_KIND_NULL)
 		|| SMILE_KIND(args->d) != SMILE_KIND_LIST || SMILE_KIND(((SmileList)args->d)->d) != SMILE_KIND_NULL) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
-			String_FromC("Cannot compile [fn]: Expression is not well-formed.")));
+			String_FromC("Cannot compile [$fn]: Expression is not well-formed.")));
 		return;
 	}
 
@@ -1783,7 +2111,7 @@ static void Compiler_CompileQuote(Compiler compiler, SmileList args)
 
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_NULL) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
-			String_FromC("Cannot compile [quote]: Expression is not well-formed.")));
+			String_FromC("Cannot compile [$quote]: Expression is not well-formed.")));
 		return;
 	}
 
@@ -1871,35 +2199,12 @@ static void Compiler_CompileProgN(Compiler compiler, SmileList args)
 	Compiler_RevertSourceLocation(compiler, namedSourceLocation);
 }
 
-static Int CompilerFunction_AddLocal(CompilerFunction compilerFunction, Symbol local)
-{
-	Int localIndex, newMax;
-	Symbol *newLocals;
-
-	// If we're out of space, grow the array.
-	if (compilerFunction->localSize >= compilerFunction->localMax) {
-		newMax = compilerFunction->localMax * 2;
-		newLocals = (Symbol *)GC_MALLOC_ATOMIC(sizeof(Symbol) * newMax);
-		MemCpy(newLocals, compilerFunction->localNames, sizeof(Symbol) * compilerFunction->localSize);
-		compilerFunction->localMax = newMax;
-		compilerFunction->localNames = newLocals;
-	}
-
-	localIndex = compilerFunction->localSize++;
-
-	compilerFunction->localNames[localIndex] = local;
-
-	return localIndex;
-}
-
 // Form: [$scope [vars...] a b c ...]
 static void Compiler_CompileScope(Compiler compiler, SmileList args)
 {
 	CompileScope scope;
 	SmileList scopeVars, temp;
 	Int numScopeVars, localIndex;
-	Int offset;
-	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 
 	// The [$scope] expression must be of the form:  [$scope [locals...] ...].
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->a) != SMILE_KIND_LIST
@@ -1930,18 +2235,8 @@ static void Compiler_CompileScope(Compiler compiler, SmileList args)
 		return;
 	}
 
-	// Allocate more space on the stack for these locals.
-	if (numScopeVars > 0) {
-		EMIT1(Op_LAlloc, 0, index = numScopeVars);
-	}
-
 	// Compile the rest of the [scope] as though it was just a [progn].
 	Compiler_CompileProgN(compiler, (SmileList)args->d);
-
-	if (numScopeVars > 0) {
-		// Free the local variables, now that we no longer need them.
-		EMIT1(Op_LFree, 0, index = numScopeVars);
-	}
 
 	Compiler_EndScope(compiler);
 }

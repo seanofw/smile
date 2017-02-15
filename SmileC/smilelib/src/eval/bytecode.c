@@ -299,9 +299,6 @@ static String ByteCode_OperandsToString(ByteCode byteCode, Int address, UserFunc
 			return String_Format("%d, %d\t; %S", byteCode->u.i2.a, byteCode->u.i2.b, SymbolTable_GetName(Smile_SymbolTable, (Symbol)byteCode->u.i2.a));
 		case Op_Call:
 		case Op_TCall:
-		case Op_LAlloc:
-		case Op_LFree:
-		case Op_Args:
 			return String_Format("%d", byteCode->u.int32);
 		
 		// C0-CF

@@ -81,8 +81,38 @@ typedef struct CompiledLocalSymbolStruct {
 	Symbol symbol;	// The name of this symbol.
 	Int kind;	// What kind of symbol it is (using the PARSEDECL_* enumeration).
 	Int index;	// The index of this symbol in its collection.
+	Bool wasRead;	// Whether this variable has been read from.
+	Bool wasReadDeep;	// Whether this variable has been read from in a child function's closure.
+	Bool wasWritten;	// Whether this variable has been written to.
+	Bool wasWrittenDeep;	// Whether this variable has been written to in a child function's closure.
 	CompileScope scope;	// The scope that contains this symbol.
 } *CompiledLocalSymbol;
+
+typedef struct TillContinuationInfoStruct {
+	Int tillIndex;	// The index of this till-info in the compiler's collection of till-info objects.
+	UserFunctionInfo userFunctionInfo;	// The user function this till object belongs to.
+	Int numOffsets;	// The number of when-label offsets in this till object.
+	Int offsets[1];	// The collection (variable-length) of when-label offsets.
+} *TillContinuationInfo;
+
+typedef struct TillContinuationStruct {
+	TillContinuationInfo tillContinuationInfo;	// The full data about this till-continuation.
+	Closure closure;	// The closure to escape back to (NULL if this TillContinuation is no longer viable).
+} *TillContinuation;
+
+typedef struct TillFlagJmpStruct {
+	struct TillFlagJmpStruct *next;	// The next jmp that needs to be updated for this symbol's 'when' address.
+	Int offset;	// The address of the jmp-to-when instruction in this segment.
+} *TillFlagJmp;
+
+typedef struct CompiledTillSymbolStruct {
+	struct CompiledLocalSymbolStruct base;	// The base struct this inherits from.
+		
+	Int tillIndex;	// The index of this symbol in the till's flag collection.
+	Int whenLabelAddress;	// The address of the 'when' clause's label-instruction (0 = no when clause).
+	Int exitJmpAddress;	// The address of the 'when' clause's jmp-to-exit instruction.
+	TillFlagJmp firstJmp;	// The head of the list of jmp-to-when instructions that need to be patched.
+} *CompiledTillSymbol;
 
 typedef struct CompiledSourceLocationStruct {
 	String filename;	// The source filename this code came from.
@@ -110,6 +140,10 @@ typedef struct CompiledTablesStruct {
 	SmileObject *objects;	// The constant objects collected during the compile.
 	Int numObjects;	// The number of constant objects collected.
 	Int maxObjects;	// The maximum number of constant objects in the array.
+		
+	TillContinuationInfo *tillInfos;	// The till-continuation-info objects collected during the compile.
+	Int numTillInfos;	// The number of till-continuation-info objects collected.
+	Int maxTillInfos;	// The maximum number of till-continuation-info objects in the array.
 		
 	struct CompiledSourceLocationStruct *sourcelocations;	// Source code locations.
 	Int numSourceLocations;	// The number of source-code locations in the struct.
@@ -139,9 +173,10 @@ SMILE_API_FUNC UserFunctionInfo Compiler_CompileGlobal(Compiler compiler, SmileO
 SMILE_API_FUNC Int Compiler_AddString(Compiler compiler, String string);
 SMILE_API_FUNC Int Compiler_AddObject(Compiler compiler, SmileObject obj);
 SMILE_API_FUNC Int Compiler_AddUserFunctionInfo(Compiler compiler, UserFunctionInfo userFunctionInfo);
+SMILE_API_FUNC TillContinuationInfo Compiler_AddTillContinuationInfo(Compiler compiler, UserFunctionInfo userFunctionInfo, Int numOffsets);
 SMILE_API_FUNC Int Compiler_AddNewSourceLocation(Compiler compiler, String filename, Int line, Int column, Symbol assignedName);
 SMILE_API_FUNC CompileScope Compiler_BeginScope(Compiler compiler, Int kind);
-SMILE_API_FUNC void CompileScope_DefineSymbol(CompileScope scope, Symbol symbol, Int kind, Int index);
+SMILE_API_FUNC CompiledLocalSymbol CompileScope_DefineSymbol(CompileScope scope, Symbol symbol, Int kind, Int index);
 SMILE_API_FUNC CompiledLocalSymbol CompileScope_FindSymbol(CompileScope compileScope, Symbol symbol);
 SMILE_API_FUNC CompiledLocalSymbol CompileScope_FindSymbolHere(CompileScope compileScope, Symbol symbol);
 SMILE_API_FUNC ClosureInfo Compiler_MakeClosureInfoForCompilerFunction(Compiler compiler, CompilerFunction compilerFunction);

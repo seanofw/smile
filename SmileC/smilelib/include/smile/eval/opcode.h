@@ -180,9 +180,7 @@ enum Opcode {
 	Op_TMet	= 0xB5,	// -n, +1 | int32, int32	; Jump to the given method with 'n' arguments, as a tail-call.  Target and arguments must all be on the stack.
 	Op_Call	= 0xB6,	// -(n+1), +1 | int32	; Call the given function with 'n' arguments.  Function and arguments must all be on the stack.
 	Op_TCall	= 0xB7,	// -(n+1), +1 | int32	; Jump to the given function with 'n' arguments as a tail-call, discarding the current scope.
-	Op_LAlloc	= 0xBC,	//  0 | int32	; Allocate 'n' more local variables; construct any new local variables with null.
-	Op_LFree	= 0xBD,	//  0 | int32	; Free 'n' unneeded local variables from the top of the local-variable stack.
-	Op_Args	= 0xBE,	//  0 | int32	; Ensure current fn has 'n' arguments minimum; construct missing args with null.  Must be first instr of function.
+	Op_LdTill	= 0xB8,	// +1 | int32	; Load the given 'till' escape-continuation branch-table object.
 	Op_Ret	= 0xBF,	//  0	; Return to caller, destroying the current function's dynamic scope.  Stack top must contain return value.
 				
 	Op_Cons	= 0xC0,	// -2, +1	; Create a new List object from the given a/d values on the work stack.

@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: eea665c17cff215f64cc4690e1c347c5
+// SourceHash: d39d1de60fbf4e730d5179dcc7e2e22c
 
 START_TEST_SUITE(CompilerTests)
 {
@@ -22,6 +22,7 @@ START_TEST_SUITE(CompilerTests)
 	CanCompileSimpleConditionals,
 	CanCompileConditionalsAllTheWay,
 	CanCompileAWhileLoopThatComputesLogarithms,
+	CanCompileASimpleTillLoop,
 }
 END_TEST_SUITE(CompilerTests)
 
