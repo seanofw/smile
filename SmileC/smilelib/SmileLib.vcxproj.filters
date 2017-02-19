@@ -121,6 +121,9 @@
     <Filter Include="src\eval">
       <UniqueIdentifier>{d77d3997-33db-446e-95b7-8b6fc918574e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\eval\compiler">
+      <UniqueIdentifier>{e0e7fac1-228e-44a1-a77e-62e668efbe6e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gc\src\allchblk.c">
@@ -816,6 +819,66 @@
     <ClCompile Include="src\smiletypes\text\smilestring_base.c">
       <Filter>src\smiletypes\text</Filter>
     </ClCompile>
+    <ClCompile Include="src\eval\compiler\compile_setf.c">
+      <Filter>src\eval\compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\eval\compiler\compile_opequals.c">
+      <Filter>src\eval\compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\eval\compiler\compile_property.c">
+      <Filter>src\eval\compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\eval\compiler\compile_variable.c">
+      <Filter>src\eval\compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\eval\compiler\compile_methodcall.c">
+      <Filter>src\eval\compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\eval\compiler\compile_expr.c">
+      <Filter>src\eval\compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\eval\compiler\compile_standardform.c">
+      <Filter>src\eval\compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\eval\compiler\compile_if.c">
+      <Filter>src\eval\compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\eval\compiler\compile_till.c">
+      <Filter>src\eval\compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\eval\compiler\compile_while.c">
+      <Filter>src\eval\compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\eval\compiler\compile_catch.c">
+      <Filter>src\eval\compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\eval\compiler\compile_fn.c">
+      <Filter>src\eval\compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\eval\compiler\compile_quote.c">
+      <Filter>src\eval\compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\eval\compiler\compile_return.c">
+      <Filter>src\eval\compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\eval\compiler\compile_prog1.c">
+      <Filter>src\eval\compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\eval\compiler\compile_progn.c">
+      <Filter>src\eval\compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\eval\compiler\compile_scope.c">
+      <Filter>src\eval\compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\eval\compiler\compile_and.c">
+      <Filter>src\eval\compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\eval\compiler\compile_new.c">
+      <Filter>src\eval\compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\eval\compiler\compile_or.c">
+      <Filter>src\eval\compiler</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">
@@ -1147,6 +1210,9 @@
     </ClInclude>
     <ClInclude Include="include\smile\smiletypes\base.h">
       <Filter>include\smiletypes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\eval\compiler_internal.h">
+      <Filter>include\eval</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
