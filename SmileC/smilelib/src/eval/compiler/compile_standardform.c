@@ -48,90 +48,90 @@ Bool Compiler_CompileStandardForm(Compiler compiler, Symbol symbol, SmileList ar
 	switch (symbol) {
 
 		// Assignment.
-	case SMILE_SPECIAL_SYMBOL__SET:
-		Compiler_CompileSetf(compiler, args);
-		return True;
-	case SMILE_SPECIAL_SYMBOL__OPSET:
-		Compiler_CompileOpEquals(compiler, args);
-		return True;
+		case SMILE_SPECIAL_SYMBOL__SET:
+			Compiler_CompileSetf(compiler, args);
+			return True;
+		case SMILE_SPECIAL_SYMBOL__OPSET:
+			Compiler_CompileOpEquals(compiler, args);
+			return True;
 
 		// Control flow.
-	case SMILE_SPECIAL_SYMBOL__IF:
-		Compiler_CompileIf(compiler, args);
-		return True;
-	case SMILE_SPECIAL_SYMBOL__WHILE:
-		Compiler_CompileWhile(compiler, args);
-		return True;
-	case SMILE_SPECIAL_SYMBOL__TILL:
-		Compiler_CompileTill(compiler, args);
-		return True;
-	case SMILE_SPECIAL_SYMBOL__CATCH:
-		Compiler_CompileCatch(compiler, args);
-		return True;
-	case SMILE_SPECIAL_SYMBOL__RETURN:
-		Compiler_CompileReturn(compiler, args);
-		return True;
+		case SMILE_SPECIAL_SYMBOL__IF:
+			Compiler_CompileIf(compiler, args);
+			return True;
+		case SMILE_SPECIAL_SYMBOL__WHILE:
+			Compiler_CompileWhile(compiler, args);
+			return True;
+		case SMILE_SPECIAL_SYMBOL__TILL:
+			Compiler_CompileTill(compiler, args);
+			return True;
+		case SMILE_SPECIAL_SYMBOL__CATCH:
+			Compiler_CompileCatch(compiler, args);
+			return True;
+		case SMILE_SPECIAL_SYMBOL__RETURN:
+			Compiler_CompileReturn(compiler, args);
+			return True;
 
 		// Expression-evaluation control.
-	case SMILE_SPECIAL_SYMBOL__FN:
-		Compiler_CompileFn(compiler, args);
-		return True;
-	case SMILE_SPECIAL_SYMBOL__QUOTE:
-		Compiler_CompileQuote(compiler, args);
-		return True;
-	case SMILE_SPECIAL_SYMBOL__PROG1:
-		Compiler_CompileProg1(compiler, args);
-		return True;
-	case SMILE_SPECIAL_SYMBOL__PROGN:
-		Compiler_CompileProgN(compiler, args);
-		return True;
-	case SMILE_SPECIAL_SYMBOL__SCOPE:
-		Compiler_CompileScope(compiler, args);
-		return True;
+		case SMILE_SPECIAL_SYMBOL__FN:
+			Compiler_CompileFn(compiler, args);
+			return True;
+		case SMILE_SPECIAL_SYMBOL__QUOTE:
+			Compiler_CompileQuote(compiler, args);
+			return True;
+		case SMILE_SPECIAL_SYMBOL__PROG1:
+			Compiler_CompileProg1(compiler, args);
+			return True;
+		case SMILE_SPECIAL_SYMBOL__PROGN:
+			Compiler_CompileProgN(compiler, args);
+			return True;
+		case SMILE_SPECIAL_SYMBOL__SCOPE:
+			Compiler_CompileScope(compiler, args);
+			return True;
 
 		// Object creation and type testing.
-	case SMILE_SPECIAL_SYMBOL__NEW:
-		Compiler_CompileNew(compiler, args);
-		return True;
-	case SMILE_SPECIAL_SYMBOL__IS:
-		oldSourceLocation = Compiler_CompileTwoArguments(compiler, args, "$is");
-		EMIT0(Op_Is, -2 + 1);
-		Compiler_RevertSourceLocation(compiler, oldSourceLocation);
-		return True;
-	case SMILE_SPECIAL_SYMBOL__TYPEOF:
-		oldSourceLocation = Compiler_CompileOneArgument(compiler, args, "$typeof");
-		EMIT0(Op_TypeOf, -1 + 1);
-		Compiler_RevertSourceLocation(compiler, oldSourceLocation);
-		return True;
+		case SMILE_SPECIAL_SYMBOL__NEW:
+			Compiler_CompileNew(compiler, args);
+			return True;
+		case SMILE_SPECIAL_SYMBOL__IS:
+			oldSourceLocation = Compiler_CompileTwoArguments(compiler, args, "$is");
+			EMIT0(Op_Is, -2 + 1);
+			Compiler_RevertSourceLocation(compiler, oldSourceLocation);
+			return True;
+		case SMILE_SPECIAL_SYMBOL__TYPEOF:
+			oldSourceLocation = Compiler_CompileOneArgument(compiler, args, "$typeof");
+			EMIT0(Op_TypeOf, -1 + 1);
+			Compiler_RevertSourceLocation(compiler, oldSourceLocation);
+			return True;
 
 		// Reference comparison.
-	case SMILE_SPECIAL_SYMBOL__EQ:
-		oldSourceLocation = Compiler_CompileTwoArguments(compiler, args, "===");
-		EMIT0(Op_SuperEq, -2 + 1);
-		Compiler_RevertSourceLocation(compiler, oldSourceLocation);
-		return True;
-	case SMILE_SPECIAL_SYMBOL__NE:
-		oldSourceLocation = Compiler_CompileTwoArguments(compiler, args, "!==");
-		EMIT0(Op_SuperNe, -2 + 1);
-		Compiler_RevertSourceLocation(compiler, oldSourceLocation);
-		return True;
+		case SMILE_SPECIAL_SYMBOL__EQ:
+			oldSourceLocation = Compiler_CompileTwoArguments(compiler, args, "===");
+			EMIT0(Op_SuperEq, -2 + 1);
+			Compiler_RevertSourceLocation(compiler, oldSourceLocation);
+			return True;
+		case SMILE_SPECIAL_SYMBOL__NE:
+			oldSourceLocation = Compiler_CompileTwoArguments(compiler, args, "!==");
+			EMIT0(Op_SuperNe, -2 + 1);
+			Compiler_RevertSourceLocation(compiler, oldSourceLocation);
+			return True;
 
 		// Logical operations.
-	case SMILE_SPECIAL_SYMBOL__AND:
-		Compiler_CompileAnd(compiler, args);
-		return True;
-	case SMILE_SPECIAL_SYMBOL__OR:
-		Compiler_CompileOr(compiler, args);
-		return True;
-	case SMILE_SPECIAL_SYMBOL__NOT:
-		oldSourceLocation = Compiler_CompileOneArgument(compiler, args, "$not");
-		EMIT0(Op_Not, -1 + 1);
-		Compiler_RevertSourceLocation(compiler, oldSourceLocation);
-		return True;
+		case SMILE_SPECIAL_SYMBOL__AND:
+			Compiler_CompileAnd(compiler, args);
+			return True;
+		case SMILE_SPECIAL_SYMBOL__OR:
+			Compiler_CompileOr(compiler, args);
+			return True;
+		case SMILE_SPECIAL_SYMBOL__NOT:
+			oldSourceLocation = Compiler_CompileOneArgument(compiler, args, "$not");
+			EMIT0(Op_Not, -1 + 1);
+			Compiler_RevertSourceLocation(compiler, oldSourceLocation);
+			return True;
 
 		// Don't know what this is, so it's likely an evaluation of whatever's in scope.
-	default:
-		return False;
+		default:
+			return False;
 	}
 }
 
