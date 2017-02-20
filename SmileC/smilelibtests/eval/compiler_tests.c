@@ -537,12 +537,12 @@ START_TEST(CanCompileASimpleTillLoop)
 {
 /*
 	SmileObject expr = Parse(
-		"#syntax STMT: [if [EXPR x] then [STMT y]] => [$if x y]\n"
-		"\n"
-		"[$till [found not-found] {\n"
-		"\tif 1 then found\n"
-		"\tif 2 then not-found\n"
-		"}]\n"
+		"[$till [found not-found]\n"
+		"\t[$progn\n"
+		"\t\t[$if 1 found]\n"
+		"\t\t[$if 2 not-found]\n"
+		"\t]\n"
+		"]\n"
 	);
 
 	Compiler compiler = Compiler_Create();
@@ -550,6 +550,8 @@ START_TEST(CanCompileASimpleTillLoop)
 	String result;
 
 	String expectedResult = String_FromC(
+		"\tNop\n"
+		"\tNop\n"
 		"L0:\n"
 		"\tLd64 1\n"
 		"\tBf >L4\n"
@@ -561,6 +563,7 @@ START_TEST(CanCompileASimpleTillLoop)
 		"L8:\n"
 		"\tJmp L0\n"
 		"L10:\n"
+		"\tLdNull\n"
 		"\tRet\n"
 	);
 
