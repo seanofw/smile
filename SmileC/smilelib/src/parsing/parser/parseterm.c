@@ -28,6 +28,13 @@
 #include <smile/parsing/internal/parsedecl.h>
 #include <smile/parsing/internal/parsescope.h>
 
+static ParseError Parser_ParseClassicQuote(Parser parser, SmileObject *result);
+static ParseError Parser_ParseClassicFn(Parser parser, SmileObject *result);
+static ParseError Parser_ParseClassicScope(Parser parser, SmileObject *result);
+static ParseError Parser_ParseClassicTill(Parser parser, SmileObject *result);
+static ParseError Parser_ParseClassicNew(Parser parser, SmileObject *result);
+static ParseError Parser_ParseClassicSet(Parser parser, SmileObject *result);
+
 //-------------------------------------------------------------------------------------------------
 // Terms
 
@@ -62,7 +69,44 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, T
 			SmileList head = NullList, tail = NullList;
 
 			startPosition = Token_GetPosition(token);
-
+		
+			if ((token = Parser_NextToken(parser))->kind == TOKEN_ALPHANAME) {
+				// See if this is a special form that requires "unique" parsing.  The special
+				// forms that require unusual parsing are those which have nonstandard variable-
+				// evaluation rules --- and those are primarily forms that are able to declare
+				// variables in a new scope.  Specifically this means we check for:
+				//
+				//     [$quote ...]
+				//     [$scope [vars...] ... ]
+				//     [$fn [args...] ... ]
+				//     [$till [flags...] ... ]
+				//     [$new base [members...]]
+				//     [$set name value]
+				//
+				// Everything else can be parsed normally, but those are necessarily unique.
+				//
+				// Note that [$set], like '=', can construct new variables in the current scope.
+				//
+				// Note also that [$scope] is much more like {...} than it is like Lisp (let), in
+				// that its given local-variable list is merely the initial list, and can be extended
+				// by [$set] or '=' or a later use of 'var' or 'const' or 'auto' within it.
+				switch (token->data.symbol) {
+					case SMILE_SPECIAL_SYMBOL__QUOTE:
+						return Parser_ParseClassicQuote(parser, result);
+					case SMILE_SPECIAL_SYMBOL__SCOPE:
+						return Parser_ParseClassicScope(parser, result);
+					case SMILE_SPECIAL_SYMBOL__FN:
+						return Parser_ParseClassicFn(parser, result);
+					case SMILE_SPECIAL_SYMBOL__TILL:
+						return Parser_ParseClassicTill(parser, result);
+					case SMILE_SPECIAL_SYMBOL__NEW:
+						return Parser_ParseClassicNew(parser, result);
+					case SMILE_SPECIAL_SYMBOL__SET:
+						return Parser_ParseClassicSet(parser, result);
+				}
+			}
+			Lexer_Unget(parser->lexer);
+		
 			Parser_ParseExprsOpt(parser, &head, &tail, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
 
 			if (!Parser_HasLookahead(parser, TOKEN_RIGHTBRACKET)) {
@@ -196,4 +240,46 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, T
 		}
 		return error;
 	}
+}
+
+static ParseError Parser_ParseClassicQuote(Parser parser, SmileObject *result)
+{
+	UNUSED(parser);
+	UNUSED(result);
+	return NULL;
+}
+
+static ParseError Parser_ParseClassicFn(Parser parser, SmileObject *result)
+{
+	UNUSED(parser);
+	UNUSED(result);
+	return NULL;
+}
+
+static ParseError Parser_ParseClassicScope(Parser parser, SmileObject *result)
+{
+	UNUSED(parser);
+	UNUSED(result);
+	return NULL;
+}
+
+static ParseError Parser_ParseClassicTill(Parser parser, SmileObject *result)
+{
+	UNUSED(parser);
+	UNUSED(result);
+	return NULL;
+}
+
+static ParseError Parser_ParseClassicNew(Parser parser, SmileObject *result)
+{
+	UNUSED(parser);
+	UNUSED(result);
+	return NULL;
+}
+
+static ParseError Parser_ParseClassicSet(Parser parser, SmileObject *result)
+{
+	UNUSED(parser);
+	UNUSED(result);
+	return NULL;
 }
