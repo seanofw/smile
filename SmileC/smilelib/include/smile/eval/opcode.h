@@ -180,7 +180,9 @@ enum Opcode {
 	Op_TMet	= 0xB5,	// -n, +1 | int32, int32	; Jump to the given method with 'n' arguments, as a tail-call.  Target and arguments must all be on the stack.
 	Op_Call	= 0xB6,	// -(n+1), +1 | int32	; Call the given function with 'n' arguments.  Function and arguments must all be on the stack.
 	Op_TCall	= 0xB7,	// -(n+1), +1 | int32	; Jump to the given function with 'n' arguments as a tail-call, discarding the current scope.
-	Op_LdTill	= 0xB8,	// +1 | int32	; Load the given 'till' escape-continuation branch-table object.
+	Op_NewTill	= 0xB8,	// +1 | int32	; Load the given 'till' escape-continuation branch-table object.
+	Op_EndTill	= 0xB9,	// -1	; Destroy (mark as unusable) the 'till' escape-continuation on the stack top.
+	Op_TillEsc	= 0xBA,	// -1 | int32	; Invoke the escape continuation on the stack, escaping to the given indexed when clause.
 	Op_Ret	= 0xBF,	//  0	; Return to caller, destroying the current function's dynamic scope.  Stack top must contain return value.
 				
 	Op_Cons	= 0xC0,	// -2, +1	; Create a new List object from the given a/d values on the work stack.
