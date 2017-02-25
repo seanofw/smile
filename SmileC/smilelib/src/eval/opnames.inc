@@ -32,8 +32,8 @@ Op(LdProp), Op(StProp), Op(StpProp), NULL, Op(LdMember), Op(StMember), Op(StpMem
 NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 
 // 80-8F
-Op(Begin), Op(End), Op(Try), Op(EndTry), Op(JmpEsc), Op(Esc), NULL, NULL,
-Op(SuperEq), Op(SuperNe), Op(Not), Op(Bool), Op(Is), Op(TypeOf), NULL, NULL,
+Op(Cons), Op(Car), Op(Cdr), NULL, Op(NewPair), Op(Left), Op(Right), NULL,
+Op(NewFn), Op(NewObj), NULL, Op(SuperEq), Op(SuperNe), Op(Not), Op(Is), Op(TypeOf),
 
 // 90-9F
 Op(Call0), Op(Call1), Op(Call2), Op(Call3), Op(Call4), Op(Call5), Op(Call6), Op(Call7),
@@ -45,19 +45,19 @@ Op(TUnary), Op(TBinary), Op(TMet2), Op(TMet3), Op(TMet4), Op(TMet5), Op(TMet6), 
 
 // B0-BF
 Op(Jmp), Op(Bt), Op(Bf), NULL, Op(Met), Op(TMet), Op(Call), Op(TCall),
-Op(LdTill), NULL, NULL, NULL, NULL, NULL, NULL, Op(Ret),
+Op(NewTill), Op(EndTill), Op(TillEsc), NULL, Op(Try), Op(EndTry), NULL, Op(Ret),
 
 // C0-CF
-Op(Cons), Op(Car), Op(Cdr), NULL, Op(NewPair), Op(Left), Op(Right), NULL,
-Op(NewFn), Op(NewObj), NULL, NULL, NULL, NULL, NULL, NULL,
+Op(Add), Op(Sub), Op(Mul), Op(Div), Op(Mod), Op(Rem), NULL, Op(RangeTo),
+Op(Eq), Op(Ne), Op(Lt), Op(Gt), Op(Le), Op(Ge), Op(Cmp), Op(Compare),
 
 // D0-DF
-Op(LdA), Op(LdD), Op(LdLeft), Op(LdRight), Op(LdStart), Op(LdEnd), Op(LdCount), Op(LdLength),
-NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+Op(Each), Op(Map), Op(Where), NULL, Op(Count), Op(Any), Op(Join), NULL,
+Op(UCount), Op(UAny), Op(UJoin), Op(Neg), Op(Bool), Op(Int), Op(String), Op(Hash),
 
 // E0-EF
-Op(Add8), Op(Sub8), Op(Add16), Op(Sub16), Op(Add32), Op(Sub32), Op(Add64), Op(Sub64),
-Op(AddR32), Op(SubR32), Op(AddR64), Op(SubR64), Op(AddF32), Op(SubF32), Op(AddF64), Op(SubF64),
+Op(NullQ), Op(ListQ), Op(PairQ), Op(FnQ), Op(BoolQ), Op(IntQ), Op(StringQ), Op(SymbolQ),
+Op(LdA), Op(LdD), Op(LdLeft), Op(LdRight), Op(LdStart), Op(LdEnd), Op(LdCount), Op(LdLength),
 
 // F0-FF
 Op(StateMachStart), Op(StateMachBody), NULL, NULL, NULL, NULL, NULL, NULL,

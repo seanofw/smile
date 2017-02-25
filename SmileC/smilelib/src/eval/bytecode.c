@@ -274,13 +274,8 @@ static String ByteCode_OperandsToString(ByteCode byteCode, Int address, UserFunc
 			return String_Format("%d\t; %S", byteCode->u.symbol, SymbolTable_GetName(Smile_SymbolTable, byteCode->u.symbol));
 		
 		// 80-8F
-		case Op_Begin:
-			return String_Format("%d, %d", (Int32)byteCode->u.int32, (Int32)byteCode->u.int32);
 		case Op_Try:
-		case Op_JmpEsc:
 			return String_Format(byteCode->u.i2.a < 0 ? "L%d, %d" : ">L%d, %d", address + byteCode->u.i2.a, byteCode->u.i2.b);
-		case Op_Esc:
-			return String_Format(byteCode->u.index < 0 ? "L%d" : ">L%d", (Int32)(address + byteCode->u.index));
 		
 		// 90-AF
 		case Op_Met0: case Op_Met1: case Op_Met2: case Op_Met3:
@@ -307,33 +302,9 @@ static String ByteCode_OperandsToString(ByteCode byteCode, Int address, UserFunc
 		case Op_NewObj:
 			return String_Format("%d", byteCode->u.int32);
 		
-		// E0-E7
-		case Op_Add8:
-		case Op_Sub8:
-			return String_Format("%u", (Int32)byteCode->u.byte);
-		case Op_Add16:
-		case Op_Sub16:
-			return String_Format("%d", (Int32)byteCode->u.int16);
-		case Op_Add32:
-		case Op_Sub32:
-			return String_Format("%d", byteCode->u.int32);
-		case Op_Add64:
-		case Op_Sub64:
-			return String_Format("%ld", byteCode->u.int64);
-		
-		// E8-EF
-		case Op_AddR32:
-		case Op_SubR32:
-			return String_Format("%g", byteCode->u.real32);
-		case Op_AddR64:
-		case Op_SubR64:
-			return String_Format("%g", byteCode->u.real64);
-		case Op_AddF32:
-		case Op_SubF32:
-			return String_Format("%g", byteCode->u.float32);
-		case Op_AddF64:
-		case Op_SubF64:
-			return String_Format("%g", byteCode->u.float64);
+		// D0-DF
+			
+		// E0-EF
 
 		// F0-FF
 	}

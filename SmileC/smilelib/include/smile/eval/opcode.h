@@ -122,18 +122,19 @@ enum Opcode {
 	Op_StMember	= 0x75,	// -2, +1	; Call 'set-member', passing value (top-1), member (top-2), and object (top-3).  Results in the stack top value.
 	Op_StpMember	= 0x76,	// -3	; Call 'set-member', passing value (top-1), member (top-2), and object (top-3).  Pops the stack top value.
 				
-	Op_Begin	= 0x80,	//  0 | int32, int32	; Set up a new scope with 'n' locals and 'm' work-stack space, preserving a reference to the parent scope.
-	Op_End	= 0x81,	//  0	; Revert to the parent scope.
-	Op_Try	= 0x82,	//  0 | label, int32	; Set up a new exception scope, branching to 'label' function if an exception is raised, pushing exception
-	Op_EndTry	= 0x83,	//  0	; Revert to the previous exception scope.
-	Op_JmpEsc	= 0x84,	//  0 | label, int32	; Unconditional jump to the given label, creating a new scope with 'n' work-stack space and one local, an escape continuation.
-	Op_Esc	= 0x85,	// -1 | label	; Unconditional jump to the given label, restoring state to the escape continuation on the stack top.
-	Op_SuperEq	= 0x88,	// -2, +1	; Push true if a (top-2) and b (top-1) are identical references, false otherwise.
-	Op_SuperNe	= 0x89,	// -2, +1	; Push false if a (top-2) and b (top-1) are identical references, true otherwise.
-	Op_Not	= 0x8A,	// -1, +1	; Convert the stack top to boolean, and then logically invert it.
-	Op_Bool	= 0x8B,	// -1, +1	; Convert the stack top to boolean.
-	Op_Is	= 0x8C,	// -2, +1	; Push true if a (top-2) is derived from b (top-1); push false if not.
-	Op_TypeOf	= 0x8D,	// -1, +1	; Push the formal type symbol corresponding to the type of the stack top.
+	Op_Cons	= 0x80,	// -2, +1	; Create a new List object from the given a/d values on the work stack.
+	Op_Car	= 0x81,	// -1, +1	; Retrieve the 'a' property from the List on the stack top (UNDEFINED if not a List or Null).
+	Op_Cdr	= 0x82,	// -1, +1	; Retrieve the 'd' property from the List on the stack top (UNDEFINED if not a List or Null).
+	Op_NewPair	= 0x84,	// -2, +1	; Create a new Pair object from the given left/right values on the work stack.
+	Op_Left	= 0x85,	// -1, +1	; Retrieve the 'left' property from the Pair on the stack top (UNDEFINED if not a Pair).
+	Op_Right	= 0x86,	// -1, +1	; Retrieve the 'right' property from the Pair on the stack top (UNDEFINED if not a Pair).
+	Op_NewFn	= 0x88,	// +1 | int32	; Push a new function instance that comes from the given compiled function (by function table index).
+	Op_NewObj	= 0x89,	// -(n*2+1), +1 | int32	; Create a new object from the 'n' property decls and base object on the work stack.
+	Op_SuperEq	= 0x8B,	// -2, +1	; Push true if a (top-2) and b (top-1) are identical references, false otherwise.
+	Op_SuperNe	= 0x8C,	// -2, +1	; Push false if a (top-2) and b (top-1) are identical references, true otherwise.
+	Op_Not	= 0x8D,	// -1, +1	; Convert the stack top to boolean, and then logically invert it.
+	Op_Is	= 0x8E,	// -2, +1	; Push true if a (top-2) is derived from b (top-1); push false if not.
+	Op_TypeOf	= 0x8F,	// -1, +1	; Push the formal type symbol corresponding to the type of the stack top.
 				
 	Op_Call0	= 0x90,	// -1, +1	; Call the given function with 0 arguments.  Function must be on the stack.
 	Op_Call1	= 0x91,	// -2, +1	; Call the given function with 1 argument.  Function and argument must be on the stack.
@@ -183,42 +184,57 @@ enum Opcode {
 	Op_NewTill	= 0xB8,	// +1 | int32	; Load the given 'till' escape-continuation branch-table object.
 	Op_EndTill	= 0xB9,	// -1	; Destroy (mark as unusable) the 'till' escape-continuation on the stack top.
 	Op_TillEsc	= 0xBA,	// -1 | int32	; Invoke the escape continuation on the stack, escaping to the given indexed when clause.
+	Op_Try	= 0xBC,	//  0 | label, int32	; Set up a new exception scope, branching to 'label' function if an exception is raised, pushing exception
+	Op_EndTry	= 0xBD,	//  0	; Revert to the previous exception scope.
 	Op_Ret	= 0xBF,	//  0	; Return to caller, destroying the current function's dynamic scope.  Stack top must contain return value.
 				
-	Op_Cons	= 0xC0,	// -2, +1	; Create a new List object from the given a/d values on the work stack.
-	Op_Car	= 0xC1,	// -1, +1	; Retrieve the 'a' property from the List on the stack top (UNDEFINED if not a List or Null).
-	Op_Cdr	= 0xC2,	// -1, +1	; Retrieve the 'd' property from the List on the stack top (UNDEFINED if not a List or Null).
-	Op_NewPair	= 0xC4,	// -2, +1	; Create a new Pair object from the given left/right values on the work stack.
-	Op_Left	= 0xC5,	// -1, +1	; Retrieve the 'left' property from the Pair on the stack top (UNDEFINED if not a Pair).
-	Op_Right	= 0xC6,	// -1, +1	; Retrieve the 'right' property from the Pair on the stack top (UNDEFINED if not a Pair).
-	Op_NewFn	= 0xC8,	// +1 | int32	; Push a new function instance that comes from the given compiled function (by function table index).
-	Op_NewObj	= 0xC9,	// -(n*2+1), +1 | int32	; Create a new object from the 'n' property decls and base object on the work stack.
+	Op_Add	= 0xC0,	// -2, +1	; Invoke any binary '+' operator on the object on the stack top.
+	Op_Sub	= 0xC1,	// -2, +1	; Invoke any binary '-' operator on the object on the stack top.
+	Op_Mul	= 0xC2,	// -2, +1	; Invoke any binary '*' operator on the object on the stack top.
+	Op_Div	= 0xC3,	// -2, +1	; Invoke any binary '/' operator on the object on the stack top.
+	Op_Mod	= 0xC4,	// -2, +1	; Invoke any binary 'mod' operator on the object on the stack top.
+	Op_Rem	= 0xC5,	// -2, +1	; Invoke any binary 'rem' operator on the object on the stack top.
+	Op_RangeTo	= 0xC7,	// -2, +1	; Invoke any binary 'range-to' operator on the object on the stack top.
+	Op_Eq	= 0xC8,	// -2, +1	; Invoke any binary '==' operator on the object on the stack top.
+	Op_Ne	= 0xC9,	// -2, +1	; Invoke any binary '!=' operator on the object on the stack top.
+	Op_Lt	= 0xCA,	// -2, +1	; Invoke any binary '<' operator on the object on the stack top.
+	Op_Gt	= 0xCB,	// -2, +1	; Invoke any binary '>' operator on the object on the stack top.
+	Op_Le	= 0xCC,	// -2, +1	; Invoke any binary '<=' operator on the object on the stack top.
+	Op_Ge	= 0xCD,	// -2, +1	; Invoke any binary '>=' operator on the object on the stack top.
+	Op_Cmp	= 0xCE,	// -2, +1	; Invoke any binary 'cmp' operator on the object on the stack top.
+	Op_Compare	= 0xCF,	// -2, +1	; Invoke any binary 'compare' operator on the object on the stack top.
 				
-	Op_LdA	= 0xD0,	// -1, +1	; Retrieve the 'a' property from the object on the stack top.
-	Op_LdD	= 0xD1,	// -1, +1	; Retrieve the 'd' property from the object on the stack top.
-	Op_LdLeft	= 0xD2,	// -1, +1	; Retrieve the 'left' property from the object on the stack top.
-	Op_LdRight	= 0xD3,	// -1, +1	; Retrieve the 'right' property from the object on the stack top.
-	Op_LdStart	= 0xD4,	// -1, +1	; Retrieve the 'start' property from the object on the stack top.
-	Op_LdEnd	= 0xD5,	// -1, +1	; Retrieve the 'end' property from the object on the stack top.
-	Op_LdCount	= 0xD6,	// -1, +1	; Retrieve the 'count' property from the object on the stack top.
-	Op_LdLength	= 0xD7,	// -1, +1	; Retrieve the 'length' property from the object on the stack top.
+	Op_Each	= 0xD0,	// -2, +1	; Invoke any binary 'each' operator on the object on the stack top.
+	Op_Map	= 0xD1,	// -2, +1	; Invoke any binary 'map' operator on the object on the stack top.
+	Op_Where	= 0xD2,	// -2, +1	; Invoke any binary 'where' operator on the object on the stack top.
+	Op_Count	= 0xD4,	// -2, +1	; Invoke any binary 'count' operator on the object on the stack top.
+	Op_Any	= 0xD5,	// -2, +1	; Invoke any binary 'any?' operator on the object on the stack top.
+	Op_Join	= 0xD6,	// -2, +1	; Invoke any binary 'join' operator on the object on the stack top.
+	Op_UCount	= 0xD8,	// -1, +1	; Invoke any unary 'count' operator on the object on the stack top.
+	Op_UAny	= 0xD9,	// -1, +1	; Invoke any unary 'any?' operator on the object on the stack top.				
+	Op_UJoin	= 0xDA,	// -1, +1	; Invoke any unary 'join' operator on the object on the stack top.
+	Op_Neg	= 0xDB,	// -1, +1	; Invoke any unary '-' operator on the object on the stack top.
+	Op_Bool	= 0xDC,	// -1, +1	; Invoke any unary 'bool' operator on the object on the stack top.	
+	Op_Int	= 0xDD,	// -1, +1	; Invoke any unary 'int' operator on the object on the stack top.	
+	Op_String	= 0xDE,	// -1, +1	; Invoke any unary 'string' operator on the object on the stack top.	
+	Op_Hash	= 0xDF,	// -1, +1	; Invoke any unary 'hash' operator on the object on the stack top.	
 				
-	Op_Add8	= 0xE0,	// -1, +1 | byte	; Add the given literal Byte to the Byte on the stack top. 
-	Op_Sub8	= 0xE1,	// -1, +1 | byte	; Subtract the given literal Byte from the Byte on the stack top.
-	Op_Add16	= 0xE2,	// -1, +1 | int16	; Add the given literal Integer16 to the Integer16 on the stack top. 
-	Op_Sub16	= 0xE3,	// -1, +1 | int16	; Subtract the given literal Integer16 from the Integer16 on the stack top.
-	Op_Add32	= 0xE4,	// -1, +1 | int32	; Add the given literal Integer32 to the Integer32 on the stack top. 
-	Op_Sub32	= 0xE5,	// -1, +1 | int32	; Subtract the given literal Integer32 from the Integer32 on the stack top.
-	Op_Add64	= 0xE6,	// -1, +1 | int64	; Add the given literal Integer64 to the Integer64 on the stack top. 
-	Op_Sub64	= 0xE7,	// -1, +1 | int64	; Subtract the given literal Integer64 from the Integer64 on the stack top.				
-	Op_AddR32	= 0xE8,	// -1, +1 | real32	; Add the given literal Real32 to the Real32 on the stack top.
-	Op_SubR32	= 0xE9,	// -1, +1 | real32	; Subtract the given literal Real32 from the Real32 on the stack top.
-	Op_AddR64	= 0xEA,	// -1, +1 | real64	; Add the given literal Real64 to the Real64 on the stack top.
-	Op_SubR64	= 0xEB,	// -1, +1 | real64	; Subtract the given literal Real64 from the Real64 on the stack top.
-	Op_AddF32	= 0xEC,	// -1, +1 | float32	; Add the given literal Float32 to the Float32 on the stack top.
-	Op_SubF32	= 0xED,	// -1, +1 | float32	; Subtract the given literal Float32 from the Float32 on the stack top.
-	Op_AddF64	= 0xEE,	// -1, +1 | float64	; Add the given literal Float64 to the Float64 on the stack top.
-	Op_SubF64	= 0xEF,	// -1, +1 | float64	; Subtract the given literal Float64 from the Float64 on the stack top.
+	Op_NullQ	= 0xE0,	// -1, +1	; Invoke any unary 'null?' operator on the object on the stack top.
+	Op_ListQ	= 0xE1,	// -1, +1	; Invoke any unary 'list?' operator on the object on the stack top.
+	Op_PairQ	= 0xE2,	// -1, +1	; Invoke any unary 'pair?' operator on the object on the stack top.
+	Op_FnQ	= 0xE3,	// -1, +1	; Invoke any unary 'fn?' operator on the object on the stack top.
+	Op_BoolQ	= 0xE4,	// -1, +1	; Invoke any unary 'bool?' operator on the object on the stack top.
+	Op_IntQ	= 0xE5,	// -1, +1	; Invoke any unary 'int?' operator on the object on the stack top.
+	Op_StringQ	= 0xE6,	// -1, +1	; Invoke any unary 'string?' operator on the object on the stack top.
+	Op_SymbolQ	= 0xE7,	// -1, +1	; Invoke any unary 'symbol?' operator on the object on the stack top.
+	Op_LdA	= 0xE8,	// -1, +1	; Retrieve the 'a' property from the object on the stack top.
+	Op_LdD	= 0xE9,	// -1, +1	; Retrieve the 'd' property from the object on the stack top.
+	Op_LdLeft	= 0xEA,	// -1, +1	; Retrieve the 'left' property from the object on the stack top.
+	Op_LdRight	= 0xEB,	// -1, +1	; Retrieve the 'right' property from the object on the stack top.
+	Op_LdStart	= 0xEC,	// -1, +1	; Retrieve the 'start' property from the object on the stack top.
+	Op_LdEnd	= 0xED,	// -1, +1	; Retrieve the 'end' property from the object on the stack top.
+	Op_LdCount	= 0xEE,	// -1, +1	; Retrieve the 'count' property from the object on the stack top.
+	Op_LdLength	= 0xEF,	// -1, +1	; Retrieve the 'length' property from the object on the stack top.
 				
 	Op_StateMachStart	= 0xF0,	//  0	; Special start-the-state-machine instruction.
 	Op_StateMachBody	= 0xF1,	//  0	; Special repeatedly-invoke-the-state-machine instruction.
