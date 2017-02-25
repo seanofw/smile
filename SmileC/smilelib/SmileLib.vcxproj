@@ -812,6 +812,7 @@
     <ClCompile Include="src\parsing\parser\parseexpr.c" />
     <ClCompile Include="src\parsing\parser\parsefunc.c" />
     <ClCompile Include="src\parsing\parser\parsemessage.c" />
+    <ClCompile Include="src\parsing\parser\parsenew.c" />
     <ClCompile Include="src\parsing\parser\parsequote.c" />
     <ClCompile Include="src\parsing\parser\parsercore.c" />
     <ClCompile Include="src\parsing\parser\parserdynstrings.c" />
@@ -822,6 +823,7 @@
     <ClCompile Include="src\parsing\parser\parsestmt.c" />
     <ClCompile Include="src\parsing\parser\parsesyntax.c" />
     <ClCompile Include="src\parsing\parser\parseterm.c" />
+    <ClCompile Include="src\parsing\parser\parsetill.c" />
     <ClCompile Include="src\siphash.c" />
     <ClCompile Include="src\smiletypes\numeric\smilebyte.c" />
     <ClCompile Include="src\smiletypes\numeric\smilebyte_base.c" />

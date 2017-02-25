@@ -38,10 +38,11 @@
 
 #define PARSESCOPE_OUTERMOST	0	// The one-and-only outermost scope.
 #define PARSESCOPE_FUNCTION	1	// A function scope (a pseudo-scope for its arguments).
-#define PARSESCOPE_SCOPEDECL	2	// An explicitly-declared scope using {braces}.
+#define PARSESCOPE_SCOPEDECL	2	// A declared scope using {braces}.
 #define PARSESCOPE_POSTCONDITION	3	// A post: or pre:condition mini-scope.
 #define PARSESCOPE_TILLDO	4	// A till...do body in which till-names apply.
 #define PARSESCOPE_SYNTAX	5	// A syntax rule's body, in which the syntax names apply.
+#define PARSESCOPE_EXPLICIT	6	// An explicitly-declared scope using a Lisp-style [$scope] form.
 
 //-------------------------------------------------------------------------------------------------
 //  Parse scopes.

@@ -879,6 +879,12 @@
     <ClCompile Include="src\eval\compiler\compile_or.c">
       <Filter>src\eval\compiler</Filter>
     </ClCompile>
+    <ClCompile Include="src\parsing\parser\parsenew.c">
+      <Filter>src\parsing\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parsing\parser\parsetill.c">
+      <Filter>src\parsing\parser</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">

@@ -210,6 +210,15 @@ ParseError ParseScope_DeclareHere(ParseScope scope, Symbol symbol, Int kind, Lex
 	ParseError error;
 	Int32 declIndex;
 
+	if (scope->kind == PARSESCOPE_EXPLICIT) {
+		if (decl != NULL)
+			*decl = NULL;
+		error = ParseMessage_Create(PARSEMESSAGE_ERROR, position,
+			String_Format("Cannot add \"%S\" to the current scope, which explicitly lists its variables.",
+				SymbolTable_GetName(Smile_SymbolTable, symbol)));
+		return error;
+	}
+
 	// Construct the base declaration object for this name.
 	parseDecl = ParseDecl_Create(symbol, kind, scope->numDecls, position, NULL);
 
@@ -253,5 +262,101 @@ ParseError ParseScope_DeclareHere(ParseScope scope, Symbol symbol, Int kind, Lex
 	// Last, return the declaration object itself.
 	if (decl != NULL)
 		*decl = parseDecl;
+	return NULL;
+}
+
+// scope-vars ::= . names
+static ParseError Parser_ParseClassicScopeVariableNames(Parser parser, SmileList *result)
+{
+	SmileList head = NullList, tail = NullList;
+	Token token;
+	Symbol name;
+	ParseError error;
+
+	for (;;) {
+		token = Parser_NextToken(parser);
+		switch (token->kind) {
+
+			case TOKEN_BAR:
+			case TOKEN_LEFTBRACE:
+			case TOKEN_LEFTBRACKET:
+			case TOKEN_LEFTPARENTHESIS:
+			case TOKEN_RIGHTBRACE:
+			case TOKEN_RIGHTBRACKET:
+			case TOKEN_RIGHTPARENTHESIS:
+				*result = head;
+				return NULL;
+
+			case TOKEN_ALPHANAME:
+			case TOKEN_UNKNOWNALPHANAME:
+			case TOKEN_PUNCTNAME:
+			case TOKEN_UNKNOWNPUNCTNAME:
+				name = token->data.symbol;
+				LIST_APPEND_WITH_SOURCE(head, tail, SmileSymbol_Create(name), Token_GetPosition(token));
+				break;
+
+			default:
+				error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), String_FromC("Missing name for [$scope] variable."));
+				Parser_AddMessage(parser, error);
+				break;
+		}
+	}
+}
+
+// term ::= '[' '$scope' . scope-vars exprs-opt ']'
+ParseError Parser_ParseClassicScope(Parser parser, SmileObject *result, LexerPosition startPosition)
+{
+	SmileList variableNames;
+	SmileList head, tail;
+	SmileList temp;
+	ParseError error;
+	ParseDecl decl;
+	SmileSymbol smileSymbol;
+
+	// Make sure there is a '[' to start the name list.
+	if ((error = Parser_ExpectLeftBracket(parser, result, NULL, "$scope", startPosition)) != NULL)
+		return error;
+
+	Parser_BeginScope(parser, PARSESCOPE_EXPLICIT);
+
+	// Parse the names.
+	if ((error = Parser_ParseClassicScopeVariableNames(parser, &variableNames)) != NULL) {
+		Parser_AddMessage(parser, error);
+		variableNames = NullList;
+	}
+
+	// Make sure there is a ']' to end the variable-names list.
+	if ((error = Parser_ExpectRightBracket(parser, result, NULL, "$scope variables", startPosition)) != NULL) {
+		Parser_EndScope(parser);
+		return error;
+	}
+
+	// Spin over the variable-names list and declare each one in the new parsing scope.
+	if (SMILE_KIND(variableNames) != SMILE_KIND_LIST) {
+		for (temp = variableNames; SMILE_KIND(temp) == SMILE_KIND_LIST; temp = (SmileList)temp->d) {
+			smileSymbol = (SmileSymbol)temp->a;
+			ParseScope_DeclareHere(parser->currentScope, smileSymbol->symbol, PARSEDECL_VARIABLE, SmileList_GetSourceLocation(temp), &decl);
+		}
+	}
+
+	// Parse the body expressions.
+	head = tail = NullList;
+	Parser_ParseExprsOpt(parser, &head, &tail, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
+
+	// End the scope.
+	Parser_EndScope(parser);
+
+	// Make sure there is a ']' to end the scope.
+	if ((error = Parser_ExpectRightBracket(parser, result, NULL, "$scope", startPosition)) != NULL)
+		return error;
+
+	// Construct the resulting [$scope names exprs] form.
+	*result =
+		(SmileObject)SmileList_ConsWithSource((SmileObject)SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__TILL),
+			(SmileObject)SmileList_ConsWithSource((SmileObject)variableNames,
+				(SmileObject)head,
+			startPosition),
+		startPosition);
+
 	return NULL;
 }

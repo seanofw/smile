@@ -358,3 +358,84 @@ ParseError Parser_ParseParamType(Parser parser, SmileObject *type)
 	Lexer_Unget(parser->lexer);
 	return NULL;
 }
+
+static ParseError DeclareClassicFnArg(Parser parser, SmileObject arg, LexerPosition argPosition)
+{
+	SmileSymbol smileSymbol;
+	SmileList smileList;
+	ParseDecl decl;
+
+	switch (SMILE_KIND(arg)) {
+	
+		case SMILE_KIND_SYMBOL:
+			smileSymbol = (SmileSymbol)arg;
+			return ParseScope_DeclareHere(parser->currentScope, smileSymbol->symbol, PARSEDECL_ARGUMENT, argPosition, &decl);
+
+		case SMILE_KIND_LIST:
+			smileList = (SmileList)arg;
+			if (SMILE_KIND(smileList->a) != SMILE_KIND_SYMBOL) {
+				return ParseMessage_Create(PARSEMESSAGE_ERROR, argPosition,
+					String_FromC("Invalid function argument name."));
+			}
+			smileSymbol = (SmileSymbol)arg;
+			return ParseScope_DeclareHere(parser->currentScope, smileSymbol->symbol, PARSEDECL_ARGUMENT, argPosition, &decl);
+
+		default:
+			return ParseMessage_Create(PARSEMESSAGE_ERROR, argPosition,
+				String_FromC("Invalid function argument name."));
+	}
+}
+
+// term ::= '[' '$fn' . '[' args ']' body ']'
+ParseError Parser_ParseClassicFn(Parser parser, SmileObject *result, LexerPosition startPosition)
+{
+	ParseError error;
+	SmileList args, temp;
+	SmileObject body;
+
+	Parser_BeginScope(parser, PARSESCOPE_FUNCTION);
+
+	error = Parser_ParseQuoteBody(parser, (SmileObject *)&args, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS, startPosition);
+	if (error != NULL) {
+		Parser_EndScope(parser);
+		*result = NullObject;
+		return error;
+	}
+
+	if (SMILE_KIND(args) != SMILE_KIND_LIST && SMILE_KIND(args) != SMILE_KIND_NULL) {
+		error = ParseMessage_Create(PARSEMESSAGE_ERROR, startPosition,
+			String_Format("First argument to [$fn] must be a list of symbols.", startPosition->line));
+		Parser_EndScope(parser);
+		*result = NullObject;
+		return error;
+	}
+
+	for (temp = args; SMILE_KIND(temp) == SMILE_KIND_LIST; temp = (SmileList)temp->d) {
+		if ((error = DeclareClassicFnArg(parser, temp->a, SmileList_GetSourceLocation(temp))) != NULL) {
+			Parser_EndScope(parser);
+			*result = NullObject;
+			return error;
+		}
+	}
+
+	error = Parser_ParseExpr(parser, &body, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
+	if (error != NULL) {
+		Parser_EndScope(parser);
+		*result = NullObject;
+		return error;
+	}
+
+	Parser_EndScope(parser);
+
+	if ((error = Parser_ExpectRightBracket(parser, result, NULL, "[$fn] form", startPosition)) != NULL)
+		return error;
+
+	*result =
+		(SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects._fnSymbol,
+			(SmileObject)SmileList_ConsWithSource((SmileObject)args,
+				(SmileObject)SmileList_ConsWithSource(body, NullObject, startPosition),
+			startPosition),
+		startPosition);
+
+	return NULL;
+}

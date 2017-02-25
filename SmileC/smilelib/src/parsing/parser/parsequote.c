@@ -377,3 +377,50 @@ static void Parser_TransformListIntoTemplate(SmileList *head, SmileList *tail, L
 	*tail = newTail;
 }
 
+// term ::= '[' '$quote' raw-list-term ']'
+ParseError Parser_ParseClassicQuote(Parser parser, SmileObject *result, LexerPosition startPosition)
+{
+	ParseError error;
+	SmileObject body;
+
+	error = Parser_ParseQuoteBody(parser, &body, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS, startPosition);
+	if (error != NULL) {
+		Parser_Recover(parser, Parser_RightBracesBracketsParentheses_Recovery, Parser_RightBracesBracketsParentheses_Count);
+		*result = NullObject;
+		return error;
+	}
+
+	if ((error = Parser_ExpectRightBracket(parser, result, NULL, "[$quote] form", startPosition)) != NULL)
+		return error;
+
+	*result =
+		(SmileObject)SmileList_ConsWithSource((SmileObject)SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__QUOTE),
+			(SmileObject)SmileList_ConsWithSource(body, NullObject, startPosition),
+		startPosition);
+	return NULL;
+}
+
+ParseError Parser_ParseQuoteBody(Parser parser, SmileObject *result, Int modeFlags, LexerPosition startPosition)
+{
+	ParseError error;
+
+	if (Lexer_Peek(parser->lexer) == TOKEN_LEFTPARENTHESIS) {
+		// This is a quote of a parenthesized expression, so parse the expression normally and then quote it.
+		error = Parser_ParseParentheses(parser, result, modeFlags);
+		if (error != NULL)
+			return error;
+		*result = (SmileObject)SmileList_ConsWithSource(
+			(SmileObject)Smile_KnownObjects._quoteSymbol,
+			(SmileObject)SmileList_ConsWithSource(*result, NullObject, startPosition),
+			startPosition
+		);
+		return NULL;
+	}
+
+	// This is a quote of a more generic thing, like a list or a symbol, so recursively parse
+	// this "quoted term".  Because the "quoted term" might be a list that somewhere contains
+	// a (parenthetical escape), thus turning the "quoted term" from an ordinary quoted list
+	// into a template, we do not do the quoting here, but instead do that quoting work inside
+	// Parser_ParseQuotedTerm() itself, which is the only code that knows how to do it correctly.
+	return Parser_ParseQuotedTerm(parser, result, modeFlags, startPosition);
+}

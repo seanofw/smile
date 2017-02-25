@@ -86,6 +86,14 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *ex
 SMILE_INTERNAL_FUNC CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, Int modeFlags, Symbol syntaxClassSymbol,
 	Int syntaxRootMode, Symbol rootSkipSymbol, ParseError *parseError);
 
+SMILE_INTERNAL_FUNC ParseError Parser_ParseClassicFn(Parser parser, SmileObject *result, LexerPosition startPosition);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseQuoteBody(Parser parser, SmileObject *result, Int modeFlags, LexerPosition startPosition);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseClassicQuote(Parser parser, SmileObject *result, LexerPosition startPosition);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseClassicScope(Parser parser, SmileObject *result, LexerPosition startPosition);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseClassicTill(Parser parser, SmileObject *result, LexerPosition startPosition);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseClassicNew(Parser parser, SmileObject *result, LexerPosition startPosition);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseClassicSet(Parser parser, SmileObject *result, LexerPosition startPosition);
+
 SMILE_INTERNAL_FUNC Token Parser_Recover(Parser parser, Int *tokenKinds, Int numTokenKinds);
 SMILE_INTERNAL_FUNC Bool Parser_IsLValue(SmileObject obj);
 SMILE_INTERNAL_FUNC Bool Parser_HasEqualLookahead(Parser parser);
@@ -93,6 +101,10 @@ SMILE_INTERNAL_FUNC Bool Parser_HasEqualOrColonLookahead(Parser parser);
 SMILE_INTERNAL_FUNC Bool Parser_HasLookahead(Parser parser, Int tokenKind);
 SMILE_INTERNAL_FUNC Bool Parser_Has2Lookahead(Parser parser, Int tokenKind1, Int tokenKind2);
 SMILE_INTERNAL_FUNC Bool Parser_Peek2(Parser parser, Token *token1, Token *token2);
+SMILE_INTERNAL_FUNC ParseError Parser_ExpectLeftBracket(Parser parser, SmileObject *result,
+	Token firstUnaryTokenForErrorReporting, const char *name, LexerPosition startPosition);
+SMILE_INTERNAL_FUNC ParseError Parser_ExpectRightBracket(Parser parser, SmileObject *result,
+	Token firstUnaryTokenForErrorReporting, const char *name, LexerPosition startPosition);
 
 SMILE_INTERNAL_DATA Int Parser_BracesBracketsParenthesesBar_Recovery[];
 SMILE_INTERNAL_DATA Int Parser_BracesBracketsParenthesesBar_Count;
