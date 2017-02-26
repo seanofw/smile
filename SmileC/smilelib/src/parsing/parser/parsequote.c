@@ -381,9 +381,8 @@ static void Parser_TransformListIntoTemplate(SmileList *head, SmileList *tail, L
 ParseError Parser_ParseClassicQuote(Parser parser, SmileObject *result, LexerPosition startPosition)
 {
 	ParseError error;
-	SmileObject body;
 
-	error = Parser_ParseQuoteBody(parser, &body, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS, startPosition);
+	error = Parser_ParseQuoteBody(parser, result, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS, startPosition);
 	if (error != NULL) {
 		Parser_Recover(parser, Parser_RightBracesBracketsParentheses_Recovery, Parser_RightBracesBracketsParentheses_Count);
 		*result = NullObject;
@@ -393,10 +392,6 @@ ParseError Parser_ParseClassicQuote(Parser parser, SmileObject *result, LexerPos
 	if ((error = Parser_ExpectRightBracket(parser, result, NULL, "[$quote] form", startPosition)) != NULL)
 		return error;
 
-	*result =
-		(SmileObject)SmileList_ConsWithSource((SmileObject)SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__QUOTE),
-			(SmileObject)SmileList_ConsWithSource(body, NullObject, startPosition),
-		startPosition);
 	return NULL;
 }
 

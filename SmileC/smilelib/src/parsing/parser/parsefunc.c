@@ -67,6 +67,7 @@ ParseError Parser_ParseFunc(Parser parser, SmileObject *expr, Int modeFlags)
 		Parser_EndScope(parser);
 		return parseError;
 	}
+	if (body == Parser_IgnorableObject) body = NullObject;
 
 	// Allow an optional semicolon to terminate the function, which is very useful for short inline functions in long compound expressions.
 	if (Lexer_Next(parser->lexer) != TOKEN_SEMICOLON) {
@@ -377,7 +378,7 @@ static ParseError DeclareClassicFnArg(Parser parser, SmileObject arg, LexerPosit
 				return ParseMessage_Create(PARSEMESSAGE_ERROR, argPosition,
 					String_FromC("Invalid function argument name."));
 			}
-			smileSymbol = (SmileSymbol)arg;
+			smileSymbol = (SmileSymbol)smileList->a;
 			return ParseScope_DeclareHere(parser->currentScope, smileSymbol->symbol, PARSEDECL_ARGUMENT, argPosition, &decl);
 
 		default:
@@ -392,17 +393,18 @@ ParseError Parser_ParseClassicFn(Parser parser, SmileObject *result, LexerPositi
 	ParseError error;
 	SmileList args, temp;
 	SmileObject body;
+	Bool argsAreTemplate;
 
 	Parser_BeginScope(parser, PARSESCOPE_FUNCTION);
 
-	error = Parser_ParseQuoteBody(parser, (SmileObject *)&args, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS, startPosition);
+	error = Parser_ParseRawListTerm(parser, (SmileObject *)&args, &argsAreTemplate, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
 	if (error != NULL) {
 		Parser_EndScope(parser);
 		*result = NullObject;
 		return error;
 	}
 
-	if (SMILE_KIND(args) != SMILE_KIND_LIST && SMILE_KIND(args) != SMILE_KIND_NULL) {
+	if ((SMILE_KIND(args) != SMILE_KIND_LIST && SMILE_KIND(args) != SMILE_KIND_NULL) || argsAreTemplate) {
 		error = ParseMessage_Create(PARSEMESSAGE_ERROR, startPosition,
 			String_Format("First argument to [$fn] must be a list of symbols.", startPosition->line));
 		Parser_EndScope(parser);
@@ -424,6 +426,7 @@ ParseError Parser_ParseClassicFn(Parser parser, SmileObject *result, LexerPositi
 		*result = NullObject;
 		return error;
 	}
+	if (body == Parser_IgnorableObject) body = NullObject;
 
 	Parser_EndScope(parser);
 

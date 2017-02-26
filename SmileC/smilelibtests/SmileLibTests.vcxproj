@@ -131,6 +131,7 @@
     <ClCompile Include="parsing\lexer\lexerpunctuation_tests.c" />
     <ClCompile Include="parsing\lexer\lexerstring_tests.c" />
     <ClCompile Include="parsing\lexer\lexerunicode_tests.c" />
+    <ClCompile Include="parsing\parser\parserclassic_tests.c" />
     <ClCompile Include="parsing\parser\parsercore_tests.c" />
     <ClCompile Include="parsing\parser\parserfunc_tests.c" />
     <ClCompile Include="parsing\parser\parsernew_tests.c" />

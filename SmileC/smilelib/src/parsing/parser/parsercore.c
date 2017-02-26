@@ -245,9 +245,8 @@ void Parser_ParseExprsOpt(Parser parser, SmileList *head, SmileList *tail, Int m
 		// Parse the next expression.
 		error = Parser_ParseExpr(parser, &expr, modeFlags);
 		if (error == NULL) {
-			if (expr != NullObject) {
-
-				// Add the successfully-parsed expression to the output (if there's something non-null to add).
+			if (expr != Parser_IgnorableObject) {
+				// Add the successfully-parsed expression to the output, if it's worth keeping.
 				LIST_APPEND_WITH_SOURCE(*head, *tail, expr, lexerPosition);
 			}
 		}
@@ -288,6 +287,7 @@ ParseError Parser_ParseOneExpressionFromText(Parser parser, SmileObject *expr, S
 		*expr = NULL;
 		return parseError;
 	}
+	if (*expr == Parser_IgnorableObject) *expr = NullObject;
 
 	if ((token = Parser_NextToken(parser))->kind != TOKEN_EOI) {
 		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),

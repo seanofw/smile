@@ -68,7 +68,7 @@ ParseError Parser_ParseKeywordList(Parser parser, SmileObject *expr)
 	Lexer_Unget(parser->lexer);
 
 	// There's literally nothing to return on a successful parse.
-	*expr = NullObject;
+	*expr = Parser_IgnorableObject;
 	return NULL;
 }
 
@@ -109,7 +109,7 @@ ParseError Parser_ParseVarDecls(Parser parser, SmileObject *expr, Int modeFlags,
 	// Finally, take our pile of assignments (if they exist), and turn them into an executable
 	// form by prefixing them with '$progn':  [$progn [\= x 5] [\= y 8] [\= z 10] ...]
 	*expr = head->kind == SMILE_KIND_NULL
-		? NullObject
+		? Parser_IgnorableObject
 		: (SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects._prognSymbol, (SmileObject)head,
 			((struct SmileListWithSourceInt *)head)->position);
 	return NULL;
@@ -370,6 +370,7 @@ ParseError Parser_ParseClassicSet(Parser parser, SmileObject *result, LexerPosit
 		*result = NullObject;
 		return error;
 	}
+	if (rvalue == Parser_IgnorableObject) rvalue = NullObject;
 
 	if ((error = Parser_ExpectRightBracket(parser, result, NULL, "[$set] form", startPosition)) != NULL)
 		return error;

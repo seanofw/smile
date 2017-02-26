@@ -23,6 +23,11 @@
 #include <smile/parsing/internal/parsedecl.h>
 #include <smile/parsing/internal/parsescope.h>
 
+static struct SmileListInt _parser_ignorableObject = { 0 };
+
+// This object is used to identify constructs that may safely be elided from the parser's output.
+SmileObject Parser_IgnorableObject = (SmileObject)&_parser_ignorableObject;
+
 //-------------------------------------------------------------------------------------------------
 // Base expression parsing
 
@@ -908,6 +913,7 @@ ParseError Parser_ParseParentheses(Parser parser, SmileObject *result, Int modeF
 		*result = NullObject;
 		return NULL;
 	}
+	if (*result == Parser_IgnorableObject) *result = NullObject;
 
 	// Make sure there's a matching ')' following the opening '('.
 	if (!Parser_HasLookahead(parser, TOKEN_RIGHTPARENTHESIS)) {

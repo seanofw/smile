@@ -198,6 +198,7 @@ static ParseError Parser_ParseClassicNewMember(Parser parser, SmileObject *resul
 		*result = NullObject;
 		return error;
 	}
+	if (body == Parser_IgnorableObject) body = NullObject;
 
 	// Make sure there's a trailing ']' to end the member.
 	if ((error = Parser_ExpectRightBracket(parser, result, NULL, "$new member", position)) != NULL)
@@ -247,9 +248,10 @@ ParseError Parser_ParseClassicNew(Parser parser, SmileObject *result, LexerPosit
 		Parser_AddMessage(parser, error);
 		base = NullObject;
 	}
+	if (base == Parser_IgnorableObject) base = NullObject;
 
 	// Make sure there is a '[' to start the member list.
-	if ((error = Parser_ExpectLeftBracket(parser, result, NULL, "$new", startPosition)) != NULL)
+	if ((error = Parser_ExpectLeftBracket(parser, result, NULL, "$new member list", startPosition)) != NULL)
 		return error;
 
 	// Parse the members, however many there may be.
@@ -259,7 +261,7 @@ ParseError Parser_ParseClassicNew(Parser parser, SmileObject *result, LexerPosit
 	}
 
 	// Make sure there is a ']' to end the member list.
-	if ((error = Parser_ExpectRightBracket(parser, result, NULL, "$new", startPosition)) != NULL)
+	if ((error = Parser_ExpectRightBracket(parser, result, NULL, "$new member list", startPosition)) != NULL)
 		return error;
 
 	// Construct the resulting [$new base members] form.

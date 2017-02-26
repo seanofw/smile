@@ -105,6 +105,9 @@
     <ClCompile Include="eval\eval_tests.c">
       <Filter>eval</Filter>
     </ClCompile>
+    <ClCompile Include="parsing\parser\parserclassic_tests.c">
+      <Filter>parsing\parser</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />

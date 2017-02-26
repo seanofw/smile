@@ -69,6 +69,7 @@ static ParseError Parser_ParseClassicTillWhen(Parser parser, SmileObject *result
 		*result = NullObject;
 		return error;
 	}
+	if (body == Parser_IgnorableObject) body = NullObject;
 
 	// Make sure there's a trailing ']' to end the when-clause.
 	if ((error = Parser_ExpectRightBracket(parser, result, NULL, "$till when-clause", position)) != NULL)
@@ -125,6 +126,7 @@ static ParseError Parser_ParseClassicTillFlagNames(Parser parser, SmileList *res
 			case TOKEN_RIGHTBRACE:
 			case TOKEN_RIGHTBRACKET:
 			case TOKEN_RIGHTPARENTHESIS:
+				Lexer_Unget(parser->lexer);
 				*result = head;
 				return NULL;
 			
@@ -192,6 +194,7 @@ ParseError Parser_ParseClassicTill(Parser parser, SmileObject *result, LexerPosi
 		Parser_AddMessage(parser, error);
 		body = NullObject;
 	}
+	if (body == Parser_IgnorableObject) body = NullObject;
 
 	// The scope for the flags is no longer valid after the body expression.
 	Parser_EndScope(parser);

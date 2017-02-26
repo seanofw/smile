@@ -111,6 +111,8 @@ SMILE_INTERNAL_DATA Int Parser_BracesBracketsParenthesesBar_Count;
 SMILE_INTERNAL_DATA Int Parser_RightBracesBracketsParentheses_Recovery[];
 SMILE_INTERNAL_DATA Int Parser_RightBracesBracketsParentheses_Count;
 
+SMILE_INTERNAL_DATA SmileObject Parser_IgnorableObject;
+
 //-------------------------------------------------------------------------------------------------
 // Inline helper methods
 

@@ -210,18 +210,7 @@ ParseError ParseScope_DeclareHere(ParseScope scope, Symbol symbol, Int kind, Lex
 	ParseError error;
 	Int32 declIndex;
 
-	if (scope->kind == PARSESCOPE_EXPLICIT) {
-		if (decl != NULL)
-			*decl = NULL;
-		error = ParseMessage_Create(PARSEMESSAGE_ERROR, position,
-			String_Format("Cannot add \"%S\" to the current scope, which explicitly lists its variables.",
-				SymbolTable_GetName(Smile_SymbolTable, symbol)));
-		return error;
-	}
-
-	// Construct the base declaration object for this name.
-	parseDecl = ParseDecl_Create(symbol, kind, scope->numDecls, position, NULL);
-
+	// First, see if we already declared this.
 	if ((previousDecl = ParseScope_FindDeclaration(scope, symbol)) != NULL) {
 	
 		// Already declared.  This isn't necessarily an error, but it depends on what
@@ -240,6 +229,19 @@ ParseError ParseScope_DeclareHere(ParseScope scope, Symbol symbol, Int kind, Lex
 			return error;
 		}
 	}
+
+	// It's not already declared, so are we allowed to declare a new variable in this scope?  If not, bail.
+	if (scope->kind == PARSESCOPE_EXPLICIT) {
+		if (decl != NULL)
+			*decl = NULL;
+		error = ParseMessage_Create(PARSEMESSAGE_ERROR, position,
+			String_Format("Cannot add \"%S\" to the current scope, which explicitly lists its variables.",
+			SymbolTable_GetName(Smile_SymbolTable, symbol)));
+		return error;
+	}
+
+	// Construct the base declaration object for this name.
+	parseDecl = ParseDecl_Create(symbol, kind, scope->numDecls, position, NULL);
 
 	// Allocate a new index for the declaration.
 	if (scope->numDecls >= scope->maxDecls) {
@@ -284,6 +286,7 @@ static ParseError Parser_ParseClassicScopeVariableNames(Parser parser, SmileList
 			case TOKEN_RIGHTBRACE:
 			case TOKEN_RIGHTBRACKET:
 			case TOKEN_RIGHTPARENTHESIS:
+				Lexer_Unget(parser->lexer);
 				*result = head;
 				return NULL;
 
@@ -317,7 +320,7 @@ ParseError Parser_ParseClassicScope(Parser parser, SmileObject *result, LexerPos
 	if ((error = Parser_ExpectLeftBracket(parser, result, NULL, "$scope", startPosition)) != NULL)
 		return error;
 
-	Parser_BeginScope(parser, PARSESCOPE_EXPLICIT);
+	Parser_BeginScope(parser, PARSESCOPE_SCOPEDECL);
 
 	// Parse the names.
 	if ((error = Parser_ParseClassicScopeVariableNames(parser, &variableNames)) != NULL) {
@@ -332,12 +335,16 @@ ParseError Parser_ParseClassicScope(Parser parser, SmileObject *result, LexerPos
 	}
 
 	// Spin over the variable-names list and declare each one in the new parsing scope.
-	if (SMILE_KIND(variableNames) != SMILE_KIND_LIST) {
+	if (SMILE_KIND(variableNames) == SMILE_KIND_LIST) {
 		for (temp = variableNames; SMILE_KIND(temp) == SMILE_KIND_LIST; temp = (SmileList)temp->d) {
 			smileSymbol = (SmileSymbol)temp->a;
 			ParseScope_DeclareHere(parser->currentScope, smileSymbol->symbol, PARSEDECL_VARIABLE, SmileList_GetSourceLocation(temp), &decl);
 		}
 	}
+
+	// Now that all of the variables are declared, we mark this as an "explicit" scope, which
+	// prohibits any new ones from being added to it.
+	parser->currentScope->kind = PARSESCOPE_EXPLICIT;
 
 	// Parse the body expressions.
 	head = tail = NullList;
@@ -352,7 +359,7 @@ ParseError Parser_ParseClassicScope(Parser parser, SmileObject *result, LexerPos
 
 	// Construct the resulting [$scope names exprs] form.
 	*result =
-		(SmileObject)SmileList_ConsWithSource((SmileObject)SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__TILL),
+		(SmileObject)SmileList_ConsWithSource((SmileObject)SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__SCOPE),
 			(SmileObject)SmileList_ConsWithSource((SmileObject)variableNames,
 				(SmileObject)head,
 			startPosition),
