@@ -571,7 +571,7 @@ UserFunctionInfo Compiler_CompileGlobal(Compiler compiler, SmileObject expr)
 	ClosureInfo closureInfo;
 	String errorMessage;
 
-	userFunctionInfo = UserFunctionInfo_Create(NULL, NullList, expr, &errorMessage);
+	userFunctionInfo = UserFunctionInfo_Create(NULL, NULL, NullList, expr, &errorMessage);
 	compilerFunction = Compiler_BeginFunction(compiler, NullList, expr);
 	compilerFunction->userFunctionInfo = userFunctionInfo;
 	compiler->compiledTables->globalFunctionInfo = userFunctionInfo;

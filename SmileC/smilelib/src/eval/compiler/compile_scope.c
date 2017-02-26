@@ -34,7 +34,7 @@ void Compiler_CompileScope(Compiler compiler, SmileList args)
 	// The [$scope] expression must be of the form:  [$scope [locals...] ...].
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->a) != SMILE_KIND_LIST
 		|| !(SMILE_KIND(args->d) == SMILE_KIND_LIST || SMILE_KIND(args->d) == SMILE_KIND_NULL)) {
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_FromC("Cannot compile [$scope]: Expression is not well-formed.")));
 		return;
 	}
@@ -46,7 +46,7 @@ void Compiler_CompileScope(Compiler compiler, SmileList args)
 	numScopeVars = 0;
 	for (temp = scopeVars; SMILE_KIND(temp) == SMILE_KIND_LIST; temp = (SmileList)temp->d) {
 		if (SMILE_KIND(temp->a) != SMILE_KIND_SYMBOL) {
-			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(temp),
+			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(temp, getSourceLocation),
 				String_Format("Cannot compile [$scope]: Variable #%d is not a valid local variable name.", numScopeVars + 1)));
 		}
 
@@ -55,7 +55,7 @@ void Compiler_CompileScope(Compiler compiler, SmileList args)
 		CompileScope_DefineSymbol(scope, symbol, PARSEDECL_VARIABLE, localIndex);
 	}
 	if (SMILE_KIND(temp) != SMILE_KIND_NULL) {
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_FromC("Cannot compile [$scope]: Local-variable list is not well-formed.")));
 		return;
 	}

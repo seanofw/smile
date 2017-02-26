@@ -338,7 +338,7 @@ ParseError Parser_ParseClassicScope(Parser parser, SmileObject *result, LexerPos
 	if (SMILE_KIND(variableNames) == SMILE_KIND_LIST) {
 		for (temp = variableNames; SMILE_KIND(temp) == SMILE_KIND_LIST; temp = (SmileList)temp->d) {
 			smileSymbol = (SmileSymbol)temp->a;
-			ParseScope_DeclareHere(parser->currentScope, smileSymbol->symbol, PARSEDECL_VARIABLE, SmileList_GetSourceLocation(temp), &decl);
+			ParseScope_DeclareHere(parser->currentScope, smileSymbol->symbol, PARSEDECL_VARIABLE, SMILE_VCALL(temp, getSourceLocation), &decl);
 		}
 	}
 

@@ -358,3 +358,12 @@ static String SmileList_ToString(SmileList self)
 
 	return StringBuilder_ToString(stringBuilder);
 }
+
+static LexerPosition SmileList_GetSourceLocation(SmileList list)
+{
+	if (list->kind & SMILE_FLAG_WITHSOURCE) {
+		struct SmileListWithSourceInt *listWithSource = (struct SmileListWithSourceInt *)list;
+		return listWithSource->position;
+	}
+	else return NULL;
+}

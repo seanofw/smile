@@ -185,7 +185,7 @@ ParseError Parser_ParseClassicTill(Parser parser, SmileObject *result, LexerPosi
 		// Spin over the flags list and declare each one in the new parsing scope.
 		for (temp = flags; SMILE_KIND(temp) == SMILE_KIND_LIST; temp = (SmileList)temp->d) {
 			smileSymbol = (SmileSymbol)temp->a;
-			ParseScope_DeclareHere(parser->currentScope, smileSymbol->symbol, PARSEDECL_TILL, SmileList_GetSourceLocation(temp), &decl);
+			ParseScope_DeclareHere(parser->currentScope, smileSymbol->symbol, PARSEDECL_TILL, SMILE_VCALL(temp, getSourceLocation), &decl);
 		}
 	}
 

@@ -135,7 +135,7 @@ static Bool ValidateTill(Compiler compiler, SmileList args, SmileList *flags, Sm
 	if (SMILE_KIND(args) != SMILE_KIND_LIST
 		|| (SMILE_KIND(args->a) != SMILE_KIND_LIST && SMILE_KIND(args->a) != SMILE_KIND_NULL)
 		|| SMILE_KIND(args->d) != SMILE_KIND_LIST) {
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_FromC("Cannot compile [$till]: Expression is not well-formed.")));
 		return False;
 	}
@@ -157,7 +157,7 @@ static Bool ValidateTill(Compiler compiler, SmileList args, SmileList *flags, Sm
 
 	// Make sure there are no other arguments.
 	if (SMILE_KIND(args) != SMILE_KIND_NULL) {
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_FromC("Cannot compile [$till]: Expression is not well-formed.")));
 		return False;
 	}
@@ -180,7 +180,7 @@ static Int DefineVariablesForFlags(Compiler compiler, SmileList flags, CompileSc
 	// For each flag, construct a flag variable with a CompiledTillSymbol object attached.
 	for (temp = flags, numFlags = 0; SMILE_KIND(temp) == SMILE_KIND_LIST; temp = LIST_REST(temp), numFlags++) {
 		if (SMILE_KIND(temp->a) != SMILE_KIND_SYMBOL) {
-			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(temp),
+			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(temp, getSourceLocation),
 				String_FromC("Cannot compile [$till]: List of flags must contain only symbols.")));
 		}
 		smileSymbol = (SmileSymbol)temp->a;
@@ -193,12 +193,12 @@ static Int DefineVariablesForFlags(Compiler compiler, SmileList flags, CompileSc
 	}
 
 	if (SMILE_KIND(temp) != SMILE_KIND_NULL) {
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(flags),
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(flags, getSourceLocation),
 			String_FromC("Cannot compile [$till]: List of flags must contain only symbols.")));
 	}
 
 	if (numFlags <= 0) {
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(flags),
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(flags, getSourceLocation),
 			String_FromC("Cannot compile [$till]: List of terminating flags must not be empty.")));
 	}
 
@@ -259,7 +259,7 @@ static Int CompileWhens(Compiler compiler, CompileScope tillScope, SmileList whe
 			|| SMILE_KIND(((SmileList)whens->a)->a) != SMILE_KIND_SYMBOL
 			|| SMILE_KIND(((SmileList)whens->a)->d) != SMILE_KIND_LIST
 			|| SMILE_KIND(((SmileList)((SmileList)whens->a)->d)->d) != SMILE_KIND_NULL) {
-			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(whens),
+			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(whens, getSourceLocation),
 				String_FromC("Cannot compile [$till]: Whens must be sub-lists of the form [symbol body].")));
 			continue;
 		}
@@ -268,13 +268,13 @@ static Int CompileWhens(Compiler compiler, CompileScope tillScope, SmileList whe
 		smileSymbol = (SmileSymbol)((SmileList)whens->a)->a;
 		compiledTillSymbol = (CompiledTillSymbol)CompileScope_FindSymbolHere(tillScope, smileSymbol->symbol);
 		if (compiledTillSymbol == NULL) {
-			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(whens),
+			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(whens, getSourceLocation),
 				String_Format("Cannot compile [$till]: When clause '%S' does not match any of the loop's flags.",
 				SymbolTable_GetName(Smile_SymbolTable, smileSymbol->symbol))));
 			continue;
 		}
 		if (compiledTillSymbol->whenLabelAddress) {
-			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(whens),
+			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(whens, getSourceLocation),
 				String_Format("Cannot compile [$till]: When clause '%S' is defined multiple times.",
 				SymbolTable_GetName(Smile_SymbolTable, smileSymbol->symbol))));
 			continue;

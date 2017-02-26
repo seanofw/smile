@@ -37,7 +37,7 @@ void Compiler_CompileNew(Compiler compiler, SmileList args)
 
 	// Must be an expression of the form: [$new base [[sym1 val1] [sym2 val2] [sym3 val3] ...]]
 	if (SmileList_Length(args) != 2) {
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_FromC("Cannot compile [$new]: Expression is not well-formed.")));
 		return;
 	}
@@ -52,12 +52,12 @@ void Compiler_CompileNew(Compiler compiler, SmileList args)
 	for (pairs = (SmileList)LIST_SECOND(args), numPairs = 0; SMILE_KIND(pairs) == SMILE_KIND_LIST; pairs = (SmileList)pairs->d, numPairs++) {
 		pair = (SmileList)pairs->a;
 		if (SMILE_KIND(pair) != SMILE_KIND_LIST) {
-			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 				String_FromC("Cannot compile [$new]: Expression is not well-formed.")));
 			return;
 		}
 		if (SmileList_Length(pair) != 2 || SMILE_KIND(pair->a) != SMILE_KIND_SYMBOL) {
-			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(pair),
+			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(pair, getSourceLocation),
 				String_FromC("Cannot compile [$new]: Expression is not well-formed.")));
 			return;
 		}
@@ -70,7 +70,7 @@ void Compiler_CompileNew(Compiler compiler, SmileList args)
 		Compiler_RevertSourceLocation(compiler, oldSourceLocation);
 	}
 	if (SMILE_KIND(pairs) != SMILE_KIND_NULL) {
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_FromC("Cannot compile [$new]: Expression is not well-formed.")));
 		return;
 	}

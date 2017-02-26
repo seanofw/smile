@@ -46,7 +46,7 @@ void Compiler_CompileReturn(Compiler compiler, SmileList args)
 		EMIT0(Op_Ret, -1);
 	}
 	else {
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_FromC("Cannot compile [$return]: Expression is not well-formed.")));
 	}
 

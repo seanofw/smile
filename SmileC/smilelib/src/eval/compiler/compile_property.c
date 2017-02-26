@@ -32,7 +32,7 @@ void Compiler_CompileProperty(Compiler compiler, SmilePair pair, Bool store)
 	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 
 	if (SMILE_KIND(pair->right) != SMILE_KIND_SYMBOL) {
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmilePair_GetSourceLocation(pair),
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(pair, getSourceLocation),
 			String_FromC("Cannot compile pair: right side must be a symbol.")));
 	}
 

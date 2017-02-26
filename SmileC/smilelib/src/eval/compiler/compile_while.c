@@ -38,7 +38,7 @@ void Compiler_CompileWhile(Compiler compiler, SmileList args)
 
 	// Must be an expression of the form [$while cond postBody] or [$while pre-body cond post-body].
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_LIST) {
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_FromC("Cannot compile [if]: Expression is not well-formed.")));
 		return;
 	}
@@ -61,7 +61,7 @@ void Compiler_CompileWhile(Compiler compiler, SmileList args)
 
 		// This should be the end of the form.
 		if ((tailKind = SMILE_KIND(args->d)) != SMILE_KIND_NULL) {
-			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 				String_FromC("Cannot compile [$while]: Expression is not well-formed.")));
 			return;
 		}
@@ -71,7 +71,7 @@ void Compiler_CompileWhile(Compiler compiler, SmileList args)
 		preClause = NullObject;
 	}
 	else {
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_FromC("Cannot compile [$while]: Expression is not well-formed.")));
 		return;
 	}

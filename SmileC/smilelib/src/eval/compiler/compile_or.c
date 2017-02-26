@@ -41,7 +41,7 @@ void Compiler_CompileOr(Compiler compiler, SmileList args)
 
 	// Must be a well-formed expression of the form [$or x y z ...].
 	if ((length = SmileList_Length(args)) <= 0) {
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_FromC("Cannot compile [or]: Expression is not well-formed.")));
 		return;
 	}

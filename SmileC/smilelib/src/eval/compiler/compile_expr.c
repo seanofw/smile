@@ -166,7 +166,7 @@ Int Compiler_CompileExpr(Compiler compiler, SmileObject expr)
 			// of a named function in the current scope.
 		case SMILE_KIND_SYMBOL:
 			if (SMILE_KIND(list->d) != SMILE_KIND_LIST && SMILE_KIND(list->d) != SMILE_KIND_NULL) {
-				Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(list),
+				Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(list, getSourceLocation),
 					String_FromC("Cannot compile list: List is not well-formed.")));
 			}
 			if (Compiler_CompileStandardForm(compiler, ((SmileSymbol)list->a)->symbol, (SmileList)list->d))

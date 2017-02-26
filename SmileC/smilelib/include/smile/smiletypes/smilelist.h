@@ -64,15 +64,6 @@ Inline SmileObject SmileList_First(SmileList list)
 	return list->a;
 }
 
-Inline LexerPosition SmileList_GetSourceLocation(SmileList list)
-{
-	if (list->kind & SMILE_FLAG_WITHSOURCE) {
-		struct SmileListWithSourceInt *listWithSource = (struct SmileListWithSourceInt *)list;
-		return listWithSource->position;
-	}
-	else return NULL;
-}
-
 #define LIST_CONS(__a__, __d__) (SmileList_Cons((SmileObject)(__a__), (SmileObject)(__d__)))
 
 #define LIST_REST(__list__) (SmileList_Rest(__list__))

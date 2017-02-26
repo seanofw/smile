@@ -75,6 +75,7 @@ typedef struct UserFunctionInfoStruct {
 	Int16 maxArgs;	// The maximum number of args that may be provided (or an error will be thrown).
 	UserFunctionArg args;	// Pointer to an array of UserFunctionArgs describing the arguments.
 		
+	LexerPosition position;	// The original source location of this function
 	SmileList argList;	// The original list of arguments to this function
 	SmileObject body;	// The original body of this function
 		
@@ -102,7 +103,7 @@ struct SmileFunctionInt {
 //-------------------------------------------------------------------------------------------------
 //  Public interface
 
-SMILE_API_FUNC UserFunctionInfo UserFunctionInfo_Create(UserFunctionInfo parent, SmileList args, SmileObject body, String *errorMessage);
+SMILE_API_FUNC UserFunctionInfo UserFunctionInfo_Create(UserFunctionInfo parent, LexerPosition position, SmileList args, SmileObject body, String *errorMessage);
 SMILE_API_FUNC SmileFunction SmileFunction_CreateUserFunction(UserFunctionInfo userFunctionInfo, Closure declaringClosure);
 SMILE_API_FUNC SmileFunction SmileFunction_CreateExternalFunction(ExternalFunction externalFunction, void *param,
 	const char *name, const char *argNames, Int argCheckFlags, Int minArgs, Int maxArgs, Int numArgsToTypeCheck, const Byte *argTypeChecks);

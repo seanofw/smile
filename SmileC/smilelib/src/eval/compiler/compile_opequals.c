@@ -47,14 +47,14 @@ void Compiler_CompileOpEquals(Compiler compiler, SmileList args)
 	// Make sure this is a well-formed list of exactly three elements.
 	length = SmileList_Length(args);
 	if (length != 3) {
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_FromC("Cannot compile [$opset]: Expression is not well-formed.")));
 		return;
 	}
 
 	// Get the operator symbol.
 	if (SMILE_KIND(args->a) != SMILE_KIND_SYMBOL) {
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_FromC("Cannot compile [$opset]: First argument must be an operator (method) name.")));
 		return;
 	}
@@ -92,7 +92,7 @@ void Compiler_CompileOpEquals(Compiler compiler, SmileList args)
 		// of the pair is a symbol.
 		pair = (SmilePair)dest;
 		if (SMILE_KIND(pair->right) != SMILE_KIND_SYMBOL) {
-			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 				String_FromC("Cannot compile [$opset]: Expression is not well-formed.")));
 			return;
 		}
@@ -125,13 +125,13 @@ void Compiler_CompileOpEquals(Compiler compiler, SmileList args)
 		// inner list is well-formed, has two elements, the first element is a pair, and the right
 		// side of the first element is the special symbol "get-member".
 		if (SmileList_Length((SmileList)dest) != 2 || SMILE_KIND(((SmileList)dest)->a) != SMILE_KIND_PAIR) {
-			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 				String_FromC("Cannot compile [$opset]: Expression is not well-formed.")));
 			return;
 		}
 		pair = (SmilePair)(((SmileList)dest)->a);
 		if (SMILE_KIND(pair->right) != SMILE_KIND_SYMBOL) {
-			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 				String_FromC("Cannot compile [$opset]: Expression is not well-formed.")));
 			return;
 		}
@@ -159,7 +159,7 @@ void Compiler_CompileOpEquals(Compiler compiler, SmileList args)
 		break;
 
 	default:
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_FromC("Cannot compile [$opset]: Expression is not well-formed.")));
 		return;
 	}

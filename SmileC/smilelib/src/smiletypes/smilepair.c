@@ -142,3 +142,12 @@ static String SmilePair_ToString(SmilePair self)
 		return String_Format("(%S . %S)", SMILE_VCALL(self->left, toString), SMILE_VCALL(self->right, toString));
 	}
 }
+
+static LexerPosition SmilePair_GetSourceLocation(SmilePair pair)
+{
+	if (pair->kind & SMILE_FLAG_WITHSOURCE) {
+		struct SmilePairWithSourceInt *pairWithSource = (struct SmilePairWithSourceInt *)pair;
+		return pairWithSource->position;
+	}
+	else return NULL;
+}

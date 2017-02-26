@@ -413,7 +413,7 @@ ParseError Parser_ParseClassicFn(Parser parser, SmileObject *result, LexerPositi
 	}
 
 	for (temp = args; SMILE_KIND(temp) == SMILE_KIND_LIST; temp = (SmileList)temp->d) {
-		if ((error = DeclareClassicFnArg(parser, temp->a, SmileList_GetSourceLocation(temp))) != NULL) {
+		if ((error = DeclareClassicFnArg(parser, temp->a, SMILE_VCALL(temp, getSourceLocation))) != NULL) {
 			Parser_EndScope(parser);
 			*result = NullObject;
 			return error;

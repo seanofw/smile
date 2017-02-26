@@ -32,7 +32,7 @@ void Compiler_CompileQuote(Compiler compiler, SmileList args)
 	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_NULL) {
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_FromC("Cannot compile [$quote]: Expression is not well-formed.")));
 		return;
 	}

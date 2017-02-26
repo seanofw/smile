@@ -149,7 +149,7 @@ static Int Compiler_CompileOneArgument(Compiler compiler, SmileList args, const 
 
 	// Must be an expression of the form [op x].
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_NULL) {
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_Format("Cannot compile [%s]: Expression is not well-formed.", name)));
 		return compiler->currentFunction->currentSourceLocation;
 	}
@@ -185,7 +185,7 @@ static Int Compiler_CompileTwoArguments(Compiler compiler, SmileList args, const
 	// Must be an expression of the form [op x y].
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_LIST
 		|| SMILE_KIND(((SmileList)args->d)->d) != SMILE_KIND_NULL) {
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_Format("Cannot compile [%s]: Expression is not well-formed.", name)));
 		return compiler->currentFunction->currentSourceLocation;
 	}

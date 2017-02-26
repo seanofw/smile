@@ -44,7 +44,7 @@ void Compiler_CompileFn(Compiler compiler, SmileList args)
 	if (SMILE_KIND(args) != SMILE_KIND_LIST
 		|| (SMILE_KIND(args->a) != SMILE_KIND_LIST && SMILE_KIND(args->a) != SMILE_KIND_NULL)
 		|| SMILE_KIND(args->d) != SMILE_KIND_LIST || SMILE_KIND(((SmileList)args->d)->d) != SMILE_KIND_NULL) {
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(args),
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_FromC("Cannot compile [$fn]: Expression is not well-formed.")));
 		return;
 	}
@@ -52,9 +52,10 @@ void Compiler_CompileFn(Compiler compiler, SmileList args)
 	// Create the function.
 	functionArgs = (SmileList)args->a;
 	functionBody = ((SmileList)args->d)->a;
-	userFunctionInfo = UserFunctionInfo_Create(compiler->currentFunction->userFunctionInfo, functionArgs, functionBody, &errorMessage);
+	userFunctionInfo = UserFunctionInfo_Create(compiler->currentFunction->userFunctionInfo, SMILE_VCALL(args, getSourceLocation),
+		functionArgs, functionBody, &errorMessage);
 	if (userFunctionInfo == NULL) {
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SmileList_GetSourceLocation(functionArgs), errorMessage));
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(functionArgs, getSourceLocation), errorMessage));
 		return;
 	}
 	functionIndex = Compiler_AddUserFunctionInfo(compiler, userFunctionInfo);

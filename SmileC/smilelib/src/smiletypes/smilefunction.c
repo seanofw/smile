@@ -202,7 +202,7 @@ static Bool UserFunctionInfo_ApplyArgs(UserFunctionInfo userFunctionInfo, SmileL
 	return True;
 }
 
-UserFunctionInfo UserFunctionInfo_Create(UserFunctionInfo parent, SmileList args, SmileObject body, String *errorMessage)
+UserFunctionInfo UserFunctionInfo_Create(UserFunctionInfo parent, LexerPosition position, SmileList args, SmileObject body, String *errorMessage)
 {
 	UserFunctionInfo userFunctionInfo;
 
@@ -213,6 +213,7 @@ UserFunctionInfo UserFunctionInfo_Create(UserFunctionInfo parent, SmileList args
 	MemZero(userFunctionInfo, sizeof(struct UserFunctionInfoStruct));
 
 	userFunctionInfo->parent = parent;
+	userFunctionInfo->position = position;
 	userFunctionInfo->argList = args;
 	userFunctionInfo->body = body;
 
@@ -496,7 +497,7 @@ Real64 SmileFunction_ToReal64(SmileFunction self)
 
 String SmileUserFunction_ToString(SmileFunction self)
 {
-	// TODO: FIXME: This should return the user's original source code.
+	// TODO: FIXME: Should this maybe return the user's original source code?
 	UNUSED(self);
 	return String_Format("<fn>");
 }
@@ -508,8 +509,7 @@ String SmileExternalFunction_ToString(SmileFunction self)
 
 LexerPosition SmileUserFunction_GetSourceLocation(SmileFunction self)
 {
-	UNUSED(self);
-	return NULL;
+	return self->u.u.userFunctionInfo->position;
 }
 
 LexerPosition SmileExternalFunction_GetSourceLocation(SmileFunction self)
