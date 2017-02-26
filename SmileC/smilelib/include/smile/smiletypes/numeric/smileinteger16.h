@@ -25,19 +25,6 @@ SMILE_API_DATA SmileVTable SmileInteger16_VTable;
 
 SMILE_API_FUNC SmileInteger16 SmileInteger16_CreateInternal(Int16 value);
 
-SMILE_API_FUNC Bool SmileInteger16_CompareEqual(SmileInteger16 self, SmileObject other);
-SMILE_API_FUNC UInt32 SmileInteger16_Hash(SmileInteger16 self);
-SMILE_API_FUNC void SmileInteger16_SetSecurity(SmileInteger16 self, Int security, SmileObject securityKey);
-SMILE_API_FUNC Int SmileInteger16_GetSecurity(SmileInteger16 self);
-SMILE_API_FUNC SmileObject SmileInteger16_GetProperty(SmileInteger16 self, Symbol propertyName);
-SMILE_API_FUNC void SmileInteger16_SetProperty(SmileInteger16 self, Symbol propertyName, SmileObject value);
-SMILE_API_FUNC Bool SmileInteger16_HasProperty(SmileInteger16 self, Symbol propertyName);
-SMILE_API_FUNC SmileList SmileInteger16_GetPropertyNames(SmileInteger16 self);
-SMILE_API_FUNC Bool SmileInteger16_ToBool(SmileInteger16 self);
-SMILE_API_FUNC Int32 SmileInteger16_ToInteger32(SmileInteger16 self);
-SMILE_API_FUNC Real64 SmileInteger16_ToReal64(SmileInteger16 self);
-SMILE_API_FUNC String SmileInteger16_ToString(SmileInteger16 self);
-
 //-------------------------------------------------------------------------------------------------
 //  Inline operations
 

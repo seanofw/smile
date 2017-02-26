@@ -170,7 +170,9 @@ struct SmileObjectInt {
 ///	
 /// <code>call</code>:	<p>Invoke this object as a function.  The number of arguments will be provided directly, and
 ///	the arguments themselves will be on the temporary stack of the current closure.</p>
-///	
+///
+/// <code>getSourceLocation</code>:	<p>Get the location in the source code where this object was created, if known.</p>
+///
 /// </remarks>
 #define SMILE_VTABLE_TYPE(__name__, __type__) \
 	__name__ { \
@@ -193,6 +195,7 @@ struct SmileObjectInt {
 		String (*toString)(__type__ self); \
 		\
 		void (*call)(__type__ self, Int argc); \
+		LexerPosition (*getSourceLocation)(__type__ self); \
 	}
 
 /// <summary>
@@ -268,20 +271,6 @@ struct SmileObjectInt {
 SMILE_VTABLE_TYPE(struct SmileVTableInt, SmileObject);
 
 SMILE_API_DATA SmileVTable SmileObject_VTable;
-
-SMILE_API_FUNC Bool SmileObject_CompareEqual(SmileObject self, SmileObject other);
-SMILE_API_FUNC UInt32 SmileObject_Hash(SmileObject self);
-SMILE_API_FUNC void SmileObject_SetSecurity(SmileObject self, Int security, SmileObject securityKey);
-SMILE_API_FUNC Int SmileObject_GetSecurity(SmileObject self);
-SMILE_API_FUNC SmileObject SmileObject_GetProperty(SmileObject self, Symbol propertyName);
-SMILE_API_FUNC void SmileObject_SetProperty(SmileObject self, Symbol propertyName, SmileObject value);
-SMILE_API_FUNC Bool SmileObject_HasProperty(SmileObject self, Symbol propertyName);
-SMILE_API_FUNC SmileList SmileObject_GetPropertyNames(SmileObject self);
-SMILE_API_FUNC Bool SmileObject_ToBool(SmileObject self);
-SMILE_API_FUNC Int32 SmileObject_ToInteger32(SmileObject self);
-SMILE_API_FUNC Float64 SmileObject_ToFloat64(SmileObject self);
-SMILE_API_FUNC Real64 SmileObject_ToReal64(SmileObject self);
-SMILE_API_FUNC String SmileObject_ToString(SmileObject self);
 
 SMILE_API_FUNC SmileObject SmileObject_Create(void);
 

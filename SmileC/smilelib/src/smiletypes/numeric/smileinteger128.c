@@ -19,6 +19,9 @@
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/numeric/smileinteger128.h>
+#include <smile/smiletypes/easyobject.h>
+
+SMILE_EASY_OBJECT_VTABLE(SmileInteger128);
 
 SmileInteger128 SmileInteger128_CreateInternal(Int128 value)
 {
@@ -31,81 +34,11 @@ SmileInteger128 SmileInteger128_CreateInternal(Int128 value)
 	return smileInt;
 }
 
-Bool SmileInteger128_CompareEqual(SmileInteger128 self, SmileObject other)
-{
-	SmileInteger128 otherInt;
-
-	if (SMILE_KIND(other) != SMILE_KIND_INTEGER64) return False;
-	otherInt = (SmileInteger128)other;
-
-	return self->value.hi == otherInt->value.hi
-		&& self->value.lo == otherInt->value.lo;
-}
-
-UInt32 SmileInteger128_Hash(SmileInteger128 self)
+static UInt32 SmileInteger128_Hash(SmileInteger128 self)
 {
 	UInt64 hi = (UInt64)self->value.hi;
 	UInt64 lo = (UInt64)self->value.lo;
 	return (UInt32)(hi ^ (hi >> 32)) ^ (UInt32)(lo ^ (lo >> 32));
-}
-
-void SmileInteger128_SetSecurityKey(SmileInteger128 self, SmileObject newSecurityKey, SmileObject oldSecurityKey)
-{
-	UNUSED(self);
-	UNUSED(newSecurityKey);
-	UNUSED(oldSecurityKey);
-	Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
-}
-
-void SmileInteger128_SetSecurity(SmileInteger128 self, Int security, SmileObject securityKey)
-{
-	UNUSED(self);
-	UNUSED(security);
-	UNUSED(securityKey);
-	Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
-}
-
-Int SmileInteger128_GetSecurity(SmileInteger128 self)
-{
-	UNUSED(self);
-	return SMILE_SECURITY_READONLY;
-}
-
-SmileObject SmileInteger128_GetProperty(SmileInteger128 self, Symbol propertyName)
-{
-	return self->base->vtable->getProperty(self->base, propertyName);
-}
-
-void SmileInteger128_SetProperty(SmileInteger128 self, Symbol propertyName, SmileObject value)
-{
-	UNUSED(self);
-	UNUSED(value);
-	Smile_ThrowException(Smile_KnownSymbols.object_security_error,
-		String_Format("Cannot set property \"%S\" on an integer, which is read-only.",
-		SymbolTable_GetName(Smile_SymbolTable, propertyName)));
-}
-
-Bool SmileInteger128_HasProperty(SmileInteger128 self, Symbol propertyName)
-{
-	UNUSED(self);
-	UNUSED(propertyName);
-	return False;
-}
-
-SmileList SmileInteger128_GetPropertyNames(SmileInteger128 self)
-{
-	UNUSED(self);
-	return NullList;
-}
-
-Bool SmileInteger128_ToBool(SmileInteger128 self)
-{
-	return (self->value.hi | self->value.lo) != 0;
-}
-
-Int32 SmileInteger128_ToInteger32(SmileInteger128 self)
-{
-	return (Int32)self->value.lo;
 }
 
 Inline Int UIntLg(UInt64 value)
@@ -118,7 +51,7 @@ Inline Int UIntLg(UInt64 value)
 	return lg;
 }
 
-Float64 SmileInteger128_ToFloat64(SmileInteger128 self)
+static Float64 SmileInteger128_ToFloat64(SmileInteger128 self)
 {
 	UInt64 uhi, ulo;
 	Int bits;
@@ -143,45 +76,13 @@ Float64 SmileInteger128_ToFloat64(SmileInteger128 self)
 	}
 }
 
-Real64 SmileInteger128_ToReal64(SmileInteger128 self)
-{
-	return Real64_FromFloat64(SmileInteger128_ToFloat64(self));
-}
+SMILE_EASY_OBJECT_READONLY_SECURITY(SmileInteger128)
+SMILE_EASY_OBJECT_NO_CALL(SmileInteger128)
+SMILE_EASY_OBJECT_NO_SOURCE(SmileInteger128)
+SMILE_EASY_OBJECT_NO_PROPERTIES(SmileInteger128)
 
-String SmileInteger128_ToString(SmileInteger128 self)
-{
-	return String_Format("%ldL", self->value.lo);
-}
-
-Bool SmileInteger128_Call(SmileInteger128 self, Int argc)
-{
-	UNUSED(self);
-	UNUSED(argc);
-
-	Smile_ThrowException(Smile_KnownSymbols.eval_error, Smile_KnownStrings.invalidFunctionError);
-
-	return True;
-}
-
-SMILE_VTABLE(SmileInteger128_VTable, SmileInteger128)
-{
-	SmileInteger128_CompareEqual,
-	SmileInteger128_Hash,
-
-	SmileInteger128_SetSecurityKey,
-	SmileInteger128_SetSecurity,
-	SmileInteger128_GetSecurity,
-
-	SmileInteger128_GetProperty,
-	SmileInteger128_SetProperty,
-	SmileInteger128_HasProperty,
-	SmileInteger128_GetPropertyNames,
-
-	SmileInteger128_ToBool,
-	SmileInteger128_ToInteger32,
-	SmileInteger128_ToFloat64,
-	SmileInteger128_ToReal64,
-	SmileInteger128_ToString,
-
-	SmileInteger128_Call,
-};
+SMILE_EASY_OBJECT_COMPARE(SmileInteger128, SMILE_KIND_INTEGER128, a->value.hi == b->value.hi && a->value.lo == b->value.lo)
+SMILE_EASY_OBJECT_TOBOOL(SmileInteger128, (obj->value.hi | obj->value.lo) != 0)
+SMILE_EASY_OBJECT_TOINT(SmileInteger128, (Int32)obj->value.lo)
+SMILE_EASY_OBJECT_TOREAL(SmileInteger128, Real64_FromFloat64(SmileInteger128_ToFloat64(obj)))
+SMILE_EASY_OBJECT_TOSTRING(SmileInteger128, String_Format("%ldL", obj->value.lo))

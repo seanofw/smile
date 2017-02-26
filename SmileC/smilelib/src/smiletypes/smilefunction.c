@@ -61,7 +61,7 @@ extern SmileVTable SmileExternalFunction_StateMachineMaxTypesCheck_VTable;
 extern SmileVTable SmileExternalFunction_StateMachineMinMaxTypesCheck_VTable;
 extern SmileVTable SmileExternalFunction_StateMachineExactTypesCheck_VTable;
 
-SMILE_EASY_OBJECT_NO_SECURITY(SmileFunction);
+SMILE_EASY_OBJECT_READONLY_SECURITY(SmileFunction);
 
 static Bool UserFunctionArg_Init(UserFunctionArg arg, SmileObject obj, String *errorMessage)
 {
@@ -506,6 +506,18 @@ String SmileExternalFunction_ToString(SmileFunction self)
 	return String_Format("<%S>", self->u.externalFunctionInfo.name);
 }
 
+LexerPosition SmileUserFunction_GetSourceLocation(SmileFunction self)
+{
+	UNUSED(self);
+	return NULL;
+}
+
+LexerPosition SmileExternalFunction_GetSourceLocation(SmileFunction self)
+{
+	UNUSED(self);
+	return NULL;
+}
+
 #define USER_FUNCTION_VTABLE(__checkKind__) \
 	\
 	extern void SmileUserFunction_##__checkKind__##_Call(SmileFunction self, Int argc); \
@@ -531,6 +543,7 @@ String SmileExternalFunction_ToString(SmileFunction self)
 		SmileUserFunction_ToString, \
 		\
 		SmileUserFunction_##__checkKind__##_Call, \
+		SmileUserFunction_GetSourceLocation, \
 	}
 
 USER_FUNCTION_VTABLE(NoArgs);	// Function with no arguments
@@ -573,6 +586,7 @@ USER_FUNCTION_VTABLE(CheckedRest);	// Function with at least one type-checked ar
 		SmileExternalFunction_ToString, \
 		\
 		SmileExternalFunction_##__checkKind__##_Call, \
+		SmileExternalFunction_GetSourceLocation, \
 	}
 
 EXTERNAL_FUNCTION_VTABLE(NoCheck);

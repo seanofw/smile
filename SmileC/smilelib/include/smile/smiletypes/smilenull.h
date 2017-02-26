@@ -25,17 +25,4 @@ SMILE_API_DATA SmileVTable SmileNull_VTable;
 
 extern SmileNull SmileNull_Create(void);
 
-extern Bool SmileNull_CompareEqual(SmileNull self, SmileObject other);
-extern UInt32 SmileNull_Hash(SmileNull self);
-extern void SmileNull_SetSecurity(SmileNull self, Int security, SmileObject securityKey);
-extern Int SmileNull_GetSecurity(SmileNull self);
-extern SmileObject SmileNull_GetProperty(SmileNull self, Symbol propertyName);
-extern void SmileNull_SetProperty(SmileNull self, Symbol propertyName, SmileObject value);
-extern Bool SmileNull_HasProperty(SmileNull self, Symbol propertyName);
-extern SmileList SmileNull_GetPropertyNames(SmileNull self);
-extern Bool SmileNull_ToBool(SmileNull self);
-extern Int32 SmileNull_ToInteger32(SmileNull self);
-extern Real64 SmileNull_ToReal64(SmileNull self);
-extern String SmileNull_ToString(SmileNull self);
-
 #endif

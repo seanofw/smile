@@ -26,10 +26,11 @@ SMILE_EASY_OBJECT_COMPARE(ParseMessage, SMILE_KIND_PARSEMESSAGE,
 	&& String_Equals(a->message, b->message));
 SMILE_EASY_OBJECT_HASH(ParseMessage, obj->position->line * 100 + obj->position->column);
 
-SMILE_EASY_OBJECT_NO_SECURITY(ParseMessage);
+SMILE_EASY_OBJECT_READONLY_SECURITY(ParseMessage);
 SMILE_EASY_OBJECT_NO_REALS(ParseMessage);
 SMILE_EASY_OBJECT_NO_PROPERTIES(ParseMessage);
 SMILE_EASY_OBJECT_NO_CALL(ParseMessage);
+SMILE_EASY_OBJECT_NO_SOURCE(ParseMessage);
 
 SMILE_EASY_OBJECT_TOBOOL(ParseMessage, True);
 SMILE_EASY_OBJECT_TOINT(ParseMessage, 0);

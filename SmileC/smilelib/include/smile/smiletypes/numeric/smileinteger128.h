@@ -25,19 +25,6 @@ SMILE_API_DATA SmileVTable SmileInteger128_VTable;
 
 SMILE_API_FUNC SmileInteger128 SmileInteger128_CreateInternal(Int128 value);
 
-SMILE_API_FUNC Bool SmileInteger128_CompareEqual(SmileInteger128 self, SmileObject other);
-SMILE_API_FUNC UInt32 SmileInteger128_Hash(SmileInteger128 self);
-SMILE_API_FUNC void SmileInteger128_SetSecurity(SmileInteger128 self, Int security, SmileObject securityKey);
-SMILE_API_FUNC Int SmileInteger128_GetSecurity(SmileInteger128 self);
-SMILE_API_FUNC SmileObject SmileInteger128_GetProperty(SmileInteger128 self, Symbol propertyName);
-SMILE_API_FUNC void SmileInteger128_SetProperty(SmileInteger128 self, Symbol propertyName, SmileObject value);
-SMILE_API_FUNC Bool SmileInteger128_HasProperty(SmileInteger128 self, Symbol propertyName);
-SMILE_API_FUNC SmileList SmileInteger128_GetPropertyNames(SmileInteger128 self);
-SMILE_API_FUNC Bool SmileInteger128_ToBool(SmileInteger128 self);
-SMILE_API_FUNC Int32 SmileInteger128_ToInteger32(SmileInteger128 self);
-SMILE_API_FUNC Real64 SmileInteger128_ToReal64(SmileInteger128 self);
-SMILE_API_FUNC String SmileInteger128_ToString(SmileInteger128 self);
-
 //-------------------------------------------------------------------------------------------------
 //  Inline operations
 

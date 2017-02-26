@@ -35,6 +35,7 @@
 	static Real64 __type__##_ToReal64(__type__ obj); \
 	static String __type__##_ToString(__type__ obj); \
 	static void __type__##_Call(__type__ obj, Int argc); \
+	static LexerPosition __type__##_GetSourceLocation(__type__ obj); \
 	\
 	/* The virtual table that glues it all together and that's needed by the type system. */ \
 	SMILE_VTABLE(__type__##_VTable, __type__) { \
@@ -53,7 +54,8 @@
 		__type__##_ToReal64, \
 		__type__##_ToString, \
 		__type__##_Call, \
-	}
+		__type__##_GetSourceLocation, \
+		}
 
 /// <summary>
 /// This macro makes declaring consistent Smile virtual comparison functions easier.
@@ -119,6 +121,13 @@
 	static Real64 __type__##_ToReal64(__type__ obj) { UNUSED(obj); return __expr__; }
 
 /// <summary>
+/// This macro can be used to declare virtual functions for a type that can't answer source locations.
+/// </summary>
+/// <param name="__type__">The type of the object you want to declare virtual functions for.</param>
+#define SMILE_EASY_OBJECT_NO_SOURCE(__type__) \
+	static LexerPosition __type__##_GetSourceLocation(__type__ obj) { UNUSED(obj); return NULL; }
+
+/// <summary>
 /// This macro can be used to declare virtual functions for a type that can't be readily compared or hashed.
 /// </summary>
 /// <param name="__type__">The type of the object you want to declare virtual functions for.</param>
@@ -131,7 +140,7 @@
 /// properties are always read-only).
 /// </summary>
 /// <param name="__type__">The type of the object you want to declare virtual functions for.</param>
-#define SMILE_EASY_OBJECT_NO_SECURITY(__type__) \
+#define SMILE_EASY_OBJECT_READONLY_SECURITY(__type__) \
 	static void __type__##_SetSecurityKey(__type__ self, SmileObject newSecurityKey, SmileObject oldSecurityKey) \
 		{ UNUSED(self); UNUSED(newSecurityKey); UNUSED(oldSecurityKey); \
 			Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string); } \
@@ -189,9 +198,10 @@
 	SMILE_EASY_OBJECT_TOINT(__type__, __toint__); \
 	SMILE_EASY_OBJECT_TOSTRING(__type__, __tostring__); \
 	SMILE_EASY_OBJECT_NO_REALS(__type__); \
-	SMILE_EASY_OBJECT_NO_SECURITY(__type__); \
+	SMILE_EASY_OBJECT_READONLY_SECURITY(__type__); \
 	SMILE_EASY_OBJECT_NO_COMPARE(__type__); \
 	SMILE_EASY_OBJECT_NO_PROPERTIES(__type__); \
 	SMILE_EASY_OBJECT_NO_CALL(__type__); \
+	SMILE_EASY_OBJECT_NO_SOURCE(__type__);
 
 #endif

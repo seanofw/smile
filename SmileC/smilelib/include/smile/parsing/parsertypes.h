@@ -2,7 +2,6 @@
 #define __SMILE_PARSING_PARSETYPES_H__
 
 typedef struct LexerStruct *Lexer;
-typedef struct LexerPositionStruct *LexerPosition;
 
 typedef struct TokenStruct *Token;
 enum TokenKind;

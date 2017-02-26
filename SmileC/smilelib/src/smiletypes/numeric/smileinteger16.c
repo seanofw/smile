@@ -19,6 +19,9 @@
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/numeric/smileinteger16.h>
+#include <smile/smiletypes/easyobject.h>
+
+SMILE_EASY_OBJECT_VTABLE(SmileInteger16);
 
 SmileInteger16 SmileInteger16_CreateInternal(Int16 value)
 {
@@ -31,124 +34,15 @@ SmileInteger16 SmileInteger16_CreateInternal(Int16 value)
 	return smileInt;
 }
 
-Bool SmileInteger16_CompareEqual(SmileInteger16 self, SmileObject other)
-{
-	SmileInteger16 otherInt;
+SMILE_EASY_OBJECT_READONLY_SECURITY(SmileInteger16)
+SMILE_EASY_OBJECT_NO_CALL(SmileInteger16)
+SMILE_EASY_OBJECT_NO_SOURCE(SmileInteger16)
+SMILE_EASY_OBJECT_NO_PROPERTIES(SmileInteger16)
 
-	if (SMILE_KIND(other) != SMILE_KIND_INTEGER16) return False;
-	otherInt = (SmileInteger16)other;
-
-	return self->value == otherInt->value;
-}
-
-UInt32 SmileInteger16_Hash(SmileInteger16 self)
-{
-	return self->value;
-}
-
-void SmileInteger16_SetSecurityKey(SmileInteger16 self, SmileObject newSecurityKey, SmileObject oldSecurityKey)
-{
-	UNUSED(self);
-	UNUSED(newSecurityKey);
-	UNUSED(oldSecurityKey);
-	Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
-}
-
-void SmileInteger16_SetSecurity(SmileInteger16 self, Int security, SmileObject securityKey)
-{
-	UNUSED(self);
-	UNUSED(security);
-	UNUSED(securityKey);
-	Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
-}
-
-Int SmileInteger16_GetSecurity(SmileInteger16 self)
-{
-	UNUSED(self);
-	return SMILE_SECURITY_READONLY;
-}
-
-SmileObject SmileInteger16_GetProperty(SmileInteger16 self, Symbol propertyName)
-{
-	return self->base->vtable->getProperty(self->base, propertyName);
-}
-
-void SmileInteger16_SetProperty(SmileInteger16 self, Symbol propertyName, SmileObject value)
-{
-	UNUSED(self);
-	UNUSED(value);
-	Smile_ThrowException(Smile_KnownSymbols.object_security_error,
-		String_Format("Cannot set property \"%S\" on an integer, which is read-only.",
-		SymbolTable_GetName(Smile_SymbolTable, propertyName)));
-}
-
-Bool SmileInteger16_HasProperty(SmileInteger16 self, Symbol propertyName)
-{
-	UNUSED(self);
-	UNUSED(propertyName);
-	return False;
-}
-
-SmileList SmileInteger16_GetPropertyNames(SmileInteger16 self)
-{
-	UNUSED(self);
-	return NullList;
-}
-
-Bool SmileInteger16_ToBool(SmileInteger16 self)
-{
-	return self->value != 0;
-}
-
-Int32 SmileInteger16_ToInteger32(SmileInteger16 self)
-{
-	return (Int32)self->value;
-}
-
-Float64 SmileInteger16_ToFloat64(SmileInteger16 self)
-{
-	return (Float64)self->value;
-}
-
-Real64 SmileInteger16_ToReal64(SmileInteger16 self)
-{
-	return Real64_FromInt32(self->value);
-}
-
-String SmileInteger16_ToString(SmileInteger16 self)
-{
-	return String_Format("%ds", (Int32)self->value);
-}
-
-Bool SmileInteger16_Call(SmileInteger16 self, Int argc)
-{
-	UNUSED(self);
-	UNUSED(argc);
-
-	Smile_ThrowException(Smile_KnownSymbols.eval_error, Smile_KnownStrings.invalidFunctionError);
-
-	return True;
-}
-
-SMILE_VTABLE(SmileInteger16_VTable, SmileInteger16)
-{
-	SmileInteger16_CompareEqual,
-	SmileInteger16_Hash,
-
-	SmileInteger16_SetSecurityKey,
-	SmileInteger16_SetSecurity,
-	SmileInteger16_GetSecurity,
-
-	SmileInteger16_GetProperty,
-	SmileInteger16_SetProperty,
-	SmileInteger16_HasProperty,
-	SmileInteger16_GetPropertyNames,
-
-	SmileInteger16_ToBool,
-	SmileInteger16_ToInteger32,
-	SmileInteger16_ToFloat64,
-	SmileInteger16_ToReal64,
-	SmileInteger16_ToString,
-
-	SmileInteger16_Call,
-};
+SMILE_EASY_OBJECT_COMPARE(SmileInteger16, SMILE_KIND_INTEGER16, a->value == b->value)
+SMILE_EASY_OBJECT_HASH(SmileInteger16, obj->value)
+SMILE_EASY_OBJECT_TOBOOL(SmileInteger16, obj->value != 0)
+SMILE_EASY_OBJECT_TOINT(SmileInteger16, obj->value)
+SMILE_EASY_OBJECT_TOREAL(SmileInteger16, Real64_FromInt32(obj->value))
+SMILE_EASY_OBJECT_TOFLOAT(SmileInteger16, (Float64)obj->value)
+SMILE_EASY_OBJECT_TOSTRING(SmileInteger16, String_Format("%ds", (Int32)obj->value))

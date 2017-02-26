@@ -239,6 +239,12 @@ void SmileUserObject_SetupSynonym(SmileUserObject self, const char *oldName, con
 	Int32Dict_SetValue((Int32Dict)&self->dict, newSymbol, (SmileObject)oldObject);
 }
 
+static LexerPosition SmileUserObject_GetSourceLocation(SmileUserObject self)
+{
+	UNUSED(self);
+	return NULL;
+}
+
 SMILE_VTABLE(SmileUserObject_VTable_ReadWriteAppend, SmileUserObject)
 {
 	SmileUserObject_CompareEqual,
@@ -260,6 +266,7 @@ SMILE_VTABLE(SmileUserObject_VTable_ReadWriteAppend, SmileUserObject)
 	SmileUserObject_ToString,
 
 	SmileUserObject_Call,
+	SmileUserObject_GetSourceLocation,
 };
 
 SMILE_VTABLE(SmileUserObject_VTable_ReadWrite, SmileUserObject)
@@ -283,6 +290,7 @@ SMILE_VTABLE(SmileUserObject_VTable_ReadWrite, SmileUserObject)
 	SmileUserObject_ToString,
 
 	SmileUserObject_Call,
+	SmileUserObject_GetSourceLocation,
 };
 
 SMILE_VTABLE(SmileUserObject_VTable_ReadAppend, SmileUserObject)
@@ -306,6 +314,7 @@ SMILE_VTABLE(SmileUserObject_VTable_ReadAppend, SmileUserObject)
 	SmileUserObject_ToString,
 
 	SmileUserObject_Call,
+	SmileUserObject_GetSourceLocation,
 };
 
 SMILE_VTABLE(SmileUserObject_VTable_ReadOnly, SmileUserObject)
@@ -329,4 +338,5 @@ SMILE_VTABLE(SmileUserObject_VTable_ReadOnly, SmileUserObject)
 	SmileUserObject_ToString,
 
 	SmileUserObject_Call,
+	SmileUserObject_GetSourceLocation,
 };

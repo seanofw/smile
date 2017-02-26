@@ -21,6 +21,13 @@
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/smilelist.h>
+#include <smile/smiletypes/easyobject.h>
+
+SMILE_EASY_OBJECT_VTABLE(SmileString);
+
+SMILE_EASY_OBJECT_READONLY_SECURITY(SmileString)
+SMILE_EASY_OBJECT_NO_CALL(SmileString)
+SMILE_EASY_OBJECT_NO_SOURCE(SmileString)
 
 SmileString SmileString_Create(String string)
 {
@@ -54,28 +61,6 @@ UInt32 SmileString_Hash(SmileString self)
 {
 	String str = SmileString_ToString(self);
 	return String_Hash(str);
-}
-
-void SmileString_SetSecurityKey(SmileString self, SmileObject newSecurityKey, SmileObject oldSecurityKey)
-{
-	UNUSED(self);
-	UNUSED(newSecurityKey);
-	UNUSED(oldSecurityKey);
-	Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
-}
-
-void SmileString_SetSecurity(SmileString self, Int security, SmileObject securityKey)
-{
-	UNUSED(self);
-	UNUSED(security);
-	UNUSED(securityKey);
-	Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
-}
-
-Int SmileString_GetSecurity(SmileString self)
-{
-	UNUSED(self);
-	return SMILE_SECURITY_READONLY;
 }
 
 SmileObject SmileString_GetProperty(SmileString self, Symbol propertyName)
@@ -142,36 +127,3 @@ Real64 SmileString_ToReal64(SmileString self)
 	Real128 result;
 	return String_ParseReal(SmileString_ToString(self), 10, &result) ? Real128_ToReal64(result) : Real64_Zero;
 }
-
-Bool SmileString_Call(SmileString self, Int argc)
-{
-	UNUSED(self);
-	UNUSED(argc);
-
-	Smile_ThrowException(Smile_KnownSymbols.eval_error, Smile_KnownStrings.invalidFunctionError);
-
-	return True;
-}
-
-SMILE_VTABLE(SmileString_VTable, SmileString)
-{
-	SmileString_CompareEqual,
-	SmileString_Hash,
-
-	SmileString_SetSecurityKey,
-	SmileString_SetSecurity,
-	SmileString_GetSecurity,
-
-	SmileString_GetProperty,
-	SmileString_SetProperty,
-	SmileString_HasProperty,
-	SmileString_GetPropertyNames,
-
-	SmileString_ToBool,
-	SmileString_ToInteger32,
-	SmileString_ToFloat64,
-	SmileString_ToReal64,
-	SmileString_ToString,
-
-	SmileString_Call,
-};

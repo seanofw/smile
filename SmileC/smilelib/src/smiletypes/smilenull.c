@@ -21,6 +21,9 @@
 #include <smile/smiletypes/smilenull.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/text/smilestring.h>
+#include <smile/smiletypes/easyobject.h>
+
+SMILE_EASY_OBJECT_VTABLE(SmileNull);
 
 SmileNull SmileNull_Create(void)
 {
@@ -34,127 +37,22 @@ SmileNull SmileNull_Create(void)
 	return smileNull;
 }
 
-Bool SmileNull_CompareEqual(SmileNull self, SmileObject other)
+static Bool SmileNull_CompareEqual(SmileNull self, SmileObject other)
 {
 	UNUSED(self);
 	return (SMILE_KIND(other) == SMILE_KIND_NULL);
 }
 
-UInt32 SmileNull_Hash(SmileNull self)
-{
-	UNUSED(self);
-	return 0;
-}
+STATIC_STRING(NullString, "null");
 
-void SmileNull_SetSecurityKey(SmileNull self, SmileObject newSecurityKey, SmileObject oldSecurityKey)
-{
-	UNUSED(self);
-	UNUSED(newSecurityKey);
-	UNUSED(oldSecurityKey);
-	Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
-}
+SMILE_EASY_OBJECT_READONLY_SECURITY(SmileNull)
+SMILE_EASY_OBJECT_NO_CALL(SmileNull)
+SMILE_EASY_OBJECT_NO_SOURCE(SmileNull)
+SMILE_EASY_OBJECT_NO_PROPERTIES(SmileNull)
 
-void SmileNull_SetSecurity(SmileNull self, Int security, SmileObject securityKey)
-{
-	UNUSED(self);
-	UNUSED(security);
-	UNUSED(securityKey);
-	Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
-}
-
-Int SmileNull_GetSecurity(SmileNull self)
-{
-	UNUSED(self);
-	return 0;
-}
-
-SmileObject SmileNull_GetProperty(SmileNull self, Symbol propertyName)
-{
-	return self->base->vtable->getProperty(self->base, propertyName);
-}
-
-void SmileNull_SetProperty(SmileNull self, Symbol propertyName, SmileObject value)
-{
-	UNUSED(self);
-	UNUSED(propertyName);
-	UNUSED(value);
-	Smile_ThrowException(Smile_KnownSymbols.property_error,
-		String_Format("Cannot set property \"%S\" on null; null is read-only.",
-		SymbolTable_GetName(Smile_SymbolTable, propertyName)));
-}
-
-Bool SmileNull_HasProperty(SmileNull self, Symbol propertyName)
-{
-	UNUSED(self);
-	UNUSED(propertyName);
-	return False;
-}
-
-SmileList SmileNull_GetPropertyNames(SmileNull self)
-{
-	UNUSED(self);
-	return NullList;
-}
-
-Bool SmileNull_ToBool(SmileNull self)
-{
-	UNUSED(self);
-	return False;
-}
-
-Int32 SmileNull_ToInteger32(SmileNull self)
-{
-	UNUSED(self);
-	return 0;
-}
-
-Float64 SmileNull_ToFloat64(SmileNull self)
-{
-	UNUSED(self);
-	return 0.0;
-}
-
-Real64 SmileNull_ToReal64(SmileNull self)
-{
-	UNUSED(self);
-	return Real64_Zero;
-}
-
-String SmileNull_ToString(SmileNull self)
-{
-	UNUSED(self);
-	return String_Format("null");
-}
-
-Bool SmileNull_Call(SmileNull self, Int argc)
-{
-	UNUSED(self);
-	UNUSED(argc);
-
-	Smile_ThrowException(Smile_KnownSymbols.eval_error, Smile_KnownStrings.invalidFunctionError);
-
-	return True;
-}
-
-SMILE_VTABLE(SmileNull_VTable, SmileNull)
-{
-	SmileNull_CompareEqual,
-	SmileNull_Hash,
-
-	SmileNull_SetSecurityKey,
-	SmileNull_SetSecurity,
-	SmileNull_GetSecurity,
-
-	SmileNull_GetProperty,
-	SmileNull_SetProperty,
-	SmileNull_HasProperty,
-	SmileNull_GetPropertyNames,
-
-	SmileNull_ToBool,
-	SmileNull_ToInteger32,
-	SmileNull_ToFloat64,
-	SmileNull_ToReal64,
-	SmileNull_ToString,
-
-	SmileNull_Call,
-};
+SMILE_EASY_OBJECT_HASH(SmileNull, 0)
+SMILE_EASY_OBJECT_TOBOOL(SmileNull, 0)
+SMILE_EASY_OBJECT_TOINT(SmileNull, 0)
+SMILE_EASY_OBJECT_TOREAL(SmileNull, Real64_Zero)
+SMILE_EASY_OBJECT_TOFLOAT(SmileNull, 0.0)
+SMILE_EASY_OBJECT_TOSTRING(SmileNull, NullString)
