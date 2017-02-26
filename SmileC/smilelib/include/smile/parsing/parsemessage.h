@@ -56,7 +56,6 @@ Inline ParseMessage ParseMessage_Create(Int messageKind, LexerPosition position,
 	parseMessage->kind = SMILE_KIND_PARSEMESSAGE;
 	parseMessage->base = (SmileObject)Smile_KnownBases.Object;
 	parseMessage->vtable = ParseMessage_VTable;
-	parseMessage->assignedSymbol = 0;
 
 	parseMessage->messageKind = messageKind;
 	parseMessage->position = position;

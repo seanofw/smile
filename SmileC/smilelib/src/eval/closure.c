@@ -142,9 +142,6 @@ void Closure_SetGlobalVariable(Closure closure, Symbol name, SmileObject value)
 	for (closure = nearestGlobal; ; closure = closure->parent->global) {
 		if (VarDict_TryGetValue(closure->closureInfo->variableDictionary, name, &varInfo)) {
 			varInfo->value = value;
-			if (!value->assignedSymbol) {
-				value->assignedSymbol = name;
-			}
 			return;
 		}
 

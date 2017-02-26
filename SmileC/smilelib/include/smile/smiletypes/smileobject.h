@@ -35,7 +35,6 @@
 /// </summary>
 #define DECLARE_BASE_OBJECT_PROPERTIES \
 	UInt32 kind;	/* What kind of native object this is, from the SMILE_KIND enumeration */ \
-	Symbol assignedSymbol;	/* The symbol assigned to this object (for debugging) */ \
 	SmileVTable vtable;	/* A pointer to this object's virtual table, which must match SMILE_VTABLE_TYPE. */ \
 	SmileObject base	/* A pointer to the "base" object for this object, i.e., the object from which this object inherits any properties. */
 
