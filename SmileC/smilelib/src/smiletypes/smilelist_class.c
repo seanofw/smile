@@ -25,28 +25,28 @@
 #include <smile/smiletypes/base.h>
 
 static Byte _listChecks[] = {
-	SMILE_KIND_MASK & ~SMILE_KIND_LIST, SMILE_KIND_NULL,
-	SMILE_KIND_MASK & ~SMILE_KIND_LIST, SMILE_KIND_NULL,
-	SMILE_KIND_MASK & ~SMILE_KIND_LIST, SMILE_KIND_NULL,
-	SMILE_KIND_MASK & ~SMILE_KIND_LIST, SMILE_KIND_NULL,
-	SMILE_KIND_MASK & ~SMILE_KIND_LIST, SMILE_KIND_NULL,
-	SMILE_KIND_MASK & ~SMILE_KIND_LIST, SMILE_KIND_NULL,
-	SMILE_KIND_MASK & ~SMILE_KIND_LIST, SMILE_KIND_NULL,
-	SMILE_KIND_MASK & ~SMILE_KIND_LIST, SMILE_KIND_NULL,
+	SMILE_KIND_MASK & ~SMILE_KIND_LIST_BIT, SMILE_KIND_NULL,
+	SMILE_KIND_MASK & ~SMILE_KIND_LIST_BIT, SMILE_KIND_NULL,
+	SMILE_KIND_MASK & ~SMILE_KIND_LIST_BIT, SMILE_KIND_NULL,
+	SMILE_KIND_MASK & ~SMILE_KIND_LIST_BIT, SMILE_KIND_NULL,
+	SMILE_KIND_MASK & ~SMILE_KIND_LIST_BIT, SMILE_KIND_NULL,
+	SMILE_KIND_MASK & ~SMILE_KIND_LIST_BIT, SMILE_KIND_NULL,
+	SMILE_KIND_MASK & ~SMILE_KIND_LIST_BIT, SMILE_KIND_NULL,
+	SMILE_KIND_MASK & ~SMILE_KIND_LIST_BIT, SMILE_KIND_NULL,
 };
 
 static Byte _joinChecks[] = {
-	SMILE_KIND_MASK & ~SMILE_KIND_LIST, SMILE_KIND_NULL,
+	SMILE_KIND_MASK & ~SMILE_KIND_LIST_BIT, SMILE_KIND_NULL,
 	SMILE_KIND_MASK, SMILE_KIND_STRING,
 };
 
 static Byte _eachChecks[] = {
-	SMILE_KIND_MASK & ~SMILE_KIND_LIST, SMILE_KIND_NULL,
+	SMILE_KIND_MASK & ~SMILE_KIND_LIST_BIT, SMILE_KIND_NULL,
 	SMILE_KIND_MASK, SMILE_KIND_FUNCTION,
 };
 
 static Byte _indexOfChecks[] = {
-	SMILE_KIND_MASK & ~SMILE_KIND_LIST, SMILE_KIND_NULL,
+	SMILE_KIND_MASK & ~SMILE_KIND_LIST_BIT, SMILE_KIND_NULL,
 	0, 0,
 };
 
@@ -658,7 +658,7 @@ static SmileObject Any(Int argc, SmileObject *argv, void *param)
 	if (argc < 1) {
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'any?' requires at least 1 argument, but was called with %d.", argc));
 	}
-	if ((SMILE_KIND(argv[0]) & ~SMILE_KIND_LIST) != SMILE_KIND_NULL) {
+	if ((SMILE_KIND(argv[0]) & ~SMILE_KIND_LIST_BIT) != SMILE_KIND_NULL) {
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FromC("Argument 1 to 'any?' is of the wrong type."));
 	}
 
@@ -795,7 +795,7 @@ static SmileObject Count(Int argc, SmileObject *argv, void *param)
 	if (argc < 1) {
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'count' requires at least 1 argument, but was called with %d.", argc));
 	}
-	if ((SMILE_KIND(argv[0]) & ~SMILE_KIND_LIST) != SMILE_KIND_NULL) {
+	if ((SMILE_KIND(argv[0]) & ~SMILE_KIND_LIST_BIT) != SMILE_KIND_NULL) {
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FromC("Argument 1 to 'count' is of the wrong type."));
 	}
 
@@ -903,7 +903,7 @@ static SmileObject First(Int argc, SmileObject *argv, void *param)
 	if (argc < 1) {
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'first' requires at least 1 argument, but was called with %d.", argc));
 	}
-	if ((SMILE_KIND(argv[0]) & ~SMILE_KIND_LIST) != SMILE_KIND_NULL) {
+	if ((SMILE_KIND(argv[0]) & ~SMILE_KIND_LIST_BIT) != SMILE_KIND_NULL) {
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FromC("Argument 1 to 'first' is of the wrong type."));
 	}
 
