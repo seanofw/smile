@@ -83,6 +83,8 @@ typedef struct __attribute__((aligned(16))) { UInt64 value[2]; } Real128;
 #undef SMILE_ALIGN
 #define SMILE_ALIGN(__n__) __attribute__((aligned(n)))
 
+#define SMILE_IGNORE_UNUSED_VARIABLES _Pragma("GCC diagnostic ignored \"-Wunused-variable\"")
+
 //------------------------------------------------------------------------------------------------
 //  Entropy.
 

@@ -24,6 +24,8 @@
 #include <smile/eval/eval.h>
 #include <smile/smiletypes/base.h>
 
+SMILE_IGNORE_UNUSED_VARIABLES
+
 static Byte _listChecks[] = {
 	SMILE_KIND_MASK & ~SMILE_KIND_LIST_BIT, SMILE_KIND_NULL,
 	SMILE_KIND_MASK & ~SMILE_KIND_LIST_BIT, SMILE_KIND_NULL,
@@ -53,11 +55,8 @@ static Byte _indexOfChecks[] = {
 //-------------------------------------------------------------------------------------------------
 // Generic type conversion
 
-static SmileObject ToBool(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(ToBool)
 {
-	UNUSED(argc);
-	UNUSED(param);
-
 	if (SMILE_KIND(argv[0]) == SMILE_KIND_LIST)
 		return (SmileObject)Smile_KnownObjects.TrueObj;
 
@@ -67,11 +66,8 @@ static SmileObject ToBool(Int argc, SmileObject *argv, void *param)
 	return (SmileObject)Smile_KnownObjects.TrueObj;
 }
 
-static SmileObject ToInt(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(ToInt)
 {
-	UNUSED(argc);
-	UNUSED(param);
-
 	if (SMILE_KIND(argv[0]) == SMILE_KIND_LIST)
 		return (SmileObject)SmileInteger64_Create(SmileList_Length(((SmileList)argv[0])));
 
@@ -81,11 +77,8 @@ static SmileObject ToInt(Int argc, SmileObject *argv, void *param)
 STATIC_STRING(_List, "List");
 STATIC_STRING(_null, "null");
 
-static SmileObject ToString(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(ToString)
 {
-	UNUSED(argc);
-	UNUSED(param);
-
 	if (SMILE_KIND(argv[0]) == SMILE_KIND_LIST) {
 		return (SmileObject)SmileString_Create(SmileObject_Stringify(argv[0]));
 	}
@@ -96,11 +89,8 @@ static SmileObject ToString(Int argc, SmileObject *argv, void *param)
 	return (SmileObject)SmileString_Create(_List);
 }
 
-static SmileObject Hash(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Hash)
 {
-	UNUSED(argc);
-	UNUSED(param);
-
 	if (SMILE_KIND(argv[0]) == SMILE_KIND_NULL) {
 		return (SmileObject)Smile_KnownObjects.ZeroInt64;
 	}
@@ -111,7 +101,7 @@ static SmileObject Hash(Int argc, SmileObject *argv, void *param)
 //-------------------------------------------------------------------------------------------------
 // Construction functions.
 
-static SmileObject Of(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Of)
 {
 	SmileList head = NullList, tail = NullList;
 	SmileUserObject base = (SmileUserObject)param;
@@ -128,10 +118,8 @@ static SmileObject Of(Int argc, SmileObject *argv, void *param)
 	return (SmileObject)head;
 }
 
-static SmileObject Cons(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Cons)
 {
-	UNUSED(param);
-
 	if (argc == 2)
 		return (SmileObject)SmileList_Cons(argv[0], argv[1]);
 	return (SmileObject)SmileList_Cons(argv[1], argv[2]);
@@ -139,12 +127,9 @@ static SmileObject Cons(Int argc, SmileObject *argv, void *param)
 
 STATIC_STRING(_cycleError, "List has infinite length because it contains a cycle.");
 
-static SmileObject Length(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Length)
 {
 	Int length;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	length = SmileList_SafeLength((SmileList)argv[0]);
 	if (length < 0) {
@@ -154,29 +139,21 @@ static SmileObject Length(Int argc, SmileObject *argv, void *param)
 	return (SmileObject)SmileInteger64_Create(length);
 }
 
-static SmileObject HasCycle(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(HasCycle)
 {
-	UNUSED(argc);
-	UNUSED(param);
-
 	return SmileList_HasCycle(argv[0]) ? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
 }
 
-static SmileObject IsWellFormed(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(IsWellFormed)
 {
-	UNUSED(argc);
-	UNUSED(param);
-
 	return SmileList_IsWellFormed(argv[0]) ? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
 }
 
 STATIC_STRING(_malformedListError, "The list passed to '%s' is malformed or contains a cycle.");
 
-static SmileObject Join(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Join)
 {
 	String glue, result;
-
-	UNUSED(param);
 
 	if (argc <= 1)
 		glue = String_Empty;
@@ -246,7 +223,7 @@ static Int EachWithTwoArgs(ClosureStateMachine closure)
 	return 2;
 }
 
-static SmileObject Each(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Each)
 {
 	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
 	SmileList list = (SmileList)argv[0];
@@ -255,9 +232,6 @@ static SmileObject Each(Int argc, SmileObject *argv, void *param)
 	EachInfo eachInfo;
 	ClosureStateMachine closure;
 	StateMachine stateMachine;
-
-	UNUSED(param);
-	UNUSED(argc);
 
 	SmileFunction_GetArgCounts(function, &minArgs, &maxArgs);
 
@@ -377,7 +351,7 @@ static Int MapWithTwoArgsBody(ClosureStateMachine closure)
 	return 2;
 }
 
-static SmileObject Map(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Map)
 {
 	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
 	SmileList list = (SmileList)argv[0];
@@ -385,9 +359,6 @@ static SmileObject Map(Int argc, SmileObject *argv, void *param)
 	Int minArgs, maxArgs;
 	MapInfo loopInfo;
 	ClosureStateMachine closure;
-
-	UNUSED(param);
-	UNUSED(argc);
 
 	SmileFunction_GetArgCounts(function, &minArgs, &maxArgs);
 
@@ -517,7 +488,7 @@ static Int WhereWithTwoArgsBody(ClosureStateMachine closure)
 	return 2;
 }
 
-static SmileObject Where(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Where)
 {
 	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
 	SmileList list = (SmileList)argv[0];
@@ -525,9 +496,6 @@ static SmileObject Where(Int argc, SmileObject *argv, void *param)
 	Int minArgs, maxArgs;
 	WhereInfo whereInfo;
 	ClosureStateMachine closure;
-
-	UNUSED(param);
-	UNUSED(argc);
 
 	SmileFunction_GetArgCounts(function, &minArgs, &maxArgs);
 
@@ -603,7 +571,7 @@ static Int AnyAllBody(ClosureStateMachine closure)
 	return 1;
 }
 
-static SmileObject Contains(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Contains)
 {
 	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
 	SmileList list = (SmileList)argv[0];
@@ -611,9 +579,6 @@ static SmileObject Contains(Int argc, SmileObject *argv, void *param)
 	AnyAllInfo anyAllInfo;
 	ClosureStateMachine closure;
 	SmileObject value;
-
-	UNUSED(param);
-	UNUSED(argc);
 
 	if (SMILE_KIND(argv[1]) != SMILE_KIND_FUNCTION) {
 		// Degenerate form:  Check to see if any values are super-equal to the given value.
@@ -636,15 +601,12 @@ static SmileObject Contains(Int argc, SmileObject *argv, void *param)
 	return NULL;	// We have to return something, but this value will be ignored.
 }
 
-static SmileObject Empty(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Empty)
 {
-	UNUSED(param);
-	UNUSED(argc);
-
 	return SMILE_KIND(argv[0]) == SMILE_KIND_NULL ? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
 }
 
-static SmileObject Any(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Any)
 {
 	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
 	SmileList list = (SmileList)argv[0];
@@ -652,8 +614,6 @@ static SmileObject Any(Int argc, SmileObject *argv, void *param)
 	AnyAllInfo anyAllInfo;
 	ClosureStateMachine closure;
 	SmileObject value;
-
-	UNUSED(param);
 
 	if (argc < 1) {
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'any?' requires at least 1 argument, but was called with %d.", argc));
@@ -691,7 +651,7 @@ static SmileObject Any(Int argc, SmileObject *argv, void *param)
 	return NULL;	// We have to return something, but this value will be ignored.
 }
 
-static SmileObject All(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(All)
 {
 	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
 	SmileList list = (SmileList)argv[0];
@@ -699,9 +659,6 @@ static SmileObject All(Int argc, SmileObject *argv, void *param)
 	AnyAllInfo anyAllInfo;
 	ClosureStateMachine closure;
 	SmileObject value;
-
-	UNUSED(param);
-	UNUSED(argc);
 
 	if (SMILE_KIND(argv[1]) != SMILE_KIND_FUNCTION) {
 		// Degenerate form:  Check to make sure that all values are super-equal to the given value.
@@ -781,7 +738,7 @@ static Int CountBody(ClosureStateMachine closure)
 	return 1;
 }
 
-static SmileObject Count(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Count)
 {
 	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
 	SmileList list = (SmileList)argv[0];
@@ -789,8 +746,6 @@ static SmileObject Count(Int argc, SmileObject *argv, void *param)
 	ClosureStateMachine closure;
 	SmileObject value;
 	Int count;
-
-	UNUSED(param);
 
 	if (argc < 1) {
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'count' requires at least 1 argument, but was called with %d.", argc));
@@ -890,15 +845,13 @@ static Int FirstBody(ClosureStateMachine closure)
 	return 1;
 }
 
-static SmileObject First(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(First)
 {
 	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
 	SmileList list = (SmileList)argv[0];
 	FirstInfo firstInfo;
 	ClosureStateMachine closure;
 	SmileObject value;
-
-	UNUSED(param);
 
 	if (argc < 1) {
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'first' requires at least 1 argument, but was called with %d.", argc));
@@ -938,7 +891,7 @@ static SmileObject First(Int argc, SmileObject *argv, void *param)
 	return NULL;	// We have to return something, but this value will be ignored.
 }
 
-static SmileObject IndexOf(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(IndexOf)
 {
 	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
 	SmileList list = (SmileList)argv[0];
@@ -947,9 +900,6 @@ static SmileObject IndexOf(Int argc, SmileObject *argv, void *param)
 	ClosureStateMachine closure;
 	SmileObject value;
 	Int index;
-
-	UNUSED(param);
-	UNUSED(argc);
 
 	if (SMILE_KIND(argv[1]) != SMILE_KIND_FUNCTION) {
 		// Degenerate form:  Return the index of the first matching item if a matching item exists, -1 if none exists.
@@ -976,28 +926,19 @@ static SmileObject IndexOf(Int argc, SmileObject *argv, void *param)
 
 //-------------------------------------------------------------------------------------------------
 
-static SmileObject Car(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Car)
 {
-	UNUSED(argc);
-	UNUSED(param);
-
 	return ((SmileList)argv[0])->a;
 }
 
-static SmileObject Cdr(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Cdr)
 {
-	UNUSED(argc);
-	UNUSED(param);
-
 	return ((SmileList)argv[0])->d;
 }
 
-static SmileObject Caar(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Caar)
 {
 	SmileObject obj;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	obj = ((SmileList)argv[0])->a;
 	if (SMILE_KIND(obj) != SMILE_KIND_LIST)
@@ -1005,12 +946,9 @@ static SmileObject Caar(Int argc, SmileObject *argv, void *param)
 	return ((SmileList)obj)->a;
 }
 
-static SmileObject Cadr(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Cadr)
 {
 	SmileObject obj;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	obj = ((SmileList)argv[0])->d;
 	if (SMILE_KIND(obj) != SMILE_KIND_LIST)
@@ -1018,12 +956,9 @@ static SmileObject Cadr(Int argc, SmileObject *argv, void *param)
 	return ((SmileList)obj)->a;
 }
 
-static SmileObject Cdar(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Cdar)
 {
 	SmileObject obj;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	obj = ((SmileList)argv[0])->a;
 	if (SMILE_KIND(obj) != SMILE_KIND_LIST)
@@ -1031,12 +966,9 @@ static SmileObject Cdar(Int argc, SmileObject *argv, void *param)
 	return ((SmileList)obj)->d;
 }
 
-static SmileObject Cddr(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Cddr)
 {
 	SmileObject obj;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	obj = ((SmileList)argv[0])->d;
 	if (SMILE_KIND(obj) != SMILE_KIND_LIST)
@@ -1044,12 +976,9 @@ static SmileObject Cddr(Int argc, SmileObject *argv, void *param)
 	return ((SmileList)obj)->d;
 }
 
-static SmileObject Caaar(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Caaar)
 {
 	SmileObject obj;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	obj = ((SmileList)argv[0])->a;
 	if (SMILE_KIND(obj) != SMILE_KIND_LIST)
@@ -1060,12 +989,9 @@ static SmileObject Caaar(Int argc, SmileObject *argv, void *param)
 	return ((SmileList)obj)->a;
 }
 
-static SmileObject Caadr(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Caadr)
 {
 	SmileObject obj;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	obj = ((SmileList)argv[0])->d;
 	if (SMILE_KIND(obj) != SMILE_KIND_LIST)
@@ -1076,12 +1002,9 @@ static SmileObject Caadr(Int argc, SmileObject *argv, void *param)
 	return ((SmileList)obj)->a;
 }
 
-static SmileObject Cadar(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Cadar)
 {
 	SmileObject obj;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	obj = ((SmileList)argv[0])->a;
 	if (SMILE_KIND(obj) != SMILE_KIND_LIST)
@@ -1092,12 +1015,9 @@ static SmileObject Cadar(Int argc, SmileObject *argv, void *param)
 	return ((SmileList)obj)->a;
 }
 
-static SmileObject Caddr(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Caddr)
 {
 	SmileObject obj;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	obj = ((SmileList)argv[0])->d;
 	if (SMILE_KIND(obj) != SMILE_KIND_LIST)
@@ -1108,12 +1028,9 @@ static SmileObject Caddr(Int argc, SmileObject *argv, void *param)
 	return ((SmileList)obj)->a;
 }
 
-static SmileObject Cdaar(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Cdaar)
 {
 	SmileObject obj;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	obj = ((SmileList)argv[0])->a;
 	if (SMILE_KIND(obj) != SMILE_KIND_LIST)
@@ -1124,12 +1041,9 @@ static SmileObject Cdaar(Int argc, SmileObject *argv, void *param)
 	return ((SmileList)obj)->d;
 }
 
-static SmileObject Cdadr(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Cdadr)
 {
 	SmileObject obj;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	obj = ((SmileList)argv[0])->d;
 	if (SMILE_KIND(obj) != SMILE_KIND_LIST)
@@ -1140,12 +1054,9 @@ static SmileObject Cdadr(Int argc, SmileObject *argv, void *param)
 	return ((SmileList)obj)->d;
 }
 
-static SmileObject Cddar(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Cddar)
 {
 	SmileObject obj;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	obj = ((SmileList)argv[0])->a;
 	if (SMILE_KIND(obj) != SMILE_KIND_LIST)
@@ -1156,12 +1067,9 @@ static SmileObject Cddar(Int argc, SmileObject *argv, void *param)
 	return ((SmileList)obj)->d;
 }
 
-static SmileObject Cdddr(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Cdddr)
 {
 	SmileObject obj;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	obj = ((SmileList)argv[0])->d;
 	if (SMILE_KIND(obj) != SMILE_KIND_LIST)
@@ -1172,13 +1080,10 @@ static SmileObject Cdddr(Int argc, SmileObject *argv, void *param)
 	return ((SmileList)obj)->d;
 }
 
-static SmileObject Cxr(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Cxr)
 {
 	UInt32 flags;
 	SmileObject obj = argv[0];
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	for (flags = (UInt32)(PtrInt)param; flags; flags >>= 3) {
 		if (SMILE_KIND(obj) != SMILE_KIND_LIST)

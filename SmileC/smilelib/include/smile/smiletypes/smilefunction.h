@@ -27,6 +27,17 @@
 #define ARG_CHECK_TYPES	(1 << 3)
 #define ARG_STATE_MACHINE	(1 << 4)	// This is a special "state machine" function.
 
+/// <summary>
+/// This macro knows how to declare a function that is externally-callable by a Smile program.
+/// You should not declare the function prototype directly yourself; let the macro do it for you
+/// correctly, as the parameters and arguments may change in newer versions of the Smile runtime.
+/// </summary>
+#define SMILE_EXTERNAL_FUNCTION(__name__) \
+	static SmileObject __name__(Int argc, SmileObject *argv, void *param)
+
+/// <summary>
+/// This is the type of an externally-callable function.
+/// </summary>
 typedef SmileObject (*ExternalFunction)(Int argc, SmileObject *argv, void *param);
 
 typedef struct ExternalFunctionInfoStruct {

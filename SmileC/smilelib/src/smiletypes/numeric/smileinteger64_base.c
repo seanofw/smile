@@ -27,6 +27,8 @@
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/base.h>
 
+SMILE_IGNORE_UNUSED_VARIABLES
+
 static Byte _integer64Checks[] = {
 	SMILE_KIND_MASK, SMILE_KIND_INTEGER64,
 	SMILE_KIND_MASK, SMILE_KIND_INTEGER64,
@@ -56,22 +58,16 @@ STATIC_STRING(_parseArguments, "Illegal arguments to 'parse' function");
 //-------------------------------------------------------------------------------------------------
 // Generic type conversion
 
-static SmileObject ToBool(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(ToBool)
 {
-	UNUSED(argc);
-	UNUSED(param);
-
 	if (SMILE_KIND(argv[0]) == SMILE_KIND_INTEGER64)
 		return ((SmileInteger64)argv[0])->value ? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
 
 	return (SmileObject)Smile_KnownObjects.TrueObj;
 }
 
-static SmileObject ToInt(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(ToInt)
 {
-	UNUSED(argc);
-	UNUSED(param);
-
 	if (SMILE_KIND(argv[0]) == SMILE_KIND_INTEGER64)
 		return argv[0];
 
@@ -80,11 +76,9 @@ static SmileObject ToInt(Int argc, SmileObject *argv, void *param)
 
 STATIC_STRING(_Integer64, "Integer64");
 
-static SmileObject ToString(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(ToString)
 {
 	Int64 numericBase;
-
-	UNUSED(param);
 
 	if (SMILE_KIND(argv[0]) == SMILE_KIND_INTEGER64) {
 		if (argc == 2) {
@@ -102,11 +96,8 @@ static SmileObject ToString(Int argc, SmileObject *argv, void *param)
 	return (SmileObject)SmileString_Create(_Integer64);
 }
 
-static SmileObject Hash(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Hash)
 {
-	UNUSED(argc);
-	UNUSED(param);
-
 	if (SMILE_KIND(argv[0]) == SMILE_KIND_INTEGER64)
 		return argv[0];
 
@@ -116,47 +107,33 @@ static SmileObject Hash(Int argc, SmileObject *argv, void *param)
 //-------------------------------------------------------------------------------------------------
 // Specialized type conversion
 
-static SmileObject ToInt64(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(ToInt64)
 {
-	UNUSED(argc);
-	UNUSED(param);
-
 	return argv[0];
 }
 
-static SmileObject ToInt32(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(ToInt32)
 {
-	UNUSED(argc);
-	UNUSED(param);
-
 	return (SmileObject)SmileInteger32_Create((UInt32)((SmileInteger64)argv[0])->value);
 }
 
-static SmileObject ToInt16(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(ToInt16)
 {
-	UNUSED(argc);
-	UNUSED(param);
-
 	return (SmileObject)SmileInteger16_Create((UInt16)((SmileInteger64)argv[0])->value);
 }
 
-static SmileObject ToByte(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(ToByte)
 {
-	UNUSED(argc);
-	UNUSED(param);
-
 	return (SmileObject)SmileByte_Create((Byte)((SmileInteger64)argv[0])->value);
 }
 
 //-------------------------------------------------------------------------------------------------
 // Parsing
 
-static SmileObject Parse(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Parse)
 {
 	Int64 numericBase;
 	Int64 value;
-
-	UNUSED(param);
 
 	switch (argc) {
 
@@ -207,12 +184,10 @@ static SmileObject Parse(Int argc, SmileObject *argv, void *param)
 //-------------------------------------------------------------------------------------------------
 // Arithmetic operators
 
-static SmileObject Plus(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Plus)
 {
 	Int64 x;
 	Int i;
-
-	UNUSED(param);
 
 	switch (argc) {
 		case 1:
@@ -245,12 +220,10 @@ static SmileObject Plus(Int argc, SmileObject *argv, void *param)
 	}
 }
 
-static SmileObject Minus(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Minus)
 {
 	Int64 x;
 	Int i;
-
-	UNUSED(param);
 
 	switch (argc) {
 		case 1:
@@ -284,12 +257,10 @@ static SmileObject Minus(Int argc, SmileObject *argv, void *param)
 	}
 }
 
-static SmileObject Star(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Star)
 {
 	Int64 x;
 	Int i;
-
-	UNUSED(param);
 
 	switch (argc) {
 		case 2:
@@ -319,12 +290,10 @@ static SmileObject Star(Int argc, SmileObject *argv, void *param)
 	}
 }
 
-static SmileObject UStar(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(UStar)
 {
 	UInt64 x;
 	Int i;
-
-	UNUSED(param);
 
 	switch (argc) {
 		case 2:
@@ -396,12 +365,10 @@ Inline Int64 MathematiciansDiv(Int64 dividend, Int64 divisor)
 	}
 }
 
-static SmileObject Slash(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Slash)
 {
 	Int64 x, y;
 	Int i;
-
-	UNUSED(param);
 
 	switch (argc) {
 		case 2:
@@ -445,12 +412,10 @@ static SmileObject Slash(Int argc, SmileObject *argv, void *param)
 	}
 }
 
-static SmileObject USlash(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(USlash)
 {
 	UInt64 x, y;
 	Int i;
-
-	UNUSED(param);
 
 	switch (argc) {
 		case 2:
@@ -494,12 +459,10 @@ static SmileObject USlash(Int argc, SmileObject *argv, void *param)
 	}
 }
 
-static SmileObject Div(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Div)
 {
 	Int64 x, y;
 	Int i;
-
-	UNUSED(param);
 
 	switch (argc) {
 		case 2:
@@ -589,13 +552,10 @@ Inline Int64 MathematiciansRemainder(Int64 x, Int64 y)
 	}
 }
 
-static SmileObject Mod(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Mod)
 {
 	Int64 x = ((SmileInteger64)argv[0])->value;
 	Int64 y = ((SmileInteger64)argv[1])->value;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	if (y == 0)
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
@@ -603,13 +563,10 @@ static SmileObject Mod(Int argc, SmileObject *argv, void *param)
 	return (SmileObject)SmileInteger64_Create(MathematiciansModulus(x, y));
 }
 
-static SmileObject UMod(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(UMod)
 {
 	UInt64 x = (UInt64)((SmileInteger64)argv[0])->value;
 	UInt64 y = (UInt64)((SmileInteger64)argv[1])->value;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	if (y == 0)
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
@@ -617,13 +574,10 @@ static SmileObject UMod(Int argc, SmileObject *argv, void *param)
 	return (SmileObject)SmileInteger64_Create((Int64)(x % y));
 }
 
-static SmileObject Rem(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Rem)
 {
 	Int64 x = ((SmileInteger64)argv[0])->value;
 	Int64 y = ((SmileInteger64)argv[1])->value;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	if (y == 0)
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
@@ -634,37 +588,28 @@ static SmileObject Rem(Int argc, SmileObject *argv, void *param)
 //-------------------------------------------------------------------------------------------------
 // Arithmetic extensions
 
-static SmileObject Sign(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Sign)
 {
 	Int64 value = ((SmileInteger64)argv[0])->value;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	return value == 0 ? (SmileObject)Smile_KnownObjects.ZeroInt64
 		: value > 0 ? (SmileObject)Smile_KnownObjects.OneInt64
 		: (SmileObject)Smile_KnownObjects.NegOneInt64;
 }
 
-static SmileObject Abs(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Abs)
 {
 	Int64 value = ((SmileInteger64)argv[0])->value;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	return value < 0 ? (SmileObject)SmileInteger64_Create(-value) : argv[0];
 }
 
-static SmileObject Clip(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Clip)
 {
 	Int64 value = ((SmileInteger64)argv[0])->value;
 	Int64 min = ((SmileInteger64)argv[1])->value;
 	Int64 max = ((SmileInteger64)argv[2])->value;
 
-	UNUSED(argc);
-	UNUSED(param);
-
 	if (value > max) {
 		value = max;
 		return value < min ? argv[1] : argv[2];
@@ -675,15 +620,12 @@ static SmileObject Clip(Int argc, SmileObject *argv, void *param)
 	else return argv[0];
 }
 
-static SmileObject UClip(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(UClip)
 {
 	UInt64 value = (UInt64)((SmileInteger64)argv[0])->value;
 	UInt64 min = (UInt64)((SmileInteger64)argv[1])->value;
 	UInt64 max = (UInt64)((SmileInteger64)argv[2])->value;
 
-	UNUSED(argc);
-	UNUSED(param);
-
 	if (value > max) {
 		value = max;
 		return value < min ? argv[1] : argv[2];
@@ -694,12 +636,10 @@ static SmileObject UClip(Int argc, SmileObject *argv, void *param)
 	else return argv[0];
 }
 
-static SmileObject Min(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Min)
 {
 	Int64 x, y;
 	Int i, j;
-
-	UNUSED(param);
 
 	switch (argc) {
 		case 1:
@@ -743,12 +683,10 @@ static SmileObject Min(Int argc, SmileObject *argv, void *param)
 	}
 }
 
-static SmileObject UMin(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(UMin)
 {
 	UInt64 x, y;
 	Int i, j;
-
-	UNUSED(param);
 
 	switch (argc) {
 		case 1:
@@ -792,12 +730,10 @@ static SmileObject UMin(Int argc, SmileObject *argv, void *param)
 	}
 }
 
-static SmileObject Max(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Max)
 {
 	Int64 x, y;
 	Int i, j;
-
-	UNUSED(param);
 
 	switch (argc) {
 		case 1:
@@ -841,12 +777,10 @@ static SmileObject Max(Int argc, SmileObject *argv, void *param)
 	}
 }
 
-static SmileObject UMax(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(UMax)
 {
 	UInt64 x, y;
 	Int i, j;
-
-	UNUSED(param);
 
 	switch (argc) {
 		case 1:
@@ -907,12 +841,10 @@ Inline Int64 IntPower(Int64 value, Int64 exponent)
 	return result;
 }
 
-static SmileObject Power(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Power)
 {
 	Int64 x, y;
 	Int i;
-
-	UNUSED(param);
 
 	switch (argc) {
 		case 2:
@@ -980,12 +912,9 @@ Inline UInt64 IntSqrt(UInt64 value)
 	return root;
 }
 
-static SmileObject Sqrt(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Sqrt)
 {
 	Int64 value = ((SmileInteger64)argv[0])->value;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	if (value < 0)
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _negativeSqrt);
@@ -993,23 +922,17 @@ static SmileObject Sqrt(Int argc, SmileObject *argv, void *param)
 	return (SmileObject)SmileInteger64_Create((Int64)IntSqrt((UInt64)value));
 }
 
-static SmileObject Pow2Q(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Pow2Q)
 {
 	Int64 value = ((SmileInteger64)argv[0])->value;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	return value > 0 && (value & (value - 1)) == 0 ? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
 }
 
-static SmileObject NextPow2(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(NextPow2)
 {
 	Int64 value = ((SmileInteger64)argv[0])->value;
 	UInt64 uvalue = (UInt64)value;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	if (value <= 0) return (SmileObject)Smile_KnownObjects.OneInt64;
 
@@ -1025,14 +948,11 @@ static SmileObject NextPow2(Int argc, SmileObject *argv, void *param)
 	return (SmileObject)SmileInteger64_Create((Int64)uvalue);
 }
 
-static SmileObject IntLg(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(IntLg)
 {
 	Int64 value = ((SmileInteger64)argv[0])->value;
 	UInt64 uvalue = (UInt64)value;
 	UInt64 log;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	if (value <= 0)
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _negativeLog);
@@ -1051,12 +971,10 @@ static SmileObject IntLg(Int argc, SmileObject *argv, void *param)
 //-------------------------------------------------------------------------------------------------
 // Bitwise operators
 
-static SmileObject BitAnd(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(BitAnd)
 {
 	Int64 x;
 	Int i;
-
-	UNUSED(param);
 
 	switch (argc) {
 		case 1:
@@ -1089,12 +1007,10 @@ static SmileObject BitAnd(Int argc, SmileObject *argv, void *param)
 	}
 }
 
-static SmileObject BitOr(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(BitOr)
 {
 	Int64 x;
 	Int i;
-
-	UNUSED(param);
 
 	switch (argc) {
 		case 1:
@@ -1127,12 +1043,10 @@ static SmileObject BitOr(Int argc, SmileObject *argv, void *param)
 	}
 }
 
-static SmileObject BitXor(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(BitXor)
 {
 	Int64 x;
 	Int i;
-
-	UNUSED(param);
 
 	switch (argc) {
 		case 1:
@@ -1165,12 +1079,9 @@ static SmileObject BitXor(Int argc, SmileObject *argv, void *param)
 	}
 }
 
-static SmileObject BitNot(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(BitNot)
 {
 	Int64 value = ((SmileInteger64)argv[0])->value;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	return value < 0 ? (SmileObject)SmileInteger64_Create(~value) : argv[0];
 }
@@ -1178,68 +1089,50 @@ static SmileObject BitNot(Int argc, SmileObject *argv, void *param)
 //-------------------------------------------------------------------------------------------------
 // Shift/rotate operators
 
-static SmileObject LogicalShiftLeft(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(LogicalShiftLeft)
 {
 	UInt64 x = (UInt64)((SmileInteger64)argv[0])->value;
 	UInt64 y = (UInt64)((SmileInteger64)argv[1])->value;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	return (SmileObject)SmileInteger64_Create((Int64)(x << y));
 }
 
-static SmileObject LogicalShiftRight(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(LogicalShiftRight)
 {
 	UInt64 x = (UInt64)((SmileInteger64)argv[0])->value;
 	UInt64 y = (UInt64)((SmileInteger64)argv[1])->value;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	return (SmileObject)SmileInteger64_Create((Int64)(x >> y));
 }
 
-static SmileObject ArithmeticShiftLeft(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(ArithmeticShiftLeft)
 {
 	Int64 x = ((SmileInteger64)argv[0])->value;
 	Int64 y = ((SmileInteger64)argv[1])->value;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	return (SmileObject)SmileInteger64_Create(x << y);
 }
 
-static SmileObject ArithmeticShiftRight(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(ArithmeticShiftRight)
 {
 	Int64 x = ((SmileInteger64)argv[0])->value;
 	Int64 y = ((SmileInteger64)argv[1])->value;
 
-	UNUSED(argc);
-	UNUSED(param);
-
 	return (SmileObject)SmileInteger64_Create(x >> y);
 }
 
-static SmileObject RotateLeft(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(RotateLeft)
 {
 	UInt64 x = (UInt64)((SmileInteger64)argv[0])->value;
 	UInt64 y = (UInt64)((SmileInteger64)argv[1])->value;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	return (SmileObject)SmileInteger64_Create((Int64)Smile_RotateLeft64(x, y));
 }
 
-static SmileObject RotateRight(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(RotateRight)
 {
 	UInt64 x = (UInt64)((SmileInteger64)argv[0])->value;
 	UInt64 y = (UInt64)((SmileInteger64)argv[1])->value;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	return (SmileObject)SmileInteger64_Create((Int64)Smile_RotateRight64(x, y));
 }
@@ -1284,32 +1177,23 @@ Inline UInt64 ComputeCountOfRightZeros(UInt64 value)
 	return c;
 }
 
-static SmileObject CountOnes(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(CountOnes)
 {
 	UInt64 value = ((SmileInteger64)argv[0])->value;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	return (SmileObject)SmileInteger64_Create((Int64)CountBitsSet((UInt64)value));
 }
 
-static SmileObject CountZeros(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(CountZeros)
 {
 	UInt64 value = ((SmileInteger64)argv[0])->value;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	return (SmileObject)SmileInteger64_Create((Int64)CountBitsSet(~(UInt64)value));
 }
 
-static SmileObject Parity(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Parity)
 {
 	UInt64 value = ((SmileInteger64)argv[0])->value;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	value ^= value >> 32;
 	value ^= value >> 16;
@@ -1321,22 +1205,16 @@ static SmileObject Parity(Int argc, SmileObject *argv, void *param)
 	return (SmileObject)SmileInteger64_Create((Int64)value);
 }
 
-static SmileObject ReverseBits(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(ReverseBits)
 {
 	UInt64 value = (UInt64)((SmileInteger64)argv[0])->value;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	return (SmileObject)SmileInteger64_Create((Int64)ComputeReverseBits(value));
 }
 
-static SmileObject ReverseBytes(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(ReverseBytes)
 {
 	UInt64 value = (UInt64)((SmileInteger64)argv[0])->value;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	value = (UInt64)( ((value >> 56) & 0x00000000000000FFULL)
 						| ((value >> 40) & 0x000000000000FF00ULL)
@@ -1350,42 +1228,30 @@ static SmileObject ReverseBytes(Int argc, SmileObject *argv, void *param)
 	return (SmileObject)SmileInteger64_Create((Int64)value);
 }
 
-static SmileObject CountRightZeros(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(CountRightZeros)
 {
 	UInt64 value = (UInt64)((SmileInteger64)argv[0])->value;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	return (SmileObject)SmileInteger64_Create((Int64)ComputeCountOfRightZeros(value));
 }
 
-static SmileObject CountRightOnes(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(CountRightOnes)
 {
 	UInt64 value = (UInt64)((SmileInteger64)argv[0])->value;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	return (SmileObject)SmileInteger64_Create((Int64)ComputeCountOfRightZeros(~value));
 }
 
-static SmileObject CountLeftZeros(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(CountLeftZeros)
 {
 	UInt64 value = (UInt64)((SmileInteger64)argv[0])->value;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	return (SmileObject)SmileInteger64_Create((Int64)ComputeCountOfRightZeros(ComputeReverseBits(value)));
 }
 
-static SmileObject CountLeftOnes(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(CountLeftOnes)
 {
 	UInt64 value = (UInt64)((SmileInteger64)argv[0])->value;
-
-	UNUSED(argc);
-	UNUSED(param);
 
 	return (SmileObject)SmileInteger64_Create((Int64)ComputeCountOfRightZeros(~ComputeReverseBits(value)));
 }
@@ -1393,11 +1259,8 @@ static SmileObject CountLeftOnes(Int argc, SmileObject *argv, void *param)
 //-------------------------------------------------------------------------------------------------
 // Comparisons
 
-static SmileObject Eq(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Eq)
 {
-	UNUSED(argc);
-	UNUSED(param);
-
 	if (SMILE_KIND(argv[1]) != SMILE_KIND_INTEGER64
 		|| ((SmileInteger64)argv[0])->value != ((SmileInteger64)argv[1])->value)
 		return (SmileObject)Smile_KnownObjects.FalseObj;
@@ -1405,11 +1268,8 @@ static SmileObject Eq(Int argc, SmileObject *argv, void *param)
 	return (SmileObject)Smile_KnownObjects.TrueObj;
 }
 
-static SmileObject Ne(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Ne)
 {
-	UNUSED(argc);
-	UNUSED(param);
-
 	if (SMILE_KIND(argv[1]) != SMILE_KIND_INTEGER64
 		|| ((SmileInteger64)argv[0])->value != ((SmileInteger64)argv[1])->value)
 		return (SmileObject)Smile_KnownObjects.TrueObj;
@@ -1417,83 +1277,56 @@ static SmileObject Ne(Int argc, SmileObject *argv, void *param)
 	return (SmileObject)Smile_KnownObjects.FalseObj;
 }
 
-static SmileObject Lt(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Lt)
 {
-	UNUSED(argc);
-	UNUSED(param);
-
 	return ((SmileInteger64)argv[0])->value < ((SmileInteger64)argv[1])->value
 		? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
 }
 
-static SmileObject Gt(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Gt)
 {
-	UNUSED(argc);
-	UNUSED(param);
-
 	return ((SmileInteger64)argv[0])->value >((SmileInteger64)argv[1])->value
 		? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
 }
 
-static SmileObject Le(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Le)
 {
-	UNUSED(argc);
-	UNUSED(param);
-
 	return ((SmileInteger64)argv[0])->value <= ((SmileInteger64)argv[1])->value
 		? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
 }
 
-static SmileObject Ge(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Ge)
 {
-	UNUSED(argc);
-	UNUSED(param);
-
 	return ((SmileInteger64)argv[0])->value >= ((SmileInteger64)argv[1])->value
 		? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
 }
 
-static SmileObject ULt(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(ULt)
 {
-	UNUSED(argc);
-	UNUSED(param);
-
 	return (UInt64)((SmileInteger64)argv[0])->value < (UInt64)((SmileInteger64)argv[1])->value
 		? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
 }
 
-static SmileObject UGt(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(UGt)
 {
-	UNUSED(argc);
-	UNUSED(param);
-
 	return (UInt64)((SmileInteger64)argv[0])->value >(UInt64)((SmileInteger64)argv[1])->value
 		? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
 }
 
-static SmileObject ULe(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(ULe)
 {
-	UNUSED(argc);
-	UNUSED(param);
-
 	return (UInt64)((SmileInteger64)argv[0])->value <= (UInt64)((SmileInteger64)argv[1])->value
 		? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
 }
 
-static SmileObject UGe(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(UGe)
 {
-	UNUSED(argc);
-	UNUSED(param);
-
 	return (UInt64)((SmileInteger64)argv[0])->value >= (UInt64)((SmileInteger64)argv[1])->value
 		? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
 }
 
-static SmileObject Compare(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(Compare)
 {
-	UNUSED(argc);
-	UNUSED(param);
-
 	Int64 x = ((SmileInteger64)argv[0])->value;
 	Int64 y = ((SmileInteger64)argv[1])->value;
 
@@ -1505,11 +1338,8 @@ static SmileObject Compare(Int argc, SmileObject *argv, void *param)
 		return (SmileObject)Smile_KnownObjects.OneInt64;
 }
 
-static SmileObject UCompare(Int argc, SmileObject *argv, void *param)
+SMILE_EXTERNAL_FUNCTION(UCompare)
 {
-	UNUSED(argc);
-	UNUSED(param);
-
 	UInt64 x = (UInt64)((SmileInteger64)argv[0])->value;
 	UInt64 y = (UInt64)((SmileInteger64)argv[1])->value;
 

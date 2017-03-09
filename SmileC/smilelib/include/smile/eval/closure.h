@@ -35,6 +35,25 @@ struct ByteCodeSegmentStruct;
 #define CLOSURE_KIND_LOCAL	1
 
 /// <summary>
+/// This shape represents a single function argument or local variable.  It consists of a pointer
+/// to a real SmileObject (usually on the heap), and, if that object is unboxed, the unboxed data
+/// immediately adjacent to it.
+/// </summary>
+typedef struct SmileArgStruct {
+	SmileObject obj;	// A pointer to the object instance itself.
+
+	// Any unboxed data associated with this arg, if this is an unboxed type.
+	union {
+		Bool b;
+		Byte i8;
+		Int16 i16;
+		Int32 i32;
+		Int64 i64;
+		Symbol symbol;
+	} unboxed;
+} *SmileArg;
+
+/// <summary>
 /// A ClosureInfo structure is a reusable object that provides all of the metadata about the
 /// information stored in similarly-shaped closures.
 /// </summary>

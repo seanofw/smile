@@ -83,6 +83,8 @@ typedef struct __attribute__((aligned(16))) { UInt64 value[2]; } Real128;
 	#define SMILE_API_DATA extern __declspec(dllimport)
 #endif
 
+#define SMILE_IGNORE_UNUSED_VARIABLES _Pragma("GCC diagnostic ignored \"-Wunused-variable\"")
+
 //------------------------------------------------------------------------------------------------
 //  Entropy.
 
