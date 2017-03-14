@@ -35,25 +35,6 @@ struct ByteCodeSegmentStruct;
 #define CLOSURE_KIND_LOCAL	1
 
 /// <summary>
-/// This shape represents a single function argument or local variable.  It consists of a pointer
-/// to a real SmileObject (usually on the heap), and, if that object is unboxed, the unboxed data
-/// immediately adjacent to it.
-/// </summary>
-typedef struct SmileArgStruct {
-	SmileObject obj;	// A pointer to the object instance itself.
-
-	// Any unboxed data associated with this arg, if this is an unboxed type.
-	union {
-		Bool b;
-		Byte i8;
-		Int16 i16;
-		Int32 i32;
-		Int64 i64;
-		Symbol symbol;
-	} unboxed;
-} *SmileArg;
-
-/// <summary>
 /// A ClosureInfo structure is a reusable object that provides all of the metadata about the
 /// information stored in similarly-shaped closures.
 /// </summary>
@@ -106,9 +87,8 @@ typedef struct ClosureStruct {
 	struct ByteCodeSegmentStruct *returnSegment;	// The segment that contains the continuation's code.
 	Int returnPc;	// The continuation's program counter.
 		
-	SmileObject *frame;	// The offset of the stack frame (- for args, + for local vars).
-	SmileObject *stackTop;	// The current address of the top of the temporary variables (NULL for global closures).
-	SmileObject variables[1];	// The array of variables (matches the ClosureInfo's numVariables + tempSize; size 0 for global closures).
+	SmileArg *stackTop;	// The current address of the top of the temporary variables (NULL for global closures).
+	SmileArg variables[1];	// The array of variables (matches the ClosureInfo's numVariables + tempSize; size 0 for global closures).
 
 } *Closure;
 
@@ -127,9 +107,8 @@ typedef struct ClosureStateMachineStruct {
 	struct ByteCodeSegmentStruct *returnSegment;	// The segment that contains the continuation's code.
 	Int returnPc;	// The continuation's program counter.
 		
-	SmileObject *frame;	// The offset of the stack frame (- for args, + for local vars).
-	SmileObject *stackTop;	// The current address of the top of the temporary variables.
-	SmileObject variables[16];	// Always a max of 16 variables for a C state machine.
+	SmileArg *stackTop;	// The current address of the top of the temporary variables.
+	SmileArg variables[16];	// Always a max of 16 variables for a C state machine.
 		
 	StateMachine stateMachineStart;	// The startup function for the state machine.
 	StateMachine stateMachineBody;	// The body function to repeatedly invoke for the state machine.
@@ -152,32 +131,63 @@ SMILE_API_FUNC SmileObject Closure_GetGlobalVariable(Closure closure, Symbol nam
 SMILE_API_FUNC Bool Closure_HasGlobalVariable(Closure closure, Symbol name);
 SMILE_API_FUNC void Closure_SetGlobalVariable(Closure closure, Symbol name, SmileObject value);
 
-SMILE_API_FUNC SmileObject Closure_GetLocalVariableInScope(Closure closure, Int scope, Int index);
-SMILE_API_FUNC void Closure_SetLocalVariableInScope(Closure closure, Int scope, Int index, SmileObject value);
+SMILE_API_FUNC SmileArg Closure_GetLocalVariableInScope(Closure closure, Int scope, Int index);
+SMILE_API_FUNC void Closure_SetLocalVariableInScope(Closure closure, Int scope, Int index, SmileArg arg);
 
-SMILE_API_FUNC SmileObject Closure_GetArgumentInScope(Closure closure, Int scope, Int index);
-SMILE_API_FUNC void Closure_SetArgumentInScope(Closure closure, Int scope, Int index, SmileObject value);
+SMILE_API_FUNC SmileArg Closure_GetArgumentInScope(Closure closure, Int scope, Int index);
+SMILE_API_FUNC void Closure_SetArgumentInScope(Closure closure, Int scope, Int index, SmileArg arg);
 
 //-------------------------------------------------------------------------------------------------
 // Inlines and Macro Forms.
 
-#define Closure_PushTemp(__closure__, __value__) \
-	(*(__closure__)->stackTop++ = (SmileObject)(__value__))
+#define Closure_Push(__closure__, __arg__) \
+	(*(__closure__)->stackTop++ = (__arg__))
 
-#define Closure_PopTemp(__closure__) \
+#define Closure_UnboxAndPush(__closure__, __value__) \
+	Closure_Push(__closure__, SmileArg_Unbox(__value__))
+
+#define Closure_PushBoxed(__closure__, __value__) \
+	(((__closure__)->stackTop++)->obj = (SmileObject)(__value__))
+
+#define Closure_PushUnboxedByte(__closure__, __value__) \
+	( ((__closure__)->stackTop->obj = (SmileObject)SmileUnboxedByte_Instance), \
+	  ((__closure__)->stackTop->unboxed.i8 = (__value__)), \
+	  ((__closure__)->stackTop++) )
+#define Closure_PushUnboxedInt16(__closure__, __value__) \
+	( ((__closure__)->stackTop->obj = (SmileObject)SmileUnboxedInteger16_Instance), \
+	  ((__closure__)->stackTop->unboxed.i16 = (__value__)), \
+	  ((__closure__)->stackTop++) )
+#define Closure_PushUnboxedInt32(__closure__, __value__) \
+	( ((__closure__)->stackTop->obj = (SmileObject)SmileUnboxedInteger32_Instance), \
+	  ((__closure__)->stackTop->unboxed.i32 = (__value__)), \
+	  ((__closure__)->stackTop++) )
+#define Closure_PushUnboxedInt64(__closure__, __value__) \
+	( ((__closure__)->stackTop->obj = (SmileObject)SmileUnboxedInteger64_Instance), \
+	  ((__closure__)->stackTop->unboxed.i64 = (__value__)), \
+	  ((__closure__)->stackTop++) )
+#define Closure_PushUnboxedBool(__closure__, __value__) \
+	( ((__closure__)->stackTop->obj = (SmileObject)SmileUnboxedBool_Instance), \
+	  ((__closure__)->stackTop->unboxed.b = (__value__)), \
+	  ((__closure__)->stackTop++) )
+#define Closure_PushUnboxedSymbol(__closure__, __value__) \
+	( ((__closure__)->stackTop->obj = (SmileObject)SmileUnboxedSymbol_Instance), \
+	  ((__closure__)->stackTop->unboxed.symbol = (__value__)), \
+	  ((__closure__)->stackTop++) )
+
+#define Closure_Pop(__closure__) \
 	(*--(__closure__)->stackTop)
 
 #define Closure_GetTop(__closure__) \
 	((__closure__)->stackTop[-1])
 
-#define Closure_SetTop(__closure__, __value__) \
-	((__closure__)->stackTop[-1] = (SmileObject)(__value__))
+#define Closure_SetTop(__closure__, __arg__) \
+	((__closure__)->stackTop[-1] = (__arg__))
 
 #define Closure_GetTemp(__closure__, __offset__) \
 	((__closure__)->stackTop[-1 - (__offset__)])
 
-#define Closure_SetTemp(__closure__, __offset__, __value__) \
-	((__closure__)->stackTop[-1 - (__offset__)] = (SmileObject)(__value__))
+#define Closure_SetTemp(__closure__, __offset__, __arg__) \
+	((__closure__)->stackTop[-1 - (__offset__)] = (__arg__))
 
 #define Closure_PopCount(__closure__, __count__) \
 	((__closure__)->stackTop -= (__count__))
@@ -185,10 +195,10 @@ SMILE_API_FUNC void Closure_SetArgumentInScope(Closure closure, Int scope, Int i
 //-------------------------------------------------------------------------------------------------
 
 #define Closure_GetLocalVariable(__closure__, __index__) \
-	((__closure__)->frame[(__index__)])
+	((__closure__)->variables[(__index__)])
 
-#define Closure_SetLocalVariable(__closure__, __index__, __value__) \
-	(((__closure__)->frame[(__index__)]) = (SmileObject)(__value__))
+#define Closure_SetLocalVariable(__closure__, __index__, __arg__) \
+	(((__closure__)->variables[(__index__)]) = (__arg__))
 
 #define Closure_GetLocalVariableInScope0(__closure__, __index__) \
 	Closure_GetLocalVariable((__closure__), (__index__))
@@ -207,30 +217,30 @@ SMILE_API_FUNC void Closure_SetArgumentInScope(Closure closure, Int scope, Int i
 #define Closure_GetLocalVariableInScope7(__closure__, __index__) \
 	Closure_GetLocalVariable((__closure__)->parent->parent->parent->parent->parent->parent->parent, (__index__))
 
-#define Closure_SetLocalVariableInScope0(__closure__, __index__, __value__) \
-	(Closure_SetLocalVariable((__closure__), (__index__), (__value__)))
-#define Closure_SetLocalVariableInScope1(__closure__, __index__, __value__) \
-	(Closure_SetLocalVariable((__closure__)->parent, (__index__), (__value__)))
-#define Closure_SetLocalVariableInScope2(__closure__, __index__, __value__) \
-	(Closure_SetLocalVariable((__closure__)->parent->parent, (__index__), (__value__)))
-#define Closure_SetLocalVariableInScope3(__closure__, __index__, __value__) \
-	(Closure_SetLocalVariable((__closure__)->parent->parent->parent, (__index__), (__value__)))
-#define Closure_SetLocalVariableInScope4(__closure__, __index__, __value__) \
-	(Closure_SetLocalVariable((__closure__)->parent->parent->parent->parent, (__index__), (__value__)))
-#define Closure_SetLocalVariableInScope5(__closure__, __index__, __value__) \
-	(Closure_SetLocalVariable((__closure__)->parent->parent->parent->parent->parent, (__index__), (__value__)))
-#define Closure_SetLocalVariableInScope6(__closure__, __index__, __value__) \
-	(Closure_SetLocalVariable((__closure__)->parent->parent->parent->parent->parent->parent, (__index__), (__value__)))
-#define Closure_SetLocalVariableInScope7(__closure__, __index__, __value__) \
-	(Closure_SetLocalVariable((__closure__)->parent->parent->parent->parent->parent->parent->parent, (__index__), (__value__)))
+#define Closure_SetLocalVariableInScope0(__closure__, __index__, __arg__) \
+	(Closure_SetLocalVariable((__closure__), (__index__), (__arg__)))
+#define Closure_SetLocalVariableInScope1(__closure__, __index__, __arg__) \
+	(Closure_SetLocalVariable((__closure__)->parent, (__index__), (__arg__)))
+#define Closure_SetLocalVariableInScope2(__closure__, __index__, __arg__) \
+	(Closure_SetLocalVariable((__closure__)->parent->parent, (__index__), (__arg__)))
+#define Closure_SetLocalVariableInScope3(__closure__, __index__, __arg__) \
+	(Closure_SetLocalVariable((__closure__)->parent->parent->parent, (__index__), (__arg__)))
+#define Closure_SetLocalVariableInScope4(__closure__, __index__, __arg__) \
+	(Closure_SetLocalVariable((__closure__)->parent->parent->parent->parent, (__index__), (__arg__)))
+#define Closure_SetLocalVariableInScope5(__closure__, __index__, __arg__) \
+	(Closure_SetLocalVariable((__closure__)->parent->parent->parent->parent->parent, (__index__), (__arg__)))
+#define Closure_SetLocalVariableInScope6(__closure__, __index__, __arg__) \
+	(Closure_SetLocalVariable((__closure__)->parent->parent->parent->parent->parent->parent, (__index__), (__arg__)))
+#define Closure_SetLocalVariableInScope7(__closure__, __index__, __arg__) \
+	(Closure_SetLocalVariable((__closure__)->parent->parent->parent->parent->parent->parent->parent, (__index__), (__arg__)))
 
 //-------------------------------------------------------------------------------------------------
 
 #define Closure_GetArgument(__closure__, __index__) \
 	((__closure__)->variables[(__index__)])
 
-#define Closure_SetArgument(__closure__, __index__, __value__) \
-	(((__closure__)->variables[(__index__)]) = (SmileObject)(__value__))
+#define Closure_SetArgument(__closure__, __index__, __arg__) \
+	(((__closure__)->variables[(__index__)]) = (__arg__))
 
 #define Closure_GetArgumentInScope0(__closure__, __index__) \
 	Closure_GetArgument((__closure__), (__index__))
@@ -249,22 +259,22 @@ SMILE_API_FUNC void Closure_SetArgumentInScope(Closure closure, Int scope, Int i
 #define Closure_GetArgumentInScope7(__closure__, __index__) \
 	Closure_GetArgument((__closure__)->parent->parent->parent->parent->parent->parent->parent, (__index__))
 
-#define Closure_SetArgumentInScope0(__closure__, __index__, __value__) \
-	(Closure_SetArgument((__closure__), (__index__), (__value__)))
-#define Closure_SetArgumentInScope1(__closure__, __index__, __value__) \
-	(Closure_SetArgument((__closure__)->parent, (__index__), (__value__)))
-#define Closure_SetArgumentInScope2(__closure__, __index__, __value__) \
-	(Closure_SetArgument((__closure__)->parent->parent, (__index__), (__value__)))
-#define Closure_SetArgumentInScope3(__closure__, __index__, __value__) \
-	(Closure_SetArgument((__closure__)->parent->parent->parent, (__index__), (__value__)))
-#define Closure_SetArgumentInScope4(__closure__, __index__, __value__) \
-	(Closure_SetArgument((__closure__)->parent->parent->parent->parent, (__index__), (__value__)))
-#define Closure_SetArgumentInScope5(__closure__, __index__, __value__) \
-	(Closure_SetArgument((__closure__)->parent->parent->parent->parent->parent, (__index__), (__value__)))
-#define Closure_SetArgumentInScope6(__closure__, __index__, __value__) \
-	(Closure_SetArgument((__closure__)->parent->parent->parent->parent->parent->parent, (__index__), (__value__)))
-#define Closure_SetArgumentInScope7(__closure__, __index__, __value__) \
-	(Closure_SetArgument((__closure__)->parent->parent->parent->parent->parent->parent->parent, (__index__), (__value__)))
+#define Closure_SetArgumentInScope0(__closure__, __index__, __arg__) \
+	(Closure_SetArgument((__closure__), (__index__), (__arg__)))
+#define Closure_SetArgumentInScope1(__closure__, __index__, __arg__) \
+	(Closure_SetArgument((__closure__)->parent, (__index__), (__arg__)))
+#define Closure_SetArgumentInScope2(__closure__, __index__, __arg__) \
+	(Closure_SetArgument((__closure__)->parent->parent, (__index__), (__arg__)))
+#define Closure_SetArgumentInScope3(__closure__, __index__, __arg__) \
+	(Closure_SetArgument((__closure__)->parent->parent->parent, (__index__), (__arg__)))
+#define Closure_SetArgumentInScope4(__closure__, __index__, __arg__) \
+	(Closure_SetArgument((__closure__)->parent->parent->parent->parent, (__index__), (__arg__)))
+#define Closure_SetArgumentInScope5(__closure__, __index__, __arg__) \
+	(Closure_SetArgument((__closure__)->parent->parent->parent->parent->parent, (__index__), (__arg__)))
+#define Closure_SetArgumentInScope6(__closure__, __index__, __arg__) \
+	(Closure_SetArgument((__closure__)->parent->parent->parent->parent->parent->parent, (__index__), (__arg__)))
+#define Closure_SetArgumentInScope7(__closure__, __index__, __arg__) \
+	(Closure_SetArgument((__closure__)->parent->parent->parent->parent->parent->parent->parent, (__index__), (__arg__)))
 
 //-------------------------------------------------------------------------------------------------
 

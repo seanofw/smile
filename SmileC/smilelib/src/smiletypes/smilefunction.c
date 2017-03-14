@@ -66,8 +66,10 @@ SMILE_EASY_OBJECT_READONLY_SECURITY(SmileFunction);
 static Bool UserFunctionArg_Init(UserFunctionArg arg, SmileObject obj, String *errorMessage)
 {
 	SmileList argList;
+	SmileArg nullArg;
 
-	arg->defaultValue = NullObject;
+	nullArg.obj = NullObject;
+	arg->defaultValue = nullArg;
 	arg->flags = USER_ARG_NORMAL;
 	arg->typeName = 0;
 
@@ -122,7 +124,7 @@ static Bool UserFunctionArg_Init(UserFunctionArg arg, SmileObject obj, String *e
 					SymbolTable_GetName(Smile_SymbolTable, arg->name));
 				return False;
 			}
-			arg->defaultValue = argList->a;
+			arg->defaultValue = SmileArg_Unbox(argList->a);
 			argList = LIST_REST(argList);
 		}
 		else if (modifier == Smile_KnownSymbols.rest) {
@@ -380,16 +382,22 @@ SmileFunction SmileFunction_CreateExternalFunction(ExternalFunction externalFunc
 	return smileFunction;
 }
 
-Bool SmileUserFunction_CompareEqual(SmileFunction self, SmileObject other)
+Bool SmileUserFunction_CompareEqual(SmileFunction self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData)
 {
+	UNUSED(selfData);
+	UNUSED(otherData);
+
 	return (SMILE_KIND(other) == SMILE_KIND_FUNCTION
 		&& self->vtable == other->vtable
 		&& self->u.u.userFunctionInfo == ((SmileFunction)other)->u.u.userFunctionInfo
 		&& self->u.u.declaringClosure == ((SmileFunction)other)->u.u.declaringClosure);
 }
 
-Bool SmileExternalFunction_CompareEqual(SmileFunction self, SmileObject other)
+Bool SmileExternalFunction_CompareEqual(SmileFunction self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData)
 {
+	UNUSED(selfData);
+	UNUSED(otherData);
+
 	return (SMILE_KIND(other) == SMILE_KIND_FUNCTION
 		&& self->vtable == other->vtable
 		&& self->u.externalFunctionInfo.externalFunction == ((SmileFunction)other)->u.externalFunctionInfo.externalFunction
@@ -471,39 +479,46 @@ SmileList SmileFunction_GetPropertyNames(SmileFunction self)
 	return head;
 }
 
-Bool SmileFunction_ToBool(SmileFunction self)
+Bool SmileFunction_ToBool(SmileFunction self, SmileUnboxedData unboxedData)
 {
 	UNUSED(self);
+	UNUSED(unboxedData);
 	return True;
 }
 
-Int32 SmileFunction_ToInteger32(SmileFunction self)
+Int32 SmileFunction_ToInteger32(SmileFunction self, SmileUnboxedData unboxedData)
 {
 	UNUSED(self);
+	UNUSED(unboxedData);
 	return 0;
 }
 
-Float64 SmileFunction_ToFloat64(SmileFunction self)
+Float64 SmileFunction_ToFloat64(SmileFunction self, SmileUnboxedData unboxedData)
 {
 	UNUSED(self);
+	UNUSED(unboxedData);
 	return 0.0;
 }
 
-Real64 SmileFunction_ToReal64(SmileFunction self)
+Real64 SmileFunction_ToReal64(SmileFunction self, SmileUnboxedData unboxedData)
 {
 	UNUSED(self);
+	UNUSED(unboxedData);
 	return Real64_Zero;
 }
 
-String SmileUserFunction_ToString(SmileFunction self)
+String SmileUserFunction_ToString(SmileFunction self, SmileUnboxedData unboxedData)
 {
 	// TODO: FIXME: Should this maybe return the user's original source code?
 	UNUSED(self);
+	UNUSED(unboxedData);
 	return String_Format("<fn>");
 }
 
-String SmileExternalFunction_ToString(SmileFunction self)
+String SmileExternalFunction_ToString(SmileFunction self, SmileUnboxedData unboxedData)
 {
+	UNUSED(unboxedData);
+
 	return String_Format("<%S>", self->u.externalFunctionInfo.name);
 }
 

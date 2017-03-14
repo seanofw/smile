@@ -18,12 +18,26 @@ struct SmileByteInt {
 	Byte value;
 };
 
+struct SmileUnboxedByteInt {
+	DECLARE_BASE_OBJECT_PROPERTIES;
+};
+
 //-------------------------------------------------------------------------------------------------
 //  Public interface
 
 SMILE_API_DATA SmileVTable SmileByte_VTable;
+SMILE_API_DATA SmileVTable SmileUnboxedByte_VTable;
 
 SMILE_API_FUNC SmileByte SmileByte_CreateInternal(Byte value);
+SMILE_API_DATA SmileUnboxedByte SmileUnboxedByte_Instance;
+
+Inline SmileArg SmileUnboxedByte_From(Byte value)
+{
+	SmileArg arg;
+	arg.obj = (SmileObject)SmileUnboxedByte_Instance;
+	arg.unboxed.i8 = value;
+	return arg;
+}
 
 //-------------------------------------------------------------------------------------------------
 //  Inline operations

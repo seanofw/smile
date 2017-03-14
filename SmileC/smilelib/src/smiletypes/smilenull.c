@@ -37,9 +37,11 @@ SmileNull SmileNull_Create(void)
 	return smileNull;
 }
 
-static Bool SmileNull_CompareEqual(SmileNull self, SmileObject other)
+static Bool SmileNull_CompareEqual(SmileNull self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData)
 {
 	UNUSED(self);
+	UNUSED(selfData);
+	UNUSED(otherData);
 	return (SMILE_KIND(other) == SMILE_KIND_NULL);
 }
 
@@ -49,6 +51,7 @@ SMILE_EASY_OBJECT_READONLY_SECURITY(SmileNull)
 SMILE_EASY_OBJECT_NO_CALL(SmileNull)
 SMILE_EASY_OBJECT_NO_SOURCE(SmileNull)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileNull)
+SMILE_EASY_OBJECT_NO_UNBOX(SmileNull)
 
 SMILE_EASY_OBJECT_HASH(SmileNull, 0)
 SMILE_EASY_OBJECT_TOBOOL(SmileNull, 0)

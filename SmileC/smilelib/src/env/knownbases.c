@@ -23,6 +23,7 @@
 #include <smile/smiletypes/smilenull.h>
 #include <smile/smiletypes/smilebool.h>
 #include <smile/smiletypes/smileuserobject.h>
+#include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
 
@@ -206,4 +207,7 @@ void KnownBases_Setup(struct KnownBasesStruct *knownBases)
 	SmileInteger64_Setup(knownBases->Integer64);
 	SmileList_Setup(knownBases->List);
 	SmileString_Setup(knownBases->String);
+
+	SmileUnboxedBool_Instance->base = (SmileObject)knownBases->Bool;
+	SmileUnboxedSymbol_Instance->base = (SmileObject)knownBases->Symbol;
 }

@@ -33,12 +33,12 @@
 /// correctly, as the parameters and arguments may change in newer versions of the Smile runtime.
 /// </summary>
 #define SMILE_EXTERNAL_FUNCTION(__name__) \
-	static SmileObject __name__(Int argc, SmileObject *argv, void *param)
+	static SmileArg __name__(Int argc, SmileArg *argv, void *param)
 
 /// <summary>
 /// This is the type of an externally-callable function.
 /// </summary>
-typedef SmileObject (*ExternalFunction)(Int argc, SmileObject *argv, void *param);
+typedef SmileArg (*ExternalFunction)(Int argc, SmileArg *argv, void *param);
 
 typedef struct ExternalFunctionInfoStruct {
 
@@ -70,7 +70,7 @@ typedef struct UserFunctionArgStruct {
 	Int32 flags;	// Flags describing what kind of argument this is, from the USER_ARG_* flags above
 	Symbol name;	// The name of this argument, as it appears in the body of the function
 	Symbol typeName;	// The object this argument must inherit from (which must be a variable name in scope).
-	SmileObject defaultValue;	// A default value for this argument, if it was omitted by the caller
+	SmileArg defaultValue;	// A default value for this argument, if it was omitted by the caller
 
 } *UserFunctionArg;
 

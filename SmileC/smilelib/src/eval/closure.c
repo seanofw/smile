@@ -46,7 +46,7 @@ ClosureInfo ClosureInfo_Create(ClosureInfo parent, Int kind)
 
 Closure Closure_CreateGlobal(ClosureInfo closureInfo, Closure parent)
 {
-	Closure closure = (Closure)GC_MALLOC(sizeof(struct ClosureStruct) - sizeof(SmileObject));
+	Closure closure = (Closure)GC_MALLOC(sizeof(struct ClosureStruct) - sizeof(SmileArg));
 	if (closure == NULL)
 		Smile_Abort_OutOfMemory();
 
@@ -58,7 +58,6 @@ Closure Closure_CreateGlobal(ClosureInfo closureInfo, Closure parent)
 	closure->returnSegment = NULL;
 	closure->returnPc = 0;
 
-	closure->frame = closure->variables;
 	closure->stackTop = NULL;
 
 	return closure;
@@ -68,7 +67,7 @@ Closure Closure_CreateLocal(ClosureInfo closureInfo, Closure parent,
 	Closure returnClosure, struct ByteCodeSegmentStruct *returnSegment, Int returnPc)
 {
 	Closure closure = (Closure)GC_MALLOC(sizeof(struct ClosureStruct)
-		+ sizeof(SmileObject) * (closureInfo->numVariables + closureInfo->tempSize - 1));
+		+ sizeof(SmileArg) * (closureInfo->numVariables + closureInfo->tempSize - 1));
 	if (closure == NULL)
 		Smile_Abort_OutOfMemory();
 
@@ -80,7 +79,6 @@ Closure Closure_CreateLocal(ClosureInfo closureInfo, Closure parent,
 	closure->returnSegment = returnSegment;
 	closure->returnPc = returnPc;
 
-	closure->frame = closure->variables;
 	closure->stackTop = closure->variables + closureInfo->numVariables;
 
 	return closure;
@@ -101,7 +99,6 @@ ClosureStateMachine Closure_CreateStateMachine(StateMachine stateMachineStart, S
 	closure->returnSegment = returnSegment;
 	closure->returnPc = returnPc;
 
-	closure->frame = closure->variables;
 	closure->stackTop = closure->variables;
 
 	closure->stateMachineStart = stateMachineStart;
@@ -155,7 +152,7 @@ void Closure_SetGlobalVariable(Closure closure, Symbol name, SmileObject value)
 	}
 }
 
-SmileObject Closure_GetArgumentInScope(Closure closure, Int scope, Int index)
+SmileArg Closure_GetArgumentInScope(Closure closure, Int scope, Int index)
 {
 	switch (scope) {
 	case 0: return Closure_GetArgument(closure, index);
@@ -170,31 +167,31 @@ SmileObject Closure_GetArgumentInScope(Closure closure, Int scope, Int index)
 	}
 }
 
-void Closure_SetArgumentInScope(Closure closure, Int scope, Int index, SmileObject value)
+void Closure_SetArgumentInScope(Closure closure, Int scope, Int index, SmileArg arg)
 {
 	switch (scope) {
 	case 0:
-		Closure_SetArgument(closure, index, value);
+		Closure_SetArgument(closure, index, arg);
 		break;
 	case 1:
-		Closure_SetArgument(closure->parent, index, value);
+		Closure_SetArgument(closure->parent, index, arg);
 		break;
 	case 2:
-		Closure_SetArgument(closure->parent->parent, index, value);
+		Closure_SetArgument(closure->parent->parent, index, arg);
 		break;
 	case 3:
-		Closure_SetArgument(closure->parent->parent->parent, index, value);
+		Closure_SetArgument(closure->parent->parent->parent, index, arg);
 		break;
 	default:
 		while (scope--) {
 			closure = closure->parent;
 		}
-		Closure_SetArgument(closure, index, value);
+		Closure_SetArgument(closure, index, arg);
 		break;
 	}
 }
 
-SmileObject Closure_GetLocalVariableInScope(Closure closure, Int scope, Int index)
+SmileArg Closure_GetLocalVariableInScope(Closure closure, Int scope, Int index)
 {
 	switch (scope) {
 	case 0: return Closure_GetLocalVariable(closure, index);
@@ -209,26 +206,26 @@ SmileObject Closure_GetLocalVariableInScope(Closure closure, Int scope, Int inde
 	}
 }
 
-void Closure_SetLocalVariableInScope(Closure closure, Int scope, Int index, SmileObject value)
+void Closure_SetLocalVariableInScope(Closure closure, Int scope, Int index, SmileArg arg)
 {
 	switch (scope) {
 	case 0:
-		Closure_SetLocalVariable(closure, index, value);
+		Closure_SetLocalVariable(closure, index, arg);
 		break;
 	case 1:
-		Closure_SetLocalVariable(closure->parent, index, value);
+		Closure_SetLocalVariable(closure->parent, index, arg);
 		break;
 	case 2:
-		Closure_SetLocalVariable(closure->parent->parent, index, value);
+		Closure_SetLocalVariable(closure->parent->parent, index, arg);
 		break;
 	case 3:
-		Closure_SetLocalVariable(closure->parent->parent->parent, index, value);
+		Closure_SetLocalVariable(closure->parent->parent->parent, index, arg);
 		break;
 	default:
 		while (scope--) {
 			closure = closure->parent;
 		}
-		Closure_SetLocalVariable(closure, index, value);
+		Closure_SetLocalVariable(closure, index, arg);
 		break;
 	}
 }

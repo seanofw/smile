@@ -29,6 +29,7 @@ SMILE_EASY_OBJECT_VTABLE(SmileList);
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileList);
 SMILE_EASY_OBJECT_NO_REALS(SmileList);
 SMILE_EASY_OBJECT_NO_CALL(SmileList);
+SMILE_EASY_OBJECT_NO_UNBOX(SmileList)
 
 SmileList SmileList_Cons(SmileObject a, SmileObject d)
 {
@@ -113,26 +114,12 @@ Int SmileList_Length(SmileList list)
 	return SMILE_KIND(list) == SMILE_KIND_NULL ? length : -1;
 }
 
-static Bool SmileList_CompareEqual(SmileList self, SmileObject other)
+static Bool SmileList_CompareEqual(SmileList self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData)
 {
-	SmileList otherList;
+	UNUSED(selfData);
+	UNUSED(otherData);
 
-	do {
-		if (!SmileObject_IsList(other)) return False;
-		otherList = (SmileList)other;
-
-		// Compare this list element.
-		if (!SMILE_VCALL1(self->a, compareEqual, otherList->a))
-			return False;
-
-		self = (SmileList)self->d;
-		other = otherList->d;
-
-		// We use a loop to unroll the ->d recursion, where possible.
-	} while (SMILE_KIND(self) == SMILE_KIND_LIST);
-
-	// Compare the last ->d objects, whatever they are.
-	return SMILE_VCALL1((SmileObject)self, compareEqual, other);
+	return (SmileObject)self == other;
 }
 
 static UInt32 SmileList_Hash(SmileList self)
@@ -182,15 +169,17 @@ static SmileList SmileList_GetPropertyNames(SmileList self)
 	return head;
 }
 
-static Bool SmileList_ToBool(SmileList self)
+static Bool SmileList_ToBool(SmileList self, SmileUnboxedData unboxedData)
 {
 	UNUSED(self);
+	UNUSED(unboxedData);
 	return True;
 }
 
-static Int32 SmileList_ToInteger32(SmileList self)
+static Int32 SmileList_ToInteger32(SmileList self, SmileUnboxedData unboxedData)
 {
 	UNUSED(self);
+	UNUSED(unboxedData);
 	return 1;
 }
 
@@ -278,7 +267,7 @@ String SmileList_Join(SmileList list, String glue)
 
 	INIT_INLINE_STRINGBUILDER(stringBuilder);
 
-	piece = SMILE_VCALL(tortoise->a, toString);
+	piece = SMILE_VCALL1(tortoise->a, toString, (SmileUnboxedData){ 0 });
 	StringBuilder_AppendString(stringBuilder, piece);
 
 	hare = tortoise = (SmileList)tortoise->d;
@@ -289,7 +278,7 @@ String SmileList_Join(SmileList list, String glue)
 			StringBuilder_AppendString(stringBuilder, glue);
 		}
 	
-		piece = SMILE_VCALL(tortoise->a, toString);
+		piece = SMILE_VCALL1(tortoise->a, toString, (SmileUnboxedData){ 0 });
 		StringBuilder_AppendString(stringBuilder, piece);
 
 		tortoise = (SmileList)tortoise->d;
@@ -303,15 +292,19 @@ static int _indent = 0;
 
 STATIC_STRING(BacktickString, "`");
 
-static String SmileList_ToString(SmileList self)
+static String SmileList_ToString(SmileList self, SmileUnboxedData unboxedData)
 {
 	Bool useIndents;
 	Bool isFirst;
 	SmileList list;
 	DECLARE_INLINE_STRINGBUILDER(stringBuilder, 256);
 
+	UNUSED(unboxedData);
+
 	if (!IsNormallyStructuredList(self))
-		return String_Format("(%S ## %S)", SMILE_VCALL(self->a, toString), SMILE_VCALL(self->d, toString));
+		return String_Format("(%S ## %S)",
+			SMILE_VCALL1(self->a, toString, (SmileUnboxedData){ 0 }),
+			SMILE_VCALL1(self->d, toString, (SmileUnboxedData){ 0 }));
 
 	if (SMILE_KIND(self->a) == SMILE_KIND_SYMBOL
 		&& ((SmileSymbol)self->a)->symbol == SMILE_SPECIAL_SYMBOL__QUOTE
@@ -319,7 +312,7 @@ static String SmileList_ToString(SmileList self)
 	{
 		SmileObject quotedItem = LIST_FIRST(LIST_REST(self));
 		if (SMILE_KIND(quotedItem) == SMILE_KIND_LIST || SMILE_KIND(quotedItem) == SMILE_KIND_SYMBOL) {
-			return String_Concat(BacktickString, SMILE_VCALL(quotedItem, toString));
+			return String_Concat(BacktickString, SMILE_VCALL1(quotedItem, toString, (SmileUnboxedData){ 0 }));
 		}
 	}
 
@@ -337,7 +330,7 @@ static String SmileList_ToString(SmileList self)
 		if (useIndents && !isFirst) {
 			StringBuilder_AppendRepeat(stringBuilder, '\t', _indent);
 		}
-		StringBuilder_AppendString(stringBuilder, SMILE_VCALL(list->a, toString));
+		StringBuilder_AppendString(stringBuilder, SMILE_VCALL1(list->a, toString, (SmileUnboxedData){ 0 }));
 		if (!useIndents) {
 			if (SMILE_KIND(list->d) != SMILE_KIND_NULL) {
 				StringBuilder_AppendByte(stringBuilder, ' ');

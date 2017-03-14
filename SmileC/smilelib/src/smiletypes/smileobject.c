@@ -32,8 +32,10 @@ SmileObject SmileObject_Create(void)
 	return obj;
 }
 
-Bool SmileObject_CompareEqual(SmileObject self, SmileObject other)
+Bool SmileObject_CompareEqual(SmileObject self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData)
 {
+	UNUSED(selfData);
+	UNUSED(otherData);
 	return self == other;
 }
 
@@ -71,6 +73,7 @@ STATIC_STRING(PrimitiveString, "Primitive");
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileObject)
 SMILE_EASY_OBJECT_NO_CALL(SmileObject)
 SMILE_EASY_OBJECT_NO_SOURCE(SmileObject)
+SMILE_EASY_OBJECT_NO_UNBOX(SmileObject)
 
 SMILE_EASY_OBJECT_HASH(SmileObject, 0)
 SMILE_EASY_OBJECT_TOBOOL(SmileObject, 0)

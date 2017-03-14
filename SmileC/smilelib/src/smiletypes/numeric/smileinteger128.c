@@ -51,10 +51,12 @@ Inline Int UIntLg(UInt64 value)
 	return lg;
 }
 
-static Float64 SmileInteger128_ToFloat64(SmileInteger128 self)
+static Float64 SmileInteger128_ToFloat64(SmileInteger128 self, SmileUnboxedData unboxedData)
 {
 	UInt64 uhi, ulo;
 	Int bits;
+
+	UNUSED(unboxedData);
 
 	if (self->value.hi < 0) {
 		if (self->value.hi == -1)
@@ -80,9 +82,10 @@ SMILE_EASY_OBJECT_READONLY_SECURITY(SmileInteger128)
 SMILE_EASY_OBJECT_NO_CALL(SmileInteger128)
 SMILE_EASY_OBJECT_NO_SOURCE(SmileInteger128)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileInteger128)
+SMILE_EASY_OBJECT_NO_UNBOX(SmileInteger128)
 
 SMILE_EASY_OBJECT_COMPARE(SmileInteger128, SMILE_KIND_INTEGER128, a->value.hi == b->value.hi && a->value.lo == b->value.lo)
 SMILE_EASY_OBJECT_TOBOOL(SmileInteger128, (obj->value.hi | obj->value.lo) != 0)
 SMILE_EASY_OBJECT_TOINT(SmileInteger128, (Int32)obj->value.lo)
-SMILE_EASY_OBJECT_TOREAL(SmileInteger128, Real64_FromFloat64(SmileInteger128_ToFloat64(obj)))
+SMILE_EASY_OBJECT_TOREAL(SmileInteger128, Real64_FromFloat64(SmileInteger128_ToFloat64(obj, unboxedData)))
 SMILE_EASY_OBJECT_TOSTRING(SmileInteger128, String_Format("%ldL", obj->value.lo))

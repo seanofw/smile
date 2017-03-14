@@ -23,11 +23,14 @@
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/easyobject.h>
 
+SMILE_IGNORE_UNUSED_VARIABLES
+
 SMILE_EASY_OBJECT_VTABLE(SmileString);
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileString)
 SMILE_EASY_OBJECT_NO_CALL(SmileString)
 SMILE_EASY_OBJECT_NO_SOURCE(SmileString)
+SMILE_EASY_OBJECT_NO_UNBOX(SmileString)
 
 SmileString SmileString_Create(String string)
 {
@@ -41,7 +44,7 @@ SmileString SmileString_Create(String string)
 	return str;
 }
 
-Bool SmileString_CompareEqual(SmileString self, SmileObject other)
+Bool SmileString_CompareEqual(SmileString self, SmileUnboxedData selfUnboxed, SmileObject other, SmileUnboxedData otherUnboxed)
 {
 	SmileString otherString;
 	Int length;
@@ -59,7 +62,7 @@ Bool SmileString_CompareEqual(SmileString self, SmileObject other)
 
 UInt32 SmileString_Hash(SmileString self)
 {
-	String str = SmileString_ToString(self);
+	String str = SmileString_ToString(self, (SmileUnboxedData){ 0 });
 	return String_Hash(str);
 }
 
@@ -104,26 +107,31 @@ SmileList SmileString_GetPropertyNames(SmileString self)
 	return head;
 }
 
-Bool SmileString_ToBool(SmileString self)
+Bool SmileString_ToBool(SmileString self, SmileUnboxedData unboxedData)
 {
 	Bool result;
-	return String_ParseBool(SmileString_ToString(self), &result) ? result : False;
+	return String_ParseBool(SmileString_GetString(self), &result) ? result : False;
 }
 
-Int32 SmileString_ToInteger32(SmileString self)
+Int32 SmileString_ToInteger32(SmileString self, SmileUnboxedData unboxedData)
 {
 	Int64 result;
-	return String_ParseInteger(SmileString_ToString(self), 10, &result) ? (Int32)result : 0;
+	return String_ParseInteger(SmileString_GetString(self), 10, &result) ? (Int32)result : 0;
 }
 
-Float64 SmileString_ToFloat64(SmileString self)
+Float64 SmileString_ToFloat64(SmileString self, SmileUnboxedData unboxedData)
 {
 	Float64 result;
-	return String_ParseFloat(SmileString_ToString(self), 10, &result) ? result : 0.0;
+	return String_ParseFloat(SmileString_GetString(self), 10, &result) ? result : 0.0;
 }
 
-Real64 SmileString_ToReal64(SmileString self)
+Real64 SmileString_ToReal64(SmileString self, SmileUnboxedData unboxedData)
 {
 	Real128 result;
-	return String_ParseReal(SmileString_ToString(self), 10, &result) ? Real128_ToReal64(result) : Real64_Zero;
+	return String_ParseReal(SmileString_GetString(self), 10, &result) ? Real128_ToReal64(result) : Real64_Zero;
+}
+
+String SmileString_ToString(SmileString str, SmileUnboxedData unboxedData)
+{
+	return String_Format("\"%S\"", String_AddCSlashes((String)&(str->string)));
 }

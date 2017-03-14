@@ -21,6 +21,8 @@
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/easyobject.h>
 
+SMILE_IGNORE_UNUSED_VARIABLES
+
 SMILE_EASY_OBJECT_VTABLE(SmileSymbol);
 
 SmileSymbol SmileSymbol_Create(Symbol symbol)
@@ -46,3 +48,48 @@ SMILE_EASY_OBJECT_TOINT(SmileSymbol, 0)
 SMILE_EASY_OBJECT_TOREAL(SmileSymbol, Real64_Zero)
 SMILE_EASY_OBJECT_TOFLOAT(SmileSymbol, 0.0)
 SMILE_EASY_OBJECT_TOSTRING(SmileSymbol, SymbolTable_GetName(Smile_SymbolTable, obj->symbol))
+
+SmileObject SmileSymbol_Box(SmileArg src)
+{
+	return src.obj;
+}
+
+SmileArg SmileSymbol_Unbox(SmileSymbol smileSymbol)
+{
+	return SmileUnboxedSymbol_From(smileSymbol->symbol);
+}
+
+//-------------------------------------------------------------------------------------------------
+
+SMILE_EASY_OBJECT_VTABLE(SmileUnboxedSymbol);
+
+SMILE_EASY_OBJECT_READONLY_SECURITY(SmileUnboxedSymbol)
+SMILE_EASY_OBJECT_NO_CALL(SmileUnboxedSymbol)
+SMILE_EASY_OBJECT_NO_SOURCE(SmileUnboxedSymbol)
+SMILE_EASY_OBJECT_NO_PROPERTIES(SmileUnboxedSymbol)
+
+SMILE_EASY_OBJECT_COMPARE(SmileUnboxedSymbol, SMILE_KIND_UNBOXED_SYMBOL, False)
+SMILE_EASY_OBJECT_HASH(SmileUnboxedSymbol, 0)
+SMILE_EASY_OBJECT_TOBOOL(SmileUnboxedSymbol, False)
+SMILE_EASY_OBJECT_TOINT(SmileUnboxedSymbol, 0)
+SMILE_EASY_OBJECT_TOREAL(SmileUnboxedSymbol, Real64_Zero)
+SMILE_EASY_OBJECT_TOFLOAT(SmileUnboxedSymbol, 0.0)
+SMILE_EASY_OBJECT_TOSTRING(SmileUnboxedSymbol, String_Empty)
+
+static SmileObject SmileUnboxedSymbol_Box(SmileArg src)
+{
+	return (SmileObject)SmileSymbol_Create(src.unboxed.symbol);
+}
+
+static SmileArg SmileUnboxedSymbol_Unbox(SmileUnboxedSymbol smileUnboxedSymbol)
+{
+	Smile_Abort_FatalError("Cannot re-unbox a unboxed object.");
+	return (SmileArg){ 0 };
+}
+
+static struct SmileUnboxedSymbolInt SmileUnboxedSymbol_Instance_Struct = {
+	SMILE_KIND_UNBOXED_SYMBOL,
+	(SmileVTable)&SmileUnboxedSymbol_VTableData,
+};
+
+extern SmileUnboxedSymbol SmileUnboxedSymbol_Instance = &SmileUnboxedSymbol_Instance_Struct;

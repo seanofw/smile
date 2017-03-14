@@ -40,9 +40,11 @@ SmileUserObject SmileUserObject_CreateWithSize(SmileObject base, Int initialSize
 	return userObject;
 }
 
-Bool SmileUserObject_CompareEqual(SmileUserObject self, SmileObject other)
+Bool SmileUserObject_CompareEqual(SmileUserObject self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData)
 {
 	UNUSED(self);
+	UNUSED(selfData);
+	UNUSED(otherData);
 	return ((SmileObject)self == other);
 }
 
@@ -53,7 +55,7 @@ UInt32 SmileUserObject_Hash(SmileUserObject self)
 
 void SmileUserObject_SetSecurityKey(SmileUserObject self, SmileObject newSecurityKey, SmileObject oldSecurityKey)
 {
-	Bool isValidSecurityKey = self->securityKey->vtable->compareEqual(self->securityKey, oldSecurityKey);
+	Bool isValidSecurityKey = self->securityKey->vtable->compareEqual(self->securityKey, (SmileUnboxedData){ 0 }, oldSecurityKey, (SmileUnboxedData){ 0 });
 	if (!isValidSecurityKey)
 		Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
 
@@ -62,7 +64,7 @@ void SmileUserObject_SetSecurityKey(SmileUserObject self, SmileObject newSecurit
 
 void SmileUserObject_SetSecurity(SmileUserObject self, Int security, SmileObject securityKey)
 {
-	Bool isValidSecurityKey = self->securityKey->vtable->compareEqual(self->securityKey, securityKey);
+	Bool isValidSecurityKey = self->securityKey->vtable->compareEqual(self->securityKey, (SmileUnboxedData){ 0 }, securityKey, (SmileUnboxedData){ 0 });
 	if (!isValidSecurityKey)
 		Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
 
@@ -172,33 +174,38 @@ SmileList SmileUserObject_GetPropertyNames(SmileUserObject self)
 	return head;
 }
 
-Bool SmileUserObject_ToBool(SmileUserObject self)
+Bool SmileUserObject_ToBool(SmileUserObject self, SmileUnboxedData unboxedData)
 {
 	UNUSED(self);
+	UNUSED(unboxedData);
 	return True;
 }
 
-Int32 SmileUserObject_ToInteger32(SmileUserObject self)
+Int32 SmileUserObject_ToInteger32(SmileUserObject self, SmileUnboxedData unboxedData)
 {
 	UNUSED(self);
+	UNUSED(unboxedData);
 	return 0;
 }
 
-Float64 SmileUserObject_ToFloat64(SmileUserObject self)
+Float64 SmileUserObject_ToFloat64(SmileUserObject self, SmileUnboxedData unboxedData)
 {
 	UNUSED(self);
+	UNUSED(unboxedData);
 	return 0.0;
 }
 
-Real64 SmileUserObject_ToReal64(SmileUserObject self)
+Real64 SmileUserObject_ToReal64(SmileUserObject self, SmileUnboxedData unboxedData)
 {
 	UNUSED(self);
+	UNUSED(unboxedData);
 	return Real64_Zero;
 }
 
-String SmileUserObject_ToString(SmileUserObject self)
+String SmileUserObject_ToString(SmileUserObject self, SmileUnboxedData unboxedData)
 {
 	UNUSED(self);
+	UNUSED(unboxedData);
 	return String_Format("user object");
 }
 

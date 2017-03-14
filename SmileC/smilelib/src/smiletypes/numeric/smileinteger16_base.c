@@ -17,6 +17,7 @@
 
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/smileuserobject.h>
+#include <smile/smiletypes/smilebool.h>
 #include <smile/smiletypes/numeric/smilebyte.h>
 #include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
@@ -28,24 +29,24 @@
 SMILE_IGNORE_UNUSED_VARIABLES
 
 static Byte _integer16Checks[] = {
-	SMILE_KIND_MASK, SMILE_KIND_INTEGER16,
-	SMILE_KIND_MASK, SMILE_KIND_INTEGER16,
-	SMILE_KIND_MASK, SMILE_KIND_INTEGER16,
-	SMILE_KIND_MASK, SMILE_KIND_INTEGER16,
-	SMILE_KIND_MASK, SMILE_KIND_INTEGER16,
-	SMILE_KIND_MASK, SMILE_KIND_INTEGER16,
-	SMILE_KIND_MASK, SMILE_KIND_INTEGER16,
-	SMILE_KIND_MASK, SMILE_KIND_INTEGER16,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER16,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER16,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER16,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER16,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER16,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER16,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER16,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER16,
 };
 
 static Byte _integer16ComparisonChecks[] = {
-	SMILE_KIND_MASK, SMILE_KIND_INTEGER16,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER16,
 	0, 0,
 };
 
 static Byte _parseChecks[] = {
 	SMILE_KIND_MASK, SMILE_KIND_STRING,
-	SMILE_KIND_MASK, SMILE_KIND_INTEGER64,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER64,
 };
 
 STATIC_STRING(_divideByZero, "Divide by zero error");
@@ -63,48 +64,47 @@ STATIC_STRING(_parseArguments, "Illegal arguments to 'parse' function");
 
 SMILE_EXTERNAL_FUNCTION(ToBool)
 {
-	if (SMILE_KIND(argv[0]) == SMILE_KIND_INTEGER16)
-		return ((SmileInteger16)argv[0])->value ? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
+	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_UNBOXED_INTEGER16)
+		return SmileUnboxedBool_From(!!argv[0].unboxed.i16);
 
-	return (SmileObject)Smile_KnownObjects.TrueObj;
+	return SmileUnboxedBool_From(True);
 }
 
 SMILE_EXTERNAL_FUNCTION(ToInt)
 {
-	if (SMILE_KIND(argv[0]) == SMILE_KIND_INTEGER16)
-		return (SmileObject)SmileInteger64_Create(((SmileInteger16)argv[0])->value);
+	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_UNBOXED_INTEGER16)
+		return SmileUnboxedInteger64_From(argv[0].unboxed.i16);
 
-	return (SmileObject)Smile_KnownObjects.ZeroInt64;
+	return SmileUnboxedInteger64_From(0);
 }
-
-STATIC_STRING(_Integer16, "Integer16");
 
 SMILE_EXTERNAL_FUNCTION(ToString)
 {
 	Int64 numericBase;
+	STATIC_STRING(integer16, "Integer16");
 
-	if (SMILE_KIND(argv[0]) == SMILE_KIND_INTEGER16) {
+	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_UNBOXED_INTEGER16) {
 		if (argc == 2) {
-			if (SMILE_KIND(argv[1]) != SMILE_KIND_INTEGER64)
+			if (SMILE_KIND(argv[1].obj) != SMILE_KIND_UNBOXED_INTEGER64)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _stringTypeError);
-			numericBase = (Int)((SmileInteger64)argv[1])->value;
+			numericBase = (Int)argv[1].unboxed.i64;
 			if (numericBase < 2 || numericBase > 36)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _numericBaseError);
 		}
 		else numericBase = 10;
 
-		return (SmileObject)SmileString_Create(String_CreateFromInteger((Int64)((SmileInteger16)argv[0])->value, (Int)numericBase, False));
+		return SmileArg_From((SmileObject)SmileString_Create(String_CreateFromInteger((Int64)argv[0].unboxed.i16, (Int)numericBase, False)));
 	}
 
-	return (SmileObject)SmileString_Create(_Integer16);
+	return SmileArg_From((SmileObject)SmileString_Create(integer16));
 }
 
 SMILE_EXTERNAL_FUNCTION(Hash)
 {
-	if (SMILE_KIND(argv[0]) == SMILE_KIND_INTEGER16)
-		return (SmileObject)SmileInteger64_Create(((SmileInteger16)argv[0])->value);
+	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_UNBOXED_INTEGER16)
+		return SmileUnboxedInteger64_From(argv[0].unboxed.i16);
 
-	return (SmileObject)SmileInteger64_Create(((PtrInt)argv[0]) ^ Smile_HashOracle);
+	return SmileUnboxedInteger64_From((PtrInt)argv[0].obj ^ Smile_HashOracle);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -112,12 +112,12 @@ SMILE_EXTERNAL_FUNCTION(Hash)
 
 SMILE_EXTERNAL_FUNCTION(ToInt64)
 {
-	return (SmileObject)SmileInteger64_Create(((SmileInteger16)argv[0])->value);
+	return SmileUnboxedInteger64_From(argv[0].unboxed.i16);
 }
 
 SMILE_EXTERNAL_FUNCTION(ToInt32)
 {
-	return (SmileObject)SmileInteger32_Create(((SmileInteger16)argv[0])->value);
+	return SmileUnboxedInteger32_From(argv[0].unboxed.i16);
 }
 
 SMILE_EXTERNAL_FUNCTION(ToInt16)
@@ -127,7 +127,7 @@ SMILE_EXTERNAL_FUNCTION(ToInt16)
 
 SMILE_EXTERNAL_FUNCTION(ToByte)
 {
-	return (SmileObject)SmileByte_Create((Byte)((SmileInteger16)argv[0])->value);
+	return SmileUnboxedByte_From((Byte)argv[0].unboxed.i16);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -142,28 +142,28 @@ SMILE_EXTERNAL_FUNCTION(Parse)
 
 		case 1:
 			// The form [parse string].
-			if (SMILE_KIND(argv[0]) != SMILE_KIND_STRING)
+			if (SMILE_KIND(argv[0].obj) != SMILE_KIND_STRING)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _parseArguments);
-			if (!String_ParseInteger(SmileString_GetString((SmileString)argv[0]), 10, &value))
-				return NullObject;
-			return (SmileObject)SmileInteger16_Create((Int16)value);
+			if (!String_ParseInteger(SmileString_GetString((SmileString)argv[0].obj), 10, &value))
+				return SmileArg_From(NullObject);
+			return SmileUnboxedInteger16_From((Int16)value);
 
 		case 2:
 			// Either the form [parse string base] or [obj.parse string].
-			if (SMILE_KIND(argv[0]) == SMILE_KIND_STRING && SMILE_KIND(argv[1]) == SMILE_KIND_INTEGER64) {
+			if (SMILE_KIND(argv[0].obj) == SMILE_KIND_STRING && SMILE_KIND(argv[1].obj) == SMILE_KIND_UNBOXED_INTEGER64) {
 				// The form [parse string base].
-				numericBase = (Int)((SmileInteger64)argv[1])->value;
+				numericBase = (Int)argv[1].unboxed.i64;
 				if (numericBase < 2 || numericBase > 36)
 					Smile_ThrowException(Smile_KnownSymbols.native_method_error, _numericBaseError);
-				if (!String_ParseInteger(SmileString_GetString((SmileString)argv[0]), (Int)numericBase, &value))
-					return NullObject;
-				return (SmileObject)SmileInteger16_Create((Int16)value);
+				if (!String_ParseInteger(SmileString_GetString((SmileString)argv[0].obj), (Int)numericBase, &value))
+					return SmileArg_From(NullObject);
+				return SmileUnboxedInteger16_From((Int16)value);
 			}
-			else if (SMILE_KIND(argv[1]) == SMILE_KIND_STRING) {
+			else if (SMILE_KIND(argv[1].obj) == SMILE_KIND_STRING) {
 				// The form [obj.parse string].
-				if (!String_ParseInteger(SmileString_GetString((SmileString)argv[1]), 10, &value))
-					return NullObject;
-				return (SmileObject)SmileInteger16_Create((Int16)value);
+				if (!String_ParseInteger(SmileString_GetString((SmileString)argv[1].obj), 10, &value))
+					return SmileArg_From(NullObject);
+				return SmileUnboxedInteger16_From((Int16)value);
 			}
 			else {
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _parseArguments);
@@ -171,19 +171,18 @@ SMILE_EXTERNAL_FUNCTION(Parse)
 
 		case 3:
 			// The form [obj.parse string base].
-			if (SMILE_KIND(argv[1]) != SMILE_KIND_STRING || SMILE_KIND(argv[2]) != SMILE_KIND_INTEGER64)
+			if (SMILE_KIND(argv[1].obj) != SMILE_KIND_STRING || SMILE_KIND(argv[2].obj) != SMILE_KIND_UNBOXED_INTEGER64)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _parseArguments);
-			numericBase = (Int)((SmileInteger64)argv[2])->value;
+			numericBase = (Int)argv[2].unboxed.i64;
 			if (numericBase < 2 || numericBase > 36)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _numericBaseError);
-			if (!String_ParseInteger(SmileString_GetString((SmileString)argv[1]), (Int)numericBase, &value))
-				return NullObject;
-			return (SmileObject)SmileInteger16_Create((Int16)value);
+			if (!String_ParseInteger(SmileString_GetString((SmileString)argv[1].obj), (Int)numericBase, &value))
+				return SmileArg_From(NullObject);
+			return SmileUnboxedInteger16_From((Int16)value);
 	}
 
-	return NullObject;	// Can't get here, but the compiler doesn't know that.
+	return SmileArg_From(NullObject);	// Can't get here, but the compiler doesn't know that.
 }
-
 
 //-------------------------------------------------------------------------------------------------
 // Arithmetic operators
@@ -198,29 +197,29 @@ SMILE_EXTERNAL_FUNCTION(Plus)
 			return argv[0];
 		
 		case 2:
-			x = ((SmileInteger16)argv[0])->value;
-			x += ((SmileInteger16)argv[1])->value;
-			return (SmileObject)SmileInteger16_Create(x);
+			x = argv[0].unboxed.i16;
+			x += argv[1].unboxed.i16;
+			return SmileUnboxedInteger16_From(x);
 		
 		case 3:
-			x = ((SmileInteger16)argv[0])->value;
-			x += ((SmileInteger16)argv[1])->value;
-			x += ((SmileInteger16)argv[2])->value;
-			return (SmileObject)SmileInteger16_Create(x);
-
-		case 4:
-			x = ((SmileInteger16)argv[0])->value;
-			x += ((SmileInteger16)argv[1])->value;
-			x += ((SmileInteger16)argv[2])->value;
-			x += ((SmileInteger16)argv[3])->value;
-			return (SmileObject)SmileInteger16_Create(x);
+			x = argv[0].unboxed.i16;
+			x += argv[1].unboxed.i16;
+			x += argv[2].unboxed.i16;
+			return SmileUnboxedInteger16_From(x);
 		
+		case 4:
+			x = argv[0].unboxed.i16;
+			x += argv[1].unboxed.i16;
+			x += argv[2].unboxed.i16;
+			x += argv[3].unboxed.i16;
+			return SmileUnboxedInteger16_From(x);
+
 		default:
-			x = ((SmileInteger16)argv[0])->value;
+			x = argv[0].unboxed.i16;
 			for (i = 1; i < argc; i++) {
-				x += ((SmileInteger16)argv[i])->value;
+				x += argv[i].unboxed.i16;
 			}
-			return (SmileObject)SmileInteger16_Create(x);
+			return SmileUnboxedInteger16_From(x);
 	}
 }
 
@@ -231,33 +230,33 @@ SMILE_EXTERNAL_FUNCTION(Minus)
 
 	switch (argc) {
 		case 1:
-			x = ((SmileInteger16)argv[0])->value;
-			return (SmileObject)SmileInteger16_Create(-x);
-
+			x = -argv[0].unboxed.i16;
+			return SmileUnboxedInteger16_From(x);
+		
 		case 2:
-			x = ((SmileInteger16)argv[0])->value;
-			x -= ((SmileInteger16)argv[1])->value;
-			return (SmileObject)SmileInteger16_Create(x);
-
+			x = argv[0].unboxed.i16;
+			x -= argv[1].unboxed.i16;
+			return SmileUnboxedInteger16_From(x);
+		
 		case 3:
-			x = ((SmileInteger16)argv[0])->value;
-			x -= ((SmileInteger16)argv[1])->value;
-			x -= ((SmileInteger16)argv[2])->value;
-			return (SmileObject)SmileInteger16_Create(x);
-
+			x = argv[0].unboxed.i16;
+			x -= argv[1].unboxed.i16;
+			x -= argv[2].unboxed.i16;
+			return SmileUnboxedInteger16_From(x);
+		
 		case 4:
-			x = ((SmileInteger16)argv[0])->value;
-			x -= ((SmileInteger16)argv[1])->value;
-			x -= ((SmileInteger16)argv[2])->value;
-			x -= ((SmileInteger16)argv[3])->value;
-			return (SmileObject)SmileInteger16_Create(x);
+			x = argv[0].unboxed.i16;
+			x -= argv[1].unboxed.i16;
+			x -= argv[2].unboxed.i16;
+			x -= argv[3].unboxed.i16;
+			return SmileUnboxedInteger16_From(x);
 
 		default:
-			x = ((SmileInteger16)argv[0])->value;
+			x = argv[0].unboxed.i16;
 			for (i = 1; i < argc; i++) {
-				x -= ((SmileInteger16)argv[i])->value;
+				x -= argv[i].unboxed.i16;
 			}
-			return (SmileObject)SmileInteger16_Create(x);
+			return SmileUnboxedInteger16_From(x);
 	}
 }
 
@@ -267,30 +266,33 @@ SMILE_EXTERNAL_FUNCTION(Star)
 	Int i;
 
 	switch (argc) {
+		case 1:
+			return argv[0];
+		
 		case 2:
-			x = ((SmileInteger16)argv[0])->value;
-			x *= ((SmileInteger16)argv[1])->value;
-			return (SmileObject)SmileInteger16_Create(x);
-
+			x = argv[0].unboxed.i16;
+			x *= argv[1].unboxed.i16;
+			return SmileUnboxedInteger16_From(x);
+		
 		case 3:
-			x = ((SmileInteger16)argv[0])->value;
-			x *= ((SmileInteger16)argv[1])->value;
-			x *= ((SmileInteger16)argv[2])->value;
-			return (SmileObject)SmileInteger16_Create(x);
-
+			x = argv[0].unboxed.i16;
+			x *= argv[1].unboxed.i16;
+			x *= argv[2].unboxed.i16;
+			return SmileUnboxedInteger16_From(x);
+		
 		case 4:
-			x = ((SmileInteger16)argv[0])->value;
-			x *= ((SmileInteger16)argv[1])->value;
-			x *= ((SmileInteger16)argv[2])->value;
-			x *= ((SmileInteger16)argv[3])->value;
-			return (SmileObject)SmileInteger16_Create(x);
+			x = argv[0].unboxed.i16;
+			x *= argv[1].unboxed.i16;
+			x *= argv[2].unboxed.i16;
+			x *= argv[3].unboxed.i16;
+			return SmileUnboxedInteger16_From(x);
 
 		default:
-			x = ((SmileInteger16)argv[0])->value;
+			x = argv[0].unboxed.i16;
 			for (i = 1; i < argc; i++) {
-				x *= ((SmileInteger16)argv[i])->value;
+				x *= argv[i].unboxed.i16;
 			}
-			return (SmileObject)SmileInteger16_Create(x);
+			return SmileUnboxedInteger16_From(x);
 	}
 }
 
@@ -300,30 +302,33 @@ SMILE_EXTERNAL_FUNCTION(UStar)
 	Int i;
 
 	switch (argc) {
+		case 1:
+			return argv[0];
+
 		case 2:
-			x = (UInt16)((SmileInteger16)argv[0])->value;
-			x *= (UInt16)((SmileInteger16)argv[1])->value;
-			return (SmileObject)SmileInteger16_Create((Int16)x);
+			x = (UInt16)argv[0].unboxed.i16;
+			x *= (UInt16)argv[1].unboxed.i16;
+			return SmileUnboxedInteger16_From(x);
 
 		case 3:
-			x = (UInt16)((SmileInteger16)argv[0])->value;
-			x *= (UInt16)((SmileInteger16)argv[1])->value;
-			x *= (UInt16)((SmileInteger16)argv[2])->value;
-			return (SmileObject)SmileInteger16_Create((Int16)x);
+			x = (UInt16)argv[0].unboxed.i16;
+			x *= (UInt16)argv[1].unboxed.i16;
+			x *= (UInt16)argv[2].unboxed.i16;
+			return SmileUnboxedInteger16_From(x);
 
 		case 4:
-			x = (UInt16)((SmileInteger16)argv[0])->value;
-			x *= (UInt16)((SmileInteger16)argv[1])->value;
-			x *= (UInt16)((SmileInteger16)argv[2])->value;
-			x *= (UInt16)((SmileInteger16)argv[3])->value;
-			return (SmileObject)SmileInteger16_Create((Int16)x);
+			x = (UInt16)argv[0].unboxed.i16;
+			x *= (UInt16)argv[1].unboxed.i16;
+			x *= (UInt16)argv[2].unboxed.i16;
+			x *= (UInt16)argv[3].unboxed.i16;
+			return SmileUnboxedInteger16_From(x);
 
 		default:
-			x = (UInt16)((SmileInteger16)argv[0])->value;
+			x = (UInt16)argv[0].unboxed.i16;
 			for (i = 1; i < argc; i++) {
-				x *= (UInt16)((SmileInteger16)argv[i])->value;
+				x *= (UInt16)argv[i].unboxed.i16;
 			}
-			return (SmileObject)SmileInteger16_Create((Int16)x);
+			return SmileUnboxedInteger16_From(x);
 	}
 }
 
@@ -376,43 +381,43 @@ SMILE_EXTERNAL_FUNCTION(Slash)
 
 	switch (argc) {
 		case 2:
-			x = ((SmileInteger16)argv[0])->value;
-			if ((y = ((SmileInteger16)argv[1])->value) == 0)
+			x = argv[0].unboxed.i16;
+			if ((y = argv[1].unboxed.i16) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x = MathematiciansDiv(x, y);
-			return (SmileObject)SmileInteger16_Create(x);
+			return SmileUnboxedInteger16_From(x);
 
 		case 3:
-			x = ((SmileInteger16)argv[0])->value;
-			if ((y = ((SmileInteger16)argv[1])->value) == 0)
+			x = argv[0].unboxed.i16;
+			if ((y = argv[1].unboxed.i16) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x = MathematiciansDiv(x, y);
-			if ((y = ((SmileInteger16)argv[2])->value) == 0)
+			if ((y = argv[2].unboxed.i16) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x = MathematiciansDiv(x, y);
-			return (SmileObject)SmileInteger16_Create(x);
+			return SmileUnboxedInteger16_From(x);
 
 		case 4:
-			x = ((SmileInteger16)argv[0])->value;
-			if ((y = ((SmileInteger16)argv[1])->value) == 0)
+			x = argv[0].unboxed.i16;
+			if ((y = argv[1].unboxed.i16) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x = MathematiciansDiv(x, y);
-			if ((y = ((SmileInteger16)argv[2])->value) == 0)
+			if ((y = argv[2].unboxed.i16) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x = MathematiciansDiv(x, y);
-			if ((y = ((SmileInteger16)argv[3])->value) == 0)
+			if ((y = argv[3].unboxed.i16) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x = MathematiciansDiv(x, y);
-			return (SmileObject)SmileInteger16_Create(x);
+			return SmileUnboxedInteger16_From(x);
 
 		default:
-			x = ((SmileInteger16)argv[0])->value;
+			x = argv[0].unboxed.i16;
 			for (i = 1; i < argc; i++) {
-				if ((y = ((SmileInteger16)argv[i])->value) == 0)
+				if ((y = argv[i].unboxed.i16) == 0)
 					Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 				x = MathematiciansDiv(x, y);
 			}
-			return (SmileObject)SmileInteger16_Create(x);
+			return SmileUnboxedInteger16_From(x);
 	}
 }
 
@@ -423,43 +428,43 @@ SMILE_EXTERNAL_FUNCTION(USlash)
 
 	switch (argc) {
 		case 2:
-			x = (UInt16)((SmileInteger16)argv[0])->value;
-			if ((y = (UInt16)((SmileInteger16)argv[1])->value) == 0)
+			x = (UInt16)argv[0].unboxed.i16;
+			if ((y = (UInt16)argv[1].unboxed.i16) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x /= y;
-			return (SmileObject)SmileInteger16_Create((Int16)x);
+			return SmileUnboxedInteger16_From(x);
 
 		case 3:
-			x = (UInt16)((SmileInteger16)argv[0])->value;
-			if ((y = (UInt16)((SmileInteger16)argv[1])->value) == 0)
+			x = (UInt16)argv[0].unboxed.i16;
+			if ((y = (UInt16)argv[1].unboxed.i16) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x /= y;
-			if ((y = (UInt16)((SmileInteger16)argv[2])->value) == 0)
+			if ((y = (UInt16)argv[2].unboxed.i16) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x /= y;
-			return (SmileObject)SmileInteger16_Create((Int16)x);
+			return SmileUnboxedInteger16_From(x);
 
 		case 4:
-			x = (UInt16)((SmileInteger16)argv[0])->value;
-			if ((y = (UInt16)((SmileInteger16)argv[1])->value) == 0)
+			x = (UInt16)argv[0].unboxed.i16;
+			if ((y = (UInt16)argv[1].unboxed.i16) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x /= y;
-			if ((y = (UInt16)((SmileInteger16)argv[2])->value) == 0)
+			if ((y = (UInt16)argv[2].unboxed.i16) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x /= y;
-			if ((y = (UInt16)((SmileInteger16)argv[3])->value) == 0)
+			if ((y = (UInt16)argv[3].unboxed.i16) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x /= y;
-			return (SmileObject)SmileInteger16_Create((Int16)x);
+			return SmileUnboxedInteger16_From(x);
 
 		default:
-			x = (UInt16)((SmileInteger16)argv[0])->value;
+			x = (UInt16)argv[0].unboxed.i16;
 			for (i = 1; i < argc; i++) {
-				if ((y = (UInt16)((SmileInteger16)argv[i])->value) == 0)
+				if ((y = (UInt16)argv[i].unboxed.i16) == 0)
 					Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 				x /= y;
 			}
-			return (SmileObject)SmileInteger16_Create((Int16)x);
+			return SmileUnboxedInteger16_From(x);
 	}
 }
 
@@ -470,43 +475,43 @@ SMILE_EXTERNAL_FUNCTION(Div)
 
 	switch (argc) {
 		case 2:
-			x = ((SmileInteger16)argv[0])->value;
-			if ((y = ((SmileInteger16)argv[1])->value) == 0)
+			x = argv[0].unboxed.i16;
+			if ((y = argv[1].unboxed.i16) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x = CDiv(x, y);
-			return (SmileObject)SmileInteger16_Create(x);
+			return SmileUnboxedInteger16_From(x);
 
 		case 3:
-			x = ((SmileInteger16)argv[0])->value;
-			if ((y = ((SmileInteger16)argv[1])->value) == 0)
+			x = argv[0].unboxed.i16;
+			if ((y = argv[1].unboxed.i16) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x = CDiv(x, y);
-			if ((y = ((SmileInteger16)argv[2])->value) == 0)
+			if ((y = argv[2].unboxed.i16) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x = CDiv(x, y);
-			return (SmileObject)SmileInteger16_Create(x);
+			return SmileUnboxedInteger16_From(x);
 
 		case 4:
-			x = ((SmileInteger16)argv[0])->value;
-			if ((y = ((SmileInteger16)argv[1])->value) == 0)
+			x = argv[0].unboxed.i16;
+			if ((y = argv[1].unboxed.i16) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x = CDiv(x, y);
-			if ((y = ((SmileInteger16)argv[2])->value) == 0)
+			if ((y = argv[2].unboxed.i16) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x = CDiv(x, y);
-			if ((y = ((SmileInteger16)argv[3])->value) == 0)
+			if ((y = argv[3].unboxed.i16) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x = CDiv(x, y);
-			return (SmileObject)SmileInteger16_Create(x);
+			return SmileUnboxedInteger16_From(x);
 
 		default:
-			x = ((SmileInteger16)argv[0])->value;
+			x = argv[0].unboxed.i16;
 			for (i = 1; i < argc; i++) {
-				if ((y = ((SmileInteger16)argv[i])->value) == 0)
+				if ((y = argv[i].unboxed.i16) == 0)
 					Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 				x = CDiv(x, y);
 			}
-			return (SmileObject)SmileInteger16_Create(x);
+			return SmileUnboxedInteger16_From(x);
 	}
 }
 
@@ -558,35 +563,35 @@ Inline Int16 MathematiciansRemainder(Int16 x, Int16 y)
 
 SMILE_EXTERNAL_FUNCTION(Mod)
 {
-	Int16 x = ((SmileInteger16)argv[0])->value;
-	Int16 y = ((SmileInteger16)argv[1])->value;
+	Int16 x = argv[0].unboxed.i16;
+	Int16 y = argv[1].unboxed.i16;
 
 	if (y == 0)
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 
-	return (SmileObject)SmileInteger16_Create(MathematiciansModulus(x, y));
+	return SmileUnboxedInteger16_From(MathematiciansModulus(x, y));
 }
 
 SMILE_EXTERNAL_FUNCTION(UMod)
 {
-	UInt16 x = (UInt16)((SmileInteger16)argv[0])->value;
-	UInt16 y = (UInt16)((SmileInteger16)argv[1])->value;
+	UInt16 x = (UInt16)argv[0].unboxed.i16;
+	UInt16 y = (UInt16)argv[1].unboxed.i16;
 
 	if (y == 0)
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 
-	return (SmileObject)SmileInteger16_Create((Int16)(x % y));
+	return SmileUnboxedInteger16_From(x % y);
 }
 
 SMILE_EXTERNAL_FUNCTION(Rem)
 {
-	Int16 x = ((SmileInteger16)argv[0])->value;
-	Int16 y = ((SmileInteger16)argv[1])->value;
+	Int16 x = argv[0].unboxed.i16;
+	Int16 y = argv[1].unboxed.i16;
 
 	if (y == 0)
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 
-	return (SmileObject)SmileInteger16_Create(MathematiciansRemainder(x, y));
+	return SmileUnboxedInteger16_From(MathematiciansRemainder(x, y));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -594,25 +599,25 @@ SMILE_EXTERNAL_FUNCTION(Rem)
 
 SMILE_EXTERNAL_FUNCTION(Sign)
 {
-	Int16 value = ((SmileInteger16)argv[0])->value;
+	Int16 value = argv[0].unboxed.i16;
 
-	return value == 0 ? (SmileObject)Smile_KnownObjects.ZeroInt16
-		: value > 0 ? (SmileObject)Smile_KnownObjects.OneInt16
-		: (SmileObject)Smile_KnownObjects.NegOneInt16;
+	return value == 0 ? SmileUnboxedInteger16_From(0)
+		: value > 0 ? SmileUnboxedInteger16_From(1)
+		: SmileUnboxedInteger16_From(-1);
 }
 
 SMILE_EXTERNAL_FUNCTION(Abs)
 {
-	Int16 value = ((SmileInteger16)argv[0])->value;
+	Int16 value = argv[0].unboxed.i16;
 
-	return value < 0 ? (SmileObject)SmileInteger16_Create(-value) : argv[0];
+	return value < 0 ? SmileUnboxedInteger16_From(-value) : argv[0];
 }
 
 SMILE_EXTERNAL_FUNCTION(Clip)
 {
-	Int16 value = ((SmileInteger16)argv[0])->value;
-	Int16 min = ((SmileInteger16)argv[1])->value;
-	Int16 max = ((SmileInteger16)argv[2])->value;
+	Int16 value = argv[0].unboxed.i16;
+	Int16 min = argv[1].unboxed.i16;
+	Int16 max = argv[2].unboxed.i16;
 
 	if (value > max) {
 		value = max;
@@ -626,9 +631,9 @@ SMILE_EXTERNAL_FUNCTION(Clip)
 
 SMILE_EXTERNAL_FUNCTION(UClip)
 {
-	UInt16 value = (UInt16)((SmileInteger16)argv[0])->value;
-	UInt16 min = (UInt16)((SmileInteger16)argv[1])->value;
-	UInt16 max = (UInt16)((SmileInteger16)argv[2])->value;
+	UInt16 value = (UInt16)argv[0].unboxed.i16;
+	UInt16 min = (UInt16)argv[1].unboxed.i16;
+	UInt16 max = (UInt16)argv[2].unboxed.i16;
 
 	if (value > max) {
 		value = max;
@@ -643,188 +648,144 @@ SMILE_EXTERNAL_FUNCTION(UClip)
 SMILE_EXTERNAL_FUNCTION(Min)
 {
 	Int16 x, y;
-	Int i, j;
+	Int i;
 
 	switch (argc) {
 		case 1:
 			return argv[0];
 
 		case 2:
-			x = ((SmileInteger16)argv[0])->value;
-			i = 0;
-			y = ((SmileInteger16)argv[1])->value;
-			if (y < x) i = 1;
-			return argv[i];
+			x = argv[0].unboxed.i16;
+			if ((y = argv[1].unboxed.i16) < x) x = y;
+			return SmileUnboxedInteger16_From(x);
 
 		case 3:
-			x = ((SmileInteger16)argv[0])->value;
-			i = 0;
-			y = ((SmileInteger16)argv[1])->value;
-			if (y < x) i = 1, x = y;
-			y = ((SmileInteger16)argv[2])->value;
-			if (y < x) i = 2, x = y;
-			return argv[i];
+			x = argv[0].unboxed.i16;
+			if ((y = argv[1].unboxed.i16) < x) x = y;
+			if ((y = argv[2].unboxed.i16) < x) x = y;
+			return SmileUnboxedInteger16_From(x);
 
 		case 4:
-			x = ((SmileInteger16)argv[0])->value;
-			i = 0;
-			y = ((SmileInteger16)argv[1])->value;
-			if (y < x) i = 1, x = y;
-			y = ((SmileInteger16)argv[2])->value;
-			if (y < x) i = 2, x = y;
-			y = ((SmileInteger16)argv[3])->value;
-			if (y < x) i = 3, x = y;
-			return argv[i];
+			x = argv[0].unboxed.i16;
+			if ((y = argv[1].unboxed.i16) < x) x = y;
+			if ((y = argv[2].unboxed.i16) < x) x = y;
+			if ((y = argv[3].unboxed.i16) < x) x = y;
+			return SmileUnboxedInteger16_From(x);
 
 		default:
-			x = ((SmileInteger16)argv[0])->value;
-			j = 0;
+			x = argv[0].unboxed.i16;
 			for (i = 1; i < argc; i++) {
-				y = ((SmileInteger16)argv[i])->value;
-				if (y < x) j = i, x = y;
+				if ((y = argv[i].unboxed.i16) < x) x = y;
 			}
-			return argv[j];
+			return SmileUnboxedInteger16_From(x);
 	}
 }
 
 SMILE_EXTERNAL_FUNCTION(UMin)
 {
 	UInt16 x, y;
-	Int i, j;
+	Int i;
 
 	switch (argc) {
 		case 1:
 			return argv[0];
 
 		case 2:
-			x = (UInt16)((SmileInteger16)argv[0])->value;
-			i = 0;
-			y = (UInt16)((SmileInteger16)argv[1])->value;
-			if (y < x) i = 1;
-			return argv[i];
+			x = (UInt16)argv[0].unboxed.i16;
+			if ((y = (UInt16)argv[1].unboxed.i16) < x) x = y;
+			return SmileUnboxedInteger16_From(x);
 
 		case 3:
-			x = (UInt16)((SmileInteger16)argv[0])->value;
-			i = 0;
-			y = (UInt16)((SmileInteger16)argv[1])->value;
-			if (y < x) i = 1, x = y;
-			y = (UInt16)((SmileInteger16)argv[2])->value;
-			if (y < x) i = 2, x = y;
-			return argv[i];
+			x = (UInt16)argv[0].unboxed.i16;
+			if ((y = (UInt16)argv[1].unboxed.i16) < x) x = y;
+			if ((y = (UInt16)argv[2].unboxed.i16) < x) x = y;
+			return SmileUnboxedInteger16_From(x);
 
 		case 4:
-			x = (UInt16)((SmileInteger16)argv[0])->value;
-			i = 0;
-			y = (UInt16)((SmileInteger16)argv[1])->value;
-			if (y < x) i = 1, x = y;
-			y = (UInt16)((SmileInteger16)argv[2])->value;
-			if (y < x) i = 2, x = y;
-			y = (UInt16)((SmileInteger16)argv[3])->value;
-			if (y < x) i = 3, x = y;
-			return argv[i];
+			x = (UInt16)argv[0].unboxed.i16;
+			if ((y = (UInt16)argv[1].unboxed.i16) < x) x = y;
+			if ((y = (UInt16)argv[2].unboxed.i16) < x) x = y;
+			if ((y = (UInt16)argv[3].unboxed.i16) < x) x = y;
+			return SmileUnboxedInteger16_From(x);
 
 		default:
-			x = (UInt16)((SmileInteger16)argv[0])->value;
-			j = 0;
+			x = (UInt16)argv[0].unboxed.i16;
 			for (i = 1; i < argc; i++) {
-				y = (UInt16)((SmileInteger16)argv[i])->value;
-				if (y < x) j = i, x = y;
+				if ((y = (UInt16)argv[i].unboxed.i16) < x) x = y;
 			}
-			return argv[j];
+			return SmileUnboxedInteger16_From(x);
 	}
 }
 
 SMILE_EXTERNAL_FUNCTION(Max)
 {
 	Int16 x, y;
-	Int i, j;
+	Int i;
 
 	switch (argc) {
 		case 1:
 			return argv[0];
 
 		case 2:
-			x = ((SmileInteger16)argv[0])->value;
-			i = 0;
-			y = ((SmileInteger16)argv[1])->value;
-			if (y > x) i = 1;
-			return argv[i];
+			x = argv[0].unboxed.i16;
+			if ((y = argv[1].unboxed.i16) > x) x = y;
+			return SmileUnboxedInteger16_From(x);
 
 		case 3:
-			x = ((SmileInteger16)argv[0])->value;
-			i = 0;
-			y = ((SmileInteger16)argv[1])->value;
-			if (y > x) i = 1, x = y;
-			y = ((SmileInteger16)argv[2])->value;
-			if (y > x) i = 2, x = y;
-			return argv[i];
+			x = argv[0].unboxed.i16;
+			if ((y = argv[1].unboxed.i16) > x) x = y;
+			if ((y = argv[2].unboxed.i16) > x) x = y;
+			return SmileUnboxedInteger16_From(x);
 
 		case 4:
-			x = ((SmileInteger16)argv[0])->value;
-			i = 0;
-			y = ((SmileInteger16)argv[1])->value;
-			if (y > x) i = 1, x = y;
-			y = ((SmileInteger16)argv[2])->value;
-			if (y > x) i = 2, x = y;
-			y = ((SmileInteger16)argv[3])->value;
-			if (y > x) i = 3, x = y;
-			return argv[i];
+			x = argv[0].unboxed.i16;
+			if ((y = argv[1].unboxed.i16) > x) x = y;
+			if ((y = argv[2].unboxed.i16) > x) x = y;
+			if ((y = argv[3].unboxed.i16) > x) x = y;
+			return SmileUnboxedInteger16_From(x);
 
 		default:
-			x = ((SmileInteger16)argv[0])->value;
-			j = 0;
+			x = argv[0].unboxed.i16;
 			for (i = 1; i < argc; i++) {
-				y = ((SmileInteger16)argv[i])->value;
-				if (y > x) j = i, x = y;
+				if ((y = argv[i].unboxed.i16) > x) x = y;
 			}
-			return argv[j];
+			return SmileUnboxedInteger16_From(x);
 	}
 }
 
 SMILE_EXTERNAL_FUNCTION(UMax)
 {
 	UInt16 x, y;
-	Int i, j;
+	Int i;
 
 	switch (argc) {
 		case 1:
 			return argv[0];
 
 		case 2:
-			x = (UInt16)((SmileInteger16)argv[0])->value;
-			i = 0;
-			y = (UInt16)((SmileInteger16)argv[1])->value;
-			if (y > x) i = 1;
-			return argv[i];
+			x = (UInt16)argv[0].unboxed.i16;
+			if ((y = (UInt16)argv[1].unboxed.i16) > x) x = y;
+			return SmileUnboxedInteger16_From(x);
 
 		case 3:
-			x = (UInt16)((SmileInteger16)argv[0])->value;
-			i = 0;
-			y = (UInt16)((SmileInteger16)argv[1])->value;
-			if (y > x) i = 1, x = y;
-			y = (UInt16)((SmileInteger16)argv[2])->value;
-			if (y > x) i = 2, x = y;
-			return argv[i];
+			x = (UInt16)argv[0].unboxed.i16;
+			if ((y = (UInt16)argv[1].unboxed.i16) > x) x = y;
+			if ((y = (UInt16)argv[2].unboxed.i16) > x) x = y;
+			return SmileUnboxedInteger16_From(x);
 
 		case 4:
-			x = (UInt16)((SmileInteger16)argv[0])->value;
-			i = 0;
-			y = (UInt16)((SmileInteger16)argv[1])->value;
-			if (y > x) i = 1, x = y;
-			y = (UInt16)((SmileInteger16)argv[2])->value;
-			if (y > x) i = 2, x = y;
-			y = (UInt16)((SmileInteger16)argv[3])->value;
-			if (y > x) i = 3, x = y;
-			return argv[i];
+			x = (UInt16)argv[0].unboxed.i16;
+			if ((y = (UInt16)argv[1].unboxed.i16) > x) x = y;
+			if ((y = (UInt16)argv[2].unboxed.i16) > x) x = y;
+			if ((y = (UInt16)argv[3].unboxed.i16) > x) x = y;
+			return SmileUnboxedInteger16_From(x);
 
 		default:
-			x = (UInt16)((SmileInteger16)argv[0])->value;
-			j = 0;
+			x = (UInt16)argv[0].unboxed.i16;
 			for (i = 1; i < argc; i++) {
-				y = (UInt16)((SmileInteger16)argv[i])->value;
-				if (y > x) j = i, x = y;
+				if ((y = (UInt16)argv[i].unboxed.i16) > x) x = y;
 			}
-			return argv[j];
+			return SmileUnboxedInteger16_From(x);
 	}
 }
 
@@ -847,48 +808,34 @@ Inline Int16 IntPower(Int16 value, Int16 exponent)
 
 SMILE_EXTERNAL_FUNCTION(Power)
 {
-	Int16 x, y;
+	Int16 x;
 	Int i;
 
 	switch (argc) {
 		case 2:
-			x = ((SmileInteger16)argv[0])->value;
-			if ((y = ((SmileInteger16)argv[1])->value) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
-			x = IntPower(x, y);
-			return (SmileObject)SmileInteger16_Create(x);
+			x = argv[0].unboxed.i16;
+			x = IntPower(x, argv[1].unboxed.i16);
+			return SmileUnboxedInteger16_From(x);
 
 		case 3:
-			x = ((SmileInteger16)argv[0])->value;
-			if ((y = ((SmileInteger16)argv[1])->value) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
-			x = IntPower(x, y);
-			if ((y = ((SmileInteger16)argv[2])->value) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
-			x = IntPower(x, y);
-			return (SmileObject)SmileInteger16_Create(x);
+			x = argv[0].unboxed.i16;
+			x = IntPower(x, argv[1].unboxed.i16);
+			x = IntPower(x, argv[2].unboxed.i16);
+			return SmileUnboxedInteger16_From(x);
 
 		case 4:
-			x = ((SmileInteger16)argv[0])->value;
-			if ((y = ((SmileInteger16)argv[1])->value) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
-			x = IntPower(x, y);
-			if ((y = ((SmileInteger16)argv[2])->value) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
-			x = IntPower(x, y);
-			if ((y = ((SmileInteger16)argv[3])->value) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
-			x = IntPower(x, y);
-			return (SmileObject)SmileInteger16_Create(x);
+			x = argv[0].unboxed.i16;
+			x = IntPower(x, argv[1].unboxed.i16);
+			x = IntPower(x, argv[2].unboxed.i16);
+			x = IntPower(x, argv[3].unboxed.i16);
+			return SmileUnboxedInteger16_From(x);
 
 		default:
-			x = ((SmileInteger16)argv[0])->value;
+			x = argv[0].unboxed.i16;
 			for (i = 1; i < argc; i++) {
-				if ((y = ((SmileInteger16)argv[i])->value) == 0)
-					Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
-				x = IntPower(x, y);
+				x = IntPower(x, argv[i].unboxed.i16);
 			}
-			return (SmileObject)SmileInteger16_Create(x);
+			return SmileUnboxedInteger16_From(x);
 	}
 }
 
@@ -914,27 +861,28 @@ Inline UInt16 IntSqrt(UInt16 value)
 
 SMILE_EXTERNAL_FUNCTION(Sqrt)
 {
-	Int16 value = ((SmileInteger16)argv[0])->value;
+	Int16 value = argv[0].unboxed.i16;
 
 	if (value < 0)
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _negativeSqrt);
 
-	return (SmileObject)SmileInteger16_Create((Int16)IntSqrt((UInt16)value));
+	return SmileUnboxedInteger16_From(IntSqrt(value));
 }
 
 SMILE_EXTERNAL_FUNCTION(Pow2Q)
 {
-	Int16 value = ((SmileInteger16)argv[0])->value;
+	Int16 value = argv[0].unboxed.i16;
 
-	return value > 0 && (value & (value - 1)) == 0 ? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
+	return SmileUnboxedBool_From(value > 0 && (value & (value - 1)) == 0);
 }
 
 SMILE_EXTERNAL_FUNCTION(NextPow2)
 {
-	Int16 value = ((SmileInteger16)argv[0])->value;
+	Int16 value = (Int16)argv[0].unboxed.i16;
 	UInt16 uvalue = (UInt16)value;
 
-	if (value <= 0) return (SmileObject)Smile_KnownObjects.OneInt16;
+	if (value < 0) return SmileUnboxedInteger16_From(0);
+	if (value == 0) return SmileUnboxedInteger16_From(1);
 
 	uvalue--;
 	uvalue |= uvalue >> 1;
@@ -943,12 +891,12 @@ SMILE_EXTERNAL_FUNCTION(NextPow2)
 	uvalue |= uvalue >> 8;
 	uvalue++;
 
-	return (SmileObject)SmileInteger16_Create((Int16)uvalue);
+	return SmileUnboxedInteger16_From(uvalue);
 }
 
 SMILE_EXTERNAL_FUNCTION(IntLg)
 {
-	Int16 value = ((SmileInteger16)argv[0])->value;
+	Int16 value = (Int16)argv[0].unboxed.i16;
 	UInt16 uvalue = (UInt16)value;
 	UInt16 log;
 
@@ -961,7 +909,7 @@ SMILE_EXTERNAL_FUNCTION(IntLg)
 	if ((uvalue & 0x000C) != 0) uvalue >>= 2, log += 2;
 	if ((uvalue & 0x0002) != 0) uvalue >>= 1, log += 1;
 
-	return (SmileObject)SmileInteger16_Create((Int16)log);
+	return SmileUnboxedInteger16_From((Int16)log);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -969,117 +917,117 @@ SMILE_EXTERNAL_FUNCTION(IntLg)
 
 SMILE_EXTERNAL_FUNCTION(BitAnd)
 {
-	Int16 x;
+	UInt16 x;
 	Int i;
 
 	switch (argc) {
 		case 1:
 			return argv[0];
-		
+
 		case 2:
-			x = ((SmileInteger16)argv[0])->value;
-			x &= ((SmileInteger16)argv[1])->value;
-			return (SmileObject)SmileInteger16_Create(x);
-		
+			x = (UInt16)argv[0].unboxed.i16;
+			x &= (UInt16)argv[1].unboxed.i16;
+			return SmileUnboxedInteger16_From(x);
+
 		case 3:
-			x = ((SmileInteger16)argv[0])->value;
-			x &= ((SmileInteger16)argv[1])->value;
-			x &= ((SmileInteger16)argv[2])->value;
-			return (SmileObject)SmileInteger16_Create(x);
+			x = (UInt16)argv[0].unboxed.i16;
+			x &= (UInt16)argv[1].unboxed.i16;
+			x &= (UInt16)argv[2].unboxed.i16;
+			return SmileUnboxedInteger16_From(x);
 
 		case 4:
-			x = ((SmileInteger16)argv[0])->value;
-			x &= ((SmileInteger16)argv[1])->value;
-			x &= ((SmileInteger16)argv[2])->value;
-			x &= ((SmileInteger16)argv[3])->value;
-			return (SmileObject)SmileInteger16_Create(x);
-		
+			x = (UInt16)argv[0].unboxed.i16;
+			x &= (UInt16)argv[1].unboxed.i16;
+			x &= (UInt16)argv[2].unboxed.i16;
+			x &= (UInt16)argv[3].unboxed.i16;
+			return SmileUnboxedInteger16_From(x);
+
 		default:
-			x = ((SmileInteger16)argv[0])->value;
+			x = (UInt16)argv[0].unboxed.i16;
 			for (i = 1; i < argc; i++) {
-				x &= ((SmileInteger16)argv[i])->value;
+				x &= (UInt16)argv[i].unboxed.i16;
 			}
-			return (SmileObject)SmileInteger16_Create(x);
+			return SmileUnboxedInteger16_From(x);
 	}
 }
 
 SMILE_EXTERNAL_FUNCTION(BitOr)
 {
-	Int16 x;
+	UInt16 x;
 	Int i;
 
 	switch (argc) {
 		case 1:
 			return argv[0];
-		
+
 		case 2:
-			x = ((SmileInteger16)argv[0])->value;
-			x |= ((SmileInteger16)argv[1])->value;
-			return (SmileObject)SmileInteger16_Create(x);
-		
+			x = (UInt16)argv[0].unboxed.i16;
+			x |= (UInt16)argv[1].unboxed.i16;
+			return SmileUnboxedInteger16_From(x);
+
 		case 3:
-			x = ((SmileInteger16)argv[0])->value;
-			x |= ((SmileInteger16)argv[1])->value;
-			x |= ((SmileInteger16)argv[2])->value;
-			return (SmileObject)SmileInteger16_Create(x);
+			x = (UInt16)argv[0].unboxed.i16;
+			x |= (UInt16)argv[1].unboxed.i16;
+			x |= (UInt16)argv[2].unboxed.i16;
+			return SmileUnboxedInteger16_From(x);
 
 		case 4:
-			x = ((SmileInteger16)argv[0])->value;
-			x |= ((SmileInteger16)argv[1])->value;
-			x |= ((SmileInteger16)argv[2])->value;
-			x |= ((SmileInteger16)argv[3])->value;
-			return (SmileObject)SmileInteger16_Create(x);
-		
+			x = (UInt16)argv[0].unboxed.i16;
+			x |= (UInt16)argv[1].unboxed.i16;
+			x |= (UInt16)argv[2].unboxed.i16;
+			x |= (UInt16)argv[3].unboxed.i16;
+			return SmileUnboxedInteger16_From(x);
+
 		default:
-			x = ((SmileInteger16)argv[0])->value;
+			x = (UInt16)argv[0].unboxed.i16;
 			for (i = 1; i < argc; i++) {
-				x |= ((SmileInteger16)argv[i])->value;
+				x |= (UInt16)argv[i].unboxed.i16;
 			}
-			return (SmileObject)SmileInteger16_Create(x);
+			return SmileUnboxedInteger16_From(x);
 	}
 }
 
 SMILE_EXTERNAL_FUNCTION(BitXor)
 {
-	Int16 x;
+	UInt16 x;
 	Int i;
 
 	switch (argc) {
 		case 1:
 			return argv[0];
-		
+
 		case 2:
-			x = ((SmileInteger16)argv[0])->value;
-			x ^= ((SmileInteger16)argv[1])->value;
-			return (SmileObject)SmileInteger16_Create(x);
-		
+			x = (UInt16)argv[0].unboxed.i16;
+			x ^= (UInt16)argv[1].unboxed.i16;
+			return SmileUnboxedInteger16_From(x);
+
 		case 3:
-			x = ((SmileInteger16)argv[0])->value;
-			x ^= ((SmileInteger16)argv[1])->value;
-			x ^= ((SmileInteger16)argv[2])->value;
-			return (SmileObject)SmileInteger16_Create(x);
+			x = (UInt16)argv[0].unboxed.i16;
+			x ^= (UInt16)argv[1].unboxed.i16;
+			x ^= (UInt16)argv[2].unboxed.i16;
+			return SmileUnboxedInteger16_From(x);
 
 		case 4:
-			x = ((SmileInteger16)argv[0])->value;
-			x ^= ((SmileInteger16)argv[1])->value;
-			x ^= ((SmileInteger16)argv[2])->value;
-			x ^= ((SmileInteger16)argv[3])->value;
-			return (SmileObject)SmileInteger16_Create(x);
-		
+			x = (UInt16)argv[0].unboxed.i16;
+			x ^= (UInt16)argv[1].unboxed.i16;
+			x ^= (UInt16)argv[2].unboxed.i16;
+			x ^= (UInt16)argv[3].unboxed.i16;
+			return SmileUnboxedInteger16_From(x);
+
 		default:
-			x = ((SmileInteger16)argv[0])->value;
+			x = (UInt16)argv[0].unboxed.i16;
 			for (i = 1; i < argc; i++) {
-				x ^= ((SmileInteger16)argv[i])->value;
+				x ^= (UInt16)argv[i].unboxed.i16;
 			}
-			return (SmileObject)SmileInteger16_Create(x);
+			return SmileUnboxedInteger16_From(x);
 	}
 }
 
 SMILE_EXTERNAL_FUNCTION(BitNot)
 {
-	Int16 value = ((SmileInteger16)argv[0])->value;
+	UInt16 value = (UInt16)argv[0].unboxed.i16;
 
-	return value < 0 ? (SmileObject)SmileInteger16_Create(~value) : argv[0];
+	return SmileUnboxedInteger16_From(~value);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1087,50 +1035,50 @@ SMILE_EXTERNAL_FUNCTION(BitNot)
 
 SMILE_EXTERNAL_FUNCTION(LogicalShiftLeft)
 {
-	UInt16 x = (UInt16)((SmileInteger16)argv[0])->value;
-	UInt16 y = (UInt16)((SmileInteger16)argv[1])->value;
+	UInt16 x = (UInt16)argv[0].unboxed.i16;
+	UInt16 y = (UInt16)argv[1].unboxed.i16;
 
-	return (SmileObject)SmileInteger16_Create((Int16)(x << y));
+	return SmileUnboxedInteger16_From((Int16)(x << y));
 }
 
 SMILE_EXTERNAL_FUNCTION(LogicalShiftRight)
 {
-	UInt16 x = (UInt16)((SmileInteger16)argv[0])->value;
-	UInt16 y = (UInt16)((SmileInteger16)argv[1])->value;
+	UInt16 x = (UInt16)argv[0].unboxed.i16;
+	UInt16 y = (UInt16)argv[1].unboxed.i16;
 
-	return (SmileObject)SmileInteger16_Create((Int16)(x >> y));
+	return SmileUnboxedInteger16_From((Int16)(x >> y));
 }
 
 SMILE_EXTERNAL_FUNCTION(ArithmeticShiftLeft)
 {
-	Int16 x = ((SmileInteger16)argv[0])->value;
-	Int16 y = ((SmileInteger16)argv[1])->value;
+	Int16 x = argv[0].unboxed.i16;
+	Int16 y = argv[1].unboxed.i16;
 
-	return (SmileObject)SmileInteger16_Create(x << y);
+	return SmileUnboxedInteger16_From(x << y);
 }
 
 SMILE_EXTERNAL_FUNCTION(ArithmeticShiftRight)
 {
-	Int16 x = ((SmileInteger16)argv[0])->value;
-	Int16 y = ((SmileInteger16)argv[1])->value;
+	Int16 x = argv[0].unboxed.i16;
+	Int16 y = argv[1].unboxed.i16;
 
-	return (SmileObject)SmileInteger16_Create(x >> y);
+	return SmileUnboxedInteger16_From(x >> y);
 }
 
 SMILE_EXTERNAL_FUNCTION(RotateLeft)
 {
-	UInt16 x = (UInt16)((SmileInteger16)argv[0])->value;
-	UInt16 y = (UInt16)((SmileInteger16)argv[1])->value;
+	UInt16 x = (UInt16)argv[0].unboxed.i16;
+	UInt16 y = (UInt16)argv[1].unboxed.i16;
 
-	return (SmileObject)SmileInteger16_Create((Int16)Smile_RotateLeft32(x, y));
+	return SmileUnboxedInteger16_From(Smile_RotateLeft16(x, y));
 }
 
 SMILE_EXTERNAL_FUNCTION(RotateRight)
 {
-	UInt16 x = (UInt16)((SmileInteger16)argv[0])->value;
-	UInt16 y = (UInt16)((SmileInteger16)argv[1])->value;
+	UInt16 x = (UInt16)argv[0].unboxed.i16;
+	UInt16 y = (UInt16)argv[1].unboxed.i16;
 
-	return (SmileObject)SmileInteger16_Create((Int16)Smile_RotateRight32(x, y));
+	return SmileUnboxedInteger16_From(Smile_RotateRight16(x, y));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1166,73 +1114,73 @@ Inline UInt16 ComputeCountOfRightZeros(UInt16 value)
 
 SMILE_EXTERNAL_FUNCTION(CountOnes)
 {
-	UInt16 value = ((SmileInteger16)argv[0])->value;
+	UInt16 value = (UInt16)argv[0].unboxed.i16;
 
-	return (SmileObject)SmileInteger16_Create((Int16)CountBitsSet((UInt16)value));
+	return SmileUnboxedInteger16_From((Int16)CountBitsSet(value));
 }
 
 SMILE_EXTERNAL_FUNCTION(CountZeros)
 {
-	UInt16 value = ((SmileInteger16)argv[0])->value;
+	UInt16 value = (UInt16)argv[0].unboxed.i16;
 
-	return (SmileObject)SmileInteger16_Create((Int16)CountBitsSet(~(UInt16)value));
+	return SmileUnboxedInteger16_From((Int16)CountBitsSet(~value));
 }
 
 SMILE_EXTERNAL_FUNCTION(Parity)
 {
-	UInt16 value = ((SmileInteger16)argv[0])->value;
+	UInt16 value = (UInt16)argv[0].unboxed.i16;
 
 	value ^= value >> 8;
 	value ^= value >> 4;
 	value &= 0xF;
 	value = (0x6996 >> value) & 1;
 
-	return (SmileObject)SmileInteger16_Create((Int16)value);
+	return SmileUnboxedInteger16_From((Int16)value);
 }
 
 SMILE_EXTERNAL_FUNCTION(ReverseBits)
 {
-	UInt16 value = (UInt16)((SmileInteger16)argv[0])->value;
+	UInt16 value = (UInt16)argv[0].unboxed.i16;
 
-	return (SmileObject)SmileInteger16_Create((Int16)ComputeReverseBits(value));
+	return SmileUnboxedInteger16_From((Int16)ComputeReverseBits(value));
 }
 
 SMILE_EXTERNAL_FUNCTION(ReverseBytes)
 {
-	UInt16 value = (UInt16)((SmileInteger16)argv[0])->value;
+	UInt16 value = (UInt16)argv[0].unboxed.i16;
 
 	value = (UInt16)( ((value >>  8) & 0x00FFU)
 						| ((value <<  8) & 0xFF00U) );
 
-	return (SmileObject)SmileInteger16_Create((Int16)value);
+	return SmileUnboxedInteger16_From((Int16)value);
 }
 
 SMILE_EXTERNAL_FUNCTION(CountRightZeros)
 {
-	UInt16 value = (UInt16)((SmileInteger16)argv[0])->value;
+	UInt16 value = (UInt16)argv[0].unboxed.i16;
 
-	return (SmileObject)SmileInteger16_Create((Int16)ComputeCountOfRightZeros(value));
+	return SmileUnboxedInteger16_From((Int16)ComputeCountOfRightZeros(value));
 }
 
 SMILE_EXTERNAL_FUNCTION(CountRightOnes)
 {
-	UInt16 value = (UInt16)((SmileInteger16)argv[0])->value;
+	UInt16 value = (UInt16)argv[0].unboxed.i16;
 
-	return (SmileObject)SmileInteger16_Create((Int16)ComputeCountOfRightZeros(~value));
+	return SmileUnboxedInteger16_From((Int16)ComputeCountOfRightZeros(~value));
 }
 
 SMILE_EXTERNAL_FUNCTION(CountLeftZeros)
 {
-	UInt16 value = (UInt16)((SmileInteger16)argv[0])->value;
+	UInt16 value = (UInt16)argv[0].unboxed.i16;
 
-	return (SmileObject)SmileInteger16_Create((Int16)ComputeCountOfRightZeros(ComputeReverseBits(value)));
+	return SmileUnboxedInteger16_From((Int16)ComputeCountOfRightZeros(ComputeReverseBits(value)));
 }
 
 SMILE_EXTERNAL_FUNCTION(CountLeftOnes)
 {
-	UInt16 value = (UInt16)((SmileInteger16)argv[0])->value;
+	UInt16 value = (UInt16)argv[0].unboxed.i16;
 
-	return (SmileObject)SmileInteger16_Create((Int16)ComputeCountOfRightZeros(~ComputeReverseBits(value)));
+	return SmileUnboxedInteger16_From((Int16)ComputeCountOfRightZeros(~ComputeReverseBits(value)));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1240,100 +1188,88 @@ SMILE_EXTERNAL_FUNCTION(CountLeftOnes)
 
 SMILE_EXTERNAL_FUNCTION(Eq)
 {
-	if (SMILE_KIND(argv[1]) != SMILE_KIND_INTEGER16
-		|| ((SmileInteger16)argv[0])->value != ((SmileInteger16)argv[1])->value)
-		return (SmileObject)Smile_KnownObjects.FalseObj;
-
-	return (SmileObject)Smile_KnownObjects.TrueObj;
+	return SmileUnboxedBool_From(SMILE_KIND(argv[1].obj) == SMILE_KIND_UNBOXED_INTEGER16
+		&& argv[0].unboxed.i16 == argv[1].unboxed.i16);
 }
 
 SMILE_EXTERNAL_FUNCTION(Ne)
 {
-	if (SMILE_KIND(argv[1]) != SMILE_KIND_INTEGER16
-		|| ((SmileInteger16)argv[0])->value != ((SmileInteger16)argv[1])->value)
-		return (SmileObject)Smile_KnownObjects.TrueObj;
-
-	return (SmileObject)Smile_KnownObjects.FalseObj;
+	return SmileUnboxedBool_From(SMILE_KIND(argv[1].obj) != SMILE_KIND_UNBOXED_INTEGER16
+		|| argv[0].unboxed.i16 != argv[1].unboxed.i16);
 }
 
 SMILE_EXTERNAL_FUNCTION(Lt)
 {
-	return ((SmileInteger16)argv[0])->value < ((SmileInteger16)argv[1])->value
-		? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
+	return SmileUnboxedBool_From(argv[0].unboxed.i16 < argv[1].unboxed.i16);
 }
 
 SMILE_EXTERNAL_FUNCTION(Gt)
 {
-	return ((SmileInteger16)argv[0])->value > ((SmileInteger16)argv[1])->value
-		? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
+	return SmileUnboxedBool_From(argv[0].unboxed.i16 > argv[1].unboxed.i16);
 }
 
 SMILE_EXTERNAL_FUNCTION(Le)
 {
-	return ((SmileInteger16)argv[0])->value <= ((SmileInteger16)argv[1])->value
-		? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
+	return SmileUnboxedBool_From(argv[0].unboxed.i16 <= argv[1].unboxed.i16);
 }
 
 SMILE_EXTERNAL_FUNCTION(Ge)
 {
-	return ((SmileInteger16)argv[0])->value >= ((SmileInteger16)argv[1])->value
-		? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
+	return SmileUnboxedBool_From(argv[0].unboxed.i16 >= argv[1].unboxed.i16);
 }
 
 SMILE_EXTERNAL_FUNCTION(ULt)
 {
-	return (UInt16)((SmileInteger16)argv[0])->value < (UInt16)((SmileInteger16)argv[1])->value
-		? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
+	return SmileUnboxedBool_From((UInt16)argv[0].unboxed.i16 < (UInt16)argv[1].unboxed.i16);
 }
 
 SMILE_EXTERNAL_FUNCTION(UGt)
 {
-	return (UInt16)((SmileInteger16)argv[0])->value > (UInt16)((SmileInteger16)argv[1])->value
-		? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
+	return SmileUnboxedBool_From((UInt16)argv[0].unboxed.i16 > (UInt16)argv[1].unboxed.i16);
 }
 
 SMILE_EXTERNAL_FUNCTION(ULe)
 {
-	return (UInt16)((SmileInteger16)argv[0])->value <= (UInt16)((SmileInteger16)argv[1])->value
-		? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
+	return SmileUnboxedBool_From((UInt16)argv[0].unboxed.i16 <= (UInt16)argv[1].unboxed.i16);
 }
 
 SMILE_EXTERNAL_FUNCTION(UGe)
 {
-	return (UInt16)((SmileInteger16)argv[0])->value >= (UInt16)((SmileInteger16)argv[1])->value
-		? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
+	return SmileUnboxedBool_From((UInt16)argv[0].unboxed.i16 >= (UInt16)argv[1].unboxed.i16);
 }
 
 SMILE_EXTERNAL_FUNCTION(Compare)
 {
-	Int16 x = ((SmileInteger16)argv[0])->value;
-	Int16 y = ((SmileInteger16)argv[1])->value;
+	Int16 x = argv[0].unboxed.i16;
+	Int16 y = argv[1].unboxed.i16;
 
 	if (x == y)
-		return (SmileObject)Smile_KnownObjects.ZeroInt64;
+		return SmileUnboxedInteger16_From(0);
 	else if (x < y)
-		return (SmileObject)Smile_KnownObjects.NegOneInt64;
+		return SmileUnboxedInteger16_From(-1);
 	else
-		return (SmileObject)Smile_KnownObjects.OneInt64;
+		return SmileUnboxedInteger16_From(+1);
 }
 
 SMILE_EXTERNAL_FUNCTION(UCompare)
 {
-	UInt16 x = (UInt16)((SmileInteger16)argv[0])->value;
-	UInt16 y = (UInt16)((SmileInteger16)argv[1])->value;
+	UInt16 x = (UInt16)argv[0].unboxed.i16;
+	UInt16 y = (UInt16)argv[1].unboxed.i16;
 
 	if (x == y)
-		return (SmileObject)Smile_KnownObjects.ZeroInt64;
+		return SmileUnboxedInteger16_From(0);
 	else if (x < y)
-		return (SmileObject)Smile_KnownObjects.NegOneInt64;
+		return SmileUnboxedInteger16_From(-1);
 	else
-		return (SmileObject)Smile_KnownObjects.OneInt64;
+		return SmileUnboxedInteger16_From(+1);
 }
 
 //-------------------------------------------------------------------------------------------------
 
 void SmileInteger16_Setup(SmileUserObject base)
 {
+	SmileUnboxedInteger16_Instance->base = (SmileObject)base;
+
 	SetupFunction("bool", ToBool, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 	SetupFunction("int", ToInt, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 	SetupFunction("string", ToString, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX, 1, 2, 0, NULL);

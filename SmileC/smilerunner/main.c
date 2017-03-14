@@ -491,7 +491,8 @@ static Int ParseAndEval(CommandLineArgs options, String string, String filename,
 
 		case EVAL_RESULT_EXCEPTION:
 			{
-				String stringified = SMILE_VCALL(evalResult->exception, toString);
+				SmileArg unboxedException = SmileArg_Unbox(evalResult->exception);
+				String stringified = SMILE_VCALL1(unboxedException.obj, toString, unboxedException.unboxed);
 				String message = String_Format("%S: Uncaught exception thrown: %S\r\n", filename, stringified);
 				fwrite(String_GetBytes(message), 1, String_Length(message), stderr);
 				fflush(stderr);
@@ -632,7 +633,8 @@ int main(int argc, const char **argv)
 	// If they requested the result to be outputted, do that now.
 	if (options->outputResult) {
 		// Convert the object to a string by a virtual call to its toString() method.
-		String stringResult = SMILE_VCALL(result, toString);
+		SmileArg unboxedResult = SmileArg_Unbox(result);
+		String stringResult = SMILE_VCALL1(unboxedResult.obj, toString, unboxedResult.unboxed);
 		fwrite(String_GetBytes(stringResult), 1, String_Length(stringResult), stdout);
 		fwrite("\n", 1, 1, stdout);
 		fflush(stdout);

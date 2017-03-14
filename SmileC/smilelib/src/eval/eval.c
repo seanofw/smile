@@ -36,6 +36,8 @@ ByteCode _byteCode;
 
 EscapeContinuation _exceptionContinuation;
 
+static Bool Is(SmileArg descendant, SmileArg ancestor);
+
 EvalResult EvalResult_Create(Int kind)
 {
 	EvalResult result = GC_MALLOC_STRUCT(struct EvalResultStruct);
@@ -74,7 +76,7 @@ EvalResult Eval_Continue(void)
 
 			// Expression evaluated normally.
 			evalResult = EvalResult_Create(EVAL_RESULT_VALUE);
-			evalResult->value = Closure_PopTemp(_closure);
+			evalResult->value = SmileArg_Box(Closure_Pop(_closure));
 
 			_exceptionContinuation->isValid = False;
 			return evalResult;
@@ -115,6 +117,7 @@ Bool Eval_RunCore(void)
 	// If there are registers leftover, the compiler's welcome to store these values in registers, but
 	// they're primarily used for less-frequent operations, so it's okay if they end up on the stack.
 	SmileObject target, value;
+	SmileArg arg, arg2;
 
 	LOAD_REGISTERS;
 
@@ -186,27 +189,27 @@ next:
 		// 10-17: Special load instructions
 		
 		case Op_LdNull:
-			Closure_PushTemp(closure, NullObject);
+			Closure_PushBoxed(closure, NullObject);
 			byteCode++;
 			goto next;
 
 		case Op_LdBool:
-			Closure_PushTemp(closure, Smile_KnownObjects.BooleanObjs[byteCode->u.boolean]);
+			Closure_PushUnboxedBool(closure, byteCode->u.boolean);
 			byteCode++;
 			goto next;
 
 		case Op_LdStr:
-			Closure_PushTemp(closure, SmileString_Create(_compiledTables->strings[byteCode->u.index]));
+			Closure_PushBoxed(closure, SmileString_Create(_compiledTables->strings[byteCode->u.index]));
 			byteCode++;
 			goto next;
 
 		case Op_LdSym:
-			Closure_PushTemp(closure, SmileSymbol_Create(byteCode->u.symbol));
+			Closure_PushUnboxedSymbol(closure, byteCode->u.symbol);
 			byteCode++;
 			goto next;
 
 		case Op_LdObj:
-			Closure_PushTemp(closure, _compiledTables->objects[byteCode->u.index]);
+			Closure_PushBoxed(closure, _compiledTables->objects[byteCode->u.index]);
 			byteCode++;
 			goto next;
 
@@ -217,27 +220,27 @@ next:
 		// 18-1F: Integer load instructions
 		
 		case Op_Ld8:
-			Closure_PushTemp(closure, SmileByte_Create(byteCode->u.byte));
+			Closure_PushUnboxedByte(closure, byteCode->u.byte);
 			byteCode++;
 			goto next;
 
 		case Op_Ld16:
-			Closure_PushTemp(closure, SmileInteger16_Create(byteCode->u.int16));
+			Closure_PushUnboxedInt16(closure, byteCode->u.int16);
 			byteCode++;
 			goto next;
 
 		case Op_Ld32:
-			Closure_PushTemp(closure, SmileInteger32_Create(byteCode->u.int32));
+			Closure_PushUnboxedInt32(closure, byteCode->u.int32);
 			byteCode++;
 			goto next;
 
 		case Op_Ld64:
-			Closure_PushTemp(closure, SmileInteger64_Create(byteCode->u.int64));
+			Closure_PushUnboxedInt64(closure, byteCode->u.int64);
 			byteCode++;
 			goto next;
 
 		case Op_Ld128:
-			Closure_PushTemp(closure, _compiledTables->objects[byteCode->u.index]);
+			Closure_PushBoxed(closure, _compiledTables->objects[byteCode->u.index]);
 			byteCode++;
 			goto next;
 		
@@ -263,7 +266,7 @@ next:
 		// 30-37: General-purpose local-variable/argument instructions
 		
 		case Op_LdLoc:
-			Closure_PushTemp(closure, Closure_GetLocalVariableInScope(closure, byteCode->u.i2.a, byteCode->u.i2.b));
+			Closure_Push(closure, Closure_GetLocalVariableInScope(closure, byteCode->u.i2.a, byteCode->u.i2.b));
 			byteCode++;
 			goto next;
 
@@ -273,12 +276,12 @@ next:
 			goto next;
 
 		case Op_StpLoc:
-			Closure_SetLocalVariableInScope(closure, byteCode->u.i2.a, byteCode->u.i2.b, Closure_PopTemp(closure));
+			Closure_SetLocalVariableInScope(closure, byteCode->u.i2.a, byteCode->u.i2.b, Closure_Pop(closure));
 			byteCode++;
 			goto next;
 
 		case Op_LdArg:
-			Closure_PushTemp(closure, Closure_GetArgumentInScope(closure, byteCode->u.i2.a, byteCode->u.i2.b));
+			Closure_Push(closure, Closure_GetArgumentInScope(closure, byteCode->u.i2.a, byteCode->u.i2.b));
 			byteCode++;
 			goto next;
 
@@ -288,7 +291,7 @@ next:
 			goto next;
 
 		case Op_StpArg:
-			Closure_SetArgumentInScope(closure, byteCode->u.i2.a, byteCode->u.i2.b, Closure_PopTemp(closure));
+			Closure_SetArgumentInScope(closure, byteCode->u.i2.a, byteCode->u.i2.b, Closure_Pop(closure));
 			byteCode++;
 			goto next;
 
@@ -296,17 +299,17 @@ next:
 		// 38-3F: Global (eXternal) variable instructions
 
 		case Op_LdX:
-			Closure_PushTemp(closure, Closure_GetGlobalVariable(closure, byteCode->u.symbol));
+			Closure_UnboxAndPush(closure, Closure_GetGlobalVariable(closure, byteCode->u.symbol));
 			byteCode++;
 			goto next;
 
 		case Op_StX:
-			Closure_SetGlobalVariable(closure, byteCode->u.symbol, Closure_GetTop(closure));
+			Closure_SetGlobalVariable(closure, byteCode->u.symbol, SmileArg_Box(Closure_GetTop(closure)));
 			byteCode++;
 			goto next;
 
 		case Op_StpX:
-			Closure_SetGlobalVariable(closure, byteCode->u.symbol, Closure_PopTemp(closure));
+			Closure_SetGlobalVariable(closure, byteCode->u.symbol, SmileArg_Box(Closure_Pop(closure)));
 			byteCode++;
 			goto next;
 
@@ -314,68 +317,68 @@ next:
 		// 40-4F: Optimized local-variable/argument load instructions
 		
 		case Op_LdArg0:
-			Closure_PushTemp(closure, Closure_GetArgumentInScope0(closure, byteCode->u.index));
+			Closure_Push(closure, Closure_GetArgumentInScope0(closure, byteCode->u.index));
 			byteCode++;
 			goto next;
 		case Op_LdArg1:
-			Closure_PushTemp(closure, Closure_GetArgumentInScope1(closure, byteCode->u.index));
+			Closure_Push(closure, Closure_GetArgumentInScope1(closure, byteCode->u.index));
 			byteCode++;
 			goto next;
 		case Op_LdArg2:
-			Closure_PushTemp(closure, Closure_GetArgumentInScope2(closure, byteCode->u.index));
+			Closure_Push(closure, Closure_GetArgumentInScope2(closure, byteCode->u.index));
 			byteCode++;
 			goto next;
 		case Op_LdArg3:
-			Closure_PushTemp(closure, Closure_GetArgumentInScope3(closure, byteCode->u.index));
+			Closure_Push(closure, Closure_GetArgumentInScope3(closure, byteCode->u.index));
 			byteCode++;
 			goto next;
 		case Op_LdArg4:
-			Closure_PushTemp(closure, Closure_GetArgumentInScope4(closure, byteCode->u.index));
+			Closure_Push(closure, Closure_GetArgumentInScope4(closure, byteCode->u.index));
 			byteCode++;
 			goto next;
 		case Op_LdArg5:
-			Closure_PushTemp(closure, Closure_GetArgumentInScope5(closure, byteCode->u.index));
+			Closure_Push(closure, Closure_GetArgumentInScope5(closure, byteCode->u.index));
 			byteCode++;
 			goto next;
 		case Op_LdArg6:
-			Closure_PushTemp(closure, Closure_GetArgumentInScope6(closure, byteCode->u.index));
+			Closure_Push(closure, Closure_GetArgumentInScope6(closure, byteCode->u.index));
 			byteCode++;
 			goto next;
 		case Op_LdArg7:
-			Closure_PushTemp(closure, Closure_GetArgumentInScope7(closure, byteCode->u.index));
+			Closure_Push(closure, Closure_GetArgumentInScope7(closure, byteCode->u.index));
 			byteCode++;
 			goto next;
 		
 		case Op_LdLoc0:
-			Closure_PushTemp(closure, Closure_GetLocalVariableInScope0(closure, byteCode->u.index));
+			Closure_Push(closure, Closure_GetLocalVariableInScope0(closure, byteCode->u.index));
 			byteCode++;
 			goto next;
 		case Op_LdLoc1:
-			Closure_PushTemp(closure, Closure_GetLocalVariableInScope1(closure, byteCode->u.index));
+			Closure_Push(closure, Closure_GetLocalVariableInScope1(closure, byteCode->u.index));
 			byteCode++;
 			goto next;
 		case Op_LdLoc2:
-			Closure_PushTemp(closure, Closure_GetLocalVariableInScope2(closure, byteCode->u.index));
+			Closure_Push(closure, Closure_GetLocalVariableInScope2(closure, byteCode->u.index));
 			byteCode++;
 			goto next;
 		case Op_LdLoc3:
-			Closure_PushTemp(closure, Closure_GetLocalVariableInScope3(closure, byteCode->u.index));
+			Closure_Push(closure, Closure_GetLocalVariableInScope3(closure, byteCode->u.index));
 			byteCode++;
 			goto next;
 		case Op_LdLoc4:
-			Closure_PushTemp(closure, Closure_GetLocalVariableInScope4(closure, byteCode->u.index));
+			Closure_Push(closure, Closure_GetLocalVariableInScope4(closure, byteCode->u.index));
 			byteCode++;
 			goto next;
 		case Op_LdLoc5:
-			Closure_PushTemp(closure, Closure_GetLocalVariableInScope5(closure, byteCode->u.index));
+			Closure_Push(closure, Closure_GetLocalVariableInScope5(closure, byteCode->u.index));
 			byteCode++;
 			goto next;
 		case Op_LdLoc6:
-			Closure_PushTemp(closure, Closure_GetLocalVariableInScope6(closure, byteCode->u.index));
+			Closure_Push(closure, Closure_GetLocalVariableInScope6(closure, byteCode->u.index));
 			byteCode++;
 			goto next;
 		case Op_LdLoc7:
-			Closure_PushTemp(closure, Closure_GetLocalVariableInScope7(closure, byteCode->u.index));
+			Closure_Push(closure, Closure_GetLocalVariableInScope7(closure, byteCode->u.index));
 			byteCode++;
 			goto next;
 		
@@ -452,95 +455,97 @@ next:
 		// 60-6F: Optimized local-variable/argument store-and-pop instructions
 
 		case Op_StpArg0:
-			Closure_SetArgumentInScope0(closure, byteCode->u.index, Closure_PopTemp(closure));
+			Closure_SetArgumentInScope0(closure, byteCode->u.index, Closure_Pop(closure));
 			byteCode++;
 			goto next;
 		case Op_StpArg1:
-			Closure_SetArgumentInScope1(closure, byteCode->u.index, Closure_PopTemp(closure));
+			Closure_SetArgumentInScope1(closure, byteCode->u.index, Closure_Pop(closure));
 			byteCode++;
 			goto next;
 		case Op_StpArg2:
-			Closure_SetArgumentInScope2(closure, byteCode->u.index, Closure_PopTemp(closure));
+			Closure_SetArgumentInScope2(closure, byteCode->u.index, Closure_Pop(closure));
 			byteCode++;
 			goto next;
 		case Op_StpArg3:
-			Closure_SetArgumentInScope3(closure, byteCode->u.index, Closure_PopTemp(closure));
+			Closure_SetArgumentInScope3(closure, byteCode->u.index, Closure_Pop(closure));
 			byteCode++;
 			goto next;
 		case Op_StpArg4:
-			Closure_SetArgumentInScope4(closure, byteCode->u.index, Closure_PopTemp(closure));
+			Closure_SetArgumentInScope4(closure, byteCode->u.index, Closure_Pop(closure));
 			byteCode++;
 			goto next;
 		case Op_StpArg5:
-			Closure_SetArgumentInScope5(closure, byteCode->u.index, Closure_PopTemp(closure));
+			Closure_SetArgumentInScope5(closure, byteCode->u.index, Closure_Pop(closure));
 			byteCode++;
 			goto next;
 		case Op_StpArg6:
-			Closure_SetArgumentInScope6(closure, byteCode->u.index, Closure_PopTemp(closure));
+			Closure_SetArgumentInScope6(closure, byteCode->u.index, Closure_Pop(closure));
 			byteCode++;
 			goto next;
 		case Op_StpArg7:
-			Closure_SetArgumentInScope7(closure, byteCode->u.index, Closure_PopTemp(closure));
+			Closure_SetArgumentInScope7(closure, byteCode->u.index, Closure_Pop(closure));
 			byteCode++;
 			goto next;
 
 		case Op_StpLoc0:
-			Closure_SetLocalVariableInScope0(closure, byteCode->u.index, Closure_PopTemp(closure));
+			Closure_SetLocalVariableInScope0(closure, byteCode->u.index, Closure_Pop(closure));
 			byteCode++;
 			goto next;
 		case Op_StpLoc1:
-			Closure_SetLocalVariableInScope1(closure, byteCode->u.index, Closure_PopTemp(closure));
+			Closure_SetLocalVariableInScope1(closure, byteCode->u.index, Closure_Pop(closure));
 			byteCode++;
 			goto next;
 		case Op_StpLoc2:
-			Closure_SetLocalVariableInScope2(closure, byteCode->u.index, Closure_PopTemp(closure));
+			Closure_SetLocalVariableInScope2(closure, byteCode->u.index, Closure_Pop(closure));
 			byteCode++;
 			goto next;
 		case Op_StpLoc3:
-			Closure_SetLocalVariableInScope3(closure, byteCode->u.index, Closure_PopTemp(closure));
+			Closure_SetLocalVariableInScope3(closure, byteCode->u.index, Closure_Pop(closure));
 			byteCode++;
 			goto next;
 		case Op_StpLoc4:
-			Closure_SetLocalVariableInScope4(closure, byteCode->u.index, Closure_PopTemp(closure));
+			Closure_SetLocalVariableInScope4(closure, byteCode->u.index, Closure_Pop(closure));
 			byteCode++;
 			goto next;
 		case Op_StpLoc5:
-			Closure_SetLocalVariableInScope5(closure, byteCode->u.index, Closure_PopTemp(closure));
+			Closure_SetLocalVariableInScope5(closure, byteCode->u.index, Closure_Pop(closure));
 			byteCode++;
 			goto next;
 		case Op_StpLoc6:
-			Closure_SetLocalVariableInScope6(closure, byteCode->u.index, Closure_PopTemp(closure));
+			Closure_SetLocalVariableInScope6(closure, byteCode->u.index, Closure_Pop(closure));
 			byteCode++;
 			goto next;
 		case Op_StpLoc7:
-			Closure_SetLocalVariableInScope7(closure, byteCode->u.index, Closure_PopTemp(closure));
+			Closure_SetLocalVariableInScope7(closure, byteCode->u.index, Closure_Pop(closure));
 			byteCode++;
 			goto next;
 		
 		//-------------------------------------------------------
-		// 70-7F: General-purporse property and member access
+		// 70-7F: General-purpose property and member access
 
 		case Op_LdProp:
-			target = Closure_GetTop(closure);
+			target = Closure_GetTop(closure).obj;
 			STORE_REGISTERS;
 			value = SMILE_VCALL1(target, getProperty, byteCode->u.symbol);
 			LOAD_REGISTERS;
-			Closure_SetTop(closure, value);
+			Closure_SetTop(closure, SmileArg_Unbox(value));
 			byteCode++;
 			goto next;
 		case Op_StProp:
-			target = Closure_GetTemp(closure, 1);
-			value = Closure_GetTemp(closure, 0);
+			target = Closure_GetTemp(closure, 1).obj;
+			arg = Closure_GetTemp(closure, 0);
+			value = SmileArg_Box(arg);
 			STORE_REGISTERS;
 			SMILE_VCALL2(target, setProperty, byteCode->u.symbol, value);
 			LOAD_REGISTERS;
 			Closure_PopCount(closure, 1);
-			Closure_SetTop(closure, value);
+			Closure_SetTop(closure, arg);
 			byteCode++;
 			goto next;
 		case Op_StpProp:
-			target = Closure_GetTemp(closure, 1);
-			value = Closure_GetTemp(closure, 0);
+			target = Closure_GetTemp(closure, 1).obj;
+			arg = Closure_GetTemp(closure, 0);
+			value = SmileArg_Box(arg);
 			STORE_REGISTERS;
 			SMILE_VCALL2(target, setProperty, byteCode->u.symbol, value);
 			LOAD_REGISTERS;
@@ -557,70 +562,70 @@ next:
 		// 80-8F: Specialty type management
 
 		case Op_Cons:
-			value = (SmileObject)SmileList_Cons(Closure_GetTemp(closure, 1), Closure_GetTemp(closure, 0));
-			Closure_PopCount(closure, 1);
-			Closure_SetTop(closure, value);
+			value = (SmileObject)SmileList_Cons(SmileArg_Box(Closure_GetTemp(closure, 1)), SmileArg_Box(Closure_GetTemp(closure, 0)));
+			Closure_PopCount(closure, 2);
+			Closure_PushBoxed(closure, value);
 			byteCode++;
 			goto next;
 
 		case Op_Car:
-			target = Closure_GetTop(closure);
+			target = Closure_GetTop(closure).obj;
 			if (SMILE_KIND(target) == SMILE_KIND_LIST) {
 				value = ((SmileList)target)->a;
 			}
 			else {
 				value = NullObject;
 			}
-			Closure_SetTop(closure, value);
+			Closure_SetTop(closure, SmileArg_Unbox(value));
 			byteCode++;
 			goto next;
 
 		case Op_Cdr:
-			target = Closure_GetTop(closure);
+			target = Closure_GetTop(closure).obj;
 			if (SMILE_KIND(target) == SMILE_KIND_LIST) {
 				value = ((SmileList)target)->a;
 			}
 			else {
 				value = NullObject;
 			}
-			Closure_SetTop(closure, value);
+			Closure_SetTop(closure, SmileArg_Unbox(value));
 			byteCode++;
 			goto next;
 
 		case Op_NewPair:
-			value = (SmileObject)SmilePair_Create(Closure_GetTemp(closure, 1), Closure_GetTemp(closure, 0));
-			Closure_PopCount(closure, 1);
-			Closure_SetTop(closure, value);
+			value = (SmileObject)SmilePair_Create(SmileArg_Box(Closure_GetTemp(closure, 1)), SmileArg_Box(Closure_GetTemp(closure, 0)));
+			Closure_PopCount(closure, 2);
+			Closure_PushBoxed(closure, value);
 			byteCode++;
 			goto next;
 
 		case Op_Left:
-			target = Closure_GetTop(closure);
+			target = Closure_GetTop(closure).obj;
 			if (SMILE_KIND(target) == SMILE_KIND_PAIR) {
 				value = ((SmilePair)target)->left;
 			}
 			else {
 				value = NullObject;
 			}
-			Closure_SetTop(closure, value);
+			Closure_SetTop(closure, SmileArg_Unbox(value));
 			byteCode++;
 			goto next;
 
 		case Op_Right:
-			target = Closure_GetTop(closure);
+			target = Closure_GetTop(closure).obj;
 			if (SMILE_KIND(target) == SMILE_KIND_PAIR) {
 				value = ((SmilePair)target)->right;
 			}
 			else {
 				value = NullObject;
 			}
-			Closure_SetTop(closure, value);
+			Closure_SetTop(closure, SmileArg_Unbox(value));
 			byteCode++;
 			goto next;
 
 		case Op_NewFn:
 			value = (SmileObject)SmileFunction_CreateUserFunction(_compiledTables->userFunctions[byteCode->u.index], closure);
-			Closure_PushTemp(closure, value);
+			Closure_PushBoxed(closure, value);
 			byteCode++;
 			goto next;
 
@@ -628,43 +633,38 @@ next:
 			goto unsupportedOpcode;
 		
 		case Op_SuperEq:
-			target = Closure_GetTemp(closure, 0);
-			value = Closure_GetTemp(closure, 1);
-			Closure_PopCount(closure, 1);
-			value = (SmileObject)SmileBool_FromBool(SMILE_VCALL1(target, compareEqual, value));
-			Closure_SetTop(closure, value);
+			arg2 = Closure_Pop(closure);
+			arg = Closure_Pop(closure);
+			Closure_PushUnboxedBool(closure, SMILE_VCALL3(arg.obj, compareEqual, arg.unboxed, arg2.obj, arg2.unboxed));
 			byteCode++;
 			goto next;
 
 		case Op_SuperNe:
-			target = Closure_GetTemp(closure, 0);
-			value = Closure_GetTemp(closure, 1);
-			Closure_PopCount(closure, 1);
-			value = (SmileObject)SmileBool_FromBool(1 - SMILE_VCALL1(target, compareEqual, value));
-			Closure_SetTop(closure, value);
+			arg2 = Closure_Pop(closure);
+			arg = Closure_Pop(closure);
+			Closure_PushUnboxedBool(closure, !SMILE_VCALL3(arg.obj, compareEqual, arg.unboxed, arg2.obj, arg2.unboxed));
 			byteCode++;
 			goto next;
 		
 		case Op_Not:
-			value = Closure_GetTop(closure);
-			if (SMILE_KIND(value) != SMILE_KIND_BOOL) {
-				SmileBool smileBool;
+			arg = Closure_Pop(closure);
+			if (SMILE_KIND(arg.obj) == SMILE_KIND_BOOL) {
+				Bool b;
 				STORE_REGISTERS;
-				smileBool = SmileBool_FromBool(1 - SMILE_VCALL(value, toBool));
+				b = !SMILE_VCALL1(arg.obj, toBool, arg.unboxed);
 				LOAD_REGISTERS;
-				Closure_SetTop(closure, smileBool);
+				Closure_PushUnboxedBool(closure, b);
 			}
 			else {
-				Closure_SetTop(closure, SmileBool_FromBool(1 - ((SmileBool)value)->value));
+				Closure_PushUnboxedBool(closure, !arg.unboxed.b);
 			}
 			byteCode++;
 			goto next;
 
 		case Op_Is:
-			target = Closure_GetTemp(closure, 0);
-			value = Closure_GetTemp(closure, 1);
-			Closure_PopCount(closure, 1);
-			Closure_SetTop(closure, SmileBool_FromBool(SmileObject_Is(target, value)));
+			arg2 = Closure_Pop(closure);
+			arg = Closure_Pop(closure);
+			Closure_PushUnboxedBool(closure, Is(arg, arg2));
 			byteCode++;
 			goto next;
 
@@ -675,7 +675,7 @@ next:
 		// 90-9F: Special-purpose function and method calls
 
 		case Op_Call0:
-			target = Closure_GetTemp(closure, 0);
+			target = Closure_GetTemp(closure, 0).obj;
 			byteCode++;
 			STORE_REGISTERS;
 			SMILE_VCALL1(target, call, 0);
@@ -683,7 +683,7 @@ next:
 			goto next;
 
 		case Op_Call1:
-			target = Closure_GetTemp(closure, 1);
+			target = Closure_GetTemp(closure, 1).obj;
 			byteCode++;
 			STORE_REGISTERS;
 			SMILE_VCALL1(target, call, 1);
@@ -691,7 +691,7 @@ next:
 			goto next;
 
 		case Op_Call2:
-			target = Closure_GetTemp(closure, 2);
+			target = Closure_GetTemp(closure, 2).obj;
 			byteCode++;
 			STORE_REGISTERS;
 			SMILE_VCALL1(target, call, 2);
@@ -699,7 +699,7 @@ next:
 			goto next;
 		
 		case Op_Call3:
-			target = Closure_GetTemp(closure, 3);
+			target = Closure_GetTemp(closure, 3).obj;
 			byteCode++;
 			STORE_REGISTERS;
 			SMILE_VCALL1(target, call, 3);
@@ -707,7 +707,7 @@ next:
 			goto next;
 
 		case Op_Call4:
-			target = Closure_GetTemp(closure, 4);
+			target = Closure_GetTemp(closure, 4).obj;
 			byteCode++;
 			STORE_REGISTERS;
 			SMILE_VCALL1(target, call, 4);
@@ -715,7 +715,7 @@ next:
 			goto next;
 
 		case Op_Call5:
-			target = Closure_GetTemp(closure, 5);
+			target = Closure_GetTemp(closure, 5).obj;
 			byteCode++;
 			STORE_REGISTERS;
 			SMILE_VCALL1(target, call, 5);
@@ -723,7 +723,7 @@ next:
 			goto next;
 
 		case Op_Call6:
-			target = Closure_GetTemp(closure, 6);
+			target = Closure_GetTemp(closure, 6).obj;
 			byteCode++;
 			STORE_REGISTERS;
 			SMILE_VCALL1(target, call, 6);
@@ -731,7 +731,7 @@ next:
 			goto next;
 
 		case Op_Call7:
-			target = Closure_GetTemp(closure, 7);
+			target = Closure_GetTemp(closure, 7).obj;
 			byteCode++;
 			STORE_REGISTERS;
 			SMILE_VCALL1(target, call, 7);
@@ -739,7 +739,7 @@ next:
 			goto next;
 
 		case Op_Met0:
-			target = Closure_GetTemp(closure, 0);	// Get the target object
+			target = Closure_GetTemp(closure, 0).obj;	// Get the target object
 			byteCode++;	
 			STORE_REGISTERS;	
 			target = SMILE_VCALL1(target, getProperty, byteCode[-1].u.symbol);	// Turn it into a function (hopefully)
@@ -748,7 +748,7 @@ next:
 			goto next;
 
 		case Op_Met1:
-			target = Closure_GetTemp(closure, 1);	// Get the target object
+			target = Closure_GetTemp(closure, 1).obj;	// Get the target object
 			byteCode++;	
 			STORE_REGISTERS;	
 			target = SMILE_VCALL1(target, getProperty, byteCode[-1].u.symbol);	// Turn it into a function (hopefully)
@@ -757,7 +757,7 @@ next:
 			goto next;
 
 		case Op_Met2:
-			target = Closure_GetTemp(closure, 2);	// Get the target object
+			target = Closure_GetTemp(closure, 2).obj;	// Get the target object
 			byteCode++;	
 			STORE_REGISTERS;	
 			target = SMILE_VCALL1(target, getProperty, byteCode[-1].u.symbol);	// Turn it into a function (hopefully)
@@ -766,7 +766,7 @@ next:
 			goto next;
 
 		case Op_Met3:
-			target = Closure_GetTemp(closure, 3);	// Get the target object
+			target = Closure_GetTemp(closure, 3).obj;	// Get the target object
 			byteCode++;	
 			STORE_REGISTERS;	
 			target = SMILE_VCALL1(target, getProperty, byteCode[-1].u.symbol);	// Turn it into a function (hopefully)
@@ -775,7 +775,7 @@ next:
 			goto next;
 
 		case Op_Met4:
-			target = Closure_GetTemp(closure, 4);	// Get the target object
+			target = Closure_GetTemp(closure, 4).obj;	// Get the target object
 			byteCode++;	
 			STORE_REGISTERS;	
 			target = SMILE_VCALL1(target, getProperty, byteCode[-1].u.symbol);	// Turn it into a function (hopefully)
@@ -784,7 +784,7 @@ next:
 			goto next;
 
 		case Op_Met5:
-			target = Closure_GetTemp(closure, 5);	// Get the target object
+			target = Closure_GetTemp(closure, 5).obj;	// Get the target object
 			byteCode++;	
 			STORE_REGISTERS;	
 			target = SMILE_VCALL1(target, getProperty, byteCode[-1].u.symbol);	// Turn it into a function (hopefully)
@@ -793,7 +793,7 @@ next:
 			goto next;
 
 		case Op_Met6:
-			target = Closure_GetTemp(closure, 6);	// Get the target object
+			target = Closure_GetTemp(closure, 6).obj;	// Get the target object
 			byteCode++;	
 			STORE_REGISTERS;	
 			target = SMILE_VCALL1(target, getProperty, byteCode[-1].u.symbol);	// Turn it into a function (hopefully)
@@ -802,7 +802,7 @@ next:
 			goto next;
 
 		case Op_Met7:
-			target = Closure_GetTemp(closure, 7);	// Get the target object
+			target = Closure_GetTemp(closure, 7).obj;	// Get the target object
 			byteCode++;	
 			STORE_REGISTERS;	
 			target = SMILE_VCALL1(target, getProperty, byteCode[-1].u.symbol);	// Turn it into a function (hopefully)
@@ -836,9 +836,9 @@ next:
 			goto next;
 
 		case Op_Bt:
-			value = Closure_PopTemp(closure);
-			if (SMILE_KIND(value) != SMILE_KIND_BOOL) {
-				if (SMILE_VCALL(value, toBool)) {
+			arg = Closure_Pop(closure);
+			if (SMILE_KIND(arg.obj) != SMILE_KIND_UNBOXED_BOOL) {
+				if (arg.unboxed.b) {
 					byteCode += byteCode->u.index;
 				}
 				else {
@@ -846,7 +846,9 @@ next:
 				}
 			}
 			else {
-				if (((SmileBool)value)->value) {
+				STORE_REGISTERS;
+				if (SMILE_VCALL1(arg.obj, toBool, arg.unboxed)) {
+					LOAD_REGISTERS;
 					byteCode += byteCode->u.index;
 				}
 				else {
@@ -856,9 +858,9 @@ next:
 			goto next;
 
 		case Op_Bf:
-			value = Closure_PopTemp(closure);
-			if (SMILE_KIND(value) != SMILE_KIND_BOOL) {
-				if (SMILE_VCALL(value, toBool)) {
+			arg = Closure_Pop(closure);
+			if (SMILE_KIND(arg.obj) == SMILE_KIND_UNBOXED_BOOL) {
+				if (arg.unboxed.b) {
 					byteCode++;
 				}
 				else {
@@ -866,7 +868,9 @@ next:
 				}
 			}
 			else {
-				if (((SmileBool)value)->value) {
+				STORE_REGISTERS;
+				if (SMILE_VCALL1(arg.obj, toBool, arg.unboxed)) {
+					LOAD_REGISTERS;
 					byteCode++;
 				}
 				else {
@@ -876,7 +880,7 @@ next:
 			goto next;
 
 		case Op_Met:
-			target = Closure_GetTemp(closure, byteCode->u.i2.b + 1);	// Get the target object
+			target = Closure_GetTemp(closure, byteCode->u.i2.b + 1).obj;	// Get the target object
 			byteCode++;	
 			STORE_REGISTERS;	
 			target = SMILE_VCALL1(target, getProperty, byteCode[-1].u.i2.a);	// Turn it into a function (hopefully)
@@ -888,7 +892,7 @@ next:
 			goto unsupportedOpcode;
 		
 		case Op_Call:
-			target = Closure_GetTemp(closure, byteCode->u.index);
+			target = Closure_GetTemp(closure, byteCode->u.index).obj;
 			byteCode++;
 			STORE_REGISTERS;
 			SMILE_VCALL1(target, call, byteCode[-1].u.index);
@@ -914,7 +918,7 @@ next:
 			}
 			else {
 				// Get the return value off the top of the closure.
-				value = Closure_GetTop(closure);
+				arg = Closure_Pop(closure);
 			
 				// Reset which closure we're running against.
 				_segment = closure->returnSegment;
@@ -922,7 +926,7 @@ next:
 				_closure = closure = closure->returnClosure;
 			
 				// Push the function's return value onto the current closure.
-				Closure_PushTemp(closure, value);
+				Closure_Push(closure, arg);
 				goto next;
 			}
 
@@ -972,10 +976,13 @@ next:
 			goto unsupportedOpcode;
 
 		case Op_Bool:
-			value = Closure_GetTop(closure);
-			if (SMILE_KIND(value) != SMILE_KIND_BOOL) {
-				value = (SmileObject)SmileBool_FromBool(SMILE_VCALL(value, toBool));
-				Closure_SetTop(closure, value);
+			arg = Closure_Pop(closure);
+			if (SMILE_KIND(arg.obj) != SMILE_KIND_UNBOXED_BOOL) {
+				Bool b;
+				STORE_REGISTERS;
+				b = SMILE_VCALL1(arg.obj, toBool, arg.unboxed);
+				LOAD_REGISTERS;
+				Closure_PushUnboxedBool(closure, b);
 			}
 			byteCode++;
 			goto next;
@@ -1002,99 +1009,99 @@ next:
 		// E8-EF: Special-purpose optimized property access
 
 		case Op_LdA:
-			target = Closure_GetTop(closure);
+			target = Closure_Pop(closure).obj;
 			if (SMILE_KIND(target) == SMILE_KIND_LIST) {
-				value = ((SmileList)target)->a;
+				Closure_UnboxAndPush(closure, ((SmileList)target)->a);
 			}
 			else {
 				STORE_REGISTERS;
 				value = SMILE_VCALL1(target, getProperty, Smile_KnownSymbols.a);
 				LOAD_REGISTERS;
+				Closure_UnboxAndPush(closure, value);
 			}
-			Closure_SetTop(closure, value);
 			byteCode++;
 			goto next;
 
 		case Op_LdD:
-			target = Closure_GetTop(closure);
+			target = Closure_Pop(closure).obj;
 			if (SMILE_KIND(target) == SMILE_KIND_LIST) {
-				value = ((SmileList)target)->d;
+				Closure_UnboxAndPush(closure, ((SmileList)target)->d);
 			}
 			else {
 				STORE_REGISTERS;
 				value = SMILE_VCALL1(target, getProperty, Smile_KnownSymbols.d);
 				LOAD_REGISTERS;
+				Closure_UnboxAndPush(closure, value);
 			}
-			Closure_SetTop(closure, value);
 			byteCode++;
 			goto next;
 		
 		case Op_LdLeft:
-			target = Closure_GetTop(closure);
+			target = Closure_Pop(closure).obj;
 			if (SMILE_KIND(target) == SMILE_KIND_PAIR) {
-				value = ((SmilePair)target)->left;
+				Closure_UnboxAndPush(closure, ((SmilePair)target)->left);
 			}
 			else {
 				STORE_REGISTERS;
 				value = SMILE_VCALL1(target, getProperty, Smile_KnownSymbols.left);
 				LOAD_REGISTERS;
+				Closure_UnboxAndPush(closure, value);
 			}
-			Closure_SetTop(closure, value);
 			byteCode++;
 			goto next;
 
 		case Op_LdRight:
-			target = Closure_GetTop(closure);
+			target = Closure_Pop(closure).obj;
 			if (SMILE_KIND(target) == SMILE_KIND_PAIR) {
-				value = ((SmilePair)target)->right;
+				Closure_UnboxAndPush(closure, ((SmilePair)target)->right);
 			}
 			else {
 				STORE_REGISTERS;
 				value = SMILE_VCALL1(target, getProperty, Smile_KnownSymbols.right);
 				LOAD_REGISTERS;
+				Closure_UnboxAndPush(closure, value);
 			}
-			Closure_SetTop(closure, value);
 			byteCode++;
 			goto next;
 
 		case Op_LdStart:
-			target = Closure_GetTop(closure);
+			target = Closure_Pop(closure).obj;
 			STORE_REGISTERS;
 			value = SMILE_VCALL1(target, getProperty, Smile_KnownSymbols.start);
 			LOAD_REGISTERS;
-			Closure_SetTop(closure, value);
+			Closure_UnboxAndPush(closure, value);
 			byteCode++;
 			goto next;
 
 		case Op_LdEnd:
-			target = Closure_GetTop(closure);
+			target = Closure_Pop(closure).obj;
 			STORE_REGISTERS;
 			value = SMILE_VCALL1(target, getProperty, Smile_KnownSymbols.end);
 			LOAD_REGISTERS;
-			Closure_SetTop(closure, value);
+			Closure_UnboxAndPush(closure, value);
 			byteCode++;
 			goto next;
 
 		case Op_LdCount:
-			target = Closure_GetTop(closure);
+			target = Closure_Pop(closure).obj;
 			STORE_REGISTERS;
 			value = SMILE_VCALL1(target, getProperty, Smile_KnownSymbols.count);
 			LOAD_REGISTERS;
-			Closure_SetTop(closure, value);
+			Closure_UnboxAndPush(closure, value);
 			byteCode++;
 			goto next;
 		
 		case Op_LdLength:
-			target = Closure_GetTop(closure);
+			target = Closure_Pop(closure).obj;
 			if (SMILE_KIND(target) == SMILE_KIND_STRING) {
-				value = (SmileObject)SmileInteger32_Create(((SmileString)target)->string.length);
+				Closure_Push(closure, SmileUnboxedInteger64_From(((SmileString)target)->string.length));
 			}
 			else {
 				STORE_REGISTERS;
 				value = SMILE_VCALL1(target, getProperty, Smile_KnownSymbols.length);
 				LOAD_REGISTERS;
+				Closure_UnboxAndPush(closure, value);
 			}
-			Closure_SetTop(closure, value);
 			byteCode++;
 			goto next;
 
@@ -1118,7 +1125,7 @@ next:
 				if ((argc = ((ClosureStateMachine)closure)->stateMachineStart((ClosureStateMachine)closure)) >= 0) {
 					LOAD_REGISTERS;
 					STORE_REGISTERS;
-					SMILE_VCALL1(Closure_GetTemp(closure, argc), call, argc);
+					SMILE_VCALL1(Closure_GetTemp(closure, argc).obj, call, argc);
 					LOAD_REGISTERS;
 					goto next;
 				}
@@ -1142,7 +1149,7 @@ next:
 				if ((argc = ((ClosureStateMachine)closure)->stateMachineBody((ClosureStateMachine)closure)) >= 0) {
 					LOAD_REGISTERS;
 					STORE_REGISTERS;
-					SMILE_VCALL1(Closure_GetTemp(closure, argc), call, argc);
+					SMILE_VCALL1(Closure_GetTemp(closure, argc).obj, call, argc);
 					LOAD_REGISTERS;
 					goto next;
 				}
@@ -1202,9 +1209,75 @@ void Smile_Throw(SmileObject thrownObject)
 	else {
 		kindObject = SmileUserObject_Get(thrownObject, Smile_KnownSymbols.kind);
 		messageObject = SmileUserObject_Get(thrownObject, Smile_KnownSymbols.message);
-		message = String_Format("%S: %S", SMILE_VCALL(kindObject, toString), SMILE_VCALL(messageObject, toString));
+		message = String_Format("%S: %S",
+			SMILE_VCALL1(kindObject, toString, (SmileUnboxedData){ 0 }),
+			SMILE_VCALL1(messageObject, toString, (SmileUnboxedData){ 0 }));
 		
 		Smile_Abort_FatalError(String_ToC(message));
+	}
+}
+
+Inline Bool Is(SmileArg descendant, SmileArg ancestor)
+{
+	switch (SMILE_KIND(descendant.obj)) {
+
+		case SMILE_KIND_UNBOXED_BOOL:
+			if (ancestor.obj != descendant.obj)
+				return SmileObject_Is(descendant.obj, ancestor.obj);
+			return descendant.unboxed.b == ancestor.unboxed.b;
+
+		case SMILE_KIND_UNBOXED_SYMBOL:
+			if (ancestor.obj != descendant.obj)
+				return SmileObject_Is(descendant.obj, ancestor.obj);
+			return descendant.unboxed.symbol == ancestor.unboxed.symbol;
+
+		case SMILE_KIND_UNBOXED_BYTE:
+			if (ancestor.obj != descendant.obj)
+				return SmileObject_Is(descendant.obj, ancestor.obj);
+			return descendant.unboxed.i8 == ancestor.unboxed.i8;
+		
+		case SMILE_KIND_UNBOXED_INTEGER16:
+			if (ancestor.obj != descendant.obj)
+				return SmileObject_Is(descendant.obj, ancestor.obj);
+			return descendant.unboxed.i16 == ancestor.unboxed.i16;
+		
+		case SMILE_KIND_UNBOXED_INTEGER32:
+			if (ancestor.obj != descendant.obj)
+				return SmileObject_Is(descendant.obj, ancestor.obj);
+			return descendant.unboxed.i32 == ancestor.unboxed.i32;
+		
+		case SMILE_KIND_UNBOXED_INTEGER64:
+			if (ancestor.obj != descendant.obj)
+				return SmileObject_Is(descendant.obj, ancestor.obj);
+			return descendant.unboxed.i64 == ancestor.unboxed.i64;
+
+		case SMILE_KIND_UNBOXED_REAL32:
+			if (ancestor.obj != descendant.obj)
+				return SmileObject_Is(descendant.obj, ancestor.obj);
+			return descendant.unboxed.r32.value == ancestor.unboxed.r32.value;
+		
+		case SMILE_KIND_UNBOXED_REAL64:
+			if (ancestor.obj != descendant.obj)
+				return SmileObject_Is(descendant.obj, ancestor.obj);
+			return descendant.unboxed.r64.value == ancestor.unboxed.r64.value;
+		
+		case SMILE_KIND_UNBOXED_FLOAT32:
+			if (ancestor.obj != descendant.obj)
+				return SmileObject_Is(descendant.obj, ancestor.obj);
+			return descendant.unboxed.f32 == ancestor.unboxed.f32;
+		
+		case SMILE_KIND_UNBOXED_FLOAT64:
+			if (ancestor.obj != descendant.obj)
+				return SmileObject_Is(descendant.obj, ancestor.obj);
+			return descendant.unboxed.f64 == ancestor.unboxed.f64;
+
+		case SMILE_KIND_STRING:
+			if (SMILE_KIND(ancestor.obj) == SMILE_KIND_STRING)
+				return String_Equals(SmileString_GetString((SmileString)descendant.obj), SmileString_GetString((SmileString)ancestor.obj));
+			return SmileObject_Is(descendant.obj, ancestor.obj);
+		
+		default:
+			return SmileObject_Is(descendant.obj, ancestor.obj);
 	}
 }
 

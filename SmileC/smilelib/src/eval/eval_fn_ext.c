@@ -32,7 +32,7 @@ extern ByteCode _byteCode;
 //-------------------------------------------------------------------------------------------------
 // External function checking helpers
 
-static Int PerformTypeChecks(Int argc, SmileObject *argv, Int numTypeChecks, const Byte *typeChecks)
+static Int PerformTypeChecks(Int argc, SmileArg *argv, Int numTypeChecks, const Byte *typeChecks)
 {
 	Int i;
 
@@ -41,7 +41,7 @@ static Int PerformTypeChecks(Int argc, SmileObject *argv, Int numTypeChecks, con
 
 		// If there are more args than type checks, perform the type checks that are defined...
 		for (i = 0; i < numTypeChecks; i++) {
-			if ((argv[i]->kind & typeChecks[i * 2]) != typeChecks[i * 2 + 1])
+			if ((argv[i].obj->kind & typeChecks[i * 2]) != typeChecks[i * 2 + 1])
 				return i;
 		}
 
@@ -50,7 +50,7 @@ static Int PerformTypeChecks(Int argc, SmileObject *argv, Int numTypeChecks, con
 
 		// ...and then repeatedly use the last type check for the rest of the arguments.
 		for (; i < argc; i++) {
-			if ((argv[i]->kind & mask) != compare)
+			if ((argv[i].obj->kind & mask) != compare)
 				return i;
 		}
 
@@ -64,31 +64,31 @@ static Int PerformTypeChecks(Int argc, SmileObject *argv, Int numTypeChecks, con
 
 		default:
 			for (i = 0; i < argc; i++) {
-				if ((argv[i]->kind & typeChecks[i * 2]) != typeChecks[i * 2 + 1])
+				if ((argv[i].obj->kind & typeChecks[i * 2]) != typeChecks[i * 2 + 1])
 					return i;
 			}
 			return -1;
 
 		case 7:
-			if ((argv[6]->kind & typeChecks[12]) != typeChecks[13])
+			if ((argv[6].obj->kind & typeChecks[12]) != typeChecks[13])
 				return 6;
 		case 6:
-			if ((argv[5]->kind & typeChecks[10]) != typeChecks[11])
+			if ((argv[5].obj->kind & typeChecks[10]) != typeChecks[11])
 				return 5;
 		case 5:
-			if ((argv[4]->kind & typeChecks[8]) != typeChecks[9])
+			if ((argv[4].obj->kind & typeChecks[8]) != typeChecks[9])
 				return 4;
 		case 4:
-			if ((argv[3]->kind & typeChecks[6]) != typeChecks[7])
+			if ((argv[3].obj->kind & typeChecks[6]) != typeChecks[7])
 				return 3;
 		case 3:
-			if ((argv[2]->kind & typeChecks[4]) != typeChecks[5])
+			if ((argv[2].obj->kind & typeChecks[4]) != typeChecks[5])
 				return 2;
 		case 2:
-			if ((argv[1]->kind & typeChecks[2]) != typeChecks[3])
+			if ((argv[1].obj->kind & typeChecks[2]) != typeChecks[3])
 				return 1;
 		case 1:
-			if ((argv[0]->kind & typeChecks[0]) != typeChecks[1])
+			if ((argv[0].obj->kind & typeChecks[0]) != typeChecks[1])
 				return 0;
 
 		case 0:
@@ -125,9 +125,9 @@ static void ThrowTypeMismatchException(SmileFunction self, Int failingArg)
 
 // Declare the local variables required for this external function invocation to work.
 #define INVOKE_DECL(__closure__, __argv__) \
-	SmileObject *__argv__; \
+	SmileArg *__argv__; \
 	Int failingArg; \
-	SmileObject stateMachineResult; \
+	SmileArg stateMachineResult; \
 	\
 	UNUSED(failingArg); \
 	UNUSED(stateMachineResult); \
@@ -160,7 +160,7 @@ static void ThrowTypeMismatchException(SmileFunction self, Int failingArg)
 #define INVOKE_STATE_MACHINE(__self__, __argc__, __argv__, __closure__) \
 	(__closure__)->stackTop = (__argv__); \
 	stateMachineResult = (__self__)->u.externalFunctionInfo.externalFunction((__argc__), (__argv__), (__self__)->u.externalFunctionInfo.param); \
-	if (stateMachineResult != NULL) { \
+	if (stateMachineResult.obj != NULL) { \
 		/* Didn't start the state machine, and instead produced a result directly. */ \
 		*(__closure__)->stackTop++ = stateMachineResult; \
 	}

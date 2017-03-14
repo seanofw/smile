@@ -44,8 +44,8 @@ static const char *_maxArgCountErrorMessage = "'%S' allows at most %d arguments,
 		\
 		if (argc != (__numArgs__)) { \
 			Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format(_argCountErrorMessage, \
-				SMILE_VCALL(self, toString), (__numArgs__), argc)); \
-				} \
+				SMILE_VCALL1(self, toString, (SmileUnboxedData){ 0 }), (__numArgs__), argc)); \
+		} \
 		\
 		/* Create a new child closure for this function. */ \
 		userFunctionInfo = self->u.u.userFunctionInfo; \
@@ -129,7 +129,7 @@ void SmileUserFunction_Slow_Call(SmileFunction self, Int argc)
 
 	if (argc != numArgs) {
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format(_argCountErrorMessage,
-			SMILE_VCALL(self, toString), numArgs, argc));
+			SMILE_VCALL1(self, toString, (SmileUnboxedData){ 0 }), numArgs, argc));
 	}
 
 	// Create a new child closure for this function.
@@ -161,11 +161,11 @@ void SmileUserFunction_Optional_Call(SmileFunction self, Int argc)
 
 	if (argc < userFunctionInfo->minArgs) {
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format(_minArgCountErrorMessage,
-			SMILE_VCALL(self, toString), userFunctionInfo->minArgs, argc));
+			SMILE_VCALL1(self, toString, (SmileUnboxedData){ 0 }), userFunctionInfo->minArgs, argc));
 	}
 	if (argc > userFunctionInfo->maxArgs) {
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format(_maxArgCountErrorMessage,
-			SMILE_VCALL(self, toString), userFunctionInfo->maxArgs, argc));
+			SMILE_VCALL1(self, toString, (SmileUnboxedData){ 0 }), userFunctionInfo->maxArgs, argc));
 	}
 
 	// Create a new child closure for this function.
@@ -199,10 +199,11 @@ void SmileUserFunction_Rest_Call(SmileFunction self, Int argc)
 	Int i;
 	SmileList restHead, restTail;
 	Closure childClosure;
+	SmileArg arg;
 
 	if (argc < userFunctionInfo->minArgs) {
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format(_minArgCountErrorMessage,
-			SMILE_VCALL(self, toString), userFunctionInfo->minArgs, argc));
+			SMILE_VCALL1(self, toString, (SmileUnboxedData){ 0 }), userFunctionInfo->minArgs, argc));
 	}
 
 	// Create a new child closure for this function.
@@ -223,7 +224,8 @@ void SmileUserFunction_Rest_Call(SmileFunction self, Int argc)
 		}
 
 		// The 'rest' argument is an empty list.
-		childClosure->variables[i] = NullObject;
+		arg.obj = NullObject;
+		childClosure->variables[i] = arg;
 	}
 	else {
 
@@ -236,9 +238,10 @@ void SmileUserFunction_Rest_Call(SmileFunction self, Int argc)
 		// Now turn the rest of the provided arguments, however many there may be, into a List.
 		restHead = restTail = NullList;
 		for (; i < argc; i++) {
-			LIST_APPEND(restHead, restTail, _closure->stackTop[-argc + i]);
+			LIST_APPEND(restHead, restTail, SmileArg_Box(_closure->stackTop[-argc + i]));
 		}
-		childClosure->variables[numArgs - 1] = (SmileObject)restHead;
+		arg.obj = (SmileObject)restHead;
+		childClosure->variables[numArgs - 1] = arg;
 	}
 
 	// Clean up the calling stack.

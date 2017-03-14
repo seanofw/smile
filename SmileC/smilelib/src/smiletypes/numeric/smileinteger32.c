@@ -21,11 +21,14 @@
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/easyobject.h>
 
+SMILE_IGNORE_UNUSED_VARIABLES
+
 SMILE_EASY_OBJECT_VTABLE(SmileInteger32);
 
 SmileInteger32 SmileInteger32_CreateInternal(Int32 value)
 {
-	SmileInteger32 smileInt = GC_MALLOC_STRUCT(struct SmileInteger32Int);
+	// We MALLOC_ATOMIC here because the base is a known pointer that will never be collected.
+	SmileInteger32 smileInt = (SmileInteger32)GC_MALLOC_ATOMIC(sizeof(struct SmileInteger32Int));
 	if (smileInt == NULL) Smile_Abort_OutOfMemory();
 	smileInt->base = (SmileObject)Smile_KnownBases.Integer32;
 	smileInt->kind = SMILE_KIND_INTEGER32;
@@ -46,3 +49,50 @@ SMILE_EASY_OBJECT_TOINT(SmileInteger32, obj->value)
 SMILE_EASY_OBJECT_TOREAL(SmileInteger32, Real64_FromInt32(obj->value))
 SMILE_EASY_OBJECT_TOFLOAT(SmileInteger32, (Float64)obj->value)
 SMILE_EASY_OBJECT_TOSTRING(SmileInteger32, String_Format("%dt", (Int32)obj->value))
+
+SmileObject SmileInteger32_Box(SmileArg src)
+{
+	return src.obj;
+}
+
+SmileArg SmileInteger32_Unbox(SmileInteger32 smileInt)
+{
+	return SmileUnboxedInteger32_From(smileInt->value);
+}
+
+//-------------------------------------------------------------------------------------------------
+
+SMILE_EASY_OBJECT_VTABLE(SmileUnboxedInteger32);
+
+SMILE_EASY_OBJECT_READONLY_SECURITY(SmileUnboxedInteger32)
+SMILE_EASY_OBJECT_NO_CALL(SmileUnboxedInteger32)
+SMILE_EASY_OBJECT_NO_SOURCE(SmileUnboxedInteger32)
+SMILE_EASY_OBJECT_NO_PROPERTIES(SmileUnboxedInteger32)
+
+SMILE_EASY_OBJECT_COMPARE(SmileUnboxedInteger32, SMILE_KIND_UNBOXED_INTEGER32, aData.i32 == bData.i32)
+SMILE_EASY_OBJECT_HASH(SmileUnboxedInteger32, 0)
+SMILE_EASY_OBJECT_TOBOOL(SmileUnboxedInteger32, (Bool)!!unboxedData.i32)
+SMILE_EASY_OBJECT_TOINT(SmileUnboxedInteger32, unboxedData.i32)
+SMILE_EASY_OBJECT_TOREAL(SmileUnboxedInteger32, Real64_FromInt32(unboxedData.i32))
+SMILE_EASY_OBJECT_TOFLOAT(SmileUnboxedInteger32, unboxedData.i32)
+SMILE_EASY_OBJECT_TOSTRING(SmileUnboxedInteger32, String_Format("%d", (Int)unboxedData.i32))
+
+
+static SmileObject SmileUnboxedInteger32_Box(SmileArg src)
+{
+	return (SmileObject)SmileInteger32_Create(src.unboxed.i32);
+}
+
+static SmileArg SmileUnboxedInteger32_Unbox(SmileUnboxedInteger32 smileUnboxedInt)
+{
+	static SmileArg arg = { 0 };
+	Smile_Abort_FatalError("Cannot re-unbox a unboxed object.");
+	return arg;
+}
+
+static struct SmileUnboxedInteger32Int SmileUnboxedInteger32_Instance_Struct = {
+	SMILE_KIND_UNBOXED_INTEGER32,
+	(SmileVTable)&SmileUnboxedInteger32_VTableData,
+};
+
+extern SmileUnboxedInteger32 SmileUnboxedInteger32_Instance = &SmileUnboxedInteger32_Instance_Struct;

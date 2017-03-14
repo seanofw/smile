@@ -29,6 +29,7 @@ SMILE_EASY_OBJECT_VTABLE(SmilePair);
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmilePair);
 SMILE_EASY_OBJECT_NO_REALS(SmilePair);
 SMILE_EASY_OBJECT_NO_CALL(SmilePair);
+SMILE_EASY_OBJECT_NO_UNBOX(SmilePair)
 
 SmilePair SmilePair_Create(SmileObject left, SmileObject right)
 {
@@ -55,22 +56,11 @@ SmilePair SmilePair_CreateWithSource(SmileObject left, SmileObject right, LexerP
 	return (SmilePair)smilePair;
 }
 
-static Bool SmilePair_CompareEqual(SmilePair self, SmileObject other)
+static Bool SmilePair_CompareEqual(SmilePair self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData)
 {
-	SmilePair otherPair;
-
-	if (SMILE_KIND(other) != SMILE_KIND_PAIR)
-		return False;
-
-	otherPair = (SmilePair)other;
-
-	if (!SMILE_VCALL1(self->left, compareEqual, otherPair->left))
-		return False;
-
-	if (!SMILE_VCALL1(self->right, compareEqual, otherPair->right))
-		return False;
-
-	return True;
+	UNUSED(selfData);
+	UNUSED(otherData);
+	return (SmileObject)self == other;
 }
 
 static UInt32 SmilePair_Hash(SmilePair self)
@@ -120,26 +110,34 @@ static SmileList SmilePair_GetPropertyNames(SmilePair self)
 	return head;
 }
 
-static Bool SmilePair_ToBool(SmilePair self)
+static Bool SmilePair_ToBool(SmilePair self, SmileUnboxedData unboxedData)
 {
 	UNUSED(self);
+	UNUSED(unboxedData);
 	return True;
 }
 
-static Int32 SmilePair_ToInteger32(SmilePair self)
+static Int32 SmilePair_ToInteger32(SmilePair self, SmileUnboxedData unboxedData)
 {
 	UNUSED(self);
+	UNUSED(unboxedData);
 	return 1;
 }
 
-static String SmilePair_ToString(SmilePair self)
+static String SmilePair_ToString(SmilePair self, SmileUnboxedData unboxedData)
 {
+	UNUSED(unboxedData);
+
 	if (self->right->kind == SMILE_KIND_SYMBOL
 		&& self->left->kind <= SMILE_KIND_FUNCTION) {
-		return String_Format("%S.%S", SMILE_VCALL(self->left, toString), SMILE_VCALL(self->right, toString));
+		return String_Format("%S.%S",
+			SMILE_VCALL1(self->left, toString, (SmileUnboxedData){ 0 }),
+			SMILE_VCALL1(self->right, toString, (SmileUnboxedData){ 0 }));
 	}
 	else {
-		return String_Format("(%S . %S)", SMILE_VCALL(self->left, toString), SMILE_VCALL(self->right, toString));
+		return String_Format("(%S . %S)",
+			SMILE_VCALL1(self->left, toString, (SmileUnboxedData){ 0 }),
+			SMILE_VCALL1(self->right, toString, (SmileUnboxedData){ 0 }));
 	}
 }
 

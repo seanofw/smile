@@ -17,6 +17,7 @@
 
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/smileuserobject.h>
+#include <smile/smiletypes/smilebool.h>
 #include <smile/smiletypes/numeric/smilebyte.h>
 #include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
@@ -28,24 +29,24 @@
 SMILE_IGNORE_UNUSED_VARIABLES
 
 static Byte _integer32Checks[] = {
-	SMILE_KIND_MASK, SMILE_KIND_INTEGER32,
-	SMILE_KIND_MASK, SMILE_KIND_INTEGER32,
-	SMILE_KIND_MASK, SMILE_KIND_INTEGER32,
-	SMILE_KIND_MASK, SMILE_KIND_INTEGER32,
-	SMILE_KIND_MASK, SMILE_KIND_INTEGER32,
-	SMILE_KIND_MASK, SMILE_KIND_INTEGER32,
-	SMILE_KIND_MASK, SMILE_KIND_INTEGER32,
-	SMILE_KIND_MASK, SMILE_KIND_INTEGER32,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER32,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER32,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER32,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER32,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER32,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER32,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER32,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER32,
 };
 
 static Byte _integer32ComparisonChecks[] = {
-	SMILE_KIND_MASK, SMILE_KIND_INTEGER32,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER32,
 	0, 0,
 };
 
 static Byte _parseChecks[] = {
 	SMILE_KIND_MASK, SMILE_KIND_STRING,
-	SMILE_KIND_MASK, SMILE_KIND_INTEGER64,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER64,
 };
 
 STATIC_STRING(_divideByZero, "Divide by zero error");
@@ -63,48 +64,47 @@ STATIC_STRING(_parseArguments, "Illegal arguments to 'parse' function");
 
 SMILE_EXTERNAL_FUNCTION(ToBool)
 {
-	if (SMILE_KIND(argv[0]) == SMILE_KIND_INTEGER32)
-		return ((SmileInteger32)argv[0])->value ? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
+	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_UNBOXED_INTEGER32)
+		return SmileUnboxedBool_From(!!argv[0].unboxed.i32);
 
-	return (SmileObject)Smile_KnownObjects.TrueObj;
+	return SmileUnboxedBool_From(True);
 }
 
 SMILE_EXTERNAL_FUNCTION(ToInt)
 {
-	if (SMILE_KIND(argv[0]) == SMILE_KIND_INTEGER32)
-		return (SmileObject)SmileInteger64_Create(((SmileInteger32)argv[0])->value);
+	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_UNBOXED_INTEGER32)
+		return SmileUnboxedInteger64_From(argv[0].unboxed.i32);
 
-	return (SmileObject)Smile_KnownObjects.ZeroInt64;
+	return SmileUnboxedInteger64_From(0);
 }
-
-STATIC_STRING(_Integer32, "Integer32");
 
 SMILE_EXTERNAL_FUNCTION(ToString)
 {
 	Int64 numericBase;
+	STATIC_STRING(integer32, "Integer32");
 
-	if (SMILE_KIND(argv[0]) == SMILE_KIND_INTEGER32) {
+	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_UNBOXED_INTEGER32) {
 		if (argc == 2) {
-			if (SMILE_KIND(argv[1]) != SMILE_KIND_INTEGER64)
+			if (SMILE_KIND(argv[1].obj) != SMILE_KIND_UNBOXED_INTEGER64)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _stringTypeError);
-			numericBase = (Int)((SmileInteger64)argv[1])->value;
+			numericBase = (Int)argv[1].unboxed.i64;
 			if (numericBase < 2 || numericBase > 36)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _numericBaseError);
 		}
 		else numericBase = 10;
 
-		return (SmileObject)SmileString_Create(String_CreateFromInteger((Int64)((SmileInteger32)argv[0])->value, (Int)numericBase, False));
+		return SmileArg_From((SmileObject)SmileString_Create(String_CreateFromInteger((Int64)argv[0].unboxed.i32, (Int)numericBase, False)));
 	}
 
-	return (SmileObject)SmileString_Create(_Integer32);
+	return SmileArg_From((SmileObject)SmileString_Create(integer32));
 }
 
 SMILE_EXTERNAL_FUNCTION(Hash)
 {
-	if (SMILE_KIND(argv[0]) == SMILE_KIND_INTEGER32)
-		return (SmileObject)SmileInteger64_Create(((SmileInteger32)argv[0])->value);
+	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_UNBOXED_INTEGER32)
+		return SmileUnboxedInteger64_From(argv[0].unboxed.i32);
 
-	return (SmileObject)SmileInteger64_Create(((PtrInt)argv[0]) ^ Smile_HashOracle);
+	return SmileUnboxedInteger64_From((PtrInt)argv[0].obj ^ Smile_HashOracle);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -112,7 +112,7 @@ SMILE_EXTERNAL_FUNCTION(Hash)
 
 SMILE_EXTERNAL_FUNCTION(ToInt64)
 {
-	return (SmileObject)SmileInteger64_Create(((SmileInteger32)argv[0])->value);
+	return SmileUnboxedInteger64_From(argv[0].unboxed.i32);
 }
 
 SMILE_EXTERNAL_FUNCTION(ToInt32)
@@ -122,12 +122,12 @@ SMILE_EXTERNAL_FUNCTION(ToInt32)
 
 SMILE_EXTERNAL_FUNCTION(ToInt16)
 {
-	return (SmileObject)SmileInteger16_Create((UInt16)((SmileInteger32)argv[0])->value);
+	return SmileUnboxedInteger16_From((Int16)argv[0].unboxed.i32);
 }
 
 SMILE_EXTERNAL_FUNCTION(ToByte)
 {
-	return (SmileObject)SmileByte_Create((Byte)((SmileInteger32)argv[0])->value);
+	return SmileUnboxedByte_From((Byte)argv[0].unboxed.i32);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -142,28 +142,28 @@ SMILE_EXTERNAL_FUNCTION(Parse)
 
 		case 1:
 			// The form [parse string].
-			if (SMILE_KIND(argv[0]) != SMILE_KIND_STRING)
+			if (SMILE_KIND(argv[0].obj) != SMILE_KIND_STRING)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _parseArguments);
-			if (!String_ParseInteger(SmileString_GetString((SmileString)argv[0]), 10, &value))
-				return NullObject;
-			return (SmileObject)SmileInteger32_Create((Int32)value);
+			if (!String_ParseInteger(SmileString_GetString((SmileString)argv[0].obj), 10, &value))
+				return SmileArg_From(NullObject);
+			return SmileUnboxedInteger32_From((Int32)value);
 
 		case 2:
 			// Either the form [parse string base] or [obj.parse string].
-			if (SMILE_KIND(argv[0]) == SMILE_KIND_STRING && SMILE_KIND(argv[1]) == SMILE_KIND_INTEGER64) {
+			if (SMILE_KIND(argv[0].obj) == SMILE_KIND_STRING && SMILE_KIND(argv[1].obj) == SMILE_KIND_UNBOXED_INTEGER64) {
 				// The form [parse string base].
-				numericBase = (Int)((SmileInteger64)argv[1])->value;
+				numericBase = (Int)argv[1].unboxed.i64;
 				if (numericBase < 2 || numericBase > 36)
 					Smile_ThrowException(Smile_KnownSymbols.native_method_error, _numericBaseError);
-				if (!String_ParseInteger(SmileString_GetString((SmileString)argv[0]), (Int)numericBase, &value))
-					return NullObject;
-				return (SmileObject)SmileInteger32_Create((Int32)value);
+				if (!String_ParseInteger(SmileString_GetString((SmileString)argv[0].obj), (Int)numericBase, &value))
+					return SmileArg_From(NullObject);
+				return SmileUnboxedInteger32_From((Int32)value);
 			}
-			else if (SMILE_KIND(argv[1]) == SMILE_KIND_STRING) {
+			else if (SMILE_KIND(argv[1].obj) == SMILE_KIND_STRING) {
 				// The form [obj.parse string].
-				if (!String_ParseInteger(SmileString_GetString((SmileString)argv[1]), 10, &value))
-					return NullObject;
-				return (SmileObject)SmileInteger32_Create((Int32)value);
+				if (!String_ParseInteger(SmileString_GetString((SmileString)argv[1].obj), 10, &value))
+					return SmileArg_From(NullObject);
+				return SmileUnboxedInteger32_From((Int32)value);
 			}
 			else {
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _parseArguments);
@@ -171,19 +171,18 @@ SMILE_EXTERNAL_FUNCTION(Parse)
 
 		case 3:
 			// The form [obj.parse string base].
-			if (SMILE_KIND(argv[1]) != SMILE_KIND_STRING || SMILE_KIND(argv[2]) != SMILE_KIND_INTEGER64)
+			if (SMILE_KIND(argv[1].obj) != SMILE_KIND_STRING || SMILE_KIND(argv[2].obj) != SMILE_KIND_UNBOXED_INTEGER64)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _parseArguments);
-			numericBase = (Int)((SmileInteger64)argv[2])->value;
+			numericBase = (Int)argv[2].unboxed.i64;
 			if (numericBase < 2 || numericBase > 36)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _numericBaseError);
-			if (!String_ParseInteger(SmileString_GetString((SmileString)argv[1]), (Int)numericBase, &value))
-				return NullObject;
-			return (SmileObject)SmileInteger32_Create((Int32)value);
+			if (!String_ParseInteger(SmileString_GetString((SmileString)argv[1].obj), (Int)numericBase, &value))
+				return SmileArg_From(NullObject);
+			return SmileUnboxedInteger32_From((Int32)value);
 	}
 
-	return NullObject;	// Can't get here, but the compiler doesn't know that.
+	return SmileArg_From(NullObject);	// Can't get here, but the compiler doesn't know that.
 }
-
 
 //-------------------------------------------------------------------------------------------------
 // Arithmetic operators
@@ -196,31 +195,31 @@ SMILE_EXTERNAL_FUNCTION(Plus)
 	switch (argc) {
 		case 1:
 			return argv[0];
-		
+
 		case 2:
-			x = ((SmileInteger32)argv[0])->value;
-			x += ((SmileInteger32)argv[1])->value;
-			return (SmileObject)SmileInteger32_Create(x);
-		
+			x = argv[0].unboxed.i32;
+			x += argv[1].unboxed.i32;
+			return SmileUnboxedInteger32_From(x);
+
 		case 3:
-			x = ((SmileInteger32)argv[0])->value;
-			x += ((SmileInteger32)argv[1])->value;
-			x += ((SmileInteger32)argv[2])->value;
-			return (SmileObject)SmileInteger32_Create(x);
+			x = argv[0].unboxed.i32;
+			x += argv[1].unboxed.i32;
+			x += argv[2].unboxed.i32;
+			return SmileUnboxedInteger32_From(x);
 
 		case 4:
-			x = ((SmileInteger32)argv[0])->value;
-			x += ((SmileInteger32)argv[1])->value;
-			x += ((SmileInteger32)argv[2])->value;
-			x += ((SmileInteger32)argv[3])->value;
-			return (SmileObject)SmileInteger32_Create(x);
-		
+			x = argv[0].unboxed.i32;
+			x += argv[1].unboxed.i32;
+			x += argv[2].unboxed.i32;
+			x += argv[3].unboxed.i32;
+			return SmileUnboxedInteger32_From(x);
+
 		default:
-			x = ((SmileInteger32)argv[0])->value;
+			x = argv[0].unboxed.i32;
 			for (i = 1; i < argc; i++) {
-				x += ((SmileInteger32)argv[i])->value;
+				x += argv[i].unboxed.i32;
 			}
-			return (SmileObject)SmileInteger32_Create(x);
+			return SmileUnboxedInteger32_From(x);
 	}
 }
 
@@ -231,33 +230,33 @@ SMILE_EXTERNAL_FUNCTION(Minus)
 
 	switch (argc) {
 		case 1:
-			x = ((SmileInteger32)argv[0])->value;
-			return (SmileObject)SmileInteger32_Create(-x);
+			x = -argv[0].unboxed.i32;
+			return SmileUnboxedInteger32_From(x);
 
 		case 2:
-			x = ((SmileInteger32)argv[0])->value;
-			x -= ((SmileInteger32)argv[1])->value;
-			return (SmileObject)SmileInteger32_Create(x);
+			x = argv[0].unboxed.i32;
+			x -= argv[1].unboxed.i32;
+			return SmileUnboxedInteger32_From(x);
 
 		case 3:
-			x = ((SmileInteger32)argv[0])->value;
-			x -= ((SmileInteger32)argv[1])->value;
-			x -= ((SmileInteger32)argv[2])->value;
-			return (SmileObject)SmileInteger32_Create(x);
+			x = argv[0].unboxed.i32;
+			x -= argv[1].unboxed.i32;
+			x -= argv[2].unboxed.i32;
+			return SmileUnboxedInteger32_From(x);
 
 		case 4:
-			x = ((SmileInteger32)argv[0])->value;
-			x -= ((SmileInteger32)argv[1])->value;
-			x -= ((SmileInteger32)argv[2])->value;
-			x -= ((SmileInteger32)argv[3])->value;
-			return (SmileObject)SmileInteger32_Create(x);
+			x = argv[0].unboxed.i32;
+			x -= argv[1].unboxed.i32;
+			x -= argv[2].unboxed.i32;
+			x -= argv[3].unboxed.i32;
+			return SmileUnboxedInteger32_From(x);
 
 		default:
-			x = ((SmileInteger32)argv[0])->value;
+			x = argv[0].unboxed.i32;
 			for (i = 1; i < argc; i++) {
-				x -= ((SmileInteger32)argv[i])->value;
+				x -= argv[i].unboxed.i32;
 			}
-			return (SmileObject)SmileInteger32_Create(x);
+			return SmileUnboxedInteger32_From(x);
 	}
 }
 
@@ -267,30 +266,33 @@ SMILE_EXTERNAL_FUNCTION(Star)
 	Int i;
 
 	switch (argc) {
+		case 1:
+			return argv[0];
+
 		case 2:
-			x = ((SmileInteger32)argv[0])->value;
-			x *= ((SmileInteger32)argv[1])->value;
-			return (SmileObject)SmileInteger32_Create(x);
+			x = argv[0].unboxed.i32;
+			x *= argv[1].unboxed.i32;
+			return SmileUnboxedInteger32_From(x);
 
 		case 3:
-			x = ((SmileInteger32)argv[0])->value;
-			x *= ((SmileInteger32)argv[1])->value;
-			x *= ((SmileInteger32)argv[2])->value;
-			return (SmileObject)SmileInteger32_Create(x);
+			x = argv[0].unboxed.i32;
+			x *= argv[1].unboxed.i32;
+			x *= argv[2].unboxed.i32;
+			return SmileUnboxedInteger32_From(x);
 
 		case 4:
-			x = ((SmileInteger32)argv[0])->value;
-			x *= ((SmileInteger32)argv[1])->value;
-			x *= ((SmileInteger32)argv[2])->value;
-			x *= ((SmileInteger32)argv[3])->value;
-			return (SmileObject)SmileInteger32_Create(x);
+			x = argv[0].unboxed.i32;
+			x *= argv[1].unboxed.i32;
+			x *= argv[2].unboxed.i32;
+			x *= argv[3].unboxed.i32;
+			return SmileUnboxedInteger32_From(x);
 
 		default:
-			x = ((SmileInteger32)argv[0])->value;
+			x = argv[0].unboxed.i32;
 			for (i = 1; i < argc; i++) {
-				x *= ((SmileInteger32)argv[i])->value;
+				x *= argv[i].unboxed.i32;
 			}
-			return (SmileObject)SmileInteger32_Create(x);
+			return SmileUnboxedInteger32_From(x);
 	}
 }
 
@@ -300,30 +302,33 @@ SMILE_EXTERNAL_FUNCTION(UStar)
 	Int i;
 
 	switch (argc) {
+		case 1:
+			return argv[0];
+
 		case 2:
-			x = (UInt32)((SmileInteger32)argv[0])->value;
-			x *= (UInt32)((SmileInteger32)argv[1])->value;
-			return (SmileObject)SmileInteger32_Create((Int32)x);
+			x = (UInt32)argv[0].unboxed.i32;
+			x *= (UInt32)argv[1].unboxed.i32;
+			return SmileUnboxedInteger32_From(x);
 
 		case 3:
-			x = (UInt32)((SmileInteger32)argv[0])->value;
-			x *= (UInt32)((SmileInteger32)argv[1])->value;
-			x *= (UInt32)((SmileInteger32)argv[2])->value;
-			return (SmileObject)SmileInteger32_Create((Int32)x);
+			x = (UInt32)argv[0].unboxed.i32;
+			x *= (UInt32)argv[1].unboxed.i32;
+			x *= (UInt32)argv[2].unboxed.i32;
+			return SmileUnboxedInteger32_From(x);
 
 		case 4:
-			x = (UInt32)((SmileInteger32)argv[0])->value;
-			x *= (UInt32)((SmileInteger32)argv[1])->value;
-			x *= (UInt32)((SmileInteger32)argv[2])->value;
-			x *= (UInt32)((SmileInteger32)argv[3])->value;
-			return (SmileObject)SmileInteger32_Create((Int32)x);
+			x = (UInt32)argv[0].unboxed.i32;
+			x *= (UInt32)argv[1].unboxed.i32;
+			x *= (UInt32)argv[2].unboxed.i32;
+			x *= (UInt32)argv[3].unboxed.i32;
+			return SmileUnboxedInteger32_From(x);
 
 		default:
-			x = (UInt32)((SmileInteger32)argv[0])->value;
+			x = (UInt32)argv[0].unboxed.i32;
 			for (i = 1; i < argc; i++) {
-				x *= (UInt32)((SmileInteger32)argv[i])->value;
+				x *= (UInt32)argv[i].unboxed.i32;
 			}
-			return (SmileObject)SmileInteger32_Create((Int32)x);
+			return SmileUnboxedInteger32_From(x);
 	}
 }
 
@@ -376,43 +381,43 @@ SMILE_EXTERNAL_FUNCTION(Slash)
 
 	switch (argc) {
 		case 2:
-			x = ((SmileInteger32)argv[0])->value;
-			if ((y = ((SmileInteger32)argv[1])->value) == 0)
+			x = argv[0].unboxed.i32;
+			if ((y = argv[1].unboxed.i32) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x = MathematiciansDiv(x, y);
-			return (SmileObject)SmileInteger32_Create(x);
+			return SmileUnboxedInteger32_From(x);
 
 		case 3:
-			x = ((SmileInteger32)argv[0])->value;
-			if ((y = ((SmileInteger32)argv[1])->value) == 0)
+			x = argv[0].unboxed.i32;
+			if ((y = argv[1].unboxed.i32) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x = MathematiciansDiv(x, y);
-			if ((y = ((SmileInteger32)argv[2])->value) == 0)
+			if ((y = argv[2].unboxed.i32) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x = MathematiciansDiv(x, y);
-			return (SmileObject)SmileInteger32_Create(x);
+			return SmileUnboxedInteger32_From(x);
 
 		case 4:
-			x = ((SmileInteger32)argv[0])->value;
-			if ((y = ((SmileInteger32)argv[1])->value) == 0)
+			x = argv[0].unboxed.i32;
+			if ((y = argv[1].unboxed.i32) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x = MathematiciansDiv(x, y);
-			if ((y = ((SmileInteger32)argv[2])->value) == 0)
+			if ((y = argv[2].unboxed.i32) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x = MathematiciansDiv(x, y);
-			if ((y = ((SmileInteger32)argv[3])->value) == 0)
+			if ((y = argv[3].unboxed.i32) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x = MathematiciansDiv(x, y);
-			return (SmileObject)SmileInteger32_Create(x);
+			return SmileUnboxedInteger32_From(x);
 
 		default:
-			x = ((SmileInteger32)argv[0])->value;
+			x = argv[0].unboxed.i32;
 			for (i = 1; i < argc; i++) {
-				if ((y = ((SmileInteger32)argv[i])->value) == 0)
+				if ((y = argv[i].unboxed.i32) == 0)
 					Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 				x = MathematiciansDiv(x, y);
 			}
-			return (SmileObject)SmileInteger32_Create(x);
+			return SmileUnboxedInteger32_From(x);
 	}
 }
 
@@ -423,43 +428,43 @@ SMILE_EXTERNAL_FUNCTION(USlash)
 
 	switch (argc) {
 		case 2:
-			x = (UInt32)((SmileInteger32)argv[0])->value;
-			if ((y = (UInt32)((SmileInteger32)argv[1])->value) == 0)
+			x = (UInt32)argv[0].unboxed.i32;
+			if ((y = (UInt32)argv[1].unboxed.i32) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x /= y;
-			return (SmileObject)SmileInteger32_Create((Int32)x);
+			return SmileUnboxedInteger32_From(x);
 
 		case 3:
-			x = (UInt32)((SmileInteger32)argv[0])->value;
-			if ((y = (UInt32)((SmileInteger32)argv[1])->value) == 0)
+			x = (UInt32)argv[0].unboxed.i32;
+			if ((y = (UInt32)argv[1].unboxed.i32) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x /= y;
-			if ((y = (UInt32)((SmileInteger32)argv[2])->value) == 0)
+			if ((y = (UInt32)argv[2].unboxed.i32) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x /= y;
-			return (SmileObject)SmileInteger32_Create((Int32)x);
+			return SmileUnboxedInteger32_From(x);
 
 		case 4:
-			x = (UInt32)((SmileInteger32)argv[0])->value;
-			if ((y = (UInt32)((SmileInteger32)argv[1])->value) == 0)
+			x = (UInt32)argv[0].unboxed.i32;
+			if ((y = (UInt32)argv[1].unboxed.i32) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x /= y;
-			if ((y = (UInt32)((SmileInteger32)argv[2])->value) == 0)
+			if ((y = (UInt32)argv[2].unboxed.i32) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x /= y;
-			if ((y = (UInt32)((SmileInteger32)argv[3])->value) == 0)
+			if ((y = (UInt32)argv[3].unboxed.i32) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x /= y;
-			return (SmileObject)SmileInteger32_Create((Int32)x);
+			return SmileUnboxedInteger32_From(x);
 
 		default:
-			x = (UInt32)((SmileInteger32)argv[0])->value;
+			x = (UInt32)argv[0].unboxed.i32;
 			for (i = 1; i < argc; i++) {
-				if ((y = (UInt32)((SmileInteger32)argv[i])->value) == 0)
+				if ((y = (UInt32)argv[i].unboxed.i32) == 0)
 					Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 				x /= y;
 			}
-			return (SmileObject)SmileInteger32_Create((Int32)x);
+			return SmileUnboxedInteger32_From(x);
 	}
 }
 
@@ -470,43 +475,43 @@ SMILE_EXTERNAL_FUNCTION(Div)
 
 	switch (argc) {
 		case 2:
-			x = ((SmileInteger32)argv[0])->value;
-			if ((y = ((SmileInteger32)argv[1])->value) == 0)
+			x = argv[0].unboxed.i32;
+			if ((y = argv[1].unboxed.i32) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x = CDiv(x, y);
-			return (SmileObject)SmileInteger32_Create(x);
+			return SmileUnboxedInteger32_From(x);
 
 		case 3:
-			x = ((SmileInteger32)argv[0])->value;
-			if ((y = ((SmileInteger32)argv[1])->value) == 0)
+			x = argv[0].unboxed.i32;
+			if ((y = argv[1].unboxed.i32) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x = CDiv(x, y);
-			if ((y = ((SmileInteger32)argv[2])->value) == 0)
+			if ((y = argv[2].unboxed.i32) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x = CDiv(x, y);
-			return (SmileObject)SmileInteger32_Create(x);
+			return SmileUnboxedInteger32_From(x);
 
 		case 4:
-			x = ((SmileInteger32)argv[0])->value;
-			if ((y = ((SmileInteger32)argv[1])->value) == 0)
+			x = argv[0].unboxed.i32;
+			if ((y = argv[1].unboxed.i32) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x = CDiv(x, y);
-			if ((y = ((SmileInteger32)argv[2])->value) == 0)
+			if ((y = argv[2].unboxed.i32) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x = CDiv(x, y);
-			if ((y = ((SmileInteger32)argv[3])->value) == 0)
+			if ((y = argv[3].unboxed.i32) == 0)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 			x = CDiv(x, y);
-			return (SmileObject)SmileInteger32_Create(x);
+			return SmileUnboxedInteger32_From(x);
 
 		default:
-			x = ((SmileInteger32)argv[0])->value;
+			x = argv[0].unboxed.i32;
 			for (i = 1; i < argc; i++) {
-				if ((y = ((SmileInteger32)argv[i])->value) == 0)
+				if ((y = argv[i].unboxed.i32) == 0)
 					Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 				x = CDiv(x, y);
 			}
-			return (SmileObject)SmileInteger32_Create(x);
+			return SmileUnboxedInteger32_From(x);
 	}
 }
 
@@ -558,35 +563,35 @@ Inline Int32 MathematiciansRemainder(Int32 x, Int32 y)
 
 SMILE_EXTERNAL_FUNCTION(Mod)
 {
-	Int32 x = ((SmileInteger32)argv[0])->value;
-	Int32 y = ((SmileInteger32)argv[1])->value;
+	Int32 x = argv[0].unboxed.i32;
+	Int32 y = argv[1].unboxed.i32;
 
 	if (y == 0)
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 
-	return (SmileObject)SmileInteger32_Create(MathematiciansModulus(x, y));
+	return SmileUnboxedInteger32_From(MathematiciansModulus(x, y));
 }
 
 SMILE_EXTERNAL_FUNCTION(UMod)
 {
-	UInt32 x = (UInt32)((SmileInteger32)argv[0])->value;
-	UInt32 y = (UInt32)((SmileInteger32)argv[1])->value;
+	UInt32 x = (UInt32)argv[0].unboxed.i32;
+	UInt32 y = (UInt32)argv[1].unboxed.i32;
 
 	if (y == 0)
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 
-	return (SmileObject)SmileInteger32_Create((Int32)(x % y));
+	return SmileUnboxedInteger32_From(x % y);
 }
 
 SMILE_EXTERNAL_FUNCTION(Rem)
 {
-	Int32 x = ((SmileInteger32)argv[0])->value;
-	Int32 y = ((SmileInteger32)argv[1])->value;
+	Int32 x = argv[0].unboxed.i32;
+	Int32 y = argv[1].unboxed.i32;
 
 	if (y == 0)
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
 
-	return (SmileObject)SmileInteger32_Create(MathematiciansRemainder(x, y));
+	return SmileUnboxedInteger32_From(MathematiciansRemainder(x, y));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -594,25 +599,25 @@ SMILE_EXTERNAL_FUNCTION(Rem)
 
 SMILE_EXTERNAL_FUNCTION(Sign)
 {
-	Int32 value = ((SmileInteger32)argv[0])->value;
+	Int32 value = argv[0].unboxed.i32;
 
-	return value == 0 ? (SmileObject)Smile_KnownObjects.ZeroInt32
-		: value > 0 ? (SmileObject)Smile_KnownObjects.OneInt32
-		: (SmileObject)Smile_KnownObjects.NegOneInt32;
+	return value == 0 ? SmileUnboxedInteger32_From(0)
+		: value > 0 ? SmileUnboxedInteger32_From(1)
+		: SmileUnboxedInteger32_From(-1);
 }
 
 SMILE_EXTERNAL_FUNCTION(Abs)
 {
-	Int32 value = ((SmileInteger32)argv[0])->value;
+	Int32 value = argv[0].unboxed.i32;
 
-	return value < 0 ? (SmileObject)SmileInteger32_Create(-value) : argv[0];
+	return value < 0 ? SmileUnboxedInteger32_From(-value) : argv[0];
 }
 
 SMILE_EXTERNAL_FUNCTION(Clip)
 {
-	Int32 value = ((SmileInteger32)argv[0])->value;
-	Int32 min = ((SmileInteger32)argv[1])->value;
-	Int32 max = ((SmileInteger32)argv[2])->value;
+	Int32 value = argv[0].unboxed.i32;
+	Int32 min = argv[1].unboxed.i32;
+	Int32 max = argv[2].unboxed.i32;
 
 	if (value > max) {
 		value = max;
@@ -626,9 +631,9 @@ SMILE_EXTERNAL_FUNCTION(Clip)
 
 SMILE_EXTERNAL_FUNCTION(UClip)
 {
-	UInt32 value = (UInt32)((SmileInteger32)argv[0])->value;
-	UInt32 min = (UInt32)((SmileInteger32)argv[1])->value;
-	UInt32 max = (UInt32)((SmileInteger32)argv[2])->value;
+	UInt32 value = (UInt32)argv[0].unboxed.i32;
+	UInt32 min = (UInt32)argv[1].unboxed.i32;
+	UInt32 max = (UInt32)argv[2].unboxed.i32;
 
 	if (value > max) {
 		value = max;
@@ -643,188 +648,144 @@ SMILE_EXTERNAL_FUNCTION(UClip)
 SMILE_EXTERNAL_FUNCTION(Min)
 {
 	Int32 x, y;
-	Int i, j;
+	Int i;
 
 	switch (argc) {
 		case 1:
 			return argv[0];
 
 		case 2:
-			x = ((SmileInteger32)argv[0])->value;
-			i = 0;
-			y = ((SmileInteger32)argv[1])->value;
-			if (y < x) i = 1;
-			return argv[i];
+			x = argv[0].unboxed.i32;
+			if ((y = argv[1].unboxed.i32) < x) x = y;
+			return SmileUnboxedInteger32_From(x);
 
 		case 3:
-			x = ((SmileInteger32)argv[0])->value;
-			i = 0;
-			y = ((SmileInteger32)argv[1])->value;
-			if (y < x) i = 1, x = y;
-			y = ((SmileInteger32)argv[2])->value;
-			if (y < x) i = 2, x = y;
-			return argv[i];
+			x = argv[0].unboxed.i32;
+			if ((y = argv[1].unboxed.i32) < x) x = y;
+			if ((y = argv[2].unboxed.i32) < x) x = y;
+			return SmileUnboxedInteger32_From(x);
 
 		case 4:
-			x = ((SmileInteger32)argv[0])->value;
-			i = 0;
-			y = ((SmileInteger32)argv[1])->value;
-			if (y < x) i = 1, x = y;
-			y = ((SmileInteger32)argv[2])->value;
-			if (y < x) i = 2, x = y;
-			y = ((SmileInteger32)argv[3])->value;
-			if (y < x) i = 3, x = y;
-			return argv[i];
+			x = argv[0].unboxed.i32;
+			if ((y = argv[1].unboxed.i32) < x) x = y;
+			if ((y = argv[2].unboxed.i32) < x) x = y;
+			if ((y = argv[3].unboxed.i32) < x) x = y;
+			return SmileUnboxedInteger32_From(x);
 
 		default:
-			x = ((SmileInteger32)argv[0])->value;
-			j = 0;
+			x = argv[0].unboxed.i32;
 			for (i = 1; i < argc; i++) {
-				y = ((SmileInteger32)argv[i])->value;
-				if (y < x) j = i, x = y;
+				if ((y = argv[i].unboxed.i32) < x) x = y;
 			}
-			return argv[j];
+			return SmileUnboxedInteger32_From(x);
 	}
 }
 
 SMILE_EXTERNAL_FUNCTION(UMin)
 {
 	UInt32 x, y;
-	Int i, j;
+	Int i;
 
 	switch (argc) {
 		case 1:
 			return argv[0];
 
 		case 2:
-			x = (UInt32)((SmileInteger32)argv[0])->value;
-			i = 0;
-			y = (UInt32)((SmileInteger32)argv[1])->value;
-			if (y < x) i = 1;
-			return argv[i];
+			x = (UInt32)argv[0].unboxed.i32;
+			if ((y = (UInt32)argv[1].unboxed.i32) < x) x = y;
+			return SmileUnboxedInteger32_From(x);
 
 		case 3:
-			x = (UInt32)((SmileInteger32)argv[0])->value;
-			i = 0;
-			y = (UInt32)((SmileInteger32)argv[1])->value;
-			if (y < x) i = 1, x = y;
-			y = (UInt32)((SmileInteger32)argv[2])->value;
-			if (y < x) i = 2, x = y;
-			return argv[i];
+			x = (UInt32)argv[0].unboxed.i32;
+			if ((y = (UInt32)argv[1].unboxed.i32) < x) x = y;
+			if ((y = (UInt32)argv[2].unboxed.i32) < x) x = y;
+			return SmileUnboxedInteger32_From(x);
 
 		case 4:
-			x = (UInt32)((SmileInteger32)argv[0])->value;
-			i = 0;
-			y = (UInt32)((SmileInteger32)argv[1])->value;
-			if (y < x) i = 1, x = y;
-			y = (UInt32)((SmileInteger32)argv[2])->value;
-			if (y < x) i = 2, x = y;
-			y = (UInt32)((SmileInteger32)argv[3])->value;
-			if (y < x) i = 3, x = y;
-			return argv[i];
+			x = (UInt32)argv[0].unboxed.i32;
+			if ((y = (UInt32)argv[1].unboxed.i32) < x) x = y;
+			if ((y = (UInt32)argv[2].unboxed.i32) < x) x = y;
+			if ((y = (UInt32)argv[3].unboxed.i32) < x) x = y;
+			return SmileUnboxedInteger32_From(x);
 
 		default:
-			x = (UInt32)((SmileInteger32)argv[0])->value;
-			j = 0;
+			x = (UInt32)argv[0].unboxed.i32;
 			for (i = 1; i < argc; i++) {
-				y = (UInt32)((SmileInteger32)argv[i])->value;
-				if (y < x) j = i, x = y;
+				if ((y = (UInt32)argv[i].unboxed.i32) < x) x = y;
 			}
-			return argv[j];
+			return SmileUnboxedInteger32_From(x);
 	}
 }
 
 SMILE_EXTERNAL_FUNCTION(Max)
 {
 	Int32 x, y;
-	Int i, j;
+	Int i;
 
 	switch (argc) {
 		case 1:
 			return argv[0];
 
 		case 2:
-			x = ((SmileInteger32)argv[0])->value;
-			i = 0;
-			y = ((SmileInteger32)argv[1])->value;
-			if (y > x) i = 1;
-			return argv[i];
+			x = argv[0].unboxed.i32;
+			if ((y = argv[1].unboxed.i32) > x) x = y;
+			return SmileUnboxedInteger32_From(x);
 
 		case 3:
-			x = ((SmileInteger32)argv[0])->value;
-			i = 0;
-			y = ((SmileInteger32)argv[1])->value;
-			if (y > x) i = 1, x = y;
-			y = ((SmileInteger32)argv[2])->value;
-			if (y > x) i = 2, x = y;
-			return argv[i];
+			x = argv[0].unboxed.i32;
+			if ((y = argv[1].unboxed.i32) > x) x = y;
+			if ((y = argv[2].unboxed.i32) > x) x = y;
+			return SmileUnboxedInteger32_From(x);
 
 		case 4:
-			x = ((SmileInteger32)argv[0])->value;
-			i = 0;
-			y = ((SmileInteger32)argv[1])->value;
-			if (y > x) i = 1, x = y;
-			y = ((SmileInteger32)argv[2])->value;
-			if (y > x) i = 2, x = y;
-			y = ((SmileInteger32)argv[3])->value;
-			if (y > x) i = 3, x = y;
-			return argv[i];
+			x = argv[0].unboxed.i32;
+			if ((y = argv[1].unboxed.i32) > x) x = y;
+			if ((y = argv[2].unboxed.i32) > x) x = y;
+			if ((y = argv[3].unboxed.i32) > x) x = y;
+			return SmileUnboxedInteger32_From(x);
 
 		default:
-			x = ((SmileInteger32)argv[0])->value;
-			j = 0;
+			x = argv[0].unboxed.i32;
 			for (i = 1; i < argc; i++) {
-				y = ((SmileInteger32)argv[i])->value;
-				if (y > x) j = i, x = y;
+				if ((y = argv[i].unboxed.i32) > x) x = y;
 			}
-			return argv[j];
+			return SmileUnboxedInteger32_From(x);
 	}
 }
 
 SMILE_EXTERNAL_FUNCTION(UMax)
 {
 	UInt32 x, y;
-	Int i, j;
+	Int i;
 
 	switch (argc) {
 		case 1:
 			return argv[0];
 
 		case 2:
-			x = (UInt32)((SmileInteger32)argv[0])->value;
-			i = 0;
-			y = (UInt32)((SmileInteger32)argv[1])->value;
-			if (y > x) i = 1;
-			return argv[i];
+			x = (UInt32)argv[0].unboxed.i32;
+			if ((y = (UInt32)argv[1].unboxed.i32) > x) x = y;
+			return SmileUnboxedInteger32_From(x);
 
 		case 3:
-			x = (UInt32)((SmileInteger32)argv[0])->value;
-			i = 0;
-			y = (UInt32)((SmileInteger32)argv[1])->value;
-			if (y > x) i = 1, x = y;
-			y = (UInt32)((SmileInteger32)argv[2])->value;
-			if (y > x) i = 2, x = y;
-			return argv[i];
+			x = (UInt32)argv[0].unboxed.i32;
+			if ((y = (UInt32)argv[1].unboxed.i32) > x) x = y;
+			if ((y = (UInt32)argv[2].unboxed.i32) > x) x = y;
+			return SmileUnboxedInteger32_From(x);
 
 		case 4:
-			x = (UInt32)((SmileInteger32)argv[0])->value;
-			i = 0;
-			y = (UInt32)((SmileInteger32)argv[1])->value;
-			if (y > x) i = 1, x = y;
-			y = (UInt32)((SmileInteger32)argv[2])->value;
-			if (y > x) i = 2, x = y;
-			y = (UInt32)((SmileInteger32)argv[3])->value;
-			if (y > x) i = 3, x = y;
-			return argv[i];
+			x = (UInt32)argv[0].unboxed.i32;
+			if ((y = (UInt32)argv[1].unboxed.i32) > x) x = y;
+			if ((y = (UInt32)argv[2].unboxed.i32) > x) x = y;
+			if ((y = (UInt32)argv[3].unboxed.i32) > x) x = y;
+			return SmileUnboxedInteger32_From(x);
 
 		default:
-			x = (UInt32)((SmileInteger32)argv[0])->value;
-			j = 0;
+			x = (UInt32)argv[0].unboxed.i32;
 			for (i = 1; i < argc; i++) {
-				y = (UInt32)((SmileInteger32)argv[i])->value;
-				if (y > x) j = i, x = y;
+				if ((y = (UInt32)argv[i].unboxed.i32) > x) x = y;
 			}
-			return argv[j];
+			return SmileUnboxedInteger32_From(x);
 	}
 }
 
@@ -847,48 +808,34 @@ Inline Int32 IntPower(Int32 value, Int32 exponent)
 
 SMILE_EXTERNAL_FUNCTION(Power)
 {
-	Int32 x, y;
+	Int32 x;
 	Int i;
 
 	switch (argc) {
 		case 2:
-			x = ((SmileInteger32)argv[0])->value;
-			if ((y = ((SmileInteger32)argv[1])->value) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
-			x = IntPower(x, y);
-			return (SmileObject)SmileInteger32_Create(x);
+			x = argv[0].unboxed.i32;
+			x = IntPower(x, argv[1].unboxed.i32);
+			return SmileUnboxedInteger32_From(x);
 
 		case 3:
-			x = ((SmileInteger32)argv[0])->value;
-			if ((y = ((SmileInteger32)argv[1])->value) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
-			x = IntPower(x, y);
-			if ((y = ((SmileInteger32)argv[2])->value) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
-			x = IntPower(x, y);
-			return (SmileObject)SmileInteger32_Create(x);
+			x = argv[0].unboxed.i32;
+			x = IntPower(x, argv[1].unboxed.i32);
+			x = IntPower(x, argv[2].unboxed.i32);
+			return SmileUnboxedInteger32_From(x);
 
 		case 4:
-			x = ((SmileInteger32)argv[0])->value;
-			if ((y = ((SmileInteger32)argv[1])->value) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
-			x = IntPower(x, y);
-			if ((y = ((SmileInteger32)argv[2])->value) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
-			x = IntPower(x, y);
-			if ((y = ((SmileInteger32)argv[3])->value) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
-			x = IntPower(x, y);
-			return (SmileObject)SmileInteger32_Create(x);
+			x = argv[0].unboxed.i32;
+			x = IntPower(x, argv[1].unboxed.i32);
+			x = IntPower(x, argv[2].unboxed.i32);
+			x = IntPower(x, argv[3].unboxed.i32);
+			return SmileUnboxedInteger32_From(x);
 
 		default:
-			x = ((SmileInteger32)argv[0])->value;
+			x = argv[0].unboxed.i32;
 			for (i = 1; i < argc; i++) {
-				if ((y = ((SmileInteger32)argv[i])->value) == 0)
-					Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
-				x = IntPower(x, y);
+				x = IntPower(x, argv[i].unboxed.i32);
 			}
-			return (SmileObject)SmileInteger32_Create(x);
+			return SmileUnboxedInteger32_From(x);
 	}
 }
 
@@ -914,27 +861,28 @@ Inline UInt32 IntSqrt(UInt32 value)
 
 SMILE_EXTERNAL_FUNCTION(Sqrt)
 {
-	Int32 value = ((SmileInteger32)argv[0])->value;
+	Int32 value = argv[0].unboxed.i32;
 
 	if (value < 0)
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _negativeSqrt);
 
-	return (SmileObject)SmileInteger32_Create((Int32)IntSqrt((UInt32)value));
+	return SmileUnboxedInteger32_From(IntSqrt(value));
 }
 
 SMILE_EXTERNAL_FUNCTION(Pow2Q)
 {
-	Int32 value = ((SmileInteger32)argv[0])->value;
+	Int32 value = argv[0].unboxed.i32;
 
-	return value > 0 && (value & (value - 1)) == 0 ? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
+	return SmileUnboxedBool_From(value > 0 && (value & (value - 1)) == 0);
 }
 
 SMILE_EXTERNAL_FUNCTION(NextPow2)
 {
-	Int32 value = ((SmileInteger32)argv[0])->value;
+	Int32 value = (Int32)argv[0].unboxed.i32;
 	UInt32 uvalue = (UInt32)value;
 
-	if (value <= 0) return (SmileObject)Smile_KnownObjects.OneInt32;
+	if (value < 0) return SmileUnboxedInteger32_From(0);
+	if (value == 0) return SmileUnboxedInteger32_From(1);
 
 	uvalue--;
 	uvalue |= uvalue >> 1;
@@ -944,12 +892,12 @@ SMILE_EXTERNAL_FUNCTION(NextPow2)
 	uvalue |= uvalue >> 16;
 	uvalue++;
 
-	return (SmileObject)SmileInteger32_Create((Int32)uvalue);
+	return SmileUnboxedInteger32_From(uvalue);
 }
 
 SMILE_EXTERNAL_FUNCTION(IntLg)
 {
-	Int32 value = ((SmileInteger32)argv[0])->value;
+	Int32 value = (Int32)argv[0].unboxed.i32;
 	UInt32 uvalue = (UInt32)value;
 	UInt32 log;
 
@@ -963,7 +911,7 @@ SMILE_EXTERNAL_FUNCTION(IntLg)
 	if ((uvalue & 0x0000000C) != 0) uvalue >>= 2, log += 2;
 	if ((uvalue & 0x00000002) != 0) uvalue >>= 1, log += 1;
 
-	return (SmileObject)SmileInteger32_Create((Int32)log);
+	return SmileUnboxedInteger32_From((Int32)log);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -971,117 +919,117 @@ SMILE_EXTERNAL_FUNCTION(IntLg)
 
 SMILE_EXTERNAL_FUNCTION(BitAnd)
 {
-	Int32 x;
+	UInt32 x;
 	Int i;
 
 	switch (argc) {
 		case 1:
 			return argv[0];
-		
+
 		case 2:
-			x = ((SmileInteger32)argv[0])->value;
-			x &= ((SmileInteger32)argv[1])->value;
-			return (SmileObject)SmileInteger32_Create(x);
-		
+			x = (UInt32)argv[0].unboxed.i32;
+			x &= (UInt32)argv[1].unboxed.i32;
+			return SmileUnboxedInteger32_From(x);
+
 		case 3:
-			x = ((SmileInteger32)argv[0])->value;
-			x &= ((SmileInteger32)argv[1])->value;
-			x &= ((SmileInteger32)argv[2])->value;
-			return (SmileObject)SmileInteger32_Create(x);
+			x = (UInt32)argv[0].unboxed.i32;
+			x &= (UInt32)argv[1].unboxed.i32;
+			x &= (UInt32)argv[2].unboxed.i32;
+			return SmileUnboxedInteger32_From(x);
 
 		case 4:
-			x = ((SmileInteger32)argv[0])->value;
-			x &= ((SmileInteger32)argv[1])->value;
-			x &= ((SmileInteger32)argv[2])->value;
-			x &= ((SmileInteger32)argv[3])->value;
-			return (SmileObject)SmileInteger32_Create(x);
-		
+			x = (UInt32)argv[0].unboxed.i32;
+			x &= (UInt32)argv[1].unboxed.i32;
+			x &= (UInt32)argv[2].unboxed.i32;
+			x &= (UInt32)argv[3].unboxed.i32;
+			return SmileUnboxedInteger32_From(x);
+
 		default:
-			x = ((SmileInteger32)argv[0])->value;
+			x = (UInt32)argv[0].unboxed.i32;
 			for (i = 1; i < argc; i++) {
-				x &= ((SmileInteger32)argv[i])->value;
+				x &= (UInt32)argv[i].unboxed.i32;
 			}
-			return (SmileObject)SmileInteger32_Create(x);
+			return SmileUnboxedInteger32_From(x);
 	}
 }
 
 SMILE_EXTERNAL_FUNCTION(BitOr)
 {
-	Int32 x;
+	UInt32 x;
 	Int i;
 
 	switch (argc) {
 		case 1:
 			return argv[0];
-		
+
 		case 2:
-			x = ((SmileInteger32)argv[0])->value;
-			x |= ((SmileInteger32)argv[1])->value;
-			return (SmileObject)SmileInteger32_Create(x);
-		
+			x = (UInt32)argv[0].unboxed.i32;
+			x |= (UInt32)argv[1].unboxed.i32;
+			return SmileUnboxedInteger32_From(x);
+
 		case 3:
-			x = ((SmileInteger32)argv[0])->value;
-			x |= ((SmileInteger32)argv[1])->value;
-			x |= ((SmileInteger32)argv[2])->value;
-			return (SmileObject)SmileInteger32_Create(x);
+			x = (UInt32)argv[0].unboxed.i32;
+			x |= (UInt32)argv[1].unboxed.i32;
+			x |= (UInt32)argv[2].unboxed.i32;
+			return SmileUnboxedInteger32_From(x);
 
 		case 4:
-			x = ((SmileInteger32)argv[0])->value;
-			x |= ((SmileInteger32)argv[1])->value;
-			x |= ((SmileInteger32)argv[2])->value;
-			x |= ((SmileInteger32)argv[3])->value;
-			return (SmileObject)SmileInteger32_Create(x);
-		
+			x = (UInt32)argv[0].unboxed.i32;
+			x |= (UInt32)argv[1].unboxed.i32;
+			x |= (UInt32)argv[2].unboxed.i32;
+			x |= (UInt32)argv[3].unboxed.i32;
+			return SmileUnboxedInteger32_From(x);
+
 		default:
-			x = ((SmileInteger32)argv[0])->value;
+			x = (UInt32)argv[0].unboxed.i32;
 			for (i = 1; i < argc; i++) {
-				x |= ((SmileInteger32)argv[i])->value;
+				x |= (UInt32)argv[i].unboxed.i32;
 			}
-			return (SmileObject)SmileInteger32_Create(x);
+			return SmileUnboxedInteger32_From(x);
 	}
 }
 
 SMILE_EXTERNAL_FUNCTION(BitXor)
 {
-	Int32 x;
+	UInt32 x;
 	Int i;
 
 	switch (argc) {
 		case 1:
 			return argv[0];
-		
+
 		case 2:
-			x = ((SmileInteger32)argv[0])->value;
-			x ^= ((SmileInteger32)argv[1])->value;
-			return (SmileObject)SmileInteger32_Create(x);
-		
+			x = (UInt32)argv[0].unboxed.i32;
+			x ^= (UInt32)argv[1].unboxed.i32;
+			return SmileUnboxedInteger32_From(x);
+
 		case 3:
-			x = ((SmileInteger32)argv[0])->value;
-			x ^= ((SmileInteger32)argv[1])->value;
-			x ^= ((SmileInteger32)argv[2])->value;
-			return (SmileObject)SmileInteger32_Create(x);
+			x = (UInt32)argv[0].unboxed.i32;
+			x ^= (UInt32)argv[1].unboxed.i32;
+			x ^= (UInt32)argv[2].unboxed.i32;
+			return SmileUnboxedInteger32_From(x);
 
 		case 4:
-			x = ((SmileInteger32)argv[0])->value;
-			x ^= ((SmileInteger32)argv[1])->value;
-			x ^= ((SmileInteger32)argv[2])->value;
-			x ^= ((SmileInteger32)argv[3])->value;
-			return (SmileObject)SmileInteger32_Create(x);
-		
+			x = (UInt32)argv[0].unboxed.i32;
+			x ^= (UInt32)argv[1].unboxed.i32;
+			x ^= (UInt32)argv[2].unboxed.i32;
+			x ^= (UInt32)argv[3].unboxed.i32;
+			return SmileUnboxedInteger32_From(x);
+
 		default:
-			x = ((SmileInteger32)argv[0])->value;
+			x = (UInt32)argv[0].unboxed.i32;
 			for (i = 1; i < argc; i++) {
-				x ^= ((SmileInteger32)argv[i])->value;
+				x ^= (UInt32)argv[i].unboxed.i32;
 			}
-			return (SmileObject)SmileInteger32_Create(x);
+			return SmileUnboxedInteger32_From(x);
 	}
 }
 
 SMILE_EXTERNAL_FUNCTION(BitNot)
 {
-	Int32 value = ((SmileInteger32)argv[0])->value;
+	UInt32 value = (UInt32)argv[0].unboxed.i32;
 
-	return value < 0 ? (SmileObject)SmileInteger32_Create(~value) : argv[0];
+	return SmileUnboxedInteger32_From(~value);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1089,50 +1037,50 @@ SMILE_EXTERNAL_FUNCTION(BitNot)
 
 SMILE_EXTERNAL_FUNCTION(LogicalShiftLeft)
 {
-	UInt32 x = (UInt32)((SmileInteger32)argv[0])->value;
-	UInt32 y = (UInt32)((SmileInteger32)argv[1])->value;
+	UInt32 x = (UInt32)argv[0].unboxed.i32;
+	UInt32 y = (UInt32)argv[1].unboxed.i32;
 
-	return (SmileObject)SmileInteger32_Create((Int32)(x << y));
+	return SmileUnboxedInteger32_From((Int32)(x << y));
 }
 
 SMILE_EXTERNAL_FUNCTION(LogicalShiftRight)
 {
-	UInt32 x = (UInt32)((SmileInteger32)argv[0])->value;
-	UInt32 y = (UInt32)((SmileInteger32)argv[1])->value;
+	UInt32 x = (UInt32)argv[0].unboxed.i32;
+	UInt32 y = (UInt32)argv[1].unboxed.i32;
 
-	return (SmileObject)SmileInteger32_Create((Int32)(x >> y));
+	return SmileUnboxedInteger32_From((Int32)(x >> y));
 }
 
 SMILE_EXTERNAL_FUNCTION(ArithmeticShiftLeft)
 {
-	Int32 x = ((SmileInteger32)argv[0])->value;
-	Int32 y = ((SmileInteger32)argv[1])->value;
+	Int32 x = argv[0].unboxed.i32;
+	Int32 y = argv[1].unboxed.i32;
 
-	return (SmileObject)SmileInteger32_Create(x << y);
+	return SmileUnboxedInteger32_From(x << y);
 }
 
 SMILE_EXTERNAL_FUNCTION(ArithmeticShiftRight)
 {
-	Int32 x = ((SmileInteger32)argv[0])->value;
-	Int32 y = ((SmileInteger32)argv[1])->value;
+	Int32 x = argv[0].unboxed.i32;
+	Int32 y = argv[1].unboxed.i32;
 
-	return (SmileObject)SmileInteger32_Create(x >> y);
+	return SmileUnboxedInteger32_From(x >> y);
 }
 
 SMILE_EXTERNAL_FUNCTION(RotateLeft)
 {
-	UInt32 x = (UInt32)((SmileInteger32)argv[0])->value;
-	UInt32 y = (UInt32)((SmileInteger32)argv[1])->value;
+	UInt32 x = (UInt32)argv[0].unboxed.i32;
+	UInt32 y = (UInt32)argv[1].unboxed.i32;
 
-	return (SmileObject)SmileInteger32_Create((Int32)Smile_RotateLeft32(x, y));
+	return SmileUnboxedInteger32_From(Smile_RotateLeft32(x, y));
 }
 
 SMILE_EXTERNAL_FUNCTION(RotateRight)
 {
-	UInt32 x = (UInt32)((SmileInteger32)argv[0])->value;
-	UInt32 y = (UInt32)((SmileInteger32)argv[1])->value;
+	UInt32 x = (UInt32)argv[0].unboxed.i32;
+	UInt32 y = (UInt32)argv[1].unboxed.i32;
 
-	return (SmileObject)SmileInteger32_Create((Int32)Smile_RotateRight32(x, y));
+	return SmileUnboxedInteger32_From(Smile_RotateRight32(x, y));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1170,21 +1118,21 @@ Inline UInt32 ComputeCountOfRightZeros(UInt32 value)
 
 SMILE_EXTERNAL_FUNCTION(CountOnes)
 {
-	UInt32 value = ((SmileInteger32)argv[0])->value;
+	UInt32 value = (UInt32)argv[0].unboxed.i32;
 
-	return (SmileObject)SmileInteger32_Create((Int32)CountBitsSet((UInt32)value));
+	return SmileUnboxedInteger32_From((Int32)CountBitsSet(value));
 }
 
 SMILE_EXTERNAL_FUNCTION(CountZeros)
 {
-	UInt32 value = ((SmileInteger32)argv[0])->value;
+	UInt32 value = (UInt32)argv[0].unboxed.i32;
 
-	return (SmileObject)SmileInteger32_Create((Int32)CountBitsSet(~(UInt32)value));
+	return SmileUnboxedInteger32_From((Int32)CountBitsSet(~value));
 }
 
 SMILE_EXTERNAL_FUNCTION(Parity)
 {
-	UInt32 value = ((SmileInteger32)argv[0])->value;
+	UInt32 value = (UInt32)argv[0].unboxed.i32;
 
 	value ^= value >> 16;
 	value ^= value >> 8;
@@ -1192,54 +1140,54 @@ SMILE_EXTERNAL_FUNCTION(Parity)
 	value &= 0xF;
 	value = (0x6996 >> value) & 1;
 
-	return (SmileObject)SmileInteger32_Create((Int32)value);
+	return SmileUnboxedInteger32_From((Int32)value);
 }
 
 SMILE_EXTERNAL_FUNCTION(ReverseBits)
 {
-	UInt32 value = (UInt32)((SmileInteger32)argv[0])->value;
+	UInt32 value = (UInt32)argv[0].unboxed.i32;
 
-	return (SmileObject)SmileInteger32_Create((Int32)ComputeReverseBits(value));
+	return SmileUnboxedInteger32_From((Int32)ComputeReverseBits(value));
 }
 
 SMILE_EXTERNAL_FUNCTION(ReverseBytes)
 {
-	UInt32 value = (UInt32)((SmileInteger32)argv[0])->value;
+	UInt32 value = (UInt32)argv[0].unboxed.i32;
 
-	value = (UInt32)( ((value >> 24) & 0x000000FFU)
-						| ((value >>  8) & 0x0000FF00U)
-						| ((value <<  8) & 0x00FF0000U)
-						| ((value << 24) & 0xFF000000U) );
+	value = (UInt32)(((value >> 24) & 0x000000FFU)
+		| ((value >> 8) & 0x0000FF00U)
+		| ((value << 8) & 0x00FF0000U)
+		| ((value << 24) & 0xFF000000U));
 
-	return (SmileObject)SmileInteger32_Create((Int32)value);
+	return SmileUnboxedInteger32_From((Int32)value);
 }
 
 SMILE_EXTERNAL_FUNCTION(CountRightZeros)
 {
-	UInt32 value = (UInt32)((SmileInteger32)argv[0])->value;
+	UInt32 value = (UInt32)argv[0].unboxed.i32;
 
-	return (SmileObject)SmileInteger32_Create((Int32)ComputeCountOfRightZeros(value));
+	return SmileUnboxedInteger32_From((Int32)ComputeCountOfRightZeros(value));
 }
 
 SMILE_EXTERNAL_FUNCTION(CountRightOnes)
 {
-	UInt32 value = (UInt32)((SmileInteger32)argv[0])->value;
+	UInt32 value = (UInt32)argv[0].unboxed.i32;
 
-	return (SmileObject)SmileInteger32_Create((Int32)ComputeCountOfRightZeros(~value));
+	return SmileUnboxedInteger32_From((Int32)ComputeCountOfRightZeros(~value));
 }
 
 SMILE_EXTERNAL_FUNCTION(CountLeftZeros)
 {
-	UInt32 value = (UInt32)((SmileInteger32)argv[0])->value;
+	UInt32 value = (UInt32)argv[0].unboxed.i32;
 
-	return (SmileObject)SmileInteger32_Create((Int32)ComputeCountOfRightZeros(ComputeReverseBits(value)));
+	return SmileUnboxedInteger32_From((Int32)ComputeCountOfRightZeros(ComputeReverseBits(value)));
 }
 
 SMILE_EXTERNAL_FUNCTION(CountLeftOnes)
 {
-	UInt32 value = (UInt32)((SmileInteger32)argv[0])->value;
+	UInt32 value = (UInt32)argv[0].unboxed.i32;
 
-	return (SmileObject)SmileInteger32_Create((Int32)ComputeCountOfRightZeros(~ComputeReverseBits(value)));
+	return SmileUnboxedInteger32_From((Int32)ComputeCountOfRightZeros(~ComputeReverseBits(value)));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1247,100 +1195,88 @@ SMILE_EXTERNAL_FUNCTION(CountLeftOnes)
 
 SMILE_EXTERNAL_FUNCTION(Eq)
 {
-	if (SMILE_KIND(argv[1]) != SMILE_KIND_INTEGER32
-		|| ((SmileInteger32)argv[0])->value != ((SmileInteger32)argv[1])->value)
-		return (SmileObject)Smile_KnownObjects.FalseObj;
-
-	return (SmileObject)Smile_KnownObjects.TrueObj;
+	return SmileUnboxedBool_From(SMILE_KIND(argv[1].obj) == SMILE_KIND_UNBOXED_INTEGER32
+		&& argv[0].unboxed.i32 == argv[1].unboxed.i32);
 }
 
 SMILE_EXTERNAL_FUNCTION(Ne)
 {
-	if (SMILE_KIND(argv[1]) != SMILE_KIND_INTEGER32
-		|| ((SmileInteger32)argv[0])->value != ((SmileInteger32)argv[1])->value)
-		return (SmileObject)Smile_KnownObjects.TrueObj;
-
-	return (SmileObject)Smile_KnownObjects.FalseObj;
+	return SmileUnboxedBool_From(SMILE_KIND(argv[1].obj) != SMILE_KIND_UNBOXED_INTEGER32
+		|| argv[0].unboxed.i32 != argv[1].unboxed.i32);
 }
 
 SMILE_EXTERNAL_FUNCTION(Lt)
 {
-	return ((SmileInteger32)argv[0])->value < ((SmileInteger32)argv[1])->value
-		? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
+	return SmileUnboxedBool_From(argv[0].unboxed.i32 < argv[1].unboxed.i32);
 }
 
 SMILE_EXTERNAL_FUNCTION(Gt)
 {
-	return ((SmileInteger32)argv[0])->value > ((SmileInteger32)argv[1])->value
-		? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
+	return SmileUnboxedBool_From(argv[0].unboxed.i32 > argv[1].unboxed.i32);
 }
 
 SMILE_EXTERNAL_FUNCTION(Le)
 {
-	return ((SmileInteger32)argv[0])->value <= ((SmileInteger32)argv[1])->value
-		? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
+	return SmileUnboxedBool_From(argv[0].unboxed.i32 <= argv[1].unboxed.i32);
 }
 
 SMILE_EXTERNAL_FUNCTION(Ge)
 {
-	return ((SmileInteger32)argv[0])->value >= ((SmileInteger32)argv[1])->value
-		? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
+	return SmileUnboxedBool_From(argv[0].unboxed.i32 >= argv[1].unboxed.i32);
 }
 
 SMILE_EXTERNAL_FUNCTION(ULt)
 {
-	return (UInt32)((SmileInteger32)argv[0])->value < (UInt32)((SmileInteger32)argv[1])->value
-		? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
+	return SmileUnboxedBool_From((UInt32)argv[0].unboxed.i32 < (UInt32)argv[1].unboxed.i32);
 }
 
 SMILE_EXTERNAL_FUNCTION(UGt)
 {
-	return (UInt32)((SmileInteger32)argv[0])->value > (UInt32)((SmileInteger32)argv[1])->value
-		? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
+	return SmileUnboxedBool_From((UInt32)argv[0].unboxed.i32 >(UInt32)argv[1].unboxed.i32);
 }
 
 SMILE_EXTERNAL_FUNCTION(ULe)
 {
-	return (UInt32)((SmileInteger32)argv[0])->value <= (UInt32)((SmileInteger32)argv[1])->value
-		? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
+	return SmileUnboxedBool_From((UInt32)argv[0].unboxed.i32 <= (UInt32)argv[1].unboxed.i32);
 }
 
 SMILE_EXTERNAL_FUNCTION(UGe)
 {
-	return (UInt32)((SmileInteger32)argv[0])->value >= (UInt32)((SmileInteger32)argv[1])->value
-		? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
+	return SmileUnboxedBool_From((UInt32)argv[0].unboxed.i32 >= (UInt32)argv[1].unboxed.i32);
 }
 
 SMILE_EXTERNAL_FUNCTION(Compare)
 {
-	Int32 x = ((SmileInteger32)argv[0])->value;
-	Int32 y = ((SmileInteger32)argv[1])->value;
+	Int32 x = argv[0].unboxed.i32;
+	Int32 y = argv[1].unboxed.i32;
 
 	if (x == y)
-		return (SmileObject)Smile_KnownObjects.ZeroInt64;
+		return SmileUnboxedInteger32_From(0);
 	else if (x < y)
-		return (SmileObject)Smile_KnownObjects.NegOneInt64;
+		return SmileUnboxedInteger32_From(-1);
 	else
-		return (SmileObject)Smile_KnownObjects.OneInt64;
+		return SmileUnboxedInteger32_From(+1);
 }
 
 SMILE_EXTERNAL_FUNCTION(UCompare)
 {
-	UInt32 x = (UInt32)((SmileInteger32)argv[0])->value;
-	UInt32 y = (UInt32)((SmileInteger32)argv[1])->value;
+	UInt32 x = (UInt32)argv[0].unboxed.i32;
+	UInt32 y = (UInt32)argv[1].unboxed.i32;
 
 	if (x == y)
-		return (SmileObject)Smile_KnownObjects.ZeroInt64;
+		return SmileUnboxedInteger32_From(0);
 	else if (x < y)
-		return (SmileObject)Smile_KnownObjects.NegOneInt64;
+		return SmileUnboxedInteger32_From(-1);
 	else
-		return (SmileObject)Smile_KnownObjects.OneInt64;
+		return SmileUnboxedInteger32_From(+1);
 }
 
 //-------------------------------------------------------------------------------------------------
 
 void SmileInteger32_Setup(SmileUserObject base)
 {
+	SmileUnboxedInteger32_Instance->base = (SmileObject)base;
+
 	SetupFunction("bool", ToBool, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 	SetupFunction("int", ToInt, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 	SetupFunction("string", ToString, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX, 1, 2, 0, NULL);

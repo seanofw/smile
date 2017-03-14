@@ -21,11 +21,14 @@
 #include <smile/smiletypes/numeric/smilebyte.h>
 #include <smile/smiletypes/easyobject.h>
 
+SMILE_IGNORE_UNUSED_VARIABLES
+
 SMILE_EASY_OBJECT_VTABLE(SmileByte);
 
 SmileByte SmileByte_CreateInternal(Byte value)
 {
-	SmileByte smileByte = GC_MALLOC_STRUCT(struct SmileByteInt);
+	// We MALLOC_ATOMIC here because the base is a known pointer that will never be collected.
+	SmileByte smileByte = (SmileByte)GC_MALLOC_ATOMIC(sizeof(struct SmileByteInt));
 	if (smileByte == NULL) Smile_Abort_OutOfMemory();
 	smileByte->base = (SmileObject)Smile_KnownBases.Byte;
 	smileByte->kind = SMILE_KIND_BYTE;
@@ -46,3 +49,48 @@ SMILE_EASY_OBJECT_TOINT(SmileByte, obj->value)
 SMILE_EASY_OBJECT_TOREAL(SmileByte, Real64_FromInt32(obj->value))
 SMILE_EASY_OBJECT_TOFLOAT(SmileByte, (Float64)obj->value)
 SMILE_EASY_OBJECT_TOSTRING(SmileByte, String_Format("%ux", (UInt32)obj->value))
+
+SmileObject SmileByte_Box(SmileArg src)
+{
+	return src.obj;
+}
+
+SmileArg SmileByte_Unbox(SmileByte smileByte)
+{
+	return SmileUnboxedByte_From(smileByte->value);
+}
+
+//-------------------------------------------------------------------------------------------------
+
+SMILE_EASY_OBJECT_VTABLE(SmileUnboxedByte);
+
+SMILE_EASY_OBJECT_READONLY_SECURITY(SmileUnboxedByte)
+SMILE_EASY_OBJECT_NO_CALL(SmileUnboxedByte)
+SMILE_EASY_OBJECT_NO_SOURCE(SmileUnboxedByte)
+SMILE_EASY_OBJECT_NO_PROPERTIES(SmileUnboxedByte)
+
+SMILE_EASY_OBJECT_COMPARE(SmileUnboxedByte, SMILE_KIND_UNBOXED_BYTE, aData.i8 == bData.i8)
+SMILE_EASY_OBJECT_HASH(SmileUnboxedByte, 0)
+SMILE_EASY_OBJECT_TOBOOL(SmileUnboxedByte, (Bool)!!unboxedData.i8)
+SMILE_EASY_OBJECT_TOINT(SmileUnboxedByte, unboxedData.i8)
+SMILE_EASY_OBJECT_TOREAL(SmileUnboxedByte, Real64_FromInt32(unboxedData.i8))
+SMILE_EASY_OBJECT_TOFLOAT(SmileUnboxedByte, unboxedData.i8)
+SMILE_EASY_OBJECT_TOSTRING(SmileUnboxedByte, String_Format("%u", (UInt)unboxedData.i8))
+
+static SmileObject SmileUnboxedByte_Box(SmileArg src)
+{
+	return (SmileObject)SmileByte_Create(src.unboxed.b);
+}
+
+static SmileArg SmileUnboxedByte_Unbox(SmileUnboxedByte smileUnboxedByte)
+{
+	Smile_Abort_FatalError("Cannot re-unbox a unboxed object.");
+	return (SmileArg){ 0 };
+}
+
+static struct SmileUnboxedByteInt SmileUnboxedByte_Instance_Struct = {
+	SMILE_KIND_UNBOXED_BYTE,
+	(SmileVTable)&SmileUnboxedByte_VTableData,
+};
+
+extern SmileUnboxedByte SmileUnboxedByte_Instance = &SmileUnboxedByte_Instance_Struct;

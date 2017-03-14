@@ -41,11 +41,6 @@ Inline SmileString SmileString_CreateC(const char *text)
 	return SmileString_Create(str);
 }
 
-Inline String SmileString_ToString(SmileString str)
-{
-	return String_Format("\"%S\"", String_AddCSlashes((String)&(str->string)));
-}
-
 Inline const char *SmileString_ToC(SmileString str)
 {
 	return (const char *)str->string.text;

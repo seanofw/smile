@@ -22,11 +22,25 @@ struct SmileSymbolInt {
 	Symbol symbol;
 };
 
+struct SmileUnboxedSymbolInt {
+	DECLARE_BASE_OBJECT_PROPERTIES;
+};
+
 //-------------------------------------------------------------------------------------------------
 //  Public interface
 
 SMILE_API_DATA SmileVTable SmileSymbol_VTable;
-
 SMILE_API_FUNC SmileSymbol SmileSymbol_Create(Symbol symbol);
+
+SMILE_API_DATA SmileVTable SmileUnboxedSymbol_VTable;
+SMILE_API_DATA SmileUnboxedSymbol SmileUnboxedSymbol_Instance;
+
+Inline SmileArg SmileUnboxedSymbol_From(Symbol symbol)
+{
+	SmileArg arg;
+	arg.obj = (SmileObject)SmileUnboxedSymbol_Instance;
+	arg.unboxed.symbol = symbol;
+	return arg;
+}
 
 #endif

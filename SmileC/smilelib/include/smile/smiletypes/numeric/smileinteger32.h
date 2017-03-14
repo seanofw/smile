@@ -18,19 +18,33 @@ struct SmileInteger32Int {
 	Int32 value;
 };
 
+struct SmileUnboxedInteger32Int {
+	DECLARE_BASE_OBJECT_PROPERTIES;
+};
+
 //-------------------------------------------------------------------------------------------------
 //  Public interface
 
 SMILE_API_DATA SmileVTable SmileInteger32_VTable;
+SMILE_API_DATA SmileVTable SmileUnboxedInteger32_VTable;
 
 SMILE_API_FUNC SmileInteger32 SmileInteger32_CreateInternal(Int32 value);
+SMILE_API_DATA SmileUnboxedInteger32 SmileUnboxedInteger32_Instance;
+
+Inline SmileArg SmileUnboxedInteger32_From(Int32 value)
+{
+	SmileArg arg;
+	arg.obj = (SmileObject)SmileUnboxedInteger32_Instance;
+	arg.unboxed.i32 = value;
+	return arg;
+}
 
 //-------------------------------------------------------------------------------------------------
 //  Inline operations
 
 Inline SmileInteger32 SmileInteger32_Create(Int32 value)
 {
-	if (value >= -100 && value <= 100)
+	if ((UInt32)(value + 100) <= 200)
 		return Smile_KnownObjects.SmallInt32s[value + 100];
 	else
 		return SmileInteger32_CreateInternal(value);

@@ -46,6 +46,36 @@ struct SmileObjectInt {
 };
 
 //-------------------------------------------------------------------------------------------------
+//  The argument struct, used for passing objects around in an unboxed form (where appropriate).
+
+/// <summary>
+/// The unboxed portion of an argument, if such a portion exists.  This is at most 64 bits.
+/// </summary>
+typedef union {
+	Bool b;
+	Byte i8;
+	Int16 i16;
+	Int32 i32;
+	Int64 i64;
+	Real32 r32;
+	Real64 r64;
+	Float32 f32;
+	Float64 f64;
+	Symbol symbol;
+} SmileUnboxedData;
+
+/// <summary>
+/// This shape represents a single function argument or local variable.  It consists of a pointer
+/// to a real SmileObject (usually on the heap), and, if that object is unboxed, the unboxed data
+/// immediately adjacent to it.  Note that unlike most other typedefs in the interpreter, the name
+/// SmileArg refers to a STRUCT, not to a pointer to it.
+/// </summary>
+typedef struct {
+	SmileObject obj;	// A pointer to the object instance itself.
+	SmileUnboxedData unboxed;	// Any unboxed data associated with this arg, if this is an unboxed type.
+} SmileArg;
+
+//-------------------------------------------------------------------------------------------------
 //  The virtual table common to all objects.
 
 /// <summary>
@@ -172,11 +202,17 @@ struct SmileObjectInt {
 ///	the arguments themselves will be on the temporary stack of the current closure.</p>
 ///
 /// <code>getSourceLocation</code>:	<p>Get the location in the source code where this object was created, if known.</p>
+///	
+/// <code>unbox</code>:	<p>Copy this object into the provided argument container, unboxing it (if
+///	appropriate).  This is the opposite of the 'box' operation, below.</p>
+///	
+/// <code>box</code>:	<p>Copy the given argument container's value onto the heap, boxing it (if necessary)
+///	and returning the boxed value.  This is the opposite of the 'unbox' operation, above.</p>
 ///
 /// </remarks>
 #define SMILE_VTABLE_TYPE(__name__, __type__) \
 	__name__ { \
-		Bool (*compareEqual)(__type__ self, SmileObject other); \
+		Bool (*compareEqual)(__type__ self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData); \
 		UInt32 (*hash)(__type__ self); \
 		\
 		void (*setSecurityKey)(__type__ self, SmileObject newSecurityKey, SmileObject oldSecurityKey); \
@@ -188,14 +224,17 @@ struct SmileObjectInt {
 		Bool (*hasProperty)(__type__ self, Symbol propertyName); \
 		SmileList (*getPropertyNames)(__type__ self); \
 		\
-		Bool (*toBool)(__type__ self); \
-		Int32 (*toInteger32)(__type__ self); \
-		Float64 (*toFloat64)(__type__ self); \
-		Real64 (*toReal64)(__type__ self); \
-		String (*toString)(__type__ self); \
+		Bool (*toBool)(__type__ self, SmileUnboxedData unboxedData); \
+		Int32 (*toInteger32)(__type__ self, SmileUnboxedData unboxedData); \
+		Float64 (*toFloat64)(__type__ self, SmileUnboxedData unboxedData); \
+		Real64 (*toReal64)(__type__ self, SmileUnboxedData unboxedData); \
+		String (*toString)(__type__ self, SmileUnboxedData unboxedData); \
 		\
 		void (*call)(__type__ self, Int argc); \
 		LexerPosition (*getSourceLocation)(__type__ self); \
+		\
+		SmileArg (*unbox)(__type__ self); \
+		SmileObject (*box)(SmileArg src); \
 	}
 
 /// <summary>
@@ -264,6 +303,18 @@ struct SmileObjectInt {
 #define SMILE_VCALL2(__obj__, __method__, __arg1__, __arg2__) \
 	((__obj__)->vtable->__method__((SmileObject)(__obj__), __arg1__, __arg2__))
 
+/// <summary>
+/// Perform a virtual call to the given method on the object, passing three arguments.
+/// </summary>
+/// <param name="__obj__">The object whose method you would like to call.</param>
+/// <param name="__arg1__">The first argument to pass to the method.</param>
+/// <param name="__arg2__">The second argument to pass to the method.</param>
+/// <param name="__arg3__">The third argument to pass to the method.</param>
+/// <param name="__method__">The name of the method to call, like "setProperty" (without quotes).</param>
+/// <returns>The return value from the method.</returns>
+#define SMILE_VCALL3(__obj__, __method__, __arg1__, __arg2__, __arg3__) \
+	((__obj__)->vtable->__method__((SmileObject)(__obj__), __arg1__, __arg2__, __arg3__))
+
 //-------------------------------------------------------------------------------------------------
 //  Declare the core SmileObject itself, its virtual table, and common (external) operations
 //  for working with it.
@@ -324,6 +375,50 @@ Inline Bool SmileObject_IsSymbol(SmileObject self)
 Inline Bool SmileObject_IsNull(SmileObject self)
 {
 	return SMILE_KIND(self) == SMILE_KIND_NULL;
+}
+
+/// <summary>
+/// Promote a boxed object up to a full function argument.
+/// </summary>
+/// <param name="obj">The object to be wrapped up as a SmileArg (with no unboxed data attached).</param>
+/// <returns>The same object, in a SmileArg wrapper.</returns>
+Inline SmileArg SmileArg_From(SmileObject obj)
+{
+	SmileArg arg;
+	arg.obj = obj;
+	return arg;
+}
+
+/// <summary>
+/// Perform a virtual call to the given argument's special 'box' method, resulting in a real
+/// object on the heap.
+/// </summary>
+/// <param name="arg">The argument containing the object whose 'box' method you would like to call.
+/// This is a SmileArg* (pointer), not a SmileArg (struct).</param>
+/// <returns>The boxed value, as a SmileObject.</returns>
+Inline SmileObject SmileArg_Box(SmileArg arg)
+{
+	if (arg.obj->kind < 0x10)
+		return arg.obj->vtable->box(arg);
+	else
+		return arg.obj;
+}
+
+/// <summary>
+/// Perform a virtual call to the given object's special 'unbox' method, resulting in an argument
+/// that can be pushed onto a call stack.
+/// </summary>
+/// <param name="obj">The object whose 'unbox' method you would like to call.</param>
+/// <returns>The possibly-unboxed value, as a SmileArg.</returns>
+Inline SmileArg SmileArg_Unbox(SmileObject obj)
+{
+	if (obj->kind < 0x10)
+		return obj->vtable->unbox(obj);
+	else {
+		SmileArg dest;
+		dest.obj = obj;
+		return dest;
+	}
 }
 
 #endif
