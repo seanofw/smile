@@ -274,8 +274,8 @@ static Int MapWithOneArgBody(ClosureStateMachine closure)
 	register MapInfo loopInfo = (MapInfo)closure->state;
 
 	// Body: Append the user function's most recent result to the output list.
-	SmileObject fnResult = Closure_Pop(closure).obj;
-	LIST_APPEND(loopInfo->resultHead, loopInfo->resultTail, fnResult);
+	SmileArg fnResult = Closure_Pop(closure);
+	LIST_APPEND(loopInfo->resultHead, loopInfo->resultTail, SmileArg_Box(fnResult));
 
 	// Next: Move the iterator to the next item.
 	loopInfo->list = (SmileList)loopInfo->list->d;
@@ -321,8 +321,8 @@ static Int MapWithTwoArgsBody(ClosureStateMachine closure)
 	register MapInfo loopInfo = (MapInfo)closure->state;
 
 	// Body: Append the user function's most recent result to the output list.
-	SmileObject fnResult = Closure_Pop(closure).obj;
-	LIST_APPEND(loopInfo->resultHead, loopInfo->resultTail, fnResult);
+	SmileArg fnResult = Closure_Pop(closure);
+	LIST_APPEND(loopInfo->resultHead, loopInfo->resultTail, SmileArg_Box(fnResult));
 
 	// Next: Move the iterator to the next item.
 	loopInfo->list = (SmileList)loopInfo->list->d;
