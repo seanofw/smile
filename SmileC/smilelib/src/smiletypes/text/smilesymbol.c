@@ -41,13 +41,23 @@ SMILE_EASY_OBJECT_NO_CALL(SmileSymbol)
 SMILE_EASY_OBJECT_NO_SOURCE(SmileSymbol)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileSymbol)
 
-SMILE_EASY_OBJECT_COMPARE(SmileSymbol, SMILE_KIND_SYMBOL, a->symbol == b->symbol)
 SMILE_EASY_OBJECT_HASH(SmileSymbol, obj->symbol)
 SMILE_EASY_OBJECT_TOBOOL(SmileSymbol, True)
 SMILE_EASY_OBJECT_TOINT(SmileSymbol, 0)
 SMILE_EASY_OBJECT_TOREAL(SmileSymbol, Real64_Zero)
 SMILE_EASY_OBJECT_TOFLOAT(SmileSymbol, 0.0)
 SMILE_EASY_OBJECT_TOSTRING(SmileSymbol, SymbolTable_GetName(Smile_SymbolTable, obj->symbol))
+
+static Bool SmileSymbol_CompareEqual(SmileSymbol a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
+{
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_SYMBOL) {
+		return ((SmileSymbol)a)->symbol == bData.symbol;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_SYMBOL) {
+		return ((SmileSymbol)a)->symbol == ((SmileSymbol)b)->symbol;
+	}
+	else return False;
+}
 
 SmileObject SmileSymbol_Box(SmileArg src)
 {
@@ -68,13 +78,23 @@ SMILE_EASY_OBJECT_NO_CALL(SmileUnboxedSymbol)
 SMILE_EASY_OBJECT_NO_SOURCE(SmileUnboxedSymbol)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileUnboxedSymbol)
 
-SMILE_EASY_OBJECT_COMPARE(SmileUnboxedSymbol, SMILE_KIND_UNBOXED_SYMBOL, False)
 SMILE_EASY_OBJECT_HASH(SmileUnboxedSymbol, 0)
-SMILE_EASY_OBJECT_TOBOOL(SmileUnboxedSymbol, False)
+SMILE_EASY_OBJECT_TOBOOL(SmileUnboxedSymbol, True)
 SMILE_EASY_OBJECT_TOINT(SmileUnboxedSymbol, 0)
 SMILE_EASY_OBJECT_TOREAL(SmileUnboxedSymbol, Real64_Zero)
 SMILE_EASY_OBJECT_TOFLOAT(SmileUnboxedSymbol, 0.0)
-SMILE_EASY_OBJECT_TOSTRING(SmileUnboxedSymbol, String_Empty)
+SMILE_EASY_OBJECT_TOSTRING(SmileUnboxedSymbol, SymbolTable_GetName(Smile_SymbolTable, unboxedData.symbol))
+
+static Bool SmileUnboxedSymbol_CompareEqual(SmileUnboxedSymbol a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
+{
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_SYMBOL) {
+		return aData.symbol == bData.symbol;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_SYMBOL) {
+		return aData.symbol == ((SmileSymbol)b)->symbol;
+	}
+	else return False;
+}
 
 static SmileObject SmileUnboxedSymbol_Box(SmileArg src)
 {

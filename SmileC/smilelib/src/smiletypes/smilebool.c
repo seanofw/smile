@@ -45,13 +45,23 @@ SMILE_EASY_OBJECT_NO_CALL(SmileBool)
 SMILE_EASY_OBJECT_NO_SOURCE(SmileBool)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileBool)
 
-SMILE_EASY_OBJECT_COMPARE(SmileBool, SMILE_KIND_BOOL, a->value == b->value)
 SMILE_EASY_OBJECT_HASH(SmileBool, obj->value)
 SMILE_EASY_OBJECT_TOBOOL(SmileBool, obj->value)
 SMILE_EASY_OBJECT_TOINT(SmileBool, obj->value)
 SMILE_EASY_OBJECT_TOREAL(SmileBool, obj->value ? Real64_One : Real64_Zero)
 SMILE_EASY_OBJECT_TOFLOAT(SmileBool, (Float64)obj->value)
 SMILE_EASY_OBJECT_TOSTRING(SmileBool, obj->value ? trueString : falseString)
+
+static Bool SmileBool_CompareEqual(SmileBool a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
+{
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_BOOL) {
+		return ((SmileBool)a)->value == bData.b;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_BOOL) {
+		return ((SmileBool)a)->value == ((SmileBool)b)->value;
+	}
+	else return False;
+}
 
 SmileObject SmileBool_Box(SmileArg src)
 {
@@ -72,17 +82,27 @@ SMILE_EASY_OBJECT_NO_CALL(SmileUnboxedBool)
 SMILE_EASY_OBJECT_NO_SOURCE(SmileUnboxedBool)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileUnboxedBool)
 
-SMILE_EASY_OBJECT_COMPARE(SmileUnboxedBool, SMILE_KIND_UNBOXED_BOOL, False)
 SMILE_EASY_OBJECT_HASH(SmileUnboxedBool, 0)
-SMILE_EASY_OBJECT_TOBOOL(SmileUnboxedBool, False)
-SMILE_EASY_OBJECT_TOINT(SmileUnboxedBool, 0)
-SMILE_EASY_OBJECT_TOREAL(SmileUnboxedBool, Real64_Zero)
-SMILE_EASY_OBJECT_TOFLOAT(SmileUnboxedBool, 0.0)
-SMILE_EASY_OBJECT_TOSTRING(SmileUnboxedBool, String_Empty)
+SMILE_EASY_OBJECT_TOBOOL(SmileUnboxedBool, unboxedData.b)
+SMILE_EASY_OBJECT_TOINT(SmileUnboxedBool, unboxedData.b)
+SMILE_EASY_OBJECT_TOREAL(SmileUnboxedBool, Real64_FromInt32(unboxedData.b))
+SMILE_EASY_OBJECT_TOFLOAT(SmileUnboxedBool, (Float64)unboxedData.b)
+SMILE_EASY_OBJECT_TOSTRING(SmileUnboxedBool, unboxedData.b ? trueString : falseString)
+
+static Bool SmileUnboxedBool_CompareEqual(SmileUnboxedBool a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
+{
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_BOOL) {
+		return aData.b == bData.b;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_BOOL) {
+		return aData.b == ((SmileBool)b)->value;
+	}
+	else return False;
+}
 
 static SmileObject SmileUnboxedBool_Box(SmileArg src)
 {
-	return (SmileObject)SmileBool_Create(src.unboxed.b);
+	return (SmileObject)Smile_KnownObjects.BooleanObjs[src.unboxed.b];
 }
 
 static SmileArg SmileUnboxedBool_Unbox(SmileUnboxedBool smileUnboxedBool)

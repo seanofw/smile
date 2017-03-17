@@ -42,13 +42,23 @@ SMILE_EASY_OBJECT_NO_CALL(SmileInteger32)
 SMILE_EASY_OBJECT_NO_SOURCE(SmileInteger32)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileInteger32)
 
-SMILE_EASY_OBJECT_COMPARE(SmileInteger32, SMILE_KIND_INTEGER32, a->value == b->value)
 SMILE_EASY_OBJECT_HASH(SmileInteger32, obj->value)
 SMILE_EASY_OBJECT_TOBOOL(SmileInteger32, obj->value != 0)
 SMILE_EASY_OBJECT_TOINT(SmileInteger32, obj->value)
 SMILE_EASY_OBJECT_TOREAL(SmileInteger32, Real64_FromInt32(obj->value))
 SMILE_EASY_OBJECT_TOFLOAT(SmileInteger32, (Float64)obj->value)
 SMILE_EASY_OBJECT_TOSTRING(SmileInteger32, String_Format("%dt", (Int32)obj->value))
+
+static Bool SmileInteger32_CompareEqual(SmileInteger32 a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
+{
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_INTEGER32) {
+		return ((SmileInteger32)a)->value == bData.i32;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_INTEGER32) {
+		return ((SmileInteger32)a)->value == ((SmileInteger32)b)->value;
+	}
+	else return False;
+}
 
 SmileObject SmileInteger32_Box(SmileArg src)
 {
@@ -69,7 +79,6 @@ SMILE_EASY_OBJECT_NO_CALL(SmileUnboxedInteger32)
 SMILE_EASY_OBJECT_NO_SOURCE(SmileUnboxedInteger32)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileUnboxedInteger32)
 
-SMILE_EASY_OBJECT_COMPARE(SmileUnboxedInteger32, SMILE_KIND_UNBOXED_INTEGER32, aData.i32 == bData.i32)
 SMILE_EASY_OBJECT_HASH(SmileUnboxedInteger32, 0)
 SMILE_EASY_OBJECT_TOBOOL(SmileUnboxedInteger32, (Bool)!!unboxedData.i32)
 SMILE_EASY_OBJECT_TOINT(SmileUnboxedInteger32, unboxedData.i32)
@@ -77,6 +86,16 @@ SMILE_EASY_OBJECT_TOREAL(SmileUnboxedInteger32, Real64_FromInt32(unboxedData.i32
 SMILE_EASY_OBJECT_TOFLOAT(SmileUnboxedInteger32, unboxedData.i32)
 SMILE_EASY_OBJECT_TOSTRING(SmileUnboxedInteger32, String_Format("%d", (Int)unboxedData.i32))
 
+static Bool SmileUnboxedInteger32_CompareEqual(SmileUnboxedInteger32 a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
+{
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_INTEGER32) {
+		return aData.i32 == bData.i32;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_INTEGER32) {
+		return aData.i32 == ((SmileInteger32)b)->value;
+	}
+	else return False;
+}
 
 static SmileObject SmileUnboxedInteger32_Box(SmileArg src)
 {

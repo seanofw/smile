@@ -42,13 +42,23 @@ SMILE_EASY_OBJECT_NO_CALL(SmileByte)
 SMILE_EASY_OBJECT_NO_SOURCE(SmileByte)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileByte)
 
-SMILE_EASY_OBJECT_COMPARE(SmileByte, SMILE_KIND_BYTE, a->value == b->value)
 SMILE_EASY_OBJECT_HASH(SmileByte, obj->value)
 SMILE_EASY_OBJECT_TOBOOL(SmileByte, obj->value != 0)
 SMILE_EASY_OBJECT_TOINT(SmileByte, obj->value)
 SMILE_EASY_OBJECT_TOREAL(SmileByte, Real64_FromInt32(obj->value))
 SMILE_EASY_OBJECT_TOFLOAT(SmileByte, (Float64)obj->value)
 SMILE_EASY_OBJECT_TOSTRING(SmileByte, String_Format("%ux", (UInt32)obj->value))
+
+static Bool SmileByte_CompareEqual(SmileByte a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
+{
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_BYTE) {
+		return ((SmileByte)a)->value == bData.i8;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_BYTE) {
+		return ((SmileByte)a)->value == ((SmileByte)b)->value;
+	}
+	else return False;
+}
 
 SmileObject SmileByte_Box(SmileArg src)
 {
@@ -69,13 +79,23 @@ SMILE_EASY_OBJECT_NO_CALL(SmileUnboxedByte)
 SMILE_EASY_OBJECT_NO_SOURCE(SmileUnboxedByte)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileUnboxedByte)
 
-SMILE_EASY_OBJECT_COMPARE(SmileUnboxedByte, SMILE_KIND_UNBOXED_BYTE, aData.i8 == bData.i8)
 SMILE_EASY_OBJECT_HASH(SmileUnboxedByte, 0)
 SMILE_EASY_OBJECT_TOBOOL(SmileUnboxedByte, (Bool)!!unboxedData.i8)
 SMILE_EASY_OBJECT_TOINT(SmileUnboxedByte, unboxedData.i8)
 SMILE_EASY_OBJECT_TOREAL(SmileUnboxedByte, Real64_FromInt32(unboxedData.i8))
 SMILE_EASY_OBJECT_TOFLOAT(SmileUnboxedByte, unboxedData.i8)
 SMILE_EASY_OBJECT_TOSTRING(SmileUnboxedByte, String_Format("%u", (UInt)unboxedData.i8))
+
+static Bool SmileUnboxedByte_CompareEqual(SmileUnboxedByte a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
+{
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_BYTE) {
+		return aData.i8 == bData.i8;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_BYTE) {
+		return aData.i8 == ((SmileByte)b)->value;
+	}
+	else return False;
+}
 
 static SmileObject SmileUnboxedByte_Box(SmileArg src)
 {

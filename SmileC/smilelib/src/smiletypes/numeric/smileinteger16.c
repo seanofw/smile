@@ -42,13 +42,23 @@ SMILE_EASY_OBJECT_NO_CALL(SmileInteger16)
 SMILE_EASY_OBJECT_NO_SOURCE(SmileInteger16)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileInteger16)
 
-SMILE_EASY_OBJECT_COMPARE(SmileInteger16, SMILE_KIND_INTEGER16, a->value == b->value)
 SMILE_EASY_OBJECT_HASH(SmileInteger16, obj->value)
 SMILE_EASY_OBJECT_TOBOOL(SmileInteger16, obj->value != 0)
 SMILE_EASY_OBJECT_TOINT(SmileInteger16, obj->value)
 SMILE_EASY_OBJECT_TOREAL(SmileInteger16, Real64_FromInt32(obj->value))
 SMILE_EASY_OBJECT_TOFLOAT(SmileInteger16, (Float64)obj->value)
 SMILE_EASY_OBJECT_TOSTRING(SmileInteger16, String_Format("%ds", (Int32)obj->value))
+
+static Bool SmileInteger16_CompareEqual(SmileInteger16 a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
+{
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_INTEGER16) {
+		return ((SmileInteger16)a)->value == bData.i16;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_INTEGER16) {
+		return ((SmileInteger16)a)->value == ((SmileInteger16)b)->value;
+	}
+	else return False;
+}
 
 SmileObject SmileInteger16_Box(SmileArg src)
 {
@@ -69,13 +79,23 @@ SMILE_EASY_OBJECT_NO_CALL(SmileUnboxedInteger16)
 SMILE_EASY_OBJECT_NO_SOURCE(SmileUnboxedInteger16)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileUnboxedInteger16)
 
-SMILE_EASY_OBJECT_COMPARE(SmileUnboxedInteger16, SMILE_KIND_UNBOXED_INTEGER16, aData.i16 == bData.i16)
 SMILE_EASY_OBJECT_HASH(SmileUnboxedInteger16, 0)
 SMILE_EASY_OBJECT_TOBOOL(SmileUnboxedInteger16, (Bool)!!unboxedData.i16)
 SMILE_EASY_OBJECT_TOINT(SmileUnboxedInteger16, unboxedData.i16)
 SMILE_EASY_OBJECT_TOREAL(SmileUnboxedInteger16, Real64_FromInt32(unboxedData.i16))
 SMILE_EASY_OBJECT_TOFLOAT(SmileUnboxedInteger16, unboxedData.i16)
 SMILE_EASY_OBJECT_TOSTRING(SmileUnboxedInteger16, String_Format("%d", (Int)unboxedData.i16))
+
+static Bool SmileUnboxedInteger16_CompareEqual(SmileUnboxedInteger16 a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
+{
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_INTEGER16) {
+		return aData.i16 == bData.i16;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_INTEGER16) {
+		return aData.i16 == ((SmileInteger16)b)->value;
+	}
+	else return False;
+}
 
 static SmileObject SmileUnboxedInteger16_Box(SmileArg src)
 {

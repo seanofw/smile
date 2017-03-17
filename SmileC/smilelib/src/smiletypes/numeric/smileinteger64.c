@@ -48,12 +48,22 @@ SMILE_EASY_OBJECT_NO_CALL(SmileInteger64)
 SMILE_EASY_OBJECT_NO_SOURCE(SmileInteger64)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileInteger64)
 
-SMILE_EASY_OBJECT_COMPARE(SmileInteger64, SMILE_KIND_INTEGER64, a->value == b->value)
 SMILE_EASY_OBJECT_TOBOOL(SmileInteger64, obj->value != 0)
 SMILE_EASY_OBJECT_TOINT(SmileInteger64, (Int32)obj->value)
 SMILE_EASY_OBJECT_TOREAL(SmileInteger64, Real64_FromInt64(obj->value))
 SMILE_EASY_OBJECT_TOFLOAT(SmileInteger64, (Float64)obj->value)
 SMILE_EASY_OBJECT_TOSTRING(SmileInteger64, String_Format("%ld", obj->value))
+
+static Bool SmileInteger64_CompareEqual(SmileInteger64 a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
+{
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_INTEGER64) {
+		return ((SmileInteger64)a)->value == bData.i64;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_INTEGER64) {
+		return ((SmileInteger64)a)->value == ((SmileInteger64)b)->value;
+	}
+	else return False;
+}
 
 SmileObject SmileInteger64_Box(SmileArg src)
 {
@@ -74,13 +84,23 @@ SMILE_EASY_OBJECT_NO_CALL(SmileUnboxedInteger64)
 SMILE_EASY_OBJECT_NO_SOURCE(SmileUnboxedInteger64)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileUnboxedInteger64)
 
-SMILE_EASY_OBJECT_COMPARE(SmileUnboxedInteger64, SMILE_KIND_UNBOXED_INTEGER64, aData.i64 == bData.i64)
 SMILE_EASY_OBJECT_HASH(SmileUnboxedInteger64, 0)
 SMILE_EASY_OBJECT_TOBOOL(SmileUnboxedInteger64, (Bool)!!unboxedData.i64)
 SMILE_EASY_OBJECT_TOINT(SmileUnboxedInteger64, (Int32)unboxedData.i64)
 SMILE_EASY_OBJECT_TOREAL(SmileUnboxedInteger64, Real64_FromInt64(unboxedData.i64))
 SMILE_EASY_OBJECT_TOFLOAT(SmileUnboxedInteger64, (Float64)unboxedData.i64)
 SMILE_EASY_OBJECT_TOSTRING(SmileUnboxedInteger64, String_Format("%ld", unboxedData.i64))
+
+static Bool SmileUnboxedInteger64_CompareEqual(SmileUnboxedInteger64 a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
+{
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_INTEGER64) {
+		return aData.i64 == bData.i64;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_INTEGER64) {
+		return aData.i64 == ((SmileInteger64)b)->value;
+	}
+	else return False;
+}
 
 static SmileObject SmileUnboxedInteger64_Box(SmileArg src)
 {
