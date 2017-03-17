@@ -407,12 +407,15 @@ Inline SmileObject SmileArg_Box(SmileArg arg)
 /// <summary>
 /// Perform a virtual call to the given object's special 'unbox' method, resulting in an argument
 /// that can be pushed onto a call stack.
+///
+/// Warning: The behavior of this function is UNDEFINED if the object refers to the special instance
+///          of an already-unboxed object.  Do not call this if the object is already unboxed.
 /// </summary>
 /// <param name="obj">The object whose 'unbox' method you would like to call.</param>
 /// <returns>The possibly-unboxed value, as a SmileArg.</returns>
 Inline SmileArg SmileArg_Unbox(SmileObject obj)
 {
-	if (obj->kind < 0x10)
+	if (obj->kind < 0x20)
 		return obj->vtable->unbox(obj);
 	else {
 		SmileArg dest;

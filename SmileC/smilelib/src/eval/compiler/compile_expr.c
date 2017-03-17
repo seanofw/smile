@@ -94,7 +94,6 @@ Int Compiler_CompileExpr(Compiler compiler, SmileObject expr)
 		break;
 
 		// Real constants evaluate to themselves.
-	case SMILE_KIND_REAL16:
 	case SMILE_KIND_REAL32:
 	case SMILE_KIND_REAL64:
 	case SMILE_KIND_REAL128:
@@ -103,7 +102,6 @@ Int Compiler_CompileExpr(Compiler compiler, SmileObject expr)
 		break;
 
 		// Float constants evaluate to themselves.
-	case SMILE_KIND_FLOAT16:
 	case SMILE_KIND_FLOAT32:
 	case SMILE_KIND_FLOAT64:
 	case SMILE_KIND_FLOAT128:
