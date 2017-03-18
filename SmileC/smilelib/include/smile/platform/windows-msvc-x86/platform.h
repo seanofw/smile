@@ -72,11 +72,11 @@ typedef struct { UInt64 value[2]; } Real128;
 #undef SMILE_API_FUNC
 #undef SMILE_API_DATA
 #ifdef SMILELIB_BUILD
-	#define SMILE_API_FUNC extern __declspec(dllexport)
-	#define SMILE_API_DATA extern __declspec(dllexport)
+#define SMILE_API_FUNC extern __declspec(dllexport)
+#define SMILE_API_DATA extern __declspec(dllexport)
 #else
-	#define SMILE_API_FUNC extern __declspec(dllimport)
-	#define SMILE_API_DATA extern __declspec(dllimport)
+#define SMILE_API_FUNC extern __declspec(dllimport)
+#define SMILE_API_DATA extern __declspec(dllimport)
 #endif
 
 // How to align data structures in memory.
@@ -91,6 +91,32 @@ typedef struct { UInt64 value[2]; } Real128;
 
 // Pragma warning macros.
 #define SMILE_IGNORE_UNUSED_VARIABLES __pragma(warning(disable:4100))
+
+// Declare these here to avoid having to include all of <windows.h> in every file.
+extern __declspec(dllimport) int __stdcall IsDebuggerPresent(void);
+
+// Determine whether a system-level debugger is attached to this process.
+#undef SMILE_IS_DEBUGGER_ATTACHED
+#define SMILE_IS_DEBUGGER_ATTACHED \
+	(IsDebuggerPresent())
+
+// Stop this process at a breakpoint.
+#undef SMILE_DEBUGGER_BREAK
+#define SMILE_DEBUGGER_BREAK \
+	do { \
+		__asm { \
+			__asm int 3 \
+		} \
+	} while (0)
+
+// Ask the debugger to breakpoint this process.
+#undef SMILE_DEBUGGER_BREAK_IF_ATTACHED
+#define SMILE_DEBUGGER_BREAK_IF_ATTACHED \
+	do { \
+		if (SMILE_IS_DEBUGGER_ATTACHED) { \
+			SMILE_DEBUGGER_BREAK; \
+		} \
+	} while (0)
 
 //------------------------------------------------------------------------------------------------
 //  Entropy.

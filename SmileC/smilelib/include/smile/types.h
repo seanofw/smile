@@ -57,6 +57,11 @@ typedef unsigned char Bool;
 // How to make functions behave as 'inline', or as close to it as possible.
 #define Inline static
 
+// External debugger support is only present on some systems, so by default, its macros are no-ops.
+#define SMILE_DEBUGGER_BREAK ((void)0)
+#define SMILE_DEBUGGER_IS_ATTACHED (0)
+#define SMILE_DEBUGGER_BREAK_IF_ATTACHED ((void)0)
+
 //------------------------------------------------------------------------------------------------
 //  Platform-specific type declarations and overrides.
 

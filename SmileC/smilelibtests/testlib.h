@@ -100,7 +100,12 @@ void WaitForAnyKey(void);
 /// <param name="__n__">The invariant to assert.  If this results in zero or NULL,
 /// the test will be aborted as a failure.</param>
 #define ASSERT(__n__) \
-	((!(__n__)) ? FailTestWithLineInternal(#__n__, __FILE__, __LINE__) : 0)
+	do { \
+		if (!(__n__)) { \
+			SMILE_DEBUGGER_BREAK_IF_ATTACHED; \
+			FailTestWithLineInternal(#__n__, __FILE__, __LINE__); \
+		} \
+	} while (0)
 
 /// <summary>
 /// Assert that the given string is a valid string and matches the given text and length.
@@ -117,7 +122,7 @@ void WaitForAnyKey(void);
 /// execution and skips any and all code remaining in it.
 /// </summary>
 #define PASS_TEST \
-		return
+	return
 
 /// <summary>
 /// Immediately fail (as bad) the current unit test.  This stops the test's
@@ -125,7 +130,10 @@ void WaitForAnyKey(void);
 /// </summary>
 /// <param name="__message__" type="const char *">A message string to display to the user as to why the test failed.</param>
 #define FAIL_TEST(__message__) \
-		FailTestWithLineInternal(__message__, __FILE__, __LINE__)
+	do { \
+		SMILE_DEBUGGER_BREAK_IF_ATTACHED; \
+		FailTestWithLineInternal(__message__, __FILE__, __LINE__); \
+	} while (0)
 
 /// <summary>
 /// Declare the end the current unit test.
