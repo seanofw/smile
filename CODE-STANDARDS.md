@@ -45,7 +45,7 @@ The Smile Interpreter's source code:
     > *The following example shows correct indentation of curly braces:*
     >
     > ```c
-    >  if (x) {
+    > if (x) {
     >     if (y) {
     >         ...
     >     }
@@ -75,8 +75,8 @@ The Smile Interpreter's source code:
     > ```c
     > void
     > f(
-    > 	int x,
-    > 	int y
+    >     int x,
+    >     int y
     > )
     > {
     > }
