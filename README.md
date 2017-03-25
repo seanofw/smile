@@ -11,10 +11,24 @@ language with a flexible syntax.  It is heavily inspired by Lisp and
 Smalltalk and JavaScript, and is as mutatable and extensible as a true
 Lisp, but it reads more like Python or Ruby.
 
-More information on Smile can be found at http://www.smile-lang.org.  An
-informal development blog can also be found at http://www.werkema.com.
+## Smile Language Information
 
-(_Note: This implementation is currently incomplete but growing,
+  * [Smile Website](http://www.smile-lang.org)
+  * [Unofficial Dev Blog](http://www.werkema.com)
+  * [Community Standards](COMMUNITY-STANDARDS.md)
+
+## C Interpreter Source Code
+
+  * [Building the Interpreter](BUILD.md)
+  * [Interpreter Code Standards](CODE-STANDARDS.md)
+  * [Interpreter Source Code](smilelib)
+    * [Logical Block Diagram](docs/Smile%20Interpreter%20Logical%20Block%20Diagram.png)
+    * [Source Overview](smilelib/src)
+      * [Parsing Overview](smilelib/src/parsing)
+      * [Evaluation Overview](smilelib/src/eval)
+    * [C Header Overview](smilelib/include)
+
+(_Note: This C implementation is currently incomplete but growing,
 and it will eventually become the official implementation.  It is **not**
 usable in its current form (yet).  If you want the much-more-complete and
 fairly-usable (but slow) C# implementation, you'll need to look elsewhere,
