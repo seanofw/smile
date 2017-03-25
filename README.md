@@ -49,11 +49,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 > _A copy of the Apache license is also included in the source repository,
-in the file ''LICENSE''._
+in the file [LICENSE](LICENSE)._
 > 
-> _**Short short version:** It's free as in speech and free as in beer.
-You can use it any way you want, but you can't claim you wrote it,
-and since it's free, you can't complain if it doesn't work for you._
+> _**Short short version:** It's free as in speech and free as in beer.  You can use it any way you want, non-profit, private, public, or commercial, and you can even sell it, but you can't claim you wrote it, and since it's free, you can't complain or sue if it doesn't work or causes trouble for you._
 
 -------------
 
