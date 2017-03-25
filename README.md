@@ -26,12 +26,20 @@ as it's not hosted here._)
 
 ### On Windows
 
-You will need Microsoft Visual Studio 2012 or 2013.  A ''.sln'' solution
-file, along with associated ''.vcxproj'' project files, is provided.  Open
+You will need Microsoft Visual Studio 2017.  A ''.sln'' solution file,
+along with associated ''.vcxproj'' project files, is provided.  Open
 the solution file and then ''Rebuild All''.
 
 Smile on Windows can be built in Debug or Release mode, for either x86 or
 x64 architectures.
+
+(Note: With effort, you could probably get it to build under VS2012/13/15
+as well, but I only build and test it on VS2017 now.)
+
+If the formatting looks weird, you may need to install the Visual Studio
+[Elastic Tabstops](http://nickgravgaard.com/elastic-tabstops/) extension,
+since all of the source code uses elastic tabstops (no spaces _or_ tabs
+for indentation!).
 
 ### On Un*x
 
