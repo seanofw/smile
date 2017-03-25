@@ -27,8 +27,12 @@ as it's not hosted here._)
 ### On Windows
 
 You will need Microsoft Visual Studio 2017.  A ''.sln'' solution file,
-along with associated ''.vcxproj'' project files, is provided.  Open
-the solution file and then ''Rebuild All''.
+along with associated ''.vcxproj'' project files, is provided.
+
+Open the solution file and then ''Rebuild All''.  After it has built, run the
+''SmileLibTests'' project to run all of the unit tests and be certain that
+the interpreter was correctly built.  The command-line executable for Smile
+can be found in the ''SmileRunner'' project.
 
 Smile on Windows can be built in Debug or Release mode, for either x86 or
 x64 architectures.
