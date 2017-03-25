@@ -27,6 +27,8 @@ The Smile Interpreter's source code:
 1. Must use tabs, not spaces, for indentation.
 
     > _Tabs are more efficient for storage; they help prevent accidents in indentation; and they are of viewer-customizable size._
+    >
+    > Also, you should prefer using an editor that supports [Elastic Tabstops](http://nickgravgaard.com/elastic-tabstops/), because the Smile source code uses them extensively, and may look funny in editors that don't support them.
 
 2. Must place open curly braces for `for`, `if`, `else`, `while`, and `do` statements on the same line as the statement, not on the next line.
 
