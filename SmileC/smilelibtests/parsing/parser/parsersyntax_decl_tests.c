@@ -48,7 +48,7 @@ START_TEST(CanParseSimpleSyntaxForms)
 		NULL
 	);
 
-	ASSERT(SmileSyntax_Equals((SmileSyntax)result, expectedResult));
+	ASSERT(SmileObject_DeepCompare(result, (SmileObject)expectedResult));
 }
 END_TEST
 
@@ -68,7 +68,7 @@ START_TEST(CanParseSyntaxFormsThatUseSyntaxForms)
 		NULL
 	);
 
-	ASSERT(SmileSyntax_Equals((SmileSyntax)result, expectedResult));
+	ASSERT(SmileObject_DeepCompare(result, (SmileObject)expectedResult));
 }
 END_TEST
 
@@ -88,7 +88,7 @@ START_TEST(CanParseSyntaxFormsThatUseListForms)
 		NULL
 	);
 
-	ASSERT(SmileSyntax_Equals((SmileSyntax)result, expectedResult));
+	ASSERT(SmileObject_DeepCompare(result, (SmileObject)expectedResult));
 }
 END_TEST
 
@@ -117,7 +117,7 @@ START_TEST(CanParseSyntaxFormsThatContainNonterminals)
 		NULL
 	);
 
-	ASSERT(SmileSyntax_Equals((SmileSyntax)result, expectedResult));
+	ASSERT(SmileObject_DeepCompare(result, (SmileObject)expectedResult));
 }
 END_TEST
 
@@ -162,8 +162,7 @@ START_TEST(TheContainingScopeShouldInfluenceTheReplacement)
 		NULL
 	);
 
-	ASSERT((SmileObject)result != NullObject);
-	ASSERT(SmileSyntax_Equals((SmileSyntax)result, expectedSyntax));
+	ASSERT(SmileObject_DeepCompare(result, (SmileObject)expectedSyntax));
 }
 END_TEST
 
@@ -198,8 +197,7 @@ START_TEST(TheContainingScopeShouldInfluenceTheReplacement2)
 		NULL
 	);
 
-	ASSERT((SmileObject)result != NullObject);
-	ASSERT(SmileSyntax_Equals((SmileSyntax)result, expectedSyntax));
+	ASSERT(SmileObject_DeepCompare(result, (SmileObject)expectedSyntax));
 }
 END_TEST
 
@@ -235,8 +233,7 @@ START_TEST(TheContainingScopeShouldInfluenceTheReplacement3)
 		NULL
 	);
 
-	ASSERT((SmileObject)result != NullObject);
-	ASSERT(SmileSyntax_Equals((SmileSyntax)result, expectedSyntax));
+	ASSERT(SmileObject_DeepCompare(result, (SmileObject)expectedSyntax));
 }
 END_TEST
 
@@ -277,8 +274,7 @@ START_TEST(CanParseSyntaxWithEmbeddedCommas)
 		NULL
 	);
 
-	ASSERT((SmileObject)result != NullObject);
-	ASSERT(SmileSyntax_Equals((SmileSyntax)result, expectedSyntax));
+	ASSERT(SmileObject_DeepCompare(result, (SmileObject)expectedSyntax));
 }
 END_TEST
 
@@ -319,8 +315,7 @@ START_TEST(CanParseSyntaxWithEmbeddedSemicolons)
 		NULL
 	);
 
-	ASSERT((SmileObject)result != NullObject);
-	ASSERT(SmileSyntax_Equals((SmileSyntax)result, expectedSyntax));
+	ASSERT(SmileObject_DeepCompare(result, (SmileObject)expectedSyntax));
 }
 END_TEST
 
@@ -361,8 +356,7 @@ START_TEST(CanParseSyntaxWithEmbeddedColons)
 		NULL
 	);
 
-	ASSERT((SmileObject)result != NullObject);
-	ASSERT(SmileSyntax_Equals((SmileSyntax)result, expectedSyntax));
+	ASSERT(SmileObject_DeepCompare(result, (SmileObject)expectedSyntax));
 }
 END_TEST
 
@@ -405,8 +399,7 @@ START_TEST(CanParseSyntaxWithEmbeddedParentheses)
 		NULL
 	);
 
-	ASSERT((SmileObject)result != NullObject);
-	ASSERT(SmileSyntax_Equals((SmileSyntax)result, expectedSyntax));
+	ASSERT(SmileObject_DeepCompare(result, (SmileObject)expectedSyntax));
 }
 END_TEST
 
@@ -473,8 +466,7 @@ START_TEST(CanParseSyntaxWithEmbeddedCurlyBraces)
 		NULL
 	);
 
-	ASSERT((SmileObject)result != NullObject);
-	ASSERT(SmileSyntax_Equals((SmileSyntax)result, expectedSyntax));
+	ASSERT(SmileObject_DeepCompare(result, (SmileObject)expectedSyntax));
 }
 END_TEST
 
@@ -532,8 +524,7 @@ START_TEST(RealWorldSyntaxExample)
 		NULL
 	);
 
-	ASSERT((SmileObject)result != NullObject);
-	ASSERT(SmileSyntax_Equals((SmileSyntax)result, expectedSyntax));
+	ASSERT(SmileObject_DeepCompare(result, (SmileObject)expectedSyntax));
 }
 END_TEST
 
