@@ -90,7 +90,7 @@ The Smile Interpreter's source code:
 
 10. Should contain whitespace to the left and right of every binary operator.
 
- > *Don't write* `1+2` *; write* `1 + 2` *. This rule is very nearly a "must" rule; you may only violate it for certain short operations like subscripting, like* `str[x+1]` *.*
+    > *Don't write* `1+2` *; write* `1 + 2` *. This rule is very nearly a "must" rule; you may only violate it for certain short operations like subscripting, like* `str[x+1]` *.*
 
 11. Must not contain whitespace after a prefix unary operator or before a postfix unary operator.
 

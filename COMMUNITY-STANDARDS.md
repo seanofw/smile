@@ -11,7 +11,7 @@ So these are the rules I promise to adhere to when interacting with you.  They a
 The Ten Commandments of the Smile Community
 -------------------------------------------
 
-1.   **Be civil.**
+1. **Be civil.**
 
     Don't be a jerk.  Say "please" when you want something, and "thank you" when someone helps you.  Don't swear without a good reason.  Don't insult or demean people — to their face, or behind their back.  You catch more flies with honey than with vinegar, you know?
 
@@ -49,7 +49,7 @@ The Ten Commandments of the Smile Community
 
 10. **Kindness is its own reward.**
 
-   We will strive not just to be civil to others, but to be kind, helpful, and understanding to them, no matter their background, preferences, skills, or experience.  We were all once beginners, and we were all once outsiders, and we will strive to help them as we would like others to help us.
+    We will strive not just to be civil to others, but to be kind, helpful, and understanding to them, no matter their background, preferences, skills, or experience.  We were all once beginners, and we were all once outsiders, and we will strive to help them as we would like others to help us.
 
 There you go.  That's the ten commandments for the as-yet nonexistent Smile community.  When you write in the Smile wiki, or discuss Smile in your blog, or post a bug report, or contribute a new library, or interact in person with others in the Smile community, you will be expected to follow these rules.
 
