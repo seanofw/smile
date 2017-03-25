@@ -71,7 +71,7 @@ Int64 Atomic_SwapInt64(Int64 *value, Int64 replacement)
 //---------------------------------------------------------------------------------------
 //  Pointer functions
 
-#if defined(SMILE_CPU_X86)
+#if SMILE_CPU == SMILE_CPU_X86
 
 void *Atomic_LoadPointer(const void **src)
 {
@@ -98,7 +98,7 @@ void *Atomic_SwapPointer(void **value, const void *replacement)
 	return (void *)InterlockedExchange((volatile Int32 *)value, (Int32)replacement);
 }
 
-#elif defined(SMILE_CPU_X64)
+#elif SMILE_CPU == SMILE_CPU_X64
 
 void *Atomic_LoadPointer(const void **src)
 {
@@ -117,7 +117,7 @@ void *Atomic_AddPointer(void **value, Int delta)
 
 void *Atomic_CompareAndSwapPointer(void **value, const void *comparator, const void *replacement)
 {
-	return InterlockedCompareExchange64((volatile Int64 *)value, (Int64)replacement, (Int64)comparator);
+	return (void *)InterlockedCompareExchange64((volatile Int64 *)value, (Int64)replacement, (Int64)comparator);
 }
 
 void *Atomic_SwapPointer(void **value, const void *replacement)
@@ -125,4 +125,6 @@ void *Atomic_SwapPointer(void **value, const void *replacement)
 	return (void *)InterlockedExchange64((volatile Int64 *)value, (Int64)replacement);
 }
 
+#else
+#error No support for atomic operations: CPU is unknown.
 #endif

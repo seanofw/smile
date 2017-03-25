@@ -76,5 +76,5 @@ void Compiler_CompileNew(Compiler compiler, SmileList args)
 	}
 
 	// Create the new object.
-	EMIT1(Op_NewObj, +1 - (numPairs * 2 + 1), int32 = numPairs);
+	EMIT1(Op_NewObj, +1 - (numPairs * 2 + 1), int32 = (Int32)numPairs);
 }

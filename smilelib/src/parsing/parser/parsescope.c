@@ -245,7 +245,7 @@ ParseError ParseScope_DeclareHere(ParseScope scope, Symbol symbol, Int kind, Lex
 
 	// Allocate a new index for the declaration.
 	if (scope->numDecls >= scope->maxDecls) {
-		Int32 newMax = scope->maxDecls * 2;
+		Int32 newMax = (Int32)scope->maxDecls * 2;
 		ParseDecl *newDecls = GC_MALLOC_STRUCT_ARRAY(ParseDecl, newMax);
 		if (newDecls == NULL)
 			Smile_Abort_OutOfMemory();
@@ -255,7 +255,7 @@ ParseError ParseScope_DeclareHere(ParseScope scope, Symbol symbol, Int kind, Lex
 	}
 
 	// Store the new declaration.
-	declIndex = scope->numDecls++;
+	declIndex = (Int32)scope->numDecls++;
 	scope->decls[declIndex] = parseDecl;
 
 	// And record it in the lookup table.

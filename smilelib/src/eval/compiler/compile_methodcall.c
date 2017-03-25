@@ -68,6 +68,6 @@ void Compiler_CompileMethodCall(Compiler compiler, SmilePair pair, SmileList arg
 		}
 	}
 	else {
-		EMIT2(Op_Met, -(length + 1) + 1, i2.a = length, i2.b = (Int32)symbol);
+		EMIT2(Op_Met, -(length + 1) + 1, i2.a = (Int32)length, i2.b = (Int32)symbol);
 	}
 }

@@ -84,9 +84,9 @@ static UInt32 SmileNonterminal_Hash(SmileNonterminal self)
 static SmileObject SmileNonterminal_GetProperty(SmileNonterminal self, Symbol propertyName)
 {
 	if (propertyName == Smile_KnownSymbols.nonterminal)
-		return (SmileObject)self->nonterminal;
+		return (SmileObject)SmileSymbol_Create(self->nonterminal);
 	else if (propertyName == Smile_KnownSymbols.name)
-		return (SmileObject)self->name;
+		return (SmileObject)SmileSymbol_Create(self->name);
 	else if (propertyName == Smile_KnownSymbols.repeat) {
 		if (self->repeat == 0) return NullObject;
 		return (SmileObject)SmileSymbol_Create(self->repeat);

@@ -67,11 +67,11 @@ void Compiler_CompileVariable(Compiler compiler, Symbol symbol, Bool store)
 		}
 		else {
 			if (store) {
-				EMIT2(Op_StArg, 0, i2.a = functionDepth, i2.b = localSymbol->index);	// Leaves the value on the stack.
+				EMIT2(Op_StArg, 0, i2.a = (Int32)functionDepth, i2.b = (Int32)localSymbol->index);	// Leaves the value on the stack.
 				localSymbol->wasWrittenDeep = True;
 			}
 			else {
-				EMIT2(Op_LdArg, +1, i2.a = functionDepth, i2.b = localSymbol->index);
+				EMIT2(Op_LdArg, +1, i2.a = (Int32)functionDepth, i2.b = (Int32)localSymbol->index);
 				localSymbol->wasReadDeep = True;
 			}
 		}
@@ -92,11 +92,11 @@ void Compiler_CompileVariable(Compiler compiler, Symbol symbol, Bool store)
 		}
 		else {
 			if (store) {
-				EMIT2(Op_StLoc, 0, i2.a = functionDepth, i2.b = localSymbol->index);	// Leaves the value on the stack.
+				EMIT2(Op_StLoc, 0, i2.a = (Int32)functionDepth, i2.b = (Int32)localSymbol->index);	// Leaves the value on the stack.
 				localSymbol->wasWrittenDeep = True;
 			}
 			else {
-				EMIT2(Op_LdLoc, +1, i2.a = functionDepth, i2.b = localSymbol->index);
+				EMIT2(Op_LdLoc, +1, i2.a = (Int32)functionDepth, i2.b = (Int32)localSymbol->index);
 				localSymbol->wasReadDeep = True;
 			}
 		}
@@ -139,7 +139,7 @@ void Compiler_CompileVariable(Compiler compiler, Symbol symbol, Bool store)
 				EMIT1(Op_LdLoc0 + functionDepth, +1, index = localSymbol->index);
 			}
 			else {
-				EMIT2(Op_LdLoc, +1, i2.a = functionDepth, i2.b = localSymbol->index);
+				EMIT2(Op_LdLoc, +1, i2.a = (Int32)functionDepth, i2.b = (Int32)localSymbol->index);
 			}
 			localSymbol->wasReadDeep = True;
 		

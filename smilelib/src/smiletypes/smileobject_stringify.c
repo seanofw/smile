@@ -110,7 +110,7 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 			StringBuilder_AppendByte(stringBuilder, ')');
 		}
 		else if (SmileObject_ContainsNestedList(obj)) {
-			Bool isFirst = True;
+			isFirst = True;
 			StringBuilder_AppendByte(stringBuilder, '[');
 			while (SMILE_KIND(list) == SMILE_KIND_LIST && SMILE_KIND(list->a) == SMILE_KIND_SYMBOL) {
 				if (!isFirst) {

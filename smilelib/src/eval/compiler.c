@@ -230,7 +230,7 @@ Int CompilerFunction_AddLocal(CompilerFunction compilerFunction, Symbol local)
 		newMax = compilerFunction->localMax * 2;
 		newLocals = (Symbol *)GC_MALLOC_ATOMIC(sizeof(Symbol) * newMax);
 		MemCpy(newLocals, compilerFunction->localNames, sizeof(Symbol) * compilerFunction->localSize);
-		compilerFunction->localMax = newMax;
+		compilerFunction->localMax = (Int32)newMax;
 		compilerFunction->localNames = newLocals;
 	}
 
@@ -327,8 +327,8 @@ Int Compiler_AddNewSourceLocation(Compiler compiler, String filename, Int line, 
 	sourceLocation = &compiledTables->sourcelocations[index];
 	sourceLocation->assignedName = assignedName;
 	sourceLocation->filename = filename;
-	sourceLocation->line = line;
-	sourceLocation->column = column;
+	sourceLocation->line = (Int32)line;
+	sourceLocation->column = (Int32)column;
 
 	return index;
 }
@@ -612,7 +612,7 @@ ClosureInfo Compiler_MakeClosureInfoForCompilerFunction(Compiler compiler, Compi
 	
 	numVariables = compilerFunction->numArgs + compilerFunction->localSize;
 	closureInfo->numVariables = (Int16)numVariables;
-	closureInfo->tempSize = compilerFunction->stackSize;
+	closureInfo->tempSize = (Int32)compilerFunction->stackSize;
 
 	variableNames = (Symbol *)GC_MALLOC_ATOMIC(sizeof(Symbol) * numVariables);
 	if (variableNames == NULL)
@@ -625,7 +625,7 @@ ClosureInfo Compiler_MakeClosureInfoForCompilerFunction(Compiler compiler, Compi
 		symbol = ((SmileSymbol)args->a)->symbol;
 
 		varInfo.kind = VAR_KIND_ARG;
-		varInfo.offset = dest;
+		varInfo.offset = (Int32)dest;
 		varInfo.symbol = symbol;
 		varInfo.value = NullObject;
 		VarDict_SetValue(closureInfo->variableDictionary, symbol, &varInfo);
@@ -637,7 +637,7 @@ ClosureInfo Compiler_MakeClosureInfoForCompilerFunction(Compiler compiler, Compi
 		symbol = compilerFunction->localNames[src];
 	
 		varInfo.kind = VAR_KIND_VAR;
-		varInfo.offset = dest;
+		varInfo.offset = (Int32)dest;
 		varInfo.symbol = symbol;
 		varInfo.value = NullObject;
 		VarDict_SetValue(closureInfo->variableDictionary, symbol, &varInfo);

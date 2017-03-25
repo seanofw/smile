@@ -70,7 +70,7 @@ static void Error(const char *filename, Int line, const char *format, ...)
 
 	if (filename != NULL) {
 		if (line > 0) {
-			fprintf(stderr, "%s:%d: ", filename, line);
+			fprintf(stderr, "%s:%d: ", filename, (int)line);
 		}
 		else {
 			fprintf(stderr, "%s: ", filename);

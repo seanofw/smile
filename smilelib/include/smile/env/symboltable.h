@@ -66,7 +66,7 @@ Inline Symbol SymbolTableInt_AddFast(SymbolTable symbolTable, String name)
 	Symbol symbol;
 
 	// Add the symbol to the table, and return it.  This skips all the usual preexistence checks.
-	table->symbolNames[symbol = table->count++] = name;
+	table->symbolNames[symbol = (Symbol)table->count++] = name;
 	StringIntDictInt_Append((struct StringIntDictInt *)(table->symbolLookup), name, String_Hash(name), symbol);
 
 	return symbol;

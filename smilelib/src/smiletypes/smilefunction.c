@@ -329,7 +329,7 @@ Inline SmileVTable GetExternalFunctionVTableByFlags(Int argCheckFlags)
 	}
 }
 
-static int WrapFunctionName(char *dest, const char *name)
+static Int WrapFunctionName(char *dest, const char *name)
 {
 	Int maxlen = 256;
 	char *start = dest;
@@ -424,12 +424,12 @@ Bool SmileExternalFunction_DeepEqual(SmileFunction self, SmileUnboxedData selfDa
 
 UInt32 SmileUserFunction_Hash(SmileFunction self)
 {
-	return ((PtrInt)(self->u.u.userFunctionInfo) & 0xFFFFFFFF) ^ Smile_HashOracle;
+	return (UInt32)(((PtrInt)(self->u.u.userFunctionInfo) & 0xFFFFFFFF) ^ Smile_HashOracle);
 }
 
 UInt32 SmileExternalFunction_Hash(SmileFunction self)
 {
-	return ((PtrInt)(self->u.externalFunctionInfo.externalFunction) ^ (PtrInt)(self->u.externalFunctionInfo.param) & 0xFFFFFFFF) ^ Smile_HashOracle;
+	return (UInt32)(((PtrInt)(self->u.externalFunctionInfo.externalFunction) ^ (PtrInt)(self->u.externalFunctionInfo.param) & 0xFFFFFFFF) ^ Smile_HashOracle);
 }
 
 SmileObject SmileUserFunction_GetProperty(SmileFunction self, Symbol propertyName)

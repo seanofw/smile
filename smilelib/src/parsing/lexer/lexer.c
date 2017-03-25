@@ -97,9 +97,9 @@ LexerPosition Lexer_GetPosition(Lexer lexer)
 		if (position == NULL)
 			Smile_Abort_OutOfMemory();
 		position->filename = lexer->filename;
-		position->line = lexer->line;
-		position->lineStart = lexer->lineStart - lexer->input;
-		position->column = lexer->src - lexer->lineStart;
+		position->line = (Int32)lexer->line;
+		position->lineStart = (Int32)(lexer->lineStart - lexer->input);
+		position->column = (Int32)(lexer->src - lexer->lineStart);
 	}
 
 	position->length = 0;

@@ -215,7 +215,7 @@ static ParseError Parser_SplitDynamicString(Lexer lexer, DynamicStringPiece **dy
 						*numDynamicStringPieces = 0;
 						return parseError;
 					}
-					StringBuilder_AppendUnicode(builder, decoded);
+					StringBuilder_AppendUnicode(builder, (UInt32)(Int32)decoded);
 				}
 			}
 			else {

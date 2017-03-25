@@ -44,7 +44,7 @@ ByteCodeSegment ByteCodeSegment_CreateWithSize(Int size)
 
 	segment->byteCodes = byteCodes;
 	segment->numByteCodes = 0;
-	segment->maxByteCodes = size;
+	segment->maxByteCodes = (Int32)size;
 
 	return segment;
 }
@@ -72,7 +72,7 @@ void ByteCodeSegment_Grow(ByteCodeSegment segment, Int count)
 	MemCpy(newByteCodes, segment->byteCodes, sizeof(struct ByteCodeStruct) * segment->numByteCodes);
 
 	segment->byteCodes = newByteCodes;
-	segment->maxByteCodes = newMax;
+	segment->maxByteCodes = (Int32)newMax;
 }
 
 STATIC_STRING(_colonString, ":");

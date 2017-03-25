@@ -43,7 +43,7 @@ static Symbol SymbolTableInt_AddSymbol(SymbolTable symbolTable, String name)
 	}
 
 	// Add the symbol to the table, and return it.
-	table->symbolNames[symbol = table->count++] = name;
+	table->symbolNames[symbol = (Symbol)table->count++] = name;
 	StringIntDict_Add(table->symbolLookup, name, symbol);
 
 	return symbol;

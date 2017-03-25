@@ -210,16 +210,16 @@ void StringBuilder_AppendFormatInternal(StringBuilder stringBuilder, const Byte 
 			case 'c':
 				{
 					// 8-bit character.  Because of the vagaries of C, this is 'int', not 'char'.
-					char ch = (char)va_arg(v, int);
-					StringBuilder_AppendByte(stringBuilder, ch);
+					char c = (char)va_arg(v, int);
+					StringBuilder_AppendByte(stringBuilder, c);
 				}
 				break;
 
 			case 'C':
 				{
 					// 32-bit code point.
-					unsigned int ch = va_arg(v, unsigned int);
-					StringBuilder_AppendUnicode(stringBuilder, (UInt32)ch);
+					unsigned int c = va_arg(v, unsigned int);
+					StringBuilder_AppendUnicode(stringBuilder, (UInt32)c);
 				}
 				break;
 

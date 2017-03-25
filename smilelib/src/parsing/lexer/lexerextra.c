@@ -78,7 +78,6 @@ SMILE_API_FUNC Int Lexer_DecodeEscapeCode(const Byte **input, const Byte *end, B
 	const Byte *src = *input;
 	Byte ch;
 	Int b1, b2;
-	UInt value;
 
 	// If there's no input, give up.
 	if (src >= end)
@@ -120,6 +119,8 @@ SMILE_API_FUNC Int Lexer_DecodeEscapeCode(const Byte **input, const Byte *end, B
 		// Handle hex forms, which start with \x or \X followed by one or two hexadecimal characters.
 		case 'x': case 'X':
 		{
+			UInt value;
+
 			// At least one hex digit is required.
 			if (src >= end || (b1 = HexValue(*src)) == -1) {
 				*input = src;
@@ -147,6 +148,8 @@ SMILE_API_FUNC Int Lexer_DecodeEscapeCode(const Byte **input, const Byte *end, B
 		// representable Unicode character) will be returned as -1.
 		case 'u': case 'U':
 		{
+			UInt value;
+
 			// At least one hex digit is required.
 			if (src >= end || (b1 = HexValue(*src)) == -1) {
 				*input = src;
@@ -214,6 +217,8 @@ SMILE_API_FUNC Int Lexer_DecodeEscapeCode(const Byte **input, const Byte *end, B
 				return ch;
 			}
 			else {
+				UInt value;
+
 				// Escaped character in the Unicode higher-than-ASCII range.
 				value = String_ExtractUnicodeCharacterInternal(&src, end);
 				*input = src;

@@ -65,7 +65,7 @@ static Float64 SmileInteger128_ToFloat64(SmileInteger128 self, SmileUnboxedData 
 		ulo = (UInt64)self->value.lo;
 		bits = UIntLg(uhi);
 		ulo = (ulo >> bits) | (uhi << (64 - bits));
-		return -ldexp((Float64)(~ulo + 1), bits);
+		return -ldexp((Float64)(~ulo + 1), (Int32)bits);
 	}
 	else {
 		if (self->value.hi == 0)
@@ -74,7 +74,7 @@ static Float64 SmileInteger128_ToFloat64(SmileInteger128 self, SmileUnboxedData 
 		ulo = (UInt64)self->value.lo;
 		bits = UIntLg(uhi);
 		ulo = (ulo >> bits) | (uhi << (64 - bits));
-		return ldexp((Float64)ulo, bits);
+		return ldexp((Float64)ulo, (Int32)bits);
 	}
 }
 
