@@ -13,6 +13,26 @@
 #include <smile/array.h>
 #endif
 
+#ifndef __SMILE_DICT_INT32DICT_H__
+#include <smile/dict/int32dict.h>
+#endif
+
+#ifndef __SMILE_DICT_INT32INT32DICT_H__
+#include <smile/dict/int32int32dict.h>
+#endif
+
+#ifndef __SMILE_DICT_STRINGDICT_H__
+#include <smile/dict/stringdict.h>
+#endif
+
+#ifndef __SMILE_DICT_STRINGINTDICT_H__
+#include <smile/dict/stringintdict.h>
+#endif
+
+#ifndef __SMILE_DICT_POINTERSET_H__
+#include <smile/dict/pointerset.h>
+#endif
+
 #ifndef __SMILE_ENV_SYMBOLTABLE_H__
 #include <smile/env/symboltable.h>
 #endif

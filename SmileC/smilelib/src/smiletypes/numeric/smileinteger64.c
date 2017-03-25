@@ -65,6 +65,19 @@ static Bool SmileInteger64_CompareEqual(SmileInteger64 a, SmileUnboxedData aData
 	else return False;
 }
 
+static Bool SmileInteger64_DeepEqual(SmileInteger64 a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData, PointerSet visitedPointers)
+{
+	UNUSED(visitedPointers);
+
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_INTEGER64) {
+		return ((SmileInteger64)a)->value == bData.i64;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_INTEGER64) {
+		return ((SmileInteger64)a)->value == ((SmileInteger64)b)->value;
+	}
+	else return False;
+}
+
 SmileObject SmileInteger64_Box(SmileArg src)
 {
 	return src.obj;
@@ -93,6 +106,19 @@ SMILE_EASY_OBJECT_TOSTRING(SmileUnboxedInteger64, String_Format("%ld", unboxedDa
 
 static Bool SmileUnboxedInteger64_CompareEqual(SmileUnboxedInteger64 a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
 {
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_INTEGER64) {
+		return aData.i64 == bData.i64;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_INTEGER64) {
+		return aData.i64 == ((SmileInteger64)b)->value;
+	}
+	else return False;
+}
+
+static Bool SmileUnboxedInteger64_DeepEqual(SmileUnboxedInteger64 a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData, PointerSet visitedPointers)
+{
+	UNUSED(visitedPointers);
+
 	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_INTEGER64) {
 		return aData.i64 == bData.i64;
 	}

@@ -32,10 +32,42 @@ SmileObject SmileObject_Create(void)
 	return obj;
 }
 
+Bool SmileObject_DeepCompare(SmileObject self, SmileObject other)
+{
+	PointerSet visitedPointers = PointerSet_Create();
+	Bool result;
+
+	result = SMILE_VCALL4(self, deepEqual, (SmileUnboxedData){ 0 }, other, (SmileUnboxedData){ 0 }, visitedPointers);
+
+	PointerSet_Clear(visitedPointers);	// Be nicer to the GC by getting rid of pointers we don't need to keep.
+
+	return result;
+}
+
+Bool SmileArg_DeepCompare(SmileArg self, SmileArg other)
+{
+	PointerSet visitedPointers = PointerSet_Create();
+	Bool result;
+
+	result = SMILE_VCALL4(self.obj, deepEqual, self.unboxed, other.obj, other.unboxed, visitedPointers);
+
+	PointerSet_Clear(visitedPointers);	// Be nicer to the GC by getting rid of pointers we don't need to keep.
+
+	return result;
+}
+
 Bool SmileObject_CompareEqual(SmileObject self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData)
 {
 	UNUSED(selfData);
 	UNUSED(otherData);
+	return self == other;
+}
+
+Bool SmileObject_DeepEqual(SmileObject self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData, PointerSet visitedPointers)
+{
+	UNUSED(selfData);
+	UNUSED(otherData);
+	UNUSED(visitedPointers);
 	return self == other;
 }
 

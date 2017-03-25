@@ -63,6 +63,19 @@ static Bool SmileBool_CompareEqual(SmileBool a, SmileUnboxedData aData, SmileObj
 	else return False;
 }
 
+static Bool SmileBool_DeepEqual(SmileBool a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData, PointerSet visitedPointers)
+{
+	UNUSED(visitedPointers);
+
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_BOOL) {
+		return ((SmileBool)a)->value == bData.b;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_BOOL) {
+		return ((SmileBool)a)->value == ((SmileBool)b)->value;
+	}
+	else return False;
+}
+
 SmileObject SmileBool_Box(SmileArg src)
 {
 	return src.obj;
@@ -91,6 +104,19 @@ SMILE_EASY_OBJECT_TOSTRING(SmileUnboxedBool, unboxedData.b ? trueString : falseS
 
 static Bool SmileUnboxedBool_CompareEqual(SmileUnboxedBool a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
 {
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_BOOL) {
+		return aData.b == bData.b;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_BOOL) {
+		return aData.b == ((SmileBool)b)->value;
+	}
+	else return False;
+}
+
+static Bool SmileUnboxedBool_DeepEqual(SmileUnboxedBool a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData, PointerSet visitedPointers)
+{
+	UNUSED(visitedPointers);
+
 	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_BOOL) {
 		return aData.b == bData.b;
 	}

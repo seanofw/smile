@@ -60,6 +60,13 @@ Bool SmileString_CompareEqual(SmileString self, SmileUnboxedData selfUnboxed, Sm
 	return !MemCmp(self->string.text, otherString->string.text, length);
 }
 
+Bool SmileString_DeepEqual(SmileString self, SmileUnboxedData selfUnboxed, SmileObject other, SmileUnboxedData otherUnboxed, PointerSet visitedPointers)
+{
+	UNUSED(visitedPointers);
+
+	return SmileString_CompareEqual(self, selfUnboxed, other, otherUnboxed);
+}
+
 UInt32 SmileString_Hash(SmileString self)
 {
 	String str = SmileString_ToString(self, (SmileUnboxedData){ 0 });

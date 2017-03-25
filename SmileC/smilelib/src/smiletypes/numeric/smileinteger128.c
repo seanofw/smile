@@ -85,6 +85,7 @@ SMILE_EASY_OBJECT_NO_PROPERTIES(SmileInteger128)
 SMILE_EASY_OBJECT_NO_UNBOX(SmileInteger128)
 
 SMILE_EASY_OBJECT_COMPARE(SmileInteger128, SMILE_KIND_INTEGER128, a->value.hi == b->value.hi && a->value.lo == b->value.lo)
+SMILE_EASY_OBJECT_DEEP_COMPARE(SmileInteger128, SMILE_KIND_INTEGER128, a->value.hi == b->value.hi && a->value.lo == b->value.lo)
 SMILE_EASY_OBJECT_TOBOOL(SmileInteger128, (obj->value.hi | obj->value.lo) != 0)
 SMILE_EASY_OBJECT_TOINT(SmileInteger128, (Int32)obj->value.lo)
 SMILE_EASY_OBJECT_TOREAL(SmileInteger128, Real64_FromFloat64(SmileInteger128_ToFloat64(obj, unboxedData)))

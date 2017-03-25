@@ -24,6 +24,10 @@ SMILE_EASY_OBJECT_COMPARE(ParseMessage, SMILE_KIND_PARSEMESSAGE,
 	a->messageKind == b->messageKind
 	&& LexerPosition_Equals(a->position, b->position)
 	&& String_Equals(a->message, b->message));
+SMILE_EASY_OBJECT_DEEP_COMPARE(ParseMessage, SMILE_KIND_PARSEMESSAGE,
+	a->messageKind == b->messageKind
+	&& LexerPosition_Equals(a->position, b->position)
+	&& String_Equals(a->message, b->message));
 SMILE_EASY_OBJECT_HASH(ParseMessage, obj->position->line * 100 + obj->position->column);
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(ParseMessage);

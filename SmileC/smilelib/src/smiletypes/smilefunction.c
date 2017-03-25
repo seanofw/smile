@@ -387,16 +387,34 @@ Bool SmileUserFunction_CompareEqual(SmileFunction self, SmileUnboxedData selfDat
 	UNUSED(selfData);
 	UNUSED(otherData);
 
-	return (SMILE_KIND(other) == SMILE_KIND_FUNCTION
-		&& self->vtable == other->vtable
-		&& self->u.u.userFunctionInfo == ((SmileFunction)other)->u.u.userFunctionInfo
-		&& self->u.u.declaringClosure == ((SmileFunction)other)->u.u.declaringClosure);
+	return (SmileObject)self == other;
 }
 
 Bool SmileExternalFunction_CompareEqual(SmileFunction self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData)
 {
 	UNUSED(selfData);
 	UNUSED(otherData);
+
+	return (SmileObject)self == other;
+}
+
+Bool SmileUserFunction_DeepEqual(SmileFunction self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData, PointerSet visitedPointers)
+{
+	UNUSED(selfData);
+	UNUSED(otherData);
+	UNUSED(visitedPointers);
+
+	return (SMILE_KIND(other) == SMILE_KIND_FUNCTION
+		&& self->vtable == other->vtable
+		&& self->u.u.userFunctionInfo == ((SmileFunction)other)->u.u.userFunctionInfo
+		&& self->u.u.declaringClosure == ((SmileFunction)other)->u.u.declaringClosure);
+}
+
+Bool SmileExternalFunction_DeepEqual(SmileFunction self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData, PointerSet visitedPointers)
+{
+	UNUSED(selfData);
+	UNUSED(otherData);
+	UNUSED(visitedPointers);
 
 	return (SMILE_KIND(other) == SMILE_KIND_FUNCTION
 		&& self->vtable == other->vtable
@@ -540,6 +558,7 @@ LexerPosition SmileExternalFunction_GetSourceLocation(SmileFunction self)
 	SMILE_VTABLE(SmileUserFunction_##__checkKind__##_VTable, SmileFunction) \
 	{ \
 		SmileUserFunction_CompareEqual, \
+		SmileUserFunction_DeepEqual, \
 		SmileUserFunction_Hash, \
 		\
 		SmileFunction_SetSecurityKey, \
@@ -583,6 +602,7 @@ USER_FUNCTION_VTABLE(CheckedRest);	// Function with at least one type-checked ar
 	SMILE_VTABLE(SmileExternalFunction_##__checkKind__##_VTable, SmileFunction) \
 	{ \
 		SmileExternalFunction_CompareEqual, \
+		SmileExternalFunction_DeepEqual, \
 		SmileExternalFunction_Hash, \
 		\
 		SmileFunction_SetSecurityKey, \

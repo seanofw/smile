@@ -42,10 +42,46 @@ SmileUserObject SmileUserObject_CreateWithSize(SmileObject base, Int initialSize
 
 Bool SmileUserObject_CompareEqual(SmileUserObject self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData)
 {
-	UNUSED(self);
 	UNUSED(selfData);
 	UNUSED(otherData);
+
 	return ((SmileObject)self == other);
+}
+
+Bool SmileUserObject_DeepEqual(SmileUserObject self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData, PointerSet visitedPointers)
+{
+	SmileUserObject otherUserObject;
+	Symbol *keys;
+	Symbol key;
+	Int i, numKeys, numOtherKeys;
+	SmileObject value, otherValue;
+
+	UNUSED(selfData);
+	UNUSED(otherData);
+
+	if ((SmileObject)self == other) return True;
+	if (SMILE_KIND(other) != SMILE_KIND_USEROBJECT) return False;
+	otherUserObject = (SmileUserObject)other;
+
+	numKeys = Int32Dict_Count((Int32Dict)&self->dict);
+	numOtherKeys = Int32Dict_Count((Int32Dict)&otherUserObject->dict);
+	if (numKeys != numOtherKeys) return False;
+
+	keys = (Symbol *)Int32Dict_GetKeys((Int32Dict)&self->dict);
+
+	for (i = 0; i < numKeys; i++) {
+		key = keys[i];
+		if (!Int32Dict_TryGetValue((Int32Dict)&otherUserObject->dict, key, &otherValue))
+			return False;
+		value = (SmileObject)Int32Dict_GetValue((Int32Dict)&self->dict, key);
+		
+		if (PointerSet_Add(visitedPointers, value)) {
+			if (!SMILE_VCALL4(value, deepEqual, (SmileUnboxedData){ 0 }, otherValue, (SmileUnboxedData){ 0 }, visitedPointers))
+				return False;
+		}
+	}
+
+	return True;
 }
 
 UInt32 SmileUserObject_Hash(SmileUserObject self)
@@ -255,6 +291,7 @@ static LexerPosition SmileUserObject_GetSourceLocation(SmileUserObject self)
 SMILE_VTABLE(SmileUserObject_VTable_ReadWriteAppend, SmileUserObject)
 {
 	SmileUserObject_CompareEqual,
+	SmileUserObject_DeepEqual,
 	SmileUserObject_Hash,
 
 	SmileUserObject_SetSecurityKey,
@@ -279,6 +316,7 @@ SMILE_VTABLE(SmileUserObject_VTable_ReadWriteAppend, SmileUserObject)
 SMILE_VTABLE(SmileUserObject_VTable_ReadWrite, SmileUserObject)
 {
 	SmileUserObject_CompareEqual,
+	SmileUserObject_DeepEqual,
 	SmileUserObject_Hash,
 
 	SmileUserObject_SetSecurityKey,
@@ -303,6 +341,7 @@ SMILE_VTABLE(SmileUserObject_VTable_ReadWrite, SmileUserObject)
 SMILE_VTABLE(SmileUserObject_VTable_ReadAppend, SmileUserObject)
 {
 	SmileUserObject_CompareEqual,
+	SmileUserObject_DeepEqual,
 	SmileUserObject_Hash,
 
 	SmileUserObject_SetSecurityKey,
@@ -327,6 +366,7 @@ SMILE_VTABLE(SmileUserObject_VTable_ReadAppend, SmileUserObject)
 SMILE_VTABLE(SmileUserObject_VTable_ReadOnly, SmileUserObject)
 {
 	SmileUserObject_CompareEqual,
+	SmileUserObject_DeepEqual,
 	SmileUserObject_Hash,
 
 	SmileUserObject_SetSecurityKey,

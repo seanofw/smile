@@ -21,6 +21,7 @@
 	\
 	/* These are the functions you'll have to implement for your object type. */ \
 	static Bool __type__##_CompareEqual(__type__ self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData); \
+	static Bool __type__##_DeepEqual(__type__ self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData, PointerSet visitedPointers); \
 	static UInt32 __type__##_Hash(__type__ obj); \
 	static void __type__##_SetSecurityKey(__type__ self, SmileObject newSecurityKey, SmileObject oldSecurityKey); \
 	static void __type__##_SetSecurity(__type__ self, Int security, SmileObject securityKey); \
@@ -42,6 +43,7 @@
 	/* The virtual table that glues it all together and that's needed by the type system. */ \
 	SMILE_VTABLE(__type__##_VTable, __type__) { \
 		__type__##_CompareEqual, \
+		__type__##_DeepEqual, \
 		__type__##_Hash, \
 		__type__##_SetSecurityKey, \
 		__type__##_SetSecurity, \
@@ -66,12 +68,31 @@
 /// </summary>
 /// <param name="__type__">The type of the object you want to declare virtual functions for.</param>
 /// <param name="__kind__">The object-kind (enum) of the object you want to declare virtual functions for.</param>
-/// <param name="__expr__">A C expression that determines whether two objects of the given type, named 'a' and 'b', are equal.</param>
+/// <param name="__expr__">A C expression that determines whether two objects of the given type, named 'a' and 'b', are equal.
+/// This should run in constant time.</param>
 #define SMILE_EASY_OBJECT_COMPARE(__type__, __kind__, __expr__) \
 	static Bool __type__##_CompareEqual(__type__ a, SmileUnboxedData aData, SmileObject other, SmileUnboxedData bData) { \
 		__type__ b; \
 		UNUSED(a); UNUSED(b); \
 		UNUSED(aData); UNUSED(bData); \
+		if (other->kind != (__kind__)) return False; \
+		b = (__type__)other; \
+		return __expr__; \
+	}
+
+/// <summary>
+/// This macro makes declaring consistent Smile virtual comparison functions easier.
+/// </summary>
+/// <param name="__type__">The type of the object you want to declare virtual functions for.</param>
+/// <param name="__kind__">The object-kind (enum) of the object you want to declare virtual functions for.</param>
+/// <param name="__expr__">A C expression that determines whether two objects of the given type, named 'a' and 'b', are equal,
+/// including all their descendants.</param>
+#define SMILE_EASY_OBJECT_DEEP_COMPARE(__type__, __kind__, __expr__) \
+	static Bool __type__##_DeepEqual(__type__ a, SmileUnboxedData aData, SmileObject other, SmileUnboxedData bData, PointerSet visitedPointers) { \
+		__type__ b; \
+		UNUSED(a); UNUSED(b); \
+		UNUSED(aData); UNUSED(bData); \
+		UNUSED(visitedPointers); \
 		if (other->kind != (__kind__)) return False; \
 		b = (__type__)other; \
 		return __expr__; \
@@ -133,14 +154,6 @@
 	static LexerPosition __type__##_GetSourceLocation(__type__ obj) { UNUSED(obj); return NULL; }
 
 /// <summary>
-/// This macro can be used to declare virtual functions for a type that can't be readily compared or hashed.
-/// </summary>
-/// <param name="__type__">The type of the object you want to declare virtual functions for.</param>
-#define SMILE_EASY_OBJECT_NO_COMPARE(__type__) \
-	static Bool __type__##_CompareEqual(SmileArg aArg, SmileArg bArg) { return (void *)aArg.obj == (void *)bArg.obj; } \
-	static UInt32 __type__##_Hash(__type__ obj) { UNUSED(obj); return 0; } \
-
-/// <summary>
 /// This macro can be used to declare virtual functions for a type that can't be unboxed (which is most of them).
 /// </summary>
 /// <param name="__type__">The type of the object you want to declare virtual functions for.</param>
@@ -198,26 +211,5 @@
 				SymbolTable_GetName(Smile_SymbolTable, symbol))); } \
 	static SmileList __type__##_GetPropertyNames(__type__ obj) \
 		{ UNUSED(obj); return NullList; }
-
-/// <summary>
-/// This macro is used to declare a virtual table and all virtual functions for a type that is
-/// essentially an opaque handle, with no properties and not much that can be done with it.
-/// </summary>
-/// <param name="__type__">The type of the object you want to declare virtual functions for.</param>
-/// <param name="__tobool__">A C expression that can convert this handle to a Boolean value (usually True).</param>
-/// <param name="__toint__">A C expression that can convert this handle to an Integer32 value (up to you, but often 0 or 1).</param>
-/// <param name="__tostring__">A C expression that can convert this handle to a String (up to you, but often the type name).</param>
-#define SMILE_EASY_OBJECT_HANDLE(__type__, __tobool__, __toint__, __tostring__) \
-	SMILE_EASY_OBJECT_VTABLE(__type__); \
-	SMILE_EASY_OBJECT_TOBOOL(__type__, __tobool__); \
-	SMILE_EASY_OBJECT_TOINT(__type__, __toint__); \
-	SMILE_EASY_OBJECT_TOSTRING(__type__, __tostring__); \
-	SMILE_EASY_OBJECT_NO_REALS(__type__); \
-	SMILE_EASY_OBJECT_READONLY_SECURITY(__type__); \
-	SMILE_EASY_OBJECT_NO_COMPARE(__type__); \
-	SMILE_EASY_OBJECT_NO_PROPERTIES(__type__); \
-	SMILE_EASY_OBJECT_NO_CALL(__type__); \
-	SMILE_EASY_OBJECT_NO_SOURCE(__type__); \
-	SMILE_EASY_OBJECT_NO_UNBOX(__type__);
 
 #endif

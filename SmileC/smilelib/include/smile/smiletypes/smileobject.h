@@ -10,6 +10,10 @@
 #include <smile/string.h>
 #endif
 
+#ifndef __SMILE_DICT_POINTERSET_H__
+#include <smile/dict/pointerset.h>
+#endif
+
 #ifndef __SMILE_ENV_ENV_H__
 #include <smile/env/env.h>
 #endif
@@ -99,7 +103,8 @@ typedef struct {
 ///	<li>Objects may only be equal if they are of the same SMILE_KIND;</li>
 ///	<li>Equality is commutative; that is, "a == b" has the same meaning as "b == a".</li>
 ///	<li>The equality function must be defined consistent with the hash() function below.</li>
-///	<li>The only object that may equal the Object instance is the Object instance.</li>
+///	<li>The equality function should run in constant time.</li>
+///	<li>The only object that may equal the Primitive instance is the Primitive instance.</li>
 ///	<li>The only object that may equal the Null instance is the Null instance.</li>
 ///	</ul>
 ///	
@@ -112,10 +117,23 @@ typedef struct {
 ///			hash(a) == hash(b).</li>
 ///	<li>Hash codes should be as close to uniformly-randomly-distributed as possible.</li>
 ///	</ul>
-///
-/// <hr />
-/// <h4>Security operations:</h4>
-///
+///	
+/// <code>deepEqual</code>:	<p>Compare this object against another object, which could be an object of any type.
+///	Return true if they are logically equal, false if they are not.  This must follow the
+///	rules listed below:</p>
+///	<ul>
+///	<li>Objects may only be equal if they are of the same SMILE_KIND;</li>
+///	<li>Equality is commutative; that is, "a == b" has the same meaning as "b == a".</li>
+///	<li>The equality function must be defined consistent with the hash() function below.</li>
+///	<li>The equality function should attempt to compare all data of both objects,
+///	recursively if necessary, and may run in O(n) time.</li>
+///	<li>The only object that may equal the Primitive instance is the Primitive instance.</li>
+///	<li>The only object that may equal the Null instance is the Null instance.</li>
+///	</ul>
+///	
+/// <hr />	
+/// <h4>Security operations:</h4>	
+///	
 /// <code>setSecurityKey</code>:	<p>Change the security key of this object to be the provided object instance.  Security
 ///	keys allow an object to be locked down to prevent alteration by unauthorized parties.
 ///	Any object may be used as a security key.  By default, all objects start with Null as
@@ -213,6 +231,7 @@ typedef struct {
 #define SMILE_VTABLE_TYPE(__name__, __type__) \
 	__name__ { \
 		Bool (*compareEqual)(__type__ self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData); \
+		Bool (*deepEqual)(__type__ self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData, PointerSet visitedPointers); \
 		UInt32 (*hash)(__type__ self); \
 		\
 		void (*setSecurityKey)(__type__ self, SmileObject newSecurityKey, SmileObject oldSecurityKey); \
@@ -310,10 +329,23 @@ typedef struct {
 /// <param name="__arg1__">The first argument to pass to the method.</param>
 /// <param name="__arg2__">The second argument to pass to the method.</param>
 /// <param name="__arg3__">The third argument to pass to the method.</param>
-/// <param name="__method__">The name of the method to call, like "setProperty" (without quotes).</param>
+/// <param name="__method__">The name of the method to call, like "compareEqual" (without quotes).</param>
 /// <returns>The return value from the method.</returns>
 #define SMILE_VCALL3(__obj__, __method__, __arg1__, __arg2__, __arg3__) \
 	((__obj__)->vtable->__method__((SmileObject)(__obj__), __arg1__, __arg2__, __arg3__))
+
+/// <summary>
+/// Perform a virtual call to the given method on the object, passing four arguments.
+/// </summary>
+/// <param name="__obj__">The object whose method you would like to call.</param>
+/// <param name="__arg1__">The first argument to pass to the method.</param>
+/// <param name="__arg2__">The second argument to pass to the method.</param>
+/// <param name="__arg3__">The third argument to pass to the method.</param>
+/// <param name="__arg4__">The fourth argument to pass to the method.</param>
+/// <param name="__method__">The name of the method to call, like "deepEqual" (without quotes).</param>
+/// <returns>The return value from the method.</returns>
+#define SMILE_VCALL4(__obj__, __method__, __arg1__, __arg2__, __arg3__, __arg4__) \
+	((__obj__)->vtable->__method__((SmileObject)(__obj__), __arg1__, __arg2__, __arg3__, __arg4__))
 
 //-------------------------------------------------------------------------------------------------
 //  Declare the core SmileObject itself, its virtual table, and common (external) operations
@@ -333,6 +365,9 @@ SMILE_API_FUNC const char *SmileObject_StringifyToC(SmileObject obj);
 
 SMILE_API_FUNC Bool SmileObject_IsRegularList(SmileObject list);
 SMILE_API_FUNC Bool SmileObject_ContainsNestedList(SmileObject obj);
+
+SMILE_API_FUNC Bool SmileObject_DeepCompare(SmileObject self, SmileObject other);
+SMILE_API_FUNC Bool SmileArg_DeepCompare(SmileArg self, SmileArg other);
 
 //-------------------------------------------------------------------------------------------------
 //  Inline operations on SmileObject.

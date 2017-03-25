@@ -69,6 +69,13 @@ static Bool SmileNonterminal_CompareEqual(SmileNonterminal self, SmileUnboxedDat
 	return True;
 }
 
+static Bool SmileNonterminal_DeepEqual(SmileNonterminal self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData, PointerSet visitedPointers)
+{
+	UNUSED(visitedPointers);
+
+	return SmileNonterminal_CompareEqual(self, selfData, other, otherData);
+}
+
 static UInt32 SmileNonterminal_Hash(SmileNonterminal self)
 {
 	return self->nonterminal + self->name;

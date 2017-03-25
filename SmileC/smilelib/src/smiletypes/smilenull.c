@@ -45,6 +45,15 @@ static Bool SmileNull_CompareEqual(SmileNull self, SmileUnboxedData selfData, Sm
 	return (SMILE_KIND(other) == SMILE_KIND_NULL);
 }
 
+static Bool SmileNull_DeepEqual(SmileNull self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData, PointerSet visitedPointers)
+{
+	UNUSED(self);
+	UNUSED(selfData);
+	UNUSED(otherData);
+	UNUSED(visitedPointers);
+	return (SMILE_KIND(other) == SMILE_KIND_NULL);
+}
+
 STATIC_STRING(NullString, "null");
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileNull)

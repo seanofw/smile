@@ -64,6 +64,14 @@ Bool SmileSyntax_Equals(SmileSyntax a, SmileSyntax b)
 
 static Bool SmileSyntax_CompareEqual(SmileSyntax self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData)
 {
+	UNUSED(selfData);
+	UNUSED(otherData);
+
+	return (SmileObject)self == other;
+}
+
+static Bool SmileSyntax_DeepEqual(SmileSyntax self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData, PointerSet visitedPointers)
+{
 	SmileSyntax otherSyntax;
 
 	UNUSED(selfData);
@@ -77,11 +85,15 @@ static Bool SmileSyntax_CompareEqual(SmileSyntax self, SmileUnboxedData selfData
 	if (self->nonterminal != otherSyntax->nonterminal)
 		return False;
 
-	if (!SMILE_VCALL3(self->pattern, compareEqual, (SmileUnboxedData){ 0 }, (SmileObject)otherSyntax->pattern, (SmileUnboxedData){ 0 }))
-		return False;
+	if (PointerSet_Add(visitedPointers, self->pattern)) {
+		if (!SMILE_VCALL4(self->pattern, deepEqual, (SmileUnboxedData){ 0 }, (SmileObject)otherSyntax->pattern, (SmileUnboxedData){ 0 }, visitedPointers))
+			return False;
+	}
 
-	if (!SMILE_VCALL3(self->replacement, compareEqual, (SmileUnboxedData){ 0 }, (SmileObject)otherSyntax->replacement, (SmileUnboxedData){ 0 }))
-		return False;
+	if (PointerSet_Add(visitedPointers, self->replacement)) {
+		if (!SMILE_VCALL4(self->replacement, deepEqual, (SmileUnboxedData){ 0 }, (SmileObject)otherSyntax->replacement, (SmileUnboxedData){ 0 }, visitedPointers))
+			return False;
+	}
 
 	return True;
 }

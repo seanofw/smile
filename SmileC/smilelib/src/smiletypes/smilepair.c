@@ -63,6 +63,32 @@ static Bool SmilePair_CompareEqual(SmilePair self, SmileUnboxedData selfData, Sm
 	return (SmileObject)self == other;
 }
 
+static Bool SmilePair_DeepEqual(SmilePair self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData, PointerSet visitedPointers)
+{
+	UNUSED(selfData);
+	UNUSED(otherData);
+
+	for (;;) {
+		if (SMILE_KIND(other) != SMILE_KIND(self)) return False;
+
+		if (PointerSet_Add(visitedPointers, self->left)) {
+			if (!SMILE_VCALL4(self->left, deepEqual, (SmileUnboxedData){ 0 }, ((SmilePair)other)->left, (SmileUnboxedData){ 0 }, visitedPointers))
+				return False;
+		}
+
+		if (PointerSet_Add(visitedPointers, self->right)) {
+			if (SMILE_KIND(self->right) != SMILE_KIND_PAIR) {
+				if (!SMILE_VCALL4(self->right, deepEqual, (SmileUnboxedData){ 0 }, ((SmilePair)other)->right, (SmileUnboxedData){ 0 }, visitedPointers))
+					return False;
+				return True;
+			}
+		}
+
+		self = (SmilePair)self->right;
+		other = ((SmilePair)other)->right;
+	}
+}
+
 static UInt32 SmilePair_Hash(SmilePair self)
 {
 	return (UInt32)(PtrInt)self;
