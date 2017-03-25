@@ -4,13 +4,6 @@
 
 -------------
 
-(_Note: Most active development work is currently taking place in the
-`bytecode-compiler` branch.  `master` is stable, but well behind current
-work.  The new bytecode compiler will be merged into `master` once it is
-complete.  -- Sean, January 2017_)
-
-<hr />
-
 **This is the C implementation of the Smile Programming Language.**
 
 Smile is a functional, object-oriented, dynamically-typed programming
