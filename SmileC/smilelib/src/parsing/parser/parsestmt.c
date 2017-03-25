@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -21,3 +21,9 @@
 #include <smile/parsing/internal/parserinternal.h>
 #include <smile/parsing/internal/parsedecl.h>
 #include <smile/parsing/internal/parsescope.h>
+
+// There is no such thing as a true statement in Smile.  This file is left blank
+// to remind all of you of that fact!
+//
+// What you probably want to go look at is parsecore.c, which contains base expressions,
+// the true root of the parse tree.

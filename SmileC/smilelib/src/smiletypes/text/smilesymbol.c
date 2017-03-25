@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -19,128 +19,123 @@
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/text/smilesymbol.h>
+#include <smile/smiletypes/easyobject.h>
+
+SMILE_IGNORE_UNUSED_VARIABLES
+
+SMILE_EASY_OBJECT_VTABLE(SmileSymbol);
 
 SmileSymbol SmileSymbol_Create(Symbol symbol)
 {
 	SmileSymbol smileInt = GC_MALLOC_STRUCT(struct SmileSymbolInt);
 	if (smileInt == NULL) Smile_Abort_OutOfMemory();
-	smileInt->base = Smile_KnownObjects.Object;
+	smileInt->base = (SmileObject)Smile_KnownBases.Symbol;
 	smileInt->kind = SMILE_KIND_SYMBOL;
 	smileInt->vtable = SmileSymbol_VTable;
 	smileInt->symbol = symbol;
 	return smileInt;
 }
 
-Bool SmileSymbol_CompareEqual(SmileSymbol self, SmileObject other)
+SMILE_EASY_OBJECT_READONLY_SECURITY(SmileSymbol)
+SMILE_EASY_OBJECT_NO_CALL(SmileSymbol)
+SMILE_EASY_OBJECT_NO_SOURCE(SmileSymbol)
+SMILE_EASY_OBJECT_NO_PROPERTIES(SmileSymbol)
+
+SMILE_EASY_OBJECT_HASH(SmileSymbol, obj->symbol)
+SMILE_EASY_OBJECT_TOBOOL(SmileSymbol, True)
+SMILE_EASY_OBJECT_TOINT(SmileSymbol, 0)
+SMILE_EASY_OBJECT_TOREAL(SmileSymbol, Real64_Zero)
+SMILE_EASY_OBJECT_TOFLOAT(SmileSymbol, 0.0)
+SMILE_EASY_OBJECT_TOSTRING(SmileSymbol, SymbolTable_GetName(Smile_SymbolTable, obj->symbol))
+
+static Bool SmileSymbol_CompareEqual(SmileSymbol a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
 {
-	SmileSymbol otherInt;
-
-	if (SMILE_KIND(other) != SMILE_KIND_SYMBOL) return False;
-	otherInt = (SmileSymbol)other;
-
-	return self->symbol == otherInt->symbol;
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_SYMBOL) {
+		return ((SmileSymbol)a)->symbol == bData.symbol;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_SYMBOL) {
+		return ((SmileSymbol)a)->symbol == ((SmileSymbol)b)->symbol;
+	}
+	else return False;
 }
 
-UInt32 SmileSymbol_Hash(SmileSymbol self)
+static Bool SmileSymbol_DeepEqual(SmileSymbol a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData, PointerSet visitedPointers)
 {
-	return (UInt32)self->symbol;
+	UNUSED(visitedPointers);
+
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_SYMBOL) {
+		return ((SmileSymbol)a)->symbol == bData.symbol;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_SYMBOL) {
+		return ((SmileSymbol)a)->symbol == ((SmileSymbol)b)->symbol;
+	}
+	else return False;
 }
 
-void SmileSymbol_SetSecurityKey(SmileSymbol self, SmileObject newSecurityKey, SmileObject oldSecurityKey)
+SmileObject SmileSymbol_Box(SmileArg src)
 {
-	UNUSED(self);
-	UNUSED(newSecurityKey);
-	UNUSED(oldSecurityKey);
-	Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
+	return src.obj;
 }
 
-void SmileSymbol_SetSecurity(SmileSymbol self, Int security, SmileObject securityKey)
+SmileArg SmileSymbol_Unbox(SmileSymbol smileSymbol)
 {
-	UNUSED(self);
-	UNUSED(security);
-	UNUSED(securityKey);
-	Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
+	return SmileUnboxedSymbol_From(smileSymbol->symbol);
 }
 
-Int SmileSymbol_GetSecurity(SmileSymbol self)
+//-------------------------------------------------------------------------------------------------
+
+SMILE_EASY_OBJECT_VTABLE(SmileUnboxedSymbol);
+
+SMILE_EASY_OBJECT_READONLY_SECURITY(SmileUnboxedSymbol)
+SMILE_EASY_OBJECT_NO_CALL(SmileUnboxedSymbol)
+SMILE_EASY_OBJECT_NO_SOURCE(SmileUnboxedSymbol)
+SMILE_EASY_OBJECT_NO_PROPERTIES(SmileUnboxedSymbol)
+
+SMILE_EASY_OBJECT_HASH(SmileUnboxedSymbol, 0)
+SMILE_EASY_OBJECT_TOBOOL(SmileUnboxedSymbol, True)
+SMILE_EASY_OBJECT_TOINT(SmileUnboxedSymbol, 0)
+SMILE_EASY_OBJECT_TOREAL(SmileUnboxedSymbol, Real64_Zero)
+SMILE_EASY_OBJECT_TOFLOAT(SmileUnboxedSymbol, 0.0)
+SMILE_EASY_OBJECT_TOSTRING(SmileUnboxedSymbol, SymbolTable_GetName(Smile_SymbolTable, unboxedData.symbol))
+
+static Bool SmileUnboxedSymbol_CompareEqual(SmileUnboxedSymbol a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
 {
-	UNUSED(self);
-	return SMILE_SECURITY_READONLY;
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_SYMBOL) {
+		return aData.symbol == bData.symbol;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_SYMBOL) {
+		return aData.symbol == ((SmileSymbol)b)->symbol;
+	}
+	else return False;
 }
 
-SmileObject SmileSymbol_GetProperty(SmileSymbol self, Symbol propertyName)
+static Bool SmileUnboxedSymbol_DeepEqual(SmileUnboxedSymbol a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData, PointerSet visitedPointers)
 {
-	return self->base->vtable->getProperty((SmileObject)self, propertyName);
+	UNUSED(visitedPointers);
+
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_SYMBOL) {
+		return aData.symbol == bData.symbol;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_SYMBOL) {
+		return aData.symbol == ((SmileSymbol)b)->symbol;
+	}
+	else return False;
 }
 
-void SmileSymbol_SetProperty(SmileSymbol self, Symbol propertyName, SmileObject value)
+static SmileObject SmileUnboxedSymbol_Box(SmileArg src)
 {
-	UNUSED(self);
-	UNUSED(value);
-	Smile_ThrowException(Smile_KnownSymbols.object_security_error,
-		String_Format("Cannot set property \"%S\" on a symbol, which is read-only.",
-		SymbolTable_GetName(Smile_SymbolTable, propertyName)));
+	return (SmileObject)SmileSymbol_Create(src.unboxed.symbol);
 }
 
-Bool SmileSymbol_HasProperty(SmileSymbol self, Symbol propertyName)
+static SmileArg SmileUnboxedSymbol_Unbox(SmileUnboxedSymbol smileUnboxedSymbol)
 {
-	UNUSED(self);
-	UNUSED(propertyName);
-	return False;
+	Smile_Abort_FatalError("Cannot re-unbox a unboxed object.");
+	return (SmileArg){ 0 };
 }
 
-SmileList SmileSymbol_GetPropertyNames(SmileSymbol self)
-{
-	UNUSED(self);
-	return NullList;
-}
-
-Bool SmileSymbol_ToBool(SmileSymbol self)
-{
-	UNUSED(self);
-	return True;
-}
-
-Int32 SmileSymbol_ToInteger32(SmileSymbol self)
-{
-	UNUSED(self);
-	return 0;
-}
-
-Float64 SmileSymbol_ToFloat64(SmileSymbol self)
-{
-	UNUSED(self);
-	return 0.0;
-}
-
-Real64 SmileSymbol_ToReal64(SmileSymbol self)
-{
-	UNUSED(self);
-	return Real64_Zero;
-}
-
-String SmileSymbol_ToString(SmileSymbol self)
-{
-	return SymbolTable_GetName(Smile_SymbolTable, self->symbol);
-}
-
-SMILE_VTABLE(SmileSymbol_VTable, SmileSymbol)
-{
-	SmileSymbol_CompareEqual,
-	SmileSymbol_Hash,
-
-	SmileSymbol_SetSecurityKey,
-	SmileSymbol_SetSecurity,
-	SmileSymbol_GetSecurity,
-
-	SmileSymbol_GetProperty,
-	SmileSymbol_SetProperty,
-	SmileSymbol_HasProperty,
-	SmileSymbol_GetPropertyNames,
-
-	SmileSymbol_ToBool,
-	SmileSymbol_ToInteger32,
-	SmileSymbol_ToFloat64,
-	SmileSymbol_ToReal64,
-	SmileSymbol_ToString,
+static struct SmileUnboxedSymbolInt SmileUnboxedSymbol_Instance_Struct = {
+	SMILE_KIND_UNBOXED_SYMBOL,
+	(SmileVTable)&SmileUnboxedSymbol_VTableData,
 };
+
+extern SmileUnboxedSymbol SmileUnboxedSymbol_Instance = &SmileUnboxedSymbol_Instance_Struct;

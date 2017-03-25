@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -118,7 +118,7 @@ readMoreName:
 		case '4': case '5': case '6': case '7':
 		case '8': case '9':
 		case '_': case '\'': case '\"':
-		case '!': case '?': case '$':
+		case '!': case '?': case '$': case '~':
 			src++;
 			goto readMoreName;
 

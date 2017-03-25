@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@
 #include <smile/smiletypes/kind.h>
 #include <smile/smiletypes/smilebool.h>
 #include <smile/smiletypes/smileobject.h>
+#include <smile/smiletypes/smileuserobject.h>
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/smilepair.h>
 #include <smile/smiletypes/smilesyntax.h>
@@ -144,8 +145,8 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 		}
 		return;
 
-	case SMILE_KIND_OBJECT:
-		StringBuilder_AppendC(stringBuilder, "Object", 0, 8);
+	case SMILE_KIND_PRIMITIVE:
+		StringBuilder_AppendC(stringBuilder, "Primitive", 0, 9);
 		return;
 
 	case SMILE_KIND_NULL:
@@ -201,6 +202,24 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 		StringBuilder_AppendFormat(stringBuilder, "\"%S\"", String_AddCSlashes((String)&((SmileString)obj)->string));
 		return;
 
+	case SMILE_KIND_USEROBJECT:
+		StringBuilder_Append(stringBuilder, (const Byte *)"{\n", 0, 2);
+		{
+			Int32DictKeyValuePair *pairs = Int32Dict_GetAll((Int32Dict)&((SmileUserObject)obj)->dict);
+			Int numPairs = Int32Dict_Count((Int32Dict)&((SmileUserObject)obj)->dict);
+			Int i;
+		
+			for (i = 0; i < numPairs; i++) {
+				StringBuilder_AppendRepeat(stringBuilder, ' ', (indent + 1) * 4);
+				StringBuilder_AppendString(stringBuilder, SymbolTable_GetName(Smile_SymbolTable, pairs[i].key));
+				StringBuilder_Append(stringBuilder, (const Byte *)": ", 0, 2);
+				StringifyRecursive((SmileObject)pairs[i].value, stringBuilder, indent + 2);
+				StringBuilder_AppendByte(stringBuilder, '\n');
+			}
+		}
+		StringBuilder_AppendByte(stringBuilder, '}');
+		return;
+	
 	case SMILE_KIND_NONTERMINAL:
 		StringBuilder_AppendFormat(stringBuilder, "[%S %S %S %S]",
 			((SmileNonterminal)obj)->nonterminal != 0 ? SymbolTable_GetName(Smile_SymbolTable, ((SmileNonterminal)obj)->nonterminal) : String_Empty,

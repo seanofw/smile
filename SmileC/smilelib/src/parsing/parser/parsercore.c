@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ Parser Parser_Create(void)
 /// <param name="scope">The scope in which the parsing is to take place.</param>
 /// <param name="text">The nul-terminated string to parse, which is assumed to come from a file named "".</param>
 /// <returns>The results of the parse (if errors are generated, they will be added to the parser's message collection).</returns>
-SmileList Parser_ParseFromC(Parser parser, ParseScope scope, const char *text)
+SmileObject Parser_ParseFromC(Parser parser, ParseScope scope, const char *text)
 {
 	return Parser_ParseString(parser, scope, String_FromC(text));
 }
@@ -58,10 +58,10 @@ SmileList Parser_ParseFromC(Parser parser, ParseScope scope, const char *text)
 /// <param name="scope">The scope in which the parsing is to take place.</param>
 /// <param name="text">The string to parse, which is assumed to come from a file named "".</param>
 /// <returns>The results of the parse (if errors are generated, they will be added to the parser's message collection).</returns>
-SmileList Parser_ParseString(Parser parser, ParseScope scope, String text)
+SmileObject Parser_ParseString(Parser parser, ParseScope scope, String text)
 {
 	Lexer lexer;
-	SmileList result;
+	SmileObject result;
 
 	lexer = Lexer_Create(text, 0, String_Length(text), String_Empty, 1, 1);
 	lexer->symbolTable = Smile_SymbolTable;
@@ -82,30 +82,24 @@ SmileList Parser_ParseString(Parser parser, ParseScope scope, String text)
 /// <remarks>
 /// program ::= . exprs_opt
 /// </remarks>
-SmileList Parser_Parse(Parser parser, Lexer lexer, ParseScope scope)
+SmileObject Parser_Parse(Parser parser, Lexer lexer, ParseScope scope)
 {
-	SmileList head, tail;
 	ParseScope parentScope;
 	Lexer oldLexer;
-	Token token;
-	
-	LIST_INIT(head, tail);
+	SmileObject result;
+
 	parentScope = parser->currentScope;
 	oldLexer = parser->lexer;
 	
 	parser->currentScope = scope;
 	parser->lexer = lexer;
 
-	Parser_ParseExprsOpt(parser, &head, &tail, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
-
-	if ((token = Parser_NextToken(parser))->kind != TOKEN_EOI) {
-		Parser_AddError(parser, Token_GetPosition(token), "Unexpected content at end of file.");
-	}
+	result = Parser_ParseScopeBody(parser);
 
 	parser->currentScope = parentScope;
 	parser->lexer = oldLexer;
 
-	return head;
+	return result;
 }
 
 /// <summary>
@@ -159,26 +153,13 @@ ParseError Parser_ParseScope(Parser parser, SmileObject *expr)
 {
 	ParseError parseError;
 	Token token;
-	LexerPosition startPosition;
-	int i, numVariables;
-	Symbol *symbolNames;
-	SmileList head, tail;
-	SmileList declHead, declTail;
-	ClosureInfo closureInfo;
 
 	if ((token = Parser_NextToken(parser))->kind != TOKEN_LEFTBRACE) {
 		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), ExpectedOpenBraceError);
 		return parseError;
 	}
-	startPosition = Token_GetPosition(token);
 
-	Parser_BeginScope(parser, PARSESCOPE_SCOPEDECL);
-
-	LIST_INIT(head, tail);
-	Parser_ParseExprsOpt(parser, &head, &tail, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
-
-	closureInfo = parser->currentScope->closure->closureInfo;
-	Parser_EndScope(parser);
+	*expr = Parser_ParseScopeBody(parser);
 
 	if ((token = Parser_NextToken(parser))->kind != TOKEN_RIGHTBRACE) {
 		*expr = NULL;
@@ -186,20 +167,62 @@ ParseError Parser_ParseScope(Parser parser, SmileObject *expr)
 		return parseError;
 	}
 
-	if (closureInfo->numVariables == 0) {
-		*expr = (SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects.prognSymbol, (SmileObject)head, startPosition);
-		return NULL;
+	return NULL;
+}
+
+//  scope ::= LBRACE . exprs_opt RBRACE
+SmileObject Parser_ParseScopeBody(Parser parser)
+{
+	LexerPosition startPosition;
+	Int i;
+	SmileList head, tail;
+	SmileList declHead, declTail;
+	ParseDecl *decls;
+	Int numDecls;
+
+	startPosition = Lexer_GetPosition(parser->lexer);
+
+	Parser_BeginScope(parser, PARSESCOPE_SCOPEDECL);
+
+	LIST_INIT(head, tail);
+	Parser_ParseExprsOpt(parser, &head, &tail, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
+
+	decls = parser->currentScope->decls;
+	numDecls = parser->currentScope->numDecls;
+
+	Parser_EndScope(parser);
+
+	LIST_INIT(declHead, declTail);
+	for (i = 0; i < numDecls; i++) {
+		switch (decls[i]->declKind) {
+			case PARSEDECL_VARIABLE:
+			case PARSEDECL_CONST:
+			case PARSEDECL_AUTO:
+				LIST_APPEND(declHead, declTail, SmileSymbol_Create(decls[i]->symbol));
+				break;
+		}
+	}
+
+	if (SMILE_KIND(declHead) == SMILE_KIND_NULL) {
+		// No declarations that require runtime scope space.
+	
+		if (SMILE_KIND(head) == SMILE_KIND_NULL) {
+			// Empty body, so we got nothin'.
+			return NullObject;
+		}
+		else if (head == tail) {
+			// This parsed to a single expression, so no need for a [$progn] to wrap it.
+			return head->a;
+		}
+		else {
+			// Multiple expressions, so wrap a [$progn] around it.
+			return (SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects._prognSymbol, (SmileObject)head, startPosition);
+		}
 	}
 	else {
-		numVariables = closureInfo->numVariables;
-		symbolNames = (Symbol *)Int32Int32Dict_GetKeys(closureInfo->symbolDictionary);
-		LIST_INIT(declHead, declTail);
-		for (i = 0; i < numVariables; i++) {
-			LIST_APPEND(declHead, declTail, SmileSymbol_Create(symbolNames[i]));
-		}
-		*expr = (SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects.scopeSymbol,
+		// We have declarations, so we need to wrap whatever we got in a [$scope].
+		return (SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects._scopeSymbol,
 			(SmileObject)SmileList_ConsWithSource((SmileObject)declHead, (SmileObject)head, startPosition), startPosition);
-		return NULL;
 	}
 }
 
@@ -222,9 +245,8 @@ void Parser_ParseExprsOpt(Parser parser, SmileList *head, SmileList *tail, Int m
 		// Parse the next expression.
 		error = Parser_ParseExpr(parser, &expr, modeFlags);
 		if (error == NULL) {
-			if (expr != NullObject) {
-
-				// Add the successfully-parsed expression to the output (if there's something non-null to add).
+			if (expr != Parser_IgnorableObject) {
+				// Add the successfully-parsed expression to the output, if it's worth keeping.
 				LIST_APPEND_WITH_SOURCE(*head, *tail, expr, lexerPosition);
 			}
 		}
@@ -265,6 +287,7 @@ ParseError Parser_ParseOneExpressionFromText(Parser parser, SmileObject *expr, S
 		*expr = NULL;
 		return parseError;
 	}
+	if (*expr == Parser_IgnorableObject) *expr = NullObject;
 
 	if ((token = Parser_NextToken(parser))->kind != TOKEN_EOI) {
 		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),

@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter (Unit Tests)
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -53,52 +53,52 @@ START_TEST(ShouldRecognizeCharacters)
 		"y = '\\n'\n"
 		"z = '\\t'\n"
 		"'\\0' '\\x1A' '\\32' '\\xA0' '\\r' '\\a' '\\f' '\\v' '\\255'\n"
-		);
+	);
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
 	ASSERT_STRING(lexer->token->text, "x", 1);
 	ASSERT(Lexer_Next(lexer) == TOKEN_EQUAL);
 	ASSERT(Lexer_Next(lexer) == TOKEN_CHAR);
-	ASSERT(lexer->token->data.i == 'z');
+	ASSERT(lexer->token->data.byte == 'z');
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
 	ASSERT_STRING(lexer->token->text, "y", 1);
 	ASSERT(Lexer_Next(lexer) == TOKEN_EQUAL);
 	ASSERT(Lexer_Next(lexer) == TOKEN_CHAR);
-	ASSERT(lexer->token->data.i == '\n');
+	ASSERT(lexer->token->data.byte == '\n');
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
 	ASSERT_STRING(lexer->token->text, "z", 1);
 	ASSERT(Lexer_Next(lexer) == TOKEN_EQUAL);
 	ASSERT(Lexer_Next(lexer) == TOKEN_CHAR);
-	ASSERT(lexer->token->data.i == '\t');
+	ASSERT(lexer->token->data.byte == '\t');
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_CHAR);
-	ASSERT(lexer->token->data.i == 0);
+	ASSERT(lexer->token->data.byte == 0);
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_CHAR);
-	ASSERT(lexer->token->data.i == 26);
+	ASSERT(lexer->token->data.byte == 26);
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_CHAR);
-	ASSERT(lexer->token->data.i == 32);
+	ASSERT(lexer->token->data.byte == 32);
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_CHAR);
-	ASSERT(lexer->token->data.i == 160);
+	ASSERT(lexer->token->data.byte == 160);
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_CHAR);
-	ASSERT(lexer->token->data.i == 13);
+	ASSERT(lexer->token->data.byte == 13);
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_CHAR);
-	ASSERT(lexer->token->data.i == 7);
+	ASSERT(lexer->token->data.byte == 7);
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_CHAR);
-	ASSERT(lexer->token->data.i == 12);
+	ASSERT(lexer->token->data.byte == 12);
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_CHAR);
-	ASSERT(lexer->token->data.i == 11);
+	ASSERT(lexer->token->data.byte == 11);
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_CHAR);
-	ASSERT(lexer->token->data.i == 255);
+	ASSERT(lexer->token->data.byte == 255);
 }
 END_TEST
 
@@ -107,7 +107,7 @@ START_TEST(ShouldRecognizeSingleLineRawStrings)
 	Lexer lexer = Setup(
 		"x = ''This is a test.''\n"
 		"y = ''This is a test.\\n''\n"
-		);
+	);
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
 	ASSERT_STRING(lexer->token->text, "x", 1);
@@ -131,7 +131,7 @@ START_TEST(ShouldRecognizeMultiLineRawStrings)
 		"\n"
 		"x = ''''This is a test.'''\n"
 		"y = '''This is a test.\\n''''\n"
-		);
+	);
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
 	ASSERT_STRING(lexer->token->text, "x", 1);

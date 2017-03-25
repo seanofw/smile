@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -132,15 +132,9 @@ Inline Int ProcessIntegerValue(Lexer lexer, UInt64 value, String text, String su
 	Int suffixLength;
 
 	if (String_IsNullOrEmpty(suffix)) {
-		if (value >= (1ULL << 32)) {
-			lexer->token->text = String_FormatString(IllegalNumericSizeMessage, "Integer32");
-			return (lexer->token->kind = TOKEN_ERROR);
-		}
-		else {
-			lexer->token->data.i = (Int32)(UInt32)value;
-			lexer->token->text = text;
-			return (lexer->token->kind = TOKEN_INTEGER32);
-		}
+		lexer->token->data.int64 = value;
+		lexer->token->text = text;
+		return (lexer->token->kind = TOKEN_INTEGER64);
 	}
 
 	suffixText = String_GetBytes(suffix);
@@ -148,24 +142,30 @@ Inline Int ProcessIntegerValue(Lexer lexer, UInt64 value, String text, String su
 
 	switch (suffixText[0]) {
 
-		case 'l': case 'L':
+		case 's': case 'S':
 			if (suffixLength == 1) {
-				lexer->token->data.int64 = (Int64)value;
-				lexer->token->text = text;
-				return (lexer->token->kind = TOKEN_INTEGER64);
-			}
-			else goto unknown_suffix;
-
-		case 'h': case 'H':
-			if (suffixLength == 1) {
-				if (value > 65536) {
+				if (value > (1ULL << 16)) {
 					lexer->token->text = String_FormatString(IllegalNumericSizeMessage, "Integer16");
 					return (lexer->token->kind = TOKEN_ERROR);
 				}
 				else {
-					lexer->token->data.i = (Int32)(UInt32)value;
+					lexer->token->data.int16 = (Int16)(UInt16)value;
 					lexer->token->text = text;
 					return (lexer->token->kind = TOKEN_INTEGER16);
+				}
+			}
+			else goto unknown_suffix;
+
+		case 't': case 'T':
+			if (suffixLength == 1) {
+				if (value >= (1ULL << 32)) {
+					lexer->token->text = String_FormatString(IllegalNumericSizeMessage, "Integer32");
+					return (lexer->token->kind = TOKEN_ERROR);
+				}
+				else {
+					lexer->token->data.int32 = (Int32)(UInt32)value;
+					lexer->token->text = text;
+					return (lexer->token->kind = TOKEN_INTEGER32);
 				}
 			}
 			else goto unknown_suffix;
@@ -177,7 +177,7 @@ Inline Int ProcessIntegerValue(Lexer lexer, UInt64 value, String text, String su
 					return (lexer->token->kind = TOKEN_ERROR);
 				}
 				else {
-					lexer->token->data.i = (Int32)(UInt32)value;
+					lexer->token->data.byte = (Byte)(UInt32)value;
 					lexer->token->text = text;
 					return (lexer->token->kind = TOKEN_BYTE);
 				}
@@ -450,7 +450,7 @@ Int Lexer_ParseReal(Lexer lexer, Bool isFirstContentOnLine)
 		}
 		else goto badSuffix;
 	}
-	else if (suffixText[0] == 'H' || suffixText[0] == 'h') {
+	else if (suffixText[0] == 'T' || suffixText[0] == 't') {
 		// 32-bit something-or-other.
 		if (suffixText[1] == '\0') {
 			// Real32.

@@ -1,6 +1,6 @@
 ﻿//---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -104,7 +104,7 @@ static ParseError Parser_ParseSyntaxTerminal(Parser parser, SmileList **tailRef)
 static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailRef);
 static void Parser_DeclareNonterminals(SmileList pattern, ParseScope scope, LexerPosition position);
 
-// syntax_expr :: = . syntax_level COLON LBRACKET syntax_pattern RBRACKET IMPLIES expr
+// syntax_expr :: = . syntax_level COLON LBRACKET syntax_pattern RBRACKET IMPLIES raw_list_term
 SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *expr, Int modeFlags)
 {
 	Token token;

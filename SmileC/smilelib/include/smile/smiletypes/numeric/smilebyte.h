@@ -18,25 +18,26 @@ struct SmileByteInt {
 	Byte value;
 };
 
+struct SmileUnboxedByteInt {
+	DECLARE_BASE_OBJECT_PROPERTIES;
+};
+
 //-------------------------------------------------------------------------------------------------
 //  Public interface
 
 SMILE_API_DATA SmileVTable SmileByte_VTable;
+SMILE_API_DATA SmileVTable SmileUnboxedByte_VTable;
 
 SMILE_API_FUNC SmileByte SmileByte_CreateInternal(Byte value);
+SMILE_API_DATA SmileUnboxedByte SmileUnboxedByte_Instance;
 
-SMILE_API_FUNC Bool SmileByte_CompareEqual(SmileByte self, SmileObject other);
-SMILE_API_FUNC UInt32 SmileByte_Hash(SmileByte self);
-SMILE_API_FUNC void SmileByte_SetSecurity(SmileByte self, Int security, SmileObject securityKey);
-SMILE_API_FUNC Int SmileByte_GetSecurity(SmileByte self);
-SMILE_API_FUNC SmileObject SmileByte_GetProperty(SmileByte self, Symbol propertyName);
-SMILE_API_FUNC void SmileByte_SetProperty(SmileByte self, Symbol propertyName, SmileObject value);
-SMILE_API_FUNC Bool SmileByte_HasProperty(SmileByte self, Symbol propertyName);
-SMILE_API_FUNC SmileList SmileByte_GetPropertyNames(SmileByte self);
-SMILE_API_FUNC Bool SmileByte_ToBool(SmileByte self);
-SMILE_API_FUNC Int32 SmileByte_ToInteger32(SmileByte self);
-SMILE_API_FUNC Real64 SmileByte_ToReal64(SmileByte self);
-SMILE_API_FUNC String SmileByte_ToString(SmileByte self);
+Inline SmileArg SmileUnboxedByte_From(Byte value)
+{
+	SmileArg arg;
+	arg.obj = (SmileObject)SmileUnboxedByte_Instance;
+	arg.unboxed.i8 = value;
+	return arg;
+}
 
 //-------------------------------------------------------------------------------------------------
 //  Inline operations

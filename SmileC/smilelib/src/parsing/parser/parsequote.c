@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/text/smilesymbol.h>
-#include <smile/smiletypes/text/smilechar.h>
 #include <smile/parsing/parser.h>
 #include <smile/parsing/internal/parserinternal.h>
 #include <smile/parsing/internal/parsedecl.h>
@@ -52,7 +51,7 @@ ParseError Parser_ParseQuotedTerm(Parser parser, SmileObject *result, Int modeFl
 
 	if (!isTemplate) {
 		*result = (SmileObject)SmileList_ConsWithSource(
-			(SmileObject)Smile_KnownObjects.quoteSymbol,
+			(SmileObject)Smile_KnownObjects._quoteSymbol,
 			(SmileObject)SmileList_ConsWithSource(*result, NullObject, position),
 			position
 		);
@@ -123,7 +122,7 @@ ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Bool *isT
 			if (error != NULL)
 				return error;
 			*result = (SmileObject)SmileList_ConsWithSource(
-				(SmileObject)Smile_KnownObjects.quoteSymbol,
+				(SmileObject)Smile_KnownObjects._quoteSymbol,
 				(SmileObject)SmileList_ConsWithSource(
 					*result,
 					NullObject,
@@ -149,22 +148,22 @@ ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Bool *isT
 		return NULL;
 
 	case TOKEN_CHAR:
-		*result = (SmileObject)SmileChar_Create((Byte)token->data.i);
+		*result = (SmileObject)SmileByte_Create(token->data.byte);
 		*isTemplate = False;
 		return NULL;
 
 	case TOKEN_BYTE:
-		*result = (SmileObject)SmileByte_Create((Byte)token->data.i);
+		*result = (SmileObject)SmileByte_Create(token->data.byte);
 		*isTemplate = False;
 		return NULL;
 
 	case TOKEN_INTEGER16:
-		*result = (SmileObject)SmileInteger16_Create((Int16)token->data.i);
+		*result = (SmileObject)SmileInteger16_Create(token->data.int16);
 		*isTemplate = False;
 		return NULL;
 
 	case TOKEN_INTEGER32:
-		*result = (SmileObject)SmileInteger32_Create(token->data.i);
+		*result = (SmileObject)SmileInteger32_Create(token->data.int32);
 		*isTemplate = False;
 		return NULL;
 
@@ -238,7 +237,7 @@ ParseError Parser_ParseRawListItemsOpt(Parser parser, SmileList *head, SmileList
 					// This is a templated list, but not a templated item.  So we need to quote it
 					// before adding it to the list.
 					expr = (SmileObject)SmileList_ConsWithSource(
-						(SmileObject)Smile_KnownObjects.quoteSymbol,
+						(SmileObject)Smile_KnownObjects._quoteSymbol,
 						(SmileObject)SmileList_ConsWithSource(expr, NullObject, lexerPosition),
 						lexerPosition
 					);
@@ -365,7 +364,7 @@ static void Parser_TransformListIntoTemplate(SmileList *head, SmileList *tail, L
 
 		// Take each element x in the old list, and turn it into [quote x] in the new list.
 		newExpr = (SmileObject)SmileList_ConsWithSource(
-			(SmileObject)Smile_KnownObjects.quoteSymbol,
+			(SmileObject)Smile_KnownObjects._quoteSymbol,
 			(SmileObject)SmileList_ConsWithSource(oldExpr, NullObject, position),
 			position
 		);
@@ -378,3 +377,45 @@ static void Parser_TransformListIntoTemplate(SmileList *head, SmileList *tail, L
 	*tail = newTail;
 }
 
+// term ::= '[' '$quote' raw-list-term ']'
+ParseError Parser_ParseClassicQuote(Parser parser, SmileObject *result, LexerPosition startPosition)
+{
+	ParseError error;
+
+	error = Parser_ParseQuoteBody(parser, result, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS, startPosition);
+	if (error != NULL) {
+		Parser_Recover(parser, Parser_RightBracesBracketsParentheses_Recovery, Parser_RightBracesBracketsParentheses_Count);
+		*result = NullObject;
+		return error;
+	}
+
+	if ((error = Parser_ExpectRightBracket(parser, result, NULL, "[$quote] form", startPosition)) != NULL)
+		return error;
+
+	return NULL;
+}
+
+ParseError Parser_ParseQuoteBody(Parser parser, SmileObject *result, Int modeFlags, LexerPosition startPosition)
+{
+	ParseError error;
+
+	if (Lexer_Peek(parser->lexer) == TOKEN_LEFTPARENTHESIS) {
+		// This is a quote of a parenthesized expression, so parse the expression normally and then quote it.
+		error = Parser_ParseParentheses(parser, result, modeFlags);
+		if (error != NULL)
+			return error;
+		*result = (SmileObject)SmileList_ConsWithSource(
+			(SmileObject)Smile_KnownObjects._quoteSymbol,
+			(SmileObject)SmileList_ConsWithSource(*result, NullObject, startPosition),
+			startPosition
+		);
+		return NULL;
+	}
+
+	// This is a quote of a more generic thing, like a list or a symbol, so recursively parse
+	// this "quoted term".  Because the "quoted term" might be a list that somewhere contains
+	// a (parenthetical escape), thus turning the "quoted term" from an ordinary quoted list
+	// into a template, we do not do the quoting here, but instead do that quoting work inside
+	// Parser_ParseQuotedTerm() itself, which is the only code that knows how to do it correctly.
+	return Parser_ParseQuotedTerm(parser, result, modeFlags, startPosition);
+}

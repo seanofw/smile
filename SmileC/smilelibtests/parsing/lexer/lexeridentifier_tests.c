@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter (Unit Tests)
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -189,8 +189,8 @@ START_TEST(ShouldRecognizeAlphaIdentsWithEmbeddedPunct)
 	ASSERT_STRING(lexer->token->text, "x", 1);
 	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
 	ASSERT_STRING(lexer->token->text, "-", 1);
-	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER32);
-	ASSERT(lexer->token->data.i == 1);
+	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
+	ASSERT(lexer->token->data.int64 == 1);
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
 	ASSERT_STRING(lexer->token->text, "w", 1);
@@ -199,8 +199,8 @@ START_TEST(ShouldRecognizeAlphaIdentsWithEmbeddedPunct)
 	ASSERT_STRING(lexer->token->text, "x", 1);
 	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
 	ASSERT_STRING(lexer->token->text, "+", 1);
-	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER32);
-	ASSERT(lexer->token->data.i == 1);
+	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
+	ASSERT(lexer->token->data.int64 == 1);
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
 	ASSERT_STRING(lexer->token->text, "This-is-a-really-long-name-you-shouldn't-use-but-could!", 55);
@@ -259,8 +259,8 @@ START_TEST(ShouldRecognizeAlphaOpEqualsForms)
 	ASSERT_STRING(lexer->token->text, "sec", 3);
 	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
 	ASSERT_STRING(lexer->token->text, "-", 1);
-	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER32);
-	ASSERT(lexer->token->data.i == 1);
+	ASSERT(Lexer_Next(lexer) == TOKEN_INTEGER64);
+	ASSERT(lexer->token->data.int64 == 1);
 	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
 	ASSERT_STRING(lexer->token->text, "===", 3);
 	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);

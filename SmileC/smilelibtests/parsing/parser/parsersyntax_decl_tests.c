@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter (Unit Tests)
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -39,17 +39,16 @@ START_TEST(CanParseSimpleSyntaxForms)
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
 	SmileSyntax expectedResult = SmileSyntax_Create(
 		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
 		(SmileList)SimpleParse("[a b c]"),
-		(SmileObject)SmileInteger32_Create(123),
+		(SmileObject)SmileInteger64_Create(123),
 		NULL
 	);
 
-	ASSERT(result->d == NullObject);
-	ASSERT(SmileSyntax_Equals((SmileSyntax)result->a, expectedResult));
+	ASSERT(SmileObject_DeepCompare(result, (SmileObject)expectedResult));
 }
 END_TEST
 
@@ -60,7 +59,7 @@ START_TEST(CanParseSyntaxFormsThatUseSyntaxForms)
 	ParseScope parseScope = ParseScope_CreateRoot();
 	ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("Stdout")), PARSEDECL_VARIABLE, NULL, NULL);
 
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
 	SmileSyntax expectedResult = SmileSyntax_Create(
 		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
@@ -69,8 +68,7 @@ START_TEST(CanParseSyntaxFormsThatUseSyntaxForms)
 		NULL
 	);
 
-	ASSERT(result->d == NullObject);
-	ASSERT(SmileSyntax_Equals((SmileSyntax)result->a, expectedResult));
+	ASSERT(SmileObject_DeepCompare(result, (SmileObject)expectedResult));
 }
 END_TEST
 
@@ -81,7 +79,7 @@ START_TEST(CanParseSyntaxFormsThatUseListForms)
 	ParseScope parseScope = ParseScope_CreateRoot();
 	ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("Stdout")), PARSEDECL_VARIABLE, NULL, NULL);
 
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
 	SmileSyntax expectedResult = SmileSyntax_Create(
 		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
@@ -90,8 +88,7 @@ START_TEST(CanParseSyntaxFormsThatUseListForms)
 		NULL
 	);
 
-	ASSERT(result->d == NullObject);
-	ASSERT(SmileSyntax_Equals((SmileSyntax)result->a, expectedResult));
+	ASSERT(SmileObject_DeepCompare(result, (SmileObject)expectedResult));
 }
 END_TEST
 
@@ -100,7 +97,7 @@ START_TEST(CanParseSyntaxFormsThatContainNonterminals)
 	Lexer lexer = SetupLexer("#syntax STMT: [magic [EXPR x]] => [x.* x]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
 	SmileSyntax expectedResult = SmileSyntax_Create(
 		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
@@ -120,8 +117,7 @@ START_TEST(CanParseSyntaxFormsThatContainNonterminals)
 		NULL
 	);
 
-	ASSERT(result->d == NullObject);
-	ASSERT(SmileSyntax_Equals((SmileSyntax)result->a, expectedResult));
+	ASSERT(SmileObject_DeepCompare(result, (SmileObject)expectedResult));
 }
 END_TEST
 
@@ -131,7 +127,7 @@ START_TEST(NonterminalsShouldNotLeakIntoTheContainingScope)
 		"var y = x");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
 	ASSERT(Parser_GetErrorCount(parser) > 0);
 }
@@ -146,7 +142,7 @@ START_TEST(TheContainingScopeShouldInfluenceTheReplacement)
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	ParseError parseDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "f"), PARSEDECL_VARIABLE, NULL, NULL);
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
 	SmileSyntax expectedSyntax = SmileSyntax_Create(
 		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
@@ -166,8 +162,7 @@ START_TEST(TheContainingScopeShouldInfluenceTheReplacement)
 		NULL
 	);
 
-	ASSERT((SmileObject)result != NullObject);
-	ASSERT(SmileSyntax_Equals((SmileSyntax)result->a, expectedSyntax));
+	ASSERT(SmileObject_DeepCompare(result, (SmileObject)expectedSyntax));
 }
 END_TEST
 
@@ -177,7 +172,7 @@ START_TEST(TheContainingScopeShouldInfluenceTheReplacement2)
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	ParseError parseDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "x"), PARSEDECL_VARIABLE, NULL, NULL);
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
 	// We expect "x op y" to become "[x.op y]" when "x" is declared in the parent
 	// scope.  If "x" is not an accessible variable, then this should parse
@@ -202,8 +197,7 @@ START_TEST(TheContainingScopeShouldInfluenceTheReplacement2)
 		NULL
 	);
 
-	ASSERT((SmileObject)result != NullObject);
-	ASSERT(SmileSyntax_Equals((SmileSyntax)result->a, expectedSyntax));
+	ASSERT(SmileObject_DeepCompare(result, (SmileObject)expectedSyntax));
 }
 END_TEST
 
@@ -219,7 +213,7 @@ START_TEST(TheContainingScopeShouldInfluenceTheReplacement3)
 	//
 	//ParseError parseDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "x"), PARSEDECL_VARIABLE, NULL, NULL);
 
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
 	SmileSyntax expectedSyntax = SmileSyntax_Create(
 		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
@@ -239,8 +233,7 @@ START_TEST(TheContainingScopeShouldInfluenceTheReplacement3)
 		NULL
 	);
 
-	ASSERT((SmileObject)result != NullObject);
-	ASSERT(SmileSyntax_Equals((SmileSyntax)result->a, expectedSyntax));
+	ASSERT(SmileObject_DeepCompare(result, (SmileObject)expectedSyntax));
 }
 END_TEST
 
@@ -249,7 +242,7 @@ START_TEST(CanParseSyntaxWithEmbeddedCommas)
 	Lexer lexer = SetupLexer("#syntax STMT: [if [EXPR x], [EXPR y] then [STMT z]] => [\\if x y z]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
 	SmileSyntax expectedSyntax = SmileSyntax_Create(
 		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
@@ -281,8 +274,7 @@ START_TEST(CanParseSyntaxWithEmbeddedCommas)
 		NULL
 	);
 
-	ASSERT((SmileObject)result != NullObject);
-	ASSERT(SmileSyntax_Equals((SmileSyntax)result->a, expectedSyntax));
+	ASSERT(SmileObject_DeepCompare(result, (SmileObject)expectedSyntax));
 }
 END_TEST
 
@@ -291,7 +283,7 @@ START_TEST(CanParseSyntaxWithEmbeddedSemicolons)
 	Lexer lexer = SetupLexer("#syntax STMT: [if [EXPR x]; [EXPR y] then [STMT z]] => [\\if x y z]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
 	SmileSyntax expectedSyntax = SmileSyntax_Create(
 		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
@@ -323,8 +315,7 @@ START_TEST(CanParseSyntaxWithEmbeddedSemicolons)
 		NULL
 	);
 
-	ASSERT((SmileObject)result != NullObject);
-	ASSERT(SmileSyntax_Equals((SmileSyntax)result->a, expectedSyntax));
+	ASSERT(SmileObject_DeepCompare(result, (SmileObject)expectedSyntax));
 }
 END_TEST
 
@@ -333,7 +324,7 @@ START_TEST(CanParseSyntaxWithEmbeddedColons)
 	Lexer lexer = SetupLexer("#syntax STMT: [if [EXPR x]: [EXPR y] then [STMT z]] => [\\if x y z]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
 	SmileSyntax expectedSyntax = SmileSyntax_Create(
 		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
@@ -365,8 +356,7 @@ START_TEST(CanParseSyntaxWithEmbeddedColons)
 		NULL
 	);
 
-	ASSERT((SmileObject)result != NullObject);
-	ASSERT(SmileSyntax_Equals((SmileSyntax)result->a, expectedSyntax));
+	ASSERT(SmileObject_DeepCompare(result, (SmileObject)expectedSyntax));
 }
 END_TEST
 
@@ -375,7 +365,7 @@ START_TEST(CanParseSyntaxWithEmbeddedParentheses)
 	Lexer lexer = SetupLexer("#syntax STMT: [if ([EXPR x]: [EXPR y]) then [STMT z]] => [\\if x y z]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
 	SmileSyntax expectedSyntax = SmileSyntax_Create(
 		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
@@ -409,8 +399,7 @@ START_TEST(CanParseSyntaxWithEmbeddedParentheses)
 		NULL
 	);
 
-	ASSERT((SmileObject)result != NullObject);
-	ASSERT(SmileSyntax_Equals((SmileSyntax)result->a, expectedSyntax));
+	ASSERT(SmileObject_DeepCompare(result, (SmileObject)expectedSyntax));
 }
 END_TEST
 
@@ -419,9 +408,9 @@ START_TEST(CannotParseSyntaxWithMismatchedParentheses1)
 	Lexer lexer = SetupLexer("#syntax STMT: [if ([EXPR x]: [EXPR y] then [STMT z]] => [\\if x y z]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
-	ASSERT(result == NullList);
+	ASSERT(result == NullObject);
 	ASSERT(Parser_GetErrorCount(parser) > 0);
 }
 END_TEST
@@ -431,9 +420,9 @@ START_TEST(CannotParseSyntaxWithMismatchedParentheses2)
 	Lexer lexer = SetupLexer("#syntax STMT: [if [EXPR x]: [EXPR y]) then [STMT z]] => [\\if x y z]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
-	ASSERT(result == NullList);
+	ASSERT(result == NullObject);
 	ASSERT(Parser_GetErrorCount(parser) > 0);
 }
 END_TEST
@@ -443,7 +432,7 @@ START_TEST(CanParseSyntaxWithEmbeddedCurlyBraces)
 	Lexer lexer = SetupLexer("#syntax STMT: [if {[EXPR x]: [EXPR y]} then [STMT z]] => [\\if x y z]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
 	SmileSyntax expectedSyntax = SmileSyntax_Create(
 		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
@@ -477,8 +466,7 @@ START_TEST(CanParseSyntaxWithEmbeddedCurlyBraces)
 		NULL
 	);
 
-	ASSERT((SmileObject)result != NullObject);
-	ASSERT(SmileSyntax_Equals((SmileSyntax)result->a, expectedSyntax));
+	ASSERT(SmileObject_DeepCompare(result, (SmileObject)expectedSyntax));
 }
 END_TEST
 
@@ -487,9 +475,9 @@ START_TEST(CannotParseSyntaxWithMismatchedCurlyBraces1)
 	Lexer lexer = SetupLexer("#syntax STMT: [if {[EXPR x]: [EXPR y] then [STMT z]] => [\\if x y z]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
-	ASSERT(result == NullList);
+	ASSERT(result == NullObject);
 	ASSERT(Parser_GetErrorCount(parser) > 0);
 }
 END_TEST
@@ -499,9 +487,9 @@ START_TEST(CannotParseSyntaxWithMismatchedCurlyBraces2)
 	Lexer lexer = SetupLexer("#syntax STMT: [if [EXPR x]: [EXPR y]} then [STMT z]] => [\\if x y z]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
-	ASSERT(result == NullList);
+	ASSERT(result == NullObject);
 	ASSERT(Parser_GetErrorCount(parser) > 0);
 }
 END_TEST
@@ -511,7 +499,7 @@ START_TEST(RealWorldSyntaxExample)
 	Lexer lexer = SetupLexer("#syntax STMT: [if [EXPR x] then [STMT y]] => [\\if x y]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
 	SmileSyntax expectedSyntax = SmileSyntax_Create(
 		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
@@ -536,8 +524,7 @@ START_TEST(RealWorldSyntaxExample)
 		NULL
 	);
 
-	ASSERT((SmileObject)result != NullObject);
-	ASSERT(SmileSyntax_Equals((SmileSyntax)result->a, expectedSyntax));
+	ASSERT(SmileObject_DeepCompare(result, (SmileObject)expectedSyntax));
 }
 END_TEST
 

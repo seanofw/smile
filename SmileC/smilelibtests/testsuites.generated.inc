@@ -1,5 +1,8 @@
 // This file was auto-generated.  Do not edit!
 
+EXTERN_TEST_SUITE(ByteCodeTests);
+EXTERN_TEST_SUITE(CompilerTests);
+EXTERN_TEST_SUITE(EvalTests);
 EXTERN_TEST_SUITE(Int32DictTests);
 EXTERN_TEST_SUITE(LexerCoreTests);
 EXTERN_TEST_SUITE(LexerIdentifierTests);
@@ -8,6 +11,7 @@ EXTERN_TEST_SUITE(LexerNumberTests);
 EXTERN_TEST_SUITE(LexerPunctuationTests);
 EXTERN_TEST_SUITE(LexerStringTests);
 EXTERN_TEST_SUITE(LexerUnicodeTests);
+EXTERN_TEST_SUITE(ParserClassicTests);
 EXTERN_TEST_SUITE(ParserCoreTests);
 EXTERN_TEST_SUITE(ParserFuncTests);
 EXTERN_TEST_SUITE(ParserNewTests);
@@ -18,6 +22,7 @@ EXTERN_TEST_SUITE(ParserSyntaxTests);
 EXTERN_TEST_SUITE(ParserSyntaxValidateTests);
 EXTERN_TEST_SUITE(ParserSyntaxWalkTests);
 EXTERN_TEST_SUITE(ParserTermTests);
+EXTERN_TEST_SUITE(PointerSetTests);
 EXTERN_TEST_SUITE(Real128Tests);
 EXTERN_TEST_SUITE(Real32Tests);
 EXTERN_TEST_SUITE(Real64Tests);
@@ -35,6 +40,9 @@ void RunAllTests()
 {
 	TestSuiteResults *results = CreateEmptyTestSuiteResults();
 
+	RUN_TEST_SUITE(results, ByteCodeTests);
+	RUN_TEST_SUITE(results, CompilerTests);
+	RUN_TEST_SUITE(results, EvalTests);
 	RUN_TEST_SUITE(results, Int32DictTests);
 	RUN_TEST_SUITE(results, LexerCoreTests);
 	RUN_TEST_SUITE(results, LexerIdentifierTests);
@@ -43,6 +51,7 @@ void RunAllTests()
 	RUN_TEST_SUITE(results, LexerPunctuationTests);
 	RUN_TEST_SUITE(results, LexerStringTests);
 	RUN_TEST_SUITE(results, LexerUnicodeTests);
+	RUN_TEST_SUITE(results, ParserClassicTests);
 	RUN_TEST_SUITE(results, ParserCoreTests);
 	RUN_TEST_SUITE(results, ParserFuncTests);
 	RUN_TEST_SUITE(results, ParserNewTests);
@@ -53,6 +62,7 @@ void RunAllTests()
 	RUN_TEST_SUITE(results, ParserSyntaxValidateTests);
 	RUN_TEST_SUITE(results, ParserSyntaxWalkTests);
 	RUN_TEST_SUITE(results, ParserTermTests);
+	RUN_TEST_SUITE(results, PointerSetTests);
 	RUN_TEST_SUITE(results, Real128Tests);
 	RUN_TEST_SUITE(results, Real32Tests);
 	RUN_TEST_SUITE(results, Real64Tests);
@@ -71,6 +81,9 @@ void RunAllTests()
 
 
 const char *TestSuiteNames[] = {
+	"ByteCodeTests",
+	"CompilerTests",
+	"EvalTests",
 	"Int32DictTests",
 	"LexerCoreTests",
 	"LexerIdentifierTests",
@@ -79,6 +92,7 @@ const char *TestSuiteNames[] = {
 	"LexerPunctuationTests",
 	"LexerStringTests",
 	"LexerUnicodeTests",
+	"ParserClassicTests",
 	"ParserCoreTests",
 	"ParserFuncTests",
 	"ParserNewTests",
@@ -89,6 +103,7 @@ const char *TestSuiteNames[] = {
 	"ParserSyntaxValidateTests",
 	"ParserSyntaxWalkTests",
 	"ParserTermTests",
+	"PointerSetTests",
 	"Real128Tests",
 	"Real32Tests",
 	"Real64Tests",
@@ -104,5 +119,5 @@ const char *TestSuiteNames[] = {
 };
 
 
-int NumTestSuites = 30;
+int NumTestSuites = 35;
 

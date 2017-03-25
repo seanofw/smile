@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -45,11 +45,18 @@ ParseScope ParseScope_CreateRoot(void)
 	ParseError error;
 
 	ParseScope parseScope = GC_MALLOC_STRUCT(struct ParseScopeStruct);
+	if (parseScope == NULL)
+		Smile_Abort_OutOfMemory();
 
 	parseScope->kind = PARSESCOPE_OUTERMOST;
 	parseScope->parentScope = NULL;
-	parseScope->closure = Closure_CreateDynamic(NULL, ClosureInfo_Create(NULL));
+	parseScope->symbolDict = Int32Int32Dict_Create();
 	parseScope->syntaxTable = ParserSyntaxTable_CreateNew();
+	parseScope->decls = GC_MALLOC_STRUCT_ARRAY(ParseDecl, 16);
+	if (parseScope->decls == NULL)
+		Smile_Abort_OutOfMemory();
+	parseScope->numDecls = 0;
+	parseScope->maxDecls = 16;
 
 	if ((error = ParseScope_DeclareGlobalOperators(parseScope)) != NULL) {
 		String errorMessage = String_Format("Unable to declare global operators; this is most likely due to a corrupt memory space. Reported error was: %S", error->message);
@@ -57,6 +64,52 @@ ParseScope ParseScope_CreateRoot(void)
 	}
 
 	return parseScope;
+}
+
+// Helper struct for ParseScope_DeclareVariablesFromClosureInfo, used while walking the VarDict.
+struct DeclareVariablesInfo {
+	ParseScope scope;
+	ParseError error;
+};
+
+// Helper function for ParseScope_DeclareVariablesFromClosureInfo, used while walking the VarDict.
+static Bool AddVariablesToScope(VarInfo varInfo, void *param)
+{
+	struct DeclareVariablesInfo *declareVariablesInfo = (struct DeclareVariablesInfo *)param;
+	ParseError error;
+
+	error = ParseScope_DeclareHere(declareVariablesInfo->scope, varInfo->symbol, PARSEDECL_GLOBAL, NULL, NULL);
+	declareVariablesInfo->error = error;
+
+	return (error == NULL);
+}
+
+/// <summary>
+/// Declare all of the global variables found in the given ClosureInfo in the given scope.
+/// This recursively walks the ClosureInfo to any parent ClosureInfos, declaring everything
+/// that the given ClosureInfo can see all the way back to its root.
+/// </summary>
+/// <param name="scope">The scope in which to declare all the global variables.</param>
+/// <param name="closureInfo">A ClosureInfo object that identifies all the names of the global variables to
+/// declare (their values will be ignored during parsing).</param>
+/// <returns>The first parse error that results from declaring these variables, or NULL if no errors were
+/// produced.  (An error could result from a duplicate variable declaration.)</returns>
+ParseError ParseScope_DeclareVariablesFromClosureInfo(ParseScope scope, ClosureInfo closureInfo)
+{
+	ParseError error;
+	struct DeclareVariablesInfo declareVariablesInfo;
+
+	declareVariablesInfo.scope = scope;
+	declareVariablesInfo.error = NULL;
+
+	if (closureInfo->parent != NULL) {
+		error = ParseScope_DeclareVariablesFromClosureInfo(scope, closureInfo->parent);
+		if (error != NULL) return error;
+	}
+
+	VarDict_ForEach(closureInfo->variableDictionary, AddVariablesToScope, &declareVariablesInfo);
+
+	return declareVariablesInfo.error;
 }
 
 /// <summary>
@@ -70,29 +123,31 @@ static ParseError ParseScope_DeclareGlobalOperators(ParseScope parseScope)
 {
 	ParseError error;
 
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.equals_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.op_equals_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.if_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.while_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.var_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.till_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.catch_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.fn_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.scope_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.progn_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.quote_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.new_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.is_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.typeof_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.and_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.or_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.not_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__SET, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__OPSET, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__IF, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__WHILE, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__TILL, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__FN, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__QUOTE, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__SCOPE, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__PROG1, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__PROGN, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__RETURN, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__CATCH, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__NOT, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__OR, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__AND, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__EQ, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__NE, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__NEW, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__IS, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+	if ((error = ParseScope_Declare(parseScope, SMILE_SPECIAL_SYMBOL__TYPEOF, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
+/*
 	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.null_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
 	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.true_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
 	if ((error = ParseScope_Declare(parseScope, Smile_KnownSymbols.false_, PARSEDECL_PRIMITIVE, NULL, NULL)) != NULL) return error;
-
+*/
 	return NULL;
 }
 
@@ -105,10 +160,17 @@ static ParseError ParseScope_DeclareGlobalOperators(ParseScope parseScope)
 ParseScope ParseScope_CreateChild(ParseScope parentScope, Int kind)
 {
 	ParseScope parseScope = GC_MALLOC_STRUCT(struct ParseScopeStruct);
+	if (parseScope == NULL)
+		Smile_Abort_OutOfMemory();
 
 	parseScope->kind = kind;
 	parseScope->parentScope = parentScope;
-	parseScope->closure = Closure_CreateDynamic(parentScope->closure, ClosureInfo_Create(parentScope->closure->closureInfo));
+	parseScope->symbolDict = Int32Int32Dict_Create();
+	parseScope->decls = GC_MALLOC_STRUCT_ARRAY(ParseDecl, 16);
+	if (parseScope->decls == NULL)
+		Smile_Abort_OutOfMemory();
+	parseScope->numDecls = 0;
+	parseScope->maxDecls = 16;
 	ParserSyntaxTable_AddRef(parseScope->syntaxTable = parentScope->syntaxTable);
 
 	return parseScope;
@@ -124,7 +186,10 @@ void ParseScope_Finish(ParseScope parseScope)
 
 	// Allow GC to reclaim the attached objects, if this was the last reference.
 	parseScope->syntaxTable = NULL;
-	parseScope->closure = NULL;
+	parseScope->symbolDict = NULL;
+	parseScope->decls = NULL;
+	parseScope->numDecls = 0;
+	parseScope->maxDecls = 0;
 	parseScope->parentScope = NULL;
 }
 
@@ -143,12 +208,11 @@ ParseError ParseScope_DeclareHere(ParseScope scope, Symbol symbol, Int kind, Lex
 	ParseDecl parseDecl;
 	ParseDecl previousDecl;
 	ParseError error;
+	Int32 declIndex;
 
-	// Construct the base declaration object for this name.
-	parseDecl = ParseDecl_Create(symbol, kind, scope->closure->closureInfo->numVariables, position, NULL);
-
-	if ((previousDecl = (ParseDecl)Closure_GetHereByName(scope->closure, symbol))->kind != SMILE_KIND_NULL) {
-
+	// First, see if we already declared this.
+	if ((previousDecl = ParseScope_FindDeclaration(scope, symbol)) != NULL) {
+	
 		// Already declared.  This isn't necessarily an error, but it depends on what
 		// kind of thing is being declared and how it relates to what was already declared.
 		if ((previousDecl->declKind != kind && previousDecl->declKind >= PARSEDECL_UNDECLARED)
@@ -166,10 +230,140 @@ ParseError ParseScope_DeclareHere(ParseScope scope, Symbol symbol, Int kind, Lex
 		}
 	}
 
-	Closure_Let(scope->closure, symbol, (SmileObject)parseDecl);
+	// It's not already declared, so are we allowed to declare a new variable in this scope?  If not, bail.
+	if (scope->kind == PARSESCOPE_EXPLICIT) {
+		if (decl != NULL)
+			*decl = NULL;
+		error = ParseMessage_Create(PARSEMESSAGE_ERROR, position,
+			String_Format("Cannot add \"%S\" to the current scope, which explicitly lists its variables.",
+			SymbolTable_GetName(Smile_SymbolTable, symbol)));
+		return error;
+	}
+
+	// Construct the base declaration object for this name.
+	parseDecl = ParseDecl_Create(symbol, kind, scope->numDecls, position, NULL);
+
+	// Allocate a new index for the declaration.
+	if (scope->numDecls >= scope->maxDecls) {
+		Int32 newMax = scope->maxDecls * 2;
+		ParseDecl *newDecls = GC_MALLOC_STRUCT_ARRAY(ParseDecl, newMax);
+		if (newDecls == NULL)
+			Smile_Abort_OutOfMemory();
+		MemCpy(newDecls, scope->decls, sizeof(ParseDecl) * scope->numDecls);
+		scope->decls = newDecls;
+		scope->maxDecls = newMax;
+	}
+
+	// Store the new declaration.
+	declIndex = scope->numDecls++;
+	scope->decls[declIndex] = parseDecl;
+
+	// And record it in the lookup table.
+	Int32Int32Dict_SetValue(scope->symbolDict, symbol, declIndex);
 
 	// Last, return the declaration object itself.
 	if (decl != NULL)
 		*decl = parseDecl;
+	return NULL;
+}
+
+// scope-vars ::= . names
+static ParseError Parser_ParseClassicScopeVariableNames(Parser parser, SmileList *result)
+{
+	SmileList head = NullList, tail = NullList;
+	Token token;
+	Symbol name;
+	ParseError error;
+
+	for (;;) {
+		token = Parser_NextToken(parser);
+		switch (token->kind) {
+
+			case TOKEN_BAR:
+			case TOKEN_LEFTBRACE:
+			case TOKEN_LEFTBRACKET:
+			case TOKEN_LEFTPARENTHESIS:
+			case TOKEN_RIGHTBRACE:
+			case TOKEN_RIGHTBRACKET:
+			case TOKEN_RIGHTPARENTHESIS:
+				Lexer_Unget(parser->lexer);
+				*result = head;
+				return NULL;
+
+			case TOKEN_ALPHANAME:
+			case TOKEN_UNKNOWNALPHANAME:
+			case TOKEN_PUNCTNAME:
+			case TOKEN_UNKNOWNPUNCTNAME:
+				name = token->data.symbol;
+				LIST_APPEND_WITH_SOURCE(head, tail, SmileSymbol_Create(name), Token_GetPosition(token));
+				break;
+
+			default:
+				error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), String_FromC("Missing name for [$scope] variable."));
+				Parser_AddMessage(parser, error);
+				break;
+		}
+	}
+}
+
+// term ::= '[' '$scope' . scope-vars exprs-opt ']'
+ParseError Parser_ParseClassicScope(Parser parser, SmileObject *result, LexerPosition startPosition)
+{
+	SmileList variableNames;
+	SmileList head, tail;
+	SmileList temp;
+	ParseError error;
+	ParseDecl decl;
+	SmileSymbol smileSymbol;
+
+	// Make sure there is a '[' to start the name list.
+	if ((error = Parser_ExpectLeftBracket(parser, result, NULL, "$scope", startPosition)) != NULL)
+		return error;
+
+	Parser_BeginScope(parser, PARSESCOPE_SCOPEDECL);
+
+	// Parse the names.
+	if ((error = Parser_ParseClassicScopeVariableNames(parser, &variableNames)) != NULL) {
+		Parser_AddMessage(parser, error);
+		variableNames = NullList;
+	}
+
+	// Make sure there is a ']' to end the variable-names list.
+	if ((error = Parser_ExpectRightBracket(parser, result, NULL, "$scope variables", startPosition)) != NULL) {
+		Parser_EndScope(parser);
+		return error;
+	}
+
+	// Spin over the variable-names list and declare each one in the new parsing scope.
+	if (SMILE_KIND(variableNames) == SMILE_KIND_LIST) {
+		for (temp = variableNames; SMILE_KIND(temp) == SMILE_KIND_LIST; temp = (SmileList)temp->d) {
+			smileSymbol = (SmileSymbol)temp->a;
+			ParseScope_DeclareHere(parser->currentScope, smileSymbol->symbol, PARSEDECL_VARIABLE, SMILE_VCALL(temp, getSourceLocation), &decl);
+		}
+	}
+
+	// Now that all of the variables are declared, we mark this as an "explicit" scope, which
+	// prohibits any new ones from being added to it.
+	parser->currentScope->kind = PARSESCOPE_EXPLICIT;
+
+	// Parse the body expressions.
+	head = tail = NullList;
+	Parser_ParseExprsOpt(parser, &head, &tail, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
+
+	// End the scope.
+	Parser_EndScope(parser);
+
+	// Make sure there is a ']' to end the scope.
+	if ((error = Parser_ExpectRightBracket(parser, result, NULL, "$scope", startPosition)) != NULL)
+		return error;
+
+	// Construct the resulting [$scope names exprs] form.
+	*result =
+		(SmileObject)SmileList_ConsWithSource((SmileObject)SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__SCOPE),
+			(SmileObject)SmileList_ConsWithSource((SmileObject)variableNames,
+				(SmileObject)head,
+			startPosition),
+		startPosition);
+
 	return NULL;
 }

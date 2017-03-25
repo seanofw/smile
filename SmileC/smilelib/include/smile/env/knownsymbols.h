@@ -8,108 +8,138 @@
 // Preregistered symbol IDs for the special symbols.
 typedef enum SmileSpecialSymbolEnum {
 
-	SMILE_SPECIAL_SYMBOL_EQUALS	= 1,
-	SMILE_SPECIAL_SYMBOL_OP_EQUALS	= 2,
+	// The twenty primitive forms first.
+	SMILE_SPECIAL_SYMBOL__SET	= 1,
+	SMILE_SPECIAL_SYMBOL__OPSET	= 2,
+	SMILE_SPECIAL_SYMBOL__IF	= 3,
+	SMILE_SPECIAL_SYMBOL__WHILE	= 4,
+	SMILE_SPECIAL_SYMBOL__TILL	= 5,
+	SMILE_SPECIAL_SYMBOL__FN	= 6,
+	SMILE_SPECIAL_SYMBOL__QUOTE	= 7,
+	SMILE_SPECIAL_SYMBOL__SCOPE	= 8,
+	SMILE_SPECIAL_SYMBOL__PROG1	= 9,
+	SMILE_SPECIAL_SYMBOL__PROGN	= 10,
+	SMILE_SPECIAL_SYMBOL__RETURN	= 11,
+	SMILE_SPECIAL_SYMBOL__CATCH	= 12,
+	SMILE_SPECIAL_SYMBOL__NOT	= 13,
+	SMILE_SPECIAL_SYMBOL__OR	= 14,
+	SMILE_SPECIAL_SYMBOL__AND	= 15,
+	SMILE_SPECIAL_SYMBOL__EQ	= 16,
+	SMILE_SPECIAL_SYMBOL__NE	= 17,
+	SMILE_SPECIAL_SYMBOL__NEW	= 18,
+	SMILE_SPECIAL_SYMBOL__IS	= 19,
+	SMILE_SPECIAL_SYMBOL__TYPEOF	= 20,
 		
-	SMILE_SPECIAL_SYMBOL_IF	= 3,
-	SMILE_SPECIAL_SYMBOL_UNLESS	= 4,
-	SMILE_SPECIAL_SYMBOL_WHILE	= 5,
-	SMILE_SPECIAL_SYMBOL_UNTIL	= 6,
-	SMILE_SPECIAL_SYMBOL_TILL	= 7,
+	// Special keywords.	
+	SMILE_SPECIAL_SYMBOL_VAR	= 21,
+	SMILE_SPECIAL_SYMBOL_CONST	= 22,
+	SMILE_SPECIAL_SYMBOL_AUTO	= 23,		
+	SMILE_SPECIAL_SYMBOL_KEYWORD	= 24,
+	SMILE_SPECIAL_SYMBOL_RETURN	= 25,
+	SMILE_SPECIAL_SYMBOL_TRY	= 26,
+	SMILE_SPECIAL_SYMBOL_CATCH	= 27,
+	SMILE_SPECIAL_SYMBOL_NOT	= 28,
+	SMILE_SPECIAL_SYMBOL_OR	= 29,
+	SMILE_SPECIAL_SYMBOL_AND	= 30,		
+	SMILE_SPECIAL_SYMBOL_NEW	= 31,
+	SMILE_SPECIAL_SYMBOL_IS	= 32,
+	SMILE_SPECIAL_SYMBOL_TYPEOF	= 33,
 		
-	SMILE_SPECIAL_SYMBOL_VAR	= 8,
-	SMILE_SPECIAL_SYMBOL_CONST	= 9,
-	SMILE_SPECIAL_SYMBOL_AUTO	= 10,
+	// Comparison punctuation.	
+	SMILE_SPECIAL_SYMBOL_SUPEREQ	= 34,
+	SMILE_SPECIAL_SYMBOL_SUPERNE	= 35,	
+	SMILE_SPECIAL_SYMBOL_EQ	= 36,
+	SMILE_SPECIAL_SYMBOL_NE	= 37,
+	SMILE_SPECIAL_SYMBOL_LT	= 38,
+	SMILE_SPECIAL_SYMBOL_GT	= 39,
+	SMILE_SPECIAL_SYMBOL_LE	= 40,
+	SMILE_SPECIAL_SYMBOL_GE	= 41,
 		
-	SMILE_SPECIAL_SYMBOL_TRY	= 11,
-	SMILE_SPECIAL_SYMBOL_CATCH	= 12,
+	// Arithmetic.	
+	SMILE_SPECIAL_SYMBOL_PLUS	= 42,
+	SMILE_SPECIAL_SYMBOL_MINUS	= 43,
+	SMILE_SPECIAL_SYMBOL_STAR	= 44,
+	SMILE_SPECIAL_SYMBOL_SLASH	= 45,
 		
-	SMILE_SPECIAL_SYMBOL_FN	= 13,
-	SMILE_SPECIAL_SYMBOL_QUOTE	= 14,
-	SMILE_SPECIAL_SYMBOL_SCOPE	= 15,
-	SMILE_SPECIAL_SYMBOL_PROG1	= 16,
-	SMILE_SPECIAL_SYMBOL_PROGN	= 17,
-	SMILE_SPECIAL_SYMBOL_RETURN	= 18,
+	// Braces and brackets.	
+	SMILE_SPECIAL_SYMBOL_LEFTPARENTHESIS	= 46,
+	SMILE_SPECIAL_SYMBOL_RIGHTPARENTHESIS	= 47,
+	SMILE_SPECIAL_SYMBOL_LEFTBRACKET	= 48,
+	SMILE_SPECIAL_SYMBOL_RIGHTBRACKET	= 49,
+	SMILE_SPECIAL_SYMBOL_LEFTBRACE	= 50,
+	SMILE_SPECIAL_SYMBOL_RIGHTBRACE	= 51,
 		
-	SMILE_SPECIAL_SYMBOL_NOT	= 19,
-	SMILE_SPECIAL_SYMBOL_OR	= 20,
-	SMILE_SPECIAL_SYMBOL_AND	= 21,
+	// Other punctuation.	
+	SMILE_SPECIAL_SYMBOL_COMMA	= 52,
+	SMILE_SPECIAL_SYMBOL_SEMICOLON	= 53,
+	SMILE_SPECIAL_SYMBOL_COLON	= 54,
+	SMILE_SPECIAL_SYMBOL_QUESTIONMARK	= 55,
+	SMILE_SPECIAL_SYMBOL_IMPLIES	= 56,
+	SMILE_SPECIAL_SYMBOL_CARET	= 57,
+	SMILE_SPECIAL_SYMBOL_SHL	= 58,
+	SMILE_SPECIAL_SYMBOL_SHR	= 59,
+	SMILE_SPECIAL_SYMBOL_SAL	= 60,
+	SMILE_SPECIAL_SYMBOL_SAR	= 61,
+	SMILE_SPECIAL_SYMBOL_ROL	= 62,
+	SMILE_SPECIAL_SYMBOL_ROR	= 63,
 		
-	SMILE_SPECIAL_SYMBOL_NEW	= 22,
-	SMILE_SPECIAL_SYMBOL_IS	= 23,
-	SMILE_SPECIAL_SYMBOL_TYPEOF	= 24,
-	SMILE_SPECIAL_SYMBOL_SUPEREQ	= 25,
-	SMILE_SPECIAL_SYMBOL_SUPERNE	= 26,
-		
-	SMILE_SPECIAL_SYMBOL_EQ	= 27,
-	SMILE_SPECIAL_SYMBOL_NE	= 28,
-	SMILE_SPECIAL_SYMBOL_LT	= 29,
-	SMILE_SPECIAL_SYMBOL_GT	= 30,
-	SMILE_SPECIAL_SYMBOL_LE	= 31,
-	SMILE_SPECIAL_SYMBOL_GE	= 32,
-		
-	SMILE_SPECIAL_SYMBOL_PLUS	= 33,
-	SMILE_SPECIAL_SYMBOL_MINUS	= 34,
-	SMILE_SPECIAL_SYMBOL_STAR	= 35,
-	SMILE_SPECIAL_SYMBOL_SLASH	= 36,
-		
-	SMILE_SPECIAL_SYMBOL_LEFTPARENTHESIS	= 37,
-	SMILE_SPECIAL_SYMBOL_RIGHTPARENTHESIS	= 38,
-	SMILE_SPECIAL_SYMBOL_LEFTBRACKET	= 39,
-	SMILE_SPECIAL_SYMBOL_RIGHTBRACKET	= 40,
-	SMILE_SPECIAL_SYMBOL_LEFTBRACE	= 41,
-	SMILE_SPECIAL_SYMBOL_RIGHTBRACE	= 42,
-		
-	SMILE_SPECIAL_SYMBOL_COMMA	= 43,
-	SMILE_SPECIAL_SYMBOL_SEMICOLON	= 44,
-	SMILE_SPECIAL_SYMBOL_COLON	= 45,
-	SMILE_SPECIAL_SYMBOL_QUESTIONMARK	= 46,
-		
-	SMILE_SPECIAL_SYMBOL_STMT	= 47,
-	SMILE_SPECIAL_SYMBOL_EXPR	= 48,
-	SMILE_SPECIAL_SYMBOL_CMPEXPR	= 49,
-	SMILE_SPECIAL_SYMBOL_ADDEXPR	= 50,
-	SMILE_SPECIAL_SYMBOL_MULEXPR	= 51,
-	SMILE_SPECIAL_SYMBOL_BINARYEXPR	= 52,
-	SMILE_SPECIAL_SYMBOL_COLONEXPR	= 53,
-	SMILE_SPECIAL_SYMBOL_RANGEEXPR	= 54,
-	SMILE_SPECIAL_SYMBOL_PREFIXEXPR	= 55,
-	SMILE_SPECIAL_SYMBOL_POSTFIXEXPR	= 56,
-	SMILE_SPECIAL_SYMBOL_CONSEXPR	= 57,
-	SMILE_SPECIAL_SYMBOL_DOTEXPR	= 58,
-	SMILE_SPECIAL_SYMBOL_TERM	= 59,
-		
-	SMILE_SPECIAL_SYMBOL_BRK	= 60,
-
+	// Special #syntax classes.	
+	SMILE_SPECIAL_SYMBOL_STMT	= 64,
+	SMILE_SPECIAL_SYMBOL_EXPR	= 65,
+	SMILE_SPECIAL_SYMBOL_CMPEXPR	= 66,
+	SMILE_SPECIAL_SYMBOL_ADDEXPR	= 67,
+	SMILE_SPECIAL_SYMBOL_MULEXPR	= 68,
+	SMILE_SPECIAL_SYMBOL_BINARYEXPR	= 69,
+	SMILE_SPECIAL_SYMBOL_COLONEXPR	= 70,
+	SMILE_SPECIAL_SYMBOL_RANGEEXPR	= 71,
+	SMILE_SPECIAL_SYMBOL_PREFIXEXPR	= 72,
+	SMILE_SPECIAL_SYMBOL_POSTFIXEXPR	= 73,
+	SMILE_SPECIAL_SYMBOL_CONSEXPR	= 74,
+	SMILE_SPECIAL_SYMBOL_DOTEXPR	= 75,
+	SMILE_SPECIAL_SYMBOL_TERM	= 76,
+	
 } SmileSpecialSymbol;
 
 // The set of known symbols, preregistered at startup time to save on runtime-initialization costs.
 typedef struct KnownSymbolsStruct {
 
-	// Specials.
-	Symbol equals_, op_equals_;
-	Symbol if_, unless_, while_, until_, till_;
-	Symbol var_, const_, auto_;
+	//------------------------------------------
+	// The 70-ish special symbols from the list above first.
+
+	// The twenty core special forms.
+	Symbol _set, _opset;
+	Symbol _if, _while, _till;
+	Symbol _fn, _quote, _scope, _prog1, _progn, _return, _catch;
+	Symbol _not, _or, _and, _eq, _ne;
+	Symbol _new, _is, _typeof;
+
+	// Special keywords.
+	Symbol var_, const_, auto_, keyword_;
+	Symbol return_;
 	Symbol try_, catch_;
-	Symbol fn_, quote_, scope_, prog1_, progn_, return_;
 	Symbol not_, or_, and_;
-	Symbol new_, is_, typeof_, supereq_, superne_;
-	Symbol brk_;
-	Symbol eq, ne, lt, gt, le, ge;
+	Symbol new_, is_, typeof_;
+
+	// Comparison punctuation.
+	Symbol supereq_, superne_, eq, ne, lt, gt, le, ge;
+
+	// Arithmetic.
 	Symbol plus, minus, star, slash;
 
-	// Special syntax nonterminals.
-	Symbol STMT, TERM;
-	Symbol EXPR, CMPEXPR, ADDEXPR, MULEXPR, BINARYEXPR, COLONEXPR, RANGEEXPR, PREFIXEXPR, POSTFIXEXPR, CONSEXPR, DOTEXPR;
+	// Braces and brackets.
+	Symbol left_parenthesis, right_parenthesis, left_bracket, right_bracket, left_brace, right_brace;
 
-	// Operator symbols.
-	Symbol caret;
+	// Other punctuation.
+	Symbol comma, semicolon, colon, question_mark, implies, caret;
 	Symbol shift_left, shift_right, arithmetic_shift_left, arithmetic_shift_right, rotate_left, rotate_right;
 
-	// Special punctuation.
-	Symbol left_parenthesis, right_parenthesis, left_bracket, right_bracket, left_brace, right_brace;
-	Symbol comma, semicolon, colon, question_mark;
-	Symbol implies;
+	// Special #syntax classes.
+	Symbol STMT;
+	Symbol EXPR, CMPEXPR, ADDEXPR, MULEXPR, BINARYEXPR, COLONEXPR, RANGEEXPR, PREFIXEXPR, POSTFIXEXPR, CONSEXPR, DOTEXPR;
+	Symbol TERM;
+
+	// End of special symbols.
+	//------------------------------------------
 
 	// Typename symbols.
 	Symbol Actor_, Array_, ArrayBase_, Bool_, Byte_, ByteRange_, ByteArray_, Char_, Closure, Enumerable_, Exception_, Facade_, FacadeProper_, Fn_, Handle_;
@@ -124,7 +154,7 @@ typedef struct KnownSymbolsStruct {
 	Symbol call, call_method, camelCase, CamelCase, case_fold, case_insensitive, case_sensitive, category, ceil, char_, chip, chop;
 	Symbol cident_q, clip, clone, code_at, code_length, compare, compare_i, compose, composed_q, cons, contains, contains_i, control_q, context, cos, count, count64;
 	Symbol count_left_ones, count_left_zeros, count_of, count_of_i, count_ones, count_right_ones, count_right_zeros, count_zeros, crc32, create, create_child_closure;
-	Symbol d, decompose, diacritic_q, digit_q, div, divide_by_zero, does_not_understand;
+	Symbol d, decompose, default_, diacritic_q, digit_q, div, divide_by_zero, does_not_understand;
 	Symbol each, end, ends_with, ends_with_i, escape, eval, even_q, exit, exp, extend_object, extend_where_new;
 	Symbol false_, filename_mode, first, floor, fold, from_seed;
 	Symbol get_member, get_object_security, get_property;
@@ -143,7 +173,7 @@ typedef struct KnownSymbolsStruct {
 	Symbol other_control, other_format, other_not_assigned, other_private_use, other_surrogate;
 	Symbol parity, parse, parse_and_eval, pattern, pos_q, post, pow2_q, pre, primary_category, printf, process_id, property_names, punct_q, punctuation;
 	Symbol punctuation_close, punctuation_connector, punctuation_dash, punctuation_final_quote, punctuation_initial_quote, punctuation_open, punctuation_other;
-	Symbol raw_reverse, read_append, read_only, read_write, read_write_append, real_, real32_, real64_, rem, repeat, replace, replacement, resize, rest, result;
+	Symbol range_to, raw_reverse, read_append, read_only, read_write, read_write_append, real_, real32_, real64_, rem, repeat, replace, replacement, resize, rest, result;
 	Symbol reverse, reverse_bits, reverse_bytes, right, rot_13;
 	Symbol separator, separator_line, separator_paragraph, separator_space;
 	Symbol set_member, set_object_security, set_property, sign, sin, space_q, splice, split, sprintf;

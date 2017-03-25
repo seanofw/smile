@@ -29,6 +29,16 @@ typedef unsigned int UInt32;
 typedef long long Int64;
 typedef unsigned long long UInt64;
 
+typedef struct {
+	unsigned long long hi;
+	unsigned long long lo;
+} UInt128;
+
+typedef struct {
+	long long hi;
+	unsigned long long lo;
+} Int128;
+
 // Portable pointer-casting types.
 typedef UInt32 PtrInt;		// An unsigned integer type that is the same size as a pointer.
 typedef Int32 Int;			// A signed integer type that matches the native platform's "best" register size.
@@ -73,6 +83,8 @@ typedef struct __attribute__((aligned(16))) { UInt64 value[2]; } Real128;
 	#undef SMILE_INTERNAL_DATA
 	#define SMILE_INTERNAL_DATA __attribute__ ((visibility ("hidden")))
 #endif
+
+#define SMILE_IGNORE_UNUSED_VARIABLES _Pragma("GCC diagnostic ignored \"-Wunused-variable\"")
 
 //------------------------------------------------------------------------------------------------
 //  Entropy.

@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -19,124 +19,124 @@
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/numeric/smileinteger16.h>
+#include <smile/smiletypes/easyobject.h>
+
+SMILE_IGNORE_UNUSED_VARIABLES
+
+SMILE_EASY_OBJECT_VTABLE(SmileInteger16);
 
 SmileInteger16 SmileInteger16_CreateInternal(Int16 value)
 {
-	SmileInteger16 smileInt = GC_MALLOC_STRUCT(struct SmileInteger16Int);
+	// We MALLOC_ATOMIC here because the base is a known pointer that will never be collected.
+	SmileInteger16 smileInt = (SmileInteger16)GC_MALLOC_ATOMIC(sizeof(struct SmileInteger16Int));
 	if (smileInt == NULL) Smile_Abort_OutOfMemory();
-	smileInt->base = Smile_KnownObjects.Object;
+	smileInt->base = (SmileObject)Smile_KnownBases.Integer16;
 	smileInt->kind = SMILE_KIND_INTEGER16;
 	smileInt->vtable = SmileInteger16_VTable;
 	smileInt->value = value;
 	return smileInt;
 }
 
-Bool SmileInteger16_CompareEqual(SmileInteger16 self, SmileObject other)
+SMILE_EASY_OBJECT_READONLY_SECURITY(SmileInteger16)
+SMILE_EASY_OBJECT_NO_CALL(SmileInteger16)
+SMILE_EASY_OBJECT_NO_SOURCE(SmileInteger16)
+SMILE_EASY_OBJECT_NO_PROPERTIES(SmileInteger16)
+
+SMILE_EASY_OBJECT_HASH(SmileInteger16, obj->value)
+SMILE_EASY_OBJECT_TOBOOL(SmileInteger16, obj->value != 0)
+SMILE_EASY_OBJECT_TOINT(SmileInteger16, obj->value)
+SMILE_EASY_OBJECT_TOREAL(SmileInteger16, Real64_FromInt32(obj->value))
+SMILE_EASY_OBJECT_TOFLOAT(SmileInteger16, (Float64)obj->value)
+SMILE_EASY_OBJECT_TOSTRING(SmileInteger16, String_Format("%ds", (Int32)obj->value))
+
+static Bool SmileInteger16_CompareEqual(SmileInteger16 a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
 {
-	SmileInteger16 otherInt;
-
-	if (SMILE_KIND(other) != SMILE_KIND_INTEGER16) return False;
-	otherInt = (SmileInteger16)other;
-
-	return self->value == otherInt->value;
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_INTEGER16) {
+		return ((SmileInteger16)a)->value == bData.i16;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_INTEGER16) {
+		return ((SmileInteger16)a)->value == ((SmileInteger16)b)->value;
+	}
+	else return False;
 }
 
-UInt32 SmileInteger16_Hash(SmileInteger16 self)
+static Bool SmileInteger16_DeepEqual(SmileInteger16 a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData, PointerSet visitedPointers)
 {
-	return self->value;
+	UNUSED(visitedPointers);
+
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_INTEGER16) {
+		return ((SmileInteger16)a)->value == bData.i16;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_INTEGER16) {
+		return ((SmileInteger16)a)->value == ((SmileInteger16)b)->value;
+	}
+	else return False;
 }
 
-void SmileInteger16_SetSecurityKey(SmileInteger16 self, SmileObject newSecurityKey, SmileObject oldSecurityKey)
+SmileObject SmileInteger16_Box(SmileArg src)
 {
-	UNUSED(self);
-	UNUSED(newSecurityKey);
-	UNUSED(oldSecurityKey);
-	Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
+	return src.obj;
 }
 
-void SmileInteger16_SetSecurity(SmileInteger16 self, Int security, SmileObject securityKey)
+SmileArg SmileInteger16_Unbox(SmileInteger16 smileInt)
 {
-	UNUSED(self);
-	UNUSED(security);
-	UNUSED(securityKey);
-	Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
+	return SmileUnboxedInteger16_From(smileInt->value);
 }
 
-Int SmileInteger16_GetSecurity(SmileInteger16 self)
+//-------------------------------------------------------------------------------------------------
+
+SMILE_EASY_OBJECT_VTABLE(SmileUnboxedInteger16);
+
+SMILE_EASY_OBJECT_READONLY_SECURITY(SmileUnboxedInteger16)
+SMILE_EASY_OBJECT_NO_CALL(SmileUnboxedInteger16)
+SMILE_EASY_OBJECT_NO_SOURCE(SmileUnboxedInteger16)
+SMILE_EASY_OBJECT_NO_PROPERTIES(SmileUnboxedInteger16)
+
+SMILE_EASY_OBJECT_HASH(SmileUnboxedInteger16, 0)
+SMILE_EASY_OBJECT_TOBOOL(SmileUnboxedInteger16, (Bool)!!unboxedData.i16)
+SMILE_EASY_OBJECT_TOINT(SmileUnboxedInteger16, unboxedData.i16)
+SMILE_EASY_OBJECT_TOREAL(SmileUnboxedInteger16, Real64_FromInt32(unboxedData.i16))
+SMILE_EASY_OBJECT_TOFLOAT(SmileUnboxedInteger16, unboxedData.i16)
+SMILE_EASY_OBJECT_TOSTRING(SmileUnboxedInteger16, String_Format("%d", (Int)unboxedData.i16))
+
+static Bool SmileUnboxedInteger16_CompareEqual(SmileUnboxedInteger16 a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
 {
-	UNUSED(self);
-	return SMILE_SECURITY_READONLY;
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_INTEGER16) {
+		return aData.i16 == bData.i16;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_INTEGER16) {
+		return aData.i16 == ((SmileInteger16)b)->value;
+	}
+	else return False;
 }
 
-SmileObject SmileInteger16_GetProperty(SmileInteger16 self, Symbol propertyName)
+static Bool SmileUnboxedInteger16_DeepEqual(SmileUnboxedInteger16 a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData, PointerSet visitedPointers)
 {
-	return self->base->vtable->getProperty((SmileObject)self, propertyName);
+	UNUSED(visitedPointers);
+
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_INTEGER16) {
+		return aData.i16 == bData.i16;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_INTEGER16) {
+		return aData.i16 == ((SmileInteger16)b)->value;
+	}
+	else return False;
 }
 
-void SmileInteger16_SetProperty(SmileInteger16 self, Symbol propertyName, SmileObject value)
+static SmileObject SmileUnboxedInteger16_Box(SmileArg src)
 {
-	UNUSED(self);
-	UNUSED(value);
-	Smile_ThrowException(Smile_KnownSymbols.object_security_error,
-		String_Format("Cannot set property \"%S\" on an integer, which is read-only.",
-		SymbolTable_GetName(Smile_SymbolTable, propertyName)));
+	return (SmileObject)SmileInteger16_Create(src.unboxed.i16);
 }
 
-Bool SmileInteger16_HasProperty(SmileInteger16 self, Symbol propertyName)
+static SmileArg SmileUnboxedInteger16_Unbox(SmileUnboxedInteger16 smileUnboxedInteger16)
 {
-	UNUSED(self);
-	UNUSED(propertyName);
-	return False;
+	Smile_Abort_FatalError("Cannot re-unbox a unboxed object.");
+	return (SmileArg){ 0 };
 }
 
-SmileList SmileInteger16_GetPropertyNames(SmileInteger16 self)
-{
-	UNUSED(self);
-	return NullList;
-}
-
-Bool SmileInteger16_ToBool(SmileInteger16 self)
-{
-	return self->value != 0;
-}
-
-Int32 SmileInteger16_ToInteger32(SmileInteger16 self)
-{
-	return (Int32)self->value;
-}
-
-Float64 SmileInteger16_ToFloat64(SmileInteger16 self)
-{
-	return (Float64)self->value;
-}
-
-Real64 SmileInteger16_ToReal64(SmileInteger16 self)
-{
-	return Real64_FromInt32(self->value);
-}
-
-String SmileInteger16_ToString(SmileInteger16 self)
-{
-	return String_Format("%dh", (Int32)self->value);
-}
-
-SMILE_VTABLE(SmileInteger16_VTable, SmileInteger16)
-{
-	SmileInteger16_CompareEqual,
-	SmileInteger16_Hash,
-
-	SmileInteger16_SetSecurityKey,
-	SmileInteger16_SetSecurity,
-	SmileInteger16_GetSecurity,
-
-	SmileInteger16_GetProperty,
-	SmileInteger16_SetProperty,
-	SmileInteger16_HasProperty,
-	SmileInteger16_GetPropertyNames,
-
-	SmileInteger16_ToBool,
-	SmileInteger16_ToInteger32,
-	SmileInteger16_ToFloat64,
-	SmileInteger16_ToReal64,
-	SmileInteger16_ToString,
+static struct SmileUnboxedInteger16Int SmileUnboxedInteger16_Instance_Struct = {
+	SMILE_KIND_UNBOXED_INTEGER16,
+	(SmileVTable)&SmileUnboxedInteger16_VTableData,
 };
+
+extern SmileUnboxedInteger16 SmileUnboxedInteger16_Instance = &SmileUnboxedInteger16_Instance_Struct;

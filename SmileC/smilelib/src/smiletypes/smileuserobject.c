@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/smileuserobject.h>
+#include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/text/smilestring.h>
 
@@ -39,10 +40,48 @@ SmileUserObject SmileUserObject_CreateWithSize(SmileObject base, Int initialSize
 	return userObject;
 }
 
-Bool SmileUserObject_CompareEqual(SmileUserObject self, SmileObject other)
+Bool SmileUserObject_CompareEqual(SmileUserObject self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData)
 {
-	UNUSED(self);
+	UNUSED(selfData);
+	UNUSED(otherData);
+
 	return ((SmileObject)self == other);
+}
+
+Bool SmileUserObject_DeepEqual(SmileUserObject self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData, PointerSet visitedPointers)
+{
+	SmileUserObject otherUserObject;
+	Symbol *keys;
+	Symbol key;
+	Int i, numKeys, numOtherKeys;
+	SmileObject value, otherValue;
+
+	UNUSED(selfData);
+	UNUSED(otherData);
+
+	if ((SmileObject)self == other) return True;
+	if (SMILE_KIND(other) != SMILE_KIND_USEROBJECT) return False;
+	otherUserObject = (SmileUserObject)other;
+
+	numKeys = Int32Dict_Count((Int32Dict)&self->dict);
+	numOtherKeys = Int32Dict_Count((Int32Dict)&otherUserObject->dict);
+	if (numKeys != numOtherKeys) return False;
+
+	keys = (Symbol *)Int32Dict_GetKeys((Int32Dict)&self->dict);
+
+	for (i = 0; i < numKeys; i++) {
+		key = keys[i];
+		if (!Int32Dict_TryGetValue((Int32Dict)&otherUserObject->dict, key, &otherValue))
+			return False;
+		value = (SmileObject)Int32Dict_GetValue((Int32Dict)&self->dict, key);
+		
+		if (PointerSet_Add(visitedPointers, value)) {
+			if (!SMILE_VCALL4(value, deepEqual, (SmileUnboxedData){ 0 }, otherValue, (SmileUnboxedData){ 0 }, visitedPointers))
+				return False;
+		}
+	}
+
+	return True;
 }
 
 UInt32 SmileUserObject_Hash(SmileUserObject self)
@@ -52,7 +91,7 @@ UInt32 SmileUserObject_Hash(SmileUserObject self)
 
 void SmileUserObject_SetSecurityKey(SmileUserObject self, SmileObject newSecurityKey, SmileObject oldSecurityKey)
 {
-	Bool isValidSecurityKey = self->securityKey->vtable->compareEqual(self->securityKey, oldSecurityKey);
+	Bool isValidSecurityKey = self->securityKey->vtable->compareEqual(self->securityKey, (SmileUnboxedData){ 0 }, oldSecurityKey, (SmileUnboxedData){ 0 });
 	if (!isValidSecurityKey)
 		Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
 
@@ -61,7 +100,7 @@ void SmileUserObject_SetSecurityKey(SmileUserObject self, SmileObject newSecurit
 
 void SmileUserObject_SetSecurity(SmileUserObject self, Int security, SmileObject securityKey)
 {
-	Bool isValidSecurityKey = self->securityKey->vtable->compareEqual(self->securityKey, securityKey);
+	Bool isValidSecurityKey = self->securityKey->vtable->compareEqual(self->securityKey, (SmileUnboxedData){ 0 }, securityKey, (SmileUnboxedData){ 0 });
 	if (!isValidSecurityKey)
 		Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
 
@@ -95,7 +134,7 @@ SmileObject SmileUserObject_GetProperty(SmileUserObject self, Symbol propertyNam
 		return obj;
 	}
 	else {
-		return self->base->vtable->getProperty((SmileObject)self, propertyName);
+		return self->base->vtable->getProperty(self->base, propertyName);
 	}
 }
 
@@ -171,39 +210,88 @@ SmileList SmileUserObject_GetPropertyNames(SmileUserObject self)
 	return head;
 }
 
-Bool SmileUserObject_ToBool(SmileUserObject self)
+Bool SmileUserObject_ToBool(SmileUserObject self, SmileUnboxedData unboxedData)
 {
 	UNUSED(self);
+	UNUSED(unboxedData);
 	return True;
 }
 
-Int32 SmileUserObject_ToInteger32(SmileUserObject self)
+Int32 SmileUserObject_ToInteger32(SmileUserObject self, SmileUnboxedData unboxedData)
 {
 	UNUSED(self);
+	UNUSED(unboxedData);
 	return 0;
 }
 
-Float64 SmileUserObject_ToFloat64(SmileUserObject self)
+Float64 SmileUserObject_ToFloat64(SmileUserObject self, SmileUnboxedData unboxedData)
 {
 	UNUSED(self);
+	UNUSED(unboxedData);
 	return 0.0;
 }
 
-Real64 SmileUserObject_ToReal64(SmileUserObject self)
+Real64 SmileUserObject_ToReal64(SmileUserObject self, SmileUnboxedData unboxedData)
 {
 	UNUSED(self);
+	UNUSED(unboxedData);
 	return Real64_Zero;
 }
 
-String SmileUserObject_ToString(SmileUserObject self)
+String SmileUserObject_ToString(SmileUserObject self, SmileUnboxedData unboxedData)
 {
 	UNUSED(self);
+	UNUSED(unboxedData);
 	return String_Format("user object");
+}
+
+void SmileUserObject_Call(SmileUserObject self, Int argc)
+{
+	SmileObject fn;
+	if (Int32Dict_TryGetValue((Int32Dict)&self->dict, (Int32)Smile_KnownSymbols._fn, &fn)
+		&& SMILE_KIND(fn) == SMILE_KIND_FUNCTION) {
+		// This has a 'fn' property that is a function.  Invoke that instead, with the same args.
+		SMILE_VCALL1(fn, call, argc);
+	}
+	else {
+		// This has no 'fn' property, so go ask the base object to do the call instead, since this isn't itself callable.
+		SMILE_VCALL1(self->base, call, argc);
+	}
+}
+
+void SmileUserObject_SetC(SmileUserObject self, const char *name, SmileObject value)
+{
+	Symbol symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, name);
+	Int32Dict_SetValue((Int32Dict)&self->dict, symbol, value);
+}
+
+void SmileUserObject_SetupFunction(SmileUserObject self, ExternalFunction function, void *param,
+	const char *name, const char *argNames, Int argCheckFlags, Int minArgs, Int maxArgs, Int numArgsToTypeCheck, const Byte *argTypeChecks)
+{
+	SmileFunction smileFunction = SmileFunction_CreateExternalFunction(function, param,
+		name, argNames, argCheckFlags, minArgs, maxArgs, numArgsToTypeCheck, argTypeChecks);
+	Symbol symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, name);
+	Int32Dict_SetValue((Int32Dict)&self->dict, symbol, (SmileObject)smileFunction);
+}
+
+void SmileUserObject_SetupSynonym(SmileUserObject self, const char *oldName, const char *newName)
+{
+	Symbol oldSymbol = SymbolTable_GetSymbolC(Smile_SymbolTable, oldName);
+	Symbol newSymbol = SymbolTable_GetSymbolC(Smile_SymbolTable, newName);
+	SmileObject oldObject = SmileUserObject_Get(self, oldSymbol);
+	Int32Dict_SetValue((Int32Dict)&self->dict, newSymbol, (SmileObject)oldObject);
+}
+
+static LexerPosition SmileUserObject_GetSourceLocation(SmileUserObject self)
+{
+	UNUSED(self);
+	return NULL;
 }
 
 SMILE_VTABLE(SmileUserObject_VTable_ReadWriteAppend, SmileUserObject)
 {
 	SmileUserObject_CompareEqual,
+	SmileUserObject_DeepEqual,
 	SmileUserObject_Hash,
 
 	SmileUserObject_SetSecurityKey,
@@ -220,11 +308,15 @@ SMILE_VTABLE(SmileUserObject_VTable_ReadWriteAppend, SmileUserObject)
 	SmileUserObject_ToFloat64,
 	SmileUserObject_ToReal64,
 	SmileUserObject_ToString,
+
+	SmileUserObject_Call,
+	SmileUserObject_GetSourceLocation,
 };
 
 SMILE_VTABLE(SmileUserObject_VTable_ReadWrite, SmileUserObject)
 {
 	SmileUserObject_CompareEqual,
+	SmileUserObject_DeepEqual,
 	SmileUserObject_Hash,
 
 	SmileUserObject_SetSecurityKey,
@@ -241,11 +333,15 @@ SMILE_VTABLE(SmileUserObject_VTable_ReadWrite, SmileUserObject)
 	SmileUserObject_ToFloat64,
 	SmileUserObject_ToReal64,
 	SmileUserObject_ToString,
+
+	SmileUserObject_Call,
+	SmileUserObject_GetSourceLocation,
 };
 
 SMILE_VTABLE(SmileUserObject_VTable_ReadAppend, SmileUserObject)
 {
 	SmileUserObject_CompareEqual,
+	SmileUserObject_DeepEqual,
 	SmileUserObject_Hash,
 
 	SmileUserObject_SetSecurityKey,
@@ -262,11 +358,15 @@ SMILE_VTABLE(SmileUserObject_VTable_ReadAppend, SmileUserObject)
 	SmileUserObject_ToFloat64,
 	SmileUserObject_ToReal64,
 	SmileUserObject_ToString,
+
+	SmileUserObject_Call,
+	SmileUserObject_GetSourceLocation,
 };
 
 SMILE_VTABLE(SmileUserObject_VTable_ReadOnly, SmileUserObject)
 {
 	SmileUserObject_CompareEqual,
+	SmileUserObject_DeepEqual,
 	SmileUserObject_Hash,
 
 	SmileUserObject_SetSecurityKey,
@@ -283,4 +383,7 @@ SMILE_VTABLE(SmileUserObject_VTable_ReadOnly, SmileUserObject)
 	SmileUserObject_ToFloat64,
 	SmileUserObject_ToReal64,
 	SmileUserObject_ToString,
+
+	SmileUserObject_Call,
+	SmileUserObject_GetSourceLocation,
 };

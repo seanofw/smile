@@ -29,6 +29,16 @@ typedef unsigned int UInt32;
 typedef __int64 Int64;
 typedef unsigned __int64 UInt64;
 
+typedef struct {
+	unsigned __int64 hi;
+	unsigned __int64 lo;
+} UInt128;
+
+typedef struct {
+	__int64 hi;
+	unsigned __int64 lo;
+} Int128;
+
 // Portable pointer-casting types.
 typedef UInt64 PtrInt;		// An unsigned integer type that is the same size as a pointer.
 typedef Int64 Int;			// A signed integer type that matches the native platform's "best" register size.
@@ -78,6 +88,28 @@ typedef struct __declspec(align(16)) { UInt64 value[2]; } Real128;
 #define SMILE_DECLARATION_STATIC_PROTOTYPE extern
 #undef SMILE_DECLARATION_EXTERN_OF_UNKNOWN_SIZE
 #define SMILE_DECLARATION_EXTERN_OF_UNKNOWN_SIZE
+
+// Pragma warning macros.
+#define SMILE_IGNORE_UNUSED_VARIABLES __pragma(warning(disable:4100))
+
+// Declare these here to avoid having to include all of <windows.h> in every file.
+extern __declspec(dllimport) int __stdcall IsDebuggerPresent(void);
+extern __declspec(dllimport) void __stdcall DebugBreak(void);
+
+// Determine whether a system-level debugger is attached to this process.
+#undef SMILE_IS_DEBUGGER_ATTACHED
+#define SMILE_IS_DEBUGGER_ATTACHED \
+	(IsDebuggerPresent())
+
+// Stop this process at a breakpoint.
+#undef SMILE_DEBUGGER_BREAK
+#define SMILE_DEBUGGER_BREAK \
+	do { __asm int 3; } while (0)
+
+// Ask the debugger to breakpoint this process.
+#undef SMILE_DEBUGGER_BREAK_IF_ATTACHED
+#define SMILE_DEBUGGER_BREAK_IF_ATTACHED \
+	do { if (IsDebuggerPresent()) { __asm int 3; } } while (0)
 
 //------------------------------------------------------------------------------------------------
 //  Entropy.

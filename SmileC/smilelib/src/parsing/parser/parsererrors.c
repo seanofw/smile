@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -201,6 +201,25 @@ Int Parser_GetFatalErrorCount(Parser parser)
 
 	for (SmileList list = parser->firstMessage; SMILE_KIND(list) != SMILE_KIND_NULL; list = LIST_REST(list)) {
 		if (((ParseMessage)list->a)->messageKind == PARSEMESSAGE_FATAL)
+			count++;
+	}
+
+	return count;
+}
+
+/// <summary>
+/// Retrieve the current count of fatal errors, errors, or warnings in the parser.
+/// </summary>
+/// <param name="parser">The parser instance.</param>
+/// <returns>The number of fatal errors, errors, or warnings in the input that the parser has found so far.</returns>
+Int Parser_GetErrorOrWarningCount(Parser parser)
+{
+	Int count = 0;
+
+	for (SmileList list = parser->firstMessage; SMILE_KIND(list) != SMILE_KIND_NULL; list = LIST_REST(list)) {
+		if (((ParseMessage)list->a)->messageKind == PARSEMESSAGE_WARNING
+			|| ((ParseMessage)list->a)->messageKind == PARSEMESSAGE_ERROR
+			|| ((ParseMessage)list->a)->messageKind == PARSEMESSAGE_FATAL)
 			count++;
 	}
 

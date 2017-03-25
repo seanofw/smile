@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter (Unit Tests)
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -23,23 +23,16 @@
 // reasonable in-process unit tests.
 
 //-------------------------------------------------------------------------------------------------
-//  Internal types
-
-/// <summary>
-/// The actual type of a test function, which is actually invisible to the test itself (the test
-/// is wrapped in an inner function with a different type).
-/// </summary>
-/// <returns>1 if the test succeeded, or 0 if the test failed.</returns>
-typedef int (*TestFunc)();
-
-/// <summary>
-/// The apparent type of a test function, which is actually the type of the internal function that
-/// wraps the test.  Takes no parameters, returns no parameters.
-/// </summary>
-typedef void (*TestFuncInternal)();
-
-//-------------------------------------------------------------------------------------------------
 //  Public type declarations
+
+/// <summary>
+/// A single result in a suite of results.
+/// </summary>
+typedef struct {
+	const char *name;
+	const char *suiteName;
+	UInt64 duration;
+} TestResult;
 
 /// <summary>
 /// A collection of results from a given test suite.
@@ -47,7 +40,25 @@ typedef void (*TestFuncInternal)();
 typedef struct {
 	int numSuccesses;
 	int numFailures;
+	TestResult slowestTests[20];
+	const char *name;
 } TestSuiteResults;
+
+//-------------------------------------------------------------------------------------------------
+//  Internal types
+
+/// <summary>
+/// The actual type of a test function, which is actually invisible to the test itself (the test
+/// is wrapped in an inner function with a different type).
+/// </summary>
+/// <returns>1 if the test succeeded, or 0 if the test failed.</returns>
+typedef int (*TestFunc)(TestSuiteResults *results);
+
+/// <summary>
+/// The apparent type of a test function, which is actually the type of the internal function that
+/// wraps the test.  Takes no parameters, returns no parameters.
+/// </summary>
+typedef void (*TestFuncInternal)();
 
 //-------------------------------------------------------------------------------------------------
 //  External parts of the implementation
@@ -57,12 +68,13 @@ extern int NumRequestedTests;
 extern Bool QuietMode;
 extern Bool InteractiveMode;
 
-int RunTestInternal(const char *name, const char *file, int line, TestFuncInternal testFuncInternal);
+int RunTestInternal(TestSuiteResults *results, const char *name, const char *file, int line, TestFuncInternal testFuncInternal);
 int FailTestInternal(const char *message);
 int FailTestWithLineInternal(const char *message, const char *file, int line);
 void AssertStringInternal(String str, const char *expectedString, Int expectedLength, const char *message);
 void AssertStringWithLineInternal(String str, const char *expectedString, Int expectedLength, const char *message, const char *file, int line);
 TestSuiteResults *RunTestSuiteInternal(const char *name, TestFunc *funcs, int numFuncs);
+void MergeSlowTests(TestResult *dest, const TestResult *src);
 void DisplayTestSuiteResults(TestSuiteResults *results);
 void WaitForAnyKey(void);
 
@@ -75,9 +87,9 @@ void WaitForAnyKey(void);
 /// <param name="__name__">The name of the unit test.</param>
 #define START_TEST(__name__) \
 	static void __name__##Internal(); \
-	static int __name__() \
+	static int __name__(TestSuiteResults *results) \
 	{ \
-		return RunTestInternal(#__name__, __FILE__, __LINE__, __name__##Internal); \
+		return RunTestInternal(results, #__name__, __FILE__, __LINE__, __name__##Internal); \
 	} \
 	static void __name__##Internal() \
 	{
@@ -88,7 +100,12 @@ void WaitForAnyKey(void);
 /// <param name="__n__">The invariant to assert.  If this results in zero or NULL,
 /// the test will be aborted as a failure.</param>
 #define ASSERT(__n__) \
-	((!(__n__)) ? FailTestWithLineInternal(#__n__, __FILE__, __LINE__) : 0)
+	do { \
+		if (!(__n__)) { \
+			SMILE_DEBUGGER_BREAK_IF_ATTACHED; \
+			FailTestWithLineInternal(#__n__, __FILE__, __LINE__); \
+		} \
+	} while (0)
 
 /// <summary>
 /// Assert that the given string is a valid string and matches the given text and length.
@@ -105,7 +122,7 @@ void WaitForAnyKey(void);
 /// execution and skips any and all code remaining in it.
 /// </summary>
 #define PASS_TEST \
-		return
+	return
 
 /// <summary>
 /// Immediately fail (as bad) the current unit test.  This stops the test's
@@ -113,7 +130,10 @@ void WaitForAnyKey(void);
 /// </summary>
 /// <param name="__message__" type="const char *">A message string to display to the user as to why the test failed.</param>
 #define FAIL_TEST(__message__) \
-		FailTestWithLineInternal(__message__, __FILE__, __LINE__)
+	do { \
+		SMILE_DEBUGGER_BREAK_IF_ATTACHED; \
+		FailTestWithLineInternal(__message__, __FILE__, __LINE__); \
+	} while (0)
 
 /// <summary>
 /// Declare the end the current unit test.
@@ -169,13 +189,21 @@ Inline void AggregateTestSuiteResults(TestSuiteResults *dest, TestSuiteResults *
 {
 	dest->numSuccesses += src->numSuccesses;
 	dest->numFailures += src->numFailures;
+	MergeSlowTests(dest->slowestTests, src->slowestTests);
 }
 
 Inline TestSuiteResults *CreateEmptyTestSuiteResults(void)
 {
+	Int i;
 	TestSuiteResults *results = GC_MALLOC_STRUCT(TestSuiteResults);
 	if (results == NULL) Smile_Abort_OutOfMemory();
 	results->numFailures = results->numSuccesses = 0;
+	results->name = NULL;
+	for (i = 0; i < sizeof(results->slowestTests) / sizeof(TestResult); i++) {
+		results->slowestTests[i].name = NULL;
+		results->slowestTests[i].suiteName = NULL;
+		results->slowestTests[i].duration = 0;
+	}
 	return results;
 }
 

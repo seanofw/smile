@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -190,7 +190,7 @@ Int Lexer_ParseChar(Lexer lexer, Bool isFirstContentOnLine)
 	}
 	src++;
 
-	lexer->token->data.i = (Int32)value;
+	lexer->token->data.byte = (Byte)(UInt32)value;
 	return END_TOKEN(TOKEN_CHAR);
 }
 

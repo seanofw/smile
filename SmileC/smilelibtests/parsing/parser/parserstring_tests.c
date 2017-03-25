@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter (Unit Tests)
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@
 #include "../../stdafx.h"
 
 #include <smile/parsing/parser.h>
-#include <smile/smiletypes/text/smilechar.h>
 #include <smile/smiletypes/text/smilestring.h>
+#include <smile/smiletypes/numeric/smilebyte.h>
 #include <smile/smiletypes/smilepair.h>
 #include <smile/env/env.h>
 
@@ -34,15 +34,10 @@ START_TEST(CanParseASingleChar)
 	Lexer lexer = SetupLexer("'a'");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
-	ASSERT(result != NULL && result != NullList);
-
-	ASSERT(result->a != NULL && result->a != NullObject);
-	ASSERT(result->d == NullObject);
-
-	ASSERT(SMILE_KIND(result->a) == SMILE_KIND_CHAR);
-	ASSERT(((SmileChar)result->a)->value == 'a');
+	ASSERT(SMILE_KIND(result) == SMILE_KIND_BYTE);
+	ASSERT(((SmileByte)result)->value == 'a');
 }
 END_TEST
 
@@ -53,10 +48,9 @@ START_TEST(CanParseAPseudoDynamicString)
 	Lexer lexer = SetupLexer("  \"This is a test.\"  ");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	SmileList result = Parser_Parse(parser, lexer, parseScope);
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
-	ASSERT(result != NULL && result != NullList);
-	ASSERT(RecursiveEquals(result->a, expectedResult));
+	ASSERT(RecursiveEquals(result, expectedResult));
 }
 END_TEST
 
@@ -66,7 +60,7 @@ START_TEST(CanParseADynamicString)
 	Parser parser;
 	SmileObject expectedResult;
 	ParseScope parseScope;
-	SmileList result;
+	SmileObject result;
 
 	lexer = SetupLexer("  \"This {x}is a {y}test.\"  ");
 
@@ -78,8 +72,7 @@ START_TEST(CanParseADynamicString)
 	ParseScope_Declare(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "y"), PARSEDECL_VARIABLE, NULL, NULL);
 	result = Parser_Parse(parser, lexer, parseScope);
 
-	ASSERT(result != NULL && result != NullList);
-	ASSERT(RecursiveEquals(result->a, expectedResult));
+	ASSERT(RecursiveEquals(result, expectedResult));
 }
 END_TEST
 

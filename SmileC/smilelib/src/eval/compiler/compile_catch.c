@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,6 +15,17 @@
 //  limitations under the License.
 //---------------------------------------------------------------------------------------
 
-#include <smile/env/env.h>
-#include <smile/env/symboltable.h>
-#include <smile/env/knownsymbols.h>
+#include <smile/eval/compiler.h>
+#include <smile/eval/compiler_internal.h>
+#include <smile/smiletypes/smilelist.h>
+#include <smile/smiletypes/smilepair.h>
+#include <smile/smiletypes/text/smilesymbol.h>
+#include <smile/parsing/parsemessage.h>
+#include <smile/parsing/internal/parsedecl.h>
+#include <smile/parsing/internal/parsescope.h>
+
+void Compiler_CompileCatch(Compiler compiler, SmileList args)
+{
+	UNUSED(compiler);
+	UNUSED(args);
+}

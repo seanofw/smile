@@ -29,19 +29,20 @@
 #ifndef __SMILE_PARSING_PARSEMESSAGE_H__
 #include <smile/parsing/parsemessage.h>
 #endif
-#ifndef __SMILE_ENV_CLOSURE_H__
-#include <smile/env/closure.h>
+#ifndef __SMILE_EVAL_CLOSURE_H__
+#include <smile/eval/closure.h>
 #endif
 
 //-------------------------------------------------------------------------------------------------
 //  Parsing scope kinds.
 
-#define PARSESCOPE_OUTERMOST		0		// The one-and-only outermost scope.
-#define PARSESCOPE_FUNCTION			1		// A function scope (a pseudo-scope for its arguments).
-#define PARSESCOPE_SCOPEDECL		2		// An explicitly-declared scope using {braces}.
-#define PARSESCOPE_POSTCONDITION	3		// A post: or pre:condition mini-scope.
-#define PARSESCOPE_TILLDO			4		// A till...do body in which till-names apply.
-#define PARSESCOPE_SYNTAX			5		// A syntax rule's body, in which the syntax names apply.
+#define PARSESCOPE_OUTERMOST	0	// The one-and-only outermost scope.
+#define PARSESCOPE_FUNCTION	1	// A function scope (a pseudo-scope for its arguments).
+#define PARSESCOPE_SCOPEDECL	2	// A declared scope using {braces}.
+#define PARSESCOPE_POSTCONDITION	3	// A post: or pre:condition mini-scope.
+#define PARSESCOPE_TILLDO	4	// A till...do body in which till-names apply.
+#define PARSESCOPE_SYNTAX	5	// A syntax rule's body, in which the syntax names apply.
+#define PARSESCOPE_EXPLICIT	6	// An explicitly-declared scope using a Lisp-style [$scope] form.
 
 //-------------------------------------------------------------------------------------------------
 //  Parse scopes.
@@ -60,10 +61,15 @@ struct ParseScopeStruct {
 	Int kind;
 
 	// This is the collection of symbols that were in some way declared within this scope.
-	// Each assignment within this closure is a mapping to a ParseDecl object, not to a real
-	// SmileObject.  Because there's only one set of variables per scope, we're a member of
-	// the Lisp-1 family.
-	Closure closure;
+	// Each assignment within this dictionary is a mapping to the index of a ParseDecl object
+	// in the declaration array below.  Because there's only one set of variables per scope,
+	// we're a member of the Lisp-1 family.
+	Int32Int32Dict symbolDict;
+
+	// This is the collection of actual symbol declarations in this scope, in declaration order.
+	ParseDecl *decls;
+	Int numDecls;
+	Int maxDecls;
 
 	// The syntax table for this scope, which describes the current effective set of syntax rules.
 	ParserSyntaxTable syntaxTable;
@@ -75,6 +81,7 @@ struct ParseScopeStruct {
 
 SMILE_API_FUNC ParseScope ParseScope_CreateRoot(void);
 SMILE_API_FUNC ParseScope ParseScope_CreateChild(ParseScope parentScope, Int kind);
+SMILE_API_FUNC ParseError ParseScope_DeclareVariablesFromClosureInfo(ParseScope scope, ClosureInfo closureInfo);
 SMILE_API_FUNC ParseError ParseScope_DeclareHere(ParseScope scope, Symbol symbol, Int kind, LexerPosition position, ParseDecl *decl);
 SMILE_API_FUNC void ParseScope_Finish(ParseScope currentScope);
 
@@ -91,8 +98,10 @@ SMILE_API_FUNC void ParseScope_Finish(ParseScope currentScope);
 /// <returns>The declaration if the symbol was explicitly declared in this scope, NULL if it was not.</returns>
 Inline ParseDecl ParseScope_FindDeclarationHere(ParseScope scope, Symbol symbol)
 {
-	Int index = Closure_GetNameIndex(scope->closure, symbol);
-	return index >= 0 ? (ParseDecl)scope->closure->variables[index] : NULL;
+	Int32 index;
+	if (!Int32Int32Dict_TryGetValue(scope->symbolDict, (Int32)symbol, &index))
+		return NULL;
+	return scope->decls[index];
 }
 
 /// <summary>
@@ -103,7 +112,11 @@ Inline ParseDecl ParseScope_FindDeclarationHere(ParseScope scope, Symbol symbol)
 /// <returns>True if that symbol has been declared in this scope chain, false if it has not.</returns>
 Inline Bool ParseScope_IsDeclared(ParseScope scope, Symbol symbol)
 {
-	return Closure_Has(scope->closure, symbol);
+	for (; scope != NULL; scope = scope->parentScope) {
+		if (Int32Int32Dict_ContainsKey(scope->symbolDict, (Int32)symbol))
+			return True;
+	}
+	return False;
 }
 
 /// <summary>
@@ -114,7 +127,7 @@ Inline Bool ParseScope_IsDeclared(ParseScope scope, Symbol symbol)
 /// <returns>True if that symbol has been declared in this scope, false if it has not.</returns>
 Inline Bool ParseScope_IsDeclaredHere(ParseScope scope, Symbol symbol)
 {
-	return Closure_HasHere(scope->closure, symbol);
+	return Int32Int32Dict_ContainsKey(scope->symbolDict, (Int32)symbol);
 }
 
 /// <summary>
@@ -125,7 +138,7 @@ Inline Bool ParseScope_IsDeclaredHere(ParseScope scope, Symbol symbol)
 /// <returns>The number of names declared within that scope.</returns>
 Inline Int ParseScope_GetDeclarationCount(ParseScope scope)
 {
-	return scope->closure->closureInfo->numVariables;
+	return Int32Int32Dict_Count(scope->symbolDict);
 }
 
 /// <summary>
@@ -149,8 +162,13 @@ Inline Bool ParseScope_IsPseudoScope(ParseScope parseScope)
 /// <returns>The declaration if the symbol was declared in this scope or any parent scope, NULL if it was not.</returns>
 Inline ParseDecl ParseScope_FindDeclaration(ParseScope scope, Symbol symbol)
 {
-	ParseDecl decl;
-	return Closure_TryGet(scope->closure, symbol, (SmileObject *)&decl) ? decl : NULL;
+	Int32 index;
+	for (; scope != NULL; scope = scope->parentScope) {
+		if (Int32Int32Dict_TryGetValue(scope->symbolDict, (Int32)symbol, &index)) {
+			return scope->decls[index];
+		}
+	}
+	return NULL;
 }
 
 /// <summary>

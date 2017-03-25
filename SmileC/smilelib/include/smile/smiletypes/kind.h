@@ -4,80 +4,83 @@
 //-----------------------------------------------------------------------------
 // Object kind enumeration.
 
-// Special intrinsic types.
-#define SMILE_KIND_NULL					0x00		// Must be 0x00 or stuff will break!
-#define SMILE_KIND_LIST					0x01		// Must be 0x01 or stuff will break!
-#define SMILE_KIND_BOOL					0x02
-#define SMILE_KIND_SYMBOL				0x03
-#define SMILE_KIND_CHAR					0x04
-#define SMILE_KIND_UCHAR				0x05
-#define SMILE_KIND_STRING				0x06
-#define SMILE_KIND_OBJECT				0x07
+typedef enum {
+		
+	// Special masks.	
+	SMILE_KIND_MASK	= ((1 << 8) - 1),	// Bottom eight bits are the *actual* kind; any upper bits are flags.
+	SMILE_KIND_LIST_BIT	= (1 << 0),	// Must be a power of two.
+		
+	// Unboxed types.	
+	SMILE_KIND_UNBOXED_BYTE	= 0x00,
+	SMILE_KIND_UNBOXED_INTEGER16	= 0x01,
+	SMILE_KIND_UNBOXED_INTEGER32	= 0x02,
+	SMILE_KIND_UNBOXED_INTEGER64	= 0x03,
+	SMILE_KIND_UNBOXED_BOOL	= 0x04,
+	SMILE_KIND_UNBOXED_FLOAT32	= 0x06,
+	SMILE_KIND_UNBOXED_FLOAT64	= 0x07,
+	SMILE_KIND_UNBOXED_SYMBOL	= 0x08,
+	SMILE_KIND_UNBOXED_REAL32	= 0x0A,
+	SMILE_KIND_UNBOXED_REAL64	= 0x0B,
+		
+	// Boxed versions of unboxable types.	
+	SMILE_KIND_BYTE	= 0x10,
+	SMILE_KIND_INTEGER16	= 0x11,
+	SMILE_KIND_INTEGER32	= 0x12,
+	SMILE_KIND_INTEGER64	= 0x13,
+	SMILE_KIND_BOOL	= 0x14,
+	SMILE_KIND_FLOAT32	= 0x16,
+	SMILE_KIND_FLOAT64	= 0x17,
+	SMILE_KIND_SYMBOL	= 0x18,
+	SMILE_KIND_REAL32	= 0x1A,
+	SMILE_KIND_REAL64	= 0x1B,
+		
+	// The special aggregate types.	
+	SMILE_KIND_NULL	= 0x20,	// Must be a number with a zero in the SMILE_KIND_LIST_BIT position.
+	SMILE_KIND_LIST	= (SMILE_KIND_NULL | SMILE_KIND_LIST_BIT),
+	SMILE_KIND_PRIMITIVE	= 0x22,	// The type of the one-and-only primitive object at the root of the object hierarchy.
+	SMILE_KIND_PAIR	= 0x23,
+	SMILE_KIND_USEROBJECT	= 0x24,
+	SMILE_KIND_STRING	= 0x25,
+		
+	// Opaque handles.	
+	SMILE_KIND_HANDLE	= 0x2B,
+	SMILE_KIND_CLOSURE	= 0x2C,
+	SMILE_KIND_FACADE	= 0x2D,
+	SMILE_KIND_MACRO	= 0x2E,
+	SMILE_KIND_FUNCTION	= 0x2F,
+		
+	// Bigger numeric types.	
+	SMILE_KIND_INTEGER128	= 0x30,
+	SMILE_KIND_BIGINT	= 0x31,
+	SMILE_KIND_FLOAT128	= 0x34,
+	SMILE_KIND_BIGFLOAT	= 0x35,
+	SMILE_KIND_REAL128	= 0x38,
+	SMILE_KIND_BIGREAL	= 0x39,
+		
+	// Types used for parsing.	
+	SMILE_KIND_SYNTAX	= 0xF0,
+	SMILE_KIND_NONTERMINAL	= 0xF1,
+		
+	// Internal types used during parsing.	
+	SMILE_KIND_PARSEDECL	= 0xFE,
+	SMILE_KIND_PARSEMESSAGE	= 0xFF,
+		
+	//----------------------	
+	// Object security bits.	
+		
+	SMILE_SECURITY_READONLY	= 0,
+	SMILE_SECURITY_WRITABLE	= (1 << 8),
+	SMILE_SECURITY_APPENDABLE	= (1 << 9),
+	SMILE_SECURITY_READWRITEAPPEND	= (SMILE_SECURITY_WRITABLE | SMILE_SECURITY_APPENDABLE),
+		
+	SMILE_SECURITY_HASKEY	= (1 << 10),
+		
+	//----------------------	
+	// Miscellaneous flags.	
+		
+	SMILE_FLAG_WITHSOURCE	= (1 << 11),
+	SMILE_FLAG_EXTERNAL_FUNCTION	= (1 << 12),
 
-// Other aggregations of data.
-#define SMILE_KIND_USEROBJECT			0x08
-#define SMILE_KIND_PAIR					0x09
-
-// Opaque handles.
-#define SMILE_KIND_HANDLE				0x0A
-#define SMILE_KIND_BYTE					0x0B
-#define SMILE_KIND_CLOSURE				0x0C
-#define SMILE_KIND_FACADE				0x0D
-#define SMILE_KIND_MACRO				0x0E
-#define SMILE_KIND_FUNCTION				0x0F
-
-// Integer numeric types.
-#define SMILE_KIND_INTEGER16			0x10
-#define SMILE_KIND_INTEGER32			0x11
-#define SMILE_KIND_INTEGER64			0x12
-#define SMILE_KIND_INTEGER128			0x13		// Not yet supported.
-
-// Binary floating-point types.
-#define SMILE_KIND_FLOAT16				0x14		// Not yet supported.
-#define SMILE_KIND_FLOAT32				0x15
-#define SMILE_KIND_FLOAT64				0x16
-#define SMILE_KIND_FLOAT128				0x17		// Not yet supported.
-
-// Decimal floating-point types.
-#define SMILE_KIND_REAL16				0x18		// Not yet supported.
-#define SMILE_KIND_REAL32				0x19
-#define SMILE_KIND_REAL64				0x1A
-#define SMILE_KIND_REAL128				0x1B		// Not yet supported.
-
-// Other numeric types.
-#define SMILE_KIND_BIGINT				0x1C		// Not yet supported.
-#define SMILE_KIND_BIGFLOAT				0x1D		// Not yet supported.
-#define SMILE_KIND_BIGREAL				0x1E		// Not yet supported.
-
-// Custom aggregate forms of the atomic types.
-#define SMILE_KIND_ATOMIC				0x00
-#define SMILE_KIND_ARRAYOF				0x20
-#define SMILE_KIND_RANGEOF				0x40
-#define SMILE_KIND_MAPOF				0x60
-
-// Types used for parsing.
-#define SMILE_KIND_SYNTAX				0xE0
-#define SMILE_KIND_NONTERMINAL			0xE1
-
-// Internal types used during parsing.
-#define SMILE_KIND_PARSEDECL			0xFE
-#define SMILE_KIND_PARSEMESSAGE			0xFF
-
-#define SMILE_KIND_MASK					0xFF
-
-//-----------------------------------------------------------------------------
-// Object security bits.
-
-#define SMILE_SECURITY_READONLY			0
-#define SMILE_SECURITY_WRITABLE			(1 << 8)
-#define SMILE_SECURITY_APPENDABLE		(1 << 9)
-#define SMILE_SECURITY_READWRITEAPPEND	(SMILE_SECURITY_WRITABLE | SMILE_SECURITY_APPENDABLE)
-
-#define SMILE_SECURITY_HASKEY			(1 << 10)
-
-//-----------------------------------------------------------------------------
-// Miscellaneous flags.
-
-#define SMILE_FLAG_WITHSOURCE			(1 << 11)
+} SmileKind;
 
 #endif

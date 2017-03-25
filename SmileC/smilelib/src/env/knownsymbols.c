@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -20,39 +20,46 @@
 //-------------------------------------------------------------------------------------------------
 //  Special symbols.
 
-STATIC_STRING(Equals_, "=");
-STATIC_STRING(Op_Equals_, "op=");
+// The twenty core special forms.
+STATIC_STRING(_Set, "$set");
+STATIC_STRING(_OpSet, "$opset");
+STATIC_STRING(_If, "$if");
+STATIC_STRING(_While, "$while");
+STATIC_STRING(_Till, "$till");
+STATIC_STRING(_Catch, "$catch");
+STATIC_STRING(_Fn, "$fn");
+STATIC_STRING(_Quote, "$quote");
+STATIC_STRING(_Scope, "$scope");
+STATIC_STRING(_Prog1, "$prog1");
+STATIC_STRING(_Progn, "$progn");
+STATIC_STRING(_Return, "$return");
+STATIC_STRING(_Not, "$not");
+STATIC_STRING(_Or, "$or");
+STATIC_STRING(_And, "$and");
+STATIC_STRING(_Eq, "$eq");
+STATIC_STRING(_Ne, "$ne");
+STATIC_STRING(_New, "$new");
+STATIC_STRING(_Is, "$is");
+STATIC_STRING(_Typeof, "$typeof");
 
-STATIC_STRING(If_, "if");
-STATIC_STRING(Unless_, "unless");
-STATIC_STRING(While_, "while");
-STATIC_STRING(Until_, "until");
-STATIC_STRING(Till_, "till");
-
+// Special keywords.
 STATIC_STRING(Var_, "var");
 STATIC_STRING(Const_, "const");
 STATIC_STRING(Auto_, "auto");
-
+STATIC_STRING(Keyword_, "keyword");
 STATIC_STRING(Try_, "try");
 STATIC_STRING(Catch_, "catch");
-
-STATIC_STRING(Fn_, "fn");
-STATIC_STRING(Quote_, "quote");
-STATIC_STRING(Scope_, "scope");
-STATIC_STRING(Prog1_, "prog1");
-STATIC_STRING(Progn_, "progn");
 STATIC_STRING(Return_, "return");
-
 STATIC_STRING(Not_, "not");
 STATIC_STRING(Or_, "or");
 STATIC_STRING(And_, "and");
-
 STATIC_STRING(New_, "new");
 STATIC_STRING(Is_, "is");
 STATIC_STRING(Typeof_, "typeof");
+
+// Comparison punctuation.
 STATIC_STRING(SuperEq_, "===");
 STATIC_STRING(SuperNe_, "!==");
-
 STATIC_STRING(Eq_, "==");
 STATIC_STRING(Ne_, "!=");
 STATIC_STRING(Lt_, "<");
@@ -60,16 +67,13 @@ STATIC_STRING(Gt_, ">");
 STATIC_STRING(Le_, "<=");
 STATIC_STRING(Ge_, ">=");
 
+// Arithmetic.
 STATIC_STRING(Plus_, "+");
 STATIC_STRING(Minus_, "-");
 STATIC_STRING(Star_, "*");
 STATIC_STRING(Slash_, "/");
 
-STATIC_STRING(Comma, ",");
-STATIC_STRING(Semicolon, ";");
-STATIC_STRING(Colon, ":");
-STATIC_STRING(QuestionMark, "?");
-
+// Braces and brackets.
 STATIC_STRING(LeftParenthesis, "(");
 STATIC_STRING(RightParenthesis, ")");
 STATIC_STRING(LeftBracket, "[");
@@ -77,6 +81,21 @@ STATIC_STRING(RightBracket, "]");
 STATIC_STRING(LeftBrace, "{");
 STATIC_STRING(RightBrace, "}");
 
+// Other punctuation.
+STATIC_STRING(Comma, ",");
+STATIC_STRING(Semicolon, ";");
+STATIC_STRING(Colon, ":");
+STATIC_STRING(QuestionMark, "?");
+STATIC_STRING(Implies, "=>");
+STATIC_STRING(Caret, "^");
+STATIC_STRING(ShiftLeft, "<<<");
+STATIC_STRING(ShiftRight, ">>>");
+STATIC_STRING(ArithmeticShiftLeft, "<<");
+STATIC_STRING(ArithmeticShiftRight, ">>");
+STATIC_STRING(RotateLeft, "<<+");
+STATIC_STRING(RotateRight, "+>>");
+
+// Special #syntax classes.
 STATIC_STRING(STMT_, "STMT");
 STATIC_STRING(EXPR_, "EXPR");
 STATIC_STRING(CMPEXPR_, "CMPEXPR");
@@ -91,8 +110,6 @@ STATIC_STRING(CONSEXPR_, "CONSEXPR");
 STATIC_STRING(DOTEXPR_, "DOTEXPR");
 STATIC_STRING(TERM_, "TERM");
 
-STATIC_STRING(Brk_, "brk");
-
 Inline Symbol AddSpecialSymbol(SymbolTable symbolTable, String name, Symbol expectedValue)
 {
 	Symbol actualValue = SymbolTableInt_AddFast(symbolTable, name);
@@ -106,39 +123,46 @@ Inline Symbol AddSpecialSymbol(SymbolTable symbolTable, String name, Symbol expe
 
 static void KnownSymbolsInt_PreloadSpecials(SymbolTable symbolTable, KnownSymbols knownSymbols)
 {
-	knownSymbols->equals_ = AddSpecialSymbol(symbolTable, Equals_, SMILE_SPECIAL_SYMBOL_EQUALS);
-	knownSymbols->op_equals_ = AddSpecialSymbol(symbolTable, Op_Equals_, SMILE_SPECIAL_SYMBOL_OP_EQUALS);
+	// The twenty core special forms.
+	knownSymbols->_set = AddSpecialSymbol(symbolTable, _Set, SMILE_SPECIAL_SYMBOL__SET);
+	knownSymbols->_opset = AddSpecialSymbol(symbolTable, _OpSet, SMILE_SPECIAL_SYMBOL__OPSET);
+	knownSymbols->_if = AddSpecialSymbol(symbolTable, _If, SMILE_SPECIAL_SYMBOL__IF);
+	knownSymbols->_while = AddSpecialSymbol(symbolTable, _While, SMILE_SPECIAL_SYMBOL__WHILE);
+	knownSymbols->_till = AddSpecialSymbol(symbolTable, _Till, SMILE_SPECIAL_SYMBOL__TILL);
+	knownSymbols->_fn = AddSpecialSymbol(symbolTable, _Fn, SMILE_SPECIAL_SYMBOL__FN);
+	knownSymbols->_quote = AddSpecialSymbol(symbolTable, _Quote, SMILE_SPECIAL_SYMBOL__QUOTE);
+	knownSymbols->_scope = AddSpecialSymbol(symbolTable, _Scope, SMILE_SPECIAL_SYMBOL__SCOPE);
+	knownSymbols->_prog1 = AddSpecialSymbol(symbolTable, _Prog1, SMILE_SPECIAL_SYMBOL__PROG1);
+	knownSymbols->_progn = AddSpecialSymbol(symbolTable, _Progn, SMILE_SPECIAL_SYMBOL__PROGN);
+	knownSymbols->_return = AddSpecialSymbol(symbolTable, _Return, SMILE_SPECIAL_SYMBOL__RETURN);
+	knownSymbols->_catch = AddSpecialSymbol(symbolTable, _Catch, SMILE_SPECIAL_SYMBOL__CATCH);
+	knownSymbols->_not = AddSpecialSymbol(symbolTable, _Not, SMILE_SPECIAL_SYMBOL__NOT);
+	knownSymbols->_or = AddSpecialSymbol(symbolTable, _Or, SMILE_SPECIAL_SYMBOL__OR);
+	knownSymbols->_and = AddSpecialSymbol(symbolTable, _And, SMILE_SPECIAL_SYMBOL__AND);
+	knownSymbols->_eq = AddSpecialSymbol(symbolTable, _Eq, SMILE_SPECIAL_SYMBOL__EQ);
+	knownSymbols->_ne = AddSpecialSymbol(symbolTable, _Ne, SMILE_SPECIAL_SYMBOL__NE);
+	knownSymbols->_new = AddSpecialSymbol(symbolTable, _New, SMILE_SPECIAL_SYMBOL__NEW);
+	knownSymbols->_is = AddSpecialSymbol(symbolTable, _Is, SMILE_SPECIAL_SYMBOL__IS);
+	knownSymbols->_typeof = AddSpecialSymbol(symbolTable, _Typeof, SMILE_SPECIAL_SYMBOL__TYPEOF);
 
-	knownSymbols->if_ = AddSpecialSymbol(symbolTable, If_, SMILE_SPECIAL_SYMBOL_IF);
-	knownSymbols->unless_ = AddSpecialSymbol(symbolTable, Unless_, SMILE_SPECIAL_SYMBOL_UNLESS);
-	knownSymbols->while_ = AddSpecialSymbol(symbolTable, While_, SMILE_SPECIAL_SYMBOL_WHILE);
-	knownSymbols->until_ = AddSpecialSymbol(symbolTable, Until_, SMILE_SPECIAL_SYMBOL_UNTIL);
-	knownSymbols->till_ = AddSpecialSymbol(symbolTable, Till_, SMILE_SPECIAL_SYMBOL_TILL);
-
+	// Special keywords.
 	knownSymbols->var_ = AddSpecialSymbol(symbolTable, Var_, SMILE_SPECIAL_SYMBOL_VAR);
 	knownSymbols->const_ = AddSpecialSymbol(symbolTable, Const_, SMILE_SPECIAL_SYMBOL_CONST);
 	knownSymbols->auto_ = AddSpecialSymbol(symbolTable, Auto_, SMILE_SPECIAL_SYMBOL_AUTO);
-
+	knownSymbols->keyword_ = AddSpecialSymbol(symbolTable, Keyword_, SMILE_SPECIAL_SYMBOL_KEYWORD);
+	knownSymbols->return_ = AddSpecialSymbol(symbolTable, Return_, SMILE_SPECIAL_SYMBOL_RETURN);
 	knownSymbols->try_ = AddSpecialSymbol(symbolTable, Try_, SMILE_SPECIAL_SYMBOL_TRY);
 	knownSymbols->catch_ = AddSpecialSymbol(symbolTable, Catch_, SMILE_SPECIAL_SYMBOL_CATCH);
-
-	knownSymbols->fn_ = AddSpecialSymbol(symbolTable, Fn_, SMILE_SPECIAL_SYMBOL_FN);
-	knownSymbols->quote_ = AddSpecialSymbol(symbolTable, Quote_, SMILE_SPECIAL_SYMBOL_QUOTE);
-	knownSymbols->scope_ = AddSpecialSymbol(symbolTable, Scope_, SMILE_SPECIAL_SYMBOL_SCOPE);
-	knownSymbols->prog1_ = AddSpecialSymbol(symbolTable, Prog1_, SMILE_SPECIAL_SYMBOL_PROG1);
-	knownSymbols->progn_ = AddSpecialSymbol(symbolTable, Progn_, SMILE_SPECIAL_SYMBOL_PROGN);
-	knownSymbols->return_ = AddSpecialSymbol(symbolTable, Return_, SMILE_SPECIAL_SYMBOL_RETURN);
-
 	knownSymbols->not_ = AddSpecialSymbol(symbolTable, Not_, SMILE_SPECIAL_SYMBOL_NOT);
 	knownSymbols->or_ = AddSpecialSymbol(symbolTable, Or_, SMILE_SPECIAL_SYMBOL_OR);
 	knownSymbols->and_ = AddSpecialSymbol(symbolTable, And_, SMILE_SPECIAL_SYMBOL_AND);
-
 	knownSymbols->new_ = AddSpecialSymbol(symbolTable, New_, SMILE_SPECIAL_SYMBOL_NEW);
 	knownSymbols->is_ = AddSpecialSymbol(symbolTable, Is_, SMILE_SPECIAL_SYMBOL_IS);
 	knownSymbols->typeof_ = AddSpecialSymbol(symbolTable, Typeof_, SMILE_SPECIAL_SYMBOL_TYPEOF);
+
+	// Comparison punctuation.
 	knownSymbols->supereq_ = AddSpecialSymbol(symbolTable, SuperEq_, SMILE_SPECIAL_SYMBOL_SUPEREQ);
 	knownSymbols->superne_ = AddSpecialSymbol(symbolTable, SuperNe_, SMILE_SPECIAL_SYMBOL_SUPERNE);
-
 	knownSymbols->eq = AddSpecialSymbol(symbolTable, Eq_, SMILE_SPECIAL_SYMBOL_EQ);
 	knownSymbols->ne = AddSpecialSymbol(symbolTable, Ne_, SMILE_SPECIAL_SYMBOL_NE);
 	knownSymbols->lt = AddSpecialSymbol(symbolTable, Lt_, SMILE_SPECIAL_SYMBOL_LT);
@@ -146,11 +170,13 @@ static void KnownSymbolsInt_PreloadSpecials(SymbolTable symbolTable, KnownSymbol
 	knownSymbols->le = AddSpecialSymbol(symbolTable, Le_, SMILE_SPECIAL_SYMBOL_LE);
 	knownSymbols->ge = AddSpecialSymbol(symbolTable, Ge_, SMILE_SPECIAL_SYMBOL_GE);
 
+	// Arithmetic.
 	knownSymbols->plus = AddSpecialSymbol(symbolTable, Plus_, SMILE_SPECIAL_SYMBOL_PLUS);
 	knownSymbols->minus = AddSpecialSymbol(symbolTable, Minus_, SMILE_SPECIAL_SYMBOL_MINUS);
 	knownSymbols->star = AddSpecialSymbol(symbolTable, Star_, SMILE_SPECIAL_SYMBOL_STAR);
 	knownSymbols->slash = AddSpecialSymbol(symbolTable, Slash_, SMILE_SPECIAL_SYMBOL_SLASH);
 
+	// Braces and brackets.
 	knownSymbols->left_parenthesis = AddSpecialSymbol(symbolTable, LeftParenthesis, SMILE_SPECIAL_SYMBOL_LEFTPARENTHESIS);
 	knownSymbols->right_parenthesis = AddSpecialSymbol(symbolTable, RightParenthesis, SMILE_SPECIAL_SYMBOL_RIGHTPARENTHESIS);
 	knownSymbols->left_bracket = AddSpecialSymbol(symbolTable, LeftBracket, SMILE_SPECIAL_SYMBOL_LEFTBRACKET);
@@ -158,11 +184,21 @@ static void KnownSymbolsInt_PreloadSpecials(SymbolTable symbolTable, KnownSymbol
 	knownSymbols->left_brace = AddSpecialSymbol(symbolTable, LeftBrace, SMILE_SPECIAL_SYMBOL_LEFTBRACE);
 	knownSymbols->right_brace = AddSpecialSymbol(symbolTable, RightBrace, SMILE_SPECIAL_SYMBOL_RIGHTBRACE);
 
+	// Other punctuation.
 	knownSymbols->comma = AddSpecialSymbol(symbolTable, Comma, SMILE_SPECIAL_SYMBOL_COMMA);
 	knownSymbols->semicolon = AddSpecialSymbol(symbolTable, Semicolon, SMILE_SPECIAL_SYMBOL_SEMICOLON);
 	knownSymbols->colon = AddSpecialSymbol(symbolTable, Colon, SMILE_SPECIAL_SYMBOL_COLON);
 	knownSymbols->question_mark = AddSpecialSymbol(symbolTable, QuestionMark, SMILE_SPECIAL_SYMBOL_QUESTIONMARK);
-	
+	knownSymbols->implies = AddSpecialSymbol(symbolTable, Implies, SMILE_SPECIAL_SYMBOL_IMPLIES);
+	knownSymbols->caret = AddSpecialSymbol(symbolTable, Caret, SMILE_SPECIAL_SYMBOL_CARET);
+	knownSymbols->shift_left = AddSpecialSymbol(symbolTable, ShiftLeft, SMILE_SPECIAL_SYMBOL_SHL);
+	knownSymbols->shift_right = AddSpecialSymbol(symbolTable, ShiftRight, SMILE_SPECIAL_SYMBOL_SHR);
+	knownSymbols->arithmetic_shift_left = AddSpecialSymbol(symbolTable, ArithmeticShiftLeft, SMILE_SPECIAL_SYMBOL_SAL);
+	knownSymbols->arithmetic_shift_right = AddSpecialSymbol(symbolTable, ArithmeticShiftRight, SMILE_SPECIAL_SYMBOL_SAR);
+	knownSymbols->rotate_left = AddSpecialSymbol(symbolTable, RotateLeft, SMILE_SPECIAL_SYMBOL_ROL);
+	knownSymbols->rotate_right = AddSpecialSymbol(symbolTable, RotateRight, SMILE_SPECIAL_SYMBOL_ROR);
+
+	// Special #syntax classes.
 	knownSymbols->STMT = AddSpecialSymbol(symbolTable, STMT_, SMILE_SPECIAL_SYMBOL_STMT);
 	knownSymbols->EXPR = AddSpecialSymbol(symbolTable, EXPR_, SMILE_SPECIAL_SYMBOL_EXPR);
 	knownSymbols->CMPEXPR = AddSpecialSymbol(symbolTable, CMPEXPR_, SMILE_SPECIAL_SYMBOL_CMPEXPR);
@@ -176,36 +212,6 @@ static void KnownSymbolsInt_PreloadSpecials(SymbolTable symbolTable, KnownSymbol
 	knownSymbols->CONSEXPR = AddSpecialSymbol(symbolTable, CONSEXPR_, SMILE_SPECIAL_SYMBOL_CONSEXPR);
 	knownSymbols->DOTEXPR = AddSpecialSymbol(symbolTable, DOTEXPR_, SMILE_SPECIAL_SYMBOL_DOTEXPR);
 	knownSymbols->TERM = AddSpecialSymbol(symbolTable, TERM_, SMILE_SPECIAL_SYMBOL_TERM);
-
-	knownSymbols->brk_ = AddSpecialSymbol(symbolTable, Brk_, SMILE_SPECIAL_SYMBOL_BRK);
-}
-
-//-------------------------------------------------------------------------------------------------
-//  Common operator symbols.
-
-STATIC_STRING(Caret_, "^");
-
-STATIC_STRING(Shift_Left_, "<<<");
-STATIC_STRING(Shift_Right_, ">>>");
-STATIC_STRING(Arithmetic_Shift_Left_, "<<");
-STATIC_STRING(Arithmetic_Shift_Right_, ">>");
-STATIC_STRING(Rotate_Left_, "<<+");
-STATIC_STRING(Rotate_Right_, "+>>");
-
-STATIC_STRING(Implies, "=>");
-
-static void KnownSymbolsInt_PreloadCommonOperators(SymbolTable symbolTable, KnownSymbols knownSymbols)
-{
-	knownSymbols->caret = SymbolTableInt_AddFast(symbolTable, Caret_);
-
-	knownSymbols->shift_left = SymbolTableInt_AddFast(symbolTable, Shift_Left_);
-	knownSymbols->shift_right = SymbolTableInt_AddFast(symbolTable, Shift_Right_);
-	knownSymbols->arithmetic_shift_left = SymbolTableInt_AddFast(symbolTable, Arithmetic_Shift_Left_);
-	knownSymbols->arithmetic_shift_right = SymbolTableInt_AddFast(symbolTable, Arithmetic_Shift_Right_);
-	knownSymbols->rotate_left = SymbolTableInt_AddFast(symbolTable, Rotate_Left_);
-	knownSymbols->rotate_right = SymbolTableInt_AddFast(symbolTable, Rotate_Right_);
-
-	knownSymbols->implies = SymbolTableInt_AddFast(symbolTable, Implies);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -402,6 +408,7 @@ STATIC_STRING(create, "create");
 STATIC_STRING(create_child_closure, "create-child-closure");
 STATIC_STRING(d, "d");
 STATIC_STRING(decompose, "decompose");
+STATIC_STRING(default_, "default");
 STATIC_STRING(diacritic_q, "diacritic?");
 STATIC_STRING(digit_q, "digit?");
 STATIC_STRING(div, "div");
@@ -529,6 +536,7 @@ STATIC_STRING(punctuation_initial_quote, "punctuation-initial-quote");
 STATIC_STRING(punctuation_open, "punctuation-open");
 STATIC_STRING(punctuation_other, "punctuation-other");
 STATIC_STRING(raw_reverse, "raw-reverse");
+STATIC_STRING(range_to, "range-to");
 STATIC_STRING(read_append, "read-append");
 STATIC_STRING(read_only, "read-only");
 STATIC_STRING(read_write, "read-write");
@@ -678,6 +686,7 @@ static void KnownSymbolsInt_PreloadGeneralSymbols(SymbolTable symbolTable, Known
 	knownSymbols->create_child_closure = SymbolTableInt_AddFast(symbolTable, create_child_closure);
 	knownSymbols->d = SymbolTableInt_AddFast(symbolTable, d);
 	knownSymbols->decompose = SymbolTableInt_AddFast(symbolTable, decompose);
+	knownSymbols->default_ = SymbolTableInt_AddFast(symbolTable, default_);
 	knownSymbols->diacritic_q = SymbolTableInt_AddFast(symbolTable, diacritic_q);
 	knownSymbols->digit_q = SymbolTableInt_AddFast(symbolTable, digit_q);
 	knownSymbols->div = SymbolTableInt_AddFast(symbolTable, div);
@@ -804,6 +813,7 @@ static void KnownSymbolsInt_PreloadGeneralSymbols(SymbolTable symbolTable, Known
 	knownSymbols->punctuation_initial_quote = SymbolTableInt_AddFast(symbolTable, punctuation_initial_quote);
 	knownSymbols->punctuation_open = SymbolTableInt_AddFast(symbolTable, punctuation_open);
 	knownSymbols->punctuation_other = SymbolTableInt_AddFast(symbolTable, punctuation_other);
+	knownSymbols->range_to = SymbolTableInt_AddFast(symbolTable, range_to);
 	knownSymbols->raw_reverse = SymbolTableInt_AddFast(symbolTable, raw_reverse);
 	knownSymbols->read_append = SymbolTableInt_AddFast(symbolTable, read_append);
 	knownSymbols->read_only = SymbolTableInt_AddFast(symbolTable, read_only);
@@ -940,7 +950,6 @@ void KnownSymbols_PreloadSymbolTable(SymbolTable symbolTable, KnownSymbols known
 		Smile_Abort_FatalError("Cannot preload symbol table: Symbol table is too small for preloading.");
 
 	KnownSymbolsInt_PreloadSpecials(symbolTable, knownSymbols);
-	KnownSymbolsInt_PreloadCommonOperators(symbolTable, knownSymbols);
 	KnownSymbolsInt_PreloadTypenames(symbolTable, knownSymbols);
 	KnownSymbolsInt_PreloadGeneralSymbols(symbolTable, knownSymbols);
 	KnownSymbolsInt_PreloadErrorSymbols(symbolTable, knownSymbols);

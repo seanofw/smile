@@ -1,0 +1,31 @@
+// This file was auto-generated.  Do not edit!
+//
+// SourceHash: f2cdfb36537a941d1368d447e5cb7acd
+
+START_TEST_SUITE(ParserClassicTests)
+{
+	CanParseAClassicSetThatCreatesANewVariable,
+	CanParseAClassicSetThatAssignsAPreexistingVariable,
+	CanParseAClassicSetThatAssignsANontrivialExpression,
+	CanParseAClassicScopeThatDoesntDoAnything,
+	CanParseAClassicScopeThatJustResultsInNull,
+	CanParseAClassicScopeThatReferencesItsVariables,
+	CanParseAClassicScopeThatContainsManyExpressionsLikeAProgNDoes,
+	CanParseAClassicNewThatContainsNothing,
+	CanParseAClassicNewThatReferencesABaseObject,
+	CanParseAClassicNewThatContainsMembersWithValues,
+	CanParseAClassicNewThatContainsMembersWithComplexExpressions,
+	CanParseAClassicQuoteThatQuotesNull,
+	ClassicQuoteOfASymbolShouldNotIntroduceAVariable,
+	ClassicQuoteShouldHandleMessyLispStyleExpressions,
+	ClassicQuoteShouldHandleMessySyntaxExpressions,
+	CanParseAClassicFunctionThatReturnsNull,
+	CanParseAClassicFunctionThatReturnsAComputation,
+	CanParseAClassicFunctionThatTakesArguments,
+	CanParseAClassicFunctionThatCanHandleRestsAndDefaults,
+	CanParseATillLoopThatContainsNothing,
+	CanParseATillLoopThatContainsAnExpressionReferencingATillFlag,
+	CanParseATillLoopThatContainsReferencesToManyTillFlags,
+}
+END_TEST_SUITE(ParserClassicTests)
+

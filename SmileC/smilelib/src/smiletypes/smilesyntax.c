@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -24,25 +24,28 @@
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/text/smilestring.h>
 
-static String SmileSyntax_AsString(SmileSyntax self);
+static String SmileSyntax_AsString(SmileSyntax self, SmileUnboxedData unboxedData);
 
 String SmileSyntax_ToString(SmileSyntax self)
 {
-	return SmileSyntax_AsString(self);
+	return SmileSyntax_AsString(self, (SmileUnboxedData){ 0 });
 }
 
 #define SmileSyntax_ToString SmileSyntax_AsString
 
 SMILE_EASY_OBJECT_VTABLE(SmileSyntax);
 
-SMILE_EASY_OBJECT_NO_SECURITY(SmileSyntax);
+SMILE_EASY_OBJECT_NO_SOURCE(SmileSyntax);
+SMILE_EASY_OBJECT_READONLY_SECURITY(SmileSyntax);
 SMILE_EASY_OBJECT_NO_REALS(SmileSyntax);
+SMILE_EASY_OBJECT_NO_CALL(SmileSyntax);
+SMILE_EASY_OBJECT_NO_UNBOX(SmileSyntax)
 
 SmileSyntax SmileSyntax_Create(Symbol nonterminal, SmileList pattern, SmileObject replacement, LexerPosition position)
 {
 	SmileSyntax smileSyntax = GC_MALLOC_STRUCT(struct SmileSyntaxInt);
 	if (smileSyntax == NULL) Smile_Abort_OutOfMemory();
-	smileSyntax->base = Smile_KnownObjects.Object;
+	smileSyntax->base = Smile_KnownBases.Primitive;
 	smileSyntax->kind = SMILE_KIND_SYNTAX | SMILE_SECURITY_READONLY;
 	smileSyntax->vtable = SmileSyntax_VTable;
 
@@ -56,12 +59,23 @@ SmileSyntax SmileSyntax_Create(Symbol nonterminal, SmileList pattern, SmileObjec
 
 Bool SmileSyntax_Equals(SmileSyntax a, SmileSyntax b)
 {
-	return SmileSyntax_CompareEqual(a, (SmileObject)b);
+	return SmileSyntax_CompareEqual(a, (SmileUnboxedData){ 0 }, (SmileObject)b, (SmileUnboxedData){ 0 });
 }
 
-static Bool SmileSyntax_CompareEqual(SmileSyntax self, SmileObject other)
+static Bool SmileSyntax_CompareEqual(SmileSyntax self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData)
+{
+	UNUSED(selfData);
+	UNUSED(otherData);
+
+	return (SmileObject)self == other;
+}
+
+static Bool SmileSyntax_DeepEqual(SmileSyntax self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData, PointerSet visitedPointers)
 {
 	SmileSyntax otherSyntax;
+
+	UNUSED(selfData);
+	UNUSED(otherData);
 
 	if (SMILE_KIND(other) != SMILE_KIND_SYNTAX)
 		return False;
@@ -71,11 +85,15 @@ static Bool SmileSyntax_CompareEqual(SmileSyntax self, SmileObject other)
 	if (self->nonterminal != otherSyntax->nonterminal)
 		return False;
 
-	if (!SMILE_VCALL1(self->pattern, compareEqual, (SmileObject)otherSyntax->pattern))
-		return False;
+	if (PointerSet_Add(visitedPointers, self->pattern)) {
+		if (!SMILE_VCALL4(self->pattern, deepEqual, (SmileUnboxedData){ 0 }, (SmileObject)otherSyntax->pattern, (SmileUnboxedData){ 0 }, visitedPointers))
+			return False;
+	}
 
-	if (!SMILE_VCALL1(self->replacement, compareEqual, (SmileObject)otherSyntax->replacement))
-		return False;
+	if (PointerSet_Add(visitedPointers, self->replacement)) {
+		if (!SMILE_VCALL4(self->replacement, deepEqual, (SmileUnboxedData){ 0 }, (SmileObject)otherSyntax->replacement, (SmileUnboxedData){ 0 }, visitedPointers))
+			return False;
+	}
 
 	return True;
 }
@@ -146,18 +164,20 @@ static SmileList SmileSyntax_GetPropertyNames(SmileSyntax self)
 	return head;
 }
 
-static Bool SmileSyntax_ToBool(SmileSyntax self)
+static Bool SmileSyntax_ToBool(SmileSyntax self, SmileUnboxedData unboxedData)
 {
 	UNUSED(self);
+	UNUSED(unboxedData);
 	return True;
 }
 
-static Int32 SmileSyntax_ToInteger32(SmileSyntax self)
+static Int32 SmileSyntax_ToInteger32(SmileSyntax self, SmileUnboxedData unboxedData)
 {
 	SmileList node;
 	Int32 count = 0;
 
 	UNUSED(self);
+	UNUSED(unboxedData);
 
 	for (node = self->pattern; node != NullList; node = SmileList_Rest(node)) {
 		count++;
@@ -166,9 +186,12 @@ static Int32 SmileSyntax_ToInteger32(SmileSyntax self)
 	return count;
 }
 
-static String SmileSyntax_ToString(SmileSyntax self)
+static String SmileSyntax_ToString(SmileSyntax self, SmileUnboxedData unboxedData)
 {
+	UNUSED(unboxedData);
+
 	return String_Format("%S: %S => %S",
 		SymbolTable_GetName(Smile_SymbolTable, self->nonterminal),
-		SMILE_VCALL(self->pattern, toString), SMILE_VCALL(self->replacement, toString));
+		SMILE_VCALL1(self->pattern, toString, (SmileUnboxedData){ 0 }),
+		SMILE_VCALL1(self->replacement, toString, (SmileUnboxedData){ 0 }));
 }

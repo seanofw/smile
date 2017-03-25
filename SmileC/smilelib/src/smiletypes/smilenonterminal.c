@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -26,14 +26,17 @@
 
 SMILE_EASY_OBJECT_VTABLE(SmileNonterminal);
 
-SMILE_EASY_OBJECT_NO_SECURITY(SmileNonterminal);
+SMILE_EASY_OBJECT_NO_SOURCE(SmileNonterminal);
+SMILE_EASY_OBJECT_READONLY_SECURITY(SmileNonterminal);
 SMILE_EASY_OBJECT_NO_REALS(SmileNonterminal);
+SMILE_EASY_OBJECT_NO_CALL(SmileNonterminal);
+SMILE_EASY_OBJECT_NO_UNBOX(SmileNonterminal)
 
 SmileNonterminal SmileNonterminal_Create(Symbol nonterminal, Symbol name, Symbol repeat, Symbol separator)
 {
 	SmileNonterminal smileSyntax = GC_MALLOC_STRUCT(struct SmileNonterminalInt);
 	if (smileSyntax == NULL) Smile_Abort_OutOfMemory();
-	smileSyntax->base = Smile_KnownObjects.Object;
+	smileSyntax->base = Smile_KnownBases.Primitive;
 	smileSyntax->kind = SMILE_KIND_NONTERMINAL | SMILE_SECURITY_READONLY;
 	smileSyntax->vtable = SmileNonterminal_VTable;
 
@@ -45,9 +48,12 @@ SmileNonterminal SmileNonterminal_Create(Symbol nonterminal, Symbol name, Symbol
 	return smileSyntax;
 }
 
-static Bool SmileNonterminal_CompareEqual(SmileNonterminal self, SmileObject other)
+static Bool SmileNonterminal_CompareEqual(SmileNonterminal self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData)
 {
 	SmileNonterminal otherNonterminal;
+
+	UNUSED(selfData);
+	UNUSED(otherData);
 
 	if (SMILE_KIND(other) != SMILE_KIND_NONTERMINAL)
 		return False;
@@ -61,6 +67,13 @@ static Bool SmileNonterminal_CompareEqual(SmileNonterminal self, SmileObject oth
 		return False;
 
 	return True;
+}
+
+static Bool SmileNonterminal_DeepEqual(SmileNonterminal self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData, PointerSet visitedPointers)
+{
+	UNUSED(visitedPointers);
+
+	return SmileNonterminal_CompareEqual(self, selfData, other, otherData);
 }
 
 static UInt32 SmileNonterminal_Hash(SmileNonterminal self)
@@ -120,20 +133,24 @@ static SmileList SmileNonterminal_GetPropertyNames(SmileNonterminal self)
 	return head;
 }
 
-static Bool SmileNonterminal_ToBool(SmileNonterminal self)
+static Bool SmileNonterminal_ToBool(SmileNonterminal self, SmileUnboxedData unboxedData)
 {
 	UNUSED(self);
+	UNUSED(unboxedData);
 	return True;
 }
 
-static Int32 SmileNonterminal_ToInteger32(SmileNonterminal self)
+static Int32 SmileNonterminal_ToInteger32(SmileNonterminal self, SmileUnboxedData unboxedData)
 {
 	UNUSED(self);
+	UNUSED(unboxedData);
 	return 1;
 }
 
-static String SmileNonterminal_ToString(SmileNonterminal self)
+static String SmileNonterminal_ToString(SmileNonterminal self, SmileUnboxedData unboxedData)
 {
+	UNUSED(unboxedData);
+
 	return String_Format("%S%S %S%s%S",
 		SymbolTable_GetName(Smile_SymbolTable, self->nonterminal),
 		self->repeat != 0 ? SymbolTable_GetName(Smile_SymbolTable, self->repeat) : String_Empty,

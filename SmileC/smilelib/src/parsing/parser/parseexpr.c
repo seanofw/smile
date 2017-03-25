@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -22,6 +22,11 @@
 #include <smile/parsing/internal/parserinternal.h>
 #include <smile/parsing/internal/parsedecl.h>
 #include <smile/parsing/internal/parsescope.h>
+
+static struct SmileListInt _parser_ignorableObject = { 0 };
+
+// This object is used to identify constructs that may safely be elided from the parser's output.
+SmileObject Parser_IgnorableObject = (SmileObject)&_parser_ignorableObject;
 
 //-------------------------------------------------------------------------------------------------
 // Base expression parsing
@@ -66,6 +71,8 @@ ParseError Parser_ParseStmt(Parser parser, SmileObject *expr, Int modeFlags)
 					return Parser_ParseVarDecls(parser, expr, modeFlags, PARSEDECL_CONST);
 				case SMILE_SPECIAL_SYMBOL_AUTO:
 					return Parser_ParseVarDecls(parser, expr, modeFlags, PARSEDECL_AUTO);
+				case SMILE_SPECIAL_SYMBOL_KEYWORD:
+					return Parser_ParseKeywordList(parser, expr);
 			}
 			// Fall through to default case if not a declaration.
 
@@ -110,7 +117,7 @@ ParseError Parser_ParseOrExpr(Parser parser, SmileObject *expr, Int modeFlags)
 
 		if (isFirst) {
 			*expr = (SmileObject)SmileList_ConsWithSource(
-				(SmileObject)Smile_KnownObjects.orSymbol,
+				(SmileObject)Smile_KnownObjects._orSymbol,
 				(SmileObject)SmileList_ConsWithSource(*expr,
 					(SmileObject)(tail = SmileList_ConsWithSource(rvalue,
 						NullObject,
@@ -156,7 +163,7 @@ ParseError Parser_ParseAndExpr(Parser parser, SmileObject *expr, Int modeFlags)
 
 		if (isFirst) {
 			*expr = (SmileObject)SmileList_ConsWithSource(
-				(SmileObject)Smile_KnownObjects.andSymbol,
+				(SmileObject)Smile_KnownObjects._andSymbol,
 				(SmileObject)SmileList_ConsWithSource(*expr,
 					(SmileObject)(tail = SmileList_ConsWithSource(rvalue,
 						NullObject,
@@ -228,9 +235,9 @@ ParseError Parser_ParseNotExpr(Parser parser, SmileObject *expr, Int modeFlags)
 	// each unary operator, going from last (innermost) to first (outermost).
 	for (i = numOperators - 1; i >= 0; i--) {
 		lexerPosition = Token_GetPosition(&unaryOperators[i]);
-		// Not is a special built-in form:  [not x]
+		// Not is a special built-in form:  [$not x]
 		*expr = (SmileObject)SmileList_ConsWithSource(
-			(SmileObject)Smile_KnownObjects.notSymbol,
+			(SmileObject)Smile_KnownObjects._notSymbol,
 			(SmileObject)SmileList_ConsWithSource(
 				*expr,
 				NullObject,
@@ -265,13 +272,13 @@ Inline SmileSymbol Parser_GetSymbolObjectForCmpOperator(Symbol symbol)
 			return Smile_KnownObjects.geSymbol;
 			break;
 		case SMILE_SPECIAL_SYMBOL_SUPEREQ:
-			return Smile_KnownObjects.supereqSymbol;
+			return Smile_KnownObjects._eqSymbol;
 			break;
 		case SMILE_SPECIAL_SYMBOL_SUPERNE:
-			return Smile_KnownObjects.superneSymbol;
+			return Smile_KnownObjects._neSymbol;
 			break;
 		case SMILE_SPECIAL_SYMBOL_IS:
-			return Smile_KnownObjects.isSymbol;
+			return Smile_KnownObjects._isSymbol;
 			break;
 		default:
 			return NULL;
@@ -301,6 +308,11 @@ ParseError Parser_ParseCmpExpr(Parser parser, SmileObject *expr, Int modeFlags)
 		return parseError;
 
 parseNextOperator:
+
+	if (Parser_Has2Lookahead(parser, TOKEN_UNKNOWNPUNCTNAME, TOKEN_EQUALWITHOUTWHITESPACE)) {
+		// This might not be possible, but if this is something like >==, then don't allow it to be consumed as a binary operator.
+		return NULL;
+	}
 
 	if ((customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_CMPEXPR, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_ADDEXPR, &parseError))
 		!= CustomSyntaxResult_NotMatchedAndNoTokensConsumed) {
@@ -372,6 +384,11 @@ ParseError Parser_ParseAddExpr(Parser parser, SmileObject *expr, Int modeFlags)
 
 parseNextOperator:
 
+	if (Parser_Has2Lookahead(parser, TOKEN_UNKNOWNPUNCTNAME, TOKEN_EQUALWITHOUTWHITESPACE)) {
+		// If this is something like +=, then don't allow it to be consumed as a binary operator.
+		return NULL;
+	}
+
 	if ((customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_ADDEXPR, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_MULEXPR, &parseError))
 		!= CustomSyntaxResult_NotMatchedAndNoTokensConsumed) {
 
@@ -428,6 +445,11 @@ ParseError Parser_ParseMulExpr(Parser parser, SmileObject *expr, Int modeFlags)
 		return parseError;
 
 parseNextOperator:
+
+	if (Parser_Has2Lookahead(parser, TOKEN_UNKNOWNPUNCTNAME, TOKEN_EQUALWITHOUTWHITESPACE)) {
+		// If this is something like *=, then don't allow it to be consumed as a binary operator.
+		return NULL;
+	}
 
 	if ((customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_MULEXPR, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_BINARYEXPR, &parseError))
 		!= CustomSyntaxResult_NotMatchedAndNoTokensConsumed) {
@@ -527,6 +549,11 @@ ParseError Parser_ParseBinaryExpr(Parser parser, SmileObject *expr, Int modeFlag
 		return parseError;
 
 parseNextOperator:
+
+	if (Parser_Has2Lookahead(parser, TOKEN_UNKNOWNPUNCTNAME, TOKEN_EQUALWITHOUTWHITESPACE)) {
+		// If this is something like +=, then don't allow it to be consumed as a binary operator.
+		return NULL;
+	}
 
 	if ((customSyntaxResult = Parser_ApplyCustomSyntax(parser, expr, modeFlags, SMILE_SPECIAL_SYMBOL_BINARYEXPR, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_COLONEXPR, &parseError))
 		!= CustomSyntaxResult_NotMatchedAndNoTokensConsumed) {
@@ -644,11 +671,9 @@ ParseError Parser_ParseRangeExpr(Parser parser, SmileObject *expr, Int modeFlags
 			return parseError;
 
 		*expr = (SmileObject)SmileList_ConsWithSource(
-			(SmileObject)SmilePair_Create((SmileObject)Smile_KnownObjects.RangeSymbol, (SmileObject)Smile_KnownObjects.ofSymbol),
-			(SmileObject)SmileList_ConsWithSource(*expr,
-				(SmileObject)SmileList_ConsWithSource(rvalue,
-					NullObject,
-					lexerPosition),
+			(SmileObject)SmilePair_Create((SmileObject)*expr, (SmileObject)Smile_KnownObjects.rangeToSymbol),
+			(SmileObject)SmileList_ConsWithSource(rvalue,
+				NullObject,
 				lexerPosition),
 			lexerPosition
 		);
@@ -676,8 +701,6 @@ Inline Bool Parser_IsAcceptableArbitraryPrefixOperator(Symbol symbol)
 		case SMILE_SPECIAL_SYMBOL_TYPEOF:
 		case SMILE_SPECIAL_SYMBOL_SUPEREQ:
 		case SMILE_SPECIAL_SYMBOL_SUPERNE:
-
-		case SMILE_SPECIAL_SYMBOL_BRK:
 			return False;
 	}
 }
@@ -745,9 +768,9 @@ ParseError Parser_ParsePrefixExpr(Parser parser, SmileObject *expr, Int modeFlag
 		position = Token_GetPosition(&unaryOperators[i]);
 		symbol = unaryOperators[i].data.symbol;
 		if (symbol == SMILE_SPECIAL_SYMBOL_TYPEOF) {
-			// Typeof is a special built-in form:  [typeof x]
+			// Typeof is a special built-in form:  [$typeof x]
 			*expr = (SmileObject)SmileList_ConsWithSource(
-				(SmileObject)Smile_KnownObjects.typeofSymbol,
+				(SmileObject)Smile_KnownObjects._typeofSymbol,
 				(SmileObject)SmileList_ConsWithSource(
 					*expr,
 					NullObject,
@@ -770,140 +793,6 @@ ParseError Parser_ParsePrefixExpr(Parser parser, SmileObject *expr, Int modeFlag
 		}
 	}
 	return NULL;
-}
-
-// newexpr ::=	  . NEW LBRACE members_opt RBRACE
-// 	| . NEW dotexpr LBRACE members_opt RBRACE
-// 	| . consexpr
-ParseError Parser_ParseNewExpr(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting)
-{
-	Token token, newToken;
-	SmileObject base, body;
-	ParseError parseError;
-	LexerPosition newTokenPosition;
-
-	token = Parser_NextToken(parser);
-	if (!((token->kind == TOKEN_ALPHANAME || token->kind == TOKEN_UNKNOWNALPHANAME)
-		&& token->data.symbol == Smile_KnownSymbols.new_)) {
-		Lexer_Unget(parser->lexer);
-		return Parser_ParsePostfixExpr(parser, expr, modeFlags, firstUnaryTokenForErrorReporting);
-	}
-
-	newTokenPosition = Token_GetPosition(token);
-
-	newToken = Token_Clone(token);
-
-	if (Parser_HasLookahead(parser, TOKEN_LEFTBRACE)) {
-		base = (SmileObject)Smile_KnownObjects.ObjectSymbol;
-	}
-	else {
-		parseError = Parser_ParseDotExpr(parser, &base, modeFlags, newToken);
-		if (parseError != NULL) {
-			token = Parser_Recover(parser, Parser_RightBracesBracketsParentheses_Recovery, Parser_RightBracesBracketsParentheses_Count);
-			if (token->kind != TOKEN_LEFTBRACE) {
-				*expr = NullObject;
-				return parseError;
-			}
-			Parser_AddMessage(parser, parseError);
-		}
-	}
-
-	if (Lexer_Next(parser->lexer) != TOKEN_LEFTBRACE) {
-		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
-			String_FromC("Missing a '{' after 'new'."));
-		*expr = NullObject;
-		return parseError;
-	}
-
-	if (!Parser_ParseMembers(parser, &body)) {
-		token = Parser_Recover(parser, Parser_RightBracesBracketsParentheses_Recovery, Parser_RightBracesBracketsParentheses_Count);
-		if (token->kind != TOKEN_RIGHTBRACE) {
-			parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
-				String_Format("Missing a '}' to end the members in the 'new' block starting on line %d.", newTokenPosition->line));
-			*expr = NullObject;
-			return parseError;
-		}
-		Lexer_Unget(parser->lexer);
-	}
-
-	if (Lexer_Next(parser->lexer) != TOKEN_RIGHTBRACE) {
-		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
-			String_Format("Missing a '}' to end the members in the 'new' block starting on line %d.", newTokenPosition->line));
-		*expr = NullObject;
-		return parseError;
-	}
-
-	*expr = (SmileObject)SmileList_ConsWithSource(
-		(SmileObject)Smile_KnownObjects.newSymbol,
-		(SmileObject)SmileList_ConsWithSource(
-			base,
-			(SmileObject)SmileList_ConsWithSource(
-				body,
-				NullObject,
-				newTokenPosition
-			),
-			newTokenPosition
-		),
-		newTokenPosition
-	);
-
-	return NULL;
-}
-
-static Int Parser_RightBracesColons_Recovery[] = {
-	TOKEN_RIGHTBRACE, TOKEN_COLON,
-};
-static Int Parser_RightBracesColons_Count = sizeof(Parser_RightBracesColons_Recovery) / sizeof(Int);
-
-// members_opt :: = . members | .
-// members :: = . members member | . member
-// member :: = . name COLON expr
-Bool Parser_ParseMembers(Parser parser, SmileObject *expr)
-{
-	SmileList head = NullList, tail = NullList;
-	Token token;
-	ParseError parseError;
-	Symbol symbol;
-	SmileObject valueExpr;
-	SmileObject memberExpr;
-	LexerPosition lexerPosition;
-	Bool hasErrors = False;
-
-	while ((token = Parser_NextToken(parser))->kind == TOKEN_ALPHANAME || token->kind == TOKEN_UNKNOWNALPHANAME
-		|| token->kind == TOKEN_PUNCTNAME || token->kind == TOKEN_UNKNOWNPUNCTNAME) {
-		symbol = token->data.symbol;
-		lexerPosition = Token_GetPosition(token);
-
-		if (Lexer_Next(parser->lexer) != TOKEN_COLON) {
-			parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
-				String_Format("Missing ':' after '%S' member.", SymbolTable_GetName(Smile_SymbolTable, symbol)));
-			Parser_AddMessage(parser, parseError);
-			if (Parser_Recover(parser, Parser_RightBracesColons_Recovery, Parser_RightBracesColons_Count)->kind != TOKEN_COLON) {
-				Lexer_Unget(parser->lexer);
-				*expr = NullObject;
-				return False;
-			}
-		}
-
-		parseError = Parser_ParseExpr(parser, &valueExpr, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERDECL);
-		if (parseError != NULL) {
-			Parser_AddMessage(parser, parseError);
-			hasErrors = True;
-		}
-
-		memberExpr = (SmileObject)SmileList_ConsWithSource(
-			(SmileObject)SmileSymbol_Create(symbol),
-			(SmileObject)SmileList_ConsWithSource(valueExpr, NullObject, lexerPosition),
-			lexerPosition
-		);
-
-		LIST_APPEND_WITH_SOURCE(head, tail, memberExpr, lexerPosition);
-	}
-
-	Lexer_Unget(parser->lexer);
-
-	*expr = (SmileObject)head;
-	return True;
 }
 
 ParseError Parser_ParsePostfixExpr(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting)
@@ -1024,6 +913,7 @@ ParseError Parser_ParseParentheses(Parser parser, SmileObject *result, Int modeF
 		*result = NullObject;
 		return NULL;
 	}
+	if (*result == Parser_IgnorableObject) *result = NullObject;
 
 	// Make sure there's a matching ')' following the opening '('.
 	if (!Parser_HasLookahead(parser, TOKEN_RIGHTPARENTHESIS)) {

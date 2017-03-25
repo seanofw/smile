@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -23,11 +23,12 @@
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/text/smilesymbol.h>
-#include <smile/smiletypes/text/smilechar.h>
 #include <smile/parsing/parser.h>
 #include <smile/parsing/internal/parserinternal.h>
 #include <smile/parsing/internal/parsedecl.h>
 #include <smile/parsing/internal/parsescope.h>
+
+static Bool Parser_TryParseSpecialForm(Parser parser, LexerPosition startPosition, SmileObject *result, ParseError *error);
 
 //-------------------------------------------------------------------------------------------------
 // Terms
@@ -47,9 +48,11 @@
 //         | . REAL
 ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, Token firstUnaryTokenForErrorReporting)
 {
-	Token token = Parser_NextToken(parser);
+	ParseDecl parseDecl;
+	Token token = Parser_NextTokenWithDeclaration(parser, &parseDecl);
 	LexerPosition startPosition;
 	ParseError error;
+	SmileList head, tail;
 
 	switch (token->kind) {
 
@@ -58,55 +61,26 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, T
 		return Parser_ParseParentheses(parser, result, modeFlags);
 
 	case TOKEN_LEFTBRACKET:
-		{
-			SmileList head = NullList, tail = NullList;
+		startPosition = Token_GetPosition(token);
+		if (Parser_TryParseSpecialForm(parser, startPosition, result, &error))
+			return error;
 
-			startPosition = Token_GetPosition(token);
+		head = NullList, tail = NullList;
+		Parser_ParseExprsOpt(parser, &head, &tail, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
 
-			Parser_ParseExprsOpt(parser, &head, &tail, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
+		if ((error = Parser_ExpectRightBracket(parser, result, firstUnaryTokenForErrorReporting, "list", startPosition)) != NULL)
+			return error;
 
-			if (!Parser_HasLookahead(parser, TOKEN_RIGHTBRACKET)) {
-				error = ParseMessage_Create(PARSEMESSAGE_ERROR,
-					firstUnaryTokenForErrorReporting != NULL ? Token_GetPosition(firstUnaryTokenForErrorReporting) : startPosition,
-					String_Format("Missing ']' in list starting on line %d.", startPosition->line));
-				*result = NullObject;
-				return error;
-			}
-			Parser_NextToken(parser);
-
-			*result = (SmileObject)head;
-			return NULL;
-		}
+		*result = (SmileObject)head;
+		return NULL;
 
 	case TOKEN_BAR:
 		error = Parser_ParseFunc(parser, result, modeFlags);
 		return error;
 
 	case TOKEN_BACKTICK:
-		{
-			startPosition = Token_GetPosition(token);
-
-			if (Lexer_Peek(parser->lexer) == TOKEN_LEFTPARENTHESIS) {
-				// This is a quote of a parenthesized expression, so parse the expression and then quote it.
-				error = Parser_ParseParentheses(parser, result, modeFlags);
-				if (error != NULL)
-					return error;
-				*result = (SmileObject)SmileList_ConsWithSource(
-					(SmileObject)Smile_KnownObjects.quoteSymbol,
-					(SmileObject)SmileList_ConsWithSource(*result, NullObject, startPosition),
-					startPosition
-				);
-				return NULL;
-			}
-			else {
-				// This is a quote of a more generic thing, like a list or a symbol, so recursively parse
-				// this "quoted term".  Because the "quoted term" might be a list that somewhere contains
-				// a (parenthetical escape), thus turning the "quoted term" from an ordinary quoted list
-				// into a template, we do not do the quoting here, but instead do that quoting work inside
-				// Parser_ParseQuotedTerm() itself, which is the only code that knows how to do it correctly.
-				return Parser_ParseQuotedTerm(parser, result, modeFlags, startPosition);
-			}
-		}
+		error = Parser_ParseQuoteBody(parser, result, modeFlags, Token_GetPosition(token));
+		return error;
 
 	case TOKEN_LEFTBRACE:
 		Lexer_Unget(parser->lexer);
@@ -115,6 +89,12 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, T
 
 	case TOKEN_ALPHANAME:
 	case TOKEN_PUNCTNAME:
+		if (parseDecl->declKind == PARSEDECL_KEYWORD) {
+			error = ParseMessage_Create(PARSEMESSAGE_ERROR,
+				firstUnaryTokenForErrorReporting != NULL ? Token_GetPosition(firstUnaryTokenForErrorReporting) : Token_GetPosition(token),
+				String_Format("\"%S\" is a keyword and cannot be used as a variable or operator", token->text));
+			return error;
+		}
 		*result = (SmileObject)SmileSymbol_Create(token->data.symbol);
 		return NULL;
 
@@ -126,19 +106,19 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, T
 		return Parser_ParseDynamicString(parser, result, token->text, Token_GetPosition(token));
 
 	case TOKEN_CHAR:
-		*result = (SmileObject)SmileChar_Create((Byte)token->data.i);
+		*result = (SmileObject)SmileByte_Create(token->data.byte);
 		return NULL;
 
 	case TOKEN_BYTE:
-		*result = (SmileObject)SmileByte_Create((Byte)token->data.i);
+		*result = (SmileObject)SmileByte_Create(token->data.byte);
 		return NULL;
 
 	case TOKEN_INTEGER16:
-		*result = (SmileObject)SmileInteger16_Create((Int16)token->data.i);
+		*result = (SmileObject)SmileInteger16_Create(token->data.int16);
 		return NULL;
 
 	case TOKEN_INTEGER32:
-		*result = (SmileObject)SmileInteger32_Create(token->data.i);
+		*result = (SmileObject)SmileInteger32_Create(token->data.int32);
 		return NULL;
 
 	case TOKEN_INTEGER64:
@@ -152,7 +132,7 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, T
 			firstUnaryTokenForErrorReporting != NULL ? Token_GetPosition(firstUnaryTokenForErrorReporting) : Token_GetPosition(token),
 			String_Format("\"%S\" is not a known variable name", token->text));
 		return error;
-
+	
 	case TOKEN_LOANWORD_SYNTAX:
 		// Parse the new syntax rule.
 		error = Parser_ParseSyntax(parser, result, modeFlags);
@@ -190,4 +170,105 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, T
 		}
 		return error;
 	}
+}
+
+/// <summary>
+/// See if this is a special form that requires "unique" parsing, and if so, parse it
+/// as one of those special forms.
+/// </summary>
+/// <remarks>
+/// The special forms that require unusual parsing are those which have nonstandard
+/// variable-evaluation rules --- and those are primarily forms that are able to
+/// declare variables in a new scope.  Specifically this means we check for:
+///
+///     [$quote ...]
+///     [$scope [vars...] ... ]
+///     [$fn [args...] ... ]
+///     [$till [flags...] ... ]
+///     [$new base [members...]]
+///     [$set name value]
+///
+/// Everything else can be parsed normally, but those are necessarily unique.
+///
+/// Note that [$set], like '=', can construct new variables in the current scope, if
+/// the scope is one that allows variable construction.
+///
+/// Note also that [$scope] is much more like Lisp (let) than it is like {braces}, in
+/// that its given local-variable list contains the names of the variables within it,
+/// and it cannot be modified beyond that set of local variables, either by [$set] or
+/// by '='.
+///
+/// Note finally that 'const' is nothing more than sleight-of-hand by the parser, in
+/// that it simply prohibits [$set] or '=' to have a 'const' variable as its lvalue:
+/// Once everything has been compiled to Lisp forms, there's no such thing as 'const'.
+/// </remarks>
+static Bool Parser_TryParseSpecialForm(Parser parser, LexerPosition startPosition, SmileObject *result, ParseError *error)
+{
+	Token token;
+	if ((token = Parser_NextToken(parser))->kind == TOKEN_ALPHANAME) {
+	
+		switch (token->data.symbol) {
+
+			case SMILE_SPECIAL_SYMBOL__QUOTE:
+				*error = Parser_ParseClassicQuote(parser, result, startPosition);
+				return True;
+			
+			case SMILE_SPECIAL_SYMBOL__SCOPE:
+				*error = Parser_ParseClassicScope(parser, result, startPosition);
+				return True;
+			
+			case SMILE_SPECIAL_SYMBOL__FN:
+				*error = Parser_ParseClassicFn(parser, result, startPosition);
+				return True;
+			
+			case SMILE_SPECIAL_SYMBOL__TILL:
+				*error = Parser_ParseClassicTill(parser, result, startPosition);
+				return True;
+			
+			case SMILE_SPECIAL_SYMBOL__NEW:
+				*error = Parser_ParseClassicNew(parser, result, startPosition);
+				return True;
+			
+			case SMILE_SPECIAL_SYMBOL__SET:
+				*error = Parser_ParseClassicSet(parser, result, startPosition);
+				return True;
+		}
+	}
+
+	Lexer_Unget(parser->lexer);
+	return False;
+}
+
+ParseError Parser_ExpectLeftBracket(Parser parser, SmileObject *result, Token firstUnaryTokenForErrorReporting, const char *name, LexerPosition startPosition)
+{
+	ParseError error;
+
+	if (!Parser_HasLookahead(parser, TOKEN_LEFTBRACKET)) {
+		error = ParseMessage_Create(PARSEMESSAGE_ERROR,
+			firstUnaryTokenForErrorReporting != NULL ? Token_GetPosition(firstUnaryTokenForErrorReporting) : startPosition,
+			String_Format("Missing '[' in %s starting on line %d.", name, startPosition->line));
+		Parser_Recover(parser, Parser_RightBracesBracketsParentheses_Recovery, Parser_RightBracesBracketsParentheses_Count);
+		*result = NullObject;
+		return error;
+	}
+	Parser_NextToken(parser);
+
+	return NULL;
+}
+
+ParseError Parser_ExpectRightBracket(Parser parser, SmileObject *result, Token firstUnaryTokenForErrorReporting, const char *name, LexerPosition startPosition)
+{
+	ParseError error;
+
+	if (!Parser_HasLookahead(parser, TOKEN_RIGHTBRACKET)) {
+		error = ParseMessage_Create(PARSEMESSAGE_ERROR,
+			firstUnaryTokenForErrorReporting != NULL ? Token_GetPosition(firstUnaryTokenForErrorReporting) : startPosition,
+			String_Format("Missing ']' in %s starting on line %d.", name, startPosition->line));
+		Parser_Recover(parser, Parser_RightBracesBracketsParentheses_Recovery, Parser_RightBracesBracketsParentheses_Count);
+		*result = NullObject;
+		return error;
+	}
+	Parser_NextToken(parser);
+
+	return NULL;
 }

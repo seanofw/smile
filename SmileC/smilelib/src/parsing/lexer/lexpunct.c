@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -121,7 +121,10 @@ Int Lexer_ParseHyphenOrEquals(Lexer lexer, Int initialChar, Bool isFirstContentO
 
 	// Anything else is a punctuation form, with '=' treated specially.
 	tokenKind = Lexer_ParsePunctuation(lexer, isFirstContentOnLine);
-	return (tokenKind == TOKEN_EQUAL && !hasPrecedingWhitespace) ? TOKEN_EQUALWITHOUTWHITESPACE : tokenKind;
+	if (tokenKind == TOKEN_EQUAL && !hasPrecedingWhitespace) {
+		lexer->token->kind = tokenKind = TOKEN_EQUALWITHOUTWHITESPACE;
+	}
+	return tokenKind;
 }
 
 /// <summary>

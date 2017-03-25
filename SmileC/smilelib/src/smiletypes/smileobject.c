@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,48 +17,58 @@
 
 #include <smile/numeric/real64.h>
 #include <smile/smiletypes/smileobject.h>
+#include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/text/smilestring.h>
+#include <smile/smiletypes/easyobject.h>
+
+SMILE_EASY_OBJECT_VTABLE(SmileObject);
 
 SmileObject SmileObject_Create(void)
 {
 	SmileObject obj = GC_MALLOC_STRUCT(struct SmileObjectInt);
-	obj->kind = SMILE_KIND_OBJECT;
+	obj->kind = SMILE_KIND_PRIMITIVE;
 	obj->base = NULL;
 	obj->vtable = SmileObject_VTable;
 	return obj;
 }
 
-Bool SmileObject_CompareEqual(SmileObject self, SmileObject other)
+Bool SmileObject_DeepCompare(SmileObject self, SmileObject other)
 {
+	PointerSet visitedPointers = PointerSet_Create();
+	Bool result;
+
+	result = SMILE_VCALL4(self, deepEqual, (SmileUnboxedData){ 0 }, other, (SmileUnboxedData){ 0 }, visitedPointers);
+
+	PointerSet_Clear(visitedPointers);	// Be nicer to the GC by getting rid of pointers we don't need to keep.
+
+	return result;
+}
+
+Bool SmileArg_DeepCompare(SmileArg self, SmileArg other)
+{
+	PointerSet visitedPointers = PointerSet_Create();
+	Bool result;
+
+	result = SMILE_VCALL4(self.obj, deepEqual, self.unboxed, other.obj, other.unboxed, visitedPointers);
+
+	PointerSet_Clear(visitedPointers);	// Be nicer to the GC by getting rid of pointers we don't need to keep.
+
+	return result;
+}
+
+Bool SmileObject_CompareEqual(SmileObject self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData)
+{
+	UNUSED(selfData);
+	UNUSED(otherData);
 	return self == other;
 }
 
-UInt32 SmileObject_Hash(SmileObject self)
+Bool SmileObject_DeepEqual(SmileObject self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData, PointerSet visitedPointers)
 {
-	UNUSED(self);
-	return 0;
-}
-
-void SmileObject_SetSecurityKey(SmileObject self, SmileObject newSecurityKey, SmileObject oldSecurityKey)
-{
-	UNUSED(self);
-	UNUSED(newSecurityKey);
-	UNUSED(oldSecurityKey);
-	Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
-}
-
-void SmileObject_SetSecurity(SmileObject self, Int security, SmileObject securityKey)
-{
-	UNUSED(self);
-	UNUSED(security);
-	UNUSED(securityKey);
-	Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
-}
-
-Int SmileObject_GetSecurity(SmileObject self)
-{
-	UNUSED(self);
-	return SMILE_SECURITY_READONLY;
+	UNUSED(selfData);
+	UNUSED(otherData);
+	UNUSED(visitedPointers);
+	return self == other;
 }
 
 SmileObject SmileObject_GetProperty(SmileObject self, Symbol propertyName)
@@ -73,8 +83,8 @@ void SmileObject_SetProperty(SmileObject self, Symbol propertyName, SmileObject 
 	UNUSED(self);
 	UNUSED(value);
 	Smile_ThrowException(Smile_KnownSymbols.object_security_error,
-		String_Format("Cannot set property \"%S\" on base Object, which is read-only.",
-			SymbolTable_GetName(Smile_SymbolTable, propertyName)));
+		String_Format("Cannot set property \"%S\" on base Primitive, which is read-only.",
+		SymbolTable_GetName(Smile_SymbolTable, propertyName)));
 }
 
 Bool SmileObject_HasProperty(SmileObject self, Symbol propertyName)
@@ -90,53 +100,16 @@ SmileList SmileObject_GetPropertyNames(SmileObject self)
 	return NullList;
 }
 
-Bool SmileObject_ToBool(SmileObject self)
-{
-	UNUSED(self);
-	return False;
-}
+STATIC_STRING(PrimitiveString, "Primitive");
 
-Int32 SmileObject_ToInteger32(SmileObject self)
-{
-	UNUSED(self);
-	return 0;
-}
+SMILE_EASY_OBJECT_READONLY_SECURITY(SmileObject)
+SMILE_EASY_OBJECT_NO_CALL(SmileObject)
+SMILE_EASY_OBJECT_NO_SOURCE(SmileObject)
+SMILE_EASY_OBJECT_NO_UNBOX(SmileObject)
 
-Float64 SmileObject_ToFloat64(SmileObject self)
-{
-	UNUSED(self);
-	return 0.0;
-}
-
-Real64 SmileObject_ToReal64(SmileObject self)
-{
-	UNUSED(self);
-	return Real64_Zero;
-}
-
-String SmileObject_ToString(SmileObject self)
-{
-	UNUSED(self);
-	return KNOWN_STRING(Object);
-}
-
-SMILE_VTABLE(SmileObject_VTable, SmileObject)
-{
-	SmileObject_CompareEqual,
-	SmileObject_Hash,
-
-	SmileObject_SetSecurityKey,
-	SmileObject_SetSecurity,
-	SmileObject_GetSecurity,
-
-	SmileObject_GetProperty,
-	SmileObject_SetProperty,
-	SmileObject_HasProperty,
-	SmileObject_GetPropertyNames,
-
-	SmileObject_ToBool,
-	SmileObject_ToInteger32,
-	SmileObject_ToFloat64,
-	SmileObject_ToReal64,
-	SmileObject_ToString,
-};
+SMILE_EASY_OBJECT_HASH(SmileObject, 0)
+SMILE_EASY_OBJECT_TOBOOL(SmileObject, 0)
+SMILE_EASY_OBJECT_TOINT(SmileObject, 0)
+SMILE_EASY_OBJECT_TOREAL(SmileObject, Real64_Zero)
+SMILE_EASY_OBJECT_TOFLOAT(SmileObject, 0.0)
+SMILE_EASY_OBJECT_TOSTRING(SmileObject, PrimitiveString)

@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -19,124 +19,125 @@
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
+#include <smile/smiletypes/easyobject.h>
+
+SMILE_IGNORE_UNUSED_VARIABLES
+
+SMILE_EASY_OBJECT_VTABLE(SmileInteger32);
 
 SmileInteger32 SmileInteger32_CreateInternal(Int32 value)
 {
-	SmileInteger32 smileInt = GC_MALLOC_STRUCT(struct SmileInteger32Int);
+	// We MALLOC_ATOMIC here because the base is a known pointer that will never be collected.
+	SmileInteger32 smileInt = (SmileInteger32)GC_MALLOC_ATOMIC(sizeof(struct SmileInteger32Int));
 	if (smileInt == NULL) Smile_Abort_OutOfMemory();
-	smileInt->base = Smile_KnownObjects.Object;
+	smileInt->base = (SmileObject)Smile_KnownBases.Integer32;
 	smileInt->kind = SMILE_KIND_INTEGER32;
 	smileInt->vtable = SmileInteger32_VTable;
 	smileInt->value = value;
 	return smileInt;
 }
 
-Bool SmileInteger32_CompareEqual(SmileInteger32 self, SmileObject other)
+SMILE_EASY_OBJECT_READONLY_SECURITY(SmileInteger32)
+SMILE_EASY_OBJECT_NO_CALL(SmileInteger32)
+SMILE_EASY_OBJECT_NO_SOURCE(SmileInteger32)
+SMILE_EASY_OBJECT_NO_PROPERTIES(SmileInteger32)
+
+SMILE_EASY_OBJECT_HASH(SmileInteger32, obj->value)
+SMILE_EASY_OBJECT_TOBOOL(SmileInteger32, obj->value != 0)
+SMILE_EASY_OBJECT_TOINT(SmileInteger32, obj->value)
+SMILE_EASY_OBJECT_TOREAL(SmileInteger32, Real64_FromInt32(obj->value))
+SMILE_EASY_OBJECT_TOFLOAT(SmileInteger32, (Float64)obj->value)
+SMILE_EASY_OBJECT_TOSTRING(SmileInteger32, String_Format("%dt", (Int32)obj->value))
+
+static Bool SmileInteger32_CompareEqual(SmileInteger32 a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
 {
-	SmileInteger32 otherInt;
-
-	if (SMILE_KIND(other) != SMILE_KIND_INTEGER32) return False;
-	otherInt = (SmileInteger32)other;
-
-	return self->value == otherInt->value;
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_INTEGER32) {
+		return ((SmileInteger32)a)->value == bData.i32;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_INTEGER32) {
+		return ((SmileInteger32)a)->value == ((SmileInteger32)b)->value;
+	}
+	else return False;
 }
 
-UInt32 SmileInteger32_Hash(SmileInteger32 self)
+static Bool SmileInteger32_DeepEqual(SmileInteger32 a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData, PointerSet visitedPointers)
 {
-	return self->value;
+	UNUSED(visitedPointers);
+
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_INTEGER32) {
+		return ((SmileInteger32)a)->value == bData.i32;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_INTEGER32) {
+		return ((SmileInteger32)a)->value == ((SmileInteger32)b)->value;
+	}
+	else return False;
 }
 
-void SmileInteger32_SetSecurityKey(SmileInteger32 self, SmileObject newSecurityKey, SmileObject oldSecurityKey)
+SmileObject SmileInteger32_Box(SmileArg src)
 {
-	UNUSED(self);
-	UNUSED(newSecurityKey);
-	UNUSED(oldSecurityKey);
-	Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
+	return src.obj;
 }
 
-void SmileInteger32_SetSecurity(SmileInteger32 self, Int security, SmileObject securityKey)
+SmileArg SmileInteger32_Unbox(SmileInteger32 smileInt)
 {
-	UNUSED(self);
-	UNUSED(security);
-	UNUSED(securityKey);
-	Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
+	return SmileUnboxedInteger32_From(smileInt->value);
 }
 
-Int SmileInteger32_GetSecurity(SmileInteger32 self)
+//-------------------------------------------------------------------------------------------------
+
+SMILE_EASY_OBJECT_VTABLE(SmileUnboxedInteger32);
+
+SMILE_EASY_OBJECT_READONLY_SECURITY(SmileUnboxedInteger32)
+SMILE_EASY_OBJECT_NO_CALL(SmileUnboxedInteger32)
+SMILE_EASY_OBJECT_NO_SOURCE(SmileUnboxedInteger32)
+SMILE_EASY_OBJECT_NO_PROPERTIES(SmileUnboxedInteger32)
+
+SMILE_EASY_OBJECT_HASH(SmileUnboxedInteger32, 0)
+SMILE_EASY_OBJECT_TOBOOL(SmileUnboxedInteger32, (Bool)!!unboxedData.i32)
+SMILE_EASY_OBJECT_TOINT(SmileUnboxedInteger32, unboxedData.i32)
+SMILE_EASY_OBJECT_TOREAL(SmileUnboxedInteger32, Real64_FromInt32(unboxedData.i32))
+SMILE_EASY_OBJECT_TOFLOAT(SmileUnboxedInteger32, unboxedData.i32)
+SMILE_EASY_OBJECT_TOSTRING(SmileUnboxedInteger32, String_Format("%d", (Int)unboxedData.i32))
+
+static Bool SmileUnboxedInteger32_CompareEqual(SmileUnboxedInteger32 a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
 {
-	UNUSED(self);
-	return SMILE_SECURITY_READONLY;
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_INTEGER32) {
+		return aData.i32 == bData.i32;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_INTEGER32) {
+		return aData.i32 == ((SmileInteger32)b)->value;
+	}
+	else return False;
 }
 
-SmileObject SmileInteger32_GetProperty(SmileInteger32 self, Symbol propertyName)
+static Bool SmileUnboxedInteger32_DeepEqual(SmileUnboxedInteger32 a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData, PointerSet visitedPointers)
 {
-	return self->base->vtable->getProperty((SmileObject)self, propertyName);
+	UNUSED(visitedPointers);
+
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_INTEGER32) {
+		return aData.i32 == bData.i32;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_INTEGER32) {
+		return aData.i32 == ((SmileInteger32)b)->value;
+	}
+	else return False;
 }
 
-void SmileInteger32_SetProperty(SmileInteger32 self, Symbol propertyName, SmileObject value)
+static SmileObject SmileUnboxedInteger32_Box(SmileArg src)
 {
-	UNUSED(self);
-	UNUSED(value);
-	Smile_ThrowException(Smile_KnownSymbols.object_security_error,
-		String_Format("Cannot set property \"%S\" on an integer, which is read-only.",
-		SymbolTable_GetName(Smile_SymbolTable, propertyName)));
+	return (SmileObject)SmileInteger32_Create(src.unboxed.i32);
 }
 
-Bool SmileInteger32_HasProperty(SmileInteger32 self, Symbol propertyName)
+static SmileArg SmileUnboxedInteger32_Unbox(SmileUnboxedInteger32 smileUnboxedInt)
 {
-	UNUSED(self);
-	UNUSED(propertyName);
-	return False;
+	static SmileArg arg = { 0 };
+	Smile_Abort_FatalError("Cannot re-unbox a unboxed object.");
+	return arg;
 }
 
-SmileList SmileInteger32_GetPropertyNames(SmileInteger32 self)
-{
-	UNUSED(self);
-	return NullList;
-}
-
-Bool SmileInteger32_ToBool(SmileInteger32 self)
-{
-	return self->value != 0;
-}
-
-Int32 SmileInteger32_ToInteger32(SmileInteger32 self)
-{
-	return self->value;
-}
-
-Float64 SmileInteger32_ToFloat64(SmileInteger32 self)
-{
-	return (Float64)self->value;
-}
-
-Real64 SmileInteger32_ToReal64(SmileInteger32 self)
-{
-	return Real64_FromInt32(self->value);
-}
-
-String SmileInteger32_ToString(SmileInteger32 self)
-{
-	return String_Format("%d", self->value);
-}
-
-SMILE_VTABLE(SmileInteger32_VTable, SmileInteger32)
-{
-	SmileInteger32_CompareEqual,
-	SmileInteger32_Hash,
-
-	SmileInteger32_SetSecurityKey,
-	SmileInteger32_SetSecurity,
-	SmileInteger32_GetSecurity,
-
-	SmileInteger32_GetProperty,
-	SmileInteger32_SetProperty,
-	SmileInteger32_HasProperty,
-	SmileInteger32_GetPropertyNames,
-
-	SmileInteger32_ToBool,
-	SmileInteger32_ToInteger32,
-	SmileInteger32_ToFloat64,
-	SmileInteger32_ToReal64,
-	SmileInteger32_ToString,
+static struct SmileUnboxedInteger32Int SmileUnboxedInteger32_Instance_Struct = {
+	SMILE_KIND_UNBOXED_INTEGER32,
+	(SmileVTable)&SmileUnboxedInteger32_VTableData,
 };
+
+extern SmileUnboxedInteger32 SmileUnboxedInteger32_Instance = &SmileUnboxedInteger32_Instance_Struct;

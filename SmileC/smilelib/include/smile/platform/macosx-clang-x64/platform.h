@@ -29,6 +29,16 @@ typedef unsigned int UInt32;
 typedef long long Int64;
 typedef unsigned long long UInt64;
 
+typedef struct {
+	unsigned long long hi;
+	unsigned long long lo;
+} UInt128;
+
+typedef struct {
+	long long hi;
+	unsigned long long lo;
+} Int128;
+
 // Portable pointer-casting types.
 typedef UInt64 PtrInt;		// An unsigned integer type that is the same size as a pointer.
 typedef Int64 Int;			// A signed integer type that matches the native platform's "best" register size.
@@ -61,6 +71,9 @@ typedef struct __attribute__((aligned(16))) { UInt64 value[2]; } Real128;
 // How to align data structures in memory.
 #undef SMILE_ALIGN
 #define SMILE_ALIGN(__n__) __attribute__((aligned(n)))
+
+// Pragma warning macros.
+#define SMILE_IGNORE_UNUSED_VARIABLES _Pragma("clang diagnostic ignored \"-Wunused-variable\"")
 
 //------------------------------------------------------------------------------------------------
 //  Entropy.

@@ -10,6 +10,10 @@
 #include <smile/string.h>
 #endif
 
+#ifndef __SMILE_DICT_POINTERSET_H__
+#include <smile/dict/pointerset.h>
+#endif
+
 #ifndef __SMILE_ENV_ENV_H__
 #include <smile/env/env.h>
 #endif
@@ -35,7 +39,6 @@
 /// </summary>
 #define DECLARE_BASE_OBJECT_PROPERTIES \
 	UInt32 kind;	/* What kind of native object this is, from the SMILE_KIND enumeration */ \
-	Symbol assignedSymbol;	/* The symbol assigned to this object (for debugging) */ \
 	SmileVTable vtable;	/* A pointer to this object's virtual table, which must match SMILE_VTABLE_TYPE. */ \
 	SmileObject base	/* A pointer to the "base" object for this object, i.e., the object from which this object inherits any properties. */
 
@@ -45,6 +48,36 @@
 struct SmileObjectInt {
 	DECLARE_BASE_OBJECT_PROPERTIES;
 };
+
+//-------------------------------------------------------------------------------------------------
+//  The argument struct, used for passing objects around in an unboxed form (where appropriate).
+
+/// <summary>
+/// The unboxed portion of an argument, if such a portion exists.  This is at most 64 bits.
+/// </summary>
+typedef union {
+	Bool b;
+	Byte i8;
+	Int16 i16;
+	Int32 i32;
+	Int64 i64;
+	Real32 r32;
+	Real64 r64;
+	Float32 f32;
+	Float64 f64;
+	Symbol symbol;
+} SmileUnboxedData;
+
+/// <summary>
+/// This shape represents a single function argument or local variable.  It consists of a pointer
+/// to a real SmileObject (usually on the heap), and, if that object is unboxed, the unboxed data
+/// immediately adjacent to it.  Note that unlike most other typedefs in the interpreter, the name
+/// SmileArg refers to a STRUCT, not to a pointer to it.
+/// </summary>
+typedef struct {
+	SmileObject obj;	// A pointer to the object instance itself.
+	SmileUnboxedData unboxed;	// Any unboxed data associated with this arg, if this is an unboxed type.
+} SmileArg;
 
 //-------------------------------------------------------------------------------------------------
 //  The virtual table common to all objects.
@@ -70,7 +103,8 @@ struct SmileObjectInt {
 ///	<li>Objects may only be equal if they are of the same SMILE_KIND;</li>
 ///	<li>Equality is commutative; that is, "a == b" has the same meaning as "b == a".</li>
 ///	<li>The equality function must be defined consistent with the hash() function below.</li>
-///	<li>The only object that may equal the Object instance is the Object instance.</li>
+///	<li>The equality function should run in constant time.</li>
+///	<li>The only object that may equal the Primitive instance is the Primitive instance.</li>
 ///	<li>The only object that may equal the Null instance is the Null instance.</li>
 ///	</ul>
 ///	
@@ -83,10 +117,23 @@ struct SmileObjectInt {
 ///			hash(a) == hash(b).</li>
 ///	<li>Hash codes should be as close to uniformly-randomly-distributed as possible.</li>
 ///	</ul>
-///
-/// <hr />
-/// <h4>Security operations:</h4>
-///
+///	
+/// <code>deepEqual</code>:	<p>Compare this object against another object, which could be an object of any type.
+///	Return true if they are logically equal, false if they are not.  This must follow the
+///	rules listed below:</p>
+///	<ul>
+///	<li>Objects may only be equal if they are of the same SMILE_KIND;</li>
+///	<li>Equality is commutative; that is, "a == b" has the same meaning as "b == a".</li>
+///	<li>The equality function must be defined consistent with the hash() function below.</li>
+///	<li>The equality function should attempt to compare all data of both objects,
+///	recursively if necessary, and may run in O(n) time.</li>
+///	<li>The only object that may equal the Primitive instance is the Primitive instance.</li>
+///	<li>The only object that may equal the Null instance is the Null instance.</li>
+///	</ul>
+///	
+/// <hr />	
+/// <h4>Security operations:</h4>	
+///	
 /// <code>setSecurityKey</code>:	<p>Change the security key of this object to be the provided object instance.  Security
 ///	keys allow an object to be locked down to prevent alteration by unauthorized parties.
 ///	Any object may be used as a security key.  By default, all objects start with Null as
@@ -165,10 +212,26 @@ struct SmileObjectInt {
 ///	is used by all of the <code>print</code> methods for outputting objects to streams.
 ///	Despite the fact that is it not intended to be a serialization method, many of the standard
 ///	built-in objects produce strings that are equivalent to a serialized form.</p>
+///	
+/// <hr />	
+/// <h4>Special operations:</h4>	
+///	
+/// <code>call</code>:	<p>Invoke this object as a function.  The number of arguments will be provided directly, and
+///	the arguments themselves will be on the temporary stack of the current closure.</p>
+///
+/// <code>getSourceLocation</code>:	<p>Get the location in the source code where this object was created, if known.</p>
+///	
+/// <code>unbox</code>:	<p>Copy this object into the provided argument container, unboxing it (if
+///	appropriate).  This is the opposite of the 'box' operation, below.</p>
+///	
+/// <code>box</code>:	<p>Copy the given argument container's value onto the heap, boxing it (if necessary)
+///	and returning the boxed value.  This is the opposite of the 'unbox' operation, above.</p>
+///
 /// </remarks>
 #define SMILE_VTABLE_TYPE(__name__, __type__) \
 	__name__ { \
-		Bool (*compareEqual)(__type__ self, SmileObject other); \
+		Bool (*compareEqual)(__type__ self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData); \
+		Bool (*deepEqual)(__type__ self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData, PointerSet visitedPointers); \
 		UInt32 (*hash)(__type__ self); \
 		\
 		void (*setSecurityKey)(__type__ self, SmileObject newSecurityKey, SmileObject oldSecurityKey); \
@@ -180,11 +243,17 @@ struct SmileObjectInt {
 		Bool (*hasProperty)(__type__ self, Symbol propertyName); \
 		SmileList (*getPropertyNames)(__type__ self); \
 		\
-		Bool (*toBool)(__type__ self); \
-		Int32 (*toInteger32)(__type__ self); \
-		Float64 (*toFloat64)(__type__ self); \
-		Real64 (*toReal64)(__type__ self); \
-		String (*toString)(__type__ self); \
+		Bool (*toBool)(__type__ self, SmileUnboxedData unboxedData); \
+		Int32 (*toInteger32)(__type__ self, SmileUnboxedData unboxedData); \
+		Float64 (*toFloat64)(__type__ self, SmileUnboxedData unboxedData); \
+		Real64 (*toReal64)(__type__ self, SmileUnboxedData unboxedData); \
+		String (*toString)(__type__ self, SmileUnboxedData unboxedData); \
+		\
+		void (*call)(__type__ self, Int argc); \
+		LexerPosition (*getSourceLocation)(__type__ self); \
+		\
+		SmileArg (*unbox)(__type__ self); \
+		SmileObject (*box)(SmileArg src); \
 	}
 
 /// <summary>
@@ -253,6 +322,31 @@ struct SmileObjectInt {
 #define SMILE_VCALL2(__obj__, __method__, __arg1__, __arg2__) \
 	((__obj__)->vtable->__method__((SmileObject)(__obj__), __arg1__, __arg2__))
 
+/// <summary>
+/// Perform a virtual call to the given method on the object, passing three arguments.
+/// </summary>
+/// <param name="__obj__">The object whose method you would like to call.</param>
+/// <param name="__arg1__">The first argument to pass to the method.</param>
+/// <param name="__arg2__">The second argument to pass to the method.</param>
+/// <param name="__arg3__">The third argument to pass to the method.</param>
+/// <param name="__method__">The name of the method to call, like "compareEqual" (without quotes).</param>
+/// <returns>The return value from the method.</returns>
+#define SMILE_VCALL3(__obj__, __method__, __arg1__, __arg2__, __arg3__) \
+	((__obj__)->vtable->__method__((SmileObject)(__obj__), __arg1__, __arg2__, __arg3__))
+
+/// <summary>
+/// Perform a virtual call to the given method on the object, passing four arguments.
+/// </summary>
+/// <param name="__obj__">The object whose method you would like to call.</param>
+/// <param name="__arg1__">The first argument to pass to the method.</param>
+/// <param name="__arg2__">The second argument to pass to the method.</param>
+/// <param name="__arg3__">The third argument to pass to the method.</param>
+/// <param name="__arg4__">The fourth argument to pass to the method.</param>
+/// <param name="__method__">The name of the method to call, like "deepEqual" (without quotes).</param>
+/// <returns>The return value from the method.</returns>
+#define SMILE_VCALL4(__obj__, __method__, __arg1__, __arg2__, __arg3__, __arg4__) \
+	((__obj__)->vtable->__method__((SmileObject)(__obj__), __arg1__, __arg2__, __arg3__, __arg4__))
+
 //-------------------------------------------------------------------------------------------------
 //  Declare the core SmileObject itself, its virtual table, and common (external) operations
 //  for working with it.
@@ -260,20 +354,6 @@ struct SmileObjectInt {
 SMILE_VTABLE_TYPE(struct SmileVTableInt, SmileObject);
 
 SMILE_API_DATA SmileVTable SmileObject_VTable;
-
-SMILE_API_FUNC Bool SmileObject_CompareEqual(SmileObject self, SmileObject other);
-SMILE_API_FUNC UInt32 SmileObject_Hash(SmileObject self);
-SMILE_API_FUNC void SmileObject_SetSecurity(SmileObject self, Int security, SmileObject securityKey);
-SMILE_API_FUNC Int SmileObject_GetSecurity(SmileObject self);
-SMILE_API_FUNC SmileObject SmileObject_GetProperty(SmileObject self, Symbol propertyName);
-SMILE_API_FUNC void SmileObject_SetProperty(SmileObject self, Symbol propertyName, SmileObject value);
-SMILE_API_FUNC Bool SmileObject_HasProperty(SmileObject self, Symbol propertyName);
-SMILE_API_FUNC SmileList SmileObject_GetPropertyNames(SmileObject self);
-SMILE_API_FUNC Bool SmileObject_ToBool(SmileObject self);
-SMILE_API_FUNC Int32 SmileObject_ToInteger32(SmileObject self);
-SMILE_API_FUNC Float64 SmileObject_ToFloat64(SmileObject self);
-SMILE_API_FUNC Real64 SmileObject_ToReal64(SmileObject self);
-SMILE_API_FUNC String SmileObject_ToString(SmileObject self);
 
 SMILE_API_FUNC SmileObject SmileObject_Create(void);
 
@@ -286,8 +366,20 @@ SMILE_API_FUNC const char *SmileObject_StringifyToC(SmileObject obj);
 SMILE_API_FUNC Bool SmileObject_IsRegularList(SmileObject list);
 SMILE_API_FUNC Bool SmileObject_ContainsNestedList(SmileObject obj);
 
+SMILE_API_FUNC Bool SmileObject_DeepCompare(SmileObject self, SmileObject other);
+SMILE_API_FUNC Bool SmileArg_DeepCompare(SmileArg self, SmileArg other);
+
 //-------------------------------------------------------------------------------------------------
 //  Inline operations on SmileObject.
+
+Inline Bool SmileObject_Is(SmileObject self, SmileObject possibleParentOrSelf)
+{
+	for (;;) {
+		if (self == possibleParentOrSelf) return True;
+		if (SMILE_KIND(self) == SMILE_KIND_PRIMITIVE) return False;
+		self = self->base;
+	}
+}
 
 Inline Bool SmileObject_IsList(SmileObject self)
 {
@@ -318,6 +410,53 @@ Inline Bool SmileObject_IsSymbol(SmileObject self)
 Inline Bool SmileObject_IsNull(SmileObject self)
 {
 	return SMILE_KIND(self) == SMILE_KIND_NULL;
+}
+
+/// <summary>
+/// Promote a boxed object up to a full function argument.
+/// </summary>
+/// <param name="obj">The object to be wrapped up as a SmileArg (with no unboxed data attached).</param>
+/// <returns>The same object, in a SmileArg wrapper.</returns>
+Inline SmileArg SmileArg_From(SmileObject obj)
+{
+	SmileArg arg;
+	arg.obj = obj;
+	return arg;
+}
+
+/// <summary>
+/// Perform a virtual call to the given argument's special 'box' method, resulting in a real
+/// object on the heap.
+/// </summary>
+/// <param name="arg">The argument containing the object whose 'box' method you would like to call.
+/// This is a SmileArg* (pointer), not a SmileArg (struct).</param>
+/// <returns>The boxed value, as a SmileObject.</returns>
+Inline SmileObject SmileArg_Box(SmileArg arg)
+{
+	if (arg.obj->kind < 0x10)
+		return arg.obj->vtable->box(arg);
+	else
+		return arg.obj;
+}
+
+/// <summary>
+/// Perform a virtual call to the given object's special 'unbox' method, resulting in an argument
+/// that can be pushed onto a call stack.
+///
+/// Warning: The behavior of this function is UNDEFINED if the object refers to the special instance
+///          of an already-unboxed object.  Do not call this if the object is already unboxed.
+/// </summary>
+/// <param name="obj">The object whose 'unbox' method you would like to call.</param>
+/// <returns>The possibly-unboxed value, as a SmileArg.</returns>
+Inline SmileArg SmileArg_Unbox(SmileObject obj)
+{
+	if (obj->kind < 0x20)
+		return obj->vtable->unbox(obj);
+	else {
+		SmileArg dest;
+		dest.obj = obj;
+		return dest;
+	}
 }
 
 #endif

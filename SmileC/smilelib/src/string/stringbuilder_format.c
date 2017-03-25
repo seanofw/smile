@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -227,8 +227,9 @@ void StringBuilder_AppendFormatInternal(StringBuilder stringBuilder, const Byte 
 				{
 					// C-style nul-terminated 8-bit string.
 					const char *src = va_arg(v, const char *);
-					if (src == NULL) continue;
-					StringBuilder_AppendC(stringBuilder, src, 0, StrLen(src));
+					if (src != NULL) {
+						StringBuilder_AppendC(stringBuilder, src, 0, StrLen(src));
+					}
 				}
 				break;
 
@@ -236,8 +237,9 @@ void StringBuilder_AppendFormatInternal(StringBuilder stringBuilder, const Byte 
 				{
 					// String object.
 					const String src = va_arg(v, const String);
-					if (src == NULL) continue;
-					StringBuilder_AppendString(stringBuilder, src);
+					if (src != NULL) {
+						StringBuilder_AppendString(stringBuilder, src);
+					}
 				}
 				break;
 

@@ -40,11 +40,13 @@ typedef enum {
 // Parser-internal methods
 
 SMILE_INTERNAL_FUNC ParseError Parser_ParseScope(Parser parser, SmileObject *expr);
+SMILE_INTERNAL_FUNC SmileObject Parser_ParseScopeBody(Parser parser);
 SMILE_INTERNAL_FUNC void Parser_ParseExprsOpt(Parser parser, SmileList *head, SmileList *tail, Int modeFlags);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseExpr(Parser parser, SmileObject *expr, Int modeFlags);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseStmt(Parser parser, SmileObject *expr, Int modeFlags);
 
 SMILE_INTERNAL_FUNC ParseError Parser_ParseVarDecls(Parser parser, SmileObject *expr, Int modeFlags, Int declKind);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseKeywordList(Parser parser, SmileObject *expr);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseDecl(Parser parser, SmileObject *expr, Int modeFlags, Int declKind);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseOpEquals(Parser parser, SmileObject *expr, Int modeFlags);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseEquals(Parser parser, SmileObject *expr, Int modeFlags);
@@ -84,6 +86,14 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *ex
 SMILE_INTERNAL_FUNC CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, Int modeFlags, Symbol syntaxClassSymbol,
 	Int syntaxRootMode, Symbol rootSkipSymbol, ParseError *parseError);
 
+SMILE_INTERNAL_FUNC ParseError Parser_ParseClassicFn(Parser parser, SmileObject *result, LexerPosition startPosition);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseQuoteBody(Parser parser, SmileObject *result, Int modeFlags, LexerPosition startPosition);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseClassicQuote(Parser parser, SmileObject *result, LexerPosition startPosition);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseClassicScope(Parser parser, SmileObject *result, LexerPosition startPosition);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseClassicTill(Parser parser, SmileObject *result, LexerPosition startPosition);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseClassicNew(Parser parser, SmileObject *result, LexerPosition startPosition);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseClassicSet(Parser parser, SmileObject *result, LexerPosition startPosition);
+
 SMILE_INTERNAL_FUNC Token Parser_Recover(Parser parser, Int *tokenKinds, Int numTokenKinds);
 SMILE_INTERNAL_FUNC Bool Parser_IsLValue(SmileObject obj);
 SMILE_INTERNAL_FUNC Bool Parser_HasEqualLookahead(Parser parser);
@@ -91,11 +101,17 @@ SMILE_INTERNAL_FUNC Bool Parser_HasEqualOrColonLookahead(Parser parser);
 SMILE_INTERNAL_FUNC Bool Parser_HasLookahead(Parser parser, Int tokenKind);
 SMILE_INTERNAL_FUNC Bool Parser_Has2Lookahead(Parser parser, Int tokenKind1, Int tokenKind2);
 SMILE_INTERNAL_FUNC Bool Parser_Peek2(Parser parser, Token *token1, Token *token2);
+SMILE_INTERNAL_FUNC ParseError Parser_ExpectLeftBracket(Parser parser, SmileObject *result,
+	Token firstUnaryTokenForErrorReporting, const char *name, LexerPosition startPosition);
+SMILE_INTERNAL_FUNC ParseError Parser_ExpectRightBracket(Parser parser, SmileObject *result,
+	Token firstUnaryTokenForErrorReporting, const char *name, LexerPosition startPosition);
 
 SMILE_INTERNAL_DATA Int Parser_BracesBracketsParenthesesBar_Recovery[];
 SMILE_INTERNAL_DATA Int Parser_BracesBracketsParenthesesBar_Count;
 SMILE_INTERNAL_DATA Int Parser_RightBracesBracketsParentheses_Recovery[];
 SMILE_INTERNAL_DATA Int Parser_RightBracesBracketsParentheses_Count;
+
+SMILE_INTERNAL_DATA SmileObject Parser_IgnorableObject;
 
 //-------------------------------------------------------------------------------------------------
 // Inline helper methods
@@ -155,6 +171,58 @@ Inline Token Parser_NextToken(Parser parser)
 			}
 			token->kind = ParseScope_IsDeclared(parser->currentScope, token->data.symbol) ? TOKEN_PUNCTNAME : TOKEN_UNKNOWNPUNCTNAME;
 			break;
+	}
+
+	return token;
+}
+
+/// <summary>
+/// Read the next token from the input stream.  If the token is an identifier, correctly map
+/// it to its declaration (or lack thereof) in the current scope.
+/// </summary>
+/// <param name="parser">The parser instance.</param>
+/// <param name="parseDecl">The declaration for this token, if it is a declared token.</param>
+/// <returns>The next token in the input stream.</returns>
+Inline Token Parser_NextTokenWithDeclaration(Parser parser, ParseDecl *parseDecl)
+{
+	Token token;
+	Symbol symbol;
+	ParseDecl decl;
+
+	Lexer_Next(parser->lexer);
+	token = parser->lexer->token;
+
+	switch (token->kind) {
+
+	case TOKEN_ALPHANAME:
+	case TOKEN_UNKNOWNALPHANAME:
+		if (token->data.symbol == 0) {
+			token->data.symbol = symbol = SymbolTable_GetSymbol(Smile_SymbolTable, token->text);
+		}
+		else {
+			symbol = token->data.symbol;
+		}
+		decl = ParseScope_FindDeclaration(parser->currentScope, token->data.symbol);
+		token->kind = decl != NULL ? TOKEN_ALPHANAME : TOKEN_UNKNOWNALPHANAME;
+		*parseDecl = decl;
+		break;
+
+	case TOKEN_PUNCTNAME:
+	case TOKEN_UNKNOWNPUNCTNAME:
+		if (token->data.symbol == 0) {
+			token->data.symbol = symbol = SymbolTable_GetSymbol(Smile_SymbolTable, token->text);
+		}
+		else {
+			symbol = token->data.symbol;
+		}
+		decl = ParseScope_FindDeclaration(parser->currentScope, token->data.symbol);
+		token->kind = decl != NULL ? TOKEN_PUNCTNAME : TOKEN_UNKNOWNPUNCTNAME;
+		*parseDecl = decl;
+		break;
+	
+	default:
+		*parseDecl = NULL;
+		break;
 	}
 
 	return token;

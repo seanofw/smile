@@ -15,10 +15,10 @@
 //-------------------------------------------------------------------------------------------------
 //  Parse-message kinds.
 
-#define PARSEMESSAGE_INFO		0		// A helpful informational message
-#define PARSEMESSAGE_WARNING	1		// A warning about possible undesirable behavior
-#define PARSEMESSAGE_ERROR		2		// An error in source code
-#define PARSEMESSAGE_FATAL		3		// A fatal error that has caused the parser to abort
+#define PARSEMESSAGE_INFO	0	// A helpful informational message
+#define PARSEMESSAGE_WARNING	1	// A warning about possible undesirable behavior
+#define PARSEMESSAGE_ERROR	2	// An error in source code
+#define PARSEMESSAGE_FATAL	3	// A fatal error that has caused the parser to abort
 
 //-------------------------------------------------------------------------------------------------
 //  Parse messages.
@@ -54,9 +54,8 @@ Inline ParseMessage ParseMessage_Create(Int messageKind, LexerPosition position,
 	ParseMessage parseMessage = GC_MALLOC_STRUCT(struct ParseMessageStruct);
 
 	parseMessage->kind = SMILE_KIND_PARSEMESSAGE;
-	parseMessage->base = Smile_KnownObjects.Object;
+	parseMessage->base = (SmileObject)Smile_KnownBases.Object;
 	parseMessage->vtable = ParseMessage_VTable;
-	parseMessage->assignedSymbol = 0;
 
 	parseMessage->messageKind = messageKind;
 	parseMessage->position = position;

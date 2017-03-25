@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -23,11 +23,14 @@ STATIC_STRING(ObjectString, "Object");
 STATIC_STRING(true_, "true");
 STATIC_STRING(false_, "false");
 STATIC_STRING(InvalidSecurityKey, "Invalid security key.");
+STATIC_STRING(invalidFunctionError, "Object is not a callable function.");
 
-void KnownStrings_Preload(struct KnownStringsStruct *knownStrings)
+void KnownStrings_Setup(struct KnownStringsStruct *knownStrings)
 {
 	knownStrings->Object = SmileString_Create(ObjectString);
 	knownStrings->true_ = SmileString_Create(true_);
 	knownStrings->false_ = SmileString_Create(false_);
 	knownStrings->InvalidSecurityKey = SmileString_Create(InvalidSecurityKey);
+
+	knownStrings->invalidFunctionError = invalidFunctionError;
 }

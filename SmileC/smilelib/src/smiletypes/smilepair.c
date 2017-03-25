@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -26,14 +26,16 @@
 
 SMILE_EASY_OBJECT_VTABLE(SmilePair);
 
-SMILE_EASY_OBJECT_NO_SECURITY(SmilePair);
+SMILE_EASY_OBJECT_READONLY_SECURITY(SmilePair);
 SMILE_EASY_OBJECT_NO_REALS(SmilePair);
+SMILE_EASY_OBJECT_NO_CALL(SmilePair);
+SMILE_EASY_OBJECT_NO_UNBOX(SmilePair)
 
 SmilePair SmilePair_Create(SmileObject left, SmileObject right)
 {
 	SmilePair smilePair = GC_MALLOC_STRUCT(struct SmilePairInt);
 	if (smilePair == NULL) Smile_Abort_OutOfMemory();
-	smilePair->base = Smile_KnownObjects.Object;
+	smilePair->base = (SmileObject)Smile_KnownBases.Pair;
 	smilePair->kind = SMILE_KIND_PAIR | SMILE_SECURITY_WRITABLE;
 	smilePair->vtable = SmilePair_VTable;
 	smilePair->left = left;
@@ -45,7 +47,7 @@ SmilePair SmilePair_CreateWithSource(SmileObject left, SmileObject right, LexerP
 {
 	struct SmilePairWithSourceInt *smilePair = GC_MALLOC_STRUCT(struct SmilePairWithSourceInt);
 	if (smilePair == NULL) Smile_Abort_OutOfMemory();
-	smilePair->base = Smile_KnownObjects.Object;
+	smilePair->base = (SmileObject)Smile_KnownBases.Pair;
 	smilePair->kind = SMILE_KIND_PAIR | SMILE_SECURITY_WRITABLE | SMILE_FLAG_WITHSOURCE;
 	smilePair->vtable = SmilePair_VTable;
 	smilePair->left = left;
@@ -54,22 +56,37 @@ SmilePair SmilePair_CreateWithSource(SmileObject left, SmileObject right, LexerP
 	return (SmilePair)smilePair;
 }
 
-static Bool SmilePair_CompareEqual(SmilePair self, SmileObject other)
+static Bool SmilePair_CompareEqual(SmilePair self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData)
 {
-	SmilePair otherPair;
+	UNUSED(selfData);
+	UNUSED(otherData);
+	return (SmileObject)self == other;
+}
 
-	if (SMILE_KIND(other) != SMILE_KIND_PAIR)
-		return False;
+static Bool SmilePair_DeepEqual(SmilePair self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData, PointerSet visitedPointers)
+{
+	UNUSED(selfData);
+	UNUSED(otherData);
 
-	otherPair = (SmilePair)other;
+	for (;;) {
+		if (SMILE_KIND(other) != SMILE_KIND(self)) return False;
 
-	if (!SMILE_VCALL1(self->left, compareEqual, otherPair->left))
-		return False;
+		if (PointerSet_Add(visitedPointers, self->left)) {
+			if (!SMILE_VCALL4(self->left, deepEqual, (SmileUnboxedData){ 0 }, ((SmilePair)other)->left, (SmileUnboxedData){ 0 }, visitedPointers))
+				return False;
+		}
 
-	if (!SMILE_VCALL1(self->right, compareEqual, otherPair->right))
-		return False;
+		if (PointerSet_Add(visitedPointers, self->right)) {
+			if (SMILE_KIND(self->right) != SMILE_KIND_PAIR) {
+				if (!SMILE_VCALL4(self->right, deepEqual, (SmileUnboxedData){ 0 }, ((SmilePair)other)->right, (SmileUnboxedData){ 0 }, visitedPointers))
+					return False;
+				return True;
+			}
+		}
 
-	return True;
+		self = (SmilePair)self->right;
+		other = ((SmilePair)other)->right;
+	}
 }
 
 static UInt32 SmilePair_Hash(SmilePair self)
@@ -119,25 +136,42 @@ static SmileList SmilePair_GetPropertyNames(SmilePair self)
 	return head;
 }
 
-static Bool SmilePair_ToBool(SmilePair self)
+static Bool SmilePair_ToBool(SmilePair self, SmileUnboxedData unboxedData)
 {
 	UNUSED(self);
+	UNUSED(unboxedData);
 	return True;
 }
 
-static Int32 SmilePair_ToInteger32(SmilePair self)
+static Int32 SmilePair_ToInteger32(SmilePair self, SmileUnboxedData unboxedData)
 {
 	UNUSED(self);
+	UNUSED(unboxedData);
 	return 1;
 }
 
-static String SmilePair_ToString(SmilePair self)
+static String SmilePair_ToString(SmilePair self, SmileUnboxedData unboxedData)
 {
+	UNUSED(unboxedData);
+
 	if (self->right->kind == SMILE_KIND_SYMBOL
 		&& self->left->kind <= SMILE_KIND_FUNCTION) {
-		return String_Format("%S.%S", SMILE_VCALL(self->left, toString), SMILE_VCALL(self->right, toString));
+		return String_Format("%S.%S",
+			SMILE_VCALL1(self->left, toString, (SmileUnboxedData){ 0 }),
+			SMILE_VCALL1(self->right, toString, (SmileUnboxedData){ 0 }));
 	}
 	else {
-		return String_Format("(%S . %S)", SMILE_VCALL(self->left, toString), SMILE_VCALL(self->right, toString));
+		return String_Format("(%S . %S)",
+			SMILE_VCALL1(self->left, toString, (SmileUnboxedData){ 0 }),
+			SMILE_VCALL1(self->right, toString, (SmileUnboxedData){ 0 }));
 	}
+}
+
+static LexerPosition SmilePair_GetSourceLocation(SmilePair pair)
+{
+	if (pair->kind & SMILE_FLAG_WITHSOURCE) {
+		struct SmilePairWithSourceInt *pairWithSource = (struct SmilePairWithSourceInt *)pair;
+		return pairWithSource->position;
+	}
+	else return NULL;
 }

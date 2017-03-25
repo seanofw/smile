@@ -70,6 +70,7 @@
       <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4996</DisableSpecificWarnings>
       <MultiProcessorCompilation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</MultiProcessorCompilation>
       <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</MinimalRebuild>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</TreatWarningAsError>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -113,9 +114,13 @@
   <ItemGroup>
     <ClCompile Include="ansicolor-w32.c" />
     <ClCompile Include="dict\int32dict_tests.c" />
+    <ClCompile Include="dict\pointerset_tests.c" />
     <ClCompile Include="dict\stringdict_tests.c" />
     <ClCompile Include="dict\stringintdict_tests.c" />
     <ClCompile Include="env\symboltable_tests.c" />
+    <ClCompile Include="eval\bytecode_tests.c" />
+    <ClCompile Include="eval\compiler_tests.c" />
+    <ClCompile Include="eval\eval_tests.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="numeric\real128_tests.c" />
     <ClCompile Include="numeric\real32_tests.c" />
@@ -127,6 +132,7 @@
     <ClCompile Include="parsing\lexer\lexerpunctuation_tests.c" />
     <ClCompile Include="parsing\lexer\lexerstring_tests.c" />
     <ClCompile Include="parsing\lexer\lexerunicode_tests.c" />
+    <ClCompile Include="parsing\parser\parserclassic_tests.c" />
     <ClCompile Include="parsing\parser\parsercore_tests.c" />
     <ClCompile Include="parsing\parser\parserfunc_tests.c" />
     <ClCompile Include="parsing\parser\parsernew_tests.c" />

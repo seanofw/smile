@@ -126,6 +126,9 @@ SMILE_API_FUNC Bool String_ParseInteger(const String str, Int numericBase, Int64
 SMILE_API_FUNC Bool String_ParseReal(const String str, Int numericBase, Real128 *result);
 SMILE_API_FUNC Bool String_ParseFloat(const String str, Int numericBase, Float64 *result);
 
+SMILE_API_FUNC String String_CreateFromInteger(Int64 value, Int numericBase, Bool includeSign);
+SMILE_API_FUNC String String_CreateFromUnsignedInteger(UInt64 value, Int numericBase);
+
 //-------------------------------------------------------------------------------------------------
 //  External parts of the implementation (Unicode support)
 

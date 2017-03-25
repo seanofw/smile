@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter (Command-Line Runner)
-//  Copyright 2004-2016 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -28,5 +28,6 @@
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/parsing/lexer.h>
 #include <smile/parsing/parser.h>
+#include <smile/eval/eval.h>
 
 #endif

@@ -96,6 +96,21 @@
     <ClCompile Include="parsing\parser\parsersyntax_validate_tests.c">
       <Filter>parsing\parser</Filter>
     </ClCompile>
+    <ClCompile Include="eval\bytecode_tests.c">
+      <Filter>eval</Filter>
+    </ClCompile>
+    <ClCompile Include="eval\compiler_tests.c">
+      <Filter>eval</Filter>
+    </ClCompile>
+    <ClCompile Include="eval\eval_tests.c">
+      <Filter>eval</Filter>
+    </ClCompile>
+    <ClCompile Include="parsing\parser\parserclassic_tests.c">
+      <Filter>parsing\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="dict\pointerset_tests.c">
+      <Filter>dict</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
