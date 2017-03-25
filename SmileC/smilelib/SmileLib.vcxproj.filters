@@ -885,6 +885,9 @@
     <ClCompile Include="src\parsing\parser\parsetill.c">
       <Filter>src\parsing\parser</Filter>
     </ClCompile>
+    <ClCompile Include="src\dict\pointerset.c">
+      <Filter>src\dict</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">
@@ -1219,6 +1222,9 @@
     </ClInclude>
     <ClInclude Include="include\smile\eval\compiler_internal.h">
       <Filter>include\eval</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\dict\pointerset.h">
+      <Filter>include\dict</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

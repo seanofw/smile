@@ -114,6 +114,7 @@
   <ItemGroup>
     <ClCompile Include="ansicolor-w32.c" />
     <ClCompile Include="dict\int32dict_tests.c" />
+    <ClCompile Include="dict\pointerset_tests.c" />
     <ClCompile Include="dict\stringdict_tests.c" />
     <ClCompile Include="dict\stringintdict_tests.c" />
     <ClCompile Include="env\symboltable_tests.c" />

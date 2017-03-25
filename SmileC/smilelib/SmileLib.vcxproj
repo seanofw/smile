@@ -128,6 +128,7 @@
     <ClInclude Include="include\smile\atomic.h" />
     <ClInclude Include="include\smile\bittwiddling.h" />
     <ClInclude Include="include\smile\dict\int32int32dict.h" />
+    <ClInclude Include="include\smile\dict\pointerset.h" />
     <ClInclude Include="include\smile\dict\vardict.h" />
     <ClInclude Include="include\smile\env\env.h" />
     <ClInclude Include="include\smile\env\knownbases.h" />
@@ -754,6 +755,7 @@
     </Text>
     <ClCompile Include="src\dict\dictstats.c" />
     <ClCompile Include="src\dict\int32int32dict.c" />
+    <ClCompile Include="src\dict\pointerset.c" />
     <ClCompile Include="src\dict\vardict.c" />
     <ClCompile Include="src\env\global.c" />
     <ClCompile Include="src\env\knownbases.c" />
