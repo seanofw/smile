@@ -11,7 +11,16 @@
 // may trigger them during normal operations.
 #define GC_IGNORE_WARN
 
+#if defined(_MSC_VER) && _MSC_VER >= 1900
+#pragma warning(push)
+#pragma warning(disable: 4464)
+#endif
+
 #include "../../gc/include/gc.h"
+
+#if defined(_MSC_VER) && _MSC_VER >= 1900
+#pragma warning(pop)
+#endif
 
 /// <summary>Allocate a raw array of the given type.  Raw arrays must not contain pointers within them,
 /// so they are more efficient for garbage collection than structured arrays.</summary>
