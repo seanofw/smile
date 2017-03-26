@@ -29,8 +29,6 @@
 #include <smile/smiletypes/smilepair.h>
 #include <smile/smiletypes/smilebool.h>
 
-STATIC_STRING(TestFilename, "test.sm");
-
 TEST_SUITE(EvalTests)
 
 static CompiledTables Compile(const char *text)
@@ -48,7 +46,7 @@ static CompiledTables Compile(const char *text)
 
 	source = String_FromC(text);
 
-	lexer = Lexer_Create(source, 0, String_Length(source), TestFilename, 1, 1);
+	lexer = Lexer_Create(source, 0, String_Length(source), GetTestScriptName(), 1, 1);
 	lexer->symbolTable = Smile_SymbolTable;
 
 	globalClosureInfo = ClosureInfo_Create(NULL, CLOSURE_KIND_GLOBAL);
@@ -432,7 +430,7 @@ START_TEST(UserFunctionsCanHaveRestParameters)
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_STRING);
-	ASSERT_STRING((String)&((SmileString)result->value)->string, "40 50 60", 8);
+	ASSERT_STRING(SmileString_GetString((SmileString)result->value), "40 50 60", 8);
 }
 END_TEST
 

@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 5980a7f7364238028b4f32052b4e63e8
+// SourceHash: d4dd8600ee513e60f367c978ba59248e
 
 START_TEST_SUITE(LexerLoanwordTests)
 {

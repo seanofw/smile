@@ -129,7 +129,6 @@ Inline Int32 ParseHtmlNamedEntity(const Byte *text, Int length, Int *index)
 {
 	Int start, i;
 	Byte ch;
-	struct StringInt name;
 	Int32 value;
 
 	i = *index;
@@ -150,9 +149,7 @@ Inline Int32 ParseHtmlNamedEntity(const Byte *text, Int length, Int *index)
 	}
 	else {
 		// See if this is a name we've heard of by looking it up in the table (quickly).
-		name.text = (Byte *)text + start;
-		name.length = i - start;
-		value = HtmlEntityNameToValue((String)&name);
+		value = HtmlEntityNameToValue((Byte *)text + start, i - start);
 
 		// Return the code for that known name.
 		*index = i;

@@ -13,25 +13,35 @@
 #include <smile/array.h>
 #endif
 
-//-------------------------------------------------------------------------------------------------
-//  Internal types
+#ifndef __SMILE_SMILETYPES_PREDECL_H__
+#include <smile/smiletypes/predecl.h>
+#endif
 
-/// <summary>
-/// The internal implementation of a String.
-/// </summary>
-struct StringInt {
-	Byte *text;				// A pointer to the actual bytes of the string (nul-terminated).
-	Int length;				// The length of the text array (in bytes, not Unicode code points).
-};
+#ifndef __SMILE_SMILETYPES_KIND_H__
+#include <smile/smiletypes/kind.h>
+#endif
 
 //-------------------------------------------------------------------------------------------------
 //  Public type declarations
 
+// Predeclare these two types.  We can't simply #include "smileobject.h" to get them
+// because that file needs to include this file!
+struct SmileVTableInt;
+struct SmileObjectInt;
+
 /// <summary>
 /// A String, which is an IMMUTABLE array of characters, with many functions to operate on it.
+/// Strings are also real Smile objects, with a virtual table and base pointer.
 /// </summary>
 typedef struct StringStruct {
-	struct StringInt _opaque;
+	UInt32 kind;	// What kind of native object this is, from the SMILE_KIND enumeration
+	struct SmileVTableInt *vtable;	// A pointer to this object's virtual table, which must match SMILE_VTABLE_TYPE.
+	struct SmileObjectInt *base;	// A pointer to the String base object.
+
+	struct {
+		Int length;	// The length of the text array (in bytes, not Unicode code points).
+		Byte text[1024];	// The actual bytes of the string (nul-terminated).  Not actually an array of 1024 bytes, either.
+	} _opaque;
 } *String;
 
 /// <summary>
@@ -66,6 +76,7 @@ SMILE_API_FUNC String String_Join(const String glue, const String *strs, Int num
 SMILE_API_FUNC String String_SlashAppend(const String *strs, Int numStrs);
 
 SMILE_API_FUNC Bool String_Equals(const String str, const String other);
+SMILE_API_FUNC Bool String_EqualsInternal(const String str, const Byte *otherText, Int otherLength);
 SMILE_API_FUNC Int String_Compare(const String a, const String b);
 SMILE_API_FUNC Int String_CompareRange(const String a, Int astart, Int alength, const String b, Int bstart, Int blength);
 
@@ -193,6 +204,13 @@ SMILE_API_FUNC String String_ConvertKnownCodePageToUtf8Range(const String str, I
 //-------------------------------------------------------------------------------------------------
 //  Inline parts of the implementation
 
+// Foreign reference to String's VTable so that we can statically instantiate strings.
+struct SmileString_VTableInt;
+SMILE_API_DATA struct SmileString_VTableInt SmileString_VTableData;
+
+// Foreign reference to String's base object so that we can statically instantiate strings.
+SMILE_API_DATA struct SmileUserObjectInt SmileString_BaseObjectStruct;
+
 /// <summary>
 /// Declare a static string, preallocated in const (readonly) memory, rather than on the heap.
 /// </summary>
@@ -200,7 +218,10 @@ SMILE_API_FUNC String String_ConvertKnownCodePageToUtf8Range(const String str, I
 /// <param name="__text__">A C-style string that contains the static text.</param>
 /// <param name="__textLength__">The number of bytes in the C-style string, not including the terminating nul character.</param>
 #define EXTERN_STATIC_STRING(__name__, __text__) \
-	static struct StringInt __name__##Struct = { (Byte *)(__text__), (sizeof(__text__) - 1) }; \
+	static struct StringStruct __name__##Struct = { \
+		SMILE_KIND_STRING, (SmileVTable)&SmileString_VTableData, (SmileObject)&SmileString_BaseObjectStruct, \
+		{ (sizeof(__text__) - 1), (__text__) } \
+	}; \
 	String __name__ = (String)(&__name__##Struct)
 
 /// <summary>
@@ -210,37 +231,21 @@ SMILE_API_FUNC String String_ConvertKnownCodePageToUtf8Range(const String str, I
 /// <param name="__name__">The name of the static string instance to declare.</param>
 /// <param name="__text__">A C-style string that contains the static text.</param>
 #define STATIC_STRING(__name__, __text__) \
-	static struct StringInt __name__##Struct = { (Byte *)(__text__), (sizeof(__text__) - 1) }; \
+	static struct StringStruct __name__##Struct = { \
+		SMILE_KIND_STRING, (SmileVTable)&SmileString_VTableData, (SmileObject)&SmileString_BaseObjectStruct, \
+		{ (sizeof(__text__) - 1), (__text__) } \
+	}; \
 	static String __name__ = (String)(&__name__##Struct)
-
-/// <summary>
-/// Declare a local variable that quickly and efficiently wraps a C-style string.
-/// </summary>
-/// <param name="__name__">The name of the string instance to declare.</param>
-#define DECLARE_TEMP_C_STRING(__name__) \
-	struct StringInt __name__##Struct; \
-	String __name__ = (String)(&__name__##Struct)
-
-/// <summary>
-/// Initialize a local variable that quickly and efficiently wraps a C-style string.
-/// </summary>
-/// <param name="__name__">The name of the string instance to wrap.</param>
-/// <param name="__text__">A C-style string that contains the text.</param>
-#define INIT_TEMP_C_STRING(__name__, __text__) \
-	(__name__##Struct.text = (Byte *)(__text__), \
-	 __name__##Struct.length = StrLen((const char *)__text__))
 
 /// <summary>
 /// Retrieve a byte from the string at the given index.  The index must
 /// be valid, or you may read past the end of the string.
 /// </summary>
-/// <param name="str">The string to read one byte from.</param>
-/// <param name="index">The index within that string of the byte to read.</param>
+/// <param name="__str__">The string to read one byte from.</param>
+/// <param name="__index__">The index within that string of the byte to read.</param>
 /// <returns>The byte at the given index.</returns>
-Inline Byte String_At(const String str, Int index)
-{
-	return ((struct StringInt *)str)->text[index];
-}
+#define String_At(__str__, __index__) \
+	((const Byte)(__str__)->_opaque.text[(__index__)])
 
 /// <summary>
 /// Retrieve a pointer to the underlying byte array in the string.  Note that strings
@@ -249,12 +254,10 @@ Inline Byte String_At(const String str, Int index)
 /// but may legally contain nul (zero) values within them; you should use String_Length()
 /// to get the actual length of the string.
 /// </summary>
-/// <param name="str">The string to obtain the raw bytes of.</param>
+/// <param name="__str__">The string to obtain the raw bytes of.</param>
 /// <returns>The raw bytes of the string.</returns>
-Inline const Byte *String_GetBytes(const String str)
-{
-	return ((struct StringInt *)str)->text;
-}
+#define String_GetBytes(__str__) \
+	((const Byte *)(__str__)->_opaque.text)
 
 /// <summary>
 /// Retrieve a pointer to the underlying byte array in the string.  Note that strings
@@ -263,22 +266,18 @@ Inline const Byte *String_GetBytes(const String str)
 /// but may legally contain nul (zero) values within them; you should use String_Length()
 /// to get the actual length of the string.
 /// </summary>
-/// <param name="str">The string to obtain the raw bytes of.</param>
+/// <param name="__str__">The string to obtain the raw bytes of.</param>
 /// <returns>The raw bytes of the string.</returns>
-Inline const char *String_ToC(const String str)
-{
-	return (const char *)((struct StringInt *)str)->text;
-}
+#define String_ToC(__str__) \
+	((const char *)(__str__)->_opaque.text)
 
 /// <summary>
 /// Get the length of the given string, in bytes.
 /// </summary>
 /// <param name="str">The string to obtain the length of.</param>
 /// <returns>The length of that string.</returns>
-Inline Int String_Length(const String str)
-{
-	return ((const struct StringInt *)str)->length;
-}
+#define String_Length(__str__) \
+	((const Int)(__str__)->_opaque.length)
 
 /// <summary>
 /// Create a String instance from a C-style (nul-terminated) string.
@@ -298,7 +297,7 @@ Inline String String_FromC(const char *text)
 /// valid string with content.</returns>
 Inline Bool String_IsNullOrEmpty(const String str)
 {
-	return str == NULL || ((const struct StringInt *)str)->length == 0;
+	return str == NULL || String_Length(str) == 0;
 }
 
 /// <summary>
@@ -308,7 +307,18 @@ Inline Bool String_IsNullOrEmpty(const String str)
 /// <returns>A reasonably-unique hash value for that string.</returns>
 Inline UInt32 String_Hash(const String str)
 {
-	return Smile_Hash(((const struct StringInt *)str)->text, ((const struct StringInt *)str)->length);
+	return Smile_Hash(str->_opaque.text, String_Length(str));
+}
+
+/// <summary>
+/// Compute a 32-bit hash code for the given string bytes.
+/// </summary>
+/// <param name="text">The text of the string to hash.</param>
+/// <param name="length">The length of the text of the string to hash.</param>
+/// <returns>A reasonably-unique hash value for that string.</returns>
+Inline UInt32 String_HashInternal(const Byte *text, Int length)
+{
+	return Smile_Hash(text, length);
 }
 
 /// <summary>
@@ -318,7 +328,7 @@ Inline UInt32 String_Hash(const String str)
 /// <returns>A reasonably-unique hash value for that string.</returns>
 Inline UInt64 String_Hash64(const String str)
 {
-	return Smile_Hash64(((const struct StringInt *)str)->text, ((const struct StringInt *)str)->length);
+	return Smile_Hash64(str->_opaque.text, String_Length(str));
 }
 
 /// <summary>
@@ -339,7 +349,7 @@ Inline Bool String_Contains(const String str, const String pattern)
 /// <returns>The whole string converted to lowercase.</returns>
 Inline String String_ToLower(const String str)
 {
-	return str != NULL ? String_ToLowerRange(str, 0, ((const struct StringInt *)str)->length) : (String )str;
+	return str != NULL ? String_ToLowerRange(str, 0, String_Length(str)) : (String )str;
 }
 
 /// <summary>
@@ -349,7 +359,7 @@ Inline String String_ToLower(const String str)
 /// <returns>The whole string converted to titlecase.</returns>
 Inline String String_ToTitle(const String str)
 {
-	return str != NULL ? String_ToTitleRange(str, 0, ((const struct StringInt *)str)->length) : (String )str;
+	return str != NULL ? String_ToTitleRange(str, 0, String_Length(str)) : (String )str;
 }
 
 /// <summary>
@@ -359,7 +369,7 @@ Inline String String_ToTitle(const String str)
 /// <returns>The whole string converted to uppercase.</returns>
 Inline String String_ToUpper(const String str)
 {
-	return str != NULL ? String_ToUpperRange(str, 0, ((const struct StringInt *)str)->length) : (String )str;
+	return str != NULL ? String_ToUpperRange(str, 0, String_Length(str)) : (String )str;
 }
 
 /// <summary>
@@ -369,7 +379,7 @@ Inline String String_ToUpper(const String str)
 /// <returns>The whole string, case-folded.</returns>
 Inline String String_CaseFold(const String str)
 {
-	return str != NULL ? String_CaseFoldRange(str, 0, ((const struct StringInt *)str)->length) : (String )str;
+	return str != NULL ? String_CaseFoldRange(str, 0, String_Length(str)) : (String )str;
 }
 
 /// <summary>
@@ -380,7 +390,7 @@ Inline String String_CaseFold(const String str)
 /// <returns>The whole string, decomposed.</returns>
 Inline String String_Decompose(const String str)
 {
-	return str != NULL ? String_DecomposeRange(str, 0, ((const struct StringInt *)str)->length) : (String )str;
+	return str != NULL ? String_DecomposeRange(str, 0, String_Length(str)) : (String )str;
 }
 
 /// <summary>
@@ -391,7 +401,7 @@ Inline String String_Decompose(const String str)
 /// <returns>The whole string, composed.</returns>
 Inline String String_Compose(const String str)
 {
-	return str != NULL ? String_ComposeRange(str, 0, ((const struct StringInt *)str)->length) : (String )str;
+	return str != NULL ? String_ComposeRange(str, 0, String_Length(str)) : (String )str;
 }
 
 /// <summary>
@@ -401,7 +411,7 @@ Inline String String_Compose(const String str)
 /// <returns>The whole string, normalized.</returns>
 Inline String String_Normalize(const String str)
 {
-	return str != NULL ? String_NormalizeRange(str, 0, ((const struct StringInt *)str)->length) : (String )str;
+	return str != NULL ? String_NormalizeRange(str, 0, String_Length(str)) : (String )str;
 }
 
 /// <summary>
@@ -414,7 +424,7 @@ Inline String String_Normalize(const String str)
 /// <returns>The whole string, converted to that code page.</returns>
 Inline String String_ConvertUtf8ToCodePage(const String str, const Byte **utf8ToCodePageTables, Int numTables)
 {
-	return str != NULL ? String_ConvertUtf8ToCodePageRange(str, 0, ((const struct StringInt *)str)->length, utf8ToCodePageTables, numTables) : (String )str;
+	return str != NULL ? String_ConvertUtf8ToCodePageRange(str, 0, String_Length(str), utf8ToCodePageTables, numTables) : (String )str;
 }
 
 /// <summary>
@@ -425,7 +435,7 @@ Inline String String_ConvertUtf8ToCodePage(const String str, const Byte **utf8To
 /// <returns>The whole string, converted to UTF-8.</returns>
 Inline String String_ConvertCodePageToUtf8(const String str, const UInt16 *codePageToUtf8Table)
 {
-	return str != NULL ? String_ConvertCodePageToUtf8Range(str, 0, ((const struct StringInt *)str)->length, codePageToUtf8Table) : (String )str;
+	return str != NULL ? String_ConvertCodePageToUtf8Range(str, 0, String_Length(str), codePageToUtf8Table) : (String )str;
 }
 
 /// <summary>
@@ -436,7 +446,7 @@ Inline String String_ConvertCodePageToUtf8(const String str, const UInt16 *codeP
 /// <returns>The whole string, converted to that code page.</returns>
 Inline String String_ConvertUtf8ToKnownCodePage(const String str, Int legacyCodePageID)
 {
-	return str != NULL ? String_ConvertUtf8ToKnownCodePageRange(str, 0, ((const struct StringInt *)str)->length, legacyCodePageID) : (String )str;
+	return str != NULL ? String_ConvertUtf8ToKnownCodePageRange(str, 0, String_Length(str), legacyCodePageID) : (String )str;
 }
 
 /// <summary>
@@ -447,7 +457,7 @@ Inline String String_ConvertUtf8ToKnownCodePage(const String str, Int legacyCode
 /// <returns>The whole string, converted to UTF-8.</returns>
 Inline String String_ConvertKnownCodePageToUtf8(const String str, Int legacyCodePageID)
 {
-	return str != NULL ? String_ConvertKnownCodePageToUtf8Range(str, 0, ((const struct StringInt *)str)->length, legacyCodePageID) : (String )str;
+	return str != NULL ? String_ConvertKnownCodePageToUtf8Range(str, 0, String_Length(str), legacyCodePageID) : (String )str;
 }
 
 /// <summary>
@@ -460,7 +470,7 @@ Inline String String_ConvertKnownCodePageToUtf8(const String str, Int legacyCode
 Inline Int String_CompareI(const String a, const String b)
 {
 	Bool usedSlowConversion;
-	return String_CompareRangeI(a, 0, ((const struct StringInt *)a)->length, b, 0, ((const struct StringInt *)b)->length, &usedSlowConversion);
+	return String_CompareRangeI(a, 0, String_Length(a), b, 0, String_Length(b), &usedSlowConversion);
 }
 
 /// <summary>

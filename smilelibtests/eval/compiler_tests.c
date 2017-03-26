@@ -26,8 +26,6 @@
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/smilepair.h>
 
-STATIC_STRING(TestFilename, "test.sm");
-
 TEST_SUITE(CompilerTests)
 
 static SmileObject Parse(const char *text)
@@ -42,7 +40,7 @@ static SmileObject Parse(const char *text)
 
 	source = String_FromC(text);
 
-	lexer = Lexer_Create(source, 0, String_Length(source), TestFilename, 1, 1);
+	lexer = Lexer_Create(source, 0, String_Length(source), GetTestScriptName(), 1, 1);
 	lexer->symbolTable = Smile_SymbolTable;
 
 	parser = Parser_Create();

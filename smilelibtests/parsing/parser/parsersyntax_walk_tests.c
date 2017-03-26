@@ -28,8 +28,6 @@
 
 TEST_SUITE(ParserSyntaxWalkTests)
 
-STATIC_STRING(TestFilename, "test.sm");
-
 START_TEST(CanReplaceSimpleTerminalForms)
 {
 	Lexer lexer = SetupLexer(

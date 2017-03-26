@@ -29,7 +29,14 @@
 
 #include "testhelpers.h"
 
-STATIC_STRING(TestFilename, "test.sm");
+static String _testScriptName;
+
+String GetTestScriptName(void)
+{
+	if (_testScriptName == NULL)
+		_testScriptName = String_FromC("test.sm");
+	return _testScriptName;
+}
 
 String Stringify(SmileObject obj)
 {
@@ -104,7 +111,7 @@ SmileObject SimpleParse(const char *input)
 	Lexer lexer;
 	String source = String_FromC(input);
 
-	lexer = Lexer_Create(source, 0, String_Length(source), TestFilename, 1, 1);
+	lexer = Lexer_Create(source, 0, String_Length(source), GetTestScriptName(), 1, 1);
 	lexer->symbolTable = Smile_SymbolTable;
 
 	return RecursiveSimpleParse(lexer);
@@ -119,7 +126,7 @@ SmileObject FullParse(const char *input)
 	SmileObject result;
 
 	source = String_FromC(input);
-	lexer = Lexer_Create(source, 0, String_Length(source), TestFilename, 1, 1);
+	lexer = Lexer_Create(source, 0, String_Length(source), GetTestScriptName(), 1, 1);
 	lexer->symbolTable = Smile_SymbolTable;
 	parser = Parser_Create();
 	parseScope = ParseScope_CreateRoot();
@@ -183,7 +190,7 @@ next:
 		return True;
 
 	case SMILE_KIND_STRING:
-		if (!String_Equals((String)&((SmileString)a)->string, (String)&((SmileString)b)->string))
+		if (!String_Equals(SmileString_GetString((SmileString)a), SmileString_GetString((SmileString)b)))
 			return False;
 		return True;
 
@@ -198,7 +205,7 @@ Lexer SetupLexerFromString(String source)
 
 	Smile_ResetEnvironment();
 
-	lexer = Lexer_Create(source, 0, String_Length(source), TestFilename, 1, 1);
+	lexer = Lexer_Create(source, 0, String_Length(source), GetTestScriptName(), 1, 1);
 	lexer->symbolTable = Smile_SymbolTable;
 
 	return lexer;

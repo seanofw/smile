@@ -24,8 +24,11 @@
 #include <smile/smiletypes/smilebool.h>
 #include <smile/smiletypes/smileuserobject.h>
 #include <smile/smiletypes/text/smilesymbol.h>
+#include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
+
+struct SmileUserObjectInt SmileString_BaseObjectStruct = { 0 };
 
 static void SetupNumericTypes(struct KnownBasesStruct *knownBases)
 {
@@ -167,7 +170,9 @@ static void SetupEnumerableTypes(struct KnownBasesStruct *knownBases)
 	SetupMapTypes(knownBases);
 
 	knownBases->List = SmileUserObject_Create((SmileObject)knownBases->Enumerable);
-	knownBases->String = SmileUserObject_Create((SmileObject)knownBases->Enumerable);
+
+	knownBases->String = &SmileString_BaseObjectStruct;
+	SmileUserObject_Init(&SmileString_BaseObjectStruct, (SmileObject)knownBases->Enumerable);
 }
 
 static void SetupMiscTypes(struct KnownBasesStruct *knownBases)

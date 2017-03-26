@@ -35,12 +35,7 @@ typedef struct CommandLineArgsStruct {
 	SmileList scriptArgs, scriptArgsTail;	// -- ...args...
 } *CommandLineArgs;
 
-STATIC_STRING(_commandLineArgument, "command-line argument");
-STATIC_STRING(_commandLineScriptName, "script");
-STATIC_STRING(_newline, "\n");
-STATIC_STRING(_newlineAndTab, "\n    ");
-
-STATIC_STRING(_whileWrapper,
+static const char *_whileWrapper =
 	"#include \"stdio\"\n"
 	"\n"
 	"till done do {\n"
@@ -48,10 +43,7 @@ STATIC_STRING(_whileWrapper,
 	"\tif line === null then done\n"
 	"%S\n"
 	"%S\n"
-	"}\n");
-
-STATIC_STRING(_printLine,
-	"Stdout print line");
+	"}\n";
 
 static void Verbose(const char *format, ...)
 {
@@ -186,7 +178,7 @@ static SmileObject ParseOneConstantValue(CommandLineArgs options, const char *te
 	SmileObject result;
 
 	string = String_FromC(text);
-	lexer = Lexer_Create(string, 0, String_Length(string), _commandLineArgument, 1, 1);
+	lexer = Lexer_Create(string, 0, String_Length(string), String_FromC("command-line argument"), 1, 1);
 	lexer->symbolTable = Smile_SymbolTable;
 	parser = Parser_Create();
 
@@ -566,12 +558,13 @@ int main(int argc, const char **argv)
 	// have the "-p" or "-n" flags applied, and apply them to get the "full" script.
 	if (options->script != NULL) {
 		if (options->wrapWithWhile) {
-			script = String_FormatString(_whileWrapper, options->script, options->printLineInLoop ? _printLine : String_Empty);
-			scriptName = _commandLineScriptName;
+			script = String_Format(_whileWrapper, options->script, options->printLineInLoop
+				? String_FromC("Stdout print line") : String_Empty);
+			scriptName = String_FromC("script");
 		}
 		else {
 			script = options->script;
-			scriptName = _commandLineScriptName;
+			scriptName = String_FromC("script");
 		}
 	}
 
@@ -601,7 +594,7 @@ int main(int argc, const char **argv)
 		else {
 			String indentedScript;
 			Verbose("Script text:");
-			indentedScript = String_Replace(script, _newline, _newlineAndTab);
+			indentedScript = String_Replace(script, String_FromC("\n"), String_FromC("\n    "));
 			fwrite(String_GetBytes(indentedScript), 1, String_Length(indentedScript), stdout);
 			puts("\n");
 		}

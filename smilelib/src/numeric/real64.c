@@ -42,14 +42,13 @@ Real64 Real64_Sixteen =		{ 0x31C0000000000010ULL };
 Real64 Real64_Inf =			{ 0x7800000000000000ULL };
 Real64 Real64_NaN =			{ 0x7C00000000000000ULL };
 
-SMILE_API_FUNC Bool Real64_TryParse(String str, Real64 *result)
+SMILE_API_FUNC Bool Real64_TryParseInternal(const Byte *src, Int length, Real64 *result)
 {
 	DECLARE_INLINE_STRINGBUILDER(cleanString, 256);
-	const Byte *src, *end, *start;
+	const Byte *end, *start;
 	Byte ch;
 
-	src = String_GetBytes(str);
-	end = src + String_Length(str);
+	end = src + length;
 
 	INIT_INLINE_STRINGBUILDER(cleanString);
 

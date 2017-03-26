@@ -28,8 +28,6 @@
 
 TEST_SUITE(ParserSyntaxTests)
 
-STATIC_STRING(TestFilename, "test.sm");
-
 //-------------------------------------------------------------------------------------------------
 //  Syntax-object parsing tests.
 

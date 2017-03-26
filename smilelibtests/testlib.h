@@ -71,12 +71,12 @@ extern Bool InteractiveMode;
 int RunTestInternal(TestSuiteResults *results, const char *name, const char *file, int line, TestFuncInternal testFuncInternal);
 int FailTestInternal(const char *message);
 int FailTestWithLineInternal(const char *message, const char *file, int line);
-void AssertStringInternal(String str, const char *expectedString, Int expectedLength, const char *message);
-void AssertStringWithLineInternal(String str, const char *expectedString, Int expectedLength, const char *message, const char *file, int line);
+const char *TestStringInternal(String str, const char *expectedString, Int expectedLength, const char *message);
 TestSuiteResults *RunTestSuiteInternal(const char *name, TestFunc *funcs, int numFuncs);
 void MergeSlowTests(TestResult *dest, const TestResult *src);
 void DisplayTestSuiteResults(TestSuiteResults *results);
 void WaitForAnyKey(void);
+String GetTestScriptName(void);
 
 //-------------------------------------------------------------------------------------------------
 //  Inline parts of the implementation (macros)
@@ -115,7 +115,14 @@ void WaitForAnyKey(void);
 /// <param name="expectedString">The expected contents of that string.</param>
 /// <param name="expectedLength">The expected length of that string.</param>
 #define ASSERT_STRING(__str__, __expectedString__, __expectedLength__) \
-	AssertStringWithLineInternal(__str__, __expectedString__, __expectedLength__, #__str__ " is not correct (line " TOSTRING_AT_COMPILE_TIME(__LINE__) ")", __FILE__, __LINE__)
+	do { \
+		const char *errorMessage; \
+		if ((errorMessage = TestStringInternal(__str__, __expectedString__, __expectedLength__, \
+				#__str__ " is not correct (line " TOSTRING_AT_COMPILE_TIME(__LINE__) ")")) != NULL) { \
+			SMILE_DEBUGGER_BREAK_IF_ATTACHED; \
+			FailTestWithLineInternal(errorMessage, __FILE__, __LINE__); \
+		} \
+	} while (0)
 
 /// <summary>
 /// Immediately pass (as good) the current unit test.  This stops the test's

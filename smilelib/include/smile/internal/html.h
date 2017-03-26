@@ -9,7 +9,7 @@
 #endif
 
 typedef struct {
-	struct StringInt string;
+	String string;
 	UInt value;
 } HtmlEntity;
 
@@ -17,6 +17,6 @@ SMILE_INTERNAL_DATA extern const HtmlEntity HtmlEntityTable[];
 SMILE_INTERNAL_DATA extern const Int HtmlEntityTableLength;
 
 SMILE_INTERNAL_FUNC String HtmlEntityValueToName(Int32 value);
-SMILE_INTERNAL_FUNC Int32 HtmlEntityNameToValue(String name);
+SMILE_INTERNAL_FUNC Int32 HtmlEntityNameToValue(const Byte *src, Int length);
 
 #endif

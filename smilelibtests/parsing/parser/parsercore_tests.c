@@ -27,8 +27,6 @@
 
 TEST_SUITE(ParserCoreTests)
 
-STATIC_STRING(TestFilename, "test.sm");
-
 //-------------------------------------------------------------------------------------------------
 //  Primitive list tests.
 

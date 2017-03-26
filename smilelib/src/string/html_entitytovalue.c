@@ -30,16 +30,11 @@
 /// </summary>
 /// <param name="name">The name of the HTML entity to look up.</param>
 /// <returns>The value for that entity, if it is an entity with a value, or -1 if there is no such entity.</returns>
-Int32 HtmlEntityNameToValue(String name)
+Int32 HtmlEntityNameToValue(const Byte *src, Int length)
 {
 	Byte ch;
-	const Byte *src;
-	Int length;
 
-	if (String_IsNullOrEmpty(name)) return -1;
-
-	src = (const Byte *)String_GetBytes(name);
-	length = String_Length(name);
+	if (src == NULL) return -1;
 
 	if (length-- <= 0) return -1;
 	switch (*src++) {

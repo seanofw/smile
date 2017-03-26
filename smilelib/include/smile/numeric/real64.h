@@ -43,7 +43,7 @@ SMILE_API_FUNC Real128 Real64_ToReal128(Real64 real64);
 SMILE_API_FUNC Float32 Real64_ToFloat32(Real64 real64);
 SMILE_API_FUNC Float64 Real64_ToFloat64(Real64 real64);
 
-SMILE_API_FUNC Bool Real64_TryParse(String str, Real64 *result);
+SMILE_API_FUNC Bool Real64_TryParseInternal(const Byte *text, Int length, Real64 *result);
 SMILE_API_FUNC String Real64_ToFixedString(Real64 real64, Int minIntDigits, Int minFracDigits, Bool forceSign);
 SMILE_API_FUNC String Real64_ToExpString(Real64 real64, Int minFracDigits, Bool forceSign);
 SMILE_API_FUNC String Real64_ToStringEx(Real64 real64, Int minIntDigits, Int minFracDigits, Bool forceSign);
@@ -102,28 +102,27 @@ Inline Int Real64_IntSign(Real64 x)
 		: +1;
 }
 
+Inline Bool Real64_TryParse(String str, Real64 *result)
+{
+	return Real64_TryParseInternal(String_GetBytes(str), String_Length(str), result);
+}
+
 Inline Real64 Real64_Parse(String str)
 {
 	Real64 result;
-	Real64_TryParse(str, &result);
+	Real64_TryParseInternal(String_GetBytes(str), String_Length(str), &result);
 	return result;
 }
 
 Inline Bool Real64_TryParseC(const char *str, Real64 *result)
 {
-	DECLARE_TEMP_C_STRING(string);
-	INIT_TEMP_C_STRING(string, str);
-
-	return Real64_TryParse(string, result);
+	return Real64_TryParseInternal((const Byte *)str, StrLen(str), result);
 }
 
 Inline Real64 Real64_ParseC(const char *str)
 {
 	Real64 result;
-	DECLARE_TEMP_C_STRING(string);
-	INIT_TEMP_C_STRING(string, str);
-
-	Real64_TryParse(string, &result);
+	Real64_TryParseInternal((const Byte *)str, StrLen(str), &result);
 	return result;
 }
 

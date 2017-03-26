@@ -132,10 +132,15 @@ Inline Bool StringDict_ContainsKey(StringDict stringDict, String key)
 /// <returns>True if the key was found, False if the key was not found.</returns>
 Inline Bool StringDict_ContainsKeyC(StringDict stringDict, const char *ckey)
 {
-	struct StringInt tempStr;
-	tempStr.text = (Byte *)ckey;
-	tempStr.length = StrLen(ckey);
-	return StringDict_ContainsKey(stringDict, (String)&tempStr);
+	Int clength = StrLen(ckey);
+	SMILE_DICT_SEARCH(struct StringDictInt, struct StringDictNode, Int,
+		stringDict, String_HashInternal((const Byte *)ckey, clength), String_EqualsInternal(node->key, (const Byte *)ckey, clength),
+		{
+			return True;
+		},
+		{
+			return False;
+		})
 }
 
 /// <summary>
@@ -206,10 +211,15 @@ Inline void *StringDict_GetValue(StringDict stringDict, String key)
 /// <returns>The value for that key (NULL if the key is not found).</returns>
 Inline void *StringDict_GetValueC(StringDict stringDict, const char *ckey)
 {
-	struct StringInt tempStr;
-	tempStr.text = (Byte *)ckey;
-	tempStr.length = StrLen(ckey);
-	return StringDict_GetValue(stringDict, (String)&tempStr);
+	Int clength = StrLen(ckey);
+	SMILE_DICT_SEARCH(struct StringDictInt, struct StringDictNode, Int,
+		stringDict, String_HashInternal((const Byte *)ckey, clength), String_EqualsInternal(node->key, (const Byte *)ckey, clength),
+		{
+			return node->value;
+		},
+		{
+			return NULL;
+		})
 }
 
 /// <summary>
@@ -241,10 +251,16 @@ Inline Bool StringDict_ReplaceValue(StringDict stringDict, String key, void *val
 /// <returns>True if the key was updated, False if it did not exist.</returns>
 Inline Int StringDict_ReplaceValueC(StringDict stringDict, const char *ckey, void *value)
 {
-	struct StringInt tempStr;
-	tempStr.text = (Byte *)ckey;
-	tempStr.length = StrLen(ckey);
-	return StringDict_ReplaceValue(stringDict, (String)&tempStr, value);
+	Int clength = StrLen(ckey);
+	SMILE_DICT_SEARCH(struct StringDictInt, struct StringDictNode, Int,
+		stringDict, String_HashInternal((const Byte *)ckey, clength), String_EqualsInternal(node->key, (const Byte *)ckey, clength),
+		{
+			node->value = value;
+			return True;
+		},
+		{
+			return False;
+		})
 }
 
 /// <summary>
@@ -277,10 +293,17 @@ Inline Bool StringDict_SetValue(StringDict stringDict, String key, void *value)
 /// <returns>True if the key already existed, False if it needed to be added.</returns>
 Inline Bool StringDict_SetValueC(StringDict stringDict, const char *ckey, void *value)
 {
-	struct StringInt tempStr;
-	tempStr.text = (Byte *)ckey;
-	tempStr.length = StrLen(ckey);
-	StringDict_SetValue(stringDict, (String)&tempStr, value);
+	Int clength = StrLen(ckey);
+	SMILE_DICT_SEARCH(struct StringDictInt, struct StringDictNode, Int,
+		stringDict, String_HashInternal((const Byte *)ckey, clength), String_EqualsInternal(node->key, (const Byte *)ckey, clength),
+		{
+			node->value = value;
+			return True;
+		},
+		{
+			StringDictInt_Append((struct StringDictInt *)stringDict, String_Create((const Byte *)ckey, clength), keyHash, value);
+			return False;
+		})
 }
 
 /// <summary>
@@ -317,10 +340,17 @@ Inline Bool StringDict_TryGetValue(StringDict stringDict, String key, void **val
 /// <returns>True if the key was found, False if the key was not found.</returns>
 Inline Bool StringDict_TryGetValueC(StringDict stringDict, const char *ckey, void **value)
 {
-	struct StringInt tempStr;
-	tempStr.text = (Byte *)ckey;
-	tempStr.length = StrLen(ckey);
-	return StringDict_TryGetValue(stringDict, (String)&tempStr, value);
+	Int clength = StrLen(ckey);
+	SMILE_DICT_SEARCH(struct StringDictInt, struct StringDictNode, Int,
+		stringDict, String_HashInternal((const Byte *)ckey, clength), String_EqualsInternal(node->key, (const Byte *)ckey, clength),
+		{
+			*value = node->value;
+			return True;
+		},
+		{
+			*value = NULL;
+			return False;
+		})
 }
 
 #endif

@@ -67,7 +67,7 @@ Int Compiler_CompileExpr(Compiler compiler, SmileObject expr)
 		EMIT1(Op_LdBool, +1, boolean = ((SmileBool)expr)->value);
 		break;
 	case SMILE_KIND_STRING:
-		EMIT1(Op_LdStr, +1, index = Compiler_AddString(compiler, (String)&((SmileString)expr)->string));
+		EMIT1(Op_LdStr, +1, index = Compiler_AddString(compiler, SmileString_GetString((SmileString)expr)));
 		break;
 	case SMILE_KIND_PRIMITIVE:
 		EMIT1(Op_LdObj, +1, index = Compiler_AddObject(compiler, Smile_KnownBases.Primitive));

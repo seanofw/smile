@@ -275,5 +275,5 @@ String HtmlEntityValueToName(Int32 value)
 
 	htmlEntity = &HtmlEntityTable[lookupIndex - 1];
 
-	return (String)(&htmlEntity->string);
+	return htmlEntity->string;
 }

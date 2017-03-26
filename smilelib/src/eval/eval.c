@@ -1094,7 +1094,7 @@ next:
 		case Op_LdLength:
 			target = Closure_Pop(closure).obj;
 			if (SMILE_KIND(target) == SMILE_KIND_STRING) {
-				Closure_Push(closure, SmileUnboxedInteger64_From(((SmileString)target)->string.length));
+				Closure_Push(closure, SmileUnboxedInteger64_From(SmileString_Length((SmileString)target)));
 			}
 			else {
 				STORE_REGISTERS;

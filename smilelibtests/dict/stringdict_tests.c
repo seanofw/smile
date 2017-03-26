@@ -91,7 +91,7 @@ START_TEST(CanAddALotOfDataIntoADictionaryReliably)
 	// generate evenly-distributed values.
 	seed = 31415;
 	for (i = 0; i < 10000; i++) {
-		StringDict_Add(dict, String_Format("%u", seed), (void *)i);
+		StringDict_Add(dict, String_Format("%u", seed), (void *)(PtrInt)i);
 		seed = (seed * 69069) + 127;
 	}
 	ASSERT(StringDict_Count(dict) == 10000);
@@ -100,7 +100,7 @@ START_TEST(CanAddALotOfDataIntoADictionaryReliably)
 	seed = 31415;
 	for (i = 0; i < 10000; i++) {
 		ptr = StringDict_GetValue(dict, String_Format("%u", seed));
-		ASSERT(ptr == (void *)i);
+		ASSERT(ptr == (void *)(PtrInt)i);
 		seed = (seed * 69069) + 127;
 	}
 }
@@ -119,7 +119,7 @@ START_TEST(SetValueCanBothAddAndUpdate)
 	// generate evenly-distributed values.
 	seed = 31415;
 	for (i = 0; i < 1000; i++) {
-		StringDict_SetValue(dict, String_Format("%u", seed), (void *)i);
+		StringDict_SetValue(dict, String_Format("%u", seed), (void *)(PtrInt)i);
 		seed = (seed * 69069) + 127;
 	}
 	ASSERT(StringDict_Count(dict) == 1000);
@@ -127,7 +127,7 @@ START_TEST(SetValueCanBothAddAndUpdate)
 	// Replace 500 of those values with new values.
 	seed = 31415;
 	for (i = 0; i < 500; i++) {
-		StringDict_SetValue(dict, String_Format("%u", seed), (void *)(i ^ 0xFFFF));
+		StringDict_SetValue(dict, String_Format("%u", seed), (void *)(PtrInt)(i ^ 0xFFFF));
 		seed = (seed * 69069) + 127;
 	}
 	ASSERT(StringDict_Count(dict) == 1000);
@@ -136,12 +136,12 @@ START_TEST(SetValueCanBothAddAndUpdate)
 	seed = 31415;
 	for (i = 0; i < 500; i++) {
 		ptr = StringDict_GetValue(dict, String_Format("%u", seed));
-		ASSERT(ptr == (void *)(i ^ 0xFFFF));
+		ASSERT(ptr == (void *)(PtrInt)(i ^ 0xFFFF));
 		seed = (seed * 69069) + 127;
 	}
 	for (; i < 1000; i++) {
 		ptr = StringDict_GetValue(dict, String_Format("%u", seed));
-		ASSERT(ptr == (void *)i);
+		ASSERT(ptr == (void *)(PtrInt)i);
 		seed = (seed * 69069) + 127;
 	}
 }
@@ -159,7 +159,7 @@ START_TEST(ContainsKeyCanAnswerWhenThingsExist)
 	// generate evenly-distributed values.
 	seed = 31415;
 	for (i = 0; i < 1000; i++) {
-		StringDict_SetValue(dict, String_Format("%u", seed), (void *)i);
+		StringDict_SetValue(dict, String_Format("%u", seed), (void *)(PtrInt)i);
 		seed = (seed * 69069) + 127;
 	}
 	ASSERT(StringDict_Count(dict) == 1000);
@@ -194,7 +194,7 @@ START_TEST(TryGetValueCanAnswerWhenThingsExist)
 	// generate evenly-distributed values.
 	seed = 31415;
 	for (i = 0; i < 1000; i++) {
-		StringDict_SetValue(dict, String_Format("%u", seed), (void *)i);
+		StringDict_SetValue(dict, String_Format("%u", seed), (void *)(PtrInt)i);
 		seed = (seed * 69069) + 127;
 	}
 	ASSERT(StringDict_Count(dict) == 1000);
@@ -205,7 +205,7 @@ START_TEST(TryGetValueCanAnswerWhenThingsExist)
 		if (!StringDict_TryGetValue(dict, String_Format("%u", seed), &ptr)) {
 			ASSERT(False);
 		}
-		ASSERT(ptr == (void *)i);
+		ASSERT(ptr == (void *)(PtrInt)i);
 		seed = (seed * 69069) + 127;
 	}
 	for (; i < 2000; i++) {
@@ -231,7 +231,7 @@ START_TEST(CanRemoveItemsByKey)
 	// generate evenly-distributed values.
 	seed = 31415;
 	for (i = 0; i < 0x4000; i++) {
-		StringDict_Add(dict, String_Format("%u", seed), (void *)i);
+		StringDict_Add(dict, String_Format("%u", seed), (void *)(PtrInt)i);
 		seed = (seed * 69069) + 127;
 	}
 	ASSERT(StringDict_Count(dict) == 0x4000);
@@ -255,7 +255,7 @@ START_TEST(CanRemoveItemsByKey)
 			ASSERT(!exists);
 		}
 		else {
-			ASSERT(exists && (void *)i == ptr);
+			ASSERT(exists && (void *)(PtrInt)i == ptr);
 		}
 		seed = (seed * 69069) + 127;
 	}
@@ -363,7 +363,7 @@ START_TEST(GetKeysReturnsAllTheKeys)
 
 	// Insert 256 values, with keys that should cause some hash collisions.
 	for (i = 0; i < 256; i++) {
-		StringDict_Add(dict, String_Format("%u", i * 12), (void *)(i ^ 0xABAD1DEA));
+		StringDict_Add(dict, String_Format("%u", i * 12), (void *)(PtrInt)(i ^ 0xABAD1DEA));
 	}
 	ASSERT(StringDict_Count(dict) == 256);
 
@@ -397,7 +397,7 @@ START_TEST(GetValuesReturnsAllTheValues)
 
 	// Insert 256 values, with keys that should cause some hash collisions.
 	for (i = 0; i < 256; i++) {
-		StringDict_Add(dict, String_Format("%u", i * 12), (void *)(i ^ 0xABAD1DEA));
+		StringDict_Add(dict, String_Format("%u", i * 12), (void *)(PtrInt)(i ^ 0xABAD1DEA));
 	}
 	ASSERT(StringDict_Count(dict) == 256);
 
@@ -430,7 +430,7 @@ START_TEST(GetAllReturnsEverything)
 
 	// Insert 256 values, with keys that should cause some hash collisions.
 	for (i = 0; i < 256; i++) {
-		StringDict_Add(dict, String_Format("%u", i * 12), (void *)(i ^ 0xABAD1DEA));
+		StringDict_Add(dict, String_Format("%u", i * 12), (void *)(PtrInt)(i ^ 0xABAD1DEA));
 	}
 	ASSERT(StringDict_Count(dict) == 256);
 

@@ -24,8 +24,6 @@
 
 TEST_SUITE(ParserQuoteTests)
 
-STATIC_STRING(TestFilename, "test.sm");
-
 //-------------------------------------------------------------------------------------------------
 //  Function-parsing tests.
 

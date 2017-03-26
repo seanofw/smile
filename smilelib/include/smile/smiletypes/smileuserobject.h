@@ -27,6 +27,7 @@ struct SmileUserObjectInt {
 //  Public interface
 
 SMILE_API_FUNC SmileUserObject SmileUserObject_CreateWithSize(SmileObject base, Int initialSize);
+SMILE_API_FUNC void SmileUserObject_InitWithSize(SmileUserObject userObject, SmileObject base, Int initialSize);
 SMILE_API_FUNC void SmileUserObject_SetC(SmileUserObject self, const char *name, SmileObject value);
 SMILE_API_FUNC void SmileUserObject_SetupFunction(SmileUserObject base, ExternalFunction function, void *param,
 	const char *name, const char *argNames, Int argCheckFlags, Int minArgs, Int maxArgs, Int numArgsToTypeCheck, const Byte *argTypeChecks);
@@ -40,6 +41,11 @@ SMILE_API_FUNC void SmileUserObject_SetupSynonym(SmileUserObject base, const cha
 Inline SmileUserObject SmileUserObject_Create(SmileObject base)
 {
 	return SmileUserObject_CreateWithSize(base, 8);
+}
+
+Inline void SmileUserObject_Init(SmileUserObject userObject, SmileObject base)
+{
+	SmileUserObject_InitWithSize(userObject, base, 8);
 }
 
 #endif

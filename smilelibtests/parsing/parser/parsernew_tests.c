@@ -27,8 +27,6 @@
 
 TEST_SUITE(ParserNewTests)
 
-STATIC_STRING(TestFilename, "test.sm");
-
 //-------------------------------------------------------------------------------------------------
 //  New-expression tests.
 

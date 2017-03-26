@@ -28,10 +28,6 @@
 
 TEST_SUITE(ParserSyntaxTableTests)
 
-STATIC_STRING(TestFilename, "test.sm");
-STATIC_STRING(SemicolonString, ";");
-STATIC_STRING(SpaceString, " ");
-
 //-------------------------------------------------------------------------------------------------
 //  Helpers.
 
@@ -57,7 +53,7 @@ static ParserSyntaxNode WalkSyntaxPattern(ParserSyntaxClass cls, const char *exp
 	ParserSyntaxNode node, nextNode;
 	Int32Dict nextDict;
 
-	numTerms = String_Split(String_FromC(expected), SemicolonString, &terms);
+	numTerms = String_Split(String_FromC(expected), String_FromC(";"), &terms);
 
 	node = (ParserSyntaxNode)cls;
 
@@ -66,7 +62,7 @@ static ParserSyntaxNode WalkSyntaxPattern(ParserSyntaxClass cls, const char *exp
 		// Move forward to the next node.
 		{
 			term = String_Trim(terms[i]);
-			numPieces = String_Split(term, SpaceString, &pieces);
+			numPieces = String_Split(term, String_FromC(" "), &pieces);
 
 			symbol = numPieces > 0 ? SymbolTable_GetSymbol(Smile_SymbolTable, String_Trim(pieces[0])) : 0;
 

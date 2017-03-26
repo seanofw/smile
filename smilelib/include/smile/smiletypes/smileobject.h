@@ -279,11 +279,11 @@ typedef struct {
 /// <returns>Code that declares an instance of the virtual table as static data.</returns>
 #define SMILE_VTABLE(__name__, __type__) \
 	SMILE_VTABLE_TYPE(struct __name__##Int, __type__); \
-	static struct __name__##Int __name__##Data; \
+	struct __name__##Int __name__##Data; \
 	\
 	SmileVTable __name__ = (SmileVTable)&__name__##Data; \
 	\
-	static struct __name__##Int __name__##Data =
+	struct __name__##Int __name__##Data =
 
 /// <summary>
 /// Get whatever kind of native Smile object this object is.

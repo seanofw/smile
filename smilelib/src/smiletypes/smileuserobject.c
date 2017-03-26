@@ -32,12 +32,27 @@ SmileUserObject SmileUserObject_CreateWithSize(SmileObject base, Int initialSize
 {
 	SmileUserObject userObject = GC_MALLOC_STRUCT(struct SmileUserObjectInt);
 	if (userObject == NULL || initialSize >= Int32Max) Smile_Abort_OutOfMemory();
+
 	userObject->base = base;
 	userObject->kind = SMILE_KIND_USEROBJECT | SMILE_SECURITY_READWRITEAPPEND;
 	userObject->vtable = SmileUserObject_VTable_ReadWriteAppend;
 	userObject->securityKey = NullObject;
+
 	Int32Dict_ClearWithSize((Int32Dict)&userObject->dict, (Int32)initialSize);
+
 	return userObject;
+}
+
+void SmileUserObject_InitWithSize(SmileUserObject userObject, SmileObject base, Int initialSize)
+{
+	if (initialSize >= Int32Max) Smile_Abort_OutOfMemory();
+
+	userObject->base = base;
+	userObject->kind = SMILE_KIND_USEROBJECT | SMILE_SECURITY_READWRITEAPPEND;
+	userObject->vtable = SmileUserObject_VTable_ReadWriteAppend;
+	userObject->securityKey = NullObject;
+
+	Int32Dict_ClearWithSize((Int32Dict)&userObject->dict, (Int32)initialSize);
 }
 
 Bool SmileUserObject_CompareEqual(SmileUserObject self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData)
@@ -93,7 +108,7 @@ void SmileUserObject_SetSecurityKey(SmileUserObject self, SmileObject newSecurit
 {
 	Bool isValidSecurityKey = self->securityKey->vtable->compareEqual(self->securityKey, (SmileUnboxedData){ 0 }, oldSecurityKey, (SmileUnboxedData){ 0 });
 	if (!isValidSecurityKey)
-		Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
+		Smile_ThrowException(Smile_KnownSymbols.object_security_error, SmileString_GetString(Smile_KnownStrings.InvalidSecurityKey));
 
 	self->securityKey = newSecurityKey;
 }
@@ -102,7 +117,7 @@ void SmileUserObject_SetSecurity(SmileUserObject self, Int security, SmileObject
 {
 	Bool isValidSecurityKey = self->securityKey->vtable->compareEqual(self->securityKey, (SmileUnboxedData){ 0 }, securityKey, (SmileUnboxedData){ 0 });
 	if (!isValidSecurityKey)
-		Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string);
+		Smile_ThrowException(Smile_KnownSymbols.object_security_error, SmileString_GetString(Smile_KnownStrings.InvalidSecurityKey));
 
 	self->kind = (self->kind & ~SMILE_SECURITY_READWRITEAPPEND) | (security & SMILE_SECURITY_READWRITEAPPEND);
 

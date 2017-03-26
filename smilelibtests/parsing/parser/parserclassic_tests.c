@@ -27,8 +27,6 @@
 
 TEST_SUITE(ParserClassicTests)
 
-STATIC_STRING(TestFilename, "test.sm");
-
 //-------------------------------------------------------------------------------------------------
 //  Classic [$set] tests.
 

@@ -199,7 +199,7 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 		return;
 
 	case SMILE_KIND_STRING:
-		StringBuilder_AppendFormat(stringBuilder, "\"%S\"", String_AddCSlashes((String)&((SmileString)obj)->string));
+		StringBuilder_AppendFormat(stringBuilder, "\"%S\"", String_AddCSlashes(SmileString_GetString((SmileString)obj)));
 		return;
 
 	case SMILE_KIND_USEROBJECT:

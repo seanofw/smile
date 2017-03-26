@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 51172be336b1905db1b80f14af88a621
+// SourceHash: face018616852fbb0bf547cac15a9843
 
 START_TEST_SUITE(LexerUnicodeTests)
 {

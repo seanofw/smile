@@ -28,8 +28,6 @@
 
 TEST_SUITE(ParserSyntaxValidateTests)
 
-STATIC_STRING(TestFilename, "test.sm");
-
 START_TEST(CannotAddRulesToUnknownRootClasses)
 {
 	Parser parser = Parser_Create();

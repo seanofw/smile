@@ -32,18 +32,6 @@ SMILE_EASY_OBJECT_NO_CALL(SmileString)
 SMILE_EASY_OBJECT_NO_SOURCE(SmileString)
 SMILE_EASY_OBJECT_NO_UNBOX(SmileString)
 
-SmileString SmileString_Create(String string)
-{
-	SmileString str = GC_MALLOC_STRUCT(struct SmileStringInt);
-	if (str == NULL) Smile_Abort_OutOfMemory();
-	str->base = (SmileObject)Smile_KnownBases.String;
-	str->kind = SMILE_KIND_STRING;
-	str->vtable = SmileString_VTable;
-	str->string.text = ((struct StringInt *)string)->text;
-	str->string.length = ((struct StringInt *)string)->length;
-	return str;
-}
-
 Bool SmileString_CompareEqual(SmileString self, SmileUnboxedData selfUnboxed, SmileObject other, SmileUnboxedData otherUnboxed)
 {
 	SmileString otherString;
@@ -54,10 +42,10 @@ Bool SmileString_CompareEqual(SmileString self, SmileUnboxedData selfUnboxed, Sm
 
 	if (otherString == self) return True;
 
-	length = self->string.length;
-	if (length != otherString->string.length) return False;
+	length = SmileString_Length(self);
+	if (length != SmileString_Length(otherString)) return False;
 
-	return !MemCmp(self->string.text, otherString->string.text, length);
+	return !MemCmp(String_GetBytes(SmileString_GetString(self)), String_GetBytes(SmileString_GetString(otherString)), length);
 }
 
 Bool SmileString_DeepEqual(SmileString self, SmileUnboxedData selfUnboxed, SmileObject other, SmileUnboxedData otherUnboxed, PointerSet visitedPointers)
@@ -77,9 +65,9 @@ SmileObject SmileString_GetProperty(SmileString self, Symbol propertyName)
 {
 	if (propertyName == Smile_KnownSymbols.length) {
 		#if SizeofInt <= 4
-			return (SmileObject)SmileInteger32_Create(self->string.length);
+			return (SmileObject)SmileInteger32_Create(String_Length(SmileString_GetString(self)));
 		#else
-			Int length = self->string.length;
+			Int length = String_Length(SmileString_GetString(self));
 			return (SmileObject)SmileInteger32_Create(length < Int32Max ? (Int32)length : Int32Max);
 		#endif
 	}
@@ -140,5 +128,5 @@ Real64 SmileString_ToReal64(SmileString self, SmileUnboxedData unboxedData)
 
 String SmileString_ToString(SmileString str, SmileUnboxedData unboxedData)
 {
-	return String_Format("\"%S\"", String_AddCSlashes((String)&(str->string)));
+	return String_Format("\"%S\"", String_AddCSlashes(SmileString_GetString(str)));
 }

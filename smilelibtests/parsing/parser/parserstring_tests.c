@@ -27,8 +27,6 @@
 
 TEST_SUITE(ParserStringTests)
 
-STATIC_STRING(TestFilename, "test.sm");
-
 START_TEST(CanParseASingleChar)
 {
 	Lexer lexer = SetupLexer("'a'");

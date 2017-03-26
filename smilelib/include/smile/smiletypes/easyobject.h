@@ -171,10 +171,10 @@
 #define SMILE_EASY_OBJECT_READONLY_SECURITY(__type__) \
 	static void __type__##_SetSecurityKey(__type__ self, SmileObject newSecurityKey, SmileObject oldSecurityKey) \
 		{ UNUSED(self); UNUSED(newSecurityKey); UNUSED(oldSecurityKey); \
-			Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string); } \
+			Smile_ThrowException(Smile_KnownSymbols.object_security_error, SmileString_GetString(Smile_KnownStrings.InvalidSecurityKey)); } \
 	static void __type__##_SetSecurity(__type__ self, Int security, SmileObject securityKey) \
 		{ UNUSED(self); UNUSED(security); UNUSED(securityKey); \
-			Smile_ThrowException(Smile_KnownSymbols.object_security_error, (String)&Smile_KnownStrings.InvalidSecurityKey->string); } \
+			Smile_ThrowException(Smile_KnownSymbols.object_security_error, SmileString_GetString(Smile_KnownStrings.InvalidSecurityKey)); } \
 	static Int __type__##_GetSecurity(__type__ obj) { UNUSED(obj); return SMILE_SECURITY_READONLY; }
 
 /// <summary>

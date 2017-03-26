@@ -150,7 +150,7 @@ SMILE_EXTERNAL_FUNCTION(Join)
 	if (argc <= 1)
 		glue = String_Empty;
 	else
-		glue = (String)&((SmileString)argv[1].obj)->string;
+		glue = SmileString_GetString((SmileString)argv[1].obj);
 	
 	result = SmileList_Join((SmileList)argv[0].obj, glue);
 

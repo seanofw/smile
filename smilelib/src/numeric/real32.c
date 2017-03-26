@@ -42,14 +42,13 @@ Real32 Real32_Sixteen =		{ 0x32800010U };
 Real32 Real32_Inf =			{ 0x78000000U };
 Real32 Real32_NaN =			{ 0x7C000000U };
 
-SMILE_API_FUNC Bool Real32_TryParse(String str, Real32 *result)
+SMILE_API_FUNC Bool Real32_TryParseInternal(const Byte *src, Int length, Real32 *result)
 {
 	DECLARE_INLINE_STRINGBUILDER(cleanString, 256);
-	const Byte *src, *end, *start;
+	const Byte *end, *start;
 	Byte ch;
 
-	src = String_GetBytes(str);
-	end = src + String_Length(str);
+	end = src + length;
 
 	INIT_INLINE_STRINGBUILDER(cleanString);
 

@@ -72,7 +72,7 @@ STATIC_STRING(_invalidTypeError, "All arguments to 'String.%s' must be of type '
 SMILE_EXTERNAL_FUNCTION(ToBool)
 {
 	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_STRING)
-		return SmileUnboxedBool_From(((SmileString)argv[0].obj)->string.length > 0);
+		return SmileUnboxedBool_From(SmileString_Length((SmileString)argv[0].obj) > 0);
 
 	return SmileUnboxedBool_From(True);
 }
@@ -80,7 +80,7 @@ SMILE_EXTERNAL_FUNCTION(ToBool)
 SMILE_EXTERNAL_FUNCTION(ToInt)
 {
 	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_STRING)
-		return SmileUnboxedInteger64_From(((SmileString)argv[0].obj)->string.length);
+		return SmileUnboxedInteger64_From(SmileString_Length((SmileString)argv[0].obj));
 
 	return SmileUnboxedInteger64_From(0);
 }
@@ -476,15 +476,15 @@ SMILE_EXTERNAL_FUNCTION(LastIndexOfI)
 
 SMILE_EXTERNAL_FUNCTION(GetMember)
 {
-	struct StringInt *x = (struct StringInt *)SmileString_GetString((SmileString)argv[0].obj);
+	String x = SmileString_GetString((SmileString)argv[0].obj);
 	Int64 index = argv[1].unboxed.i64;
 	Byte ch;
 	STATIC_STRING(indexOutOfRangeError, "Index to 'get-member' is beyond the length of the string.");
 
-	if (index < 0 || index >= x->length)
+	if (index < 0 || index >= String_Length(x))
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, indexOutOfRangeError);
 
-	ch = x->text[(Int)index];
+	ch = String_At(x, (Int)index);
 
 	return SmileUnboxedByte_From(ch);
 }

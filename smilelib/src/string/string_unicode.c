@@ -58,9 +58,8 @@ static const Int32 _identityTable[] =
 /// <returns>The value of the extracted Unicode character (code point).</returns>
 Int32 String_ExtractUnicodeCharacter(const String str, Int *index)
 {
-	const struct StringInt *s = (const struct StringInt *)str;
 	Byte c1, c2, c3, c4;
-	const Byte *text = s->text;
+	const Byte *text = String_GetBytes(str);
 
 	c1 = text[(*index)++];
 	if (c1 < 0x80)
@@ -76,7 +75,7 @@ Int32 String_ExtractUnicodeCharacter(const String str, Int *index)
 	else if (c1 < 0xE0)
 	{
 		// Low values in the Basic Multilingual Plane, like Latin and Greek and Hebrew.
-		if ((*index) >= s->length) return 0xFFFD;		// Out of input.
+		if ((*index) >= String_Length(str)) return 0xFFFD;		// Out of input.
 		c2 = text[(*index)++];
 		if ((c2 & 0xC0) != 0x80) return 0xFFFD;			// Illegal subsequent byte.
 		return (c1 << 6) + c2 - 0x3080;
@@ -84,9 +83,9 @@ Int32 String_ExtractUnicodeCharacter(const String str, Int *index)
 	else if (c1 < 0xF0)
 	{
 		// High values in the Basic Multilingual Plane, like Chinese and Japanese and Arabic.
-		if ((*index) >= s->length - 1)					// Out of input.
+		if ((*index) >= String_Length(str) - 1)					// Out of input.
 		{
-			(*index) = s->length;
+			(*index) = String_Length(str);
 			return 0xFFFD;
 		}
 		c2 = text[(*index)++];
@@ -99,9 +98,9 @@ Int32 String_ExtractUnicodeCharacter(const String str, Int *index)
 	else if (c1 < 0xF5)
 	{
 		// Four bytes for characters above the BMP (i.e., characters requiring more than 16 bits).
-		if ((*index) >= s->length - 2)
+		if ((*index) >= String_Length(str) - 2)
 		{
-			(*index) = s->length;
+			(*index) = String_Length(str);
 			return 0xFFFD;
 		}
 		c2 = text[(*index)++];
@@ -213,8 +212,6 @@ Int32 String_ExtractUnicodeCharacterInternal(const Byte **start, const Byte *end
 /// if b's substring comes before a's substring.</returns>
 Int String_CompareRangeI(const String a, Int astart, Int alength, const String b, Int bstart, Int blength, Bool *usedSlowConversion)
 {
-	const struct StringInt *astr = (const struct StringInt *)a;
-	const struct StringInt *bstr = (const struct StringInt *)b;
 	const Byte *aptr, *bptr, *aend, *bend, *oldaptr, *oldbptr;
 	Byte abyte, bbyte;
 	Int32 ach, bch, newCodeValueA, newCodeValueB;
@@ -233,28 +230,28 @@ Int String_CompareRangeI(const String a, Int astart, Int alength, const String b
 		bstart = 0;
 	}
 
-	if (String_IsNullOrEmpty(a) || astart >= astr->length || alength <= 0)
+	if (String_IsNullOrEmpty(a) || astart >= String_Length(a) || alength <= 0)
 	{
 		*usedSlowConversion = False;
-		return String_IsNullOrEmpty(b) || bstart >= bstr->length || blength <= 0 ? 0 : -1;
+		return String_IsNullOrEmpty(b) || bstart >= String_Length(b) || blength <= 0 ? 0 : -1;
 	}
-	if (String_IsNullOrEmpty(b) || bstart >= bstr->length || blength <= 0)
+	if (String_IsNullOrEmpty(b) || bstart >= String_Length(b) || blength <= 0)
 	{
 		*usedSlowConversion = False;
 		return -1;
 	}
 
-	if (alength > astr->length - astart)
+	if (alength > String_Length(a) - astart)
 	{
-		alength = astr->length - astart;
+		alength = String_Length(a) - astart;
 	}
-	if (blength > bstr->length - bstart)
+	if (blength > String_Length(b) - bstart)
 	{
-		blength = bstr->length - bstart;
+		blength = String_Length(b) - bstart;
 	}
 
-	aptr = astr->text + astart;
-	bptr = bstr->text + bstart;
+	aptr = String_GetBytes(a) + astart;
+	bptr = String_GetBytes(b) + bstart;
 	aend = aptr + alength;
 	bend = bptr + blength;
 	while (aptr < aend && bptr < bend)
@@ -298,8 +295,8 @@ Int String_CompareRangeI(const String a, Int astart, Int alength, const String b
 			// but one of these characters case-folded to multiple resulting characters.  So
 			// we have to resort a different, slower technique:  Convert the rest of the strings
 			// en masse to case-folded form, and then compare them directly.
-			foldedA = String_CaseFoldRange(a, oldaptr - astr->text, aend - oldaptr);
-			foldedB = String_CaseFoldRange(b, oldbptr - bstr->text, bend - oldbptr);
+			foldedA = String_CaseFoldRange(a, oldaptr - String_GetBytes(a), aend - oldaptr);
+			foldedB = String_CaseFoldRange(b, oldbptr - String_GetBytes(b), bend - oldbptr);
 			*usedSlowConversion = True;
 			return String_Compare(foldedA, foldedB);
 		}
@@ -337,7 +334,6 @@ Int String_CompareRangeI(const String a, Int astart, Int alength, const String b
 /// <returns>The case-converted string.</returns>
 static String ConvertCase(const String str, Int start, Int length, const Int32 **caseTable, const Int32 ***caseTableExtended, Int32 caseTableCount)
 {
-	const struct StringInt *s = (const struct StringInt *)str;
 	struct StringBuilderInt sb;
 	StringBuilder stringBuilder;
 	Int32 code, codePageIndex, newCodeValue, numCodeValues;
@@ -345,8 +341,9 @@ static String ConvertCase(const String str, Int start, Int length, const Int32 *
 	const Int32 **extendedCodePage;
 	Int i;
 	Byte ch;
+	const Byte *text;
 
-	if (s == NULL || s->length <= 0) return (String)str;
+	if (String_IsNullOrEmpty(str)) return (String)str;
 
 	if (start < 0)
 	{
@@ -354,22 +351,23 @@ static String ConvertCase(const String str, Int start, Int length, const Int32 *
 		start = 0;
 	}
 
-	if (length <= 0 || start >= s->length)
+	if (length <= 0 || start >= String_Length(str))
 		return String_Empty;
 
-	if (length > s->length - start)
+	if (length > String_Length(str) - start)
 	{
-		length = s->length - start;
+		length = String_Length(str) - start;
 	}
 
 	stringBuilder = (StringBuilder)&sb;
-	StringBuilder_InitWithSize(stringBuilder, s->length * 5 / 4);
+	StringBuilder_InitWithSize(stringBuilder, String_Length(str) * 5 / 4);
 
 	zeroCodePage = caseTable[0];
 
+	text = String_GetBytes(str);
 	for (i = start; i < start + length; )
 	{
-		ch = s->text[i];
+		ch = text[i];
 		if (ch < 128)
 		{
 			i++;
@@ -853,7 +851,7 @@ String String_ConvertUtf8ToCodePageRange(const String str, Int start, Int length
 	Int32 value, codePage;
 	const Byte *text;
 	Byte ch;
-	struct StringInt *resultStr;
+	String resultStr;
 	Byte *newText;
 
 	if (str == NULL || (strLength = String_Length(str)) <= 0) return str;
@@ -874,12 +872,8 @@ String String_ConvertUtf8ToCodePageRange(const String str, Int start, Int length
 
 	if (length <= 0) return String_Empty;
 
-	resultStr = GC_MALLOC_STRUCT(struct StringInt);
-	if (resultStr == NULL) Smile_Abort_OutOfMemory();
-	newText = GC_MALLOC_TEXT(length);
-	if (newText == NULL) Smile_Abort_OutOfMemory();
-
-	resultStr->text = newText;
+	resultStr = String_CreateInternal(length);
+	newText = resultStr->_opaque.text;
 
 	src = start;
 	dest = 0;
@@ -901,9 +895,9 @@ String String_ConvertUtf8ToCodePageRange(const String str, Int start, Int length
 
 	newText[dest] = '\0';
 
-	resultStr->length = dest;
+	resultStr->_opaque.length = dest;		// TODO: Find a better way to do this that's just as fast but wastes less memory.
 
-	return (String)resultStr;
+	return resultStr;
 }
 
 /// <summary>
@@ -1104,14 +1098,11 @@ String String_ConvertKnownCodePageToUtf8Range(const String str, Int start, Int l
 /// <returns>The zero-based index of the first match, or -1 if no match is found.</returns>
 Int String_IndexOfI(const String str, const String pattern, Int start)
 {
-	const struct StringInt *s, *p;
 	Int end, slength, plength;
 	Bool usedSlowConversion;
 
-	s = (const struct StringInt *)str;
-	p = (const struct StringInt *)pattern;
-	slength = s->length;
-	plength = p->length;
+	slength = String_Length(str);
+	plength = String_Length(pattern);
 
 	if (start < 0) start = 0;
 
@@ -1134,14 +1125,11 @@ Int String_IndexOfI(const String str, const String pattern, Int start)
 /// string matches, this returns -1.</returns>
 Int String_LastIndexOfI(const String str, const String pattern, Int start)
 {
-	const struct StringInt *s, *p;
 	Bool usedSlowConversion;
 	Int slength, plength;
 
-	s = (const struct StringInt *)str;
-	p = (const struct StringInt *)pattern;
-	slength = s->length;
-	plength = p->length;
+	slength = String_Length(str);
+	plength = String_Length(pattern);
 
 	if (plength > slength || start < plength) return -1;
 
@@ -1166,12 +1154,7 @@ Int String_LastIndexOfI(const String str, const String pattern, Int start)
 /// <returns>True if any part of the string matches the pattern, case-insensitive; False if no part of the string matches the pattern.</returns>
 Bool String_ContainsI(const String str, const String pattern)
 {
-	const struct StringInt *s, *p;
-
-	s = (const struct StringInt *)str;
-	p = (const struct StringInt *)pattern;
-
-	return p->length <= s->length && String_IndexOfI(str, pattern, 0) >= 0;
+	return String_Length(pattern) <= String_Length(str) && String_IndexOfI(str, pattern, 0) >= 0;
 }
 
 /// <summary>
@@ -1182,14 +1165,10 @@ Bool String_ContainsI(const String str, const String pattern)
 /// <returns>True if the start of the string matches the pattern, case-insensitive; False if the start of the string does not match the pattern.</returns>
 Bool String_StartsWithI(const String str, const String pattern)
 {
-	const struct StringInt *s, *p;
 	Bool usedSlowConversion;
 
-	s = (const struct StringInt *)str;
-	p = (const struct StringInt *)pattern;
-
-	return p->length <= s->length
-		&& String_CompareRangeI(pattern, 0, p->length, str, 0, p->length, &usedSlowConversion) == 0;
+	return String_Length(pattern) <= String_Length(str)
+		&& String_CompareRangeI(pattern, 0, String_Length(pattern), str, 0, String_Length(pattern), &usedSlowConversion) == 0;
 }
 
 /// <summary>
@@ -1200,12 +1179,8 @@ Bool String_StartsWithI(const String str, const String pattern)
 /// <returns>True if the end of the string matches the pattern, case-insensitive; False if the end of the string does not match the pattern.</returns>
 Bool String_EndsWithI(const String str, const String pattern)
 {
-	const struct StringInt *s, *p;
 	Bool usedSlowConversion;
 
-	s = (const struct StringInt *)str;
-	p = (const struct StringInt *)pattern;
-
-	return p->length <= s->length
-		&& String_CompareRangeI(pattern, 0, p->length, str, s->length - p->length, p->length, &usedSlowConversion) == 0;
+	return String_Length(pattern) <= String_Length(str)
+		&& String_CompareRangeI(pattern, 0, String_Length(pattern), str, String_Length(str) - String_Length(pattern), String_Length(pattern), &usedSlowConversion) == 0;
 }

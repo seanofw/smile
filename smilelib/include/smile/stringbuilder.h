@@ -91,14 +91,12 @@ Inline void StringBuilder_Init(StringBuilder stringBuilder)
 
 Inline StringBuilder StringBuilder_CreateFromString(const String str)
 {
-	const struct StringInt *s = (const struct StringInt *)str;
-	return StringBuilder_CreateFromBytes(s->text, 0, s->length);
+	return StringBuilder_CreateFromBytes(String_GetBytes(str), 0, String_Length(str));
 }
 
 Inline StringBuilder StringBuilder_CreateFromSubstring(const String str, Int start, Int length)
 {
-	const struct StringInt *s = (const struct StringInt *)str;
-	return StringBuilder_CreateFromBytes(s->text, start, length);
+	return StringBuilder_CreateFromBytes(String_GetBytes(str), start, length);
 }
 
 Inline String StringBuilder_ToString(const StringBuilder stringBuilder)
@@ -142,14 +140,12 @@ Inline void StringBuilder_Clear(StringBuilder stringBuilder)
 
 Inline void StringBuilder_AppendString(StringBuilder stringBuilder, const String str)
 {
-	const struct StringInt *s = (const struct StringInt *)str;
-	StringBuilder_Append(stringBuilder, s->text, 0, s->length);
+	StringBuilder_Append(stringBuilder, String_GetBytes(str), 0, String_Length(str));
 }
 
 Inline void StringBuilder_AppendSubstring(StringBuilder stringBuilder, const String str, Int start, Int length)
 {
-	const struct StringInt *s = (const struct StringInt *)str;
-	StringBuilder_Append(stringBuilder, s->text, start, length);
+	StringBuilder_Append(stringBuilder, String_GetBytes(str), start, length);
 }
 
 #endif

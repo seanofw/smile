@@ -21,8 +21,6 @@
 
 TEST_SUITE(LexerNumberTests)
 
-STATIC_STRING(TestFilename, "test.sm");
-
 //-------------------------------------------------------------------------------------------------
 //  Setup helper.
 
@@ -30,7 +28,7 @@ static Lexer SetupString(String source)
 {
 	Lexer lexer;
 
-	lexer = Lexer_Create(source, 0, String_Length(source), TestFilename, 1, 1);
+	lexer = Lexer_Create(source, 0, String_Length(source), GetTestScriptName(), 1, 1);
 	lexer->symbolTable = Smile_SymbolTable;
 
 	return lexer;

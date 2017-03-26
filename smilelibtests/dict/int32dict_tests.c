@@ -90,7 +90,7 @@ START_TEST(CanAddALotOfDataIntoADictionaryReliably)
 	// generate evenly-distributed values.
 	seed = 31415;
 	for (i = 0; i < 10000; i++) {
-		Int32Dict_Add(dict, seed, (void *)i);
+		Int32Dict_Add(dict, seed, (void *)(PtrInt)i);
 		seed = (seed * 69069) + 127;
 	}
 	ASSERT(Int32Dict_Count(dict) == 10000);
@@ -99,7 +99,7 @@ START_TEST(CanAddALotOfDataIntoADictionaryReliably)
 	seed = 31415;
 	for (i = 0; i < 10000; i++) {
 		ptr = Int32Dict_GetValue(dict, seed);
-		ASSERT(ptr == (void *)i);
+		ASSERT(ptr == (void *)(PtrInt)i);
 		seed = (seed * 69069) + 127;
 	}
 }
@@ -118,7 +118,7 @@ START_TEST(SetValueCanBothAddAndUpdate)
 	// generate evenly-distributed values.
 	seed = 31415;
 	for (i = 0; i < 1000; i++) {
-		Int32Dict_SetValue(dict, seed, (void *)i);
+		Int32Dict_SetValue(dict, seed, (void *)(PtrInt)i);
 		seed = (seed * 69069) + 127;
 	}
 	ASSERT(Int32Dict_Count(dict) == 1000);
@@ -126,7 +126,7 @@ START_TEST(SetValueCanBothAddAndUpdate)
 	// Replace 500 of those values with new values.
 	seed = 31415;
 	for (i = 0; i < 500; i++) {
-		Int32Dict_SetValue(dict, seed, (void *)(i ^ 0xFFFF));
+		Int32Dict_SetValue(dict, seed, (void *)(PtrInt)(i ^ 0xFFFF));
 		seed = (seed * 69069) + 127;
 	}
 	ASSERT(Int32Dict_Count(dict) == 1000);
@@ -135,12 +135,12 @@ START_TEST(SetValueCanBothAddAndUpdate)
 	seed = 31415;
 	for (i = 0; i < 500; i++) {
 		ptr = Int32Dict_GetValue(dict, seed);
-		ASSERT(ptr == (void *)(i ^ 0xFFFF));
+		ASSERT(ptr == (void *)(PtrInt)(i ^ 0xFFFF));
 		seed = (seed * 69069) + 127;
 	}
 	for (; i < 1000; i++) {
 		ptr = Int32Dict_GetValue(dict, seed);
-		ASSERT(ptr == (void *)i);
+		ASSERT(ptr == (void *)(PtrInt)i);
 		seed = (seed * 69069) + 127;
 	}
 }
@@ -158,7 +158,7 @@ START_TEST(ContainsKeyCanAnswerWhenThingsExist)
 	// generate evenly-distributed values.
 	seed = 31415;
 	for (i = 0; i < 1000; i++) {
-		Int32Dict_SetValue(dict, seed, (void *)i);
+		Int32Dict_SetValue(dict, seed, (void *)(PtrInt)i);
 		seed = (seed * 69069) + 127;
 	}
 	ASSERT(Int32Dict_Count(dict) == 1000);
@@ -193,7 +193,7 @@ START_TEST(TryGetValueCanAnswerWhenThingsExist)
 	// generate evenly-distributed values.
 	seed = 31415;
 	for (i = 0; i < 1000; i++) {
-		Int32Dict_SetValue(dict, seed, (void *)i);
+		Int32Dict_SetValue(dict, seed, (void *)(PtrInt)i);
 		seed = (seed * 69069) + 127;
 	}
 	ASSERT(Int32Dict_Count(dict) == 1000);
@@ -204,7 +204,7 @@ START_TEST(TryGetValueCanAnswerWhenThingsExist)
 		if (!Int32Dict_TryGetValue(dict, seed, &ptr)) {
 			ASSERT(False);
 		}
-		ASSERT(ptr == (void *)i);
+		ASSERT(ptr == (void *)(PtrInt)i);
 		seed = (seed * 69069) + 127;
 	}
 	for (; i < 2000; i++) {
@@ -230,7 +230,7 @@ START_TEST(CanRemoveItemsByKey)
 	// generate evenly-distributed values.
 	seed = 31415;
 	for (i = 0; i < 0x4000; i++) {
-		Int32Dict_Add(dict, seed, (void *)i);
+		Int32Dict_Add(dict, seed, (void *)(PtrInt)i);
 		seed = (seed * 69069) + 127;
 	}
 	ASSERT(Int32Dict_Count(dict) == 0x4000);
@@ -254,7 +254,7 @@ START_TEST(CanRemoveItemsByKey)
 			ASSERT(!exists);
 		}
 		else {
-			ASSERT(exists && (void *)i == ptr);
+			ASSERT(exists && (void *)(PtrInt)i == ptr);
 		}
 		seed = (seed * 69069) + 127;
 	}
@@ -397,7 +397,7 @@ START_TEST(GetKeysReturnsAllTheKeys)
 
 	// Insert 256 values, with keys that should cause some hash collisions.
 	for (i = 0; i < 256; i++) {
-		Int32Dict_Add(dict, i * 12, (void *)(i ^ 0xABAD1DEA));
+		Int32Dict_Add(dict, i * 12, (void *)(PtrInt)(i ^ 0xABAD1DEA));
 	}
 	ASSERT(Int32Dict_Count(dict) == 256);
 
@@ -430,7 +430,7 @@ START_TEST(GetValuesReturnsAllTheValues)
 
 	// Insert 256 values, with keys that should cause some hash collisions.
 	for (i = 0; i < 256; i++) {
-		Int32Dict_Add(dict, i * 12, (void *)(i ^ 0xABAD1DEA));
+		Int32Dict_Add(dict, i * 12, (void *)(PtrInt)(i ^ 0xABAD1DEA));
 	}
 	ASSERT(Int32Dict_Count(dict) == 256);
 
@@ -463,7 +463,7 @@ START_TEST(GetAllReturnsEverything)
 
 	// Insert 256 values, with keys that should cause some hash collisions.
 	for (i = 0; i < 256; i++) {
-		Int32Dict_Add(dict, i * 12, (void *)(i ^ 0xABAD1DEA));
+		Int32Dict_Add(dict, i * 12, (void *)(PtrInt)(i ^ 0xABAD1DEA));
 	}
 	ASSERT(Int32Dict_Count(dict) == 256);
 

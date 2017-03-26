@@ -36,19 +36,20 @@ EXTERN_STATIC_STRING(String_Empty, "");
 /// <returns>The new String instance.</returns>
 String String_Create(const Byte *text, Int length)
 {
-	struct StringInt *str;
+	String str;
 	Byte *newText;
 
 	if (length <= 0) return String_Empty;
 
-	str = GC_MALLOC_STRUCT(struct StringInt);
+	str = (String)GC_MALLOC_ATOMIC(sizeof(struct StringStruct) - 1024 + length + 1);
 	if (str == NULL) Smile_Abort_OutOfMemory();
-	newText = GC_MALLOC_TEXT(length);
-	if (newText == NULL) Smile_Abort_OutOfMemory();
 
-	str->length = length;
-	str->text = newText;
+	str->kind = SMILE_KIND_STRING;
+	str->vtable = (SmileVTable)&SmileString_VTableData;
+	str->base = (SmileObject)&SmileString_BaseObjectStruct;
+	str->_opaque.length = length;
 
+	newText = str->_opaque.text;
 	MemCpy(newText, text, length);
 	newText[length] = '\0';
 
@@ -62,20 +63,18 @@ String String_Create(const Byte *text, Int length)
 /// <returns>The new String instance.</returns>
 String String_CreateInternal(Int length)
 {
-	struct StringInt *str;
-	Byte *newText;
+	String str;
 
 	if (length <= 0) return String_Empty;
 
-	str = GC_MALLOC_STRUCT(struct StringInt);
+	str = (String)GC_MALLOC_ATOMIC(sizeof(struct StringStruct) - 1024 + length + 1);
 	if (str == NULL) Smile_Abort_OutOfMemory();
-	newText = GC_MALLOC_TEXT(length);
-	if (newText == NULL) Smile_Abort_OutOfMemory();
 
-	str->length = length;
-	str->text = newText;
-
-	newText[length] = '\0';
+	str->kind = SMILE_KIND_STRING;
+	str->vtable = (SmileVTable)&SmileString_VTableData;
+	str->base = (SmileObject)&SmileString_BaseObjectStruct;
+	str->_opaque.length = length;
+	str->_opaque.text[length] = '\0';
 
 	return (String)str;
 }
@@ -88,23 +87,9 @@ String String_CreateInternal(Int length)
 /// <returns>The new String instance.</returns>
 String String_CreateRepeat(Byte b, Int repeatCount)
 {
-	struct StringInt *str;
-	Byte *newText;
-
-	if (repeatCount <= 0) return String_Empty;
-
-	str = GC_MALLOC_STRUCT(struct StringInt);
-	if (str == NULL) Smile_Abort_OutOfMemory();
-	newText = GC_MALLOC_TEXT(repeatCount);
-	if (newText == NULL) Smile_Abort_OutOfMemory();
-
-	str->length = repeatCount;
-	str->text = newText;
-
-	MemSet(newText, b, repeatCount);
-	newText[repeatCount] = '\0';
-
-	return (String)str;
+	String str = String_CreateInternal(repeatCount);
+	MemSet(str->_opaque.text, b, repeatCount);
+	return str;
 }
 
 /// <summary>
@@ -116,34 +101,26 @@ String String_CreateRepeat(Byte b, Int repeatCount)
 String String_ConcatMany(const String *strs, Int numStrs)
 {
 	Int length, dest, i;
-	struct StringInt *str;
-	const struct StringInt *temp;
+	String str, temp;
 	Byte *newText;
 
 	if (numStrs <= 0) return String_Empty;
 
 	length = 0;
 	for (i = 0; i < numStrs; i++)
-	{
-		length += ((const struct StringInt *)(strs[i]))->length;
-	}
+		length += String_Length(strs[i]);
 
 	if (length <= 0) return String_Empty;
 
-	str = GC_MALLOC_STRUCT(struct StringInt);
-	if (str == NULL) Smile_Abort_OutOfMemory();
-	newText = GC_MALLOC_TEXT(length);
-	if (newText == NULL) Smile_Abort_OutOfMemory();
-
-	str->length = length;
-	str->text = newText;
+	str = String_CreateInternal(length);
+	newText = str->_opaque.text;
 
 	dest = 0;
 	for (i = 0; i < numStrs; i++)
 	{
-		temp = ((const struct StringInt *)(strs[i]));
-		MemCpy(newText + dest, temp->text, temp->length);
-		dest += temp->length;
+		temp = strs[i];
+		MemCpy(newText + dest, String_GetBytes(temp), String_Length(temp));
+		dest += String_Length(temp);
 	}
 
 	newText[length] = '\0';
@@ -162,7 +139,7 @@ String String_ConcatMany(const String *strs, Int numStrs)
 String String_Join(const String glue, const String *strs, Int numStrs)
 {
 	Int length, dest, i;
-	struct StringInt *str;
+	String str;
 	Byte *newText;
 	const Byte *glueText;
 	Int glueLength;
@@ -172,32 +149,27 @@ String String_Join(const String glue, const String *strs, Int numStrs)
 	length = 0;
 	for (i = 0; i < numStrs; i++)
 	{
-		length += ((const struct StringInt *)(strs[i]))->length;
+		length += String_Length(strs[i]);
 	}
-	length += (numStrs - 1) * ((const struct StringInt *)glue)->length;
+	length += (numStrs - 1) * String_Length(glue);
 
 	if (length <= 0) return String_Empty;
 
-	str = GC_MALLOC_STRUCT(struct StringInt);
-	if (str == NULL) Smile_Abort_OutOfMemory();
-	newText = GC_MALLOC_TEXT(length);
-	if (newText == NULL) Smile_Abort_OutOfMemory();
+	str = String_CreateInternal(length);
+	newText = str->_opaque.text;
 
-	str->length = length;
-	str->text = newText;
+	glueText = String_GetBytes(glue);
+	glueLength = String_Length(glue);
 
-	glueText = ((const struct StringInt *)glue)->text;
-	glueLength = ((const struct StringInt *)glue)->length;
-
-	MemCpy(newText, ((const struct StringInt *)(strs[0]))->text, ((const struct StringInt *)(strs[0]))->length);
-	dest = ((const struct StringInt *)(strs[0]))->length;
+	MemCpy(newText, String_GetBytes(strs[0]), String_Length(strs[0]));
+	dest = String_Length(strs[0]);
 
 	for (i = 1; i < numStrs; i++)
 	{
 		MemCpy(newText + dest, glueText, glueLength);
 		dest += glueLength;
-		MemCpy(newText + dest, ((const struct StringInt *)(strs[i]))->text, ((const struct StringInt *)(strs[i]))->length);
-		dest += ((const struct StringInt *)(strs[i]))->length;
+		MemCpy(newText + dest, String_GetBytes(strs[i]), String_Length(strs[i]));
+		dest += String_Length(strs[i]);
 	}
 
 	newText[length] = '\0';
@@ -208,13 +180,11 @@ String String_Join(const String glue, const String *strs, Int numStrs)
 /// <summary>
 /// Answer whether two strings are equal, i.e., of the same length and containing the same bytes.
 /// </summary>
-/// <param name="str">The first string to compare.</param>
-/// <param name="other">The second string to compare.</param>
+/// <param name="a">The first string to compare.</param>
+/// <param name="b">The second string to compare.</param>
 /// <returns>True if they are equal, False if they are not of the same length or contain different bytes.</returns>
-Bool String_Equals(const String str, const String other)
+Bool String_Equals(const String a, const String b)
 {
-	const struct StringInt *a = (const struct StringInt *)str;
-	const struct StringInt *b = (const struct StringInt *)other;
 	const Byte *aText, *bText;
 
 	if (a == b) return True;
@@ -222,12 +192,12 @@ Bool String_Equals(const String str, const String other)
 	if (a == NULL) return b != NULL;
 	if (b == NULL) return False;
 
-	if (a->length != b->length) return False;
+	if (String_Length(a) != String_Length(b)) return False;
 
-	aText = a->text;
-	bText = b->text;
+	aText = String_GetBytes(a);
+	bText = String_GetBytes(b);
 
-	switch (a->length)
+	switch (String_Length(a))
 	{
 		case 0: return True;
 		case 1: return aText[0] == bText[0];
@@ -236,7 +206,38 @@ Bool String_Equals(const String str, const String other)
 		case 4: return aText[0] == bText[0] && aText[1] == bText[1] && aText[2] == bText[2] && aText[3] == bText[3];
 
 		default:
-			return MemCmp(aText, bText, a->length) == 0;
+			return MemCmp(aText, bText, String_Length(a)) == 0;
+	}
+}
+
+/// <summary>
+/// Answer whether a string equals a given chunk of bytes.
+/// </summary>
+/// <param name="a">The first string to compare (which can be NULL).</param>
+/// <param name="bText">The text of the second string to compare.  This must not be NULL.</param>
+/// <param name="bLength">The length of the second string to compare.</param>
+/// <returns>True if they are equal, False if they are not of the same length or contain different bytes.</returns>
+SMILE_API_FUNC Bool String_EqualsInternal(const String a, const Byte *bText, Int bLength)
+{
+	const Byte *aText;
+
+	if (a == NULL) return False;
+
+	aText = String_GetBytes(a);
+	if (aText == bText) return True;
+
+	if (String_Length(a) != bLength) return False;
+
+	switch (String_Length(a))
+	{
+		case 0: return True;
+		case 1: return aText[0] == bText[0];
+		case 2: return aText[0] == bText[0] && aText[1] == bText[1];
+		case 3: return aText[0] == bText[0] && aText[1] == bText[1] && aText[2] == bText[2];
+		case 4: return aText[0] == bText[0] && aText[1] == bText[1] && aText[2] == bText[2] && aText[3] == bText[3];
+
+		default:
+			return MemCmp(aText, bText, String_Length(a)) == 0;
 	}
 }
 
@@ -244,26 +245,24 @@ Bool String_Equals(const String str, const String other)
 /// Answer whether two strings are equal, i.e., of the same length and containing the same bytes,
 /// or if they are not equal, which one lexically precedes the other.
 /// </summary>
-/// <param name="str">The first string to compare.</param>
-/// <param name="other">The second string to compare.</param>
+/// <param name="a">The first string to compare.</param>
+/// <param name="b">The second string to compare.</param>
 /// <returns>0 if they are equal, -1 if str precedes other, +1 if str follows other.</returns>
-Int String_Compare(const String str, const String other)
+Int String_Compare(const String a, const String b)
 {
-	const struct StringInt *a = (const struct StringInt *)str;
-	const struct StringInt *b = (const struct StringInt *)other;
 	const Byte *aText, *bText;
 	Int alen, blen;
 	Int i;
 
 	if (a == b) return 0;
 
-	if (a == NULL || a->length <= 0) return b == NULL || b->length <= 0 ? 0 : -1;
-	if (b == NULL || b->length <= 0) return +1;
+	if (a == NULL || String_Length(a) <= 0) return b == NULL || String_Length(b) <= 0 ? 0 : -1;
+	if (b == NULL || String_Length(b) <= 0) return +1;
 
-	aText = a->text;
-	bText = b->text;
-	alen = a->length;
-	blen = b->length;
+	aText = String_GetBytes(a);
+	bText = String_GetBytes(b);
+	alen = String_Length(a);
+	blen = String_Length(b);
 
 	for (i = alen < blen ? alen : blen; i--; aText++, bText++) {
 		if (*aText != *bText)
@@ -286,8 +285,6 @@ Int String_Compare(const String str, const String other)
 /// <returns>0 if they are equal, -1 if str precedes other, +1 if str follows other.</returns>
 Int String_CompareRange(const String a, Int astart, Int alength, const String b, Int bstart, Int blength)
 {
-	const struct StringInt *astr = (const struct StringInt *)a;
-	const struct StringInt *bstr = (const struct StringInt *)b;
 	const Byte *aptr, *bptr, *aend, *bend;
 	Byte abyte, bbyte;
 
@@ -302,26 +299,26 @@ Int String_CompareRange(const String a, Int astart, Int alength, const String b,
 		blength = 0;
 	}
 
-	if (String_IsNullOrEmpty(a) || astart >= astr->length || alength <= 0)
+	if (String_IsNullOrEmpty(a) || astart >= String_Length(a) || alength <= 0)
 	{
-		return String_IsNullOrEmpty(b) || bstart >= bstr->length || blength <= 0 ? 0 : -1;
+		return String_IsNullOrEmpty(b) || bstart >= String_Length(b) || blength <= 0 ? 0 : -1;
 	}
-	if (String_IsNullOrEmpty(b) || bstart >= bstr->length || blength <= 0)
+	if (String_IsNullOrEmpty(b) || bstart >= String_Length(b) || blength <= 0)
 	{
 		return -1;
 	}
 
-	if (alength > astr->length - astart)
+	if (alength > String_Length(a) - astart)
 	{
-		alength = astr->length - astart;
+		alength = String_Length(a) - astart;
 	}
-	if (blength > bstr->length - bstart)
+	if (blength > String_Length(b) - bstart)
 	{
-		blength = bstr->length - bstart;
+		blength = String_Length(b) - bstart;
 	}
 
-	aptr = astr->text + astart;
-	bptr = bstr->text + bstart;
+	aptr = String_GetBytes(a) + astart;
+	bptr = String_GetBytes(b) + bstart;
 	aend = aptr + alength;
 	bend = bptr + blength;
 	while (aptr < aend && bptr < bend)
@@ -347,15 +344,13 @@ Int String_CompareRange(const String a, Int astart, Int alength, const String b,
 /// <returns>The extracted (copied) substring.</returns>
 String String_SubstringAt(const String str, Int start)
 {
-	struct StringInt *s = (struct StringInt *)str;
-
 	if (start < 0) {
 		start = 0;
 	}
-	if (start >= s->length)
+	if (start >= String_Length(str))
 		return String_Empty;
 
-	return String_Create(s->text + start, s->length - start);
+	return String_Create(String_GetBytes(str) + start, String_Length(str) - start);
 }
 
 /// <summary>
@@ -368,51 +363,41 @@ String String_SubstringAt(const String str, Int start)
 /// <returns>The extracted (copied) substring.</returns>
 String String_Substring(const String str, Int start, Int length)
 {
-	struct StringInt *s = (struct StringInt *)str;
-
 	if (start < 0) {
 		length += start;
 		start = 0;
 	}
-	if (start >= s->length || length <= 0)
+	if (start >= String_Length(str) || length <= 0)
 		return String_Empty;
-	if (length > s->length - start) {
-		length = s->length - start;
+	if (length > String_Length(str) - start) {
+		length = String_Length(str) - start;
 	}
 
-	return String_Create(s->text + start, length);
+	return String_Create(String_GetBytes(str) + start, length);
 }
 
 /// <summary>
 /// Construct a new String instance by concatenating exactly two strings together.
 /// </summary>
-/// <param name="str">The first string to concatenate.</param>
-/// <param name="other">The second string to concatenate.</param>
+/// <param name="s1">The first string to concatenate.</param>
+/// <param name="s2">The second string to concatenate.</param>
 /// <returns>The new String instance.</returns>
-String String_Concat(const String str, const String other)
+String String_Concat(const String s1, const String s2)
 {
-	struct StringInt *result, *s1, *s2;
+	String result;
 	Byte *newText;
 	Int length;
 
-	s1 = (struct StringInt *)str;
-	s2 = (struct StringInt *)other;
+	if (s1 == NULL || String_Length(s1) == 0) return s2 != NULL ? (String)s2 : String_Empty;
+	if (s2 == NULL || String_Length(s2) == 0) return (String)s1;
 
-	if (s1 == NULL || s1->length == 0) return s2 != NULL ? (String)s2 : String_Empty;
-	if (s2 == NULL || s2->length == 0) return (String)s1;
+	length = String_Length(s1) + String_Length(s2);
 
-	length = s1->length + s2->length;
+	result = String_CreateInternal(length);
+	newText = result->_opaque.text;
 
-	result = GC_MALLOC_STRUCT(struct StringInt);
-	if (result == NULL) Smile_Abort_OutOfMemory();
-	newText = GC_MALLOC_TEXT(length);
-	if (newText == NULL) Smile_Abort_OutOfMemory();
-
-	result->length = length;
-	result->text = newText;
-
-	MemCpy(newText, s1->text, s1->length);
-	MemCpy(newText + s1->length, s2->text, s2->length);
+	MemCpy(newText, String_GetBytes(s1), String_Length(s1));
+	MemCpy(newText + String_Length(s1), String_GetBytes(s2), String_Length(s2));
 	newText[length] = '\0';
 
 	return (String)result;
@@ -426,30 +411,26 @@ String String_Concat(const String str, const String other)
 /// <returns>The new String instance.</returns>
 String String_ConcatByte(const String str, Byte ch)
 {
-	struct StringInt *result, *s1;
+	String result;
 	Byte *newText;
 	Int length;
 
-	s1 = (struct StringInt *)str;
+	if (str == NULL || String_Length(str) == 0) {
+		result = String_CreateInternal(1);
+		result->_opaque.text[0] = ch;
+		return result;
+	}
 
-	if (s1 == NULL || s1->length == 0)
-		return String_CreateRepeat(ch, 1);
+	length = String_Length(str) + 1;
 
-	length = s1->length + 1;
+	result = String_CreateInternal(length);
+	newText = result->_opaque.text;
 
-	result = GC_MALLOC_STRUCT(struct StringInt);
-	if (result == NULL) Smile_Abort_OutOfMemory();
-	newText = GC_MALLOC_TEXT(length);
-	if (newText == NULL) Smile_Abort_OutOfMemory();
-
-	result->length = length;
-	result->text = newText;
-
-	MemCpy(newText, s1->text, s1->length);
+	MemCpy(newText, String_GetBytes(str), String_Length(str));
 	newText[length-1] = ch;
 	newText[length] = '\0';
 
-	return (String)result;
+	return result;
 }
 
 /// <summary>
@@ -483,18 +464,14 @@ static Bool IsMatch(const Byte *text, const Byte *pattern, Int start, Int length
 /// string matches, this returns -1.</returns>
 Int String_IndexOf(const String str, const String pattern, Int start)
 {
-	const struct StringInt *s, *p;
 	Int end;
 
-	s = (const struct StringInt *)str;
-	p = (const struct StringInt *)pattern;
-
-	if (p->length > s->length) return -1;
+	if (String_Length(pattern) > String_Length(str)) return -1;
 
 	if (start < 0) start = 0;
 
-	for (end = s->length - p->length; start <= end; start++) {
-		if (IsMatch(s->text, p->text, start, p->length))
+	for (end = String_Length(str) - String_Length(pattern); start <= end; start++) {
+		if (IsMatch(String_GetBytes(str), String_GetBytes(pattern), start, String_Length(pattern)))
 			return start;
 	}
 	return -1;
@@ -511,13 +488,10 @@ Int String_IndexOf(const String str, const String pattern, Int start)
 /// string matches, this returns -1.</returns>
 Int String_LastIndexOf(const String str, const String pattern, Int start)
 {
-	const struct StringInt *s, *p;
 	Int slength, plength;
 
-	s = (const struct StringInt *)str;
-	p = (const struct StringInt *)pattern;
-	slength = s->length;
-	plength = p->length;
+	slength = String_Length(str);
+	plength = String_Length(pattern);
 
 	if (plength > slength || start < plength) return -1;
 
@@ -528,7 +502,7 @@ Int String_LastIndexOf(const String str, const String pattern, Int start)
 	}
 	for (; start >= 0; start--)
 	{
-		if (IsMatch(s->text, p->text, start, plength))
+		if (IsMatch(String_GetBytes(str), String_GetBytes(pattern), start, plength))
 			return start;
 	}
 	return -1;
@@ -542,12 +516,8 @@ Int String_LastIndexOf(const String str, const String pattern, Int start)
 /// <returns>True if the start of the string exactly matches the pattern; False if the start of the string does not exactly match the pattern.</returns>
 Bool String_StartsWith(const String str, const String pattern)
 {
-	const struct StringInt *s, *p;
-
-	s = (const struct StringInt *)str;
-	p = (const struct StringInt *)pattern;
-
-	return p->length <= s->length && IsMatch(s->text, p->text, 0, p->length);
+	return String_Length(pattern) <= String_Length(str)
+		&& IsMatch(String_GetBytes(str), String_GetBytes(pattern), 0, String_Length(pattern));
 }
 
 /// <summary>
@@ -558,12 +528,8 @@ Bool String_StartsWith(const String str, const String pattern)
 /// <returns>True if the end of the string exactly matches the pattern; False if the end of the string does not exactly match the pattern.</returns>
 Bool String_EndsWith(const String str, const String pattern)
 {
-	const struct StringInt *s, *p;
-
-	s = (const struct StringInt *)str;
-	p = (const struct StringInt *)pattern;
-
-	return p->length <= s->length && IsMatch(s->text, p->text, s->length - p->length, p->length);
+	return String_Length(pattern) <= String_Length(str)
+		&& IsMatch(String_GetBytes(str), String_GetBytes(pattern), String_Length(str) - String_Length(pattern), String_Length(pattern));
 }
 
 /// <summary>
@@ -576,14 +542,12 @@ Bool String_EndsWith(const String str, const String pattern)
 /// string matches, this returns -1.</returns>
 Int String_IndexOfChar(const String str, Byte ch, Int start)
 {
-	const struct StringInt *s;
-	Byte *text;
+	const Byte *text;
 	Int end;
 
-	s = (const struct StringInt *)str;
-	text = s->text;
+	text = String_GetBytes(str);
 
-	for (end = s->length; start < end; start++)
+	for (end = String_Length(str); start < end; start++)
 	{
 		if (text[start] == ch)
 			return start;
@@ -602,14 +566,10 @@ Int String_IndexOfChar(const String str, Byte ch, Int start)
 /// string matches, this returns -1.</returns>
 Int String_LastIndexOfChar(const String str, Byte ch, Int start)
 {
-	const struct StringInt *s;
-	Byte *text;
+	const Byte *text = String_GetBytes(str);
 
-	s = (const struct StringInt *)str;
-	text = s->text;
-
-	if (start >= s->length - 1)
-		start = s->length - 1;
+	if (start >= String_Length(str) - 1)
+		start = String_Length(str) - 1;
 
 	for (; start >= 0; start--)
 	{
@@ -631,17 +591,15 @@ Int String_LastIndexOfChar(const String str, Byte ch, Int start)
 /// string matches any of the characters, this returns -1.</returns>
 Int String_IndexOfAnyChar(const String str, const Byte *chars, Int numChars, Int start)
 {
-	const struct StringInt *s;
 	const Byte *text;
 	Byte ch;
 	Int end, i;
 
 	if (start < 0) start = 0;
 
-	s = (const struct StringInt *)str;
-	text = s->text;
+	text = String_GetBytes(str);
 
-	for (end = s->length; start < end; start++) {
+	for (end = String_Length(str); start < end; start++) {
 		ch = text[start];
 		for (i = 0; i < numChars; i++) {
 			if (ch == chars[i])
@@ -661,24 +619,22 @@ Int String_IndexOfAnyChar(const String str, const Byte *chars, Int numChars, Int
 /// <returns>A new string where all instances of the pattern have been replaced by the given replacement string.</returns>
 String String_Replace(const String str, const String pattern, const String replacement)
 {
-	const struct StringInt *s, *p, *r;
-	StringBuilder stringBuilder;
-	struct StringBuilderInt sb;
-	Byte *text, *patText, *repText;
-	Int lastEnd, index;
+	DECLARE_INLINE_STRINGBUILDER(stringBuilder, 256);
+	String r;
+	const Byte *text, *patText, *repText;
+	Int lastEnd, index, patLength, repLength;
 
 	if (String_IsNullOrEmpty(str)) return String_Empty;
 	if (String_IsNullOrEmpty(pattern)) return str;
 
-	s = (const struct StringInt *)str;
-	text = s->text;
-	p = (const struct StringInt *)pattern;
-	patText = p->text;
-	r = replacement != NULL ? (const struct StringInt *)replacement : (const struct StringInt *)String_Empty;
-	repText = r->text;
+	text = String_GetBytes(str);
+	patText = String_GetBytes(pattern);
+	patLength = String_Length(pattern);
+	r = (replacement != NULL ? replacement : String_Empty);
+	repText = String_GetBytes(r);
+	repLength = String_Length(r);
 
-	stringBuilder = (StringBuilder)&sb;
-	StringBuilder_InitWithSize(stringBuilder, s->length);
+	INIT_INLINE_STRINGBUILDER(stringBuilder);
 
 	lastEnd = 0;
 	index = 0;
@@ -688,13 +644,13 @@ String String_Replace(const String str, const String pattern, const String repla
 		{
 			StringBuilder_Append(stringBuilder, text, lastEnd, index - lastEnd);
 		}
-		StringBuilder_Append(stringBuilder, repText, 0, r->length);
-		lastEnd = (index += p->length);
+		StringBuilder_Append(stringBuilder, repText, 0, repLength);
+		lastEnd = (index += String_Length(pattern));
 	}
 
-	if (lastEnd < s->length)
+	if (lastEnd < String_Length(str))
 	{
-		StringBuilder_Append(stringBuilder, text, lastEnd, s->length - lastEnd);
+		StringBuilder_Append(stringBuilder, text, lastEnd, String_Length(str) - lastEnd);
 	}
 
 	return StringBuilder_ToString(stringBuilder);
@@ -709,30 +665,21 @@ String String_Replace(const String str, const String pattern, const String repla
 /// <returns>A new string where all instances of the pattern character have been replaced by the given replacement character.</returns>
 String String_ReplaceChar(const String str, Byte pattern, Byte replacement)
 {
-	const struct StringInt *s;
-	struct StringInt *newString;
-	Byte *text, *newText, *dest;
+	String newString;
 	const Byte *src;
+	Byte *newText, *dest;
 	Int length;
 	Byte ch;
 	Int i;
 
 	if (String_IsNullOrEmpty(str)) return String_Empty;
 
-	s = (const struct StringInt *)str;
-	text = s->text;
-	length = s->length;
+	length = String_Length(str);
 
-	newString = GC_MALLOC_STRUCT(struct StringInt);
-	if (newString == NULL) Smile_Abort_OutOfMemory();
-	newText = GC_MALLOC_TEXT(length);
-	if (newText == NULL) Smile_Abort_OutOfMemory();
+	newString = String_CreateInternal(length);
 
-	newString->length = length;
-	newString->text = newText;
-
-	src = text;
-	dest = newText;
+	src = String_GetBytes(str);
+	dest = newText = newString->_opaque.text;
 
 	for (i = 0; i < length; i++)
 	{
@@ -740,7 +687,7 @@ String String_ReplaceChar(const String str, Byte pattern, Byte replacement)
 	}
 	*dest = '\0';
 
-	return (String)newString;
+	return newString;
 }
 
 /// <summary>

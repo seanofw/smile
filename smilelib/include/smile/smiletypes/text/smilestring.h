@@ -15,40 +15,42 @@
 #endif
 
 //-------------------------------------------------------------------------------------------------
-//  Type declarations
-
-struct SmileStringInt {
-	DECLARE_BASE_OBJECT_PROPERTIES;
-	struct StringInt string;
-};
-
-//-------------------------------------------------------------------------------------------------
 //  Public interface
 
 SMILE_API_DATA SmileVTable SmileString_VTable;
 
-SMILE_API_FUNC SmileString SmileString_Create(String str);
+struct SmileStringInt {
+	DECLARE_BASE_OBJECT_PROPERTIES;
 
-//-------------------------------------------------------------------------------------------------
-//  Inline operations
+	struct {
+		Int length;
+		Byte text[1024];
+	} _opaque;
+};
 
-#define SmileString_GetString(__str__) \
-	((String)&((__str__)->string))
+Inline SmileString SmileString_Create(String str)
+{
+	return (SmileString)str;
+}
+
+Inline String SmileString_GetString(SmileString str)
+{
+	return (String)str;
+}
 
 Inline SmileString SmileString_CreateC(const char *text)
 {
-	String str = String_FromC(text);
-	return SmileString_Create(str);
+	return (SmileString)String_FromC(text);
 }
 
 Inline const char *SmileString_ToC(SmileString str)
 {
-	return (const char *)str->string.text;
+	return String_ToC((String)str);
 }
 
 Inline Int SmileString_Length(SmileString str)
 {
-	return str->string.length;
+	return String_Length((String)str);
 }
 
 #endif

@@ -62,14 +62,13 @@ SMILE_API_FUNC void Real_SetFlags(UInt32 flags)
 	Real_Flags = flags;
 }
 
-SMILE_API_FUNC Bool Real128_TryParse(String str, Real128 *result)
+SMILE_API_FUNC Bool Real128_TryParseInternal(const Byte *src, Int length, Real128 *result)
 {
 	DECLARE_INLINE_STRINGBUILDER(cleanString, 256);
-	const Byte *src, *end, *start;
+	const Byte *end, *start;
 	Byte ch;
 
-	src = String_GetBytes(str);
-	end = src + String_Length(str);
+	end = src + length;
 
 	INIT_INLINE_STRINGBUILDER(cleanString);
 

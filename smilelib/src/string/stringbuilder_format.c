@@ -74,13 +74,12 @@ void StringBuilder_AppendFormatv(StringBuilder stringBuilder, const char *format
 /// <param name="format">The format string.</param>
 void StringBuilder_AppendFormatString(StringBuilder stringBuilder, const String format, ...)
 {
-	const struct StringInt *s = (const struct StringInt *)format;
 	va_list v;
 
-	if (format == NULL || s->length <= 0) return;
+	if (format == NULL || String_Length(format) <= 0) return;
 
 	va_start(v, format);
-	StringBuilder_AppendFormatInternal(stringBuilder, s->text, s->length, v);
+	StringBuilder_AppendFormatInternal(stringBuilder, String_GetBytes(format), String_Length(format), v);
 	va_end(v);
 }
 
@@ -94,11 +93,9 @@ void StringBuilder_AppendFormatString(StringBuilder stringBuilder, const String 
 /// <param name="v">The va_list that describes the format arguments.</param>
 void StringBuilder_AppendFormatStringv(StringBuilder stringBuilder, const String format, va_list v)
 {
-	const struct StringInt *s = (const struct StringInt *)format;
+	if (format == NULL || String_Length(format) <= 0) return;
 
-	if (format == NULL || s->length <= 0) return;
-
-	StringBuilder_AppendFormatInternal(stringBuilder, s->text, s->length, v);
+	StringBuilder_AppendFormatInternal(stringBuilder, String_GetBytes(format), String_Length(format), v);
 }
 
 #define BUFFER_LIMIT 256

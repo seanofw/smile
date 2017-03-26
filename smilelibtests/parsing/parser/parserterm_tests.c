@@ -30,8 +30,6 @@
 
 TEST_SUITE(ParserTermTests)
 
-STATIC_STRING(TestFilename, "test.sm");
-
 //-------------------------------------------------------------------------------------------------
 //  Primitive term tests.
 
