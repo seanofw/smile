@@ -41,6 +41,16 @@ String String_Create(const Byte *text, Int length)
 
 	if (length <= 0) return String_Empty;
 
+	// IMPORTANT NOTE:  GC_MALLOC_ATOMIC() here is technically the wrong thing to do, since
+	//   the memory it allocates will actually have pointers inside it.  However, those pointers
+	//   are exclusively pointing at things in the static data segment:  They never point to
+	//   any data on the heap.  Therefore, the things that those pointers point to will always
+	//   be part of the GC's root set, and that means those pointers can be excluded from the
+	//   GC's consideration since it will have to trace them anyway.  The upshot is that while
+	//   GC_MALLOC_ATOMIC() is technically wrong, it's not *really* wrong because it's safe for
+	//   the GC to completely ignore all of the String's data and treat it as just a meaningless,
+	//   featureless blob.
+
 	str = (String)GC_MALLOC_ATOMIC(sizeof(struct StringStruct) - 1024 + length + 1);
 	if (str == NULL) Smile_Abort_OutOfMemory();
 
@@ -66,6 +76,8 @@ String String_CreateInternal(Int length)
 	String str;
 
 	if (length <= 0) return String_Empty;
+
+	// See above note about GC_MALLOC_ATOMIC() before changing this code!
 
 	str = (String)GC_MALLOC_ATOMIC(sizeof(struct StringStruct) - 1024 + length + 1);
 	if (str == NULL) Smile_Abort_OutOfMemory();
