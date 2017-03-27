@@ -9,10 +9,6 @@
 			<ExpandedItem>_opaque</ExpandedItem>
 		</Expand>
 	</Type>
-	<Type Name="StringInt">
-		<DisplayString>{(char *)text,s}</DisplayString>
-		<StringView>(char *)text,s</StringView>
-	</Type>
 	<Type Name="StringBuilderStruct">
 		<DisplayString>{(char *)_opaque.text,s}</DisplayString>
 		<StringView>(char *)_opaque.text,s</StringView>
@@ -229,7 +225,7 @@
 		<DisplayString Condition="(kind &amp; 0xFF) == 0x22">Primitive</DisplayString>
 		<DisplayString Condition="(kind &amp; 0xFF) == 0x23">Pair</DisplayString>
 		<DisplayString Condition="(kind &amp; 0xFF) == 0x24">UserObject</DisplayString>
-		<DisplayString Condition="(kind &amp; 0xFF) == 0x25">String (text={((struct SmileStringInt *)this)->string.text,s})</DisplayString>
+		<DisplayString Condition="(kind &amp; 0xFF) == 0x25">String (text={((struct StringStruct *)this)->_opaque.text,s})</DisplayString>
 		<DisplayString Condition="(kind &amp; 0xFF) == 0x2F">Function</DisplayString>
 		<DisplayString Condition="(kind &amp; 0xFF) == 0xFE">ParseDecl</DisplayString>
 		<DisplayString Condition="(kind &amp; 0xFF) == 0xFF">ParseMessage (value={((struct ParseMessageStruct *)this)->message->_opaque.text,s})</DisplayString>
@@ -238,7 +234,7 @@
 		<Expand>
 			<Item Name="as List" Condition="(kind &amp; 0xFF) == 0x20 || (kind &amp; 0xFF) == 0x21">(struct SmileListInt *)this</Item>
 			<Item Name="as Symbol" Condition="(kind &amp; 0xFF) == 0x18">(struct SmileSymbolInt *)this</Item>
-			<Item Name="as String" Condition="(kind &amp; 0xFF) == 0x25">(struct SmileStringInt *)this</Item>
+			<Item Name="as String" Condition="(kind &amp; 0xFF) == 0x25">(struct StringStruct *)this</Item>
 			<Item Name="as Pair" Condition="(kind &amp; 0xFF) == 0x23">(struct SmilePairInt *)this</Item>
 			<Item Name="as Byte" Condition="(kind &amp; 0xFF) == 0x10">(struct SmileByteInt *)this</Item>
 			<Item Name="as Integer16" Condition="(kind &amp; 0xFF) == 0x11">(struct SmileInteger16Int *)this</Item>
@@ -284,7 +280,7 @@
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x22">Primitive</DisplayString>
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x23">Pair</DisplayString>
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x24">UserObject</DisplayString>
-		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x25">String (text={((struct SmileStringInt *)obj)->string.text,s})</DisplayString>
+		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x25">String (text={((struct StringStruct *)obj)->_opaque.text,s})</DisplayString>
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x2F">Function</DisplayString>
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0xFE">ParseDecl</DisplayString>
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0xFF">ParseMessage (value={((struct ParseMessageStruct *)obj)->message->_opaque.text,s})</DisplayString>
@@ -293,7 +289,7 @@
 		<Expand>
 			<Item Name="as List" Condition="(obj-&gt;kind &amp; 0xFF) == 0x20 || (obj-&gt;kind &amp; 0xFF) == 0x21">(struct SmileListInt *)obj</Item>
 			<Item Name="as Symbol" Condition="(obj-&gt;kind &amp; 0xFF) == 0x18">(struct SmileSymbolInt *)obj</Item>
-			<Item Name="as String" Condition="(obj-&gt;kind &amp; 0xFF) == 0x25">(struct SmileStringInt *)obj</Item>
+			<Item Name="as String" Condition="(obj-&gt;kind &amp; 0xFF) == 0x25">(struct StringStruct *)obj</Item>
 			<Item Name="as Pair" Condition="(obj-&gt;kind &amp; 0xFF) == 0x23">(struct SmilePairInt *)obj</Item>
 			<Item Name="as Byte" Condition="(obj-&gt;kind &amp; 0xFF) == 0x10">(struct SmileByteInt *)obj</Item>
 			<Item Name="as Integer16" Condition="(obj-&gt;kind &amp; 0xFF) == 0x11">(struct SmileInteger16Int *)obj</Item>
@@ -312,8 +308,8 @@
 	</Type>
 
 	<!-- SmileString -->
-	<Type Name="SmileStringInt">
-		<DisplayString>String: {string->text,s}</DisplayString>
+	<Type Name="StringStruct">
+		<DisplayString>String: {_opaque.text,s}</DisplayString>
 	</Type>
 
 	<!-- SmileSymbol -->

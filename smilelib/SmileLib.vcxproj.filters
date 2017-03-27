@@ -1291,4 +1291,7 @@
       <Filter>src\atomic</Filter>
     </Text>
   </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="SmileLib.natvis" />
+  </ItemGroup>
 </Project>

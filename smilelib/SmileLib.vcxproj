@@ -889,6 +889,9 @@
   <ItemGroup>
     <Text Include="grammar.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="SmileLib.natvis" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
