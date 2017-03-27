@@ -46,7 +46,7 @@ Int Lexer_ParseLoanword(Lexer lexer, Bool isFirstContentOnLine)
 
 	// There must be content of some kind after the '#'.
 	if (src >= end) {
-		lexer->token->text = String_FormatString(UnknownLoanwordMessage, String_FromC("#"));
+		lexer->token->text = String_FormatString(UnknownLoanwordMessage, String_PoundSign);
 		return END_TOKEN(TOKEN_ERROR);
 	}
 
@@ -92,7 +92,7 @@ Int Lexer_ParseLoanword(Lexer lexer, Bool isFirstContentOnLine)
 			src = lexer->src;
 			if (src < end && *src > ' ') {
 				lexer->src = src;
-				lexer->token->text = String_FormatString(IllegalLoanwordMessage, String_Concat(String_FromC("#"), lexer->token->text));
+				lexer->token->text = String_FormatString(IllegalLoanwordMessage, String_Concat(String_PoundSign, lexer->token->text));
 				return END_TOKEN(TOKEN_ERROR);
 			}
 
@@ -107,7 +107,7 @@ Int Lexer_ParseLoanword(Lexer lexer, Bool isFirstContentOnLine)
 						// following nesting rules for '}' and ']', skipping content inside "quotes", and allowing \ to
 						// escape characters inside "quotes".
 						lexer->src = src;
-						lexer->token->text = String_FormatString(UnsupportedLoanwordMessage, String_Concat(String_FromC("#"), lexer->token->text));
+						lexer->token->text = String_FormatString(UnsupportedLoanwordMessage, String_Concat(String_PoundSign, lexer->token->text));
 						return END_TOKEN(TOKEN_ERROR);
 					}
 					goto unknown_loanword;
@@ -121,7 +121,7 @@ Int Lexer_ParseLoanword(Lexer lexer, Bool isFirstContentOnLine)
 						// like <script> and <style> and <xmp>, need to be processed verbatim.  This will return
 						// the resulting consumed data as an Insert_Html token.
 						lexer->src = src;
-						lexer->token->text = String_FormatString(UnsupportedLoanwordMessage, String_Concat(String_FromC("#"), lexer->token->text));
+						lexer->token->text = String_FormatString(UnsupportedLoanwordMessage, String_Concat(String_PoundSign, lexer->token->text));
 						return END_TOKEN(TOKEN_ERROR);
 					}
 					goto unknown_loanword;
@@ -132,7 +132,7 @@ Int Lexer_ParseLoanword(Lexer lexer, Bool isFirstContentOnLine)
 						// Start of an <xml> insert.  This will scan the given opening tag and then read characters
 						// until it finds the matching closing tag, and return that data as an Insert_Xml token.
 						lexer->src = src;
-						lexer->token->text = String_FormatString(UnsupportedLoanwordMessage, String_Concat(String_FromC("#"), lexer->token->text));
+						lexer->token->text = String_FormatString(UnsupportedLoanwordMessage, String_Concat(String_PoundSign, lexer->token->text));
 						return END_TOKEN(TOKEN_ERROR);
 					}
 					goto unknown_loanword;
@@ -161,13 +161,13 @@ Int Lexer_ParseLoanword(Lexer lexer, Bool isFirstContentOnLine)
 				default:
 				unknown_loanword:
 					lexer->src = src;
-					lexer->token->text = String_FormatString(UnknownLoanwordMessage, String_Concat(String_FromC("#"), lexer->token->text));
+					lexer->token->text = String_FormatString(UnknownLoanwordMessage, String_Concat(String_PoundSign, lexer->token->text));
 					return END_TOKEN(TOKEN_ERROR);
 			}
 
 		default:
 			lexer->src = --src;
-			lexer->token->text = String_FormatString(UnknownLoanwordMessage, String_Concat(String_FromC("#"), String_CreateRepeat(ch, 1)));
+			lexer->token->text = String_FormatString(UnknownLoanwordMessage, String_Concat(String_PoundSign, String_CreateRepeat(ch, 1)));
 			return END_TOKEN(TOKEN_ERROR);
 	}
 }

@@ -42,36 +42,14 @@ STATIC_STRING(TokenString_Float128, "float128");
 STATIC_STRING(TokenString_RawString, "raw string");
 STATIC_STRING(TokenString_DynString, "string");
 
-STATIC_STRING(TokenString_LeftBrace, "{");
-STATIC_STRING(TokenString_RightBrace, "}");
-STATIC_STRING(TokenString_LeftParenthesis, "(");
-STATIC_STRING(TokenString_RightParenthesis, ")");
-STATIC_STRING(TokenString_LeftBracket, "[");
-STATIC_STRING(TokenString_RightBracket, "]");
-
-STATIC_STRING(TokenString_Bar, "|");
-STATIC_STRING(TokenString_Equal, "=");
-STATIC_STRING(TokenString_EqualWithoutWhitespace, "=");
-STATIC_STRING(TokenString_Backtick, "`");
 STATIC_STRING(TokenString_DoubleHash, "##");
-STATIC_STRING(TokenString_Dot, ".");
 STATIC_STRING(TokenString_DotDot, "..");
 STATIC_STRING(TokenString_DotDotDot, "...");
-STATIC_STRING(TokenString_Colon, ":");
-STATIC_STRING(TokenString_Comma, ",");
-STATIC_STRING(TokenString_SemiColon, ";");
-
-STATIC_STRING(TokenString_Plus, "+");
-STATIC_STRING(TokenString_Minus, "-");
-STATIC_STRING(TokenString_Star, "*");
-STATIC_STRING(TokenString_Slash, "/");
 
 STATIC_STRING(TokenString_SuperEq, "===");
 STATIC_STRING(TokenString_SuperNe, "!==");
 STATIC_STRING(TokenString_Eq, "==");
 STATIC_STRING(TokenString_Ne, "!=");
-STATIC_STRING(TokenString_Lt, "<");
-STATIC_STRING(TokenString_Gt, ">");
 STATIC_STRING(TokenString_Le, "<=");
 STATIC_STRING(TokenString_Ge, ">=");
 
@@ -126,24 +104,24 @@ SMILE_API_FUNC String TokenKind_ToString(Int tokenKind)
 		case TOKEN_RAWSTRING: return TokenString_RawString;
 		case TOKEN_DYNSTRING: return TokenString_DynString;
 
-		case TOKEN_LEFTBRACE: return TokenString_LeftBrace;
-		case TOKEN_RIGHTBRACE: return TokenString_RightBrace;
-		case TOKEN_LEFTPARENTHESIS: return TokenString_LeftParenthesis;
-		case TOKEN_RIGHTPARENTHESIS: return TokenString_RightParenthesis;
-		case TOKEN_LEFTBRACKET: return TokenString_LeftBracket;
-		case TOKEN_RIGHTBRACKET: return TokenString_RightBracket;
+		case TOKEN_LEFTBRACE: return String_LeftBrace;
+		case TOKEN_RIGHTBRACE: return String_RightBrace;
+		case TOKEN_LEFTPARENTHESIS: return String_LeftParenthesis;
+		case TOKEN_RIGHTPARENTHESIS: return String_RightParenthesis;
+		case TOKEN_LEFTBRACKET: return String_LeftBracket;
+		case TOKEN_RIGHTBRACKET: return String_RightBracket;
 
-		case TOKEN_BAR: return TokenString_Bar;
-		case TOKEN_EQUAL: return TokenString_Equal;
-		case TOKEN_EQUALWITHOUTWHITESPACE: return TokenString_EqualWithoutWhitespace;
-		case TOKEN_BACKTICK: return TokenString_Backtick;
+		case TOKEN_BAR: return String_VerticalBar;
+		case TOKEN_EQUAL: return String_Equal;
+		case TOKEN_EQUALWITHOUTWHITESPACE: return String_Equal;
+		case TOKEN_BACKTICK: return String_Backtick;
 		case TOKEN_DOUBLEHASH: return TokenString_DoubleHash;
-		case TOKEN_DOT: return TokenString_Dot;
+		case TOKEN_DOT: return String_Period;
 		case TOKEN_DOTDOT: return TokenString_DotDot;
 		case TOKEN_DOTDOTDOT: return TokenString_DotDotDot;
-		case TOKEN_COLON: return TokenString_Colon;
-		case TOKEN_COMMA: return TokenString_Comma;
-		case TOKEN_SEMICOLON: return TokenString_SemiColon;
+		case TOKEN_COLON: return String_Colon;
+		case TOKEN_COMMA: return String_Comma;
+		case TOKEN_SEMICOLON: return String_Semicolon;
 
 		case TOKEN_LOANWORD_INCLUDE: return TokenString_LoanWord_Include;
 		case TOKEN_LOANWORD_REGEX: return TokenString_LoanWord_Regex;

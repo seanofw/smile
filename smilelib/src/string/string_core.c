@@ -22,11 +22,6 @@
 #include <smile/internal/types.h>
 
 /// <summary>
-/// The shared empty string instance, which is readonly static (non-heap) data.
-/// </summary>
-EXTERN_STATIC_STRING(String_Empty, "");
-
-/// <summary>
 /// Construct a new String instance containing the given substring of text,
 /// starting at the given start index, going for the given length.
 /// </summary>

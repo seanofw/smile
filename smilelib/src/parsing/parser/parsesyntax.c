@@ -56,12 +56,6 @@ STATIC_STRING(InvalidMulExprPatternError, "Syntax patterns in the MULEXPR class 
 STATIC_STRING(InvalidBinaryExprPatternError, "Syntax patterns in the BINARYEXPR class must either start with a keyword, or with a COLONEXPR nonterminal followed by a keyword.");
 STATIC_STRING(InvalidPostfixExprPatternError, "Syntax patterns in the POSTFIXEXPR class must either start with a keyword, or with a CONSEXPR nonterminal followed by a keyword.");
 
-STATIC_STRING(String_Plus, "+");
-STATIC_STRING(String_Star, "*");
-STATIC_STRING(String_QuestionMark, "?");
-STATIC_STRING(String_Comma, ",");
-STATIC_STRING(String_Semicolon, ";");
-
 /// <summary>
 /// Tokens that are used during common recovery scenarios to determine the
 /// likely end of the current error:  {  }  [  ]  (  )

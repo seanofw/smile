@@ -888,6 +888,9 @@
     <ClCompile Include="src\dict\pointerset.c">
       <Filter>src\dict</Filter>
     </ClCompile>
+    <ClCompile Include="src\string\string_static.c">
+      <Filter>src\string</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">

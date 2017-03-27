@@ -594,7 +594,7 @@ int main(int argc, const char **argv)
 		else {
 			String indentedScript;
 			Verbose("Script text:");
-			indentedScript = String_Replace(script, String_FromC("\n"), String_FromC("\n    "));
+			indentedScript = String_Replace(script, String_Newline, String_FromC("\n    "));
 			fwrite(String_GetBytes(indentedScript), 1, String_Length(indentedScript), stdout);
 			puts("\n");
 		}
