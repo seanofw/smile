@@ -23,6 +23,7 @@
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/eval/eval.h>
 #include <smile/smiletypes/base.h>
+#include <smile/internal/staticstring.h>
 
 SMILE_IGNORE_UNUSED_VARIABLES
 

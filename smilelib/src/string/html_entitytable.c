@@ -16,7 +16,7 @@
 //---------------------------------------------------------------------------------------
 
 #include <smile/internal/html.h>
-
+#include <smile/internal/staticstring.h>
 
 STATIC_STRING(_quot, "quot");
 STATIC_STRING(_amp, "amp");

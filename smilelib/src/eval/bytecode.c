@@ -22,6 +22,7 @@
 #include <smile/stringbuilder.h>
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/text/smilesymbol.h>
+#include <smile/internal/staticstring.h>
 
 static String ByteCode_OperandsToString(ByteCode byteCode, Int address, UserFunctionInfo userFunctionInfo, struct CompiledTablesStruct *compiledTables);
 
@@ -74,8 +75,6 @@ void ByteCodeSegment_Grow(ByteCodeSegment segment, Int count)
 	segment->byteCodes = newByteCodes;
 	segment->maxByteCodes = (Int32)newMax;
 }
-
-STATIC_STRING(_colonString, ":");
 
 /// <summary>
 /// Convert the given byte-code segment to a string that lists all its instructions,

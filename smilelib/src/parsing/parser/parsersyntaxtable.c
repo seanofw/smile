@@ -25,6 +25,7 @@
 #include <smile/parsing/internal/parsedecl.h>
 #include <smile/parsing/internal/parsescope.h>
 #include <smile/parsing/internal/parsesyntax.h>
+#include <smile/internal/staticstring.h>
 
 static ParserSyntaxNode ParserSyntaxNode_CreateInternal(Symbol name, Symbol variable, Int repetitionKind, Int repetitionSep);
 

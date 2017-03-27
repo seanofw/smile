@@ -80,9 +80,6 @@ const char *SmileObject_StringifyToC(SmileObject obj)
 	return String_ToC(SmileObject_Stringify(obj));
 }
 
-STATIC_STRING(TrueString, "true");
-STATIC_STRING(FalseString, "false");
-
 static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int indent)
 {
 	SmileList list;
@@ -153,7 +150,7 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 		return;
 
 	case SMILE_KIND_BOOL:
-		StringBuilder_AppendString(stringBuilder, ((SmileBool)obj)->value ? TrueString : FalseString);
+		StringBuilder_AppendString(stringBuilder, ((SmileBool)obj)->value ? String_True : String_False);
 		return;
 	
 	case SMILE_KIND_PAIR:

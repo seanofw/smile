@@ -26,6 +26,7 @@
 #include <smile/parsing/internal/parserinternal.h>
 #include <smile/parsing/internal/parsedecl.h>
 #include <smile/parsing/internal/parsescope.h>
+#include <smile/internal/staticstring.h>
 
 STATIC_STRING(UnmatchedCurlyBraceError, "Unmatched } in dynamic string");
 STATIC_STRING(DisallowedCurlyBraceError, "Disallowed { inside parsed content in dynamic string");

@@ -15,8 +15,6 @@
 //  limitations under the License.
 //---------------------------------------------------------------------------------------
 
-#include <stdio.h>
-
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/smileuserobject.h>
 #include <smile/smiletypes/smilebool.h>
@@ -26,6 +24,7 @@
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/base.h>
+#include <smile/internal/staticstring.h>
 
 SMILE_IGNORE_UNUSED_VARIABLES
 

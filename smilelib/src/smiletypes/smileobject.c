@@ -19,6 +19,7 @@
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/easyobject.h>
+#include <smile/internal/staticstring.h>
 
 SMILE_EASY_OBJECT_VTABLE(SmileObject);
 

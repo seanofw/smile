@@ -17,6 +17,7 @@
 
 #include <smile/numeric/realshared.h>
 #include <smile/stringbuilder.h>
+#include <smile/internal/staticstring.h>
 
 STATIC_STRING(Real_String_Zero, "0");
 STATIC_STRING(Real_String_PosZero, "+0");

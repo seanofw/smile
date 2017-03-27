@@ -145,6 +145,7 @@
     <ClInclude Include="include\smile\eval\eval.h" />
     <ClInclude Include="include\smile\eval\opcode.h" />
     <ClInclude Include="include\smile\gc.h" />
+    <ClInclude Include="include\smile\internal\staticstring.h" />
     <ClInclude Include="include\smile\mem.h" />
     <ClInclude Include="include\smile\numeric\real.h" />
     <ClInclude Include="include\smile\numeric\real128.h" />

@@ -18,8 +18,7 @@
 #include <smile/gc.h>
 #include <smile/string.h>
 #include <smile/stringbuilder.h>
-
-STATIC_STRING(Space, " ");
+#include <smile/internal/staticstring.h>
 
 STATIC_STRING(CommaSpace, ", ");
 
@@ -860,9 +859,9 @@ String String_JoinEnglishNames(const String *items, Int numItems, const String c
 			{
 				String pieces[5];
 				pieces[0] = items[0];
-				pieces[1] = Space;
+				pieces[1] = String_Space;
 				pieces[2] = conjunction;
-				pieces[3] = Space;
+				pieces[3] = String_Space;
 				pieces[4] = items[1];
 				return String_ConcatMany(pieces, 5);
 			}
@@ -874,7 +873,7 @@ String String_JoinEnglishNames(const String *items, Int numItems, const String c
 				pieces[2] = items[1];
 				pieces[3] = CommaSpace;
 				pieces[4] = conjunction;
-				pieces[5] = Space;
+				pieces[5] = String_Space;
 				pieces[6] = items[2];
 				return String_ConcatMany(pieces, 7);
 			}

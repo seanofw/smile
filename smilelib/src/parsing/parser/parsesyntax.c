@@ -27,6 +27,7 @@
 #include <smile/parsing/internal/parserinternal.h>
 #include <smile/parsing/internal/parsedecl.h>
 #include <smile/parsing/internal/parsescope.h>
+#include <smile/internal/staticstring.h>
 
 STATIC_STRING(MissingSyntaxClassName, "Expected a valid syntax nonterminal name after #syntax.");
 STATIC_STRING(MissingSyntaxColon, "Expected a ':' after the syntax nonterminal name.");

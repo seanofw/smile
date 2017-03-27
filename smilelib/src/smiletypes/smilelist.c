@@ -316,8 +316,6 @@ String SmileList_Join(SmileList list, String glue)
 
 static int _indent = 0;
 
-STATIC_STRING(BacktickString, "`");
-
 static String SmileList_ToString(SmileList self, SmileUnboxedData unboxedData)
 {
 	Bool useIndents;
@@ -338,7 +336,7 @@ static String SmileList_ToString(SmileList self, SmileUnboxedData unboxedData)
 	{
 		SmileObject quotedItem = LIST_FIRST(LIST_REST(self));
 		if (SMILE_KIND(quotedItem) == SMILE_KIND_LIST || SMILE_KIND(quotedItem) == SMILE_KIND_SYMBOL) {
-			return String_Concat(BacktickString, SMILE_VCALL1(quotedItem, toString, (SmileUnboxedData){ 0 }));
+			return String_Concat(String_Backtick, SMILE_VCALL1(quotedItem, toString, (SmileUnboxedData){ 0 }));
 		}
 	}
 

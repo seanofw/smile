@@ -20,6 +20,7 @@
 #include <smile/string.h>
 #include <smile/stringbuilder.h>
 #include <smile/internal/types.h>
+#include <smile/internal/staticstring.h>
 
 // The special one-and-only empty string.
 EXTERN_STATIC_STRING(String_Empty, "");

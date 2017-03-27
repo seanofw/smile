@@ -16,6 +16,7 @@
 //---------------------------------------------------------------------------------------
 
 #include <smile/string.h>
+#include <smile/internal/staticstring.h>
 #include <smile/env/knownstrings.h>
 
 EXTERN_STATIC_STRING(String_Object, "Object");

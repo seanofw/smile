@@ -442,14 +442,12 @@ SmileObject SmileUserFunction_GetProperty(SmileFunction self, Symbol propertyNam
 	}
 }
 
-STATIC_STRING(_spaceSplitter, " ");
-
 SmileObject SmileExternalFunction_GetProperty(SmileFunction self, Symbol propertyName)
 {
 	if (propertyName == Smile_KnownSymbols.arguments) {
 		SmileList head, tail;
 		String *pieces;
-		Int numPieces = String_Split(self->u.externalFunctionInfo.argNames, _spaceSplitter, &pieces);
+		Int numPieces = String_Split(self->u.externalFunctionInfo.argNames, String_Space, &pieces);
 		Int i;
 	
 		LIST_INIT(head, tail);

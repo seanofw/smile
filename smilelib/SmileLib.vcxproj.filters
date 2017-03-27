@@ -1226,6 +1226,9 @@
     <ClInclude Include="include\smile\dict\pointerset.h">
       <Filter>include\dict</Filter>
     </ClInclude>
+    <ClInclude Include="include\smile\internal\staticstring.h">
+      <Filter>include\internal</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\smile\array.h">

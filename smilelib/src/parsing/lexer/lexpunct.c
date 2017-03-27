@@ -20,6 +20,7 @@
 #include <smile/parsing/identkind.h>
 #include <smile/stringbuilder.h>
 
+#include <smile/internal/staticstring.h>
 #include <smile/parsing/internal/lexerinternal.h>
 
 //---------------------------------------------------------------------------

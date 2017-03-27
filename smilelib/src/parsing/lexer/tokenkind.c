@@ -17,6 +17,7 @@
 
 #include <smile/string.h>
 #include <smile/parsing/tokenkind.h>
+#include <smile/internal/staticstring.h>
 
 STATIC_STRING(TokenString_Error, "<error>");
 STATIC_STRING(TokenString_None, "<none>");

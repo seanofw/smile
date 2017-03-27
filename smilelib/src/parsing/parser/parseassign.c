@@ -21,6 +21,7 @@
 #include <smile/parsing/internal/parserinternal.h>
 #include <smile/parsing/internal/parsedecl.h>
 #include <smile/parsing/internal/parsescope.h>
+#include <smile/internal/staticstring.h>
 
 STATIC_STRING(MissingVarNameMessage, "Expected a variable name after 'var'");
 STATIC_STRING(MissingConstNameMessage, "Expected a constant name after 'const'");

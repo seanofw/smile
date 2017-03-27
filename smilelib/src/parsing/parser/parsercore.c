@@ -22,6 +22,7 @@
 #include <smile/parsing/internal/parserinternal.h>
 #include <smile/parsing/internal/parsedecl.h>
 #include <smile/parsing/internal/parsescope.h>
+#include <smile/internal/staticstring.h>
 
 //-------------------------------------------------------------------------------------------------
 // Parser Construction
@@ -145,17 +146,17 @@ SmileObject Parser_ParseConstant(Parser parser, Lexer lexer, ParseScope scope)
 	return result;
 }
 
-STATIC_STRING(ExpectedOpenBraceError, "Expected { ... to begin a scope");
-STATIC_STRING(ExpectedCloseBraceError, "Expected ... } to end the scope");
-
 //  scope ::= . LBRACE exprs_opt RBRACE
 ParseError Parser_ParseScope(Parser parser, SmileObject *expr)
 {
 	ParseError parseError;
 	Token token;
 
+	STATIC_STRING(expectedOpenBraceError, "Expected { ... to begin a scope");
+	STATIC_STRING(expectedCloseBraceError, "Expected ... } to end the scope");
+
 	if ((token = Parser_NextToken(parser))->kind != TOKEN_LEFTBRACE) {
-		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), ExpectedOpenBraceError);
+		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), expectedOpenBraceError);
 		return parseError;
 	}
 
@@ -163,7 +164,7 @@ ParseError Parser_ParseScope(Parser parser, SmileObject *expr)
 
 	if ((token = Parser_NextToken(parser))->kind != TOKEN_RIGHTBRACE) {
 		*expr = NULL;
-		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), ExpectedCloseBraceError);
+		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), expectedCloseBraceError);
 		return parseError;
 	}
 
