@@ -49,6 +49,7 @@ SMILE_API_FUNC Symbol SymbolTable_GetSymbolC(SymbolTable symbolTable, const char
 SMILE_API_FUNC Symbol SymbolTable_GetSymbolNoCreate(SymbolTable symbolTable, String name);
 SMILE_API_FUNC Symbol SymbolTable_GetSymbolNoCreateC(SymbolTable symbolTable, const char *name);
 SMILE_API_FUNC String SymbolTable_GetName(SymbolTable symbolTable, Symbol symbol);
+SMILE_API_FUNC const char *SymbolTable_GetNameC(SymbolTable symbolTable, Symbol symbol);
 
 //-------------------------------------------------------------------------------------------------
 //  Inline parts of the implementation.

@@ -217,11 +217,11 @@
 		<DisplayString Condition="(kind &amp; 0xFF) == 0x14">Bool (boxed; {((struct SmileBoolInt *)this)-&gt;value})</DisplayString>
 		<DisplayString Condition="(kind &amp; 0xFF) == 0x16">Float32 (boxed)</DisplayString>
 		<DisplayString Condition="(kind &amp; 0xFF) == 0x17">Float64 (boxed)</DisplayString>
-		<DisplayString Condition="(kind &amp; 0xFF) == 0x18">Symbol (boxed; {((struct SmileSymbolInt *)this)-&gt;symbol})</DisplayString>
+		<DisplayString Condition="(kind &amp; 0xFF) == 0x18">Symbol (boxed; {((struct SmileSymbolInt *)this)-&gt;symbol}; {SymbolTable_GetNameC(Smile_SymbolTable, ((struct SmileSymbolInt *)this)-&gt;symbol)})</DisplayString>
 		<DisplayString Condition="(kind &amp; 0xFF) == 0x1A">Real32 (boxed)</DisplayString>
 		<DisplayString Condition="(kind &amp; 0xFF) == 0x1B">Real64 (boxed)</DisplayString>
 		<DisplayString Condition="(kind &amp; 0xFF) == 0x20">Null</DisplayString>
-		<DisplayString Condition="(kind &amp; 0xFF) == 0x21">List</DisplayString>
+		<DisplayString Condition="(kind &amp; 0xFF) == 0x21">List ({SmileList_SafeLength((struct SmileListInt *)this)} items)</DisplayString>
 		<DisplayString Condition="(kind &amp; 0xFF) == 0x22">Primitive</DisplayString>
 		<DisplayString Condition="(kind &amp; 0xFF) == 0x23">Pair</DisplayString>
 		<DisplayString Condition="(kind &amp; 0xFF) == 0x24">UserObject</DisplayString>
@@ -249,6 +249,7 @@
 			<Item Name="[flags]">kind &amp; ~0xFF</Item>
 			<Item Name="[vtable]">vtable</Item>
 			<Item Name="[base]">base</Item>
+			<Item Name="[stringified]">SmileObject_Stringify(this)->_opaque.text</Item>
 		</Expand>
 	</Type>
 
@@ -262,7 +263,7 @@
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x04">Bool (unboxed; value={unboxed.b})</DisplayString>
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x06">Float32 (unboxed; value={unboxed.f32})</DisplayString>
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x07">Float64 (unboxed; value={unboxed.f64})</DisplayString>
-		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x08">Symbol (unboxed; value={unboxed.symbol})</DisplayString>
+		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x08">Symbol (unboxed; value={unboxed.symbol}; {SymbolTable_GetNameC(Smile_SymbolTable, unboxed.symbol)})</DisplayString>
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x0A">Real32 (unboxed; value={unboxed.i32})</DisplayString>
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x0B">Real64 (unboxed; value={unboxed.i64})</DisplayString>
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x10">Byte (boxed; value={((struct SmileByteInt *)obj)->value})</DisplayString>
@@ -272,11 +273,11 @@
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x14">Bool (boxed; {((struct SmileBoolInt *)obj)-&gt;value})</DisplayString>
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x16">Float32 (boxed)</DisplayString>
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x17">Float64 (boxed)</DisplayString>
-		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x18">Symbol (boxed; {((struct SmileSymbolInt *)obj)-&gt;symbol})</DisplayString>
+		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x18">Symbol (boxed; {((struct SmileSymbolInt *)obj)-&gt;symbol}; {SymbolTable_GetNameC(Smile_SymbolTable, ((struct SmileSymbolInt *)obj)-&gt;symbol)})</DisplayString>
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x1A">Real32 (boxed)</DisplayString>
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x1B">Real64 (boxed)</DisplayString>
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x20">Null</DisplayString>
-		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x21">List</DisplayString>
+		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x21">List ({SmileList_SafeLength((struct SmileListInt *)this)} items)</DisplayString>
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x22">Primitive</DisplayString>
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x23">Pair</DisplayString>
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x24">UserObject</DisplayString>
@@ -304,6 +305,7 @@
 			<Item Name="[flags]">obj->kind &amp; ~0xFF</Item>
 			<Item Name="[vtable]">obj->vtable</Item>
 			<Item Name="[base]">obj->base</Item>
+			<Item Name="[stringified]">SmileObject_Stringify(SmileArg_Box(*this))->_opaque.text</Item>
 		</Expand>
 	</Type>
 
@@ -314,7 +316,7 @@
 
 	<!-- SmileSymbol -->
 	<Type Name="SmileSymbolInt">
-		<DisplayString>Symbol: {symbol}</DisplayString>
+		<DisplayString>Symbol: {symbol}: {SymbolTable_GetNameC(Smile_SymbolTable, symbol)}</DisplayString>
 	</Type>
 
 	<!-- SmileByte -->
@@ -353,7 +355,7 @@
 
 	<!-- SmileList -->
 	<Type Name="SmileListInt">
-		<DisplayString Condition="(kind &amp; 0xFF) == 0x21">List</DisplayString>
+		<DisplayString Condition="(kind &amp; 0xFF) == 0x21">List ({SmileList_SafeLength((struct SmileListInt *)this)} items)</DisplayString>
 		<DisplayString Condition="(kind &amp; 0xFF) == 0x20">Null</DisplayString>
 		<DisplayString>Undefined (kind={(char)kind &amp; 0xFF,X})</DisplayString>
 		<Expand>
@@ -367,6 +369,7 @@
 			<Item Name="[flags]">kind &amp; ~0xFF</Item>
 			<Item Name="[vtable]">vtable</Item>
 			<Item Name="[base]">base</Item>
+			<Item Name="[stringified]">SmileObject_Stringify((SmileObject)this)->_opaque.text</Item>
 
 			<LinkedListItems>
 				<HeadPointer>this</HeadPointer>
@@ -390,6 +393,7 @@
 			<Item Name="[flags]">kind &amp; ~0xFF</Item>
 			<Item Name="[vtable]">vtable</Item>
 			<Item Name="[base]">base</Item>
+			<Item Name="[stringified]">SmileObject_Stringify((SmileObject)this)->_opaque.text</Item>
 		</Expand>
 	</Type>
 

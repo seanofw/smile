@@ -147,3 +147,16 @@ String SymbolTable_GetName(SymbolTable symbolTable, Symbol symbol)
 
 	return table->symbolNames[(Int)symbol];
 }
+
+/// <summary>
+/// Look up the name of the given symbol, and return it as a C string.
+/// </summary>
+/// <param name="symbolTable">The symbol table in which the symbol will exist.</param>
+/// <param name="symbol">The symbol whose name you would like to retrieve.</param>
+/// <returns>The name, if this is a valid symbol in this table, or NULL if this is not a valid symbol
+/// or does not exist in this table.</returns>
+const char *SymbolTable_GetNameC(SymbolTable symbolTable, Symbol symbol)
+{
+	String string = SymbolTable_GetName(symbolTable, symbol);
+	return (string != NULL ? string->_opaque.text : NULL);
+}

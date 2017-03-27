@@ -236,10 +236,7 @@ Int SmileList_SafeLength(SmileList list)
 		length++;
 	}
 
-	if (tortoise == hare)
-		return -1;
-
-	return length;
+	return (SMILE_KIND(tortoise) != SMILE_KIND_LIST ? length : -1);
 }
 
 // If this list has no cycles and ends in a Null, then it is well-formed.  If it contains a cycle, or
