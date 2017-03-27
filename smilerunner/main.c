@@ -345,7 +345,7 @@ static CommandLineArgs ParseCommandLine(int argc, const char **argv)
 		if (options->scriptName == NULL)
 			options->scriptName = String_FromC(argv[i]);
 		else {
-			LIST_APPEND(options->scriptArgs, options->scriptArgsTail, SmileString_CreateC(argv[i]));
+			LIST_APPEND(options->scriptArgs, options->scriptArgsTail, argv[i]);
 		}
 	}
 

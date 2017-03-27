@@ -22,7 +22,6 @@
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/smilenull.h>
 #include <smile/smiletypes/smilebool.h>
-#include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/numeric/smilebyte.h>
 #include <smile/smiletypes/numeric/smileinteger16.h>

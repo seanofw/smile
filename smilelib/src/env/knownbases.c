@@ -24,11 +24,10 @@
 #include <smile/smiletypes/smilebool.h>
 #include <smile/smiletypes/smileuserobject.h>
 #include <smile/smiletypes/text/smilesymbol.h>
-#include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
 
-struct SmileUserObjectInt SmileString_BaseObjectStruct = { 0 };
+struct SmileUserObjectInt String_BaseObjectStruct = { 0 };
 
 static void SetupNumericTypes(struct KnownBasesStruct *knownBases)
 {
@@ -171,8 +170,8 @@ static void SetupEnumerableTypes(struct KnownBasesStruct *knownBases)
 
 	knownBases->List = SmileUserObject_Create((SmileObject)knownBases->Enumerable);
 
-	knownBases->String = &SmileString_BaseObjectStruct;
-	SmileUserObject_Init(&SmileString_BaseObjectStruct, (SmileObject)knownBases->Enumerable);
+	knownBases->String = &String_BaseObjectStruct;
+	SmileUserObject_Init(&String_BaseObjectStruct, (SmileObject)knownBases->Enumerable);
 }
 
 static void SetupMiscTypes(struct KnownBasesStruct *knownBases)
@@ -202,7 +201,7 @@ extern void SmileInteger16_Setup(SmileUserObject base);
 extern void SmileInteger32_Setup(SmileUserObject base);
 extern void SmileInteger64_Setup(SmileUserObject base);
 extern void SmileList_Setup(SmileUserObject base);
-extern void SmileString_Setup(SmileUserObject base);
+extern void String_Setup(SmileUserObject base);
 
 void KnownBases_Setup(struct KnownBasesStruct *knownBases)
 {
@@ -211,7 +210,7 @@ void KnownBases_Setup(struct KnownBasesStruct *knownBases)
 	SmileInteger32_Setup(knownBases->Integer32);
 	SmileInteger64_Setup(knownBases->Integer64);
 	SmileList_Setup(knownBases->List);
-	SmileString_Setup(knownBases->String);
+	String_Setup(knownBases->String);
 
 	SmileUnboxedBool_Instance->base = (SmileObject)knownBases->Bool;
 	SmileUnboxedSymbol_Instance->base = (SmileObject)knownBases->Symbol;

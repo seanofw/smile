@@ -22,7 +22,6 @@
 #include <smile/smiletypes/smilesyntax.h>
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/text/smilesymbol.h>
-#include <smile/smiletypes/text/smilestring.h>
 
 static String SmileSyntax_AsString(SmileSyntax self, SmileUnboxedData unboxedData);
 

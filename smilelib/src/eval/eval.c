@@ -21,7 +21,6 @@
 #include <smile/smiletypes/smilebool.h>
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/smileuserobject.h>
-#include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/numeric/smilebyte.h>
 #include <smile/smiletypes/numeric/smileinteger16.h>
@@ -199,7 +198,7 @@ next:
 			goto next;
 
 		case Op_LdStr:
-			Closure_PushBoxed(closure, SmileString_Create(_compiledTables->strings[byteCode->u.index]));
+			Closure_PushBoxed(closure, _compiledTables->strings[byteCode->u.index]);
 			byteCode++;
 			goto next;
 
@@ -1094,7 +1093,7 @@ next:
 		case Op_LdLength:
 			target = Closure_Pop(closure).obj;
 			if (SMILE_KIND(target) == SMILE_KIND_STRING) {
-				Closure_Push(closure, SmileUnboxedInteger64_From(SmileString_Length((SmileString)target)));
+				Closure_Push(closure, SmileUnboxedInteger64_From(String_Length((String)target)));
 			}
 			else {
 				STORE_REGISTERS;
@@ -1273,7 +1272,7 @@ Inline Bool Is(SmileArg descendant, SmileArg ancestor)
 
 		case SMILE_KIND_STRING:
 			if (SMILE_KIND(ancestor.obj) == SMILE_KIND_STRING)
-				return String_Equals(SmileString_GetString((SmileString)descendant.obj), SmileString_GetString((SmileString)ancestor.obj));
+				return String_Equals((String)descendant.obj, (String)ancestor.obj);
 			return SmileObject_Is(descendant.obj, ancestor.obj);
 		
 		default:

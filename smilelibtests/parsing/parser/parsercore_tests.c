@@ -18,7 +18,6 @@
 #include "../../stdafx.h"
 
 #include <smile/parsing/parser.h>
-#include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/smilepair.h>
 #include <smile/env/env.h>
@@ -49,7 +48,7 @@ START_TEST(CanParseASequenceOfTerms)
 		SmileInteger64_Create(45),
 		SmileInteger64_Create(0x10),
 		SmileInteger64_Create(0x2B),
-		SmileString_Create(String_FromC("or not")),
+		String_FromC("or not"),
 		SmileInteger64_Create(0x2B),
 		NULL
 	);
@@ -72,7 +71,7 @@ START_TEST(ParenthesesHaveNoMeaningInASequenceOfTerms)
 		SmileInteger64_Create(45),
 		SmileInteger64_Create(0x10),
 		SmileInteger64_Create(0x2B),
-		SmileString_Create(String_FromC("or not")),
+		String_FromC("or not"),
 		SmileInteger64_Create(0x2B),
 		NULL
 	);

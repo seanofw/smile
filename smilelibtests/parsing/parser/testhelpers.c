@@ -22,7 +22,6 @@
 #include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
-#include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/smilepair.h>
 #include <smile/smiletypes/smilesyntax.h>
 #include <smile/env/env.h>
@@ -99,7 +98,7 @@ static SmileObject RecursiveSimpleParse(Lexer lexer)
 
 	case TOKEN_DYNSTRING:
 	case TOKEN_RAWSTRING:
-		return (SmileObject)SmileString_Create(lexer->token->text);
+		return (SmileObject)lexer->token->text;
 
 	default:
 		return NullObject;
@@ -190,7 +189,7 @@ next:
 		return True;
 
 	case SMILE_KIND_STRING:
-		if (!String_Equals(SmileString_GetString((SmileString)a), SmileString_GetString((SmileString)b)))
+		if (!String_Equals((String)a, (String)b))
 			return False;
 		return True;
 

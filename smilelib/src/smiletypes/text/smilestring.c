@@ -17,7 +17,6 @@
 
 #include <smile/numeric/real.h>
 #include <smile/smiletypes/smileobject.h>
-#include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/smilelist.h>
@@ -25,56 +24,50 @@
 
 SMILE_IGNORE_UNUSED_VARIABLES
 
-SMILE_EASY_OBJECT_VTABLE(SmileString);
+SMILE_EASY_OBJECT_VTABLE(String);
 
-SMILE_EASY_OBJECT_READONLY_SECURITY(SmileString)
-SMILE_EASY_OBJECT_NO_CALL(SmileString)
-SMILE_EASY_OBJECT_NO_SOURCE(SmileString)
-SMILE_EASY_OBJECT_NO_UNBOX(SmileString)
+SMILE_EASY_OBJECT_READONLY_SECURITY(String)
+SMILE_EASY_OBJECT_NO_CALL(String)
+SMILE_EASY_OBJECT_NO_SOURCE(String)
+SMILE_EASY_OBJECT_NO_UNBOX(String)
 
-Bool SmileString_CompareEqual(SmileString self, SmileUnboxedData selfUnboxed, SmileObject other, SmileUnboxedData otherUnboxed)
+Bool String_CompareEqual(String self, SmileUnboxedData selfUnboxed, SmileObject other, SmileUnboxedData otherUnboxed)
 {
-	SmileString otherString;
+	String otherString;
 	Int length;
 
 	if (SMILE_KIND(other) != SMILE_KIND_STRING) return False;
-	otherString = (SmileString)other;
+	otherString = (String)other;
 
 	if (otherString == self) return True;
 
-	length = SmileString_Length(self);
-	if (length != SmileString_Length(otherString)) return False;
+	length = String_Length(self);
+	if (length != String_Length(otherString)) return False;
 
-	return !MemCmp(String_GetBytes(SmileString_GetString(self)), String_GetBytes(SmileString_GetString(otherString)), length);
+	return !MemCmp(String_GetBytes(self), String_GetBytes(otherString), length);
 }
 
-Bool SmileString_DeepEqual(SmileString self, SmileUnboxedData selfUnboxed, SmileObject other, SmileUnboxedData otherUnboxed, PointerSet visitedPointers)
+Bool String_DeepEqual(String self, SmileUnboxedData selfUnboxed, SmileObject other, SmileUnboxedData otherUnboxed, PointerSet visitedPointers)
 {
 	UNUSED(visitedPointers);
 
-	return SmileString_CompareEqual(self, selfUnboxed, other, otherUnboxed);
+	return String_CompareEqual(self, selfUnboxed, other, otherUnboxed);
 }
 
-UInt32 SmileString_Hash(SmileString self)
-{
-	String str = SmileString_ToString(self, (SmileUnboxedData){ 0 });
-	return String_Hash(str);
-}
-
-SmileObject SmileString_GetProperty(SmileString self, Symbol propertyName)
+SmileObject String_GetProperty(String self, Symbol propertyName)
 {
 	if (propertyName == Smile_KnownSymbols.length) {
 		#if SizeofInt <= 4
-			return (SmileObject)SmileInteger32_Create(String_Length(SmileString_GetString(self)));
+			return (SmileObject)SmileInteger32_Create(String_Length(self));
 		#else
-			Int length = String_Length(SmileString_GetString(self));
+			Int length = String_Length(self);
 			return (SmileObject)SmileInteger32_Create(length < Int32Max ? (Int32)length : Int32Max);
 		#endif
 	}
 	return self->base->vtable->getProperty(self->base, propertyName);
 }
 
-void SmileString_SetProperty(SmileString self, Symbol propertyName, SmileObject value)
+void String_SetProperty(String self, Symbol propertyName, SmileObject value)
 {
 	UNUSED(self);
 	UNUSED(value);
@@ -83,13 +76,13 @@ void SmileString_SetProperty(SmileString self, Symbol propertyName, SmileObject 
 		SymbolTable_GetName(Smile_SymbolTable, propertyName)));
 }
 
-Bool SmileString_HasProperty(SmileString self, Symbol propertyName)
+Bool String_HasProperty(String self, Symbol propertyName)
 {
 	UNUSED(self);
 	return (propertyName == Smile_KnownSymbols.length);
 }
 
-SmileList SmileString_GetPropertyNames(SmileString self)
+SmileList String_GetPropertyNames(String self)
 {
 	SmileList head, tail;
 
@@ -102,31 +95,31 @@ SmileList SmileString_GetPropertyNames(SmileString self)
 	return head;
 }
 
-Bool SmileString_ToBool(SmileString self, SmileUnboxedData unboxedData)
+Bool String_ToBool(String self, SmileUnboxedData unboxedData)
 {
 	Bool result;
-	return String_ParseBool(SmileString_GetString(self), &result) ? result : False;
+	return String_ParseBool(self, &result) ? result : False;
 }
 
-Int32 SmileString_ToInteger32(SmileString self, SmileUnboxedData unboxedData)
+Int32 String_ToInteger32(String self, SmileUnboxedData unboxedData)
 {
 	Int64 result;
-	return String_ParseInteger(SmileString_GetString(self), 10, &result) ? (Int32)result : 0;
+	return String_ParseInteger(self, 10, &result) ? (Int32)result : 0;
 }
 
-Float64 SmileString_ToFloat64(SmileString self, SmileUnboxedData unboxedData)
+Float64 String_ToFloat64(String self, SmileUnboxedData unboxedData)
 {
 	Float64 result;
-	return String_ParseFloat(SmileString_GetString(self), 10, &result) ? result : 0.0;
+	return String_ParseFloat(self, 10, &result) ? result : 0.0;
 }
 
-Real64 SmileString_ToReal64(SmileString self, SmileUnboxedData unboxedData)
+Real64 String_ToReal64(String self, SmileUnboxedData unboxedData)
 {
 	Real128 result;
-	return String_ParseReal(SmileString_GetString(self), 10, &result) ? Real128_ToReal64(result) : Real64_Zero;
+	return String_ParseReal(self, 10, &result) ? Real128_ToReal64(result) : Real64_Zero;
 }
 
-String SmileString_ToString(SmileString str, SmileUnboxedData unboxedData)
+String String_ToString(String str, SmileUnboxedData unboxedData)
 {
-	return String_Format("\"%S\"", String_AddCSlashes(SmileString_GetString(str)));
+	return String_Format("\"%S\"", String_AddCSlashes(str));
 }

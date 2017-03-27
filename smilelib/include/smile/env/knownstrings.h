@@ -10,18 +10,11 @@
 #include <smile/smiletypes/predecl.h>
 #endif
 
-struct KnownStringsStruct {
-	SmileString Object;
-	SmileString true_;
-	SmileString false_;
-	SmileString InvalidSecurityKey;
-	
-	String invalidFunctionError;
-};
+SMILE_API_DATA String String_Object;	// "Object"
+SMILE_API_DATA String String_True;	// "true"
+SMILE_API_DATA String String_False;	// "false"
 
-#define KNOWN_STRING(__name__) \
-	((String)&(Smile_KnownStrings.__name__->string))
-
-void KnownStrings_Setup(struct KnownStringsStruct *knownStrings);
+SMILE_API_DATA String String_InvalidSecurityKey;	// "Invalid security key."
+SMILE_API_DATA String String_InvalidFunctionError;	// "Object is not a callable function."
 
 #endif

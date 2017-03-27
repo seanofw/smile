@@ -20,7 +20,6 @@
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/easyobject.h>
 #include <smile/smiletypes/text/smilesymbol.h>
-#include <smile/smiletypes/text/smilestring.h>
 
 extern SmileVTable SmileUserFunction_NoArgs_VTable;
 extern SmileVTable SmileUserFunction_Fast1_VTable;
@@ -455,13 +454,13 @@ SmileObject SmileExternalFunction_GetProperty(SmileFunction self, Symbol propert
 	
 		LIST_INIT(head, tail);
 		for (i = 0; i < numPieces; i++) {
-			LIST_APPEND(head, tail, SmileString_Create(pieces[i]));
+			LIST_APPEND(head, tail, pieces[i]);
 		}
 	
 		return (SmileObject)head;
 	}
 	else if (propertyName == Smile_KnownSymbols.body) {
-		return (SmileObject)SmileString_Create(String_Format("<%S>", self->u.externalFunctionInfo.name));
+		return (SmileObject)String_Format("<%S>", self->u.externalFunctionInfo.name);
 	}
 	else {
 		return self->base->vtable->getProperty(self->base, propertyName);

@@ -21,7 +21,6 @@
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/smilepair.h>
-#include <smile/smiletypes/text/smilestring.h>
 #include <smile/parsing/parser.h>
 #include <smile/parsing/internal/lexerinternal.h>
 #include <smile/parsing/internal/parserinternal.h>
@@ -82,7 +81,7 @@ ParseError Parser_ParseDynamicString(Parser parser, SmileObject *expr, String te
 
 	// If there's no parsed content, just return the string verbatim.
 	if (numDynamicStringPieces < 2 && !dynamicStringPieces[0]->isExpression) {
-		*expr = (SmileObject)SmileString_Create(dynamicStringPieces[0]->text);
+		*expr = (SmileObject)dynamicStringPieces[0]->text;
 		return NULL;
 	}
 
@@ -94,7 +93,7 @@ ParseError Parser_ParseDynamicString(Parser parser, SmileObject *expr, String te
 	for (i = 0; i < numDynamicStringPieces; i++) {
 		piece = dynamicStringPieces[i];
 		if (!piece->isExpression) {
-			LIST_APPEND_WITH_SOURCE(head, tail, SmileString_Create(piece->text), piece->firstLine);
+			LIST_APPEND_WITH_SOURCE(head, tail, piece->text, piece->firstLine);
 		}
 		else {
 			parseError = Parser_ParseOneExpressionFromText(parser, &parsedContent, piece->text, piece->firstLine);

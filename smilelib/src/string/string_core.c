@@ -50,8 +50,8 @@ String String_Create(const Byte *text, Int length)
 	if (str == NULL) Smile_Abort_OutOfMemory();
 
 	str->kind = SMILE_KIND_STRING;
-	str->vtable = (SmileVTable)&SmileString_VTableData;
-	str->base = (SmileObject)&SmileString_BaseObjectStruct;
+	str->vtable = (SmileVTable)&String_VTableData;
+	str->base = (SmileObject)&String_BaseObjectStruct;
 	str->_opaque.length = length;
 
 	newText = str->_opaque.text;
@@ -78,8 +78,8 @@ String String_CreateInternal(Int length)
 	if (str == NULL) Smile_Abort_OutOfMemory();
 
 	str->kind = SMILE_KIND_STRING;
-	str->vtable = (SmileVTable)&SmileString_VTableData;
-	str->base = (SmileObject)&SmileString_BaseObjectStruct;
+	str->vtable = (SmileVTable)&String_VTableData;
+	str->base = (SmileObject)&String_BaseObjectStruct;
 	str->_opaque.length = length;
 	str->_opaque.text[length] = '\0';
 

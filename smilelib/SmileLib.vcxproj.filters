@@ -1025,9 +1025,6 @@
     <ClInclude Include="include\smile\smiletypes\predecl.h">
       <Filter>include\smiletypes</Filter>
     </ClInclude>
-    <ClInclude Include="include\smile\smiletypes\text\smilestring.h">
-      <Filter>include\smiletypes\text</Filter>
-    </ClInclude>
     <ClInclude Include="include\smile\smiletypes\text\smilesymbol.h">
       <Filter>include\smiletypes\text</Filter>
     </ClInclude>

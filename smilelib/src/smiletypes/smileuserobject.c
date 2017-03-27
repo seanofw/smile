@@ -21,7 +21,6 @@
 #include <smile/smiletypes/smileuserobject.h>
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/text/smilesymbol.h>
-#include <smile/smiletypes/text/smilestring.h>
 
 extern SmileVTable SmileUserObject_VTable_ReadOnly;
 extern SmileVTable SmileUserObject_VTable_ReadWrite;
@@ -108,7 +107,7 @@ void SmileUserObject_SetSecurityKey(SmileUserObject self, SmileObject newSecurit
 {
 	Bool isValidSecurityKey = self->securityKey->vtable->compareEqual(self->securityKey, (SmileUnboxedData){ 0 }, oldSecurityKey, (SmileUnboxedData){ 0 });
 	if (!isValidSecurityKey)
-		Smile_ThrowException(Smile_KnownSymbols.object_security_error, SmileString_GetString(Smile_KnownStrings.InvalidSecurityKey));
+		Smile_ThrowException(Smile_KnownSymbols.object_security_error, String_InvalidSecurityKey);
 
 	self->securityKey = newSecurityKey;
 }
@@ -117,7 +116,7 @@ void SmileUserObject_SetSecurity(SmileUserObject self, Int security, SmileObject
 {
 	Bool isValidSecurityKey = self->securityKey->vtable->compareEqual(self->securityKey, (SmileUnboxedData){ 0 }, securityKey, (SmileUnboxedData){ 0 });
 	if (!isValidSecurityKey)
-		Smile_ThrowException(Smile_KnownSymbols.object_security_error, SmileString_GetString(Smile_KnownStrings.InvalidSecurityKey));
+		Smile_ThrowException(Smile_KnownSymbols.object_security_error, String_InvalidSecurityKey);
 
 	self->kind = (self->kind & ~SMILE_SECURITY_READWRITEAPPEND) | (security & SMILE_SECURITY_READWRITEAPPEND);
 

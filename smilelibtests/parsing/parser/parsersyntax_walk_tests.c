@@ -18,7 +18,6 @@
 #include "../../stdafx.h"
 
 #include <smile/smiletypes/text/smilesymbol.h>
-#include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/smilepair.h>
 #include <smile/smiletypes/smilesyntax.h>
 #include <smile/parsing/parser.h>

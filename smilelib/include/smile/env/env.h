@@ -62,7 +62,6 @@
 
 SMILE_API_DATA SymbolTable Smile_SymbolTable;
 SMILE_API_DATA struct KnownSymbolsStruct Smile_KnownSymbols;
-SMILE_API_DATA struct KnownStringsStruct Smile_KnownStrings;
 SMILE_API_DATA struct KnownObjectsStruct Smile_KnownObjects;
 SMILE_API_DATA struct KnownBasesStruct Smile_KnownBases;
 

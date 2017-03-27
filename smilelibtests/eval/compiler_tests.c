@@ -22,7 +22,6 @@
 #include <smile/eval/opcode.h>
 #include <smile/eval/compiler.h>
 #include <smile/parsing/parser.h>
-#include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/smilepair.h>
 

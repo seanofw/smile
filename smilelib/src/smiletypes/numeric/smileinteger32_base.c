@@ -22,7 +22,6 @@
 #include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
-#include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/base.h>
 
@@ -93,10 +92,10 @@ SMILE_EXTERNAL_FUNCTION(ToString)
 		}
 		else numericBase = 10;
 
-		return SmileArg_From((SmileObject)SmileString_Create(String_CreateFromInteger((Int64)argv[0].unboxed.i32, (Int)numericBase, False)));
+		return SmileArg_From((SmileObject)String_CreateFromInteger((Int64)argv[0].unboxed.i32, (Int)numericBase, False));
 	}
 
-	return SmileArg_From((SmileObject)SmileString_Create(integer32));
+	return SmileArg_From((SmileObject)integer32);
 }
 
 SMILE_EXTERNAL_FUNCTION(Hash)
@@ -144,7 +143,7 @@ SMILE_EXTERNAL_FUNCTION(Parse)
 			// The form [parse string].
 			if (SMILE_KIND(argv[0].obj) != SMILE_KIND_STRING)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _parseArguments);
-			if (!String_ParseInteger(SmileString_GetString((SmileString)argv[0].obj), 10, &value))
+			if (!String_ParseInteger((String)argv[0].obj, 10, &value))
 				return SmileArg_From(NullObject);
 			return SmileUnboxedInteger32_From((Int32)value);
 
@@ -155,13 +154,13 @@ SMILE_EXTERNAL_FUNCTION(Parse)
 				numericBase = (Int)argv[1].unboxed.i64;
 				if (numericBase < 2 || numericBase > 36)
 					Smile_ThrowException(Smile_KnownSymbols.native_method_error, _numericBaseError);
-				if (!String_ParseInteger(SmileString_GetString((SmileString)argv[0].obj), (Int)numericBase, &value))
+				if (!String_ParseInteger((String)argv[0].obj, (Int)numericBase, &value))
 					return SmileArg_From(NullObject);
 				return SmileUnboxedInteger32_From((Int32)value);
 			}
 			else if (SMILE_KIND(argv[1].obj) == SMILE_KIND_STRING) {
 				// The form [obj.parse string].
-				if (!String_ParseInteger(SmileString_GetString((SmileString)argv[1].obj), 10, &value))
+				if (!String_ParseInteger((String)argv[1].obj, 10, &value))
 					return SmileArg_From(NullObject);
 				return SmileUnboxedInteger32_From((Int32)value);
 			}
@@ -176,7 +175,7 @@ SMILE_EXTERNAL_FUNCTION(Parse)
 			numericBase = (Int)argv[2].unboxed.i64;
 			if (numericBase < 2 || numericBase > 36)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _numericBaseError);
-			if (!String_ParseInteger(SmileString_GetString((SmileString)argv[1].obj), (Int)numericBase, &value))
+			if (!String_ParseInteger((String)argv[1].obj, (Int)numericBase, &value))
 				return SmileArg_From(NullObject);
 			return SmileUnboxedInteger32_From((Int32)value);
 	}

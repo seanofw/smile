@@ -20,7 +20,6 @@
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/smilenull.h>
 #include <smile/smiletypes/text/smilesymbol.h>
-#include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/easyobject.h>
 
 SMILE_EASY_OBJECT_VTABLE(SmileNull);

@@ -18,7 +18,6 @@
 #include "../../stdafx.h"
 
 #include <smile/parsing/parser.h>
-#include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/numeric/smilebyte.h>
 #include <smile/smiletypes/smilepair.h>
 #include <smile/env/env.h>
@@ -41,7 +40,7 @@ END_TEST
 
 START_TEST(CanParseAPseudoDynamicString)
 {
-	SmileObject expectedResult = (SmileObject)SmileString_Create(String_FromC("This is a test."));
+	SmileObject expectedResult = (SmileObject)String_FromC("This is a test.");
 
 	Lexer lexer = SetupLexer("  \"This is a test.\"  ");
 	Parser parser = Parser_Create();

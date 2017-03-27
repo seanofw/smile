@@ -21,7 +21,6 @@
 #include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
-#include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/parsing/parser.h>
 #include <smile/parsing/internal/parserinternal.h>
@@ -99,7 +98,7 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, T
 		return NULL;
 
 	case TOKEN_RAWSTRING:
-		*result = (SmileObject)SmileString_Create(token->text);
+		*result = (SmileObject)token->text;
 		return NULL;
 
 	case TOKEN_DYNSTRING:

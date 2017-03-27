@@ -27,7 +27,6 @@
 #include <smile/env/knownbases.h>
 #include <smile/smiletypes/smileuserobject.h>
 #include <smile/smiletypes/text/smilesymbol.h>
-#include <smile/smiletypes/text/smilestring.h>
 
 extern void Smile_InitTicks(void);
 
@@ -46,7 +45,6 @@ UInt32 Smile_HashOracle;
 // The environment.
 SymbolTable Smile_SymbolTable;
 struct KnownSymbolsStruct Smile_KnownSymbols;
-struct KnownStringsStruct Smile_KnownStrings;
 struct KnownObjectsStruct Smile_KnownObjects;
 struct KnownBasesStruct Smile_KnownBases;
 
@@ -72,7 +70,6 @@ void Smile_ResetEnvironment(void)
 	Smile_SymbolTable = NULL;
 	MemZero(&Smile_KnownSymbols, sizeof(struct KnownSymbolsStruct));
 	MemZero(&Smile_KnownBases, sizeof(struct KnownBasesStruct));
-	MemZero(&Smile_KnownStrings, sizeof(struct KnownStringsStruct));
 	MemZero(&Smile_KnownObjects, sizeof(struct KnownObjectsStruct));
 
 	// Now give the garbage collector a chance to make the world as clean as possible.
@@ -87,9 +84,6 @@ void Smile_ResetEnvironment(void)
 	// Preload the known bases into this environment.  This must come first, or we can't
 	// correctly instantiate any other Smile types.
 	KnownBases_Preload(&Smile_KnownBases);
-
-	// Preload the known strings into this environment.
-	KnownStrings_Setup(&Smile_KnownStrings);
 
 	// Preload the known objects into this environment.
 	KnownObjects_Setup(&Smile_KnownObjects, &Smile_KnownSymbols);
@@ -149,7 +143,7 @@ SmileUserObject Smile_CreateException(Symbol exceptionKind, String message)
 {
 	SmileUserObject exception = SmileUserObject_Create((SmileObject)Smile_KnownBases.Exception);
 	SmileUserObject_Set(exception, Smile_KnownSymbols.kind, SmileSymbol_Create(exceptionKind));
-	SmileUserObject_Set(exception, Smile_KnownSymbols.message, SmileString_Create(message));
+	SmileUserObject_Set(exception, Smile_KnownSymbols.message, message);
 	return exception;
 }
 

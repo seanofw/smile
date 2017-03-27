@@ -21,7 +21,6 @@
 #include <smile/smiletypes/easyobject.h>
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/text/smilesymbol.h>
-#include <smile/smiletypes/text/smilestring.h>
 #include <smile/stringbuilder.h>
 
 SMILE_EASY_OBJECT_VTABLE(SmileList);

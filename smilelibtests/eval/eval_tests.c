@@ -23,7 +23,6 @@
 #include <smile/eval/compiler.h>
 #include <smile/eval/eval.h>
 #include <smile/parsing/parser.h>
-#include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/smilepair.h>
@@ -186,7 +185,7 @@ START_TEST(CanEvalSmileCodeThatConvertsBetweenTypes)
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_STRING);
-	ASSERT_STRING(SmileString_GetString((SmileString)result->value), "2345", 4);
+	ASSERT_STRING((String)result->value, "2345", 4);
 }
 END_TEST
 
@@ -430,7 +429,7 @@ START_TEST(UserFunctionsCanHaveRestParameters)
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_STRING);
-	ASSERT_STRING(SmileString_GetString((SmileString)result->value), "40 50 60", 8);
+	ASSERT_STRING((String)result->value, "40 50 60", 8);
 }
 END_TEST
 
@@ -879,7 +878,7 @@ START_TEST(CanConcatenateStrings)
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_STRING);
-	ASSERT_STRING(SmileString_GetString((SmileString)result->value), "foobar", 6);
+	ASSERT_STRING((String)result->value, "foobar", 6);
 }
 END_TEST
 
@@ -890,7 +889,7 @@ START_TEST(CanConcatenateManyStrings)
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_STRING);
-	ASSERT_STRING(SmileString_GetString((SmileString)result->value), "You say goodbye, and I say hello.", 33);
+	ASSERT_STRING((String)result->value, "You say goodbye, and I say hello.", 33);
 }
 END_TEST
 
@@ -901,7 +900,7 @@ START_TEST(CanConcatenateManyStringsMoreEfficiently1)
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_STRING);
-	ASSERT_STRING(SmileString_GetString((SmileString)result->value), "You say goodbye, and I say hello.", 33);
+	ASSERT_STRING((String)result->value, "You say goodbye, and I say hello.", 33);
 }
 END_TEST
 
@@ -912,7 +911,7 @@ START_TEST(CanConcatenateManyStringsMoreEfficiently2)
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_STRING);
-	ASSERT_STRING(SmileString_GetString((SmileString)result->value), "You say goodbye, and I say hello.", 33);
+	ASSERT_STRING((String)result->value, "You say goodbye, and I say hello.", 33);
 }
 END_TEST
 
@@ -924,7 +923,7 @@ START_TEST(CanConcatenateManyStringsMoreEfficiently3)
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_STRING);
-	ASSERT_STRING(SmileString_GetString((SmileString)result->value), "You say goodbye, and I say hello.", 33);
+	ASSERT_STRING((String)result->value, "You say goodbye, and I say hello.", 33);
 }
 END_TEST
 

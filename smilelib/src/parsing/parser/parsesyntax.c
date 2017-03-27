@@ -20,7 +20,6 @@
 #include <smile/smiletypes/smilesyntax.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
-#include <smile/smiletypes/text/smilestring.h>
 #include <smile/stringbuilder.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/parsing/parser.h>

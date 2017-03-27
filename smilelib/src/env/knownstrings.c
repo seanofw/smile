@@ -17,20 +17,9 @@
 
 #include <smile/string.h>
 #include <smile/env/knownstrings.h>
-#include <smile/smiletypes/text/smilestring.h>
 
-STATIC_STRING(ObjectString, "Object");
-STATIC_STRING(true_, "true");
-STATIC_STRING(false_, "false");
-STATIC_STRING(InvalidSecurityKey, "Invalid security key.");
-STATIC_STRING(invalidFunctionError, "Object is not a callable function.");
-
-void KnownStrings_Setup(struct KnownStringsStruct *knownStrings)
-{
-	knownStrings->Object = SmileString_Create(ObjectString);
-	knownStrings->true_ = SmileString_Create(true_);
-	knownStrings->false_ = SmileString_Create(false_);
-	knownStrings->InvalidSecurityKey = SmileString_Create(InvalidSecurityKey);
-
-	knownStrings->invalidFunctionError = invalidFunctionError;
-}
+EXTERN_STATIC_STRING(String_Object, "Object");
+EXTERN_STATIC_STRING(String_True, "true");
+EXTERN_STATIC_STRING(String_False, "false");
+EXTERN_STATIC_STRING(String_InvalidSecurityKey, "Invalid security key.");
+EXTERN_STATIC_STRING(String_InvalidFunctionError, "Object is not a callable function.");

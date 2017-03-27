@@ -270,11 +270,11 @@ SMILE_API_FUNC String String_ConvertKnownCodePageToUtf8Range(const String str, I
 //  Inline parts of the implementation
 
 // Foreign reference to String's VTable so that we can statically instantiate strings.
-struct SmileString_VTableInt;
-SMILE_API_DATA struct SmileString_VTableInt SmileString_VTableData;
+struct String_VTableInt;
+SMILE_API_DATA struct String_VTableInt String_VTableData;
 
 // Foreign reference to String's base object so that we can statically instantiate strings.
-SMILE_API_DATA struct SmileUserObjectInt SmileString_BaseObjectStruct;
+SMILE_API_DATA struct SmileUserObjectInt String_BaseObjectStruct;
 
 /// <summary>
 /// Declare a static string, preallocated in const (readonly) memory, rather than on the heap.
@@ -284,7 +284,7 @@ SMILE_API_DATA struct SmileUserObjectInt SmileString_BaseObjectStruct;
 /// <param name="__textLength__">The number of bytes in the C-style string, not including the terminating nul character.</param>
 #define EXTERN_STATIC_STRING(__name__, __text__) \
 	static struct StringStruct __name__##Struct = { \
-		SMILE_KIND_STRING, (SmileVTable)&SmileString_VTableData, (SmileObject)&SmileString_BaseObjectStruct, \
+		SMILE_KIND_STRING, (SmileVTable)&String_VTableData, (SmileObject)&String_BaseObjectStruct, \
 		{ (sizeof(__text__) - 1), (__text__) } \
 	}; \
 	String __name__ = (String)(&__name__##Struct)
@@ -297,7 +297,7 @@ SMILE_API_DATA struct SmileUserObjectInt SmileString_BaseObjectStruct;
 /// <param name="__text__">A C-style string that contains the static text.</param>
 #define STATIC_STRING(__name__, __text__) \
 	static struct StringStruct __name__##Struct = { \
-		SMILE_KIND_STRING, (SmileVTable)&SmileString_VTableData, (SmileObject)&SmileString_BaseObjectStruct, \
+		SMILE_KIND_STRING, (SmileVTable)&String_VTableData, (SmileObject)&String_BaseObjectStruct, \
 		{ (sizeof(__text__) - 1), (__text__) } \
 	}; \
 	static String __name__ = (String)(&__name__##Struct)

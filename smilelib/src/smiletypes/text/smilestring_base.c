@@ -25,7 +25,6 @@
 #include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
-#include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/base.h>
 
@@ -72,7 +71,7 @@ STATIC_STRING(_invalidTypeError, "All arguments to 'String.%s' must be of type '
 SMILE_EXTERNAL_FUNCTION(ToBool)
 {
 	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_STRING)
-		return SmileUnboxedBool_From(SmileString_Length((SmileString)argv[0].obj) > 0);
+		return SmileUnboxedBool_From(String_Length((String)argv[0].obj) > 0);
 
 	return SmileUnboxedBool_From(True);
 }
@@ -80,7 +79,7 @@ SMILE_EXTERNAL_FUNCTION(ToBool)
 SMILE_EXTERNAL_FUNCTION(ToInt)
 {
 	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_STRING)
-		return SmileUnboxedInteger64_From(SmileString_Length((SmileString)argv[0].obj));
+		return SmileUnboxedInteger64_From(String_Length((String)argv[0].obj));
 
 	return SmileUnboxedInteger64_From(0);
 }
@@ -92,7 +91,7 @@ SMILE_EXTERNAL_FUNCTION(ToString)
 	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_STRING)
 		return argv[0];
 
-	return SmileArg_From((SmileObject)SmileString_Create(string));
+	return SmileArg_From((SmileObject)string);
 }
 
 SMILE_EXTERNAL_FUNCTION(Hash)
@@ -100,7 +99,7 @@ SMILE_EXTERNAL_FUNCTION(Hash)
 	Int64 hash;
 
 	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_STRING) {
-		hash = String_Hash64(SmileString_GetString((SmileString)argv[0].obj));
+		hash = String_Hash64((String)argv[0].obj);
 		return SmileUnboxedInteger64_From(hash);
 	}
 
@@ -128,15 +127,15 @@ SMILE_EXTERNAL_FUNCTION(Plus)
 
 	if (argc == 2) {
 		// Concatenating exactly two things: a string + (a string | a char | a Unicode char).
-		x = SmileString_GetString((SmileString)argv[0].obj);
+		x = (String)argv[0].obj;
 	
 		switch (SMILE_KIND(argv[1].obj)) {
 			case SMILE_KIND_STRING:
-				x = String_Concat(x, SmileString_GetString((SmileString)argv[1].obj));
-				return SmileArg_From((SmileObject)SmileString_Create(x));
+				x = String_Concat(x, (String)argv[1].obj);
+				return SmileArg_From((SmileObject)x);
 			case SMILE_KIND_UNBOXED_BYTE:
 				x = String_ConcatByte(x, argv[1].unboxed.i8);
-				return SmileArg_From((SmileObject)SmileString_Create(x));
+				return SmileArg_From((SmileObject)x);
 			case SMILE_KIND_UNBOXED_INTEGER16:
 				value = argv[1].unboxed.i16;
 				break;
@@ -154,7 +153,7 @@ SMILE_EXTERNAL_FUNCTION(Plus)
 	
 		if (value < 256 && value >= 0) {
 			x = String_ConcatByte(x, (Byte)value);
-			return SmileArg_From((SmileObject)SmileString_Create(x));
+			return SmileArg_From((SmileObject)x);
 		}
 		if (value < 0 || value >= 0x110000) {
 			Smile_ThrowException(Smile_KnownSymbols.native_method_error, _plusIllegalUnicodeChar);
@@ -163,7 +162,7 @@ SMILE_EXTERNAL_FUNCTION(Plus)
 		INIT_INLINE_STRINGBUILDER(stringBuilder);
 		StringBuilder_AppendString(stringBuilder, x);
 		StringBuilder_AppendUnicode(stringBuilder, (UInt32)value);
-		return SmileArg_From((SmileObject)SmileString_Create(StringBuilder_ToString(stringBuilder)));
+		return SmileArg_From((SmileObject)StringBuilder_ToString(stringBuilder));
 	}
 
 concat_many:
@@ -177,7 +176,7 @@ concat_many:
 		switch (SMILE_KIND(argv[i].obj)) {
 		
 		case SMILE_KIND_STRING:
-			StringBuilder_AppendString(stringBuilder, SmileString_GetString((SmileString)argv[i].obj));
+			StringBuilder_AppendString(stringBuilder, (String)argv[i].obj);
 			break;
 		case SMILE_KIND_UNBOXED_BYTE:
 			StringBuilder_AppendByte(stringBuilder, argv[1].unboxed.i8);
@@ -203,7 +202,7 @@ concat_many:
 		}
 	}
 
-	return SmileArg_From((SmileObject)SmileString_Create(StringBuilder_ToString(stringBuilder)));
+	return SmileArg_From((SmileObject)StringBuilder_ToString(stringBuilder));
 }
 
 SMILE_EXTERNAL_FUNCTION(Remove)
@@ -212,15 +211,15 @@ SMILE_EXTERNAL_FUNCTION(Remove)
 
 	if (argc == 2) {
 		// Subtract:  Remove string y from string x.
-		x = SmileString_GetString((SmileString)argv[0].obj);
-		x = String_Replace(x, SmileString_GetString((SmileString)argv[1].obj), String_Empty);
-		return SmileArg_From((SmileObject)SmileString_Create(x));
+		x = (String)argv[0].obj;
+		x = String_Replace(x, (String)argv[1].obj, String_Empty);
+		return SmileArg_From((SmileObject)x);
 	}
 	else {
 		// Negate:  Reverse string x.
-		x = SmileString_GetString((SmileString)argv[0].obj);
+		x = (String)argv[0].obj;
 		x = String_Reverse(x);
-		return SmileArg_From((SmileObject)SmileString_Create(x));
+		return SmileArg_From((SmileObject)x);
 	}
 }
 
@@ -228,9 +227,9 @@ SMILE_EXTERNAL_FUNCTION(Repeat)
 {
 	String x;
 
-	x = SmileString_GetString((SmileString)argv[0].obj);
+	x = (String)argv[0].obj;
 	x = String_Repeat(x, (Int)((SmileInteger64)argv[1].obj)->value);
-	return SmileArg_From((SmileObject)SmileString_Create(x));
+	return SmileArg_From((SmileObject)x);
 }
 
 SMILE_EXTERNAL_FUNCTION(SlashAppend)
@@ -244,37 +243,37 @@ SMILE_EXTERNAL_FUNCTION(SlashAppend)
 			return argv[0];
 		
 		case 2:
-			strs[0] = SmileString_GetString((SmileString)argv[0].obj);
-			strs[1] = SmileString_GetString((SmileString)argv[1].obj);
+			strs[0] = (String)argv[0].obj;
+			strs[1] = (String)argv[1].obj;
 			x = String_SlashAppend(strs, 2);
-			return SmileArg_From((SmileObject)SmileString_Create(x));
+			return SmileArg_From((SmileObject)x);
 	
 		case 3:
-			strs[0] = SmileString_GetString((SmileString)argv[0].obj);
-			strs[1] = SmileString_GetString((SmileString)argv[1].obj);
-			strs[2] = SmileString_GetString((SmileString)argv[2].obj);
+			strs[0] = (String)argv[0].obj;
+			strs[1] = (String)argv[1].obj;
+			strs[2] = (String)argv[2].obj;
 			x = String_SlashAppend(strs, 3);
-			return SmileArg_From((SmileObject)SmileString_Create(x));
+			return SmileArg_From((SmileObject)x);
 
 		case 4:
-			strs[0] = SmileString_GetString((SmileString)argv[0].obj);
-			strs[1] = SmileString_GetString((SmileString)argv[1].obj);
-			strs[2] = SmileString_GetString((SmileString)argv[2].obj);
-			strs[3] = SmileString_GetString((SmileString)argv[3].obj);
+			strs[0] = (String)argv[0].obj;
+			strs[1] = (String)argv[1].obj;
+			strs[2] = (String)argv[2].obj;
+			strs[3] = (String)argv[3].obj;
 			x = String_SlashAppend(strs, 4);
-			return SmileArg_From((SmileObject)SmileString_Create(x));
+			return SmileArg_From((SmileObject)x);
 
 		default:
 			// Smash together the strings in batches of up to 16 strings each.
-			x = SmileString_GetString((SmileString)argv[0].obj);
+			x = (String)argv[0].obj;
 			for (i = 1; i < argc; i++) {
 				strs[0] = x;
 				for (j = 1; j < 16 && i < argc; j++, i++) {
-					strs[j] = SmileString_GetString((SmileString)argv[i].obj);
+					strs[j] = (String)argv[i].obj;
 				}
 				x = String_SlashAppend(strs, j);
 			}
-			return SmileArg_From((SmileObject)SmileString_Create(x));
+			return SmileArg_From((SmileObject)x);
 	}
 }
 
@@ -284,7 +283,7 @@ SMILE_EXTERNAL_FUNCTION(SlashAppend)
 SMILE_EXTERNAL_FUNCTION(Eq)
 {
 	if (SMILE_KIND(argv[1].obj) != SMILE_KIND_STRING
-		|| !String_Equals(SmileString_GetString((SmileString)argv[0].obj), SmileString_GetString((SmileString)argv[1].obj)))
+		|| !String_Equals((String)argv[0].obj, (String)argv[1].obj))
 		return SmileUnboxedBool_From(False);
 
 	return SmileUnboxedBool_From(True);
@@ -293,7 +292,7 @@ SMILE_EXTERNAL_FUNCTION(Eq)
 SMILE_EXTERNAL_FUNCTION(Ne)
 {
 	if (SMILE_KIND(argv[1].obj) != SMILE_KIND_STRING
-		|| !String_Equals(SmileString_GetString((SmileString)argv[0].obj), SmileString_GetString((SmileString)argv[1].obj)))
+		|| !String_Equals((String)argv[0].obj, (String)argv[1].obj))
 		return SmileUnboxedBool_From(True);
 
 	return SmileUnboxedBool_From(False);
@@ -302,7 +301,7 @@ SMILE_EXTERNAL_FUNCTION(Ne)
 SMILE_EXTERNAL_FUNCTION(EqI)
 {
 	if (SMILE_KIND(argv[1].obj) != SMILE_KIND_STRING
-		|| String_CompareI(SmileString_GetString((SmileString)argv[0].obj), SmileString_GetString((SmileString)argv[1].obj)) != 0)
+		|| String_CompareI((String)argv[0].obj, (String)argv[1].obj) != 0)
 		return SmileUnboxedBool_From(False);
 
 	return SmileUnboxedBool_From(True);
@@ -311,7 +310,7 @@ SMILE_EXTERNAL_FUNCTION(EqI)
 SMILE_EXTERNAL_FUNCTION(NeI)
 {
 	if (SMILE_KIND(argv[1].obj) != SMILE_KIND_STRING
-		|| String_CompareI(SmileString_GetString((SmileString)argv[0].obj), SmileString_GetString((SmileString)argv[1].obj)) != 0)
+		|| String_CompareI((String)argv[0].obj, (String)argv[1].obj) != 0)
 		return SmileUnboxedBool_From(True);
 
 	return SmileUnboxedBool_From(False);
@@ -320,8 +319,8 @@ SMILE_EXTERNAL_FUNCTION(NeI)
 #define RELATIVE_COMPARE(__name__, __func__, __op__) \
 	SMILE_EXTERNAL_FUNCTION(__name__) \
 	{ \
-		String x = SmileString_GetString((SmileString)argv[0].obj); \
-		String y = SmileString_GetString((SmileString)argv[1].obj); \
+		String x = (String)argv[0].obj; \
+		String y = (String)argv[1].obj; \
 		Int cmp = __func__(x, y); \
 		\
 		return SmileUnboxedBool_From(cmp __op__ 0); \
@@ -338,8 +337,8 @@ RELATIVE_COMPARE(GeI, String_CompareI, >=)
 
 SMILE_EXTERNAL_FUNCTION(Compare)
 {
-	String x = SmileString_GetString((SmileString)argv[0].obj);
-	String y = SmileString_GetString((SmileString)argv[1].obj);
+	String x = (String)argv[0].obj;
+	String y = (String)argv[1].obj;
 	Int cmp = String_Compare(x, y);
 
 	if (cmp == 0)
@@ -352,8 +351,8 @@ SMILE_EXTERNAL_FUNCTION(Compare)
 
 SMILE_EXTERNAL_FUNCTION(CompareI)
 {
-	String x = SmileString_GetString((SmileString)argv[0].obj);
-	String y = SmileString_GetString((SmileString)argv[1].obj);
+	String x = (String)argv[0].obj;
+	String y = (String)argv[1].obj;
 	Int cmp = String_CompareI(x, y);
 
 	if (cmp == 0)
@@ -368,48 +367,48 @@ SMILE_EXTERNAL_FUNCTION(CompareI)
 
 SMILE_EXTERNAL_FUNCTION(StartsWith)
 {
-	String x = SmileString_GetString((SmileString)argv[0].obj);
-	String y = SmileString_GetString((SmileString)argv[1].obj);
+	String x = (String)argv[0].obj;
+	String y = (String)argv[1].obj;
 	Bool result = String_StartsWith(x, y);
 	return SmileUnboxedBool_From(result);
 }
 
 SMILE_EXTERNAL_FUNCTION(StartsWithI)
 {
-	String x = SmileString_GetString((SmileString)argv[0].obj);
-	String y = SmileString_GetString((SmileString)argv[1].obj);
+	String x = (String)argv[0].obj;
+	String y = (String)argv[1].obj;
 	Bool result = String_StartsWithI(x, y);
 	return SmileUnboxedBool_From(result);
 }
 
 SMILE_EXTERNAL_FUNCTION(EndsWith)
 {
-	String x = SmileString_GetString((SmileString)argv[0].obj);
-	String y = SmileString_GetString((SmileString)argv[1].obj);
+	String x = (String)argv[0].obj;
+	String y = (String)argv[1].obj;
 	Bool result = String_EndsWith(x, y);
 	return SmileUnboxedBool_From(result);
 }
 
 SMILE_EXTERNAL_FUNCTION(EndsWithI)
 {
-	String x = SmileString_GetString((SmileString)argv[0].obj);
-	String y = SmileString_GetString((SmileString)argv[1].obj);
+	String x = (String)argv[0].obj;
+	String y = (String)argv[1].obj;
 	Bool result = String_EndsWithI(x, y);
 	return SmileUnboxedBool_From(result);
 }
 
 SMILE_EXTERNAL_FUNCTION(Contains)
 {
-	String x = SmileString_GetString((SmileString)argv[0].obj);
-	String y = SmileString_GetString((SmileString)argv[1].obj);
+	String x = (String)argv[0].obj;
+	String y = (String)argv[1].obj;
 	Bool result = String_Contains(x, y);
 	return SmileUnboxedBool_From(result);
 }
 
 SMILE_EXTERNAL_FUNCTION(ContainsI)
 {
-	String x = SmileString_GetString((SmileString)argv[0].obj);
-	String y = SmileString_GetString((SmileString)argv[1].obj);
+	String x = (String)argv[0].obj;
+	String y = (String)argv[1].obj;
 	Bool result = String_ContainsI(x, y);
 	return SmileUnboxedBool_From(result);
 }
@@ -418,8 +417,8 @@ SMILE_EXTERNAL_FUNCTION(ContainsI)
 
 SMILE_EXTERNAL_FUNCTION(IndexOf)
 {
-	String x = SmileString_GetString((SmileString)argv[0].obj);
-	String y = SmileString_GetString((SmileString)argv[1].obj);
+	String x = (String)argv[0].obj;
+	String y = (String)argv[1].obj;
 
 	Int64 startIndex = argc > 2 ? argv[2].unboxed.i64 : 0;
 	Int stringLength = String_Length(x);
@@ -432,8 +431,8 @@ SMILE_EXTERNAL_FUNCTION(IndexOf)
 
 SMILE_EXTERNAL_FUNCTION(IndexOfI)
 {
-	String x = SmileString_GetString((SmileString)argv[0].obj);
-	String y = SmileString_GetString((SmileString)argv[1].obj);
+	String x = (String)argv[0].obj;
+	String y = (String)argv[1].obj;
 
 	Int64 startIndex = argc > 2 ? argv[2].unboxed.i64 : 0;
 	Int stringLength = String_Length(x);
@@ -446,8 +445,8 @@ SMILE_EXTERNAL_FUNCTION(IndexOfI)
 
 SMILE_EXTERNAL_FUNCTION(LastIndexOf)
 {
-	String x = SmileString_GetString((SmileString)argv[0].obj);
-	String y = SmileString_GetString((SmileString)argv[1].obj);
+	String x = (String)argv[0].obj;
+	String y = (String)argv[1].obj;
 
 	Int64 startIndex = argc > 2 ? argv[2].unboxed.i64 : 0;
 	Int stringLength = String_Length(x);
@@ -460,8 +459,8 @@ SMILE_EXTERNAL_FUNCTION(LastIndexOf)
 
 SMILE_EXTERNAL_FUNCTION(LastIndexOfI)
 {
-	String x = SmileString_GetString((SmileString)argv[0].obj);
-	String y = SmileString_GetString((SmileString)argv[1].obj);
+	String x = (String)argv[0].obj;
+	String y = (String)argv[1].obj;
 
 	Int64 startIndex = argc > 2 ? argv[2].unboxed.i64 : 0;
 	Int stringLength = String_Length(x);
@@ -476,7 +475,7 @@ SMILE_EXTERNAL_FUNCTION(LastIndexOfI)
 
 SMILE_EXTERNAL_FUNCTION(GetMember)
 {
-	String x = SmileString_GetString((SmileString)argv[0].obj);
+	String x = (String)argv[0].obj;
 	Int64 index = argv[1].unboxed.i64;
 	Byte ch;
 	STATIC_STRING(indexOutOfRangeError, "Index to 'get-member' is beyond the length of the string.");
@@ -491,37 +490,37 @@ SMILE_EXTERNAL_FUNCTION(GetMember)
 
 SMILE_EXTERNAL_FUNCTION(Substr)
 {
-	String x = SmileString_GetString((SmileString)argv[0].obj);
+	String x = (String)argv[0].obj;
 
 	if (argc == 2) {
 		Int64 index = argv[1].unboxed.i64;
-		return SmileArg_From((SmileObject)SmileString_Create(String_SubstringAt(x, (Int)index)));
+		return SmileArg_From((SmileObject)String_SubstringAt(x, (Int)index));
 	}
 	else {
 		Int64 index = argv[1].unboxed.i64;
 		Int64 length = argv[2].unboxed.i64;
-		return SmileArg_From((SmileObject)SmileString_Create(String_Substring(x, (Int)index, (Int)length)));
+		return SmileArg_From((SmileObject)String_Substring(x, (Int)index, (Int)length));
 	}
 }
 
 SMILE_EXTERNAL_FUNCTION(Left)
 {
-	String x = SmileString_GetString((SmileString)argv[0].obj);
+	String x = (String)argv[0].obj;
 	Int64 length = argv[1].unboxed.i64;
 	Int stringLength = String_Length(x);
 
 	return length >= stringLength ? argv[0]
-		: SmileArg_From((SmileObject)SmileString_Create(String_Substring(x, 0, (Int)length)));
+		: SmileArg_From((SmileObject)String_Substring(x, 0, (Int)length));
 }
 
 SMILE_EXTERNAL_FUNCTION(Right)
 {
-	String x = SmileString_GetString((SmileString)argv[0].obj);
+	String x = (String)argv[0].obj;
 	Int64 length = argv[1].unboxed.i64;
 	Int stringLength = String_Length(x);
 
 	return length >= stringLength ? argv[0]
-		: SmileArg_From((SmileObject)SmileString_Create(String_SubstringAt(x, (Int)stringLength - (Int)length)));
+		: SmileArg_From((SmileObject)String_SubstringAt(x, (Int)stringLength - (Int)length));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -529,8 +528,8 @@ SMILE_EXTERNAL_FUNCTION(Right)
 #define UnaryProxyFunction(__functionName__, __stringName__) \
 	SMILE_EXTERNAL_FUNCTION(__functionName__) \
 	{ \
-		String x = SmileString_GetString((SmileString)argv[0].obj); \
-		return SmileArg_From((SmileObject)SmileString_Create(__stringName__(x))); \
+		String x = (String)argv[0].obj; \
+		return SmileArg_From((SmileObject)__stringName__(x)); \
 	}
 
 UnaryProxyFunction(CaseFold, String_CaseFold)
@@ -559,7 +558,7 @@ UnaryProxyFunction(RegexEscape, String_RegexEscape)
 //-------------------------------------------------------------------------------------------------
 
 typedef struct EachInfoStruct {
-	SmileString initialString;
+	String initialString;
 	const Byte *ptr, *end;
 	SmileFunction function;
 	Int index;
@@ -613,7 +612,7 @@ static Int EachWithTwoArgs(ClosureStateMachine closure)
 SMILE_EXTERNAL_FUNCTION(Each)
 {
 	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
-	SmileString smileString = (SmileString)argv[0].obj;
+	String smileString = (String)argv[0].obj;
 	SmileFunction function = (SmileFunction)argv[1].obj;
 	Int minArgs, maxArgs;
 	EachInfo eachInfo;
@@ -629,8 +628,8 @@ SMILE_EXTERNAL_FUNCTION(Each)
 	eachInfo->function = function;
 	eachInfo->initialString = smileString;
 	eachInfo->index = 0;
-	eachInfo->ptr = String_GetBytes(SmileString_GetString(smileString));
-	eachInfo->end = eachInfo->ptr + SmileString_Length(smileString);
+	eachInfo->ptr = String_GetBytes(smileString);
+	eachInfo->end = eachInfo->ptr + String_Length(smileString);
 
 	Closure_PushBoxed(closure, NullObject);	// Initial "return" value from 'each'.
 
@@ -654,7 +653,7 @@ static Int MapWithOneArgStart(ClosureStateMachine closure)
 
 	// Condition: If we've run out of list nodes, we're done.
 	if (loopInfo->ptr >= loopInfo->end) {
-		Closure_PushBoxed(closure, SmileString_Create(StringBuilder_ToString(loopInfo->result)));
+		Closure_PushBoxed(closure, StringBuilder_ToString(loopInfo->result));
 		return -1;
 	}
 
@@ -684,7 +683,7 @@ static Int MapWithOneArgBody(ClosureStateMachine closure)
 			StringBuilder_AppendUnicode(loopInfo->result, (UInt32)fnResult.unboxed.i64);
 			break;
 		case SMILE_KIND_STRING:
-			StringBuilder_AppendString(loopInfo->result, SmileString_GetString((SmileString)fnResult.obj));
+			StringBuilder_AppendString(loopInfo->result, (String)fnResult.obj);
 			break;
 		default:
 			Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FromC("'map' projection must return a String or Integer type."));
@@ -701,7 +700,7 @@ static Int MapWithOneArgBody(ClosureStateMachine closure)
 
 	// Condition: If we've run out of list nodes, we're done.
 	if (loopInfo->ptr >= loopInfo->end) {
-		Closure_PushBoxed(closure, SmileString_Create(StringBuilder_ToString(loopInfo->result)));
+		Closure_PushBoxed(closure, StringBuilder_ToString(loopInfo->result));
 		return -1;
 	}
 
@@ -719,7 +718,7 @@ static Int MapWithTwoArgsStart(ClosureStateMachine closure)
 
 	// Condition: If we've run out of list nodes, we're done.
 	if (loopInfo->ptr >= loopInfo->end) {
-		Closure_PushBoxed(closure, SmileString_Create(StringBuilder_ToString(loopInfo->result)));
+		Closure_PushBoxed(closure, StringBuilder_ToString(loopInfo->result));
 		return -1;
 	}
 
@@ -750,7 +749,7 @@ static Int MapWithTwoArgsBody(ClosureStateMachine closure)
 			StringBuilder_AppendUnicode(loopInfo->result, (UInt32)fnResult.unboxed.i64);
 			break;
 		case SMILE_KIND_STRING:
-			StringBuilder_AppendString(loopInfo->result, SmileString_GetString((SmileString)fnResult.obj));
+			StringBuilder_AppendString(loopInfo->result, (String)fnResult.obj);
 			break;
 		default:
 			Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FromC("'map' projection must return a String or Integer type."));
@@ -767,7 +766,7 @@ static Int MapWithTwoArgsBody(ClosureStateMachine closure)
 
 	// Condition: If we've run out of list nodes, we're done.
 	if (loopInfo->ptr >= loopInfo->end) {
-		Closure_PushBoxed(closure, SmileString_Create(StringBuilder_ToString(loopInfo->result)));
+		Closure_PushBoxed(closure, StringBuilder_ToString(loopInfo->result));
 		return -1;
 	}
 
@@ -781,7 +780,7 @@ static Int MapWithTwoArgsBody(ClosureStateMachine closure)
 SMILE_EXTERNAL_FUNCTION(Map)
 {
 	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
-	SmileString smileString = (SmileString)argv[0].obj;
+	String smileString = (String)argv[0].obj;
 	SmileFunction function = (SmileFunction)argv[1].obj;
 	Int minArgs, maxArgs;
 	MapInfo mapInfo;
@@ -789,8 +788,8 @@ SMILE_EXTERNAL_FUNCTION(Map)
 	const Byte *ptr;
 	Int length;
 
-	ptr = String_GetBytes(SmileString_GetString(smileString));
-	length = SmileString_Length(smileString);
+	ptr = String_GetBytes(smileString);
+	length = String_Length(smileString);
 
 	SmileFunction_GetArgCounts(function, &minArgs, &maxArgs);
 
@@ -825,7 +824,7 @@ static Int WhereWithOneArgStart(ClosureStateMachine closure)
 
 	// Condition: If we've run out of bytes, we're done.
 	if (loopInfo->ptr >= loopInfo->end) {
-		Closure_PushBoxed(closure, SmileString_Create(StringBuilder_ToString(loopInfo->result)));
+		Closure_PushBoxed(closure, StringBuilder_ToString(loopInfo->result));
 		return -1;
 	}
 
@@ -858,7 +857,7 @@ static Int WhereWithOneArgBody(ClosureStateMachine closure)
 
 	// Condition: If we've run out of list nodes, we're done.
 	if (loopInfo->ptr >= loopInfo->end) {
-		Closure_PushBoxed(closure, SmileString_Create(StringBuilder_ToString(loopInfo->result)));
+		Closure_PushBoxed(closure, StringBuilder_ToString(loopInfo->result));
 		return -1;
 	}
 
@@ -876,7 +875,7 @@ static Int WhereWithTwoArgsStart(ClosureStateMachine closure)
 
 	// Condition: If we've run out of list nodes, we're done.
 	if (loopInfo->ptr >= loopInfo->end) {
-		Closure_PushBoxed(closure, SmileString_Create(StringBuilder_ToString(loopInfo->result)));
+		Closure_PushBoxed(closure, StringBuilder_ToString(loopInfo->result));
 		return -1;
 	}
 
@@ -910,7 +909,7 @@ static Int WhereWithTwoArgsBody(ClosureStateMachine closure)
 
 	// Condition: If we've run out of list nodes, we're done.
 	if (loopInfo->ptr >= loopInfo->end) {
-		Closure_PushBoxed(closure, SmileString_Create(StringBuilder_ToString(loopInfo->result)));
+		Closure_PushBoxed(closure, StringBuilder_ToString(loopInfo->result));
 		return -1;
 	}
 
@@ -924,7 +923,7 @@ static Int WhereWithTwoArgsBody(ClosureStateMachine closure)
 SMILE_EXTERNAL_FUNCTION(Where)
 {
 	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
-	SmileString smileString = (SmileString)argv[0].obj;
+	String smileString = (String)argv[0].obj;
 	SmileFunction function = (SmileFunction)argv[1].obj;
 	Int minArgs, maxArgs;
 	WhereInfo whereInfo;
@@ -932,8 +931,8 @@ SMILE_EXTERNAL_FUNCTION(Where)
 	const Byte *ptr;
 	Int length;
 
-	ptr = String_GetBytes(SmileString_GetString(smileString));
-	length = SmileString_Length(smileString);
+	ptr = String_GetBytes(smileString);
+	length = String_Length(smileString);
 
 	SmileFunction_GetArgCounts(function, &minArgs, &maxArgs);
 
@@ -1011,7 +1010,7 @@ static Int CountBody(ClosureStateMachine closure)
 SMILE_EXTERNAL_FUNCTION(Count)
 {
 	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
-	SmileString smileString = (SmileString)argv[0].obj;
+	String smileString = (String)argv[0].obj;
 	CountInfo countInfo;
 	ClosureStateMachine closure;
 	Byte value;
@@ -1026,8 +1025,8 @@ SMILE_EXTERNAL_FUNCTION(Count)
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FromC("Argument 1 to 'count' is of the wrong type."));
 	}
 
-	ptr = String_GetBytes(SmileString_GetString(smileString));
-	length = SmileString_Length(smileString);
+	ptr = String_GetBytes(smileString);
+	length = String_Length(smileString);
 
 	if (argc == 1) {
 		// Degenerate form: Just return the length of the string.
@@ -1064,7 +1063,7 @@ SMILE_EXTERNAL_FUNCTION(Count)
 
 //-------------------------------------------------------------------------------------------------
 
-void SmileString_Setup(SmileUserObject base)
+void String_Setup(SmileUserObject base)
 {
 	SetupFunction("bool", ToBool, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 	SetupFunction("int", ToInt, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);

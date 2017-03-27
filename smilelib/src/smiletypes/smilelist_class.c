@@ -20,7 +20,6 @@
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/smilebool.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
-#include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/eval/eval.h>
 #include <smile/smiletypes/base.h>
@@ -75,13 +74,13 @@ SMILE_EXTERNAL_FUNCTION(ToString)
 	STATIC_STRING(null, "null");
 
 	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_LIST) {
-		return SmileArg_From((SmileObject)SmileString_Create(SmileObject_Stringify(argv[0].obj)));
+		return SmileArg_From((SmileObject)SmileObject_Stringify(argv[0].obj));
 	}
 	else if (SMILE_KIND(argv[0].obj) == SMILE_KIND_NULL) {
-		return SmileArg_From((SmileObject)SmileString_Create(null));
+		return SmileArg_From((SmileObject)null);
 	}
 
-	return SmileArg_From((SmileObject)SmileString_Create(list));
+	return SmileArg_From((SmileObject)list);
 }
 
 SMILE_EXTERNAL_FUNCTION(Hash)
@@ -150,7 +149,7 @@ SMILE_EXTERNAL_FUNCTION(Join)
 	if (argc <= 1)
 		glue = String_Empty;
 	else
-		glue = SmileString_GetString((SmileString)argv[1].obj);
+		glue = (String)argv[1].obj;
 	
 	result = SmileList_Join((SmileList)argv[0].obj, glue);
 
@@ -158,7 +157,7 @@ SMILE_EXTERNAL_FUNCTION(Join)
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FormatString(malformedListError, "join"));
 	}
 
-	return SmileArg_From((SmileObject)SmileString_Create(result));
+	return SmileArg_From((SmileObject)result);
 }
 
 //-------------------------------------------------------------------------------------------------

@@ -146,7 +146,7 @@ typedef struct {
 ///	enum.  This replaces the current security flags, in full.  You may only alter this object's
 ///	security if you provide the correct security key for it.  An object may choose to ignore
 ///	or alter requests to change its security, according to its own internal rules (for example,
-///	an always-immutable object type, like SmileString, may always prohibit attempts to
+///	an always-immutable object type, like String, may always prohibit attempts to
 ///	force it to allow WRITE access to its data).</p>
 ///	
 /// <code>getSecurity</code>:	<p>Get the current security flags applied to this object, from the SMILE_SECURITY_*

@@ -188,7 +188,6 @@
     <ClInclude Include="include\smile\smiletypes\predecl.h" />
     <ClInclude Include="include\smile\smiletypes\smilepair.h" />
     <ClInclude Include="include\smile\smiletypes\smilesyntax.h" />
-    <ClInclude Include="include\smile\smiletypes\text\smilestring.h" />
     <ClInclude Include="include\smile\smiletypes\text\smilesymbol.h" />
     <ClInclude Include="include\smile\smiletypes\smileuserobject.h" />
     <ClInclude Include="include\smile\string.h" />

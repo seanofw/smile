@@ -9,10 +9,6 @@
 #include <smile/numeric/real64.h>
 #endif
 
-#ifndef __SMILE_SMILETYPES_TEXT_SMILESTRING_H__
-#include <smile/smiletypes/text/smilestring.h>
-#endif
-
 /// <summary>
 /// This macro makes declaring consistent Smile virtual tables and associated functions easier.
 /// </summary>
@@ -171,10 +167,10 @@
 #define SMILE_EASY_OBJECT_READONLY_SECURITY(__type__) \
 	static void __type__##_SetSecurityKey(__type__ self, SmileObject newSecurityKey, SmileObject oldSecurityKey) \
 		{ UNUSED(self); UNUSED(newSecurityKey); UNUSED(oldSecurityKey); \
-			Smile_ThrowException(Smile_KnownSymbols.object_security_error, SmileString_GetString(Smile_KnownStrings.InvalidSecurityKey)); } \
+			Smile_ThrowException(Smile_KnownSymbols.object_security_error, String_InvalidSecurityKey); } \
 	static void __type__##_SetSecurity(__type__ self, Int security, SmileObject securityKey) \
 		{ UNUSED(self); UNUSED(security); UNUSED(securityKey); \
-			Smile_ThrowException(Smile_KnownSymbols.object_security_error, SmileString_GetString(Smile_KnownStrings.InvalidSecurityKey)); } \
+			Smile_ThrowException(Smile_KnownSymbols.object_security_error, String_InvalidSecurityKey); } \
 	static Int __type__##_GetSecurity(__type__ obj) { UNUSED(obj); return SMILE_SECURITY_READONLY; }
 
 /// <summary>
@@ -193,7 +189,7 @@
 #define SMILE_EASY_OBJECT_NO_CALL(__type__) \
 	static void __type__##_Call(__type__ obj, Int argc) { \
 		UNUSED(obj); UNUSED(argc); \
-		Smile_ThrowException(Smile_KnownSymbols.eval_error, Smile_KnownStrings.invalidFunctionError); }
+		Smile_ThrowException(Smile_KnownSymbols.eval_error, String_InvalidFunctionError); }
 
 /// <summary>
 /// This macro can be used to declare virtual functions for a type that has no properties.

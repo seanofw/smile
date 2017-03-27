@@ -21,7 +21,6 @@
 #include <smile/smiletypes/smilebool.h>
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/smileuserobject.h>
-#include <smile/smiletypes/text/smilestring.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 
 extern Closure _closure;
