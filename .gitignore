@@ -12,6 +12,7 @@ build/
 bld/
 [Bb]in/
 [Oo]bj/
+cov-int/
 
 # Intermediate files
 *_i.c
