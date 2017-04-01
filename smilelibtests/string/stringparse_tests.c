@@ -308,6 +308,7 @@ START_TEST(ShouldParseNegativeDecimalFloatsThatAreOfTheFormIntegerDotDigits)
 	ASSERT(String_ParseFloat(String_FromC("  -42.0  "), 10, &result) == True && result == -42.0);
 	ASSERT(String_ParseFloat(String_FromC("-123'456.789"), 10, &result) == True && result == -123456.789);
 	ASSERT(String_ParseFloat(String_FromC("  -3'958'164.270'819  "), 10, &result) == True && result == -3958164.270819);
+	ASSERT(String_ParseFloat(String_FromC("  -42.0056  "), 10, &result) == True && result == -42.0056);
 }
 END_TEST
 

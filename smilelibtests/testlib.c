@@ -379,7 +379,7 @@ static Bool WildcardMatch(const Byte *pattern, const Byte *patternEnd, const Byt
 			// If we ran out of characters, this is a fail.
 			if (text == textEnd)
 				return False;
-			textChar = CaseFold(*text++);
+			text++;
 			break;
 
 		case '*':

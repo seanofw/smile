@@ -70,7 +70,7 @@ static Real64 RR(const char *str)
 	}
 	while (bufptr < u.buffer + 8) {
 		if (highNybble) {
-			*bufptr++;
+			bufptr++;
 			highNybble = False;
 		}
 		else {
