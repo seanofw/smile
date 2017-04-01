@@ -173,7 +173,7 @@ Int Lexer_ParseChar(Lexer lexer, Bool isFirstContentOnLine)
 	if (ch == '\\') {
 		value = Lexer_DecodeEscapeCode(&src, end, False);
 	}
-	else if (ch >= '\0' && ch <= '\x1F') {
+	else if (ch <= '\x1F') {
 		// Linebreaks and control codes are disallowed, so this is treated as an unterminated char.
 		lexer->src = src;
 		lexer->token->text = String_FormatString(UnterminatedCharMessage, startLine);

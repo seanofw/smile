@@ -77,7 +77,7 @@ SMILE_API_FUNC Bool Real128_TryParseInternal(const Byte *src, Int length, Real12
 	// parsing function.
 
 	// Skip initial whitespace.
-	while (src < end && (ch = *src) >= '\x00' && ch <= '\x20') src++;
+	while (src < end && *src <= '\x20') src++;
 
 	// If there's no content, this is a fail.
 	if (src >= end) {
@@ -86,7 +86,7 @@ SMILE_API_FUNC Bool Real128_TryParseInternal(const Byte *src, Int length, Real12
 	}
 
 	// Trim off trailing whitespace.
-	while (end > src && (ch = end[-1]) >= '\x00' && ch <= '\x20') end--;
+	while (end > src && end[-1] <= '\x20') end--;
 
 	// Check for named numeric values like "inf" and "nan".  We only allow quiet NaNs, since
 	// nothing in Smile's numerics supports signaling NaNs.  We have to check for these up front,

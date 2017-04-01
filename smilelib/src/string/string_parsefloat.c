@@ -173,18 +173,10 @@ Inline Int ParseFloatFractionalPart(const Byte *text, Int length, Int *index, In
 		value = (Float64)intDigits;
 
 		// Shuffle the bits down, quickly, using precomputed multipliers to avoid loss of
-		// precision where possible.
-		if (digits == significantDigits) {
-			value /= _floatMultipliersByBase[numericBase][significantDigits - 1];
-		}
-		else {
-			while (digits >= 64) {
-				value /= _floatMultipliersByBase[numericBase][63];
-			}
-			if (digits > 0) {
-				value /= _floatMultipliersByBase[numericBase][digits - 1];
-			}
-		}
+		// precision where possible.  Since we cut off at 58 bits' worth of mantissa, 'digits'
+		// can never be more than 58 (it can only even be at 58 when we're in base 2), which
+		// means we'll never overrun the precomputed multipliers, since there are 64 in each base.
+		value /= _floatMultipliersByBase[numericBase][digits - 1];
 	}
 	else {
 		// No digits, or we hit an invalid character.

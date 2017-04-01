@@ -374,14 +374,13 @@ String String_TrimWhitespace(const String str, Bool trimStart, Bool trimEnd)
 {
 	const Byte *src = String_GetBytes(str);
 	Int start, end, length = String_Length(str);
-	Byte ch;
 
 	start = 0;
 	end = length;
 
 	if (trimStart)
 	{
-		while (start < length && ((ch = src[start]) >= '\x00' && ch <= '\x20'))
+		while (start < length && src[start] <= '\x20')
 		{
 			start++;
 		}
@@ -389,7 +388,7 @@ String String_TrimWhitespace(const String str, Bool trimStart, Bool trimEnd)
 
 	if (trimEnd)
 	{
-		while (end > start && ((ch = src[end - 1]) >= '\x00' && ch <= '\x20'))
+		while (end > start && src[end - 1] <= '\x20')
 		{
 			end--;
 		}
@@ -424,7 +423,7 @@ String String_CompactWhitespace(const String str)
 	lastch = '\x00';
 	for (i = 0; i < length; i++) {
 		ch = src[i];
-		if (ch >= '\x00' && ch <= '\x20') {
+		if (ch <= '\x20') {
 			if (dest > result && !(lastch >= '\x00' && lastch <= '\x20')) {
 				*dest++ = ' ';
 			}

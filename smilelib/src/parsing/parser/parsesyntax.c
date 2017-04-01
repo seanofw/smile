@@ -369,8 +369,7 @@ static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailR
 	name = SymbolTable_GetSymbol(Smile_SymbolTable, parser->lexer->token->text);
 
 	// Last, but not least, allow an optional trailing ',' or ';' to express the notion of a separator character.
-	if ((tokenKind = Lexer_Peek(parser->lexer)) == TOKEN_COMMA || tokenKind == TOKEN_SEMICOLON) {
-		Lexer_Next(parser->lexer);
+	if ((tokenKind = Lexer_Next(parser->lexer)) == TOKEN_COMMA || tokenKind == TOKEN_SEMICOLON) {
 
 		if (!repeat) {
 			parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
@@ -382,7 +381,10 @@ static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailR
 
 		separator = (tokenKind == TOKEN_COMMA ? Smile_KnownSymbols.comma : Smile_KnownSymbols.semicolon);
 	}
-	else separator = 0;
+	else {
+		Lexer_Unget(parser->lexer);
+		separator = 0;
+	}
 
 	// Finally, this must finish with a right bracket.
 	if (Lexer_Next(parser->lexer) != TOKEN_RIGHTBRACKET) {

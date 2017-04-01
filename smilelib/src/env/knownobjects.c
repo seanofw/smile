@@ -48,7 +48,7 @@ void KnownObjects_Setup(struct KnownObjectsStruct *knownObjects, struct KnownSym
 		knownObjects->SmallInt16s[i + 100] = SmileInteger16_CreateInternal((Int16)i);
 		knownObjects->SmallInt32s[i + 100] = SmileInteger32_CreateInternal(i);
 		knownObjects->SmallInt64s[i + 100] = SmileInteger64_CreateInternal((Int64)i);
-		i128.hi = (Int64)i >> 63;
+		i128.hi = (Int64)i >> 31;
 		i128.lo = (Int64)i;
 		knownObjects->SmallInt128s[i + 100] = SmileInteger128_CreateInternal(i128);
 	}

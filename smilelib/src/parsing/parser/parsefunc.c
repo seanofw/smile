@@ -92,7 +92,7 @@ ParseError Parser_ParseFunc(Parser parser, SmileObject *expr, Int modeFlags)
 ParseError Parser_ParseParamsOpt(Parser parser, SmileList *params)
 {
 	SmileList head = NullList, tail = NullList;
-	SmileObject param;
+	SmileObject param = NullObject;
 	ParseError parseError = NULL, paramError;
 	Int tokenKind;
 	Bool isFirst;
@@ -135,7 +135,7 @@ ParseError Parser_ParseParamsOpt(Parser parser, SmileList *params)
 		}
 	
 		// Is this the trailing "rest" parameter?
-		if (Lexer_Peek(parser->lexer) == TOKEN_DOTDOTDOT) {
+		if (Lexer_Next(parser->lexer) == TOKEN_DOTDOTDOT) {
 			
 			// It is the rest parameter.  Make sure it doesn't have a default value assigned, because
 			// such things are nonsensical for the "rest" parameter.
@@ -156,9 +156,6 @@ ParseError Parser_ParseParamsOpt(Parser parser, SmileList *params)
 			else {
 				paramName = ((SmileSymbol)param)->symbol;
 			}
-		
-			// Consume the ellipsis.
-			Lexer_Next(parser->lexer);
 		
 			// If the next token isn't a bar, we have an error.
 			if (Lexer_Peek(parser->lexer) != TOKEN_BAR) {
@@ -187,6 +184,10 @@ ParseError Parser_ParseParamsOpt(Parser parser, SmileList *params)
 					NullObject,
 					paramPosition
 				);
+		}
+		else {
+			// Not an ellipsis, so don't eat it.
+			Lexer_Unget(parser->lexer);
 		}
 	
 		LIST_APPEND_WITH_SOURCE(head, tail, param, paramPosition);
@@ -293,10 +294,9 @@ ParseError Parser_ParseParam(Parser parser, SmileObject *param, LexerPosition *p
 	}
 
 	// Next, see if this has a default value assigned after it.
-	if (Lexer_Peek(parser->lexer) == TOKEN_EQUAL) {
+	if (Lexer_Next(parser->lexer) == TOKEN_EQUAL) {
 	
 		// Optional parameter, with an assigned default value.
-		Lexer_Next(parser->lexer);
 		defaultPosition = Lexer_GetPosition(parser->lexer);
 		parseError = Parser_ParseRawListTerm(parser, &defaultValue, &isTemplate, 0);
 		if (parseError != NULL) {
@@ -330,6 +330,10 @@ ParseError Parser_ParseParam(Parser parser, SmileObject *param, LexerPosition *p
 				defaultPosition
 			);
 		tail = (SmileList)((SmileList)tail->d)->d;
+	}
+	else {
+		// No equal sign, so don't eat the next token.
+		Lexer_Unget(parser->lexer);
 	}
 
 	// Success!

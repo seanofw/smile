@@ -298,12 +298,12 @@ Int String_CompareRange(const String a, Int astart, Int alength, const String b,
 	if (astart < 0)
 	{
 		alength += astart;
-		alength = 0;
+		astart = 0;
 	}
 	if (bstart < 0)
 	{
 		blength += bstart;
-		blength = 0;
+		bstart = 0;
 	}
 
 	if (String_IsNullOrEmpty(a) || astart >= String_Length(a) || alength <= 0)

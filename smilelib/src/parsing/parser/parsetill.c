@@ -54,14 +54,15 @@ static ParseError Parser_ParseClassicTillWhen(Parser parser, SmileObject *result
 			SymbolTable_GetName(Smile_SymbolTable, name)));
 		Parser_AddMessage(parser, error);
 	}
-
-	// The name should also not have been used already.
-	if (flag->scopeIndex < 0) {
-		error = ParseMessage_Create(PARSEMESSAGE_ERROR, position, String_Format("Flag name for \"{0}\" cannot be used for multiple when-clauses in the same [$till] form.",
-			SymbolTable_GetName(Smile_SymbolTable, name)));
-		Parser_AddMessage(parser, error);
+	else {
+		// The name should also not have been used already.
+		if (flag->scopeIndex < 0) {
+			error = ParseMessage_Create(PARSEMESSAGE_ERROR, position, String_Format("Flag name for \"{0}\" cannot be used for multiple when-clauses in the same [$till] form.",
+				SymbolTable_GetName(Smile_SymbolTable, name)));
+			Parser_AddMessage(parser, error);
+		}
+		flag->scopeIndex = -1;
 	}
-	flag->scopeIndex = -1;
 
 	// Now consume the expression that forms the body.
 	error = Parser_ParseExpr(parser, &body, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);

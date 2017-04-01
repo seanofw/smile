@@ -143,12 +143,13 @@ Inline Bool IntArrayContains(Int needle, Int *haystack, Int count)
 Inline Token Parser_NextToken(Parser parser)
 {
 	Token token;
+	Int tokenKind;
 	Symbol symbol;
 
-	Lexer_Next(parser->lexer);
+	tokenKind = Lexer_Next(parser->lexer);
 	token = parser->lexer->token;
 
-	switch (token->kind) {
+	switch (tokenKind) {
 
 		case TOKEN_ALPHANAME:
 		case TOKEN_UNKNOWNALPHANAME:
@@ -186,13 +187,14 @@ Inline Token Parser_NextToken(Parser parser)
 Inline Token Parser_NextTokenWithDeclaration(Parser parser, ParseDecl *parseDecl)
 {
 	Token token;
+	Int tokenKind;
 	Symbol symbol;
 	ParseDecl decl;
 
-	Lexer_Next(parser->lexer);
+	tokenKind = Lexer_Next(parser->lexer);
 	token = parser->lexer->token;
 
-	switch (token->kind) {
+	switch (tokenKind) {
 
 	case TOKEN_ALPHANAME:
 	case TOKEN_UNKNOWNALPHANAME:

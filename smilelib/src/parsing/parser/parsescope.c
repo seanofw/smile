@@ -26,12 +26,15 @@ static ParseError ParseScope_DeclareGlobalOperators(ParseScope parseScope);
 
 static const char *ParseDecl_Names[] = {
 	"an undeclared variable",
+
 	"a primitive",
 	"a global variable",
 	"a function argument",
 	"a local variable",
+
 	"a const value",
 	"an auto variable",
+	"a keyword",
 	"a postcondition result",
 	"a till-loop name",
 };
