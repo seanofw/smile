@@ -2,6 +2,8 @@
 
 **Copyright &copy; 2004-2017 Sean Werkema**
 
+[![Coverity Scan Status](https://scan.coverity.com/projects/seanofw-smile/badge.svg?flat=1)](https://scan.coverity.com/projects/seanofw-smile)
+
 -------------
 
 **This is the C implementation of the Smile Programming Language.**
