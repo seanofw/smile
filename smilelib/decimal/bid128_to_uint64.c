@@ -60,33 +60,11 @@ C1.w[0] = x.w[0];
   // check for NaN or Infinity
 if ((x.w[1] & MASK_SPECIAL) == MASK_SPECIAL) {
     // x is special
-if ((x.w[1] & MASK_NAN) == MASK_NAN) {	// x is NAN
-  if ((x.w[1] & MASK_SNAN) == MASK_SNAN) {	// x is SNAN
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  } else {	// x is QNaN
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  }
+  // set invalid flag
+  *pfpsf |= BID_INVALID_EXCEPTION;
+  // return Integer Indefinite
+  res = 0x8000000000000000ull;
   BID_RETURN_VAL (res);
-} else {	// x is not a NaN, so it must be infinity
-  if (!x_sign) {	// x is +inf
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  } else {	// x is -inf
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  }
-  BID_RETURN_VAL (res);
-}
 }
   // check for non-canonical values (after the check for special values)
 if ((C1.w[1] > 0x0001ed09bead87c0ull)
@@ -410,33 +388,11 @@ C1.w[0] = x.w[0];
   // check for NaN or Infinity
 if ((x.w[1] & MASK_SPECIAL) == MASK_SPECIAL) {
     // x is special
-if ((x.w[1] & MASK_NAN) == MASK_NAN) {	// x is NAN
-  if ((x.w[1] & MASK_SNAN) == MASK_SNAN) {	// x is SNAN
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  } else {	// x is QNaN
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  }
+  // set invalid flag
+  *pfpsf |= BID_INVALID_EXCEPTION;
+  // return Integer Indefinite
+  res = 0x8000000000000000ull;
   BID_RETURN_VAL (res);
-} else {	// x is not a NaN, so it must be infinity
-  if (!x_sign) {	// x is +inf
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  } else {	// x is -inf
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  }
-  BID_RETURN_VAL (res);
-}
 }
   // check for non-canonical values (after the check for special values)
 if ((C1.w[1] > 0x0001ed09bead87c0ull)
@@ -827,33 +783,11 @@ C1.w[0] = x.w[0];
   // check for NaN or Infinity
 if ((x.w[1] & MASK_SPECIAL) == MASK_SPECIAL) {
     // x is special
-if ((x.w[1] & MASK_NAN) == MASK_NAN) {	// x is NAN
-  if ((x.w[1] & MASK_SNAN) == MASK_SNAN) {	// x is SNAN
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  } else {	// x is QNaN
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  }
+  // set invalid flag
+  *pfpsf |= BID_INVALID_EXCEPTION;
+  // return Integer Indefinite
+  res = 0x8000000000000000ull;
   BID_RETURN_VAL (res);
-} else {	// x is not a NaN, so it must be infinity
-  if (!x_sign) {	// x is +inf
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  } else {	// x is -inf
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  }
-  BID_RETURN_VAL (res);
-}
 }
   // check for non-canonical values (after the check for special values)
 if ((C1.w[1] > 0x0001ed09bead87c0ull)
@@ -1076,33 +1010,11 @@ C1.w[0] = x.w[0];
   // check for NaN or Infinity
 if ((x.w[1] & MASK_SPECIAL) == MASK_SPECIAL) {
     // x is special
-if ((x.w[1] & MASK_NAN) == MASK_NAN) {	// x is NAN
-  if ((x.w[1] & MASK_SNAN) == MASK_SNAN) {	// x is SNAN
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  } else {	// x is QNaN
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  }
+  // set invalid flag
+  *pfpsf |= BID_INVALID_EXCEPTION;
+  // return Integer Indefinite
+  res = 0x8000000000000000ull;
   BID_RETURN_VAL (res);
-} else {	// x is not a NaN, so it must be infinity
-  if (!x_sign) {	// x is +inf
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  } else {	// x is -inf
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  }
-  BID_RETURN_VAL (res);
-}
 }
   // check for non-canonical values (after the check for special values)
 if ((C1.w[1] > 0x0001ed09bead87c0ull)
@@ -1364,33 +1276,11 @@ C1.w[0] = x.w[0];
   // check for NaN or Infinity
 if ((x.w[1] & MASK_SPECIAL) == MASK_SPECIAL) {
     // x is special
-if ((x.w[1] & MASK_NAN) == MASK_NAN) {	// x is NAN
-  if ((x.w[1] & MASK_SNAN) == MASK_SNAN) {	// x is SNAN
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  } else {	// x is QNaN
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  }
+  // set invalid flag
+  *pfpsf |= BID_INVALID_EXCEPTION;
+  // return Integer Indefinite
+  res = 0x8000000000000000ull;
   BID_RETURN_VAL (res);
-} else {	// x is not a NaN, so it must be infinity
-  if (!x_sign) {	// x is +inf
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  } else {	// x is -inf
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  }
-  BID_RETURN_VAL (res);
-}
 }
   // check for non-canonical values (after the check for special values)
 if ((C1.w[1] > 0x0001ed09bead87c0ull)
@@ -1691,33 +1581,11 @@ C1.w[0] = x.w[0];
   // check for NaN or Infinity
 if ((x.w[1] & MASK_SPECIAL) == MASK_SPECIAL) {
     // x is special
-if ((x.w[1] & MASK_NAN) == MASK_NAN) {	// x is NAN
-  if ((x.w[1] & MASK_SNAN) == MASK_SNAN) {	// x is SNAN
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  } else {	// x is QNaN
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  }
+  // set invalid flag
+  *pfpsf |= BID_INVALID_EXCEPTION;
+  // return Integer Indefinite
+  res = 0x8000000000000000ull;
   BID_RETURN_VAL (res);
-} else {	// x is not a NaN, so it must be infinity
-  if (!x_sign) {	// x is +inf
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  } else {	// x is -inf
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  }
-  BID_RETURN_VAL (res);
-}
 }
   // check for non-canonical values (after the check for special values)
 if ((C1.w[1] > 0x0001ed09bead87c0ull)
@@ -2025,33 +1893,11 @@ C1.w[0] = x.w[0];
   // check for NaN or Infinity
 if ((x.w[1] & MASK_SPECIAL) == MASK_SPECIAL) {
     // x is special
-if ((x.w[1] & MASK_NAN) == MASK_NAN) {	// x is NAN
-  if ((x.w[1] & MASK_SNAN) == MASK_SNAN) {	// x is SNAN
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  } else {	// x is QNaN
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  }
+  // set invalid flag
+  *pfpsf |= BID_INVALID_EXCEPTION;
+  // return Integer Indefinite
+  res = 0x8000000000000000ull;
   BID_RETURN_VAL (res);
-} else {	// x is not a NaN, so it must be infinity
-  if (!x_sign) {	// x is +inf
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  } else {	// x is -inf
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  }
-  BID_RETURN_VAL (res);
-}
 }
   // check for non-canonical values (after the check for special values)
 if ((C1.w[1] > 0x0001ed09bead87c0ull)
@@ -2304,33 +2150,11 @@ C1.w[0] = x.w[0];
   // check for NaN or Infinity
 if ((x.w[1] & MASK_SPECIAL) == MASK_SPECIAL) {
     // x is special
-if ((x.w[1] & MASK_NAN) == MASK_NAN) {	// x is NAN
-  if ((x.w[1] & MASK_SNAN) == MASK_SNAN) {	// x is SNAN
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  } else {	// x is QNaN
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  }
+  // set invalid flag
+  *pfpsf |= BID_INVALID_EXCEPTION;
+  // return Integer Indefinite
+  res = 0x8000000000000000ull;
   BID_RETURN_VAL (res);
-} else {	// x is not a NaN, so it must be infinity
-  if (!x_sign) {	// x is +inf
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  } else {	// x is -inf
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  }
-  BID_RETURN_VAL (res);
-}
 }
   // check for non-canonical values (after the check for special values)
 if ((C1.w[1] > 0x0001ed09bead87c0ull)
@@ -2621,33 +2445,11 @@ C1.w[0] = x.w[0];
   // check for NaN or Infinity
 if ((x.w[1] & MASK_SPECIAL) == MASK_SPECIAL) {
     // x is special
-if ((x.w[1] & MASK_NAN) == MASK_NAN) {	// x is NAN
-  if ((x.w[1] & MASK_SNAN) == MASK_SNAN) {	// x is SNAN
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  } else {	// x is QNaN
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  }
+  // set invalid flag
+  *pfpsf |= BID_INVALID_EXCEPTION;
+  // return Integer Indefinite
+  res = 0x8000000000000000ull;
   BID_RETURN_VAL (res);
-} else {	// x is not a NaN, so it must be infinity
-  if (!x_sign) {	// x is +inf
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  } else {	// x is -inf
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  }
-  BID_RETURN_VAL (res);
-}
 }
   // check for non-canonical values (after the check for special values)
 if ((C1.w[1] > 0x0001ed09bead87c0ull)
@@ -2956,33 +2758,11 @@ C1.w[0] = x.w[0];
   // check for NaN or Infinity
 if ((x.w[1] & MASK_SPECIAL) == MASK_SPECIAL) {
     // x is special
-if ((x.w[1] & MASK_NAN) == MASK_NAN) {	// x is NAN
-  if ((x.w[1] & MASK_SNAN) == MASK_SNAN) {	// x is SNAN
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  } else {	// x is QNaN
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  }
+  // set invalid flag
+  *pfpsf |= BID_INVALID_EXCEPTION;
+  // return Integer Indefinite
+  res = 0x8000000000000000ull;
   BID_RETURN_VAL (res);
-} else {	// x is not a NaN, so it must be infinity
-  if (!x_sign) {	// x is +inf
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  } else {	// x is -inf
-    // set invalid flag
-    *pfpsf |= BID_INVALID_EXCEPTION;
-    // return Integer Indefinite
-    res = 0x8000000000000000ull;
-  }
-  BID_RETURN_VAL (res);
-}
 }
   // check for non-canonical values (after the check for special values)
 if ((C1.w[1] > 0x0001ed09bead87c0ull)

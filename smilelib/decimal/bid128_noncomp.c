@@ -1204,11 +1204,7 @@ RES_WRAPFN_DFP(int, bid128_radix, 128)
 int
 bid128_radix (BID_UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
-  int res;
-  if (x.w[BID_LOW_128W])	// dummy test
-    res = 10;
-  else
-    res = 10;
+  int res = 10;
   BID_RETURN (res);
 }
 

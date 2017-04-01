@@ -937,11 +937,7 @@ RES_WRAPFN_DFP(int, bid32_radix, 32)
 int
 bid32_radix (BID_UINT32 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
-  int res;
-  if (x) // dummy test
-    res = 10;
-  else
-    res = 10;
+  int res = 10;
   BID_RETURN (res);
 }
 
