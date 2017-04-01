@@ -29,7 +29,8 @@ static Int DefineVariablesForFlags(Compiler compiler, SmileList flags, CompileSc
 static Int CompileWhens(Compiler compiler, CompileScope tillScope, SmileList whens, Int initialStackDepth);
 static Int GenerateNullCase(Compiler compiler, Int initialStackDepth, Int numFlags, Int numWhens);
 static Int GenerateExitLabel(Compiler compiler, Int initialStackDepth, Int numWhens);
-static Bool ResolveBranches(Compiler compiler, SmileList flags, CompileScope tillScope, TillContinuationInfo tillInfo, Int exitLabel);
+static Bool ResolveBranches(Compiler compiler, SmileList flags, CompileScope tillScope, TillContinuationInfo tillInfo,
+	Int nullLabel, Int exitLabel);
 static void ResolveWhenJumps(ByteCodeSegment segment, CompiledTillSymbol compiledTillSymbol);
 static void GenerateTillContinuation(Compiler compiler, Int numFlags, Int tillContinuationVariableIndex,
 	Int *loadTillAddress, TillContinuationInfo *tillInfo);
@@ -92,7 +93,7 @@ void Compiler_CompileTill(Compiler compiler, SmileList args)
 
 	// Loop back up and do it again.
 	loopJmp = EMIT0(Op_Jmp, 0);
-	FIX_BRANCH(loopJmp, loopJmp - loopLabel);
+	FIX_BRANCH(loopJmp, loopLabel - loopJmp);
 
 	Compiler_EndScope(compiler);
 
@@ -110,7 +111,7 @@ void Compiler_CompileTill(Compiler compiler, SmileList args)
 	//---------------------------------------------------------
 	// Phase 5.  Branch resolution.
 
-	realContinuationNeeded = ResolveBranches(compiler, flags, tillScope, tillInfo, exitLabel);
+	realContinuationNeeded = ResolveBranches(compiler, flags, tillScope, tillInfo, nullLabel, exitLabel);
 
 	//---------------------------------------------------------
 	// Phase 6.  Cleanup.
@@ -362,7 +363,8 @@ static void ResolveWhenJumps(ByteCodeSegment segment, CompiledTillSymbol compile
 /// This returns true if a real continuation is needed by this till-loop, or false if the till-loop uses
 /// exclusively local Op_Jmps.
 /// </summary>
-static Bool ResolveBranches(Compiler compiler, SmileList flags, CompileScope tillScope, TillContinuationInfo tillInfo, Int exitLabel)
+static Bool ResolveBranches(Compiler compiler, SmileList flags, CompileScope tillScope, TillContinuationInfo tillInfo,
+	Int nullLabel, Int exitLabel)
 {
 	SmileSymbol smileSymbol;
 	CompiledTillSymbol compiledTillSymbol;
@@ -387,7 +389,7 @@ static Bool ResolveBranches(Compiler compiler, SmileList flags, CompileScope til
 		if (!compiledTillSymbol->whenLabelAddress) {
 			// Update any flags that don't point to a [when] to point to the nullLabel instead, so
 			// that everything has a defined branch target.
-			compiledTillSymbol->whenLabelAddress = exitLabel;
+			compiledTillSymbol->whenLabelAddress = nullLabel;
 			compiledTillSymbol->exitJmpAddress = 0;
 		}
 		else {
