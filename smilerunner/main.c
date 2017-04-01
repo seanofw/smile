@@ -235,11 +235,13 @@ static CommandLineArgs ParseCommandLine(int argc, const char **argv)
 								return NULL;
 							}
 							else goto unknownArgument;
+							break;
 						case 'q':
 							if (!strcmp(argv[i] + 2, "quiet")) {
 								options->quiet = True;
 							}
 							else goto unknownArgument;
+							break;
 						case 'v':
 							if (!strcmp(argv[i] + 2, "verbose")) {
 								options->verbose = True;
@@ -598,7 +600,7 @@ int main(int argc, const char **argv)
 			fwrite(String_GetBytes(indentedScript), 1, String_Length(indentedScript), stdout);
 			puts("\n");
 		}
-		if (options->globalDefinitions != NULL) {
+		if (options->globalDefinitions != NullList) {
 			Verbose("Global variables: %s", SmileObject_StringifyToC((SmileObject)options->globalDefinitions));
 		}
 		Verbose("");
