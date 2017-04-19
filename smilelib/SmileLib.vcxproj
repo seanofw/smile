@@ -138,6 +138,7 @@
     <ClInclude Include="include\smile\env\knownstrings.h" />
     <ClInclude Include="include\smile\env\knownsymbols.h" />
     <ClInclude Include="include\smile\env\symboltable.h" />
+    <ClInclude Include="include\smile\eval\compiledblock.h" />
     <ClInclude Include="include\smile\eval\bytecode.h" />
     <ClInclude Include="include\smile\eval\closure.h" />
     <ClInclude Include="include\smile\eval\compiler.h" />
@@ -770,6 +771,7 @@
     <ClCompile Include="src\eval\bytecode.c" />
     <ClCompile Include="src\eval\closure.c" />
     <ClCompile Include="src\eval\compiler.c" />
+    <ClCompile Include="src\eval\compiler\compiledblock.c" />
     <ClCompile Include="src\eval\compiler\compile_and.c" />
     <ClCompile Include="src\eval\compiler\compile_catch.c" />
     <ClCompile Include="src\eval\compiler\compile_expr.c" />

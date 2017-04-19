@@ -24,8 +24,11 @@
 #include <smile/parsing/internal/parsedecl.h>
 #include <smile/parsing/internal/parsescope.h>
 
-void Compiler_CompileCatch(Compiler compiler, SmileList args)
+CompiledBlock Compiler_CompileCatch(Compiler compiler, SmileList args, CompileFlags compileFlags)
 {
 	UNUSED(compiler);
 	UNUSED(args);
+	UNUSED(compileFlags);
+
+	return NULL;
 }

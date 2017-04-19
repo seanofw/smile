@@ -25,18 +25,20 @@
 #include <smile/parsing/internal/parsescope.h>
 
 // Form: [$fn [args...] body]
-void Compiler_CompileFn(Compiler compiler, SmileList args)
+CompiledBlock Compiler_CompileFn(Compiler compiler, SmileList args, CompileFlags compileFlags)
 {
 	CompilerFunction compilerFunction;
 	CompileScope scope;
 	SmileList functionArgs;
 	SmileObject functionBody;
-	Int i, offset;
-	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
+	Int i;
 	ClosureInfo closureInfo;
 	UserFunctionInfo userFunctionInfo;
 	Int functionIndex;
 	String errorMessage;
+	CompiledBlock compiledBlock, childBlock;
+	IntermediateInstruction instr;
+	ByteCodeSegment byteCodeSegment;
 
 	Int oldSourceLocation = Compiler_SetAssignedSymbol(compiler, 0);
 
@@ -46,7 +48,7 @@ void Compiler_CompileFn(Compiler compiler, SmileList args)
 		|| SMILE_KIND(args->d) != SMILE_KIND_LIST || SMILE_KIND(((SmileList)args->d)->d) != SMILE_KIND_NULL) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_FromC("Cannot compile [$fn]: Expression is not well-formed.")));
-		return;
+		return CompiledBlock_CreateError();
 	}
 
 	// Create the function.
@@ -56,16 +58,16 @@ void Compiler_CompileFn(Compiler compiler, SmileList args)
 		functionArgs, functionBody, &errorMessage);
 	if (userFunctionInfo == NULL) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(functionArgs, getSourceLocation), errorMessage));
-		return;
+		return CompiledBlock_CreateError();
 	}
 	functionIndex = Compiler_AddUserFunctionInfo(compiler, userFunctionInfo);
 	compilerFunction = Compiler_BeginFunction(compiler, functionArgs, functionBody);
 	compilerFunction->userFunctionInfo = userFunctionInfo;
 	compilerFunction->numArgs = userFunctionInfo->numArgs;
-	segment = compiler->currentFunction->byteCodeSegment;
 
 	// Begin a new symbol scope for this function.
 	scope = Compiler_BeginScope(compiler, PARSESCOPE_FUNCTION);
+	compiledBlock = CompiledBlock_Create();
 
 	// Declare the argument symbols, so that they can be correctly resolved.
 	for (i = 0; i < userFunctionInfo->numArgs; i++) {
@@ -75,24 +77,32 @@ void Compiler_CompileFn(Compiler compiler, SmileList args)
 
 	// Compile the body.
 	Compiler_SetSourceLocationFromList(compiler, (SmileList)args->d);
-	Compiler_CompileExpr(compiler, functionBody);
+	childBlock = Compiler_CompileExpr(compiler, functionBody, compileFlags & ~COMPILE_FLAG_NORESULT);
+	Compiler_EmitRequireResult(compiler, childBlock);
+	CompiledBlock_AppendChild(compiledBlock, childBlock);
 
 	// Emit a return instruction at the end.
 	Compiler_SetSourceLocationFromList(compiler, args);
 	EMIT0(Op_Ret, -1);
 
-	// We're done compiling this function.
+	// We're done intermediate-compiling this function.
 	Compiler_EndScope(compiler);
 	Compiler_EndFunction(compiler);
 
+	// Now transform it into finished bytecodes.
+	byteCodeSegment = CompiledBlock_Finish(compiledBlock);
+
 	// Make a suitable closure decriptor for it, and an actual function object.
-	segment = compiler->currentFunction->byteCodeSegment;
 	closureInfo = Compiler_MakeClosureInfoForCompilerFunction(compiler, compilerFunction);
 	MemCpy(&userFunctionInfo->closureInfo, closureInfo, sizeof(struct ClosureInfoStruct));
-	userFunctionInfo->byteCodeSegment = compilerFunction->byteCodeSegment;
+	userFunctionInfo->byteCodeSegment = byteCodeSegment;
 
 	Compiler_RevertSourceLocation(compiler, oldSourceLocation);
 
+	compiledBlock = CompiledBlock_Create();
+
 	// Finally, emit an instruction to load a new instance of this function onto its parent's stack.
 	EMIT1(Op_NewFn, 1, index = functionIndex);
+
+	return compiledBlock;
 }

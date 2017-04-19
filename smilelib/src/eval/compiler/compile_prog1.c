@@ -25,32 +25,40 @@
 #include <smile/parsing/internal/parsescope.h>
 
 // Form: [$prog1 a b c ...]
-void Compiler_CompileProg1(Compiler compiler, SmileList args)
+CompiledBlock Compiler_CompileProg1(Compiler compiler, SmileList args, CompileFlags compileFlags)
 {
 	Int oldSourceLocation;
+	CompiledBlock compiledBlock, childBlock;
+
+	compiledBlock = CompiledBlock_Create();
 
 	if (SMILE_KIND(args) != SMILE_KIND_LIST)
-		return;
+		return compiledBlock;
 
 	oldSourceLocation = Compiler_SetAssignedSymbol(compiler, 0);
 
 	// Compile this expression, and keep it.
-	Compiler_CompileExpr(compiler, args->a);
-	args = LIST_REST(args);
+	childBlock = Compiler_CompileExpr(compiler, args->a, compileFlags);
+	Compiler_MakeStackMatchCompileFlags(compiler, childBlock, compileFlags);
+	CompiledBlock_AppendChild(compiledBlock, childBlock);
 
 	Compiler_RevertSourceLocation(compiler, oldSourceLocation);
 
-	for (; SMILE_KIND(args) == SMILE_KIND_LIST; args = LIST_REST(args)) {
+	// Compile the rest, and toss their values.
+	for (args = LIST_REST(args); SMILE_KIND(args) == SMILE_KIND_LIST; args = LIST_REST(args)) {
 
 		// Compile this next expression...
 		Compiler_RevertSourceLocation(compiler, oldSourceLocation);
 		Compiler_SetSourceLocationFromList(compiler, args);
-		Compiler_CompileExpr(compiler, args->a);
+		childBlock = Compiler_CompileExpr(compiler, args->a, compileFlags & ~COMPILE_FLAG_NORESULT);
+		Compiler_EmitNoResult(compiler, childBlock);
+		CompiledBlock_AppendChild(compiledBlock, childBlock);
 
 		// ...and discard its result.
 		Compiler_SetSourceLocationFromList(compiler, args);
-		Compiler_EmitPop1(compiler);
 	}
 
 	Compiler_RevertSourceLocation(compiler, oldSourceLocation);
+
+	return compiledBlock;
 }

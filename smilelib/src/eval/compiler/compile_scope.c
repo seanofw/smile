@@ -25,18 +25,19 @@
 #include <smile/parsing/internal/parsescope.h>
 
 // Form: [$scope [vars...] a b c ...]
-void Compiler_CompileScope(Compiler compiler, SmileList args)
+CompiledBlock Compiler_CompileScope(Compiler compiler, SmileList args, CompileFlags compileFlags)
 {
 	CompileScope scope;
 	SmileList scopeVars, temp;
 	Int numScopeVars, localIndex;
+	CompiledBlock compiledBlock;
 
 	// The [$scope] expression must be of the form:  [$scope [locals...] ...].
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->a) != SMILE_KIND_LIST
 		|| !(SMILE_KIND(args->d) == SMILE_KIND_LIST || SMILE_KIND(args->d) == SMILE_KIND_NULL)) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_FromC("Cannot compile [$scope]: Expression is not well-formed.")));
-		return;
+		return CompiledBlock_CreateError();
 	}
 
 	scope = Compiler_BeginScope(compiler, PARSESCOPE_SCOPEDECL);
@@ -57,11 +58,13 @@ void Compiler_CompileScope(Compiler compiler, SmileList args)
 	if (SMILE_KIND(temp) != SMILE_KIND_NULL) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_FromC("Cannot compile [$scope]: Local-variable list is not well-formed.")));
-		return;
+		return CompiledBlock_CreateError();
 	}
 
 	// Compile the rest of the [scope] as though it was just a [progn].
-	Compiler_CompileProgN(compiler, (SmileList)args->d);
+	compiledBlock = Compiler_CompileProgN(compiler, (SmileList)args->d, compileFlags);
 
 	Compiler_EndScope(compiler);
+
+	return compiledBlock;
 }

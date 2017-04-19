@@ -25,10 +25,11 @@
 #include <smile/parsing/internal/parsescope.h>
 
 // Form: [$return] or [$return value]
-void Compiler_CompileReturn(Compiler compiler, SmileList args)
+CompiledBlock Compiler_CompileReturn(Compiler compiler, SmileList args, CompileFlags compileFlags)
 {
-	Int offset;
-	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
+	CompiledBlock compiledBlock, childBlock;
+
+	compiledBlock = CompiledBlock_Create();
 
 	Int oldSourceLocation = Compiler_SetAssignedSymbol(compiler, 0);
 	Compiler_SetSourceLocationFromList(compiler, args);
@@ -37,18 +38,24 @@ void Compiler_CompileReturn(Compiler compiler, SmileList args)
 		// Naked [$return], so we're implicitly returning null.
 		EMIT0(Op_LdNull, +1);
 		EMIT0(Op_Ret, -1);
+		compiledBlock->blockFlags |= BLOCK_FLAG_ESCAPE;
 	}
 	else if (SMILE_KIND(args) == SMILE_KIND_LIST && SMILE_KIND(args->d) == SMILE_KIND_NULL) {
 		// Compile the return expression...
-		Compiler_CompileExpr(compiler, args->a);
+		childBlock = Compiler_CompileExpr(compiler, args->a, compileFlags & ~COMPILE_FLAG_NORESULT);
 
 		// ...and return it.
 		EMIT0(Op_Ret, -1);
+		compiledBlock->blockFlags |= BLOCK_FLAG_ESCAPE;
 	}
 	else {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_FromC("Cannot compile [$return]: Expression is not well-formed.")));
+		Compiler_RevertSourceLocation(compiler, oldSourceLocation);
+		return CompiledBlock_CreateError();
 	}
 
 	Compiler_RevertSourceLocation(compiler, oldSourceLocation);
+
+	return compiledBlock;
 }

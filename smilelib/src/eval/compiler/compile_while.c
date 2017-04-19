@@ -24,13 +24,13 @@
 #include <smile/parsing/internal/parsedecl.h>
 #include <smile/parsing/internal/parsescope.h>
 
-static void CompileWhileWithPreAndPost(Compiler compiler, Bool not, SmileObject condition, SmileObject preClause, SmileObject postClause);
-static void CompileWhileWithPre(Compiler compiler, Bool not, SmileObject condition, SmileObject preClause);
-static void CompileWhileWithPost(Compiler compiler, Bool not, SmileObject condition, SmileObject postClause);
-static void CompileWhileWithNoBody(Compiler compiler, Bool not, SmileObject condition);
+static CompiledBlock CompileWhileWithPreAndPost(Compiler compiler, Bool not, SmileObject condition, SmileObject preClause, SmileObject postClause, CompileFlags compileFlags);
+static CompiledBlock CompileWhileWithPre(Compiler compiler, Bool not, SmileObject condition, SmileObject preClause, CompileFlags compileFlags);
+static CompiledBlock CompileWhileWithPost(Compiler compiler, Bool not, SmileObject condition, SmileObject postClause, CompileFlags compileFlags);
+static CompiledBlock CompileWhileWithNoBody(Compiler compiler, Bool not, SmileObject condition, CompileFlags compileFlags);
 
 // Form: [$while pre-body cond post-body]
-void Compiler_CompileWhile(Compiler compiler, SmileList args)
+CompiledBlock Compiler_CompileWhile(Compiler compiler, SmileList args, CompileFlags compileFlags)
 {
 	SmileObject condition, preClause, postClause;
 	Int postKind, tailKind;
@@ -40,7 +40,7 @@ void Compiler_CompileWhile(Compiler compiler, SmileList args)
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_LIST) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_FromC("Cannot compile [if]: Expression is not well-formed.")));
-		return;
+		return CompiledBlock_CreateError();
 	}
 
 	// Get the condition.
@@ -63,7 +63,7 @@ void Compiler_CompileWhile(Compiler compiler, SmileList args)
 		if ((tailKind = SMILE_KIND(args->d)) != SMILE_KIND_NULL) {
 			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 				String_FromC("Cannot compile [$while]: Expression is not well-formed.")));
-			return;
+			return CompiledBlock_CreateError();
 		}
 	}
 	else if (postKind == SMILE_KIND_NULL) {
@@ -73,7 +73,7 @@ void Compiler_CompileWhile(Compiler compiler, SmileList args)
 	else {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_FromC("Cannot compile [$while]: Expression is not well-formed.")));
-		return;
+		return CompiledBlock_CreateError();
 	}
 
 	// Extract off any [$not] operators, and if there were any, we'll invert the branches.
@@ -85,199 +85,246 @@ void Compiler_CompileWhile(Compiler compiler, SmileList args)
 
 	// Dispatch to an optimized compile depending on which flavor of [$while] this is.
 	if (hasPre && hasPost) {
-		CompileWhileWithPreAndPost(compiler, not, condition, preClause, postClause);
+		return CompileWhileWithPreAndPost(compiler, not, condition, preClause, postClause, compileFlags);
 	}
 	else if (hasPre) {
-		CompileWhileWithPre(compiler, not, condition, preClause);
+		return CompileWhileWithPre(compiler, not, condition, preClause, compileFlags);
 	}
 	else if (hasPost) {
-		CompileWhileWithPost(compiler, not, condition, postClause);
+		return CompileWhileWithPost(compiler, not, condition, postClause, compileFlags);
 	}
 	else {
-		CompileWhileWithNoBody(compiler, not, condition);
+		return CompileWhileWithNoBody(compiler, not, condition, compileFlags);
 	}
 }
 
 // Form: do {...} while cond then {...}
-static void CompileWhileWithPreAndPost(Compiler compiler, Bool not, SmileObject condition, SmileObject preClause, SmileObject postClause)
+static CompiledBlock CompileWhileWithPreAndPost(Compiler compiler, Bool not, SmileObject condition, SmileObject preClause, SmileObject postClause, CompileFlags compileFlags)
 {
-	ByteCodeSegment segment;
-	Int bDelta, jmpDelta;
-	Int b, jmp, bLabel, jmpLabel;
-	Int offset;
+	IntermediateInstruction instr, jmpLabel, bLabel;
+	CompiledBlock compiledBlock, preBlock, postBlock, condBlock;
 
-	segment = compiler->currentFunction->byteCodeSegment;
+	compiledBlock = CompiledBlock_Create();
+
+	jmpLabel = EMIT0(Op_Label, 0);
+	bLabel = EMIT0(Op_Label, 0);
 
 	// Emit this in order of:
 	//
-	//   l1: eval preClause
+	//   l1:
+	//       preBlock (result only based on flags)
 	//
-	//       eval cond
+	//       condBlock (require result)
 	//       branch l2
 	//
-	//       pop1		// pop the last preClause
+	//       pop1 (if needed, based on result of preBlock)
 	//
-	//       eval postClause
-	//       pop1
+	//       postBlock (no result)
 	//
 	//       jmp l1
 	//
-	//   l2:	// left with the last preClause on the stack.
+	//   l2:	// left with the last preBlock's value on the stack.
 
-	jmpLabel = EMIT0(Op_Label, 0);
+	CompiledBlock_AttachInstruction(compiledBlock, NULL, jmpLabel);
 
-	Compiler_CompileExpr(compiler, preClause);
+	preBlock = Compiler_CompileExpr(compiler, preClause, compileFlags);
+	CompiledBlock_AppendChild(compiledBlock, preBlock);
+	Compiler_MakeStackMatchCompileFlags(compiler, compiledBlock, compileFlags);
 
-	Compiler_CompileExpr(compiler, condition);
+	condBlock = Compiler_CompileExpr(compiler, condition, compileFlags & COMPILE_FLAG_NORESULT);
+	Compiler_EmitRequireResult(compiler, condBlock);
+	CompiledBlock_AppendChild(compiledBlock, condBlock);
 
-	b = EMIT0(not ? Op_Bf : Op_Bt, -1);
+	instr = EMIT0(not ? Op_Bf : Op_Bt, -1);
+	instr->p.branchTarget = bLabel;
 
-	Compiler_EmitPop1(compiler);
+	if (!(compileFlags & COMPILE_FLAG_NORESULT)) {
+		EMIT0(Op_Pop1, -1);
+	}
 
-	Compiler_CompileExpr(compiler, postClause);
-	Compiler_EmitPop1(compiler);
+	postBlock = Compiler_CompileExpr(compiler, postClause, compileFlags | COMPILE_FLAG_NORESULT);
+	Compiler_EmitNoResult(compiler, postBlock);
+	CompiledBlock_AppendChild(compiledBlock, postBlock);
 
-	jmp = EMIT0(Op_Jmp, 0);
+	instr = EMIT0(Op_Jmp, 0);
+	instr->p.branchTarget = jmpLabel;
 
-	bLabel = EMIT0(Op_Label, 0);
+	CompiledBlock_AttachInstruction(compiledBlock, compiledBlock->last, bLabel);
 
-	bDelta = bLabel - b;
-	FIX_BRANCH(b, bDelta);
-	FIX_BRANCH(bLabel, -bDelta);
+	// By the time we reach this point, if the compileFlags requested a result,
+	// there will be one instance of that result actually left, so even though the
+	// automatic count says the stack is balanced at zero, there will be if the
+	// compileFlags requested a result.
+	if (!(compileFlags & COMPILE_FLAG_NORESULT)) {
+		compiledBlock->finalStackDelta++;
+	}
 
-	jmpDelta = jmpLabel - jmp;
-	FIX_BRANCH(jmp, jmpDelta);
-	FIX_BRANCH(jmpLabel, -jmpDelta);
-
-	// By the time we reach this point, one iteration will be left on the stack.
-	compiler->currentFunction->currentStackDepth++;
+	return compiledBlock;
 }
 
 // Form: do {...} while cond
-static void CompileWhileWithPre(Compiler compiler, Bool not, SmileObject condition, SmileObject preClause)
+static CompiledBlock CompileWhileWithPre(Compiler compiler, Bool not, SmileObject condition, SmileObject preClause, CompileFlags compileFlags)
 {
-	ByteCodeSegment segment;
-	Int bDelta, jmpDelta;
-	Int b, jmp, bLabel, jmpLabel;
-	Int offset;
+	IntermediateInstruction instr, jmpLabel, bLabel;
+	CompiledBlock compiledBlock, preBlock, condBlock;
 
-	segment = compiler->currentFunction->byteCodeSegment;
+	compiledBlock = CompiledBlock_Create();
+
+	jmpLabel = EMIT0(Op_Label, 0);
+	bLabel = EMIT0(Op_Label, 0);
 
 	// Emit this in order of:
 	//
 	//       jmp l1
 	//
-	//   l2: pop1	// pop last preClause from stack
+	//   l2:
+	//       pop1 (if needed, based on result of preBlock)
 	//
-	//   l1: eval preClause
+	//   l1:
+	//       preBlock (result only based on flags)
 	//
-	//       eval cond
+	//       condBlock (require result)
 	//       branch l2
 	//
-	//   // stack is left with last preClause sitting on it.
+	//   // stack may be left with last preClause sitting on it.
 
-	jmp = EMIT0(Op_Jmp, 0);
+	instr = EMIT0(Op_Jmp, 0);
+	instr->p.branchTarget = jmpLabel;
 
-	bLabel = EMIT0(Op_Label, 0);
+	CompiledBlock_AttachInstruction(compiledBlock, compiledBlock->last, bLabel);
 
-	Compiler_EmitPop1(compiler);
+	// Note: We don't add the Pop1 here because there's not yet anything on the
+	// stack to pop and it would cause the stack counters to end up negative.
 
-	jmpLabel = EMIT0(Op_Label, 0);
+	CompiledBlock_AttachInstruction(compiledBlock, compiledBlock->last, jmpLabel);
 
-	Compiler_CompileExpr(compiler, preClause);
+	preBlock = Compiler_CompileExpr(compiler, preClause, compileFlags);
+	CompiledBlock_AppendChild(compiledBlock, preBlock);
+	Compiler_MakeStackMatchCompileFlags(compiler, compiledBlock, compileFlags);
 
-	Compiler_CompileExpr(compiler, condition);
+	if (!(compileFlags & COMPILE_FLAG_NORESULT)) {
+		// Go back and insert the pop after the bLabel, now that the stack
+		// has something poppable on it.
+		instr = IntermediateInstruction_Create(Op_Pop1);
+		CompiledBlock_AttachInstruction(compiledBlock, bLabel, instr);
+		compiledBlock->finalStackDelta += -1;
+	}
 
-	b = EMIT0(not ? Op_Bf : Op_Bt, -1);
+	condBlock = Compiler_CompileExpr(compiler, condition, compileFlags & COMPILE_FLAG_NORESULT);
+	Compiler_EmitRequireResult(compiler, condBlock);
+	CompiledBlock_AppendChild(compiledBlock, condBlock);
 
-	bDelta = bLabel - b;
-	FIX_BRANCH(b, bDelta);
-	FIX_BRANCH(bLabel, -bDelta);
+	instr = EMIT0(not ? Op_Bf : Op_Bt, -1);
+	instr->p.branchTarget = bLabel;
 
-	jmpDelta = jmpLabel - jmp;
-	FIX_BRANCH(jmp, jmpDelta);
-	FIX_BRANCH(jmpLabel, -jmpDelta);
+	// By the time we reach this point, if the compileFlags requested a result,
+	// there will be one instance of that result actually left, so even though the
+	// automatic count says the stack is balanced at zero, there will be if the
+	// compileFlags requested a result.
+	if (!(compileFlags & COMPILE_FLAG_NORESULT)) {
+		compiledBlock->finalStackDelta++;
+	}
 
-	// By the time we reach this point, one iteration will be left on the stack.
-	compiler->currentFunction->currentStackDepth++;
+	return compiledBlock;
 }
 
 // Form: while cond do {...}
-static void CompileWhileWithPost(Compiler compiler, Bool not, SmileObject condition, SmileObject postClause)
+static CompiledBlock CompileWhileWithPost(Compiler compiler, Bool not, SmileObject condition, SmileObject postClause, CompileFlags compileFlags)
 {
-	ByteCodeSegment segment;
-	Int bDelta, jmpDelta;
-	Int b, jmp, bLabel, jmpLabel;
-	Int offset;
+	IntermediateInstruction instr, jmpLabel, bLabel;
+	CompiledBlock compiledBlock, postBlock, condBlock;
 
-	segment = compiler->currentFunction->byteCodeSegment;
+	compiledBlock = CompiledBlock_Create();
+
+	jmpLabel = EMIT0(Op_Label, 0);
+	bLabel = EMIT0(Op_Label, 0);
 
 	// Emit this in order of:
 	//
-	//       ldnull	// Initial result, if the initial condition is false.
+	//       ldnull   (Initial result, if a result is required and we never enter the loop)
 	//       jmp l1
 	//
-	//   l2: pop1	// pop last postClause (or initial null).
-	//       eval postClause
+	//   l2:
+	//       pop1    (pop last postClause (or initial null), if a result is required)
+	//       postBlock    (result depends on compile flags)
 	//
-	//   l1: eval cond
+	//   l1:
+	//       condBlock (result always)
 	//       branch l2
 	//
 	//   // stack is left with either the initial null or the last postClause.
 
-	EMIT0(Op_LdNull, +1);
+	if (!(compileFlags & COMPILE_FLAG_NORESULT)) {
+		EMIT0(Op_LdNull, +1);
+	}
 
-	jmp = EMIT0(Op_Jmp, 0);
+	instr = EMIT0(Op_Jmp, 0);
+	instr->p.branchTarget = jmpLabel;
 
-	bLabel = EMIT0(Op_Label, 0);
+	CompiledBlock_AttachInstruction(compiledBlock, compiledBlock->last, bLabel);
 
-	Compiler_EmitPop1(compiler);
+	postBlock = Compiler_CompileExpr(compiler, postClause, compileFlags);
+	CompiledBlock_AppendChild(compiledBlock, postBlock);
+	Compiler_MakeStackMatchCompileFlags(compiler, compiledBlock, compileFlags);
 
-	Compiler_CompileExpr(compiler, postClause);
+	if (!(compileFlags & COMPILE_FLAG_NORESULT)) {
+		// Go back and insert the pop after the bLabel, now that the stack
+		// has something poppable on it.
+		instr = IntermediateInstruction_Create(Op_Pop1);
+		CompiledBlock_AttachInstruction(compiledBlock, bLabel, instr);
+		compiledBlock->finalStackDelta += -1;
+	}
 
-	jmpLabel = EMIT0(Op_Label, 0);
+	CompiledBlock_AttachInstruction(compiledBlock, compiledBlock->last, jmpLabel);
 
-	Compiler_CompileExpr(compiler, condition);
+	condBlock = Compiler_CompileExpr(compiler, condition, compileFlags);
+	CompiledBlock_AppendChild(compiledBlock, condBlock);
+	Compiler_EmitRequireResult(compiler, compiledBlock);
 
-	b = EMIT0(not ? Op_Bf : Op_Bt, -1);
+	instr = EMIT0(not ? Op_Bf : Op_Bt, -1);
+	instr->p.branchTarget = bLabel;
 
-	bDelta = bLabel - b;
-	FIX_BRANCH(b, bDelta);
-	FIX_BRANCH(bLabel, -bDelta);
+	// By the time we reach this point, if the compileFlags requested a result,
+	// there will be one instance of that result actually left, so even though the
+	// automatic count says the stack is balanced at zero, there will be if the
+	// compileFlags requested a result.
+	if (!(compileFlags & COMPILE_FLAG_NORESULT)) {
+		compiledBlock->finalStackDelta++;
+	}
 
-	jmpDelta = jmpLabel - jmp;
-	FIX_BRANCH(jmp, jmpDelta);
-	FIX_BRANCH(jmpLabel, -jmpDelta);
+	return compiledBlock;
 }
 
 // Form: while cond {}
-static void CompileWhileWithNoBody(Compiler compiler, Bool not, SmileObject condition)
+static CompiledBlock CompileWhileWithNoBody(Compiler compiler, Bool not, SmileObject condition, CompileFlags compileFlags)
 {
-	ByteCodeSegment segment;
-	Int bDelta;
-	Int b, bLabel;
-	Int offset;
+	CompiledBlock compiledBlock, childBlock;
+	IntermediateInstruction instr, bLabel;
 
-	segment = compiler->currentFunction->byteCodeSegment;
+	compiledBlock = CompiledBlock_Create();
 
 	// Emit this in order of:
 	//
-	//   l1: eval cond
+	//   l1:
+	//       condBlock (result required)
 	//       branch l1
 	//
-	//       ldnull
+	//       ldnull (if flags require a result)
 	//
 	//   // stack is left with a null on it, since there is no body.
 
 	bLabel = EMIT0(Op_Label, 0);
 
-	Compiler_CompileExpr(compiler, condition);
+	childBlock = Compiler_CompileExpr(compiler, condition, compileFlags & ~COMPILE_FLAG_NORESULT);
+	Compiler_EmitRequireResult(compiler, childBlock);
+	CompiledBlock_AppendChild(compiledBlock, childBlock);
 
-	b = EMIT0(not ? Op_Bf : Op_Bt, -1);
+	instr = EMIT0(not ? Op_Bf : Op_Bt, -1);
+	instr->p.branchTarget = bLabel;
 
-	EMIT0(Op_LdNull, +1);
+	if (!(compileFlags & COMPILE_FLAG_NORESULT)) {
+		EMIT0(Op_LdNull, +1);
+	}
 
-	bDelta = bLabel - b;
-	FIX_BRANCH(b, bDelta);
-	FIX_BRANCH(bLabel, -bDelta);
+	return compiledBlock;
 }

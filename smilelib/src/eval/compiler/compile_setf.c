@@ -25,15 +25,15 @@
 #include <smile/parsing/internal/parsescope.h>
 
 // Form: [$set lvalue rvalue]
-void Compiler_CompileSetf(Compiler compiler, SmileList args)
+CompiledBlock Compiler_CompileSetf(Compiler compiler, SmileList args, CompileFlags compileFlags)
 {
 	Int length;
 	SmileObject dest, value, index;
 	SmilePair pair;
 	Symbol symbol;
-	Int offset;
-	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 	Int oldSourceLocation = compiler->currentFunction->currentSourceLocation;
+	CompiledBlock compiledBlock, childBlock;
+	IntermediateInstruction instr;
 
 	// There are three possible legal forms for the arguments:
 	//
@@ -49,7 +49,7 @@ void Compiler_CompileSetf(Compiler compiler, SmileList args)
 	if (length != 2) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_FromC("Cannot compile [$set]: Expression is not well-formed.")));
-		return;
+		return CompiledBlock_CreateError();
 	}
 
 	// Get the destination object, and the value to be assigned.
@@ -65,13 +65,16 @@ void Compiler_CompileSetf(Compiler compiler, SmileList args)
 		Compiler_SetSourceLocationFromList(compiler, (SmileList)args->d);
 
 		// Load the value to store.
-		Compiler_CompileExpr(compiler, value);
+		compiledBlock = CompiledBlock_Create();
+		childBlock = Compiler_CompileExpr(compiler, value, compileFlags & ~COMPILE_FLAG_NORESULT);
+		Compiler_EmitRequireResult(compiler, childBlock);
+		CompiledBlock_AppendChild(compiledBlock, childBlock);
 
 		// Store it, leaving a duplicate on the stack.
 		Compiler_SetSourceLocationFromList(compiler, args);
-		Compiler_CompileVariable(compiler, symbol, True);
+		Compiler_CompileStoreVariable(compiler, symbol, compileFlags, compiledBlock);
 		Compiler_RevertSourceLocation(compiler, oldSourceLocation);
-		break;
+		return compiledBlock;
 
 	case SMILE_KIND_PAIR:
 		// This is probably of the form [$set obj.property value].  Make sure the right side
@@ -80,26 +83,38 @@ void Compiler_CompileSetf(Compiler compiler, SmileList args)
 		if (SMILE_KIND(pair->right) != SMILE_KIND_SYMBOL) {
 			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 				String_FromC("Cannot compile [$set]: Expression is not well-formed.")));
-			return;
+			return CompiledBlock_CreateError();
 		}
 		symbol = ((SmileSymbol)pair->right)->symbol;
 
 		Compiler_SetSourceLocationFromList(compiler, (SmileList)args->d);
 
 		// Evaluate the left side first.
-		Compiler_CompileExpr(compiler, pair->left);
+		compiledBlock = CompiledBlock_Create();
+		childBlock = Compiler_CompileExpr(compiler, pair->left, compileFlags & ~COMPILE_FLAG_NORESULT);
+		Compiler_EmitRequireResult(compiler, childBlock);
+		CompiledBlock_AppendChild(compiledBlock, childBlock);
 
 		Compiler_SetAssignedSymbol(compiler, symbol);
 		Compiler_SetSourceLocationFromList(compiler, args);
 
 		// Evaluate the value second.  (Doing this second ensures that everything always
 		// evaluates left-to-right, the order in which it was written.)
-		Compiler_CompileExpr(compiler, value);
+		childBlock = Compiler_CompileExpr(compiler, value, compileFlags & ~COMPILE_FLAG_NORESULT);
+		Compiler_EmitRequireResult(compiler, childBlock);
+		CompiledBlock_AppendChild(compiledBlock, childBlock);
 
 		// Assign the property.
-		EMIT1(Op_StProp, -1, symbol = symbol);	// Leaves the value on the stack.
-		Compiler_RevertSourceLocation(compiler, oldSourceLocation);
-		break;
+		if (compileFlags & COMPILE_FLAG_NORESULT) {
+			EMIT1(Op_StpProp, -2, symbol = symbol);
+			Compiler_RevertSourceLocation(compiler, oldSourceLocation);
+			return compiledBlock;
+		}
+		else {
+			EMIT1(Op_StProp, -1, symbol = symbol);
+			Compiler_RevertSourceLocation(compiler, oldSourceLocation);
+			return compiledBlock;
+		}
 
 	case SMILE_KIND_LIST:
 		// This is probably of the form [$set [(obj.get-member) index] value].  Make sure that the
@@ -108,30 +123,43 @@ void Compiler_CompileSetf(Compiler compiler, SmileList args)
 		if (SmileList_Length((SmileList)dest) != 2 || SMILE_KIND(((SmileList)dest)->a) != SMILE_KIND_PAIR) {
 			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 				String_FromC("Cannot compile [$set]: Expression is not well-formed.")));
-			return;
+			return CompiledBlock_CreateError();
 		}
 		pair = (SmilePair)(((SmileList)dest)->a);
 		if (SMILE_KIND(pair->right) != SMILE_KIND_SYMBOL) {
 			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 				String_FromC("Cannot compile [$set]: Expression is not well-formed.")));
-			return;
+			return CompiledBlock_CreateError();
 		}
 		index = LIST_SECOND((SmileList)dest);
 
 		// Okay.  We now have pair->left, pair->right, index, and value.  Let's compile them.
+		compiledBlock = CompiledBlock_Create();
 		Compiler_SetSourceLocationFromPair(compiler, pair);
-		Compiler_CompileExpr(compiler, pair->left);
+		childBlock = Compiler_CompileExpr(compiler, pair->left, compileFlags & ~COMPILE_FLAG_NORESULT);
+		Compiler_EmitRequireResult(compiler, childBlock);
+		CompiledBlock_AppendChild(compiledBlock, childBlock);
 		Compiler_SetSourceLocationFromList(compiler, (SmileList)((SmileList)dest)->d);
-		Compiler_CompileExpr(compiler, index);
+		childBlock = Compiler_CompileExpr(compiler, index, compileFlags & ~COMPILE_FLAG_NORESULT);
+		Compiler_EmitRequireResult(compiler, childBlock);
+		CompiledBlock_AppendChild(compiledBlock, childBlock);
 		Compiler_SetSourceLocationFromList(compiler, (SmileList)args->d);
-		Compiler_CompileExpr(compiler, value);
+		childBlock = Compiler_CompileExpr(compiler, value, compileFlags & ~COMPILE_FLAG_NORESULT);
+		Compiler_EmitRequireResult(compiler, childBlock);
+		CompiledBlock_AppendChild(compiledBlock, childBlock);
 		Compiler_SetSourceLocationFromList(compiler, args);
-		EMIT0(Op_StMember, -3);	// Leaves the value on the stack.
-		break;
+		if (compileFlags & COMPILE_FLAG_NORESULT) {
+			EMIT0(Op_StpMember, -3);
+			return compiledBlock;
+		}
+		else {
+			EMIT0(Op_StMember, -2);
+			return compiledBlock;
+		}
 
 	default:
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_FromC("Cannot compile [$set]: Expression is not well-formed.")));
-		return;
+		return CompiledBlock_CreateError();
 	}
 }
