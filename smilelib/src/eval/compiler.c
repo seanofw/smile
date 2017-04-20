@@ -391,7 +391,8 @@ TillContinuationInfo Compiler_AddTillContinuationInfo(Compiler compiler, UserFun
 		Smile_Abort_OutOfMemory();
 	tillInfo->tillIndex = index;
 	tillInfo->userFunctionInfo = userFunctionInfo;
-	tillInfo->numOffsets = numOffsets;
+	tillInfo->numSymbols = 0;
+	tillInfo->symbols = NULL;
 	compiledTables->tillInfos[index] = tillInfo;
 
 	return tillInfo;

@@ -98,8 +98,8 @@ typedef struct CompiledLocalSymbolStruct {
 typedef struct TillContinuationInfoStruct {
 	Int tillIndex;	// The index of this till-info in the compiler's collection of till-info objects.
 	UserFunctionInfo userFunctionInfo;	// The user function this till object belongs to.
-	Int numOffsets;	// The number of when-label offsets in this till object.
-	Int offsets[1];	// The collection (variable-length) of when-label offsets.
+	Int numSymbols;	// The number of symbols (flags) defined by this till continuation.
+	struct CompiledTillSymbolStruct **symbols;	// The symbols (flags) defined by this till continuation.
 } *TillContinuationInfo;
 
 typedef struct TillContinuationStruct {

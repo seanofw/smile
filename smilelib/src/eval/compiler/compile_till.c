@@ -25,14 +25,16 @@
 #include <smile/parsing/internal/parsescope.h>
 
 static Bool ValidateTill(Compiler compiler, SmileList args, SmileList *flags, SmileObject *body, SmileList *whens);
-static Int DefineVariablesForFlags(Compiler compiler, SmileList flags, CompileScope tillScope, Int tillContinuationVariableIndex);
-static Int CompileWhens(Compiler compiler, CompiledBlock parentBlock, CompileScope tillScope, SmileList whens,
-	IntermediateInstruction exitTarget, CompileFlags compileFlags);
-static IntermediateInstruction GenerateNullCase(Compiler compiler, Int numFlags, Int numWhens,
+static Int CountFlags(Compiler compiler, SmileList flags);
+static void DefineVariablesForFlags(Compiler compiler, SmileList flags, Int numFlags, CompileScope tillScope,
+	TillContinuationInfo tillInfo, Int tillContinuationVariableIndex, IntermediateInstruction nullLabel);
+static Int CompileWhens(Compiler compiler, CompiledBlock parentBlock, CompileScope tillScope,
+	SmileList whens, IntermediateInstruction exitTarget, CompileFlags compileFlags);
+static Bool CompileNullCase(Compiler compiler, IntermediateInstruction nullLabel, Int numFlags, Int numWhens,
 	CompiledBlock parentBlock, CompileFlags compileFlags);
 static CompiledBlock GenerateTillContinuation(Compiler compiler, Int numFlags, Int tillContinuationVariableIndex,
 	TillContinuationInfo *tillInfo);
-static Bool IsRealContinuationNeeded(Compiler compiler, SmileList flags, CompileScope tillScope);
+static Bool IsRealContinuationNeeded(SmileList flags, CompileScope tillScope);
 static void FinalizeTillContinuation(Compiler compiler, CompiledBlock compiledBlock, IntermediateInstruction tillBlockInstr,
 	Int tillContinuationVariableIndex, Bool realContinuationNeeded);
 
@@ -47,8 +49,8 @@ CompiledBlock Compiler_CompileTill(Compiler compiler, SmileList args, CompileFla
 	Int numFlags, numWhens;
 	TillContinuationInfo tillInfo;
 	Bool realContinuationNeeded;
-	CompiledBlock compiledBlock, tillBlock, childBlock;
-	IntermediateInstruction instr, tillBlockInstr, loopLabel, loopJmp, nullLabel, exitLabel;
+	CompiledBlock compiledBlock, tillBlock, childBlock, whensBlock;
+	IntermediateInstruction tillBlockInstr, loopLabel, loopJmp, nullLabel, exitLabel;
 
 	//---------------------------------------------------------
 	// Phase 1.  Validation.
@@ -68,16 +70,30 @@ CompiledBlock Compiler_CompileTill(Compiler compiler, SmileList args, CompileFla
 	// Allocate an invisible local variable to hold the special till-escape-continuation object.
 	tillContinuationVariableIndex = CompilerFunction_AddLocal(compiler->currentFunction, 0);
 
-	// Declare variables for each flag, in the till-scope.
-	numFlags = DefineVariablesForFlags(compiler, flags, tillScope, tillContinuationVariableIndex);
-
-	exitLabel = IntermediateInstruction_Create(Op_Label);
+	// Count up how many flags there are, since everything depends on knowing about the set of flags.
+	numFlags = CountFlags(compiler, flags);
 
 	//---------------------------------------------------------
-	// Phase 3.  Core loop.
+	// Phase 3.  Compile the when clauses and the null clause.
 
-	// Emit code to load the till's actual live continuation into the till-continuation variable.
+	// Construct the code to load the till's actual live continuation into the till-continuation variable.
+	// This also sets up the TillContinuationInfo object, which will hold all the when-branch targets.
 	tillBlock = GenerateTillContinuation(compiler, numFlags, tillContinuationVariableIndex, &tillInfo);
+
+	// Declare variables for each flag, in the till-scope, and attach those variables to the till-continuation.
+	nullLabel = IntermediateInstruction_Create(Op_Label);
+	exitLabel = IntermediateInstruction_Create(Op_Label);
+	DefineVariablesForFlags(compiler, flags, numFlags, tillScope, tillInfo, tillContinuationVariableIndex, nullLabel);
+
+	// Make the block for the whens.
+	whensBlock = CompiledBlock_Create();
+	numWhens = CompileWhens(compiler, whensBlock, tillScope, whens, exitLabel, compileFlags);
+	CompileNullCase(compiler, nullLabel, numFlags, numWhens, whensBlock, compileFlags);
+
+	//---------------------------------------------------------
+	// Phase 4.  Core loop.
+
+	// Emit the till instruction itself.
 	tillBlockInstr = CompiledBlock_AppendChild(compiledBlock, tillBlock);
 
 	// The real "till loop" starts here.
@@ -96,24 +112,25 @@ CompiledBlock Compiler_CompileTill(Compiler compiler, SmileList args, CompileFla
 	Compiler_EndScope(compiler);
 
 	//---------------------------------------------------------
-	// Phase 4.  When clauses and the null clause.
+	// Phase 5.  Attach the terminating cases after the core loop.
 
-	numWhens = CompileWhens(compiler, compiledBlock, tillScope, whens, exitLabel, compileFlags);
-	nullLabel = GenerateNullCase(compiler, numFlags, numWhens, compiledBlock, compileFlags);
+	CompiledBlock_AppendChild(compiledBlock, whensBlock);
 	CompiledBlock_AttachInstruction(compiledBlock, compiledBlock->last, exitLabel);
 
 	//---------------------------------------------------------
-	// Phase 5.  Determine if we really need a true continuation or not.
+	// Phase 6.  Determine if we really need a true continuation or not.
 
-	realContinuationNeeded = IsRealContinuationNeeded(compiler, flags, tillScope);
+	realContinuationNeeded = IsRealContinuationNeeded(flags, tillScope);
 
 	//---------------------------------------------------------
-	// Phase 6.  Cleanup.
+	// Phase 7.  Cleanup.
 
 	// If we really don't need a true escape-continuation for this till (i.e., all exits are through
 	// simple jump instructions in the same closure), then remove the instructions that allocate an
 	// escape-continuation on the heap.  Otherwise, mark the 'till' continuation as finished.
 	FinalizeTillContinuation(compiler, compiledBlock, tillBlockInstr, tillContinuationVariableIndex, realContinuationNeeded);
+
+	return compiledBlock;
 }
 
 /// <summary>
@@ -161,19 +178,51 @@ static Bool ValidateTill(Compiler compiler, SmileList args, SmileList *flags, Sm
 }
 
 /// <summary>
+/// Count how many flags are defined, and make sure that it's a valid list.
+/// </summary>
+/// <returns>The number of flags, or zero (and adds an error message) if the list is invalid.</returns>
+static Int CountFlags(Compiler compiler, SmileList flags)
+{
+	Int numFlags;
+
+	// Count up how many flags there are, and make sure the list is valid.
+	numFlags = SmileList_SafeLength(flags);
+	if (numFlags < 0) {
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(flags, getSourceLocation),
+			String_FromC("Cannot compile [$till]: List of terminating flags is an invalid form.")));
+		return 0;
+	}
+	if (numFlags == 0) {
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(flags, getSourceLocation),
+			String_FromC("Cannot compile [$till]: List of terminating flags must not be empty.")));
+		return 0;
+	}
+
+	return numFlags;
+}
+
+/// <summary>
 /// Spin through each of the flags in the [$till] loop's flags list, and define a special
 /// local variable for that flag in the till's scope.  Also, attach each one of those special
 /// flag variables to the till-continuation, so that it can be invoked later on.
 /// </summary>
-static Int DefineVariablesForFlags(Compiler compiler, SmileList flags, CompileScope tillScope, Int tillContinuationVariableIndex)
+static void DefineVariablesForFlags(Compiler compiler, SmileList flags, Int numFlags, CompileScope tillScope,
+	TillContinuationInfo tillInfo, Int tillContinuationVariableIndex, IntermediateInstruction nullLabel)
 {
 	SmileList temp;
 	SmileSymbol smileSymbol;
-	CompiledTillSymbol compiledTillSymbol;
-	Int numFlags;
+	CompiledTillSymbol compiledTillSymbol, *allCompiledTillSymbols;
+	Int index;
+
+	tillInfo->numSymbols = numFlags;
+
+	// Allocate an array to hold all their metadata.
+	tillInfo->symbols = allCompiledTillSymbols = GC_MALLOC_STRUCT_ARRAY(CompiledTillSymbol, numFlags);
+	if (allCompiledTillSymbols == NULL)
+		Smile_Abort_OutOfMemory();
 
 	// For each flag, construct a flag variable with a CompiledTillSymbol object attached.
-	for (temp = flags, numFlags = 0; SMILE_KIND(temp) == SMILE_KIND_LIST; temp = LIST_REST(temp), numFlags++) {
+	for (temp = flags, index = 0; SMILE_KIND(temp) == SMILE_KIND_LIST; temp = LIST_REST(temp), index++) {
 		if (SMILE_KIND(temp->a) != SMILE_KIND_SYMBOL) {
 			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(temp, getSourceLocation),
 				String_FromC("Cannot compile [$till]: List of flags must contain only symbols.")));
@@ -181,22 +230,16 @@ static Int DefineVariablesForFlags(Compiler compiler, SmileList flags, CompileSc
 		smileSymbol = (SmileSymbol)temp->a;
 
 		compiledTillSymbol = (CompiledTillSymbol)CompileScope_DefineSymbol(tillScope, smileSymbol->symbol, PARSEDECL_TILL, tillContinuationVariableIndex);
-		compiledTillSymbol->tillIndex = numFlags;
-		compiledTillSymbol->whenLabel = NULL;
+		compiledTillSymbol->tillIndex = index;
+		compiledTillSymbol->whenLabel = nullLabel;
 		compiledTillSymbol->firstJmp = NULL;
+		allCompiledTillSymbols[index] = compiledTillSymbol;
 	}
 
 	if (SMILE_KIND(temp) != SMILE_KIND_NULL) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(flags, getSourceLocation),
 			String_FromC("Cannot compile [$till]: List of flags must contain only symbols.")));
 	}
-
-	if (numFlags <= 0) {
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(flags, getSourceLocation),
-			String_FromC("Cannot compile [$till]: List of terminating flags must not be empty.")));
-	}
-
-	return numFlags;
 }
 
 /// <summary>
@@ -230,10 +273,10 @@ static CompiledBlock GenerateTillContinuation(Compiler compiler, Int numFlags, I
 /// Compile all the [when] clauses, and update the till object to point to their emitted
 /// instructions.  This returns the number of [when] clauses emitted.
 /// </summary>
-static Int CompileWhens(Compiler compiler, CompiledBlock parentBlock, CompileScope tillScope, SmileList whens,
-	IntermediateInstruction exitTarget, CompileFlags compileFlags)
+static Int CompileWhens(Compiler compiler, CompiledBlock parentBlock, CompileScope tillScope,
+	SmileList whens, IntermediateInstruction exitTarget, CompileFlags compileFlags)
 {
-	Int numWhens = 0;
+	Int numWhens, index;
 	SmileSymbol smileSymbol;
 	CompiledTillSymbol compiledTillSymbol;
 	IntermediateInstruction instr;
@@ -242,10 +285,19 @@ static Int CompileWhens(Compiler compiler, CompiledBlock parentBlock, CompileSco
 	if (SMILE_KIND(whens) != SMILE_KIND_LIST)
 		return 0;
 
+	numWhens = SmileList_SafeLength(whens);
+	if (numWhens < 0) {
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(whens, getSourceLocation),
+			String_FromC("Cannot compile [$till]: When clauses are not a valid list form.")));
+		return 0;
+	}
+	if (numWhens == 0)
+		return 0;
+
 	// Emit all the [when] bodies, and for each, go back and update any branches, and the till continuation,
 	// to match their addresses.  Any near branches will get relative offsets, and the till continuation will
 	// get an absolute address.
-	for (; SMILE_KIND(whens) == SMILE_KIND_LIST; whens = LIST_REST(whens)) {
+	for (index = 0; SMILE_KIND(whens) == SMILE_KIND_LIST; whens = LIST_REST(whens), index++) {
 
 		// Make sure this [when] is well-formed.
 		if (SMILE_KIND(whens->a) != SMILE_KIND_LIST
@@ -288,8 +340,6 @@ static Int CompileWhens(Compiler compiler, CompiledBlock parentBlock, CompileSco
 		// Branch to the exit label for this till-loop.
 		instr = EMIT0(Op_Jmp, 0);
 		instr->p.branchTarget = exitTarget;
-
-		numWhens++;
 	}
 
 	return numWhens;
@@ -300,16 +350,15 @@ static Int CompileWhens(Compiler compiler, CompiledBlock parentBlock, CompileSco
 /// does not have a matching [when] clause.  Returns the label for the null case, or (somewhat
 /// ironically) returns NULL if there is no null case.
 /// </summary>
-static IntermediateInstruction GenerateNullCase(Compiler compiler, Int numFlags, Int numWhens,
+static Bool CompileNullCase(Compiler compiler, IntermediateInstruction nullLabel, Int numFlags, Int numWhens,
 	CompiledBlock parentBlock, CompileFlags compileFlags)
 {
-	IntermediateInstruction nullLabel;
 	CompiledBlock compiledBlock;
 
 	// If we emitted fewer when-clauses than we have flags, emit the null case.
 	// (This loads 'null' on the stack, and is used for any flag without a 'when'.)
 	if (numWhens >= numFlags)
-		return NULL;
+		return False;
 
 	// Attach a new block for the null case.
 	compiledBlock = CompiledBlock_Create();
@@ -317,11 +366,12 @@ static IntermediateInstruction GenerateNullCase(Compiler compiler, Int numFlags,
 
 	// Add a label to it, and produce a null if the compile flags expect a result.
 	nullLabel = EMIT0(Op_Label, 0);
+	CompiledBlock_AttachInstruction(compiledBlock, compiledBlock->last, nullLabel);
 	if (!(compileFlags & COMPILE_FLAG_NORESULT)) {
 		EMIT0(Op_LdNull, +1);
 	}
 
-	return nullLabel;
+	return True;
 }
 
 /// <summary>
@@ -329,7 +379,7 @@ static IntermediateInstruction GenerateNullCase(Compiler compiler, Int numFlags,
 /// exit from deep inside some function, or if we can just get away with using a simple Jmp
 /// instruction.
 /// </summary>
-static Bool IsRealContinuationNeeded(Compiler compiler, SmileList flags, CompileScope tillScope)
+static Bool IsRealContinuationNeeded(SmileList flags, CompileScope tillScope)
 {
 	SmileSymbol smileSymbol;
 	CompiledTillSymbol compiledTillSymbol;
