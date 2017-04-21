@@ -31,6 +31,10 @@ CompiledBlock Compiler_CompileQuote(Compiler compiler, SmileList args, CompileFl
 	CompiledBlock compiledBlock;
 	IntermediateInstruction instr;
 
+	// Quoting something that won't actually be needed results in nothing.
+	if (compileFlags & COMPILE_FLAG_NORESULT)
+		return CompiledBlock_Create();
+
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_NULL) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_FromC("Cannot compile [$quote]: Expression is not well-formed.")));

@@ -100,10 +100,13 @@ void CompiledBlock_AttachInstruction(CompiledBlock compiledBlock, IntermediateIn
 		newInstruction->prev = insertAfterThis;
 		if (compiledBlock->last == insertAfterThis)
 			compiledBlock->last = newInstruction;
+		else
+			insertAfterThis->next->prev = newInstruction;
+		insertAfterThis->next = newInstruction;
 	}
 
 	// One more now.
-	compiledBlock->numInstructions--;
+	compiledBlock->numInstructions++;
 }
 
 /// <summary>
@@ -377,4 +380,16 @@ ByteCodeSegment CompiledBlock_Finish(CompiledBlock compiledBlock)
 	CompiledBlock_AppendToByteCodeSegment(compiledBlock, segment);
 
 	return segment;
+}
+
+/// <summary>
+/// Convert the contents of this compiled block to a string.  Note that this
+/// *does* alter the block slightly, by computing the actual instruction addresses
+/// for it, but other than resolving addresses, the block's contents are unchanged.
+/// This is primarily only useful for debugging.
+/// </summary>
+String CompiledBlock_Stringify(CompiledBlock compiledBlock)
+{
+	ByteCodeSegment segment = CompiledBlock_Finish(compiledBlock);
+	return ByteCodeSegment_Stringify(segment);
 }

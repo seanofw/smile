@@ -232,7 +232,6 @@ static void DefineVariablesForFlags(Compiler compiler, SmileList flags, Int numF
 		compiledTillSymbol = (CompiledTillSymbol)CompileScope_DefineSymbol(tillScope, smileSymbol->symbol, PARSEDECL_TILL, tillContinuationVariableIndex);
 		compiledTillSymbol->tillIndex = index;
 		compiledTillSymbol->whenLabel = nullLabel;
-		compiledTillSymbol->firstJmp = NULL;
 		allCompiledTillSymbols[index] = compiledTillSymbol;
 	}
 

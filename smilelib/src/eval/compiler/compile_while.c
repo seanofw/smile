@@ -106,8 +106,8 @@ static CompiledBlock CompileWhileWithPreAndPost(Compiler compiler, Bool not, Smi
 
 	compiledBlock = CompiledBlock_Create();
 
-	jmpLabel = EMIT0(Op_Label, 0);
-	bLabel = EMIT0(Op_Label, 0);
+	jmpLabel = IntermediateInstruction_Create(Op_Label);
+	bLabel = IntermediateInstruction_Create(Op_Label);
 
 	// Emit this in order of:
 	//
@@ -170,8 +170,8 @@ static CompiledBlock CompileWhileWithPre(Compiler compiler, Bool not, SmileObjec
 
 	compiledBlock = CompiledBlock_Create();
 
-	jmpLabel = EMIT0(Op_Label, 0);
-	bLabel = EMIT0(Op_Label, 0);
+	jmpLabel = IntermediateInstruction_Create(Op_Label);
+	bLabel = IntermediateInstruction_Create(Op_Label);
 
 	// Emit this in order of:
 	//
@@ -236,8 +236,8 @@ static CompiledBlock CompileWhileWithPost(Compiler compiler, Bool not, SmileObje
 
 	compiledBlock = CompiledBlock_Create();
 
-	jmpLabel = EMIT0(Op_Label, 0);
-	bLabel = EMIT0(Op_Label, 0);
+	jmpLabel = IntermediateInstruction_Create(Op_Label);
+	bLabel = IntermediateInstruction_Create(Op_Label);
 
 	// Emit this in order of:
 	//
@@ -256,6 +256,7 @@ static CompiledBlock CompileWhileWithPost(Compiler compiler, Bool not, SmileObje
 
 	if (!(compileFlags & COMPILE_FLAG_NORESULT)) {
 		EMIT0(Op_LdNull, +1);
+		compiledBlock->finalStackDelta--;	// This will get popped in the first iteration.
 	}
 
 	instr = EMIT0(Op_Jmp, 0);
@@ -268,11 +269,12 @@ static CompiledBlock CompileWhileWithPost(Compiler compiler, Bool not, SmileObje
 	Compiler_MakeStackMatchCompileFlags(compiler, compiledBlock, compileFlags);
 
 	if (!(compileFlags & COMPILE_FLAG_NORESULT)) {
+		compiledBlock->finalStackDelta--;	// Logically pop the previous iteration's content.
+											
 		// Go back and insert the pop after the bLabel, now that the stack
 		// has something poppable on it.
 		instr = IntermediateInstruction_Create(Op_Pop1);
 		CompiledBlock_AttachInstruction(compiledBlock, bLabel, instr);
-		compiledBlock->finalStackDelta += -1;
 	}
 
 	CompiledBlock_AttachInstruction(compiledBlock, compiledBlock->last, jmpLabel);

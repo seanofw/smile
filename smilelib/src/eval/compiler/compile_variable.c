@@ -181,7 +181,7 @@ Inline void Compiler_CompileStoreLocalVariable(Compiler compiler, CompiledLocalS
 Inline CompiledBlock Compiler_CompileTillFlag(Compiler compiler, CompiledLocalSymbol localSymbol, CompileFlags compileFlags)
 {
 	CompiledTillSymbol tillSymbol;
-	IntermediateInstruction instr;
+	IntermediateInstruction instr, jmpInstr;
 	Int functionDepth = compiler->currentFunction->functionDepth - localSymbol->scope->function->functionDepth;
 	CompiledBlock compiledBlock = CompiledBlock_Create();
 
@@ -193,17 +193,9 @@ Inline CompiledBlock Compiler_CompileTillFlag(Compiler compiler, CompiledLocalSy
 		// Special case:  This is a flag triggered in the same function, so we
 		// can use a simple Jmp to escape the till loop.
 
-		// First, make a place to record where this jump is.
-		TillFlagJmp jmpInfo = GC_MALLOC_STRUCT(struct TillFlagJmpStruct);
-		if (jmpInfo == NULL)
-			Smile_Abort_OutOfMemory();
-
-		// Record the jump in the till-flag's list of jumps to resolve.
-		jmpInfo->next = tillSymbol->firstJmp;
-		tillSymbol->firstJmp = jmpInfo;
-
-		// Now emit the jump instruction itself, recording it for later.
-		jmpInfo->instr = EMIT0(Op_Jmp, 0);
+		// Emit the jump instruction, pointing at the when block.
+		jmpInstr = EMIT0(Op_Jmp, 0);
+		jmpInstr->p.branchTarget = tillSymbol->whenLabel;
 
 		localSymbol->wasRead = True;
 	}

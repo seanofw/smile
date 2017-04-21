@@ -49,7 +49,7 @@ CompiledBlock Compiler_CompileProgN(Compiler compiler, SmileList args, CompileFl
 		Compiler_RevertSourceLocation(compiler, isLast ? namedSourceLocation : namelessSourceLocation);
 		Compiler_SetSourceLocationFromList(compiler, args);
 		childBlock = Compiler_CompileExpr(compiler, args->a,
-			isLast ? (compileFlags | COMPILE_FLAG_NORESULT) : (compileFlags & ~COMPILE_FLAG_NORESULT));
+			isLast ? compileFlags : (compileFlags | COMPILE_FLAG_NORESULT));
 
 		// Only keep the value if this is the last instruction.
 		if (isLast) {
@@ -58,6 +58,9 @@ CompiledBlock Compiler_CompileProgN(Compiler compiler, SmileList args, CompileFl
 		else {
 			Compiler_EmitNoResult(compiler, childBlock);
 		}
+
+		// Add this child to the progn.
+		CompiledBlock_AppendChild(compiledBlock, childBlock);
 
 		// ...and if it's the last one, keep its value.
 		if (isLast) break;

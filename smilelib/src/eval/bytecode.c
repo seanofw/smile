@@ -78,9 +78,21 @@ void ByteCodeSegment_Grow(ByteCodeSegment segment, Int count)
 
 /// <summary>
 /// Convert the given byte-code segment to a string that lists all its instructions,
+/// in order.  This doesn't add any important external information like string contents,
+/// but because it only requires a ByteCodeSegment as input, it can be very useful for
+/// debugging.
+/// </summary>
+String ByteCodeSegment_Stringify(ByteCodeSegment segment)
+{
+	return ByteCodeSegment_ToString(segment, NULL, NULL);
+}
+
+/// <summary>
+/// Convert the given byte-code segment to a string that lists all its instructions,
 /// in order.
 /// </summary>
 /// <param name="segment">The byte-code segment to dump.</param>
+/// <param name="userFunctionInfo">The function that this code segment is a part of.</param>
 /// <param name="compiledTables">The compiled tables of objects and functions and strings
 /// that this segment may reference.</param>
 /// <returns>The byte-code segment's instructions, as a string.</returns>
@@ -188,7 +200,8 @@ static String ByteCode_OperandsToString(ByteCode byteCode, Int address, UserFunc
 		case Op_LdBool:
 			return String_Format("%s", byteCode->u.boolean ? "true" : "false");
 		case Op_LdStr:
-			return String_Format("%d\t; \"%S\"", byteCode->u.index, String_AddCSlashes(compiledTables->strings[byteCode->u.index]));
+			return String_Format("%d\t; \"%S\"", byteCode->u.index,
+				compiledTables != NULL ? String_AddCSlashes(compiledTables->strings[byteCode->u.index]) : String_FromC("???"));
 		case Op_LdSym:
 			return String_Format("%d\t; %S", byteCode->u.symbol, SymbolTable_GetName(Smile_SymbolTable, byteCode->u.symbol));
 		case Op_LdObj:

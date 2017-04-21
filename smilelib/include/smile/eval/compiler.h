@@ -107,17 +107,11 @@ typedef struct TillContinuationStruct {
 	Closure closure;	// The closure to escape back to (NULL if this TillContinuation is no longer viable).
 } *TillContinuation;
 
-typedef struct TillFlagJmpStruct {
-	struct TillFlagJmpStruct *next;	// The next jmp that needs to be updated for this symbol's 'when' address.
-	struct IntermediateInstructionStruct *instr;	// The jmp-to-when instruction in this segment.
-} *TillFlagJmp;
-
 typedef struct CompiledTillSymbolStruct {
 	struct CompiledLocalSymbolStruct base;	// The base struct this inherits from.
 		
 	Int tillIndex;	// The index of this symbol in the till's flag collection.
 	IntermediateInstruction whenLabel;	// The address of the 'when' clause's label-instruction (0 = no when clause).
-	TillFlagJmp firstJmp;	// The head of the list of jmp-to-when instructions that need to be patched.
 } *CompiledTillSymbol;
 
 typedef struct CompiledSourceLocationStruct {

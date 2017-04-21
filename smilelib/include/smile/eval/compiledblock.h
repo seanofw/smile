@@ -89,5 +89,6 @@ extern void CompiledBlock_AppendToByteCodeSegment(CompiledBlock compiledBlock, B
 extern IntermediateInstruction CompiledBlock_AppendChild(CompiledBlock parentBlock, CompiledBlock newChild);
 extern IntermediateInstruction CompiledBlock_Emit(CompiledBlock compiledBlock, Int opcode, Int stackDelta, Int sourceLocation);
 extern ByteCodeSegment CompiledBlock_Finish(CompiledBlock compiledBlock);
+extern String CompiledBlock_Stringify(CompiledBlock compiledBlock);
 
 #endif
