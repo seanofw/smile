@@ -457,7 +457,7 @@ UserFunctionInfo Compiler_CompileGlobal(Compiler compiler, SmileObject expr)
 	EMIT0(Op_Ret, -1);
 
 	byteCodeSegment = CompiledBlock_Finish(compiledBlock);
-	compiler->currentFunction->stackSize = compiledBlock->maxStackDepth;
+	compilerFunction->stackSize = compiledBlock->maxStackDepth;
 
 	Compiler_EndFunction(compiler);
 

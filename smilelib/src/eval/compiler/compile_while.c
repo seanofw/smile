@@ -131,7 +131,7 @@ static CompiledBlock CompileWhileWithPreAndPost(Compiler compiler, Bool not, Smi
 	CompiledBlock_AppendChild(compiledBlock, preBlock);
 	Compiler_MakeStackMatchCompileFlags(compiler, compiledBlock, compileFlags);
 
-	condBlock = Compiler_CompileExpr(compiler, condition, compileFlags & COMPILE_FLAG_NORESULT);
+	condBlock = Compiler_CompileExpr(compiler, condition, compileFlags & ~COMPILE_FLAG_NORESULT);
 	Compiler_EmitRequireResult(compiler, condBlock);
 	CompiledBlock_AppendChild(compiledBlock, condBlock);
 
@@ -210,7 +210,7 @@ static CompiledBlock CompileWhileWithPre(Compiler compiler, Bool not, SmileObjec
 		compiledBlock->finalStackDelta += -1;
 	}
 
-	condBlock = Compiler_CompileExpr(compiler, condition, compileFlags & COMPILE_FLAG_NORESULT);
+	condBlock = Compiler_CompileExpr(compiler, condition, compileFlags & ~COMPILE_FLAG_NORESULT);
 	Compiler_EmitRequireResult(compiler, condBlock);
 	CompiledBlock_AppendChild(compiledBlock, condBlock);
 
@@ -279,7 +279,7 @@ static CompiledBlock CompileWhileWithPost(Compiler compiler, Bool not, SmileObje
 
 	CompiledBlock_AttachInstruction(compiledBlock, compiledBlock->last, jmpLabel);
 
-	condBlock = Compiler_CompileExpr(compiler, condition, compileFlags);
+	condBlock = Compiler_CompileExpr(compiler, condition, compileFlags & ~COMPILE_FLAG_NORESULT);
 	CompiledBlock_AppendChild(compiledBlock, condBlock);
 	Compiler_EmitRequireResult(compiler, compiledBlock);
 

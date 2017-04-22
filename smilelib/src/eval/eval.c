@@ -836,7 +836,7 @@ next:
 
 		case Op_Bt:
 			arg = Closure_Pop(closure);
-			if (SMILE_KIND(arg.obj) != SMILE_KIND_UNBOXED_BOOL) {
+			if (SMILE_KIND(arg.obj) == SMILE_KIND_UNBOXED_BOOL) {
 				if (arg.unboxed.b) {
 					byteCode += byteCode->u.index;
 				}
