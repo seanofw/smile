@@ -45,6 +45,14 @@
 #include <smile/eval/closure.h>
 #endif
 
+#ifndef __SMILE_EVAL_COMPILEDBLOCK_H__
+#include <smile/eval/compiledblock.h>
+#endif
+
+typedef enum {
+	COMPILE_FLAG_NORESULT = (1 << 0),	// Try to compile this expr only for its side-effects; avoid leaving anything on the stack.
+} CompileFlags;
+
 //-------------------------------------------------------------------------------------------------
 //  Type declarations.
 
@@ -64,7 +72,6 @@ typedef struct CompilerFunctionStruct {
 	Bool isCompiled;	// Whether this function is fully or only partially compiled.
 	SmileList args;	// This function's arguments, from its raw expression.
 	SmileObject body;	// This function's body, from its raw expression.
-	ByteCodeSegment byteCodeSegment;	// The byte-code segment that holds this function's instructions.
 	ClosureInfo closureInfo;	// The ClosureInfo object needed to actually eval this function.
 	Int currentSourceLocation;	// The current source location, if any.
 	UserFunctionInfo userFunctionInfo;	// The UserFunctionInfo object that is being generated from this.
@@ -91,8 +98,8 @@ typedef struct CompiledLocalSymbolStruct {
 typedef struct TillContinuationInfoStruct {
 	Int tillIndex;	// The index of this till-info in the compiler's collection of till-info objects.
 	UserFunctionInfo userFunctionInfo;	// The user function this till object belongs to.
-	Int numOffsets;	// The number of when-label offsets in this till object.
-	Int offsets[1];	// The collection (variable-length) of when-label offsets.
+	Int numSymbols;	// The number of symbols (flags) defined by this till continuation.
+	struct CompiledTillSymbolStruct **symbols;	// The symbols (flags) defined by this till continuation.
 } *TillContinuationInfo;
 
 typedef struct TillContinuationStruct {
@@ -100,18 +107,11 @@ typedef struct TillContinuationStruct {
 	Closure closure;	// The closure to escape back to (NULL if this TillContinuation is no longer viable).
 } *TillContinuation;
 
-typedef struct TillFlagJmpStruct {
-	struct TillFlagJmpStruct *next;	// The next jmp that needs to be updated for this symbol's 'when' address.
-	Int offset;	// The address of the jmp-to-when instruction in this segment.
-} *TillFlagJmp;
-
 typedef struct CompiledTillSymbolStruct {
 	struct CompiledLocalSymbolStruct base;	// The base struct this inherits from.
 		
 	Int tillIndex;	// The index of this symbol in the till's flag collection.
-	Int whenLabelAddress;	// The address of the 'when' clause's label-instruction (0 = no when clause).
-	Int exitJmpAddress;	// The address of the 'when' clause's jmp-to-exit instruction.
-	TillFlagJmp firstJmp;	// The head of the list of jmp-to-when instructions that need to be patched.
+	IntermediateInstruction whenLabel;	// The address of the 'when' clause's label-instruction (0 = no when clause).
 } *CompiledTillSymbol;
 
 typedef struct CompiledSourceLocationStruct {
@@ -168,7 +168,7 @@ SMILE_API_FUNC CompiledTables CompiledTables_Create(void);
 SMILE_API_FUNC Compiler Compiler_Create(void);
 SMILE_API_FUNC CompilerFunction Compiler_BeginFunction(Compiler compiler, SmileList args, SmileObject body);
 SMILE_API_FUNC void Compiler_EndFunction(Compiler compiler);
-SMILE_API_FUNC Int Compiler_CompileExpr(Compiler compiler, SmileObject expr);
+SMILE_API_FUNC CompiledBlock Compiler_CompileExpr(Compiler compiler, SmileObject expr, CompileFlags compileFlags);
 SMILE_API_FUNC UserFunctionInfo Compiler_CompileGlobal(Compiler compiler, SmileObject expr);
 SMILE_API_FUNC Int Compiler_AddString(Compiler compiler, String string);
 SMILE_API_FUNC Int Compiler_AddObject(Compiler compiler, SmileObject obj);

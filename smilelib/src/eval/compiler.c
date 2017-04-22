@@ -25,132 +25,6 @@
 #include <smile/parsing/internal/parsedecl.h>
 #include <smile/parsing/internal/parsescope.h>
 
-void Compiler_EmitPop1(Compiler compiler)
-{
-	Byte lastOpcode, newOpcode;
-	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
-	Int offset;
-
-	if (segment->numByteCodes <= 0) {
-		EMIT0(Op_Pop1, -1);
-		return;
-	}
-
-	lastOpcode = RECENT_BYTECODE(-1).opcode;
-	
-	switch (lastOpcode) {
-		case Op_Ld8: case Op_Ld16: case Op_Ld32: case Op_Ld64: case Op_Ld128:
-		case Op_LdR16: case Op_LdR32: case Op_LdR64: case Op_LdR128:
-		case Op_LdF16: case Op_LdF32: case Op_LdF64: case Op_LdF128:
-		case Op_LdBool:
-		case Op_LdNull:
-		case Op_LdStr:
-		case Op_LdObj:
-		case Op_LdSym:
-		case Op_LdClos:
-		case Op_Dup: case Op_Dup1: case Op_Dup2:
-		case Op_LdX:
-		case Op_LdArg:
-		case Op_LdArg0: case Op_LdArg1: case Op_LdArg2: case Op_LdArg3:
-		case Op_LdArg4: case Op_LdArg5: case Op_LdArg6: case Op_LdArg7:
-		case Op_LdLoc:
-		case Op_LdLoc0: case Op_LdLoc1: case Op_LdLoc2: case Op_LdLoc3:
-		case Op_LdLoc4: case Op_LdLoc5: case Op_LdLoc6: case Op_LdLoc7:
-			// Delete last instruction, since it's a simple load and wasn't actually needed.
-			segment->numByteCodes--;
-			ApplyStackDelta(compiler->currentFunction, -1);
-			return;
-
-		case Op_LdProp:
-			// Delete last instruction, and pop the object before it.
-			segment->numByteCodes--;
-			ApplyStackDelta(compiler->currentFunction, -1);
-			Compiler_EmitPop1(compiler);
-			return;
-		
-		case Op_LdMember:
-			// Delete last instruction, and pop the two objects before it.
-			segment->numByteCodes--;
-			ApplyStackDelta(compiler->currentFunction, -1);
-			Compiler_EmitPop1(compiler);
-			Compiler_EmitPop1(compiler);
-			return;
-		
-		case Op_Pop1:
-			// Upgrade this to a Pop2.
-			RECENT_BYTECODE(-1).opcode = Op_Pop2;
-			ApplyStackDelta(compiler->currentFunction, -1);
-			return;
-
-		case Op_Pop2:
-			// Upgrade this to a Pop 3.
-			RECENT_BYTECODE(-1).opcode = Op_Pop;
-			RECENT_BYTECODE(-1).u.index = 3;
-			ApplyStackDelta(compiler->currentFunction, -1);
-			return;
-
-		case Op_Pop:
-			// Upgrade this to a Pop N+1.
-			RECENT_BYTECODE(-1).u.index++;
-			ApplyStackDelta(compiler->currentFunction, -1);
-			return;
-
-		case Op_Rep1:
-			// Upgrade this to a Pop2.
-			RECENT_BYTECODE(-1).opcode = Op_Pop2;
-			ApplyStackDelta(compiler->currentFunction, -1);
-			return;
-
-		case Op_Rep2:
-			// Upgrade this to a Pop 3.
-			RECENT_BYTECODE(-1).opcode = Op_Pop;
-			RECENT_BYTECODE(-1).u.index = 3;
-			ApplyStackDelta(compiler->currentFunction, -1);
-			return;
-
-		case Op_Rep:
-			// Upgrade this to a Pop N+1.
-			RECENT_BYTECODE(-1).opcode = Op_Pop;
-			RECENT_BYTECODE(-1).u.index++;
-			ApplyStackDelta(compiler->currentFunction, -1);
-			return;
-		
-		case Op_StX:	newOpcode = Op_StpX;	break;
-		case Op_StArg:	newOpcode = Op_StpArg;	break;
-		case Op_StArg0:	newOpcode = Op_StpArg0;	break;
-		case Op_StArg1:	newOpcode = Op_StpArg1;	break;
-		case Op_StArg2:	newOpcode = Op_StpArg2;	break;
-		case Op_StArg3:	newOpcode = Op_StpArg3;	break;
-		case Op_StArg4:	newOpcode = Op_StpArg4;	break;
-		case Op_StArg5:	newOpcode = Op_StpArg5;	break;
-		case Op_StArg6:	newOpcode = Op_StpArg6;	break;
-		case Op_StArg7:	newOpcode = Op_StpArg7;	break;
-		case Op_StLoc:	newOpcode = Op_StpLoc;	break;
-		case Op_StLoc0:	newOpcode = Op_StpLoc0;	break;
-		case Op_StLoc1:	newOpcode = Op_StpLoc1;	break;
-		case Op_StLoc2:	newOpcode = Op_StpLoc2;	break;
-		case Op_StLoc3:	newOpcode = Op_StpLoc3;	break;
-		case Op_StLoc4:	newOpcode = Op_StpLoc4;	break;
-		case Op_StLoc5:	newOpcode = Op_StpLoc5;	break;
-		case Op_StLoc6:	newOpcode = Op_StpLoc6;	break;
-		case Op_StLoc7:	newOpcode = Op_StpLoc7;	break;
-		case Op_StProp:	newOpcode = Op_StpProp;	break;
-		case Op_StMember:	newOpcode = Op_StpMember;	break;
-		default:	newOpcode = lastOpcode;	break;
-	}
-
-	if (newOpcode != lastOpcode) {
-		// Rewrite the most recent store as a store-and-pop.
-		RECENT_BYTECODE(-1).opcode = newOpcode;
-		ApplyStackDelta(compiler->currentFunction, -1);
-		return;
-	}
-	else {
-		// The last opcode wasn't a store, so just pop whatever it was.
-		EMIT0(Op_Pop1, -1);
-	}
-}
-
 Int Compiler_SetSourceLocation(Compiler compiler, LexerPosition lexerPosition)
 {
 	Int oldSourceLocation = compiler->currentFunction->currentSourceLocation;
@@ -351,7 +225,6 @@ CompilerFunction Compiler_BeginFunction(Compiler compiler, SmileList args, Smile
 		Smile_Abort_OutOfMemory();
 	newFunction->args = args;
 	newFunction->body = body;
-	newFunction->byteCodeSegment = ByteCodeSegment_Create();
 	newFunction->numArgs = 0;
 	newFunction->isCompiled = False;
 	newFunction->parent = compiler->currentFunction;
@@ -518,7 +391,8 @@ TillContinuationInfo Compiler_AddTillContinuationInfo(Compiler compiler, UserFun
 		Smile_Abort_OutOfMemory();
 	tillInfo->tillIndex = index;
 	tillInfo->userFunctionInfo = userFunctionInfo;
-	tillInfo->numOffsets = numOffsets;
+	tillInfo->numSymbols = 0;
+	tillInfo->symbols = NULL;
 	compiledTables->tillInfos[index] = tillInfo;
 
 	return tillInfo;
@@ -565,29 +439,31 @@ Int Compiler_AddObject(Compiler compiler, SmileObject obj)
 UserFunctionInfo Compiler_CompileGlobal(Compiler compiler, SmileObject expr)
 {
 	CompilerFunction compilerFunction;
-	Int offset;
-	ByteCodeSegment segment;
 	UserFunctionInfo userFunctionInfo;
 	ClosureInfo closureInfo;
 	String errorMessage;
+	CompiledBlock compiledBlock;
+	ByteCodeSegment byteCodeSegment;
 
 	userFunctionInfo = UserFunctionInfo_Create(NULL, NULL, NullList, expr, &errorMessage);
 	compilerFunction = Compiler_BeginFunction(compiler, NullList, expr);
 	compilerFunction->userFunctionInfo = userFunctionInfo;
 	compiler->compiledTables->globalFunctionInfo = userFunctionInfo;
 
-	segment = compiler->currentFunction->byteCodeSegment;
-
-	Compiler_CompileExpr(compiler, expr);
+	compiledBlock = Compiler_CompileExpr(compiler, expr, 0);
+	Compiler_EmitRequireResult(compiler, compiledBlock);
 
 	compiler->currentFunction->currentSourceLocation = 0;
 	EMIT0(Op_Ret, -1);
+
+	byteCodeSegment = CompiledBlock_Finish(compiledBlock);
+	compilerFunction->stackSize = compiledBlock->maxStackDepth;
 
 	Compiler_EndFunction(compiler);
 
 	closureInfo = Compiler_MakeClosureInfoForCompilerFunction(compiler, compilerFunction);
 	MemCpy(&userFunctionInfo->closureInfo, closureInfo, sizeof(struct ClosureInfoStruct));
-	userFunctionInfo->byteCodeSegment = compilerFunction->byteCodeSegment;
+	userFunctionInfo->byteCodeSegment = byteCodeSegment;
 
 	return userFunctionInfo;
 }

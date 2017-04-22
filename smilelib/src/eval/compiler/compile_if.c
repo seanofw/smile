@@ -25,23 +25,19 @@
 #include <smile/parsing/internal/parsescope.h>
 
 // Form: [$if cond then-clause else-clause]
-void Compiler_CompileIf(Compiler compiler, SmileList args)
+CompiledBlock Compiler_CompileIf(Compiler compiler, SmileList args, CompileFlags compileFlags)
 {
 	SmileObject condition, thenClause, elseClause, temp;
 	Int elseKind;
 	Bool not;
-	ByteCodeSegment segment;
-	Int bfDelta, jmpDelta;
-	Int bf, jmp, bfLabel, jmpLabel;
-	Int offset;
-
-	segment = compiler->currentFunction->byteCodeSegment;
+	CompiledBlock compiledBlock, condBlock, trueBlock, falseBlock;
+	IntermediateInstruction bf, jmp, bfLabel, jmpLabel;
 
 	// Must be an expression of the form [$if cond then-clause] or [$if cond then-clause else-clause].
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_LIST) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_FromC("Cannot compile [if]: Expression is not well-formed.")));
-		return;
+		return CompiledBlock_Create();
 	}
 
 	// Get the condition.
@@ -62,7 +58,7 @@ void Compiler_CompileIf(Compiler compiler, SmileList args)
 		if ((elseKind = SMILE_KIND(args->d)) != SMILE_KIND_NULL) {
 			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 				String_FromC("Cannot compile [if]: Expression is not well-formed.")));
-			return;
+			return CompiledBlock_Create();
 		}
 	}
 	else if (elseKind == SMILE_KIND_NULL) {
@@ -72,7 +68,7 @@ void Compiler_CompileIf(Compiler compiler, SmileList args)
 	else {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_FromC("Cannot compile [if]: Expression is not well-formed.")));
-		return;
+		return CompiledBlock_Create();
 	}
 
 	// Extract off any [$not] operators, and if there were any, swap then/else clauses.
@@ -83,25 +79,70 @@ void Compiler_CompileIf(Compiler compiler, SmileList args)
 		thenClause = temp;
 	}
 
-	// Evaluate the condition.
-	Compiler_CompileExpr(compiler, condition);
+	// Compile the condition.
+	condBlock = Compiler_CompileExpr(compiler, condition, compileFlags & ~COMPILE_FLAG_NORESULT);
+	Compiler_EmitRequireResult(compiler, condBlock);
 
-	// Emit the conditional logic.
-	bf = EMIT0(Op_Bf, -1);
-	Compiler_CompileExpr(compiler, thenClause);
-	jmp = EMIT0(Op_Jmp, 0);
-	bfLabel = EMIT0(Op_Label, 0);
-	Compiler_CompileExpr(compiler, elseClause);
-	jmpLabel = EMIT0(Op_Label, 0);
+	// Compile the 'true' side.
+	trueBlock = Compiler_CompileExpr(compiler, thenClause, compileFlags);
+	Compiler_MakeStackMatchCompileFlags(compiler, trueBlock, compileFlags);
 
-	// By the time we reach this point, only 'then' or 'else' will be left on the stack.
-	compiler->currentFunction->currentStackDepth--;
+	// Compile the 'false' side.
+	falseBlock = Compiler_CompileExpr(compiler, elseClause, compileFlags);
+	Compiler_MakeStackMatchCompileFlags(compiler, falseBlock, compileFlags);
 
-	// Fill in the relative branch targets.
-	bfDelta = bfLabel - bf;
-	FIX_BRANCH(bf, bfDelta);
-	FIX_BRANCH(bfLabel, -bfDelta);
-	jmpDelta = jmpLabel - jmp;
-	FIX_BRANCH(jmp, jmpDelta);
-	FIX_BRANCH(jmpLabel, -jmpDelta);
+	// Now emit the instructions that best fit this conditional.
+	if (trueBlock->first != NULL && falseBlock->first != NULL) {
+		// Have both a 'then' clause and an 'else' one, so emit the full 'if'.
+		compiledBlock = CompiledBlock_Create();
+		CompiledBlock_AppendChild(compiledBlock, condBlock);
+		bf = EMIT0(Op_Bf, -1);
+		CompiledBlock_AppendChild(compiledBlock, trueBlock);
+		jmp = EMIT0(Op_Jmp, 0);
+		bfLabel = EMIT0(Op_Label, 0);
+		CompiledBlock_AppendChild(compiledBlock, falseBlock);
+		jmpLabel = EMIT0(Op_Label, 0);
+
+		// Point the jumps at the appropriate target labels.
+		bf->p.branchTarget = bfLabel;
+		bfLabel->p.branchTarget = bf;
+		jmp->p.branchTarget = jmpLabel;
+		jmpLabel->p.branchTarget = jmp;
+
+		return compiledBlock;
+	}
+	else if (trueBlock->first != NULL) {
+		// Have only a 'then' clause, with no 'else' clause.
+		compiledBlock = CompiledBlock_Create();
+		CompiledBlock_AppendChild(compiledBlock, condBlock);
+		bf = EMIT0(Op_Bf, -1);
+		CompiledBlock_AppendChild(compiledBlock, trueBlock);
+		bfLabel = EMIT0(Op_Label, 0);
+
+		// Point the jumps at the appropriate target labels.
+		bf->p.branchTarget = bfLabel;
+		bfLabel->p.branchTarget = bf;
+
+		return compiledBlock;
+	}
+	else if (falseBlock->first != NULL) {
+		// Have only an 'else' clause, with no 'then' clause.
+		compiledBlock = CompiledBlock_Create();
+		CompiledBlock_AppendChild(compiledBlock, condBlock);
+		bf = EMIT0(Op_Bt, -1);
+		CompiledBlock_AppendChild(compiledBlock, falseBlock);
+		bfLabel = EMIT0(Op_Label, 0);
+
+		// Point the jumps at the appropriate target labels.
+		bf->p.branchTarget = bfLabel;
+		bfLabel->p.branchTarget = bf;
+
+		return compiledBlock;
+	}
+	else {
+		// Have neither clause, which means we can recompile the condition in no-output mode.
+		condBlock = Compiler_CompileExpr(compiler, condition, compileFlags);
+		Compiler_EmitNoResult(compiler, condBlock);
+		return condBlock;
+	}
 }

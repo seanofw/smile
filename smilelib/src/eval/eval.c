@@ -836,7 +836,7 @@ next:
 
 		case Op_Bt:
 			arg = Closure_Pop(closure);
-			if (SMILE_KIND(arg.obj) != SMILE_KIND_UNBOXED_BOOL) {
+			if (SMILE_KIND(arg.obj) == SMILE_KIND_UNBOXED_BOOL) {
 				if (arg.unboxed.b) {
 					byteCode += byteCode->u.index;
 				}
@@ -1175,7 +1175,7 @@ next:
 		case Op_C6:
 		case Op_D3: case Op_D7:
 		case Op_F2: case Op_F3: case Op_F4: case Op_F5: case Op_F6: case Op_F7:
-		case Op_F8: case Op_F9: case Op_FA: case Op_FB: case Op_FC: case Op_FD: case Op_FE:
+		case Op_F8: case Op_F9: case Op_FA: case Op_FB: case Op_FC: case Op_FD:
 			STORE_REGISTERS;
 			Smile_Abort_FatalError(String_ToC(String_Format("Compiler bug: Unknown opcode 0x%02X", byteCode->opcode)));
 		

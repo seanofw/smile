@@ -25,32 +25,39 @@
 #include <smile/parsing/internal/parsescope.h>
 
 // Form: [$quote expr]
-void Compiler_CompileQuote(Compiler compiler, SmileList args)
+CompiledBlock Compiler_CompileQuote(Compiler compiler, SmileList args, CompileFlags compileFlags)
 {
 	Int objectIndex;
-	Int offset;
-	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
+	CompiledBlock compiledBlock;
+	IntermediateInstruction instr;
+
+	// Quoting something that won't actually be needed results in nothing.
+	if (compileFlags & COMPILE_FLAG_NORESULT)
+		return CompiledBlock_Create();
 
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_NULL) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_FromC("Cannot compile [$quote]: Expression is not well-formed.")));
-		return;
+		return CompiledBlock_CreateError();
 	}
 
 	if (SMILE_KIND(args->a) == SMILE_KIND_SYMBOL) {
 		// A quoted symbol can just be loaded directly.
+		compiledBlock = CompiledBlock_Create();
 		EMIT1(Op_LdSym, +1, symbol = ((SmileSymbol)args->a)->symbol);
-		return;
+		return compiledBlock;
 	}
 	else if (SMILE_KIND(args->a) != SMILE_KIND_LIST && SMILE_KIND(args->a) != SMILE_KIND_PAIR) {
 		// It's neither a list nor a pair nor a symbol, so quoting it just results in *it*, whatever it is.
-		Compiler_CompileExpr(compiler, args->a);
-		return;
+		compiledBlock = Compiler_CompileExpr(compiler, args->a, compileFlags);
+		Compiler_MakeStackMatchCompileFlags(compiler, compiledBlock, compileFlags);
+		return compiledBlock;
 	}
-
-	// Add the quoted form as a literal stored object.
-	objectIndex = Compiler_AddObject(compiler, args->a);
-
-	// Add an instruction to load it.
-	EMIT1(Op_LdObj, +1, index = objectIndex);
+	else {
+		// Load the quoted form as a literal stored object.
+		compiledBlock = CompiledBlock_Create();
+		objectIndex = Compiler_AddObject(compiler, args->a);
+		EMIT1(Op_LdObj, +1, index = objectIndex);
+		return compiledBlock;
+	}
 }

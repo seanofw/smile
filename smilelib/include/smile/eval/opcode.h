@@ -284,8 +284,8 @@ enum Opcode {
 	Op_FB	= 0xFB,		
 	Op_FC	= 0xFC,		
 	Op_FD	= 0xFD,		
-	Op_FE	= 0xFE,		
-	Op_Label	= 0xFF,	//  0	; Branch target
+	Op_Label	= 0xFE,	//  0	; Branch target		
+	Op_Block	= 0xFF,	//  0	; Child basic block during intermediate-code generation
 };
 
 SMILE_API_DATA String *Opcode_Names;

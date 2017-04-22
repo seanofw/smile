@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 96aa8b6ce3c1178c6e0be41f896905fc
+// SourceHash: b2385d45fd77c7be22fb6fa4e56a733a
 
 START_TEST_SUITE(CompilerTests)
 {
@@ -20,7 +20,16 @@ START_TEST_SUITE(CompilerTests)
 	CanCompileNestedScopeVariableReads,
 	NestedScopesVariablesDontOverlap,
 	CanCompileSimpleConditionals,
+	CanCompileConditionalsWithNullThenSide,
+	CanCompileConditionalsWithNullElseSide,
+	CanCompileConditionalsWithAMeaninglessThenSide,
+	CanCompileConditionalsWithMeaninglessElseSide,
 	CanCompileConditionalsAllTheWay,
+	CanCompileAPreCondPostWhileLoop,
+	CanCompileAPreCondWhileLoop,
+	CanCompileANullCondPostWhileLoop,
+	CanCompileACondPostWhileLoop,
+	CanCompileACondOnlyWhileLoop,
 	CanCompileAWhileLoopThatComputesLogarithms,
 	CanCompileASimpleTillLoop,
 }

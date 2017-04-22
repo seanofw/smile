@@ -25,24 +25,30 @@
 #include <smile/parsing/internal/parsescope.h>
 
 // Form: expr.symbol
-void Compiler_CompileProperty(Compiler compiler, SmilePair pair, Bool store)
+CompiledBlock Compiler_CompileLoadProperty(Compiler compiler, SmilePair pair, CompileFlags compileFlags)
 {
 	Symbol symbol;
-	Int offset;
-	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
+	IntermediateInstruction instr;
+	CompiledBlock compiledBlock, childBlock;
 
 	if (SMILE_KIND(pair->right) != SMILE_KIND_SYMBOL) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(pair, getSourceLocation),
 			String_FromC("Cannot compile pair: right side must be a symbol.")));
+		return CompiledBlock_CreateError();
 	}
 
 	// Evaluate the left side first, which will leave the left side on the stack.
-	Compiler_CompileExpr(compiler, pair->left);
+	compiledBlock = CompiledBlock_Create();
+	childBlock = Compiler_CompileExpr(compiler, pair->left, 0);
+	CompiledBlock_AppendChild(compiledBlock, childBlock);
+	Compiler_EmitRequireResult(compiler, compiledBlock);
 
 	// Extract the property named by the symbol on the right side, leaving the property's value on the stack.
 	symbol = ((SmileSymbol)(pair->right))->symbol;
-	if (store) {
-		EMIT1(Op_StProp, -2, symbol = symbol);
+	if (compileFlags & COMPILE_FLAG_NORESULT) {
+		// If they don't want anything, then don't even bother to dereference the data, and
+		// discard anything we have computed so far.
+		EMIT0(Op_Pop1, -1);
 	}
 	else {
 		// If this is one of the special common properties of one of the built-in core shapes,
@@ -75,5 +81,36 @@ void Compiler_CompileProperty(Compiler compiler, SmilePair pair, Bool store)
 		else {
 			EMIT1(Op_LdProp, -1 + 1, symbol = symbol);
 		}
+	}
+
+	return compiledBlock;
+}
+
+// Form: expr.symbol
+void Compiler_CompileStoreProperty(Compiler compiler, SmilePair pair, CompileFlags compileFlags, CompiledBlock compiledBlock)
+{
+	Symbol symbol;
+	IntermediateInstruction instr;
+	CompiledBlock childBlock;
+
+	if (SMILE_KIND(pair->right) != SMILE_KIND_SYMBOL) {
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(pair, getSourceLocation),
+			String_FromC("Cannot compile pair: right side must be a symbol.")));
+		compiledBlock->blockFlags |= BLOCK_FLAG_ERROR;
+		return;
+	}
+
+	// Evaluate the left side first, which will leave the left side on the stack.
+	childBlock = Compiler_CompileExpr(compiler, pair->left, 0);
+	CompiledBlock_AppendChild(compiledBlock, childBlock);
+	Compiler_EmitRequireResult(compiler, compiledBlock);
+
+	// Extract the property named by the symbol on the right side, leaving the property's value on the stack.
+	symbol = ((SmileSymbol)(pair->right))->symbol;
+	if (compileFlags & COMPILE_FLAG_NORESULT) {
+		EMIT1(Op_StpProp, -2, symbol = symbol);
+	}
+	else {
+		EMIT1(Op_StProp, -1, symbol = symbol);
 	}
 }

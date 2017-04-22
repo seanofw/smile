@@ -24,14 +24,14 @@
 #include <smile/parsing/internal/parsedecl.h>
 #include <smile/parsing/internal/parsescope.h>
 
-void Compiler_CompileMethodCall(Compiler compiler, SmilePair pair, SmileList args)
+CompiledBlock Compiler_CompileMethodCall(Compiler compiler, SmilePair pair, SmileList args, CompileFlags compileFlags)
 {
 	Int length;
 	SmileList temp;
-	Int offset;
 	Symbol symbol;
-	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 	Int oldSourceLocation = compiler->currentFunction->currentSourceLocation;
+	CompiledBlock compiledBlock, childBlock;
+	IntermediateInstruction instr;
 
 	// First, make sure the args are well-formed, and count how many of them there are.
 	length = SmileList_Length(args);
@@ -40,18 +40,24 @@ void Compiler_CompileMethodCall(Compiler compiler, SmilePair pair, SmileList arg
 	if (length < 0 || SMILE_KIND(pair->right) != SMILE_KIND_SYMBOL) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, NULL,
 			String_FromC("Cannot compile method call: Argument list is not well-formed.")));
-		return;
+		return CompiledBlock_CreateError();
 	}
+
+	compiledBlock = CompiledBlock_Create();
 
 	// Evaluate the left side of the pair (the object to invoke).
 	Compiler_SetSourceLocationFromPair(compiler, pair);
-	Compiler_CompileExpr(compiler, pair->left);
+	childBlock = Compiler_CompileExpr(compiler, pair->left, compileFlags & ~COMPILE_FLAG_NORESULT);
+	CompiledBlock_AppendChild(compiledBlock, childBlock);
+	Compiler_EmitRequireResult(compiler, compiledBlock);
 	symbol = ((SmileSymbol)pair->right)->symbol;
 
 	// Evaluate all of the arguments.
 	for (temp = args; SMILE_KIND(temp) == SMILE_KIND_LIST; temp = (SmileList)temp->d) {
 		Compiler_SetSourceLocationFromList(compiler, temp);
-		Compiler_CompileExpr(compiler, temp->a);
+		childBlock = Compiler_CompileExpr(compiler, temp->a, compileFlags & ~COMPILE_FLAG_NORESULT);
+		CompiledBlock_AppendChild(compiledBlock, childBlock);
+		Compiler_EmitRequireResult(compiler, compiledBlock);
 	}
 
 	Compiler_RevertSourceLocation(compiler, oldSourceLocation);
@@ -70,4 +76,9 @@ void Compiler_CompileMethodCall(Compiler compiler, SmilePair pair, SmileList arg
 	else {
 		EMIT2(Op_Met, -(length + 1) + 1, i2.a = (Int32)length, i2.b = (Int32)symbol);
 	}
+
+	// If no result is desired, just discard whatever the method returned.
+	Compiler_PopIfNecessary(compiler, compiledBlock, compileFlags);
+
+	return compiledBlock;
 }

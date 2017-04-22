@@ -12,36 +12,74 @@
 #endif
 
 //-------------------------------------------------------------------------------------------------
-// External functions
+// Compiler functions
 
-extern void Compiler_EmitPop1(Compiler compiler);
 extern Int Compiler_SetSourceLocation(Compiler compiler, LexerPosition lexerPosition);
 extern Int Compiler_SetAssignedSymbol(Compiler compiler, Symbol symbol);
 extern Bool Compiler_StripNots(SmileObject *objPtr);
 
 extern Int CompilerFunction_AddLocal(CompilerFunction compilerFunction, Symbol local);
 
-extern void Compiler_CompileProperty(Compiler compiler, SmilePair pair, Bool store);
-extern void Compiler_CompileVariable(Compiler compiler, Symbol symbol, Bool store);
-extern void Compiler_CompileMethodCall(Compiler compiler, SmilePair pair, SmileList args);
+extern CompiledBlock Compiler_CompileLoadProperty(Compiler compiler, SmilePair pair, CompileFlags compileFlags);
+extern void Compiler_CompileStoreProperty(Compiler compiler, SmilePair pair, CompileFlags compileFlags, CompiledBlock compiledBlock);
+extern CompiledBlock Compiler_CompileLoadVariable(Compiler compiler, Symbol symbol, CompileFlags compileFlags);
+extern void Compiler_CompileStoreVariable(Compiler compiler, Symbol symbol, CompileFlags compileFlags, CompiledBlock compiledBlock);
+extern CompiledBlock Compiler_CompileMethodCall(Compiler compiler, SmilePair pair, SmileList args, CompileFlags compileFlags);
 
-extern Bool Compiler_CompileStandardForm(Compiler compiler, Symbol symbol, SmileList args);
+extern CompiledBlock Compiler_CompileStandardForm(Compiler compiler, Symbol symbol, SmileList args, CompileFlags compileFlags);
 
-extern void Compiler_CompileSetf(Compiler compiler, SmileList args);
-extern void Compiler_CompileOpEquals(Compiler compiler, SmileList args);
-extern void Compiler_CompileIf(Compiler compiler, SmileList args);
-extern void Compiler_CompileWhile(Compiler compiler, SmileList args);
-extern void Compiler_CompileTill(Compiler compiler, SmileList args);
-extern void Compiler_CompileCatch(Compiler compiler, SmileList args);
-extern void Compiler_CompileReturn(Compiler compiler, SmileList args);
-extern void Compiler_CompileFn(Compiler compiler, SmileList args);
-extern void Compiler_CompileQuote(Compiler compiler, SmileList args);
-extern void Compiler_CompileProg1(Compiler compiler, SmileList args);
-extern void Compiler_CompileProgN(Compiler compiler, SmileList args);
-extern void Compiler_CompileScope(Compiler compiler, SmileList args);
-extern void Compiler_CompileNew(Compiler compiler, SmileList args);
-extern void Compiler_CompileAnd(Compiler compiler, SmileList args);
-extern void Compiler_CompileOr(Compiler compiler, SmileList args);
+extern CompiledBlock Compiler_CompileSetf(Compiler compiler, SmileList args, CompileFlags compileFlags);
+extern CompiledBlock Compiler_CompileOpEquals(Compiler compiler, SmileList args, CompileFlags compileFlags);
+extern CompiledBlock Compiler_CompileIf(Compiler compiler, SmileList args, CompileFlags compileFlags);
+extern CompiledBlock Compiler_CompileWhile(Compiler compiler, SmileList args, CompileFlags compileFlags);
+extern CompiledBlock Compiler_CompileTill(Compiler compiler, SmileList args, CompileFlags compileFlags);
+extern CompiledBlock Compiler_CompileCatch(Compiler compiler, SmileList args, CompileFlags compileFlags);
+extern CompiledBlock Compiler_CompileReturn(Compiler compiler, SmileList args, CompileFlags compileFlags);
+extern CompiledBlock Compiler_CompileFn(Compiler compiler, SmileList args, CompileFlags compileFlags);
+extern CompiledBlock Compiler_CompileQuote(Compiler compiler, SmileList args, CompileFlags compileFlags);
+extern CompiledBlock Compiler_CompileProg1(Compiler compiler, SmileList args, CompileFlags compileFlags);
+extern CompiledBlock Compiler_CompileProgN(Compiler compiler, SmileList args, CompileFlags compileFlags);
+extern CompiledBlock Compiler_CompileScope(Compiler compiler, SmileList args, CompileFlags compileFlags);
+extern CompiledBlock Compiler_CompileNew(Compiler compiler, SmileList args, CompileFlags compileFlags);
+extern CompiledBlock Compiler_CompileAnd(Compiler compiler, SmileList args, CompileFlags compileFlags);
+extern CompiledBlock Compiler_CompileOr(Compiler compiler, SmileList args, CompileFlags compileFlags);
+
+//-------------------------------------------------------------------------------------------------
+// Macros
+//
+// (These are partial functions; they depend on certain declarations being in
+// place in the functions that use them, and on certain data being set up correctly.
+// Caveats, provisos, exclusions, and ipso-factos may apply.  Your mileage may vary.
+// Void where prohibited by law.  NULL and void where declared NULL and void.)
+
+/// <summary>
+/// Emit the given opcode to the current segment's instruction stream, adjusting the stack's
+/// count of pushed items by the given delta.  This opcode requires no (zero) operands.
+/// This will also tag the new instruction with the compiler's current source location.
+/// </summary>
+#define EMIT0(__opcode__, __stackDelta__) \
+	(CompiledBlock_Emit(compiledBlock, (__opcode__), (__stackDelta__), compiler->currentFunction->currentSourceLocation))
+
+/// <summary>
+/// Emit the given opcode to the current segment's instruction stream, adjusting the stack's
+/// count of pushed items by the given delta.  This opcode requires one operand.
+/// This will also tag the new instruction with the compiler's current source location.
+/// </summary>
+#define EMIT1(__opcode__, __stackDelta__, __operand1__) \
+	((instr = CompiledBlock_Emit(compiledBlock, (__opcode__), (__stackDelta__), compiler->currentFunction->currentSourceLocation)), \
+		(instr->u.__operand1__), \
+		instr)
+
+/// <summary>
+/// Emit the given opcode to the current segment's instruction stream, adjusting the stack's
+/// count of pushed items by the given delta.  This opcode requires two operands.
+/// This will also tag the new instruction with the compiler's current source location.
+/// </summary>
+#define EMIT2(__opcode__, __stackDelta__, __operand1__, __operand2__) \
+	((instr = CompiledBlock_Emit(compiledBlock, (__opcode__), (__stackDelta__), compiler->currentFunction->currentSourceLocation)), \
+		(instr->u.__operand1__), \
+		(instr->u.__operand2__), \
+		instr)
 
 //-------------------------------------------------------------------------------------------------
 // Inline functions
@@ -51,20 +89,47 @@ extern void Compiler_CompileOr(Compiler compiler, SmileList args);
 // they're good candidates for inlining.)
 
 /// <summary>
-/// Adjust the given function's stack depth by the given amount.  This also
-/// updates the function's maximum stack depth, if necessary.  (Also, since it's
-/// used in macros, it returns a useless zero that the C compiler should optimize
-/// away.)
+/// The previous operation resulted in an object on the stack, but if one wasn't desired, then
+/// we have a little cleanup.  If necessary, this emits an Op_Pop1, and then produces a suitable
+/// CompileResult describing whatever the resulting data looks like.
 /// </summary>
-Inline Int ApplyStackDelta(CompilerFunction compilerFunction, Int stackDelta)
+Inline void Compiler_PopIfNecessary(Compiler compiler, CompiledBlock compiledBlock, CompileFlags compileFlags)
 {
-	compilerFunction->currentStackDepth += stackDelta;
-
-	if (compilerFunction->currentStackDepth > compilerFunction->stackSize) {
-		compilerFunction->stackSize = compilerFunction->currentStackDepth;
+	if (compileFlags & COMPILE_FLAG_NORESULT) {
+		// The previous operation couldn't avoid emitting output, so just pop it.
+		EMIT0(Op_Pop1, -1);
 	}
+}
 
-	return 0;
+/// <summary>
+/// If the previous operation resulted in unwanted content on the stack, get rid of it by popping it.
+/// </summary>
+Inline void Compiler_EmitNoResult(Compiler compiler, CompiledBlock compiledBlock)
+{
+	if (compiledBlock->finalStackDelta != 0) {
+		EMIT0(Op_Pop1, -1);
+	}
+}
+
+/// <summary>
+/// Force there to be at least a null on the stack, even if the previous operation didn't
+/// emit any output.
+/// </summary>
+Inline void Compiler_EmitRequireResult(Compiler compiler, CompiledBlock compiledBlock)
+{
+	if (compiledBlock->finalStackDelta == 0) {
+		EMIT0(Op_LdNull, +1);
+	}
+}
+
+Inline void Compiler_MakeStackMatchCompileFlags(Compiler compiler, CompiledBlock compiledBlock, CompileFlags compileFlags)
+{
+	if (compileFlags & COMPILE_FLAG_NORESULT) {
+		Compiler_EmitNoResult(compiler, compiledBlock);
+	}
+	else {
+		Compiler_EmitRequireResult(compiler, compiledBlock);
+	}
 }
 
 /// <summary>
@@ -100,62 +165,5 @@ Inline Int Compiler_SetSourceLocationFromPair(Compiler compiler, SmilePair pair)
 
 	return Compiler_SetSourceLocation(compiler, ((struct SmilePairWithSourceInt *)pair)->position);
 }
-
-
-//-------------------------------------------------------------------------------------------------
-// Macros
-//
-// (These are partial functions; they depend on certain declarations being in
-// place in the functions that use them, and on certain data being set up correctly.
-// Caveats, provisos, exclusions, and ipso-factos may apply.  Your mileage may vary.
-// Void where prohibited by law.  NULL and void where declared NULL and void.)
-
-/// <summary>
-/// Emit the given opcode to the current segment's instruction stream, adjusting the stack's
-/// count of pushed items by the given delta.  This opcode requires no (zero) operands.
-/// This will also tag the new instruction with the compiler's current source location.
-/// </summary>
-#define EMIT0(__opcode__, __stackDelta__) \
-	((offset = ByteCodeSegment_Emit(segment, (__opcode__), compiler->currentFunction->currentSourceLocation)), \
-		ApplyStackDelta(compiler->currentFunction, __stackDelta__), \
-		offset)
-
-/// <summary>
-/// Emit the given opcode to the current segment's instruction stream, adjusting the stack's
-/// count of pushed items by the given delta.  This opcode requires one operand.
-/// This will also tag the new instruction with the compiler's current source location.
-/// </summary>
-#define EMIT1(__opcode__, __stackDelta__, __operand1__) \
-	((offset = ByteCodeSegment_Emit(segment, (__opcode__), compiler->currentFunction->currentSourceLocation)), \
-		segment->byteCodes[offset].u.__operand1__, \
-		ApplyStackDelta(compiler->currentFunction, __stackDelta__), \
-		offset)
-
-/// <summary>
-/// Emit the given opcode to the current segment's instruction stream, adjusting the stack's
-/// count of pushed items by the given delta.  This opcode requires two operands.
-/// This will also tag the new instruction with the compiler's current source location.
-/// </summary>
-#define EMIT2(__opcode__, __stackDelta__, __operand1__, __operand2__) \
-	((offset = ByteCodeSegment_Emit(segment, (__opcode__), compiler->currentFunction->currentSourceLocation)), \
-		segment->byteCodes[offset].u.__operand1__, \
-		segment->byteCodes[offset].u.__operand2__, \
-		ApplyStackDelta(compiler->currentFunction, __stackDelta__), \
-		offset)
-
-/// <summary>
-/// Go back and correct the instruction at the given absolute offset in the current segment's
-/// instruction stream to have the given index value.  This is ususally used for branch instructions,
-/// to correct their branch deltas to the given amount after their target label has been emitted.
-/// </summary>
-#define FIX_BRANCH(__offset__, __index__) \
-	(segment->byteCodes[(__offset__)].u.index = (__index__))
-
-/// <summary>
-/// Locate a recently-emitted bytecode, at the given delta.  For example, RECENT_BYTECODE(-1)
-/// is the most-recently-emitted bytecode; RECENT_BYTECODE(-2) is the one before it, and so
-/// on.  This results in the correct 'struct ByteCodeStruct' (not a pointer) of the instruction.
-/// </summary>
-#define RECENT_BYTECODE(__delta__) (segment->byteCodes[segment->numByteCodes + (__delta__)])
 
 #endif

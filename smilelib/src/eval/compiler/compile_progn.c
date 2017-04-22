@@ -25,14 +25,17 @@
 #include <smile/parsing/internal/parsescope.h>
 
 // Form: [$progn a b c ...]
-void Compiler_CompileProgN(Compiler compiler, SmileList args)
+CompiledBlock Compiler_CompileProgN(Compiler compiler, SmileList args, CompileFlags compileFlags)
 {
 	Int namedSourceLocation, namelessSourceLocation;
 	SmileList next;
 	Bool isLast;
+	CompiledBlock compiledBlock, childBlock;
+
+	compiledBlock = CompiledBlock_Create();
 
 	if (SMILE_KIND(args) != SMILE_KIND_LIST)
-		return;
+		return compiledBlock;
 
 	namedSourceLocation = Compiler_SetAssignedSymbol(compiler, 0);
 	namelessSourceLocation = compiler->currentFunction->currentSourceLocation;
@@ -45,16 +48,29 @@ void Compiler_CompileProgN(Compiler compiler, SmileList args)
 		// Compile this next expression...
 		Compiler_RevertSourceLocation(compiler, isLast ? namedSourceLocation : namelessSourceLocation);
 		Compiler_SetSourceLocationFromList(compiler, args);
-		Compiler_CompileExpr(compiler, args->a);
+		childBlock = Compiler_CompileExpr(compiler, args->a,
+			isLast ? compileFlags : (compileFlags | COMPILE_FLAG_NORESULT));
+
+		// Only keep the value if this is the last instruction.
+		if (isLast) {
+			Compiler_MakeStackMatchCompileFlags(compiler, childBlock, compileFlags);
+		}
+		else {
+			Compiler_EmitNoResult(compiler, childBlock);
+		}
+
+		// Add this child to the progn.
+		CompiledBlock_AppendChild(compiledBlock, childBlock);
 
 		// ...and if it's the last one, keep its value.
 		if (isLast) break;
 
-		// Otherwise, discard it and move to the next expression.
+		// Otherwise, move to the next expression.
 		Compiler_SetSourceLocationFromList(compiler, args);
-		Compiler_EmitPop1(compiler);
 		args = next;
 	}
 
 	Compiler_RevertSourceLocation(compiler, namedSourceLocation);
+
+	return compiledBlock;
 }

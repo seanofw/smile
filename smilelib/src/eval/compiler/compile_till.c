@@ -25,44 +25,44 @@
 #include <smile/parsing/internal/parsescope.h>
 
 static Bool ValidateTill(Compiler compiler, SmileList args, SmileList *flags, SmileObject *body, SmileList *whens);
-static Int DefineVariablesForFlags(Compiler compiler, SmileList flags, CompileScope tillScope, Int tillContinuationVariableIndex);
-static Int CompileWhens(Compiler compiler, CompileScope tillScope, SmileList whens, Int initialStackDepth);
-static Int GenerateNullCase(Compiler compiler, Int initialStackDepth, Int numFlags, Int numWhens);
-static Int GenerateExitLabel(Compiler compiler, Int initialStackDepth, Int numWhens);
-static Bool ResolveBranches(Compiler compiler, SmileList flags, CompileScope tillScope, TillContinuationInfo tillInfo, Int exitLabel);
-static void ResolveWhenJumps(ByteCodeSegment segment, CompiledTillSymbol compiledTillSymbol);
-static void GenerateTillContinuation(Compiler compiler, Int numFlags, Int tillContinuationVariableIndex,
-	Int *loadTillAddress, TillContinuationInfo *tillInfo);
-static void FinalizeTillContinuation(Compiler compiler, Int loadTillAddress, Int tillContinuationVariableindex,
-	Bool realContinuationNeeded);
+static Int CountFlags(Compiler compiler, SmileList flags);
+static void DefineVariablesForFlags(Compiler compiler, SmileList flags, Int numFlags, CompileScope tillScope,
+	TillContinuationInfo tillInfo, Int tillContinuationVariableIndex, IntermediateInstruction nullLabel);
+static Int CompileWhens(Compiler compiler, CompiledBlock parentBlock, CompileScope tillScope,
+	SmileList whens, IntermediateInstruction exitTarget, CompileFlags compileFlags);
+static Bool CompileNullCase(Compiler compiler, IntermediateInstruction nullLabel, Int numFlags, Int numWhens,
+	CompiledBlock parentBlock, CompileFlags compileFlags);
+static CompiledBlock GenerateTillContinuation(Compiler compiler, Int numFlags, Int tillContinuationVariableIndex,
+	TillContinuationInfo *tillInfo);
+static Bool IsRealContinuationNeeded(SmileList flags, CompileScope tillScope);
+static void FinalizeTillContinuation(Compiler compiler, CompiledBlock compiledBlock, IntermediateInstruction tillBlockInstr,
+	Int tillContinuationVariableIndex, Bool realContinuationNeeded);
 
 // Form: [$till [flag1 flag2 flag3 ...] body [[flag1 when1] [flag2 when2] ...]]
-void Compiler_CompileTill(Compiler compiler, SmileList args)
+CompiledBlock Compiler_CompileTill(Compiler compiler, SmileList args, CompileFlags compileFlags)
 {
 	SmileList flags;
 	SmileObject body;
 	SmileList whens;
 	CompileScope tillScope;
-	Int offset;
 	Int tillContinuationVariableIndex;
-	Int loopLabel, loopJmp;
-	Int nullLabel, exitLabel;
 	Int numFlags, numWhens;
-	Int loadTillAddress;
-	Int initialStackDepth;
-	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
 	TillContinuationInfo tillInfo;
 	Bool realContinuationNeeded;
+	CompiledBlock compiledBlock, tillBlock, childBlock, whensBlock;
+	IntermediateInstruction tillBlockInstr, loopLabel, loopJmp, nullLabel, exitLabel;
 
 	//---------------------------------------------------------
 	// Phase 1.  Validation.
 
 	// Make sure this [$till] is well-formed, with two or three args, one of which is a list of flags.
 	if (!ValidateTill(compiler, args, &flags, &body, &whens))
-		return;
+		return CompiledBlock_CreateError();
 
 	//---------------------------------------------------------
 	// Phase 2.  Setup.
+
+	compiledBlock = CompiledBlock_Create();
 
 	// Construct a compiler scope for the flag declarations.
 	tillScope = Compiler_BeginScope(compiler, PARSESCOPE_TILLDO);
@@ -70,55 +70,67 @@ void Compiler_CompileTill(Compiler compiler, SmileList args)
 	// Allocate an invisible local variable to hold the special till-escape-continuation object.
 	tillContinuationVariableIndex = CompilerFunction_AddLocal(compiler->currentFunction, 0);
 
-	// Declare variables for each flag, in the till-scope.
-	numFlags = DefineVariablesForFlags(compiler, flags, tillScope, tillContinuationVariableIndex);
-
-	// Record the initial stack depth.  The 'when' clauses all start at this depth,
-	// and leave exactly one object on the stack.
-	initialStackDepth = compiler->currentFunction->currentStackDepth;
+	// Count up how many flags there are, since everything depends on knowing about the set of flags.
+	numFlags = CountFlags(compiler, flags);
 
 	//---------------------------------------------------------
-	// Phase 3.  Core loop.
+	// Phase 3.  Compile the when clauses and the null clause.
 
-	// Emit code to load the till's actual live continuation into the till-continuation variable.
-	GenerateTillContinuation(compiler, numFlags, tillContinuationVariableIndex, &loadTillAddress, &tillInfo);
+	// Construct the code to load the till's actual live continuation into the till-continuation variable.
+	// This also sets up the TillContinuationInfo object, which will hold all the when-branch targets.
+	tillBlock = GenerateTillContinuation(compiler, numFlags, tillContinuationVariableIndex, &tillInfo);
+
+	// Declare variables for each flag, in the till-scope, and attach those variables to the till-continuation.
+	nullLabel = IntermediateInstruction_Create(Op_Label);
+	exitLabel = IntermediateInstruction_Create(Op_Label);
+	DefineVariablesForFlags(compiler, flags, numFlags, tillScope, tillInfo, tillContinuationVariableIndex, nullLabel);
+
+	// Make the block for the whens.
+	whensBlock = CompiledBlock_Create();
+	numWhens = CompileWhens(compiler, whensBlock, tillScope, whens, exitLabel, compileFlags);
+	CompileNullCase(compiler, nullLabel, numFlags, numWhens, whensBlock, compileFlags);
+
+	//---------------------------------------------------------
+	// Phase 4.  Core loop.
+
+	// Emit the till instruction itself.
+	tillBlockInstr = CompiledBlock_AppendChild(compiledBlock, tillBlock);
 
 	// The real "till loop" starts here.
 	loopLabel = EMIT0(Op_Label, 0);
 
 	// Evaluate the till loop's body.
-	Compiler_CompileExpr(compiler, body);
-	Compiler_EmitPop1(compiler);	// We don't care about the result of eval'ing the body.
+	childBlock = Compiler_CompileExpr(compiler, body, compileFlags | COMPILE_FLAG_NORESULT);
+	Compiler_EmitNoResult(compiler, childBlock);	// We don't care about the result of eval'ing the body.
+	CompiledBlock_AppendChild(compiledBlock, childBlock);
 
 	// Loop back up and do it again.
 	loopJmp = EMIT0(Op_Jmp, 0);
-	FIX_BRANCH(loopJmp, loopJmp - loopLabel);
+	loopJmp->p.branchTarget = loopLabel;
 
+	// The scope with the till flag names is now done.
 	Compiler_EndScope(compiler);
 
 	//---------------------------------------------------------
-	// Phase 4.  When clauses and the null clause.
+	// Phase 5.  Attach the terminating cases after the core loop.
 
-	numWhens = CompileWhens(compiler, tillScope, whens, initialStackDepth);
-	nullLabel = GenerateNullCase(compiler, initialStackDepth, numFlags, numWhens);
-	exitLabel = GenerateExitLabel(compiler, initialStackDepth, numWhens);
-
-	// After all the when/null clauses, there will be exactly one item left on the stack.
-	compiler->currentFunction->currentStackDepth = initialStackDepth;
-	ApplyStackDelta(compiler->currentFunction, +1);
+	CompiledBlock_AppendChild(compiledBlock, whensBlock);
+	CompiledBlock_AttachInstruction(compiledBlock, compiledBlock->last, exitLabel);
 
 	//---------------------------------------------------------
-	// Phase 5.  Branch resolution.
+	// Phase 6.  Determine if we really need a true continuation or not.
 
-	realContinuationNeeded = ResolveBranches(compiler, flags, tillScope, tillInfo, exitLabel);
+	realContinuationNeeded = IsRealContinuationNeeded(flags, tillScope);
 
 	//---------------------------------------------------------
-	// Phase 6.  Cleanup.
+	// Phase 7.  Cleanup.
 
 	// If we really don't need a true escape-continuation for this till (i.e., all exits are through
 	// simple jump instructions in the same closure), then remove the instructions that allocate an
 	// escape-continuation on the heap.  Otherwise, mark the 'till' continuation as finished.
-	FinalizeTillContinuation(compiler, loadTillAddress, tillContinuationVariableIndex, realContinuationNeeded);
+	FinalizeTillContinuation(compiler, compiledBlock, tillBlockInstr, tillContinuationVariableIndex, realContinuationNeeded);
+
+	return compiledBlock;
 }
 
 /// <summary>
@@ -166,19 +178,51 @@ static Bool ValidateTill(Compiler compiler, SmileList args, SmileList *flags, Sm
 }
 
 /// <summary>
+/// Count how many flags are defined, and make sure that it's a valid list.
+/// </summary>
+/// <returns>The number of flags, or zero (and adds an error message) if the list is invalid.</returns>
+static Int CountFlags(Compiler compiler, SmileList flags)
+{
+	Int numFlags;
+
+	// Count up how many flags there are, and make sure the list is valid.
+	numFlags = SmileList_SafeLength(flags);
+	if (numFlags < 0) {
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(flags, getSourceLocation),
+			String_FromC("Cannot compile [$till]: List of terminating flags is an invalid form.")));
+		return 0;
+	}
+	if (numFlags == 0) {
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(flags, getSourceLocation),
+			String_FromC("Cannot compile [$till]: List of terminating flags must not be empty.")));
+		return 0;
+	}
+
+	return numFlags;
+}
+
+/// <summary>
 /// Spin through each of the flags in the [$till] loop's flags list, and define a special
 /// local variable for that flag in the till's scope.  Also, attach each one of those special
 /// flag variables to the till-continuation, so that it can be invoked later on.
 /// </summary>
-static Int DefineVariablesForFlags(Compiler compiler, SmileList flags, CompileScope tillScope, Int tillContinuationVariableIndex)
+static void DefineVariablesForFlags(Compiler compiler, SmileList flags, Int numFlags, CompileScope tillScope,
+	TillContinuationInfo tillInfo, Int tillContinuationVariableIndex, IntermediateInstruction nullLabel)
 {
 	SmileList temp;
 	SmileSymbol smileSymbol;
-	CompiledTillSymbol compiledTillSymbol;
-	Int numFlags;
+	CompiledTillSymbol compiledTillSymbol, *allCompiledTillSymbols;
+	Int index;
+
+	tillInfo->numSymbols = numFlags;
+
+	// Allocate an array to hold all their metadata.
+	tillInfo->symbols = allCompiledTillSymbols = GC_MALLOC_STRUCT_ARRAY(CompiledTillSymbol, numFlags);
+	if (allCompiledTillSymbols == NULL)
+		Smile_Abort_OutOfMemory();
 
 	// For each flag, construct a flag variable with a CompiledTillSymbol object attached.
-	for (temp = flags, numFlags = 0; SMILE_KIND(temp) == SMILE_KIND_LIST; temp = LIST_REST(temp), numFlags++) {
+	for (temp = flags, index = 0; SMILE_KIND(temp) == SMILE_KIND_LIST; temp = LIST_REST(temp), index++) {
 		if (SMILE_KIND(temp->a) != SMILE_KIND_SYMBOL) {
 			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(temp, getSourceLocation),
 				String_FromC("Cannot compile [$till]: List of flags must contain only symbols.")));
@@ -186,23 +230,15 @@ static Int DefineVariablesForFlags(Compiler compiler, SmileList flags, CompileSc
 		smileSymbol = (SmileSymbol)temp->a;
 
 		compiledTillSymbol = (CompiledTillSymbol)CompileScope_DefineSymbol(tillScope, smileSymbol->symbol, PARSEDECL_TILL, tillContinuationVariableIndex);
-		compiledTillSymbol->tillIndex = numFlags;
-		compiledTillSymbol->whenLabelAddress = 0;
-		compiledTillSymbol->exitJmpAddress = 0;
-		compiledTillSymbol->firstJmp = NULL;
+		compiledTillSymbol->tillIndex = index;
+		compiledTillSymbol->whenLabel = nullLabel;
+		allCompiledTillSymbols[index] = compiledTillSymbol;
 	}
 
 	if (SMILE_KIND(temp) != SMILE_KIND_NULL) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(flags, getSourceLocation),
 			String_FromC("Cannot compile [$till]: List of flags must contain only symbols.")));
 	}
-
-	if (numFlags <= 0) {
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(flags, getSourceLocation),
-			String_FromC("Cannot compile [$till]: List of terminating flags must not be empty.")));
-	}
-
-	return numFlags;
 }
 
 /// <summary>
@@ -213,11 +249,11 @@ static Int DefineVariablesForFlags(Compiler compiler, SmileList flags, CompileSc
 /// an 'escape' continuation; 'escape' continuations must obey stack semantics, acting like
 /// non-local returns).
 /// </summary>
-static void GenerateTillContinuation(Compiler compiler, Int numFlags, Int tillContinuationVariableIndex,
-	Int *loadTillAddress, TillContinuationInfo *tillInfo)
+static CompiledBlock GenerateTillContinuation(Compiler compiler, Int numFlags, Int tillContinuationVariableIndex,
+	TillContinuationInfo *tillInfo)
 {
-	Int offset;
-	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
+	CompiledBlock compiledBlock = CompiledBlock_Create();
+	IntermediateInstruction instr;
 
 	// Construct the till's continuation metadata.
 	*tillInfo = Compiler_AddTillContinuationInfo(compiler, compiler->currentFunction->userFunctionInfo, numFlags);
@@ -226,33 +262,41 @@ static void GenerateTillContinuation(Compiler compiler, Int numFlags, Int tillCo
 	// is only used if child functions need to escape to it.  If no children invoke it, these
 	// two instructions will be replaced with simple NOP instructions at the end of all this.
 	// (Subsequent peephole optimizations can remove the NOPs.)
-	*loadTillAddress = EMIT1(Op_NewTill, +1, index = (*tillInfo)->tillIndex);
+	EMIT1(Op_NewTill, +1, index = (*tillInfo)->tillIndex);
 	EMIT1(Op_StpLoc0, -1, index = tillContinuationVariableIndex);
+
+	return compiledBlock;
 }
 
 /// <summary>
 /// Compile all the [when] clauses, and update the till object to point to their emitted
-/// instructions.  This returns the number of [when] clauses emitted.  (Note:  This damages
-/// the stack-depth counter.)
+/// instructions.  This returns the number of [when] clauses emitted.
 /// </summary>
-static Int CompileWhens(Compiler compiler, CompileScope tillScope, SmileList whens, Int initialStackDepth)
+static Int CompileWhens(Compiler compiler, CompiledBlock parentBlock, CompileScope tillScope,
+	SmileList whens, IntermediateInstruction exitTarget, CompileFlags compileFlags)
 {
-	Int numWhens = 0;
-	Int offset;
-	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
+	Int numWhens, index;
 	SmileSymbol smileSymbol;
 	CompiledTillSymbol compiledTillSymbol;
+	IntermediateInstruction instr;
+	CompiledBlock compiledBlock, childBlock;
 
 	if (SMILE_KIND(whens) != SMILE_KIND_LIST)
+		return 0;
+
+	numWhens = SmileList_SafeLength(whens);
+	if (numWhens < 0) {
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(whens, getSourceLocation),
+			String_FromC("Cannot compile [$till]: When clauses are not a valid list form.")));
+		return 0;
+	}
+	if (numWhens == 0)
 		return 0;
 
 	// Emit all the [when] bodies, and for each, go back and update any branches, and the till continuation,
 	// to match their addresses.  Any near branches will get relative offsets, and the till continuation will
 	// get an absolute address.
-	for (; SMILE_KIND(whens) == SMILE_KIND_LIST; whens = LIST_REST(whens)) {
-
-		// Reset the stack.
-		compiler->currentFunction->currentStackDepth = initialStackDepth;
+	for (index = 0; SMILE_KIND(whens) == SMILE_KIND_LIST; whens = LIST_REST(whens), index++) {
 
 		// Make sure this [when] is well-formed.
 		if (SMILE_KIND(whens->a) != SMILE_KIND_LIST
@@ -273,23 +317,28 @@ static Int CompileWhens(Compiler compiler, CompileScope tillScope, SmileList whe
 				SymbolTable_GetName(Smile_SymbolTable, smileSymbol->symbol))));
 			continue;
 		}
-		if (compiledTillSymbol->whenLabelAddress) {
+		if (compiledTillSymbol->whenLabel != NULL) {
 			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(whens, getSourceLocation),
 				String_Format("Cannot compile [$till]: When clause '%S' is defined multiple times.",
 				SymbolTable_GetName(Smile_SymbolTable, smileSymbol->symbol))));
 			continue;
 		}
 
-		// Emit the label that will be branched to, either by escape continuation or, if possible, by local Jmp.
-		compiledTillSymbol->whenLabelAddress = EMIT0(Op_Label, 0);
+		// Attach a new block for the [when] clause.
+		compiledBlock = CompiledBlock_Create();
+		CompiledBlock_AppendChild(parentBlock, compiledBlock);
+
+		// Emit the label that will be branched to, either by escape continuation or, if possible, by a local Jmp.
+		compiledTillSymbol->whenLabel = EMIT0(Op_Label, 0);
 
 		// Compile the body of the [when], and leave it on the stack as the output.
-		Compiler_CompileExpr(compiler, ((SmileList)((SmileList)whens->a)->d)->a);
+		childBlock = Compiler_CompileExpr(compiler, ((SmileList)((SmileList)whens->a)->d)->a, compileFlags);
+		Compiler_MakeStackMatchCompileFlags(compiler, childBlock, compileFlags);
+		CompiledBlock_AppendChild(compiledBlock, childBlock);
 
 		// Branch to the exit label for this till-loop.
-		compiledTillSymbol->exitJmpAddress = EMIT0(Op_Jmp, 0);
-
-		numWhens++;
+		instr = EMIT0(Op_Jmp, 0);
+		instr->p.branchTarget = exitTarget;
 	}
 
 	return numWhens;
@@ -297,79 +346,43 @@ static Int CompileWhens(Compiler compiler, CompileScope tillScope, SmileList whe
 
 /// <summary>
 /// Generate the till's special null case, if needed.  The null case is used for any till flag that
-/// does not have a matching [when] clause.  Returns the absolute address in the segment of the
-/// null case's Op_Label, if it is emitted (-1 if it is not).  (Note:  This damages the stack-depth counter.)
+/// does not have a matching [when] clause.  Returns the label for the null case, or (somewhat
+/// ironically) returns NULL if there is no null case.
 /// </summary>
-static Int GenerateNullCase(Compiler compiler, Int initialStackDepth, Int numFlags, Int numWhens)
+static Bool CompileNullCase(Compiler compiler, IntermediateInstruction nullLabel, Int numFlags, Int numWhens,
+	CompiledBlock parentBlock, CompileFlags compileFlags)
 {
-	Int nullLabel;
-	Int offset;
-	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
-
-	compiler->currentFunction->currentStackDepth = initialStackDepth;
+	CompiledBlock compiledBlock;
 
 	// If we emitted fewer when-clauses than we have flags, emit the null case.
 	// (This loads 'null' on the stack, and is used for any flag without a 'when'.)
-	if (numWhens < numFlags) {
-		nullLabel = EMIT0(Op_Label, 0);
+	if (numWhens >= numFlags)
+		return False;
+
+	// Attach a new block for the null case.
+	compiledBlock = CompiledBlock_Create();
+	CompiledBlock_AppendChild(parentBlock, compiledBlock);
+
+	// Add a label to it, and produce a null if the compile flags expect a result.
+	nullLabel = EMIT0(Op_Label, 0);
+	CompiledBlock_AttachInstruction(compiledBlock, compiledBlock->last, nullLabel);
+	if (!(compileFlags & COMPILE_FLAG_NORESULT)) {
 		EMIT0(Op_LdNull, +1);
 	}
-	else nullLabel = -1;
 
-	return nullLabel;
+	return True;
 }
 
 /// <summary>
-/// Generate the till's exit label, if it is needed.  It is needed if one or more
-/// [when] clauses is emitted, since they branch to it; if only the null case is emitted,
-/// then we don't need the exit label.  Returns the absolute address of the exit label,
-/// if it is emitted (-1 if it is not).  (Note:  This damages the stack-depth counter.)
+/// Now that we have compiled the body, determine if we need to use a real escape continuation to
+/// exit from deep inside some function, or if we can just get away with using a simple Jmp
+/// instruction.
 /// </summary>
-static Int GenerateExitLabel(Compiler compiler, Int initialStackDepth, Int numWhens)
-{
-	Int offset;
-	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
-
-	compiler->currentFunction->currentStackDepth = initialStackDepth;
-
-	// If we emitted at least one when clause, then also emit the exit label, which continues
-	// the program past the till loop.
-	if (numWhens > 0)
-		return EMIT0(Op_Label, 0);
-	else
-		return -1;
-}
-
-/// <summary>
-/// Given a simple linked-list of TillFlagJmps attached to a given till-flag symbol, spin
-/// over that list and update those Op_Jmps to point to the till-flag's when label (or the
-/// null label, as appropriate).
-/// </summary>
-static void ResolveWhenJumps(ByteCodeSegment segment, CompiledTillSymbol compiledTillSymbol)
-{
-	TillFlagJmp jumps;
-
-	for (jumps = compiledTillSymbol->firstJmp; jumps != NULL; jumps = jumps->next) {
-		segment->byteCodes[jumps->offset].u.index = compiledTillSymbol->whenLabelAddress - jumps->offset;
-	}
-}
-
-/// <summary>
-/// For all of the flags in this [$till] form, go back and resolve all their unconditional branch
-/// offsets.  This updates each [when] clause to branch to the exit label; and updates any unconditional
-/// flag jumps to point to their respective [when] clauses (or to the null label as necessary).  This
-/// also updates the till-continuation's info to point to each of the labels of the compiled when-clauses.
-/// This returns true if a real continuation is needed by this till-loop, or false if the till-loop uses
-/// exclusively local Op_Jmps.
-/// </summary>
-static Bool ResolveBranches(Compiler compiler, SmileList flags, CompileScope tillScope, TillContinuationInfo tillInfo, Int exitLabel)
+static Bool IsRealContinuationNeeded(SmileList flags, CompileScope tillScope)
 {
 	SmileSymbol smileSymbol;
 	CompiledTillSymbol compiledTillSymbol;
-	Bool realContinuationNeeded;
-	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
-
-	realContinuationNeeded = False;
+	Bool realContinuationNeeded = False;
 
 	// Finalize each of the flags.
 	for (; SMILE_KIND(flags) == SMILE_KIND_LIST; flags = LIST_REST(flags)) {
@@ -383,24 +396,6 @@ static Bool ResolveBranches(Compiler compiler, SmileList flags, CompileScope til
 			// allocate a true continuation for at least one of the flags.
 			realContinuationNeeded = True;
 		}
-
-		if (!compiledTillSymbol->whenLabelAddress) {
-			// Update any flags that don't point to a [when] to point to the nullLabel instead, so
-			// that everything has a defined branch target.
-			compiledTillSymbol->whenLabelAddress = exitLabel;
-			compiledTillSymbol->exitJmpAddress = 0;
-		}
-		else {
-			// Go back and update any [when] branches' tail jumps to point to the exit label.
-			segment->byteCodes[compiledTillSymbol->exitJmpAddress].u.index = exitLabel - compiledTillSymbol->exitJmpAddress;
-		}
-
-		// Go to any emitted unconditional jumps in this segment and correct them to point to
-		// their respective when/null targets.
-		ResolveWhenJumps(segment, compiledTillSymbol);
-
-		// Update the till's continuation metadata to point to the appropriate exit clause for this flag.
-		tillInfo->offsets[compiledTillSymbol->tillIndex] = compiledTillSymbol->whenLabelAddress;
 	}
 
 	return realContinuationNeeded;
@@ -413,11 +408,10 @@ static Bool ResolveBranches(Compiler compiler, SmileList flags, CompileScope til
 /// causes the dynamic extent of 'till' to be marked as concluded, so that the till's
 /// continuation may only be used as an 'escape' continuation.
 /// </summary>
-static void FinalizeTillContinuation(Compiler compiler, Int loadTillAddress, Int tillContinuationVariableIndex,
-	Bool realContinuationNeeded)
+static void FinalizeTillContinuation(Compiler compiler, CompiledBlock compiledBlock, IntermediateInstruction tillBlockInstr,
+	Int tillContinuationVariableIndex, Bool realContinuationNeeded)
 {
-	Int offset;
-	ByteCodeSegment segment = compiler->currentFunction->byteCodeSegment;
+	IntermediateInstruction instr;
 
 	if (realContinuationNeeded) {
 		// Mark this till has having its dynamic extent now exited.
@@ -425,8 +419,11 @@ static void FinalizeTillContinuation(Compiler compiler, Int loadTillAddress, Int
 		EMIT0(Op_EndTill, -1);
 	}
 	else {
-		// This till doesn't need an escape continuation or cleanup.
-		segment->byteCodes[loadTillAddress].opcode = Op_Nop;
-		segment->byteCodes[loadTillAddress + 1].opcode = Op_Nop;
+		// This till doesn't need an escape continuation or cleanup, so get rid of
+		// the load-till instruction.  This may result in the stack max being too high
+		// by one, but the likelihood that the max wasn't matched or exceeded by something
+		// else inside the loop is very low (almost impossible), so it's no big deal
+		// that we're off here:  Worst-case scenario, we waste one word of memory.
+		CompiledBlock_DetachInstruction(compiledBlock, tillBlockInstr);
 	}
 }
