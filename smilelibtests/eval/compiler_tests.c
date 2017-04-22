@@ -592,6 +592,212 @@ END_TEST
 
 //-------------------------------------------------------------------------------------------------
 
+START_TEST(CanCompileAPreCondPostWhileLoop)
+{
+	SmileObject expr = Parse(
+		"var x = 0, y = 0\n"
+		"[$while x += 1 x < 10 y -= 1]\n"
+	);
+
+	Compiler compiler = Compiler_Create();
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	String result;
+
+	String expectedResult = String_Format(
+		"\tLd64 0\n"
+		"\tStpLoc0 0\t; x\n"
+		"\tLd64 0\n"
+		"\tStpLoc0 1\t; y\n"
+
+		"\tLdLoc0 0\t; x\n"
+		"\tLd64 1\n"
+		"\tBinary %d\t; +\n"
+		"\tStLoc0 0\t; x\n"
+
+		"\tLdLoc0 0\t; x\n"
+		"\tLd64 10\n"
+		"\tBinary %d\t; <\n"
+		"\tBt >L18\n"
+
+		"\tPop1\n"
+
+		"\tLdLoc0 1\t; y\n"
+		"\tLd64 1\n"
+		"\tBinary %d\t; -\n"
+		"\tStpLoc0 1\t; y\n"
+
+		"\tJmp L4\n"
+
+		"\tRet\n",
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "+"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "<"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "-")
+	);
+
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
+
+	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
+}
+END_TEST
+
+START_TEST(CanCompileAPreCondWhileLoop)
+{
+	SmileObject expr = Parse(
+		"var x = 0\n"
+		"[$while x += 1 x < 10 []]\n"
+	);
+
+	Compiler compiler = Compiler_Create();
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	String result;
+
+	String expectedResult = String_Format(
+		"\tLd64 0\n"
+		"\tStpLoc0 0\t; x\n"
+
+		"\tJmp >L4\n"
+
+		"\tPop1\n"
+
+		"\tLdLoc0 0\t; x\n"
+		"\tLd64 1\n"
+		"\tBinary %d\t; +\n"
+		"\tStLoc0 0\t; x\n"
+
+		"\tLdLoc0 0\t; x\n"
+		"\tLd64 10\n"
+		"\tBinary %d\t; <\n"
+		"\tBt L3\n"
+
+		"\tRet\n",
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "+"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "<")
+	);
+
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
+
+	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
+}
+END_TEST
+
+START_TEST(CanCompileANullCondPostWhileLoop)
+{
+	SmileObject expr = Parse(
+		"var x = 0\n"
+		"[$while [] x < 10 x += 1]\n"
+	);
+
+	Compiler compiler = Compiler_Create();
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	String result;
+
+	String expectedResult = String_Format(
+		"\tLd64 0\n"
+		"\tStpLoc0 0\t; x\n"
+
+		"\tLdNull\n"
+		"\tJmp >L9\n"
+
+		"\tPop1\n"
+
+		"\tLdLoc0 0\t; x\n"
+		"\tLd64 1\n"
+		"\tBinary %d\t; +\n"
+		"\tStLoc0 0\t; x\n"
+
+		"\tLdLoc0 0\t; x\n"
+		"\tLd64 10\n"
+		"\tBinary %d\t; <\n"
+		"\tBt L4\n"
+
+		"\tRet\n",
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "+"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "<")
+	);
+
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
+
+	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
+}
+END_TEST
+
+START_TEST(CanCompileACondPostWhileLoop)
+{
+	SmileObject expr = Parse(
+		"var x = 0\n"
+		"[$while x < 10 x += 1]\n"
+	);
+
+	Compiler compiler = Compiler_Create();
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	String result;
+
+	String expectedResult = String_Format(
+		"\tLd64 0\n"
+		"\tStpLoc0 0\t; x\n"
+
+		"\tLdNull\n"
+		"\tJmp >L9\n"
+
+		"\tPop1\n"
+
+		"\tLdLoc0 0\t; x\n"
+		"\tLd64 1\n"
+		"\tBinary %d\t; +\n"
+		"\tStLoc0 0\t; x\n"
+
+		"\tLdLoc0 0\t; x\n"
+		"\tLd64 10\n"
+		"\tBinary %d\t; <\n"
+		"\tBt L4\n"
+
+		"\tRet\n",
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "+"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "<")
+	);
+
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
+
+	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
+}
+END_TEST
+
+START_TEST(CanCompileACondOnlyWhileLoop)
+{
+	SmileObject expr = Parse(
+		"var x = 0\n"
+		"[$while (x += 1) < 10 []]\n"
+	);
+
+	Compiler compiler = Compiler_Create();
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	String result;
+
+	String expectedResult = String_Format(
+		"\tLd64 0\n"
+		"\tStpLoc0 0\t; x\n"
+
+		"\tLdLoc0 0\t; x\n"
+		"\tLd64 1\n"
+		"\tBinary %d\t; +\n"
+		"\tStLoc0 0\t; x\n"
+		"\tLd64 10\n"
+		"\tBinary %d\t; <\n"
+		"\tBt L2\n"
+
+		"\tLdNull\n"
+
+		"\tRet\n",
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "+"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "<")
+	);
+
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
+
+	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
+}
+END_TEST
+
 START_TEST(CanCompileAWhileLoopThatComputesLogarithms)
 {
 	SmileObject expr = Parse(

@@ -36,7 +36,7 @@ CompiledBlock Compiler_CompileWhile(Compiler compiler, SmileList args, CompileFl
 	Int postKind, tailKind;
 	Bool not, hasPre, hasPost;
 
-	// Must be an expression of the form [$while cond postBody] or [$while pre-body cond post-body].
+	// Must be an expression of the form [$while cond body] or [$while pre-body cond post-body].
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_LIST) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
 			String_FromC("Cannot compile [if]: Expression is not well-formed.")));
