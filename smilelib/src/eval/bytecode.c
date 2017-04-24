@@ -88,6 +88,20 @@ String ByteCodeSegment_Stringify(ByteCodeSegment segment)
 }
 
 /// <summary>
+/// Add spaces/tabs to make the resulting "assembly" code look pretty while still being able
+/// to be block-indented code.
+/// </summary>
+static void AssemblyIndent(StringBuilder stringBuilder, int depth)
+{
+	if (depth > 0) {
+		StringBuilder_AppendByte(stringBuilder, '\t');
+		if (depth > 1) {
+			StringBuilder_AppendRepeat(stringBuilder, ' ', (depth - 1) * 3);
+		}
+	}
+}
+
+/// <summary>
 /// Convert the given byte-code segment to a string that lists all its instructions,
 /// in order.
 /// </summary>
@@ -98,7 +112,7 @@ String ByteCodeSegment_Stringify(ByteCodeSegment segment)
 /// <returns>The byte-code segment's instructions, as a string.</returns>
 String ByteCodeSegment_ToString(ByteCodeSegment segment, UserFunctionInfo userFunctionInfo, struct CompiledTablesStruct *compiledTables)
 {
-	Int i, end;
+	Int i, end, depth = 1;
 	DECLARE_INLINE_STRINGBUILDER(stringBuilder, 256);
 	String string;
 	ByteCode byteCode;
@@ -108,8 +122,14 @@ String ByteCodeSegment_ToString(ByteCodeSegment segment, UserFunctionInfo userFu
 	for (i = 0, end = segment->numByteCodes; i < end; i++) {
 		byteCode = segment->byteCodes + i;
 		string = ByteCode_ToString(byteCode, i, userFunctionInfo, compiledTables);
-		if (byteCode->opcode != Op_Label) {
-			StringBuilder_AppendByte(stringBuilder, '\t');
+		if (byteCode->opcode < Op_Pseudo) {
+			AssemblyIndent(stringBuilder, depth);
+		}
+		else {
+			if (byteCode->opcode == Op_EndBlock) depth--;
+			if (byteCode->opcode != Op_Label)
+				AssemblyIndent(stringBuilder, depth);
+			if (byteCode->opcode == Op_Block) depth++;
 		}
 		StringBuilder_AppendString(stringBuilder, string);
 		StringBuilder_AppendByte(stringBuilder, '\n');
@@ -134,7 +154,11 @@ String ByteCode_ToString(ByteCode byteCode, Int address, UserFunctionInfo userFu
 
 	if (byteCode->opcode == Op_Label)
 		return String_Format("L%d:", address);
-	
+	if (byteCode->opcode == Op_Block)
+		return String_FromC("{");
+	if (byteCode->opcode == Op_EndBlock)
+		return String_FromC("}");
+
 	opcode = Opcode_Names[byteCode->opcode];
 	if (opcode == NULL) opcode = String_Format("Op%02X", byteCode->opcode);
 
