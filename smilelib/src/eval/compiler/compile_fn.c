@@ -90,7 +90,7 @@ CompiledBlock Compiler_CompileFn(Compiler compiler, SmileList args, CompileFlags
 	Compiler_EndFunction(compiler);
 
 	// Now transform it into finished bytecodes.
-	byteCodeSegment = CompiledBlock_Finish(compiledBlock);
+	byteCodeSegment = CompiledBlock_Finish(compiledBlock, False);
 	compilerFunction->stackSize = compiledBlock->maxStackDepth;
 
 	// Make a suitable closure decriptor for it, and an actual function object.

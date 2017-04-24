@@ -278,12 +278,12 @@ enum Opcode {
 	Op_F5	= 0xF5,		
 	Op_F6	= 0xF6,		
 	Op_F7	= 0xF7,		
-	Op_F8	= 0xF8,		
+	Op_Pseudo	= 0xF8,	//  0	; First pseudo-op
 	Op_F9	= 0xF9,		
 	Op_FA	= 0xFA,		
 	Op_FB	= 0xFB,		
 	Op_FC	= 0xFC,		
-	Op_FD	= 0xFD,		
+	Op_EndBlock	= 0xFD,	//  0	; End of child basic block
 	Op_Label	= 0xFE,	//  0	; Branch target		
 	Op_Block	= 0xFF,	//  0	; Child basic block during intermediate-code generation
 };

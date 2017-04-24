@@ -246,7 +246,7 @@ void CompiledBlock_Flatten(CompiledBlock compiledBlock)
 /// <param name="compiledBlock">The basic block to which address resolution should be applied.</param>
 /// <param name="startAddress">The initial starting address for the block.</param>
 /// <returns>The first instruction address *after* the basic block.</returns>
-Int CompiledBlock_ResolveAddresses(CompiledBlock compiledBlock, Int startAddress)
+Int CompiledBlock_CalculateAddresses(CompiledBlock compiledBlock, Int startAddress, Bool includePseudoOps)
 {
 	IntermediateInstruction instr;
 
@@ -259,13 +259,27 @@ Int CompiledBlock_ResolveAddresses(CompiledBlock compiledBlock, Int startAddress
 		if (instr->opcode == Op_Block) {
 			// Child blocks need to be recursed into.  Note that this completely and
 			// fully resolves their addresses, both instruction addresses and branch targets.
-			startAddress = CompiledBlock_ResolveAddresses(instr->p.childBlock, startAddress);
+			if (includePseudoOps) startAddress++;
+			startAddress = CompiledBlock_CalculateAddresses(instr->p.childBlock, startAddress, includePseudoOps);
+			if (includePseudoOps) startAddress++;
 		}
-		else if (instr->opcode != Op_Label) {
-			// Every instruction gets an address except for labels, which get none.
+		else if (instr->opcode < Op_Pseudo || includePseudoOps) {
+			// Every instruction gets an address except for pseudo-ops, which get none.
 			startAddress++;
 		}
 	}
+
+	return startAddress;
+}
+
+/// <summary>
+/// Walk through all instructions of this block and any child blocks, and update any
+/// branches to have real, appropriate target addresses.
+/// </summary>
+/// <param name="compiledBlock">The basic block to which branch-target resolution should be applied.</param>
+void CompiledBlock_ResolveBranches(CompiledBlock compiledBlock)
+{
+	IntermediateInstruction instr;
 
 	// Step 2.  Spin over the instructions again, and anywhere we find a branch, we
 	// resolve it to point to its target label, relative to its own address.  Note that
@@ -288,16 +302,19 @@ Int CompiledBlock_ResolveAddresses(CompiledBlock compiledBlock, Int startAddress
 				// Till loops need to have all of their branch indexes filled in.
 				// TODO: FIXME: DO THIS.
 				break;
+
+			case Op_Block:
+				// Recurse into child blocks.
+				CompiledBlock_ResolveBranches(instr->p.childBlock);
+				break;
 		}
 	}
-
-	return startAddress;
 }
 
 /// <summary>
 /// Pack the entire given CompiledBlock down into a finished ByteCodeSegment.
 /// </summary>
-void CompiledBlock_AppendToByteCodeSegment(CompiledBlock compiledBlock, ByteCodeSegment segment)
+void CompiledBlock_AppendToByteCodeSegment(CompiledBlock compiledBlock, ByteCodeSegment segment, Bool includePseudoOps)
 {
 	IntermediateInstruction instr;
 	ByteCode byteCode;
@@ -307,10 +324,24 @@ void CompiledBlock_AppendToByteCodeSegment(CompiledBlock compiledBlock, ByteCode
 	for (instr = compiledBlock->first; instr != NULL; instr = instr->next) {
 
 		if (instr->opcode == Op_Block) {
+			if (includePseudoOps) {
+				byteCode = &segment->byteCodes[segment->numByteCodes++];
+				byteCode->opcode = (Byte)instr->opcode;
+				byteCode->sourceLocation = instr->sourceLocation;
+				byteCode->u.int64 = instr->u.int64;
+			}
+
 			// Child blocks need to be recursed into.
-			CompiledBlock_AppendToByteCodeSegment(instr->p.childBlock, segment);
+			CompiledBlock_AppendToByteCodeSegment(instr->p.childBlock, segment, includePseudoOps);
+
+			if (includePseudoOps) {
+				byteCode = &segment->byteCodes[segment->numByteCodes++];
+				byteCode->opcode = (Byte)Op_EndBlock;
+				byteCode->sourceLocation = instr->sourceLocation;
+				byteCode->u.int64 = instr->u.int64;
+			}
 		}
-		else if (instr->opcode != Op_Label) {
+		else if (instr->opcode != Op_Label || includePseudoOps) {
 			// Everything else that's not a pseudo-op needs to be copied into the segment.
 			byteCode = &segment->byteCodes[segment->numByteCodes++];
 			byteCode->opcode = (Byte)instr->opcode;
@@ -372,12 +403,13 @@ IntermediateInstruction CompiledBlock_Emit(CompiledBlock compiledBlock, Int opco
 /// Finish the entire given CompiledBlock, assigning it real addresses, resolving its branches,
 /// and transforming it into an executable ByteCodeSegment.
 /// </summary>
-ByteCodeSegment CompiledBlock_Finish(CompiledBlock compiledBlock)
+ByteCodeSegment CompiledBlock_Finish(CompiledBlock compiledBlock, Bool includePseudoOps)
 {
 	ByteCodeSegment segment = ByteCodeSegment_Create();
 
-	CompiledBlock_ResolveAddresses(compiledBlock, 0);
-	CompiledBlock_AppendToByteCodeSegment(compiledBlock, segment);
+	CompiledBlock_CalculateAddresses(compiledBlock, 0, includePseudoOps);
+	CompiledBlock_ResolveBranches(compiledBlock);
+	CompiledBlock_AppendToByteCodeSegment(compiledBlock, segment, includePseudoOps);
 
 	return segment;
 }
@@ -390,6 +422,6 @@ ByteCodeSegment CompiledBlock_Finish(CompiledBlock compiledBlock)
 /// </summary>
 String CompiledBlock_Stringify(CompiledBlock compiledBlock)
 {
-	ByteCodeSegment segment = CompiledBlock_Finish(compiledBlock);
+	ByteCodeSegment segment = CompiledBlock_Finish(compiledBlock, True);
 	return ByteCodeSegment_Stringify(segment);
 }

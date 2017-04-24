@@ -61,4 +61,4 @@ Op(LdA), Op(LdD), Op(LdLeft), Op(LdRight), Op(LdStart), Op(LdEnd), Op(LdCount), 
 
 // F0-FF
 Op(StateMachStart), Op(StateMachBody), NULL, NULL, NULL, NULL, NULL, NULL,
-NULL, NULL, NULL, NULL, NULL, NULL, Op(Label), Op(Block),
+Op(Pseudo), NULL, NULL, NULL, NULL, Op(EndBlock), Op(Label), Op(Block),

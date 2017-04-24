@@ -84,11 +84,12 @@ extern void CompiledBlock_AttachInstruction(CompiledBlock compiledBlock, Interme
 extern void CompiledBlock_DetachInstruction(CompiledBlock compiledBlock, IntermediateInstruction instruction);
 extern CompiledBlock CompiledBlock_Combine(CompiledBlock firstblock, CompiledBlock secondBlock);
 extern void CompiledBlock_Flatten(CompiledBlock compiledBlock);
-extern Int CompiledBlock_ResolveAddresses(CompiledBlock compiledBlock, Int startAddress);
-extern void CompiledBlock_AppendToByteCodeSegment(CompiledBlock compiledBlock, ByteCodeSegment segment);
+extern Int CompiledBlock_CalculateAddresses(CompiledBlock compiledBlock, Int startAddress, Bool includePseudoOps);
+extern void CompiledBlock_ResolveBranches(CompiledBlock compiledBlock);
+extern void CompiledBlock_AppendToByteCodeSegment(CompiledBlock compiledBlock, ByteCodeSegment segment, Bool includePseudoOps);
 extern IntermediateInstruction CompiledBlock_AppendChild(CompiledBlock parentBlock, CompiledBlock newChild);
 extern IntermediateInstruction CompiledBlock_Emit(CompiledBlock compiledBlock, Int opcode, Int stackDelta, Int sourceLocation);
-extern ByteCodeSegment CompiledBlock_Finish(CompiledBlock compiledBlock);
+extern ByteCodeSegment CompiledBlock_Finish(CompiledBlock compiledBlock, Bool includePseudoOps);
 extern String CompiledBlock_Stringify(CompiledBlock compiledBlock);
 
 #endif
