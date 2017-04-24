@@ -30,8 +30,8 @@ static void DefineVariablesForFlags(Compiler compiler, SmileList flags, Int numF
 	TillContinuationInfo tillInfo, Int tillContinuationVariableIndex, IntermediateInstruction nullLabel);
 static Int CompileWhens(Compiler compiler, CompiledBlock parentBlock, CompileScope tillScope,
 	SmileList whens, IntermediateInstruction exitTarget, CompileFlags compileFlags);
-static Bool CompileNullCase(Compiler compiler, IntermediateInstruction nullLabel, Int numFlags, Int numWhens,
-	CompiledBlock parentBlock, CompileFlags compileFlags);
+static CompiledBlock CompileNullCase(Compiler compiler, IntermediateInstruction nullLabel, Int numFlags, Int numWhens,
+	CompileFlags compileFlags);
 static CompiledBlock GenerateTillContinuation(Compiler compiler, Int numFlags, Int tillContinuationVariableIndex,
 	TillContinuationInfo *tillInfo);
 static Bool IsRealContinuationNeeded(SmileList flags, CompileScope tillScope);
@@ -49,7 +49,7 @@ CompiledBlock Compiler_CompileTill(Compiler compiler, SmileList args, CompileFla
 	Int numFlags, numWhens;
 	TillContinuationInfo tillInfo;
 	Bool realContinuationNeeded;
-	CompiledBlock compiledBlock, tillBlock, childBlock, whensBlock;
+	CompiledBlock compiledBlock, tillBlock, childBlock, whensBlock, nullBlock;
 	IntermediateInstruction tillBlockInstr, loopLabel, loopJmp, nullLabel, exitLabel;
 
 	//---------------------------------------------------------
@@ -88,7 +88,8 @@ CompiledBlock Compiler_CompileTill(Compiler compiler, SmileList args, CompileFla
 	// Make the block for the whens.
 	whensBlock = CompiledBlock_Create();
 	numWhens = CompileWhens(compiler, whensBlock, tillScope, whens, exitLabel, compileFlags);
-	CompileNullCase(compiler, nullLabel, numFlags, numWhens, whensBlock, compileFlags);
+	nullBlock = CompileNullCase(compiler, nullLabel, numFlags, numWhens, compileFlags);
+	CompiledBlock_AppendChild(whensBlock, nullBlock);
 
 	//---------------------------------------------------------
 	// Phase 4.  Core loop.
@@ -349,28 +350,25 @@ static Int CompileWhens(Compiler compiler, CompiledBlock parentBlock, CompileSco
 /// does not have a matching [when] clause.  Returns the label for the null case, or (somewhat
 /// ironically) returns NULL if there is no null case.
 /// </summary>
-static Bool CompileNullCase(Compiler compiler, IntermediateInstruction nullLabel, Int numFlags, Int numWhens,
-	CompiledBlock parentBlock, CompileFlags compileFlags)
+static CompiledBlock CompileNullCase(Compiler compiler, IntermediateInstruction nullLabel, Int numFlags, Int numWhens, CompileFlags compileFlags)
 {
 	CompiledBlock compiledBlock;
 
 	// If we emitted fewer when-clauses than we have flags, emit the null case.
 	// (This loads 'null' on the stack, and is used for any flag without a 'when'.)
 	if (numWhens >= numFlags)
-		return False;
+		return NULL;
 
 	// Attach a new block for the null case.
 	compiledBlock = CompiledBlock_Create();
-	CompiledBlock_AppendChild(parentBlock, compiledBlock);
 
-	// Add a label to it, and produce a null if the compile flags expect a result.
-	nullLabel = EMIT0(Op_Label, 0);
+	// Add the null label to it, and produce a null if the compile flags expect a result.
 	CompiledBlock_AttachInstruction(compiledBlock, compiledBlock->last, nullLabel);
 	if (!(compileFlags & COMPILE_FLAG_NORESULT)) {
 		EMIT0(Op_LdNull, +1);
 	}
 
-	return True;
+	return compiledBlock;
 }
 
 /// <summary>

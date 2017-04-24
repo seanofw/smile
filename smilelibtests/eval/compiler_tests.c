@@ -848,7 +848,6 @@ END_TEST
 
 START_TEST(CanCompileASimpleTillLoop)
 {
-/*
 	SmileObject expr = Parse(
 		"[$till [found not-found]\n"
 		"\t[$progn\n"
@@ -863,19 +862,13 @@ START_TEST(CanCompileASimpleTillLoop)
 	String result;
 
 	String expectedResult = String_FromC(
-		"\tNop\n"
-		"\tNop\n"
-		"L0:\n"
 		"\tLd64 1\n"
-		"\tBf >L4\n"
-		"\tJmp >L10\n"
-		"L4:\n"
+		"\tBf >L3\n"
+		"\tJmp >L7\n"
 		"\tLd64 2\n"
-		"\tBf >L8\n"
-		"\tJmp >L10\n"
-		"L8:\n"
+		"\tBf >L6\n"
+		"\tJmp >L7\n"
 		"\tJmp L0\n"
-		"L10:\n"
 		"\tLdNull\n"
 		"\tRet\n"
 	);
@@ -883,7 +876,6 @@ START_TEST(CanCompileASimpleTillLoop)
 	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
 
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
-*/
 }
 END_TEST
 
