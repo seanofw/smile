@@ -112,6 +112,17 @@ SMILE_API_FUNC UInt64 Smile_TicksToMicroseconds(UInt64 ticks);
 #define TOSTRING_AT_COMPILE_TIME(__n__) TOSTRING_AT_COMPILE_TIME2(__n__)
 #define TOSTRING_AT_COMPILE_TIME2(__n__) #__n__
 
+/// <summary>
+/// Assertions, which are useful for guaranteeing correct behavior (in debug builds).
+/// </summary>
+#define SMILE_ASSERT(__n__) \
+	do { \
+		if (!(__n__)) { \
+			SMILE_DEBUGGER_BREAK_IF_ATTACHED; \
+			Smile_Abort_FatalError(__FILE__ ":" TOSTRING_AT_COMPILE_TIME(__LINE__) ": " TOSTRING_AT_COMPILE_TIME(__n__)); \
+		} \
+	} while (0);
+
 #ifndef Smile_Hash
 	/// <summary>
 	/// Compute a 32 bit hash for a buffer.  The hash is guaranteed to always be the

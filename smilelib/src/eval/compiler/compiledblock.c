@@ -84,6 +84,14 @@ CompiledBlock CompiledBlock_CreateError(void)
 void CompiledBlock_AttachInstruction(CompiledBlock compiledBlock, IntermediateInstruction insertAfterThis,
 	IntermediateInstruction newInstruction)
 {
+	// Basic sanity checks.
+	SMILE_ASSERT(compiledBlock != NULL);
+	SMILE_ASSERT(newInstruction != NULL);
+
+	// Cannot attach an instruction that has already been attached!
+	SMILE_ASSERT(newInstruction->next == NULL && newInstruction->prev == NULL
+		&& compiledBlock->first != newInstruction && compiledBlock->last != newInstruction);
+
 	if (insertAfterThis == NULL) {
 
 		// Insert at the head.
@@ -118,6 +126,10 @@ void CompiledBlock_AttachInstruction(CompiledBlock compiledBlock, IntermediateIn
 /// <param name="instruction">The instruction to detach.  This must not be NULL.</param>
 void CompiledBlock_DetachInstruction(CompiledBlock compiledBlock, IntermediateInstruction instruction)
 {
+	// Basic sanity checks.
+	SMILE_ASSERT(compiledBlock != NULL);
+	SMILE_ASSERT(instruction != NULL);
+
 	// Detach the forward pointer.
 	if (instruction->next != NULL) {
 		instruction->next->prev = instruction->prev;
