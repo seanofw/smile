@@ -172,6 +172,27 @@ START_TEST(CanEvalSmileCodeThatComputesALogarithm)
 }
 END_TEST
 
+START_TEST(CanEvalATillLoopThatComputesAnExponent)
+{
+	CompiledTables compiledTables = Compile(
+		"#syntax STMT: [if [EXPR x] then [STMT y]] => [$if x y]\n"
+		"\n"
+		"var x = 1\n"
+		"[$till [reached-eight-bits] {\n"
+		"\tif x > 0xFF then reached-eight-bits\n"
+		"\tx <<= 1\n"
+		"}]\n"
+		"x\n"
+	);
+
+	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 256);
+}
+END_TEST
+
 START_TEST(CanEvalSmileCodeThatConvertsBetweenTypes)
 {
 	CompiledTables compiledTables = Compile(

@@ -879,4 +879,45 @@ START_TEST(CanCompileASimpleTillLoop)
 }
 END_TEST
 
+START_TEST(CanCompileATillLoopThatActuallyDoesSomething)
+{
+	SmileObject expr = Parse(
+		"#syntax STMT: [if [EXPR x] then [STMT y]] => [$if x y]\n"
+		"\n"
+		"var x = 1\n"
+		"[$till [reached-eight-bits] {\n"
+		"\tif x > 0xFF then reached-eight-bits\n"
+		"\tx <<= 1\n"
+		"}]\n"
+	);
+
+	Compiler compiler = Compiler_Create();
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	String result;
+
+	String expectedResult = String_Format(
+		"\tLd64 1\n"
+		"\tStpLoc0 0\t; x\n"
+		"\tLdLoc0 0\t; x\n"
+		"\tLd64 255\n"
+		"\tBinary %d\t; >\n"
+		"\tBf >L7\n"
+		"\tJmp >L12\n"
+		"\tLdLoc0 0\t; x\n"
+		"\tLd64 1\n"
+		"\tBinary %d\t; <<\n"
+		"\tStpLoc0 0\t; x\n"
+		"\tJmp L2\n"
+		"\tLdNull\n"
+		"\tRet\n",
+		SymbolTable_GetSymbolC(Smile_SymbolTable, ">"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "<<")
+	);
+
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction, compiler->compiledTables);
+
+	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
+}
+END_TEST
+
 #include "compiler_tests.generated.inc"
