@@ -97,7 +97,8 @@ typedef enum SmileSpecialSymbolEnum {
 	SMILE_SPECIAL_SYMBOL_CONSEXPR	= 74,
 	SMILE_SPECIAL_SYMBOL_DOTEXPR	= 75,
 	SMILE_SPECIAL_SYMBOL_TERM	= 76,
-	
+	SMILE_SPECIAL_SYMBOL_NAME	= 77,
+
 } SmileSpecialSymbol;
 
 // The set of known symbols, preregistered at startup time to save on runtime-initialization costs.
@@ -137,6 +138,7 @@ typedef struct KnownSymbolsStruct {
 	Symbol STMT;
 	Symbol EXPR, CMPEXPR, ADDEXPR, MULEXPR, BINARYEXPR, COLONEXPR, RANGEEXPR, PREFIXEXPR, POSTFIXEXPR, CONSEXPR, DOTEXPR;
 	Symbol TERM;
+	Symbol NAME;
 
 	// End of special symbols.
 	//------------------------------------------

@@ -110,6 +110,7 @@ STATIC_STRING(POSTFIXEXPR_, "POSTFIXEXPR");
 STATIC_STRING(CONSEXPR_, "CONSEXPR");
 STATIC_STRING(DOTEXPR_, "DOTEXPR");
 STATIC_STRING(TERM_, "TERM");
+STATIC_STRING(NAME_, "NAME");
 
 Inline Symbol AddSpecialSymbol(SymbolTable symbolTable, String name, Symbol expectedValue)
 {
@@ -213,6 +214,7 @@ static void KnownSymbolsInt_PreloadSpecials(SymbolTable symbolTable, KnownSymbol
 	knownSymbols->CONSEXPR = AddSpecialSymbol(symbolTable, CONSEXPR_, SMILE_SPECIAL_SYMBOL_CONSEXPR);
 	knownSymbols->DOTEXPR = AddSpecialSymbol(symbolTable, DOTEXPR_, SMILE_SPECIAL_SYMBOL_DOTEXPR);
 	knownSymbols->TERM = AddSpecialSymbol(symbolTable, TERM_, SMILE_SPECIAL_SYMBOL_TERM);
+	knownSymbols->NAME = AddSpecialSymbol(symbolTable, NAME_, SMILE_SPECIAL_SYMBOL_NAME);
 }
 
 //-------------------------------------------------------------------------------------------------

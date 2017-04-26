@@ -54,6 +54,7 @@ STATIC_STRING(IllegalSeparatorSymbolError, "Syntax rule contains an unknown sepa
 STATIC_STRING(CantRepeatFirstNonterminalError, "Cannot use '?' or '*' repeats on the first item in a syntax pattern.");
 STATIC_STRING(DuplicateSyntaxRuleError, "Duplicate syntax rule pattern; patterns must be unique within a syntax class.");
 STATIC_STRING(NullReplacementError, "Syntax rules must not have null/[] as their replacement form.");
+STATIC_STRING(InvalidSealedPatternError, "Syntax patterns may not be added to the special %s class.");
 
 //-------------------------------------------------------------------------------------------------
 //  ParserSyntaxNode functions.
@@ -422,6 +423,7 @@ static void ParserSyntaxTable_RecursivelyComputeFirstSet(ParserSyntaxTable table
 		case SMILE_SPECIAL_SYMBOL_PREFIXEXPR:
 		case SMILE_SPECIAL_SYMBOL_POSTFIXEXPR:
 		case SMILE_SPECIAL_SYMBOL_TERM:
+		case SMILE_SPECIAL_SYMBOL_NAME:
 			Int32Int32Dict_Add(firstSet, -1, 0);
 			Int32Int32Dict_Add(nonterminalsSeen, -1, 0);
 			break;

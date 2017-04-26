@@ -66,7 +66,9 @@ static ParserSyntaxClass GetSyntaxClass(Parser parser, Symbol syntaxClassSymbol)
 			return syntaxTable->postfixExprClass;
 		case SMILE_SPECIAL_SYMBOL_TERM:
 			return syntaxTable->termClass;
-		
+		case SMILE_SPECIAL_SYMBOL_NAME:
+			return NULL;
+
 		default:
 			if (!Int32Dict_TryGetValue(syntaxTable->syntaxClasses, syntaxClassSymbol, &syntaxClass))
 				return NULL;
@@ -309,6 +311,10 @@ static CustomSyntaxResult Parser_RecursivelyApplyCustomSyntax(Parser parser, Smi
 
 		case SMILE_SPECIAL_SYMBOL_TERM:
 			*parseError = Parser_ParseTerm(parser, expr, modeFlags, NULL);
+			break;
+
+		case SMILE_SPECIAL_SYMBOL_NAME:
+			*parseError = Parser_ParseAnyName(parser, expr);
 			break;
 
 		default:

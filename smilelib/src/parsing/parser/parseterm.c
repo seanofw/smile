@@ -172,6 +172,25 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, T
 }
 
 /// <summary>
+/// Parse exactly one name (any name).
+/// </summary>
+ParseError Parser_ParseAnyName(Parser parser, SmileObject *expr)
+{
+	Token token = Parser_NextToken(parser);
+	ParseError error;
+
+	if (token->kind == TOKEN_ALPHANAME || token->kind == TOKEN_PUNCTNAME
+		|| token->kind == TOKEN_UNKNOWNALPHANAME || token->kind == TOKEN_UNKNOWNPUNCTNAME) {
+		*expr =(SmileObject)SmileSymbol_Create(token->data.symbol);
+		return NULL;
+	}
+
+	error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
+		String_Format("Expected a name, not \"%S\".", TokenKind_ToString(token->kind)));
+	return error;
+}
+
+/// <summary>
 /// See if this is a special form that requires "unique" parsing, and if so, parse it
 /// as one of those special forms.
 /// </summary>

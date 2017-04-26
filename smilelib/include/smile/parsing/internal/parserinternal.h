@@ -68,6 +68,7 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseConsExpr(Parser parser, SmileObject *
 SMILE_INTERNAL_FUNC ParseError Parser_ParseDotExpr(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseTerm(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseParentheses(Parser parser, SmileObject *result, Int modeFlags);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseAnyName(Parser parser, SmileObject *expr);
 
 SMILE_INTERNAL_FUNC ParseError Parser_ParseQuotedTerm(Parser parser, SmileObject *result, Int modeFlags, LexerPosition position);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Bool *isTemplate, Int modeFlags);
