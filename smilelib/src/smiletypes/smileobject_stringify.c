@@ -84,7 +84,6 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 {
 	SmileList list;
 	SmilePair pair;
-	Bool isFirst;
 
 	if (obj == NULL) {
 		StringBuilder_AppendC(stringBuilder, "<NULL>", 0, 6);
@@ -94,50 +93,54 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 	switch (SMILE_KIND(obj)) {
 
 	case SMILE_KIND_LIST:
-		list = (SmileList)obj;
-		if (!SmileObject_IsRegularList(obj)) {
-			StringBuilder_AppendByte(stringBuilder, '(');
-			while (SMILE_KIND(list) == SMILE_KIND_LIST) {
-				StringifyRecursive((SmileObject)list->a, stringBuilder, indent + 1);
-				StringBuilder_AppendC(stringBuilder, " ## ", 0, 4);
-				list = LIST_REST(list);
-			}
-			StringifyRecursive((SmileObject)list, stringBuilder, indent + 1);
-			StringBuilder_AppendByte(stringBuilder, ')');
-		}
-		else if (SmileObject_ContainsNestedList(obj)) {
-			isFirst = True;
-			StringBuilder_AppendByte(stringBuilder, '[');
-			while (SMILE_KIND(list) == SMILE_KIND_LIST && SMILE_KIND(list->a) == SMILE_KIND_SYMBOL) {
-				if (!isFirst) {
-					StringBuilder_AppendByte(stringBuilder, ' ');
+		{
+			Bool isFirst;
+
+			list = (SmileList)obj;
+			if (!SmileObject_IsRegularList(obj)) {
+				StringBuilder_AppendByte(stringBuilder, '(');
+				while (SMILE_KIND(list) == SMILE_KIND_LIST) {
+					StringifyRecursive((SmileObject)list->a, stringBuilder, indent + 1);
+					StringBuilder_AppendC(stringBuilder, " ## ", 0, 4);
+					list = LIST_REST(list);
 				}
-				StringifyRecursive((SmileObject)list->a, stringBuilder, indent + 1);
-				list = LIST_REST(list);
-				isFirst = False;
+				StringifyRecursive((SmileObject)list, stringBuilder, indent + 1);
+				StringBuilder_AppendByte(stringBuilder, ')');
 			}
-			StringBuilder_AppendByte(stringBuilder, '\n');
-			while (SMILE_KIND(list) == SMILE_KIND_LIST) {
-				StringBuilder_AppendRepeat(stringBuilder, ' ', (indent + 1) * 4);
-				StringifyRecursive((SmileObject)list->a, stringBuilder, indent + 1);
+			else if (SmileObject_ContainsNestedList(obj)) {
+				isFirst = True;
+				StringBuilder_AppendByte(stringBuilder, '[');
+				while (SMILE_KIND(list) == SMILE_KIND_LIST && SMILE_KIND(list->a) == SMILE_KIND_SYMBOL) {
+					if (!isFirst) {
+						StringBuilder_AppendByte(stringBuilder, ' ');
+					}
+					StringifyRecursive((SmileObject)list->a, stringBuilder, indent + 1);
+					list = LIST_REST(list);
+					isFirst = False;
+				}
 				StringBuilder_AppendByte(stringBuilder, '\n');
-				list = LIST_REST(list);
-			}
-			StringBuilder_AppendRepeat(stringBuilder, ' ', indent * 4);
-			StringBuilder_AppendByte(stringBuilder, ']');
-		}
-		else {
-			isFirst = True;
-			StringBuilder_AppendByte(stringBuilder, '[');
-			while (SMILE_KIND(list) == SMILE_KIND_LIST) {
-				if (!isFirst) {
-					StringBuilder_AppendByte(stringBuilder, ' ');
+				while (SMILE_KIND(list) == SMILE_KIND_LIST) {
+					StringBuilder_AppendRepeat(stringBuilder, ' ', (indent + 1) * 4);
+					StringifyRecursive((SmileObject)list->a, stringBuilder, indent + 1);
+					StringBuilder_AppendByte(stringBuilder, '\n');
+					list = LIST_REST(list);
 				}
-				StringifyRecursive((SmileObject)list->a, stringBuilder, indent + 1);
-				list = LIST_REST(list);
-				isFirst = False;
+				StringBuilder_AppendRepeat(stringBuilder, ' ', indent * 4);
+				StringBuilder_AppendByte(stringBuilder, ']');
 			}
-			StringBuilder_AppendByte(stringBuilder, ']');
+			else {
+				isFirst = True;
+				StringBuilder_AppendByte(stringBuilder, '[');
+				while (SMILE_KIND(list) == SMILE_KIND_LIST) {
+					if (!isFirst) {
+						StringBuilder_AppendByte(stringBuilder, ' ');
+					}
+					StringifyRecursive((SmileObject)list->a, stringBuilder, indent + 1);
+					list = LIST_REST(list);
+					isFirst = False;
+				}
+				StringBuilder_AppendByte(stringBuilder, ']');
+			}
 		}
 		return;
 
@@ -217,12 +220,42 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 		return;
 	
 	case SMILE_KIND_NONTERMINAL:
-		StringBuilder_AppendFormat(stringBuilder, "[%S %S %S %S]",
-			((SmileNonterminal)obj)->nonterminal != 0 ? SymbolTable_GetName(Smile_SymbolTable, ((SmileNonterminal)obj)->nonterminal) : String_Empty,
-			((SmileNonterminal)obj)->name != 0 ? SymbolTable_GetName(Smile_SymbolTable, ((SmileNonterminal)obj)->name) : String_Empty,
-			((SmileNonterminal)obj)->repeat != 0 ? SymbolTable_GetName(Smile_SymbolTable, ((SmileNonterminal)obj)->repeat) : String_Empty,
-			((SmileNonterminal)obj)->separator != 0 ? SymbolTable_GetName(Smile_SymbolTable, ((SmileNonterminal)obj)->separator) : String_Empty
-		);
+		{
+			String str;
+			SmileNonterminal nt = (SmileNonterminal)obj;
+			Bool isFirst = True;
+
+			StringBuilder_AppendByte(stringBuilder, '[');
+
+			str = SymbolTable_GetName(Smile_SymbolTable, nt->nonterminal);
+			if (!String_IsNullOrEmpty(str)) {
+				if (!isFirst) StringBuilder_AppendByte(stringBuilder, ' ');
+				StringBuilder_AppendString(stringBuilder, str);
+				isFirst = False;
+			}
+
+			str = SymbolTable_GetName(Smile_SymbolTable, nt->repeat);
+			if (!String_IsNullOrEmpty(str)) {
+				StringBuilder_AppendString(stringBuilder, str);
+				isFirst = False;
+			}
+
+			str = SymbolTable_GetName(Smile_SymbolTable, nt->name);
+			if (!String_IsNullOrEmpty(str)) {
+				if (!isFirst) StringBuilder_AppendByte(stringBuilder, ' ');
+				StringBuilder_AppendString(stringBuilder, str);
+				isFirst = False;
+			}
+
+			str = SymbolTable_GetName(Smile_SymbolTable, nt->separator);
+			if (!String_IsNullOrEmpty(str)) {
+				if (!isFirst) StringBuilder_AppendByte(stringBuilder, ' ');
+				StringBuilder_AppendString(stringBuilder, str);
+				isFirst = False;
+			}
+
+			StringBuilder_AppendByte(stringBuilder, ']');
+		}
 		return;
 
 	case SMILE_KIND_SYNTAX:
