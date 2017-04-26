@@ -19,6 +19,8 @@
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/smilepair.h>
 #include <smile/smiletypes/smilelist.h>
+#include <smile/string.h>
+#include <smile/stringbuilder.h>
 #include <smile/parsing/parser.h>
 #include <smile/parsing/internal/parserinternal.h>
 #include <smile/parsing/internal/parsedecl.h>
@@ -437,7 +439,7 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 		// Try to match the next item (terminal or nonterminal) in the pattern.
 	
 		// Find or construct a table that describes possible transitions to subsequent states.
-		transitionTable = ParserSyntaxTable_GetTransitionTable(parser->currentScope->syntaxTable, node);
+		transitionTable = ParserSyntaxTable_GetTransitionTable(parser, parser->currentScope->syntaxTable, node);
 		if (transitionTable == NULL) {
 			// Couldn't construct a transition table due to a grammar conflict.
 			*parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
@@ -518,6 +520,28 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 		// No match, but we haven't consumed anything, so maybe we don't need to match.
 		*parseError = NULL;
 		return CustomSyntaxResult_NotMatchedAndNoTokensConsumed;
+	}
+	else if (Int32Dict_Count(transitionTable) == 0) {
+		// No match, and we traversed at least one node of the tree, but there's nowhere past here
+		// to go, so we found a broken syntax rule.  First, collect the failed/unmatched nonterminals.
+		Int32 *nextKeys = Int32Dict_GetKeys(node->nextNonterminals);
+		Int32 numKeys = Int32Dict_Count(node->nextNonterminals);
+		StringBuilder errorBuilder = StringBuilder_Create();
+		Int32 i;
+		for (i = 0; i < numKeys; i++) {
+			if (i != 0) StringBuilder_Append(errorBuilder, (const Byte *)"\"/\"", 0, 3);
+			StringBuilder_AppendString(errorBuilder, SymbolTable_GetName(Smile_SymbolTable, nextKeys[i]));
+		}
+
+		// Now generate a suitable error message with them.
+		*parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, node->position,
+			String_Format("Incomplete syntax rule after \"%S\": subsequent %s \"%S\" %s.",
+				SymbolTable_GetName(Smile_SymbolTable, node->name),
+				numKeys == 1 ? "nonterminal" : "nonterminals",
+				StringBuilder_ToString(errorBuilder),
+				numKeys == 1 ? "does not match any known class" : "do not match any known classes"
+			));
+		return CustomSyntaxResult_PartialApplicationWithError;
 	}
 	else {
 		// No match, and we've traversed at least one node of the tree.  So the

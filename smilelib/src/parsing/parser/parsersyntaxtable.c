@@ -27,7 +27,7 @@
 #include <smile/parsing/internal/parsesyntax.h>
 #include <smile/internal/staticstring.h>
 
-static ParserSyntaxNode ParserSyntaxNode_CreateInternal(Symbol name, Symbol variable, Int repetitionKind, Int repetitionSep);
+static ParserSyntaxNode ParserSyntaxNode_CreateInternal(Symbol name, Symbol variable, Int repetitionKind, Int repetitionSep, LexerPosition position);
 
 static ParserSyntaxClass ParserSyntaxClass_CreateNew(void);
 static void *ParserSyntaxClass_DictClone(Int32 key, void *value, void *param);
@@ -39,7 +39,6 @@ static Bool ParserSyntaxClass_Extend(Parser parser, LexerPosition position,
 	ParserSyntaxNode *resultingNode, ParserSyntaxClass *resultingCls);
 
 static ParserSyntaxTable ParserSyntaxTable_VFork(ParserSyntaxTable table);
-static Bool ParserSyntaxTable_ValidateRuleWithInitialNonterminal(ParserSyntaxTable table, Symbol rootNonterminal, Symbol firstNonterminal);
 
 static UInt32 UniqueNodeID = 0;
 
@@ -71,8 +70,9 @@ STATIC_STRING(InvalidSealedPatternError, "Syntax patterns may not be added to th
 /// Either 0 (no repetition), '?' for optional, '*' for zero-or-more, '+' for one-or-more.</param>
 /// <param name="repetitionSep">The separator for the repetition, if this is a nonterminal reference.
 /// Either 0 (no separator), ',' for comma, or ';' for semicolon.</param>
+/// <param name="position">The source position that caused us to create this node.</param>
 /// <returns>The newly-created syntax node.</returns>
-static ParserSyntaxNode ParserSyntaxNode_CreateInternal(Symbol name, Symbol variable, Int repetitionKind, Int repetitionSep)
+static ParserSyntaxNode ParserSyntaxNode_CreateInternal(Symbol name, Symbol variable, Int repetitionKind, Int repetitionSep, LexerPosition position)
 {
 	ParserSyntaxNode syntaxNode = GC_MALLOC_STRUCT(struct ParserSyntaxNodeStruct);
 
@@ -89,6 +89,8 @@ static ParserSyntaxNode ParserSyntaxNode_CreateInternal(Symbol name, Symbol vari
 	syntaxNode->repetitionSep = (Int8)repetitionSep;
 
 	syntaxNode->nodeID = Atomic_IncrementInt32(&UniqueNodeID);
+
+	syntaxNode->position = position;
 
 	return syntaxNode;
 }
@@ -287,7 +289,7 @@ static Bool ParserSyntaxClass_Extend(Parser parser, LexerPosition position,
 		}
 		nextDict = variable	? (parent->nextNonterminals	= Int32Dict_CreateWithSize(4))
 			: (parent->nextTerminals	= Int32Dict_CreateWithSize(4));
-		syntaxNode = ParserSyntaxNode_CreateInternal(name, variable, repetitionKind, repetitionSep);
+		syntaxNode = ParserSyntaxNode_CreateInternal(name, variable, repetitionKind, repetitionSep, position);
 		Int32Dict_Add(nextDict, name, syntaxNode);
 	}
 	else if (variable) {
@@ -298,7 +300,7 @@ static Bool ParserSyntaxClass_Extend(Parser parser, LexerPosition position,
 			if (newCls->referenceCount > 1) {
 				newCls = ParserSyntaxClass_VFork(newCls);
 			}
-			syntaxNode = ParserSyntaxNode_CreateInternal(name, variable, repetitionKind, repetitionSep);
+			syntaxNode = ParserSyntaxNode_CreateInternal(name, variable, repetitionKind, repetitionSep, position);
 			Int32Dict_Add(parent->nextNonterminals, name, syntaxNode);
 		}
 		if (syntaxNode->name == name && (syntaxNode->repetitionKind != repetitionKind || syntaxNode->repetitionSep != repetitionSep)) {
@@ -325,7 +327,7 @@ static Bool ParserSyntaxClass_Extend(Parser parser, LexerPosition position,
 			if (newCls->referenceCount > 1) {
 				newCls = ParserSyntaxClass_VFork(newCls);
 			}
-			syntaxNode = ParserSyntaxNode_CreateInternal(name, variable, repetitionKind, repetitionSep);
+			syntaxNode = ParserSyntaxNode_CreateInternal(name, variable, repetitionKind, repetitionSep, position);
 			Int32Dict_Add(parent->nextTerminals, name, syntaxNode);
 		}
 	}
@@ -403,7 +405,8 @@ static ParserSyntaxTable ParserSyntaxTable_VFork(ParserSyntaxTable table)
 	return newTable;
 }
 
-static void ParserSyntaxTable_RecursivelyComputeFirstSet(ParserSyntaxTable table, Symbol nonterminal, Int32Int32Dict firstSet, Int32Int32Dict nonterminalsSeen)
+static void ParserSyntaxTable_RecursivelyComputeFirstSet(ParserSyntaxTable table, Symbol nonterminal,
+	Int32Int32Dict firstSet, Int32Int32Dict nonterminalsSeen)
 {
 	ParserSyntaxClass syntaxClass;
 
@@ -432,7 +435,7 @@ static void ParserSyntaxTable_RecursivelyComputeFirstSet(ParserSyntaxTable table
 	// Find the rule pointed-to by the current nonterminal.
 	if (!Int32Dict_TryGetValue(table->syntaxClasses, nonterminal, &syntaxClass)) {
 		// If we got here, then we ended up nowhere (i.e., this set of syntax rules is
-		// incomplete or broken or something).
+		// currently incomplete or broken or something, and not parse-able).
 		return;
 	}
 
@@ -448,11 +451,11 @@ static void ParserSyntaxTable_RecursivelyComputeFirstSet(ParserSyntaxTable table
 
 	if (syntaxClass->nextNonterminals != NULL) {
 		// This syntax class has nonterminals that start it, so recurse on them.
-		Int32 *keys = Int32Dict_GetKeys(syntaxClass->nextNonterminals);
-		Int32 numKeys = Int32Dict_Count(syntaxClass->nextNonterminals);
-	
-		while (numKeys--) {
-			Symbol nextNonterminal = *keys++;
+		Int32DictKeyValuePair *pair = Int32Dict_GetAll(syntaxClass->nextNonterminals);
+		Int32 numPairs = Int32Dict_Count(syntaxClass->nextNonterminals);
+
+		for (; numPairs--; pair++) {
+			Symbol nextNonterminal = pair->key;
 			ParserSyntaxTable_RecursivelyComputeFirstSet(table, nextNonterminal, firstSet, nonterminalsSeen);
 		}
 	}
@@ -470,9 +473,9 @@ static void ParserSyntaxTable_RecursivelyComputeFirstSet(ParserSyntaxTable table
 ///
 /// The FIRST set for addexpr is ['-', IDENT, NUMBER].
 /// </summary>
-/// <param name="table">The syntax table that records the grammar containing this node.</param>
-/// <param name="node">The node for which you would like to retrieve the FOLLOW set.</param>
-/// <returns>The return value is a dictionary whose keys are the FOLLOW set (and whose values are all zero).</returns>
+/// <param name="table">The syntax table that records the grammar containing this nonterminal.</param>
+/// <param name="node">The nonterminal for which you would like to retrieve the FIRST set.</param>
+/// <returns>The return value is a dictionary whose keys are the FIRST set (and whose values are all zero).</returns>
 static Int32Int32Dict ParserSyntaxTable_ComputeFirstSet(ParserSyntaxTable table, Symbol nonterminal)
 {
 	Int32Int32Dict firstSet = Int32Int32Dict_Create();
@@ -517,12 +520,12 @@ static Int32Int32Dict ParserSyntaxTable_ComputeFollowSet(ParserSyntaxTable table
 	if (node->nextNonterminals != NULL) {
 		// This syntax class has nonterminals that are in its next-state dictionary, so add the union of their
 		// FIRST sets to the FOLLOW set.
-		Int32 *nextNonterminals = Int32Dict_GetKeys(node->nextNonterminals);
-		Int32 numNextNonterminals = Int32Dict_Count(node->nextNonterminals);
+		Int32DictKeyValuePair *pair = Int32Dict_GetAll(node->nextNonterminals);
+		Int32 numPairs = Int32Dict_Count(node->nextNonterminals);
 
-		while (numNextNonterminals--) {
+		for (; numPairs--; pair++) {
 			// Get the FIRST set for this nonterminal.
-			Symbol nextNonterminal = *nextNonterminals++;
+			Symbol nextNonterminal = pair->key;
 			Int32Int32Dict firstSet = ParserSyntaxTable_GetFirstSet(table, nextNonterminal);
 
 			Int32 *terminals = Int32Int32Dict_GetKeys(firstSet);
@@ -542,11 +545,12 @@ static Int32Int32Dict ParserSyntaxTable_ComputeFollowSet(ParserSyntaxTable table
 /// Compute the transition table that describes where to go from the given node.
 /// This table is a straightforward dictionary mapping input symbols to next nodes.
 /// </summary>
+/// <param name="parser">The parser that wants to compute transition table for this node.</param>
 /// <param name="table">The syntax table that records the grammar containing this node.</param>
 /// <param name="node">The node for which you would like to retrieve a transition-out table.</param>
 /// <returns>A suitable transition table for that node, or NULL if the grammar is ambigious
 /// (within the limitations of LL(1)) after this node.</returns>
-static Int32Dict ParserSyntaxTable_ComputeTransitionTable(ParserSyntaxTable table, ParserSyntaxNode node)
+static Int32Dict ParserSyntaxTable_ComputeTransitionTable(Parser parser, ParserSyntaxTable table, ParserSyntaxNode node)
 {
 	Int32Dict transitionTable = Int32Dict_Create();
 	
@@ -558,6 +562,8 @@ static Int32Dict ParserSyntaxTable_ComputeTransitionTable(ParserSyntaxTable tabl
 		for (; numPairs--; pair++) {
 			if (!Int32Dict_Add(transitionTable, pair->key, pair->value)) {
 				// Well, nuts.  We have a conflict, i.e., an ambiguous grammar.
+				Parser_AddError(parser, node->position, "Ambiguous grammar starting at \"%s\"; multiple grammar rules have the same symbol in the same position.",
+					SymbolTable_GetNameC(Smile_SymbolTable, pair->key));
 				return NULL;
 			}
 		}
@@ -579,6 +585,8 @@ static Int32Dict ParserSyntaxTable_ComputeTransitionTable(ParserSyntaxTable tabl
 			for (; numTerminals--; terminal++) {
 				if (!Int32Dict_Add(transitionTable, *terminal, pair->value)) {
 					// Well, nuts.  We have a conflict, i.e., an ambiguous grammar.
+					Parser_AddError(parser, node->position, "Ambiguous grammar starting at \"%s\"; multiple grammar rules have the same symbol in the same position.",
+						SymbolTable_GetNameC(Smile_SymbolTable, *terminal));
 					return NULL;
 				}
 			}
@@ -588,6 +596,21 @@ static Int32Dict ParserSyntaxTable_ComputeTransitionTable(ParserSyntaxTable tabl
 	return transitionTable;
 }
 
+/// <summary>
+/// Get the FIRST set, which describes which input symbols should cause us to
+/// enter the given nonterminal node.  For example, given this grammar:
+///
+///    addexpr ::= mulexpr '+' addexpr | mulexpr
+///    mulexpr ::= unary '*' mulexpr | unary
+///    unary ::= '-' unary | term
+///    term ::= IDENT | NUMBER
+///
+/// The FIRST set for unary is ['-' IDENT NUMBER], which means that if we see any of those in
+/// the input, we can successfully begin parsing a unary.
+/// </summary>
+/// <param name="table">The syntax table that records the grammar containing this nonterminal.</param>
+/// <param name="nonterminal">The nonterminal for which you would like to retrieve the FIRST set.</param>
+/// <returns>The return value is a dictionary whose keys are the FIRST set (and whose values are all zero).</returns>
 Int32Int32Dict ParserSyntaxTable_GetFirstSet(ParserSyntaxTable table, Symbol nonterminal)
 {
 	Int32Int32Dict firstSet;
@@ -645,7 +668,7 @@ Int32Int32Dict ParserSyntaxTable_GetFollowSet(ParserSyntaxTable table, ParserSyn
 /// <param name="node">The node for which you would like to retrieve a transition-out table.</param>
 /// <returns>A suitable transition table for that node, or NULL if the grammar is ambigious
 /// (within the limitations of LL(1)) after this node.</returns>
-Int32Dict ParserSyntaxTable_GetTransitionTable(ParserSyntaxTable table, ParserSyntaxNode node)
+Int32Dict ParserSyntaxTable_GetTransitionTable(Parser parser, ParserSyntaxTable table, ParserSyntaxNode node)
 {
 	Int32Dict transitionTable;
 
@@ -654,7 +677,7 @@ Int32Dict ParserSyntaxTable_GetTransitionTable(ParserSyntaxTable table, ParserSy
 	}
 
 	if (!Int32Dict_TryGetValue(table->transitionTables, node->nodeID, &transitionTable)) {
-		transitionTable = ParserSyntaxTable_ComputeTransitionTable(table, node);
+		transitionTable = ParserSyntaxTable_ComputeTransitionTable(parser, table, node);
 		Int32Dict_Add(table->transitionTables, node->nodeID, transitionTable);
 	}
 

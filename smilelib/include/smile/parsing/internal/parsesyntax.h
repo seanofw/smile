@@ -42,6 +42,8 @@ struct ParserSyntaxNodeStruct {
 		
 	Symbol name;	// The keyword/symbol or nonterminal name.
 	Symbol variable;	// The variable to emit on a nonterminal match, 0 if this is a keyword/symbol.
+		
+	LexerPosition position;	// The position in the source code of the syntax rule that first created this node (for error reporting).
 };
 
 /// <summary>
@@ -94,7 +96,7 @@ SMILE_API_FUNC Bool ParserSyntaxTable_AddRule(Parser parser, ParserSyntaxTable *
 SMILE_API_FUNC Bool ParserSyntaxTable_SetupDefaultRules(Parser parser, ParserSyntaxTable *table);
 SMILE_API_FUNC Int32Int32Dict ParserSyntaxTable_GetFirstSet(ParserSyntaxTable table, Symbol nonterminal);
 SMILE_API_FUNC Int32Int32Dict ParserSyntaxTable_GetFollowSet(ParserSyntaxTable table, ParserSyntaxNode node);
-SMILE_API_FUNC Int32Dict ParserSyntaxTable_GetTransitionTable(ParserSyntaxTable table, ParserSyntaxNode node);
+SMILE_API_FUNC Int32Dict ParserSyntaxTable_GetTransitionTable(Parser parser, ParserSyntaxTable table, ParserSyntaxNode node);
 
 /// <summary>
 /// Increase the reference count for the given syntax table, so that it knows
