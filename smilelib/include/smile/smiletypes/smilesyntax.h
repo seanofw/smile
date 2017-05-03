@@ -45,6 +45,9 @@ struct SmileNonterminalInt {
 	Symbol name;	// The name to use in the substitution for the matched syntax construct.
 	Symbol repeat;	// Either 0 (no repetition), '?' for optional, '*' for zero-or-more, '+' for one-or-more.
 	Symbol separator;	// Either 0 (no separator), ',' for comma, or ';' for semicolon.
+
+	Int32 numWithSymbols;	// The number of entries in the 'with' symbol list.
+	Symbol *withSymbols;	// The list of 'with' symbols (used for temporarily declaring symbols during parsing of this nonterminal).
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -58,6 +61,6 @@ SMILE_API_FUNC String SmileSyntax_ToString(SmileSyntax self);
 
 SMILE_API_DATA SmileVTable SmileNonterminal_VTable;
 
-SMILE_API_FUNC SmileNonterminal SmileNonterminal_Create(Symbol nonterminal, Symbol name, Symbol repeat, Symbol separator);
+SMILE_API_FUNC SmileNonterminal SmileNonterminal_Create(Symbol nonterminal, Symbol name, Symbol repeat, Symbol separator, Int numWithSymbols, Symbol *withSymbols);
 
 #endif

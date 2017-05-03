@@ -105,7 +105,9 @@ START_TEST(CanParseSyntaxFormsThatContainNonterminals)
 					SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
 					SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("x")),
 					0,
-					0
+					0,
+					0,
+					NULL
 				),
 				NullObject
 			)
@@ -150,7 +152,9 @@ START_TEST(TheContainingScopeShouldInfluenceTheReplacement)
 					SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
 					SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("x")),
 					0,
-					0
+					0,
+					0,
+					NULL
 				),
 				NullObject
 			)
@@ -185,7 +189,9 @@ START_TEST(TheContainingScopeShouldInfluenceTheReplacement2)
 					SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
 					SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("y")),
 					0,
-					0
+					0,
+					0,
+					NULL
 				),
 				NullObject
 			)
@@ -221,7 +227,9 @@ START_TEST(TheContainingScopeShouldInfluenceTheReplacement3)
 					SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
 					SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("y")),
 					0,
-					0
+					0,
+					0,
+					NULL
 				),
 				NullObject
 			)
@@ -249,21 +257,27 @@ START_TEST(CanParseSyntaxWithEmbeddedCommas)
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("x")),
 				0,
-				0
+				0,
+				0,
+				NULL
 			),
 			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, ",")),
 			(SmileObject)SmileNonterminal_Create(
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("y")),
 				0,
-				0
+				0,
+				0,
+				NULL
 			),
 			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, "then")),
 			(SmileObject)SmileNonterminal_Create(
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("z")),
 				0,
-				0
+				0,
+				0,
+				NULL
 			),
 			NULL
 		),
@@ -290,21 +304,27 @@ START_TEST(CanParseSyntaxWithEmbeddedSemicolons)
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("x")),
 				0,
-				0
+				0,
+				0,
+				NULL
 			),
 			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, ";")),
 			(SmileObject)SmileNonterminal_Create(
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("y")),
 				0,
-				0
+				0,
+				0,
+				NULL
 			),
 			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, "then")),
 			(SmileObject)SmileNonterminal_Create(
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("z")),
 				0,
-				0
+				0,
+				0,
+				NULL
 			),
 			NULL
 		),
@@ -331,21 +351,27 @@ START_TEST(CanParseSyntaxWithEmbeddedColons)
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("x")),
 				0,
-				0
+				0,
+				0,
+				NULL
 			),
 			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, ":")),
 			(SmileObject)SmileNonterminal_Create(
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("y")),
 				0,
-				0
+				0,
+				0,
+				NULL
 			),
 			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, "then")),
 			(SmileObject)SmileNonterminal_Create(
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("z")),
 				0,
-				0
+				0,
+				0,
+				NULL
 			),
 			NULL
 		),
@@ -373,14 +399,18 @@ START_TEST(CanParseSyntaxWithEmbeddedParentheses)
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("x")),
 				0,
-				0
+				0,
+				0,
+				NULL
 			),
 			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, ":")),
 			(SmileObject)SmileNonterminal_Create(
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("y")),
 				0,
-				0
+				0,
+				0,
+				NULL
 			),
 			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, ")")),
 			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, "then")),
@@ -388,7 +418,9 @@ START_TEST(CanParseSyntaxWithEmbeddedParentheses)
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("z")),
 				0,
-				0
+				0,
+				0,
+				NULL
 			),
 			NULL
 		),
@@ -440,14 +472,18 @@ START_TEST(CanParseSyntaxWithEmbeddedCurlyBraces)
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("x")),
 				0,
-				0
+				0,
+				0,
+				NULL
 			),
 			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, ":")),
 			(SmileObject)SmileNonterminal_Create(
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("y")),
 				0,
-				0
+				0,
+				0,
+				NULL
 			),
 			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, "}")),
 			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, "then")),
@@ -455,7 +491,9 @@ START_TEST(CanParseSyntaxWithEmbeddedCurlyBraces)
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("z")),
 				0,
-				0
+				0,
+				0,
+				NULL
 			),
 			NULL
 		),
@@ -506,14 +544,18 @@ START_TEST(RealWorldSyntaxExample)
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("EXPR")),
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("x")),
 				0,
-				0
+				0,
+				0,
+				NULL
 			),
 			(SmileObject)SmileSymbol_Create(SymbolTable_GetSymbolC(Smile_SymbolTable, "then")),
 			(SmileObject)SmileNonterminal_Create(
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
 				SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("y")),
 				0,
-				0
+				0,
+				0,
+				NULL
 			),
 			NULL
 		),
