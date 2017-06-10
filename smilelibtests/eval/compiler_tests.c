@@ -557,10 +557,10 @@ END_TEST
 START_TEST(CanCompileConditionalsAllTheWay)
 {
 	SmileObject expr = Parse(
-		"#syntax STMT: [if [EXPR x] then [STMT y]] => [$if x y]\n"
-		"#syntax STMT: [if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if x y]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
 		"\n"
-		"if 1 < 10 then\n"
+		"my-if 1 < 10 then\n"
 		"\t`then-side\n"
 		"else\n"
 		"\t`else-side\n"
@@ -801,11 +801,11 @@ END_TEST
 START_TEST(CanCompileAWhileLoopThatComputesLogarithms)
 {
 	SmileObject expr = Parse(
-		"#syntax STMT: [while [EXPR x] do [STMT y]] => [$while [] x y]\n"
+		"#syntax STMT: [my-while [EXPR x] do [STMT y]] => [$while [] x y]\n"
 		"\n"
 		"n = 12345678\n"
 		"log = 0\n"
-		"while n do {\n"
+		"my-while n do {\n"
 		"\tn >>>= 1\n"
 		"\tlog += 1\n"
 		"}\n"
@@ -882,11 +882,11 @@ END_TEST
 START_TEST(CanCompileATillLoopThatActuallyDoesSomething)
 {
 	SmileObject expr = Parse(
-		"#syntax STMT: [if [EXPR x] then [STMT y]] => [$if x y]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if x y]\n"
 		"\n"
 		"var x = 1\n"
 		"[$till [reached-eight-bits] {\n"
-		"\tif x > 0xFF then reached-eight-bits\n"
+		"\tmy-if x > 0xFF then reached-eight-bits\n"
 		"\tx <<= 1\n"
 		"}]\n"
 	);
@@ -924,11 +924,11 @@ START_TEST(CanCompileATillLoopUsingSimpleSyntax)
 {
 /*
 	SmileObject expr = Parse(
-		"#syntax STMT: [if [EXPR x] then [STMT y]] => [$if x y]\n"
-		"#syntax STMT: [till [NAME+ names ,] do [with names: STMT body]] => [$till names body]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if x y]\n"
+		"#syntax STMT: [my-till [NAME+ names ,] do [with names: STMT body]] => [$till names body]\n"
 		"\n"
 		"var x = 1\n"
-		"till reached-eight-bits do {\n"
+		"my-till reached-eight-bits do {\n"
 		"\tif x > 0xFF then reached-eight-bits\n"
 		"\tx <<= 1\n"
 		"}\n"

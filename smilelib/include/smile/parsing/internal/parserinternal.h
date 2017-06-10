@@ -45,6 +45,16 @@ SMILE_INTERNAL_FUNC void Parser_ParseExprsOpt(Parser parser, SmileList *head, Sm
 SMILE_INTERNAL_FUNC ParseError Parser_ParseExpr(Parser parser, SmileObject *expr, Int modeFlags);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseStmt(Parser parser, SmileObject *expr, Int modeFlags);
 
+SMILE_INTERNAL_FUNC ParseError Parser_ParseIfUnless(Parser parser, SmileObject *expr, Int modeFlags, Bool invert);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseDo(Parser parser, SmileObject *expr, Int modeFlags);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseWhileUntil(Parser parser, SmileObject *expr, Int modeFlags, Bool invert);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseReturn(Parser parser, SmileObject *expr, Int modeFlags);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseTry(Parser parser, SmileObject *expr, Int modeFlags);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseTill(Parser parser, SmileObject *expr, Int modeFlags);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseTillNames(Parser parser, SmileList *names);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseTillName(Parser parser, SmileObject *expr);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseWhens(Parser parser, SmileObject *expr, ParseScope tillScope, Int modeFlags);
+
 SMILE_INTERNAL_FUNC ParseError Parser_ParseVarDecls(Parser parser, SmileObject *expr, Int modeFlags, Int declKind);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseKeywordList(Parser parser, SmileObject *expr);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseDecl(Parser parser, SmileObject *expr, Int modeFlags, Int declKind);
@@ -111,6 +121,8 @@ SMILE_INTERNAL_DATA Int Parser_BracesBracketsParenthesesBar_Recovery[];
 SMILE_INTERNAL_DATA Int Parser_BracesBracketsParenthesesBar_Count;
 SMILE_INTERNAL_DATA Int Parser_RightBracesBracketsParentheses_Recovery[];
 SMILE_INTERNAL_DATA Int Parser_RightBracesBracketsParentheses_Count;
+SMILE_INTERNAL_DATA Int Parser_BracesBracketsParenthesesBarName_Recovery[];
+SMILE_INTERNAL_DATA Int Parser_BracesBracketsParenthesesBarName_Count;
 
 SMILE_INTERNAL_DATA SmileObject Parser_IgnorableObject;
 
