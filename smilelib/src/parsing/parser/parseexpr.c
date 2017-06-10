@@ -359,6 +359,7 @@ ParseError Parser_ParseTry(Parser parser, SmileObject *expr, Int modeFlags)
 	SmileObject handler;
 	SmileObject body;
 	Token token;
+	Int tokenKind;
 
 	// Parse the body.
 	parseError = Parser_ParseExpr(parser, &body, (modeFlags & ~BINARYLINEBREAKS_MASK) | BINARYLINEBREAKS_ALLOWED);
@@ -390,11 +391,37 @@ ParseError Parser_ParseTry(Parser parser, SmileObject *expr, Int modeFlags)
 	}
 
 	// Parse the handler function.
-	parseError = Parser_ParseFunc(parser, &handler, modeFlags);
-	if (parseError != NULL) {
+	if ((tokenKind = Lexer_Next(parser->lexer)) == TOKEN_BAR) {
+		parseError = Parser_ParseFunc(parser, &handler, modeFlags);
+		if (parseError != NULL) {
+			// No recovery past this point; there are no more tokens we can consume in the grammar.
+			*expr = NullObject;
+			return parseError;
+		}
+	}
+	else if (tokenKind == TOKEN_LEFTBRACKET) {
+		// Might be [$fn ...], so try to parse that.
+		Lexer_Unget(parser->lexer);
+		parseError = Parser_ParseTerm(parser, &handler, modeFlags, NULL);
+		if (parseError != NULL) {
+			// No recovery past this point; there are no more tokens we can consume in the grammar.
+			*expr = NullObject;
+			return parseError;
+		}
+		if (SMILE_KIND(handler) != SMILE_KIND_LIST
+			|| SMILE_KIND(LIST_FIRST((SmileList)handler)) != SMILE_KIND_SYMBOL
+			|| ((SmileSymbol)LIST_FIRST((SmileList)handler))->symbol != SMILE_SPECIAL_SYMBOL__FN) {
+			// No recovery past this point; there are no more tokens we can consume in the grammar.
+			Lexer_Unget(parser->lexer);
+			*expr = NullObject;
+			return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), String_FromC("'catch' handler must be a function."));
+		}
+	}
+	else {
 		// No recovery past this point; there are no more tokens we can consume in the grammar.
+		Lexer_Unget(parser->lexer);
 		*expr = NullObject;
-		return parseError;
+		return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), String_FromC("'catch' handler must be a function."));
 	}
 
 	// Now make the resulting form: [$catch body handler]
@@ -410,14 +437,14 @@ ParseError Parser_ParseTry(Parser parser, SmileObject *expr, Int modeFlags)
 ParseError Parser_ParseTill(Parser parser, SmileObject *expr, Int modeFlags)
 {
 	ParseError parseError;
-	ParseScope tillScope;
+	Int32Int32Dict tillFlags;
 	SmileList names;
 	SmileObject body;
 	Token token;
 	SmileObject whens;
 
 	Parser_BeginScope(parser, PARSESCOPE_TILLDO);
-	tillScope = parser->currentScope;
+	tillFlags = parser->currentScope->symbolDict;
 
 	// Parse the till-names first.
 	if ((parseError = Parser_ParseTillNames(parser, &names)) != NULL) {
@@ -472,7 +499,7 @@ ParseError Parser_ParseTill(Parser parser, SmileObject *expr, Int modeFlags)
 	Parser_EndScope(parser);
 
 	// Parse any 'when' clauses hanging off the bottom of the loop.
-	parseError = Parser_ParseWhens(parser, &whens, tillScope, modeFlags);
+	parseError = Parser_ParseWhens(parser, &whens, tillFlags, modeFlags);
 	if (parseError != NULL) {
 		Parser_AddMessage(parser, parseError);
 		whens = NullObject;
@@ -566,7 +593,7 @@ ParseError Parser_ParseTillName(Parser parser, SmileObject *expr)
 // whens_opt ::= whens |
 // whens ::= when whens | when
 // when ::= WHEN name expr
-ParseError Parser_ParseWhens(Parser parser, SmileObject *expr, ParseScope tillScope, Int modeFlags)
+ParseError Parser_ParseWhens(Parser parser, SmileObject *expr, Int32Int32Dict tillFlags, Int modeFlags)
 {
 	ParseError parseError;
 	Token token;
@@ -605,7 +632,7 @@ ParseError Parser_ParseWhens(Parser parser, SmileObject *expr, ParseScope tillSc
 			flagName = token->data.symbol;
 
 			// That symbol should be one of the flag names declared in the 'till'.
-			if (!ParseScope_IsDeclaredHere(tillScope, flagName)) {
+			if (!Int32Int32Dict_ContainsKey(tillFlags, flagName)) {
 				Parser_AddError(parser, Token_GetPosition(token), "'%S' is not a name declared in this 'till' loop.",
 					SymbolTable_GetName(Smile_SymbolTable, flagName));
 				// Try to keep going anyway.

@@ -111,6 +111,9 @@
     <ClCompile Include="dict\pointerset_tests.c">
       <Filter>dict</Filter>
     </ClCompile>
+    <ClCompile Include="parsing\parser\parserstmt_tests.c">
+      <Filter>parsing\parser</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />

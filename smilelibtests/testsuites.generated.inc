@@ -16,6 +16,7 @@ EXTERN_TEST_SUITE(ParserCoreTests);
 EXTERN_TEST_SUITE(ParserFuncTests);
 EXTERN_TEST_SUITE(ParserNewTests);
 EXTERN_TEST_SUITE(ParserQuoteTests);
+EXTERN_TEST_SUITE(ParserStmtTests);
 EXTERN_TEST_SUITE(ParserStringTests);
 EXTERN_TEST_SUITE(ParserSyntaxTableTests);
 EXTERN_TEST_SUITE(ParserSyntaxTests);
@@ -56,6 +57,7 @@ void RunAllTests()
 	RUN_TEST_SUITE(results, ParserFuncTests);
 	RUN_TEST_SUITE(results, ParserNewTests);
 	RUN_TEST_SUITE(results, ParserQuoteTests);
+	RUN_TEST_SUITE(results, ParserStmtTests);
 	RUN_TEST_SUITE(results, ParserStringTests);
 	RUN_TEST_SUITE(results, ParserSyntaxTableTests);
 	RUN_TEST_SUITE(results, ParserSyntaxTests);
@@ -97,6 +99,7 @@ const char *TestSuiteNames[] = {
 	"ParserFuncTests",
 	"ParserNewTests",
 	"ParserQuoteTests",
+	"ParserStmtTests",
 	"ParserStringTests",
 	"ParserSyntaxTableTests",
 	"ParserSyntaxTests",
@@ -119,5 +122,5 @@ const char *TestSuiteNames[] = {
 };
 
 
-int NumTestSuites = 35;
+int NumTestSuites = 36;
 

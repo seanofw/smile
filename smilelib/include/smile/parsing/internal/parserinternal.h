@@ -53,7 +53,7 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseTry(Parser parser, SmileObject *expr,
 SMILE_INTERNAL_FUNC ParseError Parser_ParseTill(Parser parser, SmileObject *expr, Int modeFlags);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseTillNames(Parser parser, SmileList *names);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseTillName(Parser parser, SmileObject *expr);
-SMILE_INTERNAL_FUNC ParseError Parser_ParseWhens(Parser parser, SmileObject *expr, ParseScope tillScope, Int modeFlags);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseWhens(Parser parser, SmileObject *expr, Int32Int32Dict tillFlags, Int modeFlags);
 
 SMILE_INTERNAL_FUNC ParseError Parser_ParseVarDecls(Parser parser, SmileObject *expr, Int modeFlags, Int declKind);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseKeywordList(Parser parser, SmileObject *expr);
