@@ -33,6 +33,13 @@ Int Parser_BracesBracketsParenthesesBar_Recovery[] = {
 };
 Int Parser_BracesBracketsParenthesesBar_Count = sizeof(Parser_BracesBracketsParenthesesBar_Recovery) / sizeof(Int);
 
+Int Parser_BracesBracketsParenthesesBarName_Recovery[] = {
+	TOKEN_LEFTBRACE, TOKEN_LEFTBRACKET, TOKEN_LEFTPARENTHESIS,
+	TOKEN_RIGHTBRACE, TOKEN_RIGHTBRACKET, TOKEN_RIGHTPARENTHESIS,
+	TOKEN_BAR, TOKEN_ALPHANAME, TOKEN_UNKNOWNALPHANAME,
+};
+Int Parser_BracesBracketsParenthesesBarName_Count = sizeof(Parser_BracesBracketsParenthesesBarName_Recovery) / sizeof(Int);
+
 Int Parser_RightBracesBracketsParentheses_Recovery[] = {
 	TOKEN_RIGHTBRACE, TOKEN_RIGHTBRACKET, TOKEN_RIGHTPARENTHESIS
 };

@@ -106,10 +106,10 @@ END_TEST
 START_TEST(CanEvalIfThenElse)
 {
 	CompiledTables compiledTables = Compile(
-		"#syntax STMT: [if [EXPR x] then [STMT y]] => [$if x y]\n"
-		"#syntax STMT: [if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if x y]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
 		"x = 1\n"
-		"if x then y = 123\n"
+		"my-if x then y = 123\n"
 		"else y = 456\n"
 		"y\n"
 	);
@@ -153,11 +153,11 @@ END_TEST
 START_TEST(CanEvalSmileCodeThatComputesALogarithm)
 {
 	CompiledTables compiledTables = Compile(
-		"#syntax STMT: [while [EXPR x] do [STMT y]] => [$while [] x y]\n"
+		"#syntax STMT: [my-while [EXPR x] do [STMT y]] => [$while [] x y]\n"
 		"\n"
 		"n = 12345678\n"
 		"log = 0\n"
-		"while n do {\n"
+		"my-while n do {\n"
 		"\tn >>>= 1\n"
 		"\tlog += 1\n"
 		"}\n"
@@ -175,11 +175,11 @@ END_TEST
 START_TEST(CanEvalATillLoopThatComputesAnExponent)
 {
 	CompiledTables compiledTables = Compile(
-		"#syntax STMT: [if [EXPR x] then [STMT y]] => [$if x y]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if x y]\n"
 		"\n"
 		"var x = 1\n"
 		"[$till [reached-eight-bits] {\n"
-		"\tif x > 0xFF then reached-eight-bits\n"
+		"\tmy-if x > 0xFF then reached-eight-bits\n"
 		"\tx <<= 1\n"
 		"}]\n"
 		"x\n"
@@ -249,11 +249,11 @@ END_TEST
 START_TEST(CanEvalRecursiveCallsToUserFunctions)
 {
 	CompiledTables compiledTables = Compile(
-		"#syntax STMT: [if [EXPR x] then [STMT y]] => [$if x y]\n"
-		"#syntax STMT: [if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if x y]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
 		"\n"
 		"factorial = |x|\n"
-		"\tif x <= 1 then x\n"
+		"\tmy-if x <= 1 then x\n"
 		"\telse x * [factorial x - 1]\n"
 		"\n"
 		"n = [factorial 10]\n"

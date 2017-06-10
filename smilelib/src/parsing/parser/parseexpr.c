@@ -73,8 +73,24 @@ ParseError Parser_ParseStmt(Parser parser, SmileObject *expr, Int modeFlags)
 					return Parser_ParseVarDecls(parser, expr, modeFlags, PARSEDECL_AUTO);
 				case SMILE_SPECIAL_SYMBOL_KEYWORD:
 					return Parser_ParseKeywordList(parser, expr);
+				case SMILE_SPECIAL_SYMBOL_IF:
+					return Parser_ParseIfUnless(parser, expr, modeFlags, False);
+				case SMILE_SPECIAL_SYMBOL_UNLESS:
+					return Parser_ParseIfUnless(parser, expr, modeFlags, True);
+				case SMILE_SPECIAL_SYMBOL_DO:
+					return Parser_ParseDo(parser, expr, modeFlags);
+				case SMILE_SPECIAL_SYMBOL_WHILE:
+					return Parser_ParseWhileUntil(parser, expr, modeFlags, False);
+				case SMILE_SPECIAL_SYMBOL_UNTIL:
+					return Parser_ParseWhileUntil(parser, expr, modeFlags, True);
+				case SMILE_SPECIAL_SYMBOL_RETURN:
+					return Parser_ParseReturn(parser, expr, modeFlags);
+				case SMILE_SPECIAL_SYMBOL_TILL:
+					return Parser_ParseTill(parser, expr, modeFlags);
+				case SMILE_SPECIAL_SYMBOL_TRY:
+					return Parser_ParseTry(parser, expr, modeFlags);
 			}
-			// Fall through to default case if not a declaration.
+			// Fall through to default case if not a special form.
 
 		default:
 			Lexer_Unget(parser->lexer);
@@ -86,7 +102,572 @@ ParseError Parser_ParseStmt(Parser parser, SmileObject *expr, Int modeFlags)
 	}
 }
 
-// orexpr :: = . orexpr OR andexpr | . andexpr
+// if_then ::= IF . arith THEN expr
+//           | IF . arith THEN expr ELSE expr
+//           | UNLESS . arith THEN expr
+//           | UNLESS . arith THEN expr ELSE expr
+ParseError Parser_ParseIfUnless(Parser parser, SmileObject *expr, Int modeFlags, Bool invert)
+{
+	ParseError parseError;
+	SmileObject condition;
+	SmileObject thenBody, elseBody;
+	Token token;
+
+	// Parse the condition.
+	parseError = Parser_ParseOpEquals(parser, &condition, (modeFlags & ~BINARYLINEBREAKS_MASK) | BINARYLINEBREAKS_ALLOWED);
+	if (parseError != NULL) {
+		// Bad condition.
+		Token recoveryToken = Parser_Recover(parser, Parser_BracesBracketsParenthesesBarName_Recovery,
+			Parser_BracesBracketsParenthesesBarName_Count);
+		if ((recoveryToken->kind == TOKEN_ALPHANAME || recoveryToken->kind == TOKEN_UNKNOWNALPHANAME)
+			&& recoveryToken->data.symbol == SMILE_SPECIAL_SYMBOL_THEN) {
+
+			// Bad condition, but we recovered to a 'then', so try to keep going.
+			Parser_NextToken(parser);
+			Parser_AddMessage(parser, parseError);
+			condition = NullObject;
+		}
+		else {
+			*expr = NullObject;
+			return parseError;
+		}
+	}
+
+	// Consume the 'then' keyword.
+	if (!(((token = Parser_NextToken(parser))->kind == TOKEN_ALPHANAME || token->kind == TOKEN_UNKNOWNALPHANAME)
+		&& token->data.symbol == SMILE_SPECIAL_SYMBOL_THEN)) {
+		// Missing 'then' keyword.
+		// We assume that's an error of omission, so we just rewind back a token and then try to keep going.
+		Parser_AddError(parser, Token_GetPosition(token), "Missing 'then' keyword after '%s'.", invert ? "unless" : "if");
+		Lexer_Unget(parser->lexer);
+	}
+
+	// Parse the then-body.
+	parseError = Parser_ParseExpr(parser, &thenBody, modeFlags);
+	if (parseError != NULL) {
+		// Bad then-body.
+		Token recoveryToken = Parser_Recover(parser, Parser_BracesBracketsParenthesesBarName_Recovery,
+			Parser_BracesBracketsParenthesesBarName_Count);
+		if ((recoveryToken->kind == TOKEN_ALPHANAME || recoveryToken->kind == TOKEN_UNKNOWNALPHANAME)
+			&& recoveryToken->data.symbol == SMILE_SPECIAL_SYMBOL_ELSE) {
+
+			// Bad condition, but we recovered to an 'else', so try to keep going.
+			Parser_NextToken(parser);
+			Parser_AddMessage(parser, parseError);
+			condition = NullObject;
+		}
+		else {
+			*expr = NullObject;
+			return parseError;
+		}
+	}
+
+	// Consume an optional 'else' keyword.
+	if (((token = Parser_NextToken(parser))->kind == TOKEN_ALPHANAME || token->kind == TOKEN_UNKNOWNALPHANAME)
+		&& token->data.symbol == SMILE_SPECIAL_SYMBOL_ELSE) {
+
+		// Parse the else-body.
+		parseError = Parser_ParseExpr(parser, &elseBody, modeFlags);
+		if (parseError != NULL) {
+			// No recovery past this point; there are no more tokens we can consume in the grammar.
+			*expr = NullObject;
+			return parseError;
+		}
+	}
+	else {
+		Lexer_Unget(parser->lexer);
+		elseBody = NullObject;
+	}
+
+	// If we're an 'unless' form, add a [$not] around the condition.
+	if (invert) {
+		condition = (SmileObject)SmileList_Cons((SmileObject)Smile_KnownObjects._notSymbol,
+			(SmileObject)SmileList_Cons(condition, NullObject));
+	}
+
+	// Now make the resulting form.
+	if (SMILE_KIND(elseBody) != SMILE_KIND_NULL) {
+		// Make an [$if cond then else] construct.
+		*expr =
+			(SmileObject)SmileList_Cons((SmileObject)Smile_KnownObjects._ifSymbol,
+				(SmileObject)SmileList_Cons(condition,
+					(SmileObject)SmileList_Cons(thenBody,
+						(SmileObject)SmileList_Cons(elseBody,
+							NullObject))));
+	}
+	else {
+		// Make an [$if cond then] construct.
+		*expr =
+			(SmileObject)SmileList_Cons((SmileObject)Smile_KnownObjects._ifSymbol,
+				(SmileObject)SmileList_Cons(condition,
+					(SmileObject)SmileList_Cons(thenBody,
+						NullObject)));
+	}
+	return NULL;
+}
+
+// do_while ::= DO . expr WHILE arith
+//            | DO . expr UNTIL arith
+ParseError Parser_ParseDo(Parser parser, SmileObject *expr, Int modeFlags)
+{
+	ParseError parseError;
+	SmileObject condition;
+	SmileObject body;
+	Token token;
+	Bool invert;
+
+	// Parse the body.
+	parseError = Parser_ParseExpr(parser, &body, modeFlags);
+	if (parseError != NULL) {
+		// Bad body.
+		Token recoveryToken = Parser_Recover(parser, Parser_BracesBracketsParenthesesBarName_Recovery,
+			Parser_BracesBracketsParenthesesBarName_Count);
+		if ((recoveryToken->kind == TOKEN_ALPHANAME || recoveryToken->kind == TOKEN_UNKNOWNALPHANAME)
+			&& (recoveryToken->data.symbol == SMILE_SPECIAL_SYMBOL_WHILE || recoveryToken->data.symbol == SMILE_SPECIAL_SYMBOL_UNTIL)) {
+
+			// Bad condition, but we recovered to a 'while' or an 'until', so try to keep going.
+			Parser_NextToken(parser);
+			Parser_AddMessage(parser, parseError);
+			condition = NullObject;
+		}
+		else {
+			*expr = NullObject;
+			return parseError;
+		}
+	}
+
+	// Consume the 'while' or 'until' keyword.
+	if (!(((token = Parser_NextToken(parser))->kind == TOKEN_ALPHANAME || token->kind == TOKEN_UNKNOWNALPHANAME)
+		&& (token->data.symbol == SMILE_SPECIAL_SYMBOL_WHILE || token->data.symbol == SMILE_SPECIAL_SYMBOL_UNTIL))) {
+		// Missing 'do' keyword.
+		// We assume that's an error of omission, so we just rewind back a token and then try to keep going.
+		Parser_AddError(parser, Token_GetPosition(token), "Missing 'while' or 'until' keyword after 'do'.");
+		Lexer_Unget(parser->lexer);
+	}
+	invert = token->data.symbol == SMILE_SPECIAL_SYMBOL_UNTIL;
+
+	// Parse the condition.
+	parseError = Parser_ParseOpEquals(parser, &condition, (modeFlags & ~BINARYLINEBREAKS_MASK) | BINARYLINEBREAKS_ALLOWED);
+	if (parseError != NULL) {
+		// No recovery past this point; there are no more tokens we can consume in the grammar.
+		*expr = NullObject;
+		return parseError;
+	}
+
+	// If we're an 'until' form, add a [$not] around the condition.
+	if (invert) {
+		condition = (SmileObject)SmileList_Cons((SmileObject)Smile_KnownObjects._notSymbol,
+			(SmileObject)SmileList_Cons(condition, NullObject));
+	}
+
+	// Now make the resulting form: [$while body condition null]
+	*expr =
+		(SmileObject)SmileList_Cons((SmileObject)Smile_KnownObjects._whileSymbol,
+			(SmileObject)SmileList_Cons(body,
+				(SmileObject)SmileList_Cons(condition,
+					(SmileObject)SmileList_Cons(NullObject,
+						NullObject))));
+	return NULL;
+}
+
+// while_do ::= WHILE . arith DO expr
+//            | UNTIL . arith DO expr
+ParseError Parser_ParseWhileUntil(Parser parser, SmileObject *expr, Int modeFlags, Bool invert)
+{
+	ParseError parseError;
+	SmileObject condition;
+	SmileObject body;
+	Token token;
+
+	// Parse the condition.
+	parseError = Parser_ParseOpEquals(parser, &condition, (modeFlags & ~BINARYLINEBREAKS_MASK) | BINARYLINEBREAKS_ALLOWED);
+	if (parseError != NULL) {
+		// Bad condition.
+		Token recoveryToken = Parser_Recover(parser, Parser_BracesBracketsParenthesesBarName_Recovery,
+			Parser_BracesBracketsParenthesesBarName_Count);
+		if ((recoveryToken->kind == TOKEN_ALPHANAME || recoveryToken->kind == TOKEN_UNKNOWNALPHANAME)
+			&& recoveryToken->data.symbol == SMILE_SPECIAL_SYMBOL_DO) {
+
+			// Bad condition, but we recovered to a 'do', so try to keep going.
+			Parser_NextToken(parser);
+			Parser_AddMessage(parser, parseError);
+			condition = NullObject;
+		}
+		else {
+			*expr = NullObject;
+			return parseError;
+		}
+	}
+
+	// Consume the 'do' keyword.
+	if (!(((token = Parser_NextToken(parser))->kind == TOKEN_ALPHANAME || token->kind == TOKEN_UNKNOWNALPHANAME)
+		&& token->data.symbol == SMILE_SPECIAL_SYMBOL_DO)) {
+		// Missing 'do' keyword.
+		// We assume that's an error of omission, so we just rewind back a token and then try to keep going.
+		Parser_AddError(parser, Token_GetPosition(token), "Missing 'do' keyword after '%s'.", invert ? "until" : "while");
+		Lexer_Unget(parser->lexer);
+	}
+
+	// Parse the then-body.
+	parseError = Parser_ParseExpr(parser, &body, modeFlags);
+	if (parseError != NULL) {
+		// No recovery past this point; there are no more tokens we can consume in the grammar.
+		*expr = NullObject;
+		return parseError;
+	}
+
+	// If we're an 'until' form, add a [$not] around the condition.
+	if (invert) {
+		condition = (SmileObject)SmileList_Cons((SmileObject)Smile_KnownObjects._notSymbol,
+			(SmileObject)SmileList_Cons(condition, NullObject));
+	}
+
+	// Now make the resulting form: [$while condition body]
+	*expr =
+		(SmileObject)SmileList_Cons((SmileObject)Smile_KnownObjects._whileSymbol,
+			(SmileObject)SmileList_Cons(condition,
+				(SmileObject)SmileList_Cons(body,
+					NullObject)));
+	return NULL;
+}
+
+// return ::= RETURN . arith
+ParseError Parser_ParseReturn(Parser parser, SmileObject *expr, Int modeFlags)
+{
+	ParseError parseError;
+	SmileObject result;
+
+	// Parse the result.
+	parseError = Parser_ParseOpEquals(parser, &result, (modeFlags & ~BINARYLINEBREAKS_MASK) | BINARYLINEBREAKS_ALLOWED);
+	if (parseError != NULL) {
+		*expr = NullObject;
+		return parseError;
+	}
+
+	// Make a [$return result] construct.
+	*expr =
+		(SmileObject)SmileList_Cons((SmileObject)Smile_KnownObjects._returnSymbol,
+			(SmileObject)SmileList_Cons(result,
+				NullObject));
+	return NULL;
+}
+
+// try_catch ::= TRY . expr CATCH func
+ParseError Parser_ParseTry(Parser parser, SmileObject *expr, Int modeFlags)
+{
+	ParseError parseError;
+	SmileObject handler;
+	SmileObject body;
+	Token token;
+	Int tokenKind;
+
+	// Parse the body.
+	parseError = Parser_ParseExpr(parser, &body, (modeFlags & ~BINARYLINEBREAKS_MASK) | BINARYLINEBREAKS_ALLOWED);
+	if (parseError != NULL) {
+		// Bad condition.
+		Token recoveryToken = Parser_Recover(parser, Parser_BracesBracketsParenthesesBarName_Recovery,
+			Parser_BracesBracketsParenthesesBarName_Count);
+		if ((recoveryToken->kind == TOKEN_ALPHANAME || recoveryToken->kind == TOKEN_UNKNOWNALPHANAME)
+			&& recoveryToken->data.symbol == SMILE_SPECIAL_SYMBOL_CATCH) {
+
+			// Bad body, but we recovered to a 'catch', so try to keep going.
+			Parser_NextToken(parser);
+			Parser_AddMessage(parser, parseError);
+			body = NullObject;
+		}
+		else {
+			*expr = NullObject;
+			return parseError;
+		}
+	}
+
+	// Consume the 'catch' keyword.
+	if (!(((token = Parser_NextToken(parser))->kind == TOKEN_ALPHANAME || token->kind == TOKEN_UNKNOWNALPHANAME)
+		&& token->data.symbol == SMILE_SPECIAL_SYMBOL_CATCH)) {
+		// Missing 'catch' keyword.
+		// We assume that's an error of omission, so we just rewind back a token and then try to keep going.
+		Parser_AddError(parser, Token_GetPosition(token), "Missing 'catch' keyword after 'try'.");
+		Lexer_Unget(parser->lexer);
+	}
+
+	// Parse the handler function.
+	if ((tokenKind = Lexer_Next(parser->lexer)) == TOKEN_BAR) {
+		parseError = Parser_ParseFunc(parser, &handler, modeFlags);
+		if (parseError != NULL) {
+			// No recovery past this point; there are no more tokens we can consume in the grammar.
+			*expr = NullObject;
+			return parseError;
+		}
+	}
+	else if (tokenKind == TOKEN_LEFTBRACKET) {
+		// Might be [$fn ...], so try to parse that.
+		Lexer_Unget(parser->lexer);
+		parseError = Parser_ParseTerm(parser, &handler, modeFlags, NULL);
+		if (parseError != NULL) {
+			// No recovery past this point; there are no more tokens we can consume in the grammar.
+			*expr = NullObject;
+			return parseError;
+		}
+		if (SMILE_KIND(handler) != SMILE_KIND_LIST
+			|| SMILE_KIND(LIST_FIRST((SmileList)handler)) != SMILE_KIND_SYMBOL
+			|| ((SmileSymbol)LIST_FIRST((SmileList)handler))->symbol != SMILE_SPECIAL_SYMBOL__FN) {
+			// No recovery past this point; there are no more tokens we can consume in the grammar.
+			Lexer_Unget(parser->lexer);
+			*expr = NullObject;
+			return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), String_FromC("'catch' handler must be a function."));
+		}
+	}
+	else {
+		// No recovery past this point; there are no more tokens we can consume in the grammar.
+		Lexer_Unget(parser->lexer);
+		*expr = NullObject;
+		return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), String_FromC("'catch' handler must be a function."));
+	}
+
+	// Now make the resulting form: [$catch body handler]
+	*expr =
+		(SmileObject)SmileList_Cons((SmileObject)Smile_KnownObjects._catchSymbol,
+			(SmileObject)SmileList_Cons(body,
+				(SmileObject)SmileList_Cons(handler,
+					NullObject)));
+	return NULL;
+}
+
+// till_do ::= TILL . till_names DO expr whens_opt
+ParseError Parser_ParseTill(Parser parser, SmileObject *expr, Int modeFlags)
+{
+	ParseError parseError;
+	Int32Int32Dict tillFlags;
+	SmileList names;
+	SmileObject body;
+	Token token;
+	SmileObject whens;
+
+	Parser_BeginScope(parser, PARSESCOPE_TILLDO);
+	tillFlags = parser->currentScope->symbolDict;
+
+	// Parse the till-names first.
+	if ((parseError = Parser_ParseTillNames(parser, &names)) != NULL) {
+		// Bad flags.
+		Token recoveryToken = Parser_Recover(parser, Parser_BracesBracketsParenthesesBarName_Recovery,
+			Parser_BracesBracketsParenthesesBarName_Count);
+		if ((recoveryToken->kind == TOKEN_ALPHANAME || recoveryToken->kind == TOKEN_UNKNOWNALPHANAME)
+			&& recoveryToken->data.symbol == SMILE_SPECIAL_SYMBOL_DO) {
+
+			// Bad names, but we recovered to a 'do', so try to keep going.
+			Parser_NextToken(parser);
+			Parser_AddMessage(parser, parseError);
+			names = NullList;
+		}
+		else {
+			Parser_EndScope(parser);
+			*expr = NullObject;
+			return parseError;
+		}
+	}
+
+	// Consume the 'do' keyword.
+	if (!(((token = Parser_NextToken(parser))->kind == TOKEN_ALPHANAME || token->kind == TOKEN_UNKNOWNALPHANAME)
+		&& token->data.symbol == SMILE_SPECIAL_SYMBOL_DO)) {
+		// Missing 'do' keyword.
+		// We assume that's an error of omission, so we just rewind back a token and then try to keep going.
+		Parser_AddError(parser, Token_GetPosition(token), "Missing 'do' keyword after 'till'.");
+		Lexer_Unget(parser->lexer);
+	}
+
+	// Parse the loop body.
+	parseError = Parser_ParseExpr(parser, &body, modeFlags);
+	if (parseError != NULL) {
+		// Bad flags.
+		Token recoveryToken = Parser_Recover(parser, Parser_BracesBracketsParenthesesBarName_Recovery,
+			Parser_BracesBracketsParenthesesBarName_Count);
+		if ((recoveryToken->kind == TOKEN_ALPHANAME || recoveryToken->kind == TOKEN_UNKNOWNALPHANAME)
+			&& recoveryToken->data.symbol == SMILE_SPECIAL_SYMBOL_WHEN) {
+
+			// Bad body, but we recovered to a 'when', so try to keep going.
+			Parser_NextToken(parser);
+			Parser_AddMessage(parser, parseError);
+			names = NullList;
+		}
+		else {
+			Parser_EndScope(parser);
+			*expr = NullObject;
+			return parseError;
+		}
+	}
+
+	Parser_EndScope(parser);
+
+	// Parse any 'when' clauses hanging off the bottom of the loop.
+	parseError = Parser_ParseWhens(parser, &whens, tillFlags, modeFlags);
+	if (parseError != NULL) {
+		Parser_AddMessage(parser, parseError);
+		whens = NullObject;
+	}
+
+	// Now make the resulting form: [$till flags body whens]
+	if (SMILE_KIND(whens) != SMILE_KIND_NULL) {
+		*expr =
+			(SmileObject)SmileList_Cons((SmileObject)Smile_KnownObjects._tillSymbol,
+				(SmileObject)SmileList_Cons((SmileObject)names,
+					(SmileObject)SmileList_Cons(body,
+						(SmileObject)SmileList_Cons(whens,
+							NullObject))));
+	}
+	else {
+		*expr =
+			(SmileObject)SmileList_Cons((SmileObject)Smile_KnownObjects._tillSymbol,
+				(SmileObject)SmileList_Cons((SmileObject)names,
+					(SmileObject)SmileList_Cons(body,
+						NullObject)));
+	}
+	return NULL;
+}
+
+// till_names ::= . anyname | . till_names COMMA anyname
+ParseError Parser_ParseTillNames(Parser parser, SmileList *names)
+{
+	SmileObject decl;
+	ParseError error;
+	SmileList head, tail;
+	Token token;
+
+	// Parse the first name, which results in a symbol like 'x'.
+	error = Parser_ParseTillName(parser, &decl);
+	if (error != NULL) return error;
+
+	// Wrap it in a list, so it becomes [x].
+	LIST_INIT(head, tail);
+	if (decl->kind != SMILE_KIND_NULL) {
+		LIST_APPEND_WITH_SOURCE(head, tail, decl, ((struct SmileListWithSourceInt *)decl)->position);
+	}
+
+	// Every time we see a comma, parse the next name, and add it to the list.
+	while ((token = Parser_NextToken(parser))->kind == TOKEN_COMMA) {
+
+		error = Parser_ParseTillName(parser, &decl);
+		if (error != NULL) return error;
+
+		if (decl->kind != SMILE_KIND_NULL) {
+			LIST_APPEND_WITH_SOURCE(head, tail, decl, ((struct SmileListWithSourceInt *)decl)->position);
+		}
+	}
+
+	// Don't overconsume at the end.
+	Lexer_Unget(parser->lexer);
+
+	// Return the list of names.
+	*names = head;
+	return NULL;
+}
+
+// anyname ::= NAME
+ParseError Parser_ParseTillName(Parser parser, SmileObject *expr)
+{
+	Token token;
+	ParseError error;
+	Symbol symbol;
+
+	// Get the name.
+	if ((token = Parser_NextToken(parser))->kind != TOKEN_UNKNOWNALPHANAME
+		&& token->kind != TOKEN_ALPHANAME
+		&& token->kind != TOKEN_UNKNOWNPUNCTNAME
+		&& token->kind != TOKEN_PUNCTNAME) {
+
+		// No variable name?  That's an error.
+		*expr = NullObject;
+		error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), String_FromC("Missing flag name after 'till'."));
+		return error;
+	}
+
+	// Declare it in the current scope.
+	symbol = token->data.symbol;
+	error = ParseScope_Declare(parser->currentScope, symbol, PARSEDECL_TILL, Token_GetPosition(token), NULL);
+	if (error != NULL)
+		return error;
+
+	*expr = (SmileObject)SmileSymbol_Create(symbol);
+	return NULL;
+}
+
+// whens_opt ::= whens |
+// whens ::= when whens | when
+// when ::= WHEN name expr
+ParseError Parser_ParseWhens(Parser parser, SmileObject *expr, Int32Int32Dict tillFlags, Int modeFlags)
+{
+	ParseError parseError;
+	Token token;
+	Int32Dict usedSymbolDict;
+	SmileList whenHead, whenTail;
+	Symbol flagName;
+	SmileObject whenBody;
+	LexerPosition position;
+	SmileObject whenClause;
+
+	usedSymbolDict = Int32Dict_Create();
+
+	whenHead = whenTail = NullList;
+
+	// Parse any 'when' constructs that follow.
+	for (;;) {
+
+		// Consume a 'when' keyword.
+		if (!(((token = Parser_NextToken(parser))->kind == TOKEN_ALPHANAME || token->kind == TOKEN_UNKNOWNALPHANAME)
+			&& token->data.symbol == SMILE_SPECIAL_SYMBOL_WHEN)) {
+			// No 'when' keyword, so we're done.
+			Lexer_Unget(parser->lexer);
+			break;
+		}
+		position = Token_GetPosition(token);
+
+		// There should be a symbol that follows it.
+		if (!(((token = Parser_NextToken(parser))->kind == TOKEN_ALPHANAME || token->kind == TOKEN_UNKNOWNALPHANAME
+			|| token->kind == TOKEN_PUNCTNAME || token->kind == TOKEN_UNKNOWNPUNCTNAME))) {
+			// Not a symbol, so complain, but rewind a token and keep going if we can.
+			Parser_AddError(parser, Token_GetPosition(token), "Missing till-flag name after 'when'.");
+			Lexer_Unget(parser->lexer);
+			flagName = 0;
+		}
+		else {
+			flagName = token->data.symbol;
+
+			// That symbol should be one of the flag names declared in the 'till'.
+			if (!Int32Int32Dict_ContainsKey(tillFlags, flagName)) {
+				Parser_AddError(parser, Token_GetPosition(token), "'%S' is not a name declared in this 'till' loop.",
+					SymbolTable_GetName(Smile_SymbolTable, flagName));
+				// Try to keep going anyway.
+			}
+			else {
+				// That symbol shouldn't have been used already for this 'till'.
+				if (!Int32Dict_Add(usedSymbolDict, flagName, NULL)) {
+					Parser_AddError(parser, Token_GetPosition(token), "'when %S' was used multiple times for the same 'till' loop.",
+						SymbolTable_GetName(Smile_SymbolTable, flagName));
+					// Keep going with the parse.
+				}
+			}
+		}
+
+		// There should be a body after the 'when name' clause.
+		parseError = Parser_ParseExpr(parser, &whenBody, modeFlags);
+		if (parseError != NULL) {
+			Parser_AddMessage(parser, parseError);
+		}
+
+		// Construct the when clause itself:  [flag body]
+		whenClause =
+			(SmileObject)SmileList_Cons(flagName ? (SmileObject)SmileSymbol_Create(flagName) : NullObject,
+				(SmileObject)SmileList_Cons(whenBody,
+					NullObject));
+
+		// Add it to the result list.
+		LIST_APPEND_WITH_SOURCE(whenHead, whenTail, whenClause, position);
+	}
+
+	*expr = (SmileObject)whenHead;
+	return NULL;
+}
+
+// orexpr ::= . orexpr OR andexpr | . andexpr
 ParseError Parser_ParseOrExpr(Parser parser, SmileObject *expr, Int modeFlags)
 {
 	SmileList tail = NullList;

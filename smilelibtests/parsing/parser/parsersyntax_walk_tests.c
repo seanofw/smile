@@ -125,9 +125,9 @@ END_TEST
 START_TEST(IfThenTest)
 {
 	Lexer lexer = SetupLexer(
-		"#syntax STMT: [if [EXPR x] then [STMT y]] => [$if x y]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if x y]\n"
 		"4 + 5\n"
-		"if 1 < 2 then 10\n"
+		"my-if 1 < 2 then 10\n"
 		"6 + 7\n"
 	);
 	Parser parser = Parser_Create();
@@ -144,9 +144,9 @@ END_TEST
 START_TEST(IfThenElseTest)
 {
 	Lexer lexer = SetupLexer(
-		"#syntax STMT: [if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
 		"4 + 5\n"
-		"if 1 < 2 then 10 else 20\n"
+		"my-if 1 < 2 then 10 else 20\n"
 		"6 + 7\n"
 		);
 	Parser parser = Parser_Create();
@@ -163,11 +163,11 @@ END_TEST
 START_TEST(IfThenElseTestWithBothIfThenRules)
 {
 	Lexer lexer = SetupLexer(
-		"#syntax STMT: [if [EXPR x] then [STMT y]] => [$if x y]\n"
-		"#syntax STMT: [if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if x y]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
 		"4 + 5\n"
-		"if 1 < 2 then 10\n"
-		"if 3 < 4 then 30 else 40\n"
+		"my-if 1 < 2 then 10\n"
+		"my-if 3 < 4 then 30 else 40\n"
 		"6 + 7\n"
 	);
 	Parser parser = Parser_Create();
@@ -185,14 +185,14 @@ END_TEST
 START_TEST(IfThenElseTestWithNestedConditionals)
 {
 	Lexer lexer = SetupLexer(
-		"#syntax STMT: [if [EXPR x] then [STMT y]] => [$if x y]\n"
-		"#syntax STMT: [if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if x y]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
 		"4 + 5\n"
-		"if 1 < 2 then\n"
-		"  if 5 < 6 then 50\n"
+		"my-if 1 < 2 then\n"
+		"  my-if 5 < 6 then 50\n"
 		"  else 60\n"
-		"else if 3 < 4 then\n"
-		"  if 7 < 8 then 70\n"
+		"else my-if 3 < 4 then\n"
+		"  my-if 7 < 8 then 70\n"
 		"  else 80\n"
 		"else 40\n"
 		"6 + 7\n"
@@ -211,11 +211,11 @@ END_TEST
 START_TEST(CStyleIfThenElseTest)
 {
 	Lexer lexer = SetupLexer(
-		"#syntax STMT: [if ( [EXPR x] ) [STMT y]] => [$if x y]\n"
-		"#syntax STMT: [if ( [EXPR x] ) [STMT y] else [STMT z]] => [$if x y z]\n"
+		"#syntax STMT: [my-if ( [EXPR x] ) [STMT y]] => [$if x y]\n"
+		"#syntax STMT: [my-if ( [EXPR x] ) [STMT y] else [STMT z]] => [$if x y z]\n"
 		"4 + 5\n"
-		"if (1 < 2) 10\n"
-		"if (3 < 4) 30 else 40\n"
+		"my-if (1 < 2) 10\n"
+		"my-if (3 < 4) 30 else 40\n"
 		"6 + 7\n"
 		);
 	Parser parser = Parser_Create();
@@ -256,9 +256,9 @@ END_TEST
 START_TEST(CanExtendStmtWithKeywordRoots)
 {
 	Lexer lexer = SetupLexer(
-		"#syntax STMT: [if ( [EXPR x] ) [STMT y]] => [$if x y]\n"
+		"#syntax STMT: [my-if ( [EXPR x] ) [STMT y]] => [$if x y]\n"
 		"4 + 5\n"
-		"if (1 < 2) 10\n"
+		"my-if (1 < 2) 10\n"
 		"6 + 7\n"
 	);
 	Parser parser = Parser_Create();
@@ -275,9 +275,9 @@ END_TEST
 START_TEST(CanExtendExprWithKeywordRoots)
 {
 	Lexer lexer = SetupLexer(
-		"#syntax EXPR: [if ( [EXPR x] ) [STMT y]] => [$if x y]\n"
+		"#syntax EXPR: [my-if ( [EXPR x] ) [STMT y]] => [$if x y]\n"
 		"4 + 5\n"
-		"x = if (1 < 2) 10\n"
+		"x = my-if (1 < 2) 10\n"
 		"6 + 7\n"
 	);
 	Parser parser = Parser_Create();
@@ -298,12 +298,12 @@ END_TEST
 START_TEST(CanDeclareKeywords)
 {
 	Lexer lexer = SetupLexer(
-		"keyword if, then, else\n"
-		"#syntax STMT: [if [EXPR x] then [STMT y]] => [$if x y]\n"
-		"#syntax STMT: [if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
+		"keyword my-if, then, else\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if x y]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
 		"4 + 5\n"
-		"if 1 < 2 then 10\n"
-		"if 3 < 4 then 30 else 40\n"
+		"my-if 1 < 2 then 10\n"
+		"my-if 3 < 4 then 30 else 40\n"
 		"6 + 7\n"
 	);
 	Parser parser = Parser_Create();
@@ -324,13 +324,13 @@ START_TEST(DeclaringKeywordsChangesParsingBehavior)
 {
 	// Without the keyword declaration, this is a series of operators.
 	Lexer lexer = SetupLexer(
-		"if 4 then 5 else 6\n"
+		"my-if 4 then 5 else 6\n"
 	);
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileList result = (SmileList)Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedResult = SimpleParse("[([([(4 . if)] . then) 5] . else) 6]");
+	SmileObject expectedResult = SimpleParse("[([([(4 . my-if)] . then) 5] . else) 6]");
 
 	ASSERT(parser->firstMessage == NullList);
 	ASSERT(RecursiveEquals((SmileObject)result, expectedResult));
@@ -338,8 +338,8 @@ START_TEST(DeclaringKeywordsChangesParsingBehavior)
 	// With the keyword declaration, this is a syntax error, because 'if' and 'then' and 'else'
 	// cannot be used as unary or binary operators.
 	lexer = SetupLexer(
-		"keyword if, then, else\n"
-		"if 4 then 5 else 6\n"
+		"keyword my-if, then, else\n"
+		"my-if 4 then 5 else 6\n"
 	);
 	parser = Parser_Create();
 	parseScope = ParseScope_CreateRoot();
@@ -348,11 +348,11 @@ START_TEST(DeclaringKeywordsChangesParsingBehavior)
 	ASSERT(parser->firstMessage != NullList);
 
 	// And now the kicker:  *With* the keyword declaration, *and* a syntax rule, this is allowed again,
-	// because 'if' and 'then' and 'else' are still valid for use as syntax keywords.
+	// because 'my-if' and 'then' and 'else' are still valid for use as syntax keywords.
 	lexer = SetupLexer(
-		"#syntax STMT: [if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
-		"keyword if, then, else\n"
-		"if 4 then 5 else 6\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
+		"keyword my-if, then, else\n"
+		"my-if 4 then 5 else 6\n"
 	);
 	parser = Parser_Create();
 	parseScope = ParseScope_CreateRoot();

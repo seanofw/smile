@@ -15,6 +15,8 @@
 //  limitations under the License.
 //---------------------------------------------------------------------------------------
 
+#include <stdlib.h>
+
 #include <smile/types.h>
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/smilesyntax.h>
@@ -42,6 +44,7 @@ STATIC_STRING(MalformedSyntaxPatternIllegalNonterminal, "Invalid syntax pattern:
 STATIC_STRING(MalformedSyntaxPatternIllegalNonterminalName, "Invalid syntax pattern: Nonterminal variables must be named identifiers, not \"%S\".");
 STATIC_STRING(MalformedSyntaxPatternIllegalNonterminalRepeat, "Invalid syntax pattern: Unknown nonterminal repeat kind '%S'.");
 STATIC_STRING(MalformedSyntaxPatternNonterminalRepeatSeparatorMismatch, "Invalid syntax pattern: Nonterminal has a separator '%S' but does not repeat.");
+STATIC_STRING(MalformedSyntaxPatternMissingNameAfterWith, "Invalid syntax pattern: Invalid name after 'with' in nonterminal.");
 
 STATIC_STRING(InvalidPatternError, "Syntax patterns must be non-empty lists.");
 STATIC_STRING(BrokenPatternError, "Internal error: Syntax patterns must only consist of symbols and nonterminals.");
@@ -96,6 +99,7 @@ static ParseError Parser_ValidateSpecialSyntaxClasses(Symbol nonterminal, SmileL
 static ParseError Parser_ParseSyntaxPattern(Parser parser, SmileList **tailRef);
 static ParseError Parser_ParseSyntaxTerminal(Parser parser, SmileList **tailRef);
 static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailRef);
+static ParseError Parser_ParseSyntaxNonterminalWithDeclarations(Parser parser, Int *numWithSymbols, Symbol **withSymbols);
 static void Parser_DeclareNonterminals(SmileList pattern, ParseScope scope, LexerPosition position);
 
 // syntax_expr :: = . syntax_level COLON LBRACKET syntax_pattern RBRACKET IMPLIES raw_list_term
@@ -184,8 +188,8 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *ex
 	return NULL;
 }
 
-// syntax_pattern :: = syntax_element | syntax_element syntax_pattern
-// syntax_element :: = syntax_term | syntax_nonterm
+// syntax_pattern :: = . syntax_element | . syntax_element syntax_pattern
+// syntax_element :: = . syntax_term | . syntax_nonterm
 static ParseError Parser_ParseSyntaxPattern(Parser parser, SmileList **tailRef)
 {
 	ParseError parseError;
@@ -212,7 +216,7 @@ static ParseError Parser_ParseSyntaxPattern(Parser parser, SmileList **tailRef)
 	}
 }
 
-// syntax_term :: = any_name | COMMA | SEMICOLON | COLON | LPAREN syntax_pattern RPAREN | LBRACE syntax_pattern RBRACE
+// syntax_term :: = . any_name | . COMMA | . SEMICOLON | . COLON | . LPAREN syntax_pattern RPAREN | . LBRACE syntax_pattern RBRACE
 static ParseError Parser_ParseSyntaxTerminal(Parser parser, SmileList **tailRef)
 {
 	SmileList *tail = *tailRef;
@@ -293,7 +297,8 @@ static ParseError Parser_ParseSyntaxTerminal(Parser parser, SmileList **tailRef)
 	}
 }
 
-// syntax_nonterm :: = LBRACKET any_name any_name syntax_sep_opt RBRACKET
+// syntax_nonterm :: = . LBRACKET syntax_with_opt any_name any_name syntax_sep_opt RBRACKET
+// syntax_with_opt :: = WITH any_names COLON | 
 static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailRef)
 {
 	ParseError parseError;
@@ -304,6 +309,10 @@ static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailR
 	String punctuationTail;
 	Token token;
 	Int tokenKind;
+	Int numWithSymbols;
+	Symbol *withSymbols;
+
+	STATIC_STRING(withKeyword, "with");
 
 	// Left bracket first.
 	if (Lexer_Next(parser->lexer) != TOKEN_LEFTBRACKET) {
@@ -319,6 +328,32 @@ static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailR
 			String_FormatString(MalformedSyntaxPatternIllegalNonterminal, token->text));
 		Parser_Recover(parser, _syntaxRecover, _syntaxRecoverCount);
 		return parseError;
+	}
+
+	// If the nonterminal name is the special keyword 'with', go parse the list of "with" declarations,
+	// and then collect another nonterminal name.
+	if (String_Equals(token->text, withKeyword)) {
+
+		// Go parse the with declarations, until we reach a ':' token.
+		parseError = Parser_ParseSyntaxNonterminalWithDeclarations(parser, &numWithSymbols, &withSymbols);
+		if (parseError != NULL) {
+			Parser_Recover(parser, _syntaxRecover, _syntaxRecoverCount);
+			return parseError;
+		}
+
+		// Now get the real nonterminal name.
+		token = Parser_NextToken(parser);
+		if (token->kind != TOKEN_ALPHANAME && token->kind != TOKEN_UNKNOWNALPHANAME) {
+			parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
+				String_FormatString(MalformedSyntaxPatternIllegalNonterminal, token->text));
+			Parser_Recover(parser, _syntaxRecover, _syntaxRecoverCount);
+			return parseError;
+		}
+	}
+	else {
+		// No 'with' symbol list.
+		withSymbols = NULL;
+		numWithSymbols = 0;
 	}
 
 	if (String_EndsWith(token->text, String_QuestionMark)) {
@@ -394,7 +429,7 @@ static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailR
 	}
 
 	// Now construct the nonterminal, since we know it's legal.
-	**tailRef = SmileList_Cons((SmileObject)SmileNonterminal_Create(nonterminal, name, repeat, separator), NullObject);
+	**tailRef = SmileList_Cons((SmileObject)SmileNonterminal_Create(nonterminal, name, repeat, separator, numWithSymbols, withSymbols), NullObject);
 	*tailRef = (SmileList *)&((**tailRef)->d);
 	return NULL;
 }
@@ -653,4 +688,99 @@ static ParseError Parser_ValidateSpecialSyntaxClasses(Symbol cls, SmileList patt
 				return parseError;
 			}
 	}
+}
+
+/// <summary>
+/// Lexicographically compare the text of two symbols for ordering.  This uses
+/// an ASCII-betical sort order.  Returns 0 if a==b, &gt;0 if a&gt;b, and &lt;0 if a&lt;b.
+/// </summary>
+Inline Int CompareSymbols(Symbol a, Symbol b)
+{
+	return String_Compare(
+		SymbolTable_GetName(Smile_SymbolTable, a),
+		SymbolTable_GetName(Smile_SymbolTable, b)
+	);
+}
+
+/// <summary>
+/// Helper comparison function for qsort that invokes CompareSymbols to do the real work.
+/// </summary>
+static int qsort_CompareSymbols(const void *a, const void *b)
+{
+	return (int)CompareSymbols(*(Symbol *)a, *(Symbol *)b);
+}
+
+/// <summary>
+/// Lexicographically sort an array of symbols by their text, in-place.  This uses
+/// an ASCII-betical sort order.
+/// </summary>
+Inline void SortSymbols(Int numSymbols, Symbol *symbols)
+{
+	qsort((void *)symbols, (size_t)numSymbols, sizeof(Symbol), qsort_CompareSymbols);
+}
+
+// syntax_with_opt :: = WITH . syntax_with_names COLON |
+// syntax_with_names :: = . syntax_with_names COMMA any_name | . syntax_with_names any_name | . any_name
+static ParseError Parser_ParseSyntaxNonterminalWithDeclarations(Parser parser, Int *numWithSymbolsReturn, Symbol **withSymbolsReturn)
+{
+	Int numWithSymbols, maxWithSymbols;
+	Symbol *withSymbols;
+	Token token;
+	ParseError parseError;
+	Int tokenKind;
+
+	// Create an initial chunk of space for the symbols (up to 16, which is plenty for nearly everything).
+	numWithSymbols = 0;
+	maxWithSymbols = 16;
+	withSymbols = (Symbol *)GC_MALLOC_ATOMIC(sizeof(Symbol) * maxWithSymbols);
+	if (withSymbols == NULL)
+		Smile_Abort_OutOfMemory();
+
+	do {
+		// Read the next thing, which should be a name of some kind.
+		token = Parser_NextToken(parser);
+		if (token->kind != TOKEN_ALPHANAME && token->kind != TOKEN_UNKNOWNALPHANAME) {
+			parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
+				String_FormatString(MalformedSyntaxPatternMissingNameAfterWith, token->text));
+			Parser_Recover(parser, _syntaxRecover, _syntaxRecoverCount);
+			return parseError;
+		}
+
+		// Make enough room in the collection of names for another entry, growing the array if necessary.
+		if (numWithSymbols >= maxWithSymbols) {
+			Int newMax;
+			Symbol *newSymbols;
+
+			newMax = maxWithSymbols * 2;
+			newSymbols = (Symbol *)GC_MALLOC_ATOMIC(sizeof(Symbol) * newMax);
+			if (newSymbols == NULL)
+				Smile_Abort_OutOfMemory();
+
+			MemCpy(newSymbols, withSymbols, sizeof(Symbol) * numWithSymbols);
+			withSymbols = newSymbols;
+			maxWithSymbols = newMax;
+		}
+
+		// Add the new name to the collection of names.
+		withSymbols[numWithSymbols++] = token->data.symbol;
+
+		// Optionally consume a comma.
+		tokenKind = Lexer_Peek(parser->lexer);
+		if (tokenKind == TOKEN_COMMA) {
+			Lexer_Next(parser->lexer);
+		}
+
+		// Keep going until we see a colon.
+	} while (tokenKind != TOKEN_COLON);
+
+	// Got a colon, so consume it.
+	Lexer_Next(parser->lexer);
+
+	// Sort the symbols ASCII-betically so that symbol arrays may be easily compared and diff'ed.
+	SortSymbols(numWithSymbols, withSymbols);
+
+	// Return the resulting collection of names.
+	*numWithSymbolsReturn = numWithSymbols;
+	*withSymbolsReturn = withSymbols;
+	return NULL;
 }

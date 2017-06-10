@@ -22,6 +22,9 @@
 #include <smile/smiletypes/smilesyntax.h>
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/text/smilesymbol.h>
+#include <smile/string.h>
+#include <smile/stringbuilder.h>
+#include <smile/internal/staticstring.h>
 
 SMILE_EASY_OBJECT_VTABLE(SmileNonterminal);
 
@@ -31,7 +34,7 @@ SMILE_EASY_OBJECT_NO_REALS(SmileNonterminal);
 SMILE_EASY_OBJECT_NO_CALL(SmileNonterminal);
 SMILE_EASY_OBJECT_NO_UNBOX(SmileNonterminal)
 
-SmileNonterminal SmileNonterminal_Create(Symbol nonterminal, Symbol name, Symbol repeat, Symbol separator)
+SmileNonterminal SmileNonterminal_Create(Symbol nonterminal, Symbol name, Symbol repeat, Symbol separator, Int numWithSymbols, Symbol *withSymbols)
 {
 	SmileNonterminal smileSyntax = GC_MALLOC_STRUCT(struct SmileNonterminalInt);
 	if (smileSyntax == NULL) Smile_Abort_OutOfMemory();
@@ -43,6 +46,8 @@ SmileNonterminal SmileNonterminal_Create(Symbol nonterminal, Symbol name, Symbol
 	smileSyntax->name = name;
 	smileSyntax->repeat = repeat;
 	smileSyntax->separator = separator;
+	smileSyntax->numWithSymbols = (Int32)numWithSymbols;
+	smileSyntax->withSymbols = withSymbols;
 
 	return smileSyntax;
 }
@@ -146,11 +151,38 @@ static Int32 SmileNonterminal_ToInteger32(SmileNonterminal self, SmileUnboxedDat
 	return 1;
 }
 
+static String SmileNonterminal_WithsToString(SmileNonterminal self)
+{
+	Int i;
+	String withs;
+	DECLARE_INLINE_STRINGBUILDER(withBuilder, 256);
+
+	STATIC_STRING(withText, "with ");
+	STATIC_STRING(commaText, ", ");
+	STATIC_STRING(colonText, ": ");
+
+	if (self->numWithSymbols <= 0)
+		return String_Empty;
+
+	INIT_INLINE_STRINGBUILDER(withBuilder);
+
+	for (i = 0; i < self->numWithSymbols; i++) {
+		StringBuilder_AppendString(withBuilder, i == 0 ? withText : commaText);
+		StringBuilder_AppendString(withBuilder, SymbolTable_GetName(Smile_SymbolTable, self->withSymbols[i]));
+	}
+
+	StringBuilder_AppendString(withBuilder, colonText);
+
+	withs = StringBuilder_ToString(withBuilder);
+	return withs;
+}
+
 static String SmileNonterminal_ToString(SmileNonterminal self, SmileUnboxedData unboxedData)
 {
 	UNUSED(unboxedData);
 
-	return String_Format("%S%S %S%s%S",
+	return String_Format("%S%S%S %S%s%S",
+		SmileNonterminal_WithsToString(self),
 		SymbolTable_GetName(Smile_SymbolTable, self->nonterminal),
 		self->repeat != 0 ? SymbolTable_GetName(Smile_SymbolTable, self->repeat) : String_Empty,
 		SymbolTable_GetName(Smile_SymbolTable, self->name),
