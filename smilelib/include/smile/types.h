@@ -89,6 +89,7 @@ typedef unsigned char Bool;
 #define UInt32Max (~(UInt32)0)
 #define UInt64Max (~(UInt64)0)
 #define UIntMax (~(UInt)0)
+#define PtrIntMax (~(PtrInt)0)
 
 // Global functions for the core runtime.
 SMILE_API_FUNC void Smile_Init(void);
