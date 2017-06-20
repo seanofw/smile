@@ -18,7 +18,7 @@
 #include <smile/numeric/real.h>
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/text/smilesymbol.h>
-#include <smile/smiletypes/numeric/smileinteger32.h>
+#include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/easyobject.h>
 
@@ -58,10 +58,10 @@ SmileObject String_GetProperty(String self, Symbol propertyName)
 {
 	if (propertyName == Smile_KnownSymbols.length) {
 		#if SizeofInt <= 4
-			return (SmileObject)SmileInteger32_Create(String_Length(self));
+			return (SmileObject)SmileInteger64_Create(String_Length(self));
 		#else
 			Int length = String_Length(self);
-			return (SmileObject)SmileInteger32_Create(length < Int32Max ? (Int32)length : Int32Max);
+			return (SmileObject)SmileInteger64_Create(length < Int32Max ? (Int32)length : Int32Max);
 		#endif
 	}
 	return self->base->vtable->getProperty(self->base, propertyName);
