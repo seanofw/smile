@@ -45,6 +45,12 @@ typedef struct StringStruct {
 } *String;
 
 /// <summary>
+/// A StringBuilder, which is a tool for efficiently constructing strings by repeatedly
+/// appending text to them.  This is an incomplete type, as declared here.
+/// </summary>
+typedef struct StringBuilderStruct *StringBuilder;
+
+/// <summary>
 /// Options for use in String_Split().
 /// </summary>
 enum StringSplitOptions {

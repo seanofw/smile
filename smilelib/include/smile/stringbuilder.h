@@ -36,9 +36,9 @@ struct StringBuilderInt {
 /// A StringBuilder, which is a tool for efficiently constructing strings by repeatedly
 /// appending text to them.
 /// </summary>
-typedef struct StringBuilderStruct {
+struct StringBuilderStruct {
 	struct StringBuilderInt _opaque;
-} *StringBuilder;
+};
 
 //-------------------------------------------------------------------------------------------------
 //  External parts of the implementation

@@ -32,6 +32,7 @@ SMILE_API_FUNC void SmileByteArray_Resize(SmileByteArray byteArray, Int length);
 
 SMILE_API_FUNC String String_CreateFromPartialByteArray(const SmileByteArray byteArray, Int start, Int length);
 SMILE_API_FUNC SmileByteArray String_ToPartialByteArray(const String str, Int start, Int length);
+SMILE_API_FUNC SmileByteArray StringBuilder_ToByteArray(StringBuilder stringBuilder);
 
 /// <summary>
 /// Create a string from a full byte array.  This requires O(n) time and space to copy the

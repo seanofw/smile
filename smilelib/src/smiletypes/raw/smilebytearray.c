@@ -22,6 +22,7 @@
 #include <smile/smiletypes/raw/smilebytearray.h>
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/easyobject.h>
+#include <smile/stringbuilder.h>
 #include <smile/internal/staticstring.h>
 
 SMILE_IGNORE_UNUSED_VARIABLES
@@ -81,6 +82,14 @@ SmileByteArray String_ToPartialByteArray(const String str, Int start, Int length
 	// There's a nonempty array of bytes, so create a string from it.
 	return SmileByteArray_CreateInternal((SmileObject)Smile_KnownBases.ByteArray,
 		(Byte *)String_GetBytes(str) + start, length, False);
+}
+
+SMILE_API_FUNC SmileByteArray StringBuilder_ToByteArray(StringBuilder stringBuilder)
+{
+	struct StringBuilderInt *sb = (struct StringBuilderInt *)stringBuilder;
+	SmileByteArray byteArray = SmileByteArray_Create((SmileObject)Smile_KnownBases.ByteArray, sb->length, True);
+	MemCpy(byteArray->data, sb->text, sb->length);
+	return byteArray;
 }
 
 /// <summary>
