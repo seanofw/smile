@@ -175,6 +175,7 @@
     <ClInclude Include="include\smile\simplestats.h" />
     <ClInclude Include="include\smile\smiletypes\base.h" />
     <ClInclude Include="include\smile\smiletypes\easyobject.h" />
+    <ClInclude Include="include\smile\smiletypes\raw\smilebytearray.h" />
     <ClInclude Include="include\smile\smiletypes\smilebool.h" />
     <ClInclude Include="include\smile\smiletypes\smilefunction.h" />
     <ClInclude Include="include\smile\smiletypes\smilelist.h" />
@@ -842,6 +843,8 @@
     <ClCompile Include="src\smiletypes\numeric\smileinteger32_base.c" />
     <ClCompile Include="src\smiletypes\numeric\smileinteger64.c" />
     <ClCompile Include="src\smiletypes\numeric\smileinteger64_base.c" />
+    <ClCompile Include="src\smiletypes\raw\smilebytearray.c" />
+    <ClCompile Include="src\smiletypes\raw\smilebytearray_base.c" />
     <ClCompile Include="src\smiletypes\smilebool.c" />
     <ClCompile Include="src\smiletypes\smilefunction.c" />
     <ClCompile Include="src\smiletypes\smilelist.c" />

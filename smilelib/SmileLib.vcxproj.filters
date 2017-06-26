@@ -124,6 +124,12 @@
     <Filter Include="src\eval\compiler">
       <UniqueIdentifier>{e0e7fac1-228e-44a1-a77e-62e668efbe6e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\smiletypes\raw">
+      <UniqueIdentifier>{7e3ca066-7df7-4dcc-865f-1327d90bb8bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\smiletypes\raw">
+      <UniqueIdentifier>{b3a528c1-668a-4f81-8dda-6e17097b6c2f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gc\src\allchblk.c">
@@ -894,6 +900,12 @@
     <ClCompile Include="src\eval\compiler\compiledblock.c">
       <Filter>src\eval\compiler</Filter>
     </ClCompile>
+    <ClCompile Include="src\smiletypes\raw\smilebytearray.c">
+      <Filter>src\smiletypes\raw</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\raw\smilebytearray_base.c">
+      <Filter>src\smiletypes\raw</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">
@@ -1234,6 +1246,9 @@
     </ClInclude>
     <ClInclude Include="include\smile\eval\compiledblock.h">
       <Filter>include\eval</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\raw\smilebytearray.h">
+      <Filter>include\smiletypes\raw</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

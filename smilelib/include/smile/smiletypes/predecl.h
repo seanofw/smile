@@ -33,4 +33,6 @@ typedef struct SmileUnboxedSymbolInt *SmileUnboxedSymbol;
 typedef struct SmileSyntaxInt *SmileSyntax;
 typedef struct SmileNonterminalInt *SmileNonterminal;
 
+typedef struct SmileByteArrayInt *SmileByteArray;
+
 #endif

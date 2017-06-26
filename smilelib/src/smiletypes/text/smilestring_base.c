@@ -27,6 +27,7 @@
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/base.h>
+#include <smile/smiletypes/raw/smilebytearray.h>
 #include <smile/internal/staticstring.h>
 
 SMILE_IGNORE_UNUSED_VARIABLES
@@ -555,6 +556,8 @@ UnaryProxyFunction(UrlEncode, String_UrlEncode)
 UnaryProxyFunction(UrlQueryEncode, String_UrlQueryEncode)
 UnaryProxyFunction(UrlDecode, String_UrlDecode)
 UnaryProxyFunction(RegexEscape, String_RegexEscape)
+
+UnaryProxyFunction(ByteArray, String_ToByteArray)
 
 //-------------------------------------------------------------------------------------------------
 
@@ -1144,4 +1147,6 @@ void String_Setup(SmileUserObject base)
 	SetupFunction("map", Map, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
 	SetupFunction("where", Where, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
 	SetupFunction("count", Count, NULL, "string", ARG_STATE_MACHINE, 0, 0, 0, NULL);
+
+	SetupFunction("byte-array", ByteArray, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 }

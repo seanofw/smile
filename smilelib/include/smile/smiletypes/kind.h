@@ -56,6 +56,9 @@ typedef enum {
 	SMILE_KIND_BIGFLOAT	= 0x35,
 	SMILE_KIND_REAL128	= 0x38,
 	SMILE_KIND_BIGREAL	= 0x39,
+
+	// Raw buffer types.
+	SMILE_KIND_BYTEARRAY	= 0x40,
 		
 	// Types used for parsing.	
 	SMILE_KIND_SYNTAX	= 0xF0,
