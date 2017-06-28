@@ -176,6 +176,7 @@
     <ClInclude Include="include\smile\smiletypes\base.h" />
     <ClInclude Include="include\smile\smiletypes\easyobject.h" />
     <ClInclude Include="include\smile\smiletypes\raw\smilebytearray.h" />
+    <ClInclude Include="include\smile\smiletypes\smilehandle.h" />
     <ClInclude Include="include\smile\smiletypes\smilebool.h" />
     <ClInclude Include="include\smile\smiletypes\smilefunction.h" />
     <ClInclude Include="include\smile\smiletypes\smilelist.h" />
@@ -754,6 +755,12 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="lib\stdio\stdio_dir.c" />
+    <ClCompile Include="lib\stdio\stdio_dir_base.c" />
+    <ClCompile Include="lib\stdio\stdio_file.c" />
+    <ClCompile Include="lib\stdio\stdio_file_base.c" />
+    <ClCompile Include="lib\stdio\stdio_main.c" />
+    <ClCompile Include="lib\stdio\stdio_path_base.c" />
     <ClCompile Include="src\atomic\atomic.c" />
     <Text Include="src\atomic\atomic_windows_msvc.inc">
       <FileType>Document</FileType>
@@ -845,6 +852,7 @@
     <ClCompile Include="src\smiletypes\numeric\smileinteger64_base.c" />
     <ClCompile Include="src\smiletypes\raw\smilebytearray.c" />
     <ClCompile Include="src\smiletypes\raw\smilebytearray_base.c" />
+    <ClCompile Include="src\smiletypes\smilehandle.c" />
     <ClCompile Include="src\smiletypes\smilebool.c" />
     <ClCompile Include="src\smiletypes\smilefunction.c" />
     <ClCompile Include="src\smiletypes\smilelist.c" />

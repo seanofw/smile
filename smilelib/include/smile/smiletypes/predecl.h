@@ -7,6 +7,8 @@ typedef struct SmileVTableInt *SmileVTable;
 
 typedef struct SmileObjectInt *SmileObject;
 
+typedef struct SmileHandleInt *SmileHandle;
+
 typedef struct SmileListInt *SmileList;
 typedef struct SmileListInt *SmileNull;
 typedef struct SmilePairInt *SmilePair;

@@ -181,6 +181,7 @@ static void SetupMiscTypes(struct KnownBasesStruct *knownBases)
 	knownBases->Bool = SmileUserObject_Create((SmileObject)knownBases->Object);
 	knownBases->Symbol = SmileUserObject_Create((SmileObject)knownBases->Object);
 	knownBases->Exception = SmileUserObject_Create((SmileObject)knownBases->Object);
+	knownBases->Handle = SmileUserObject_Create((SmileObject)knownBases->Object);
 }
 
 void KnownBases_Preload(struct KnownBasesStruct *knownBases)

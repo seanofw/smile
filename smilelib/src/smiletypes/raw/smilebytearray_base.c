@@ -672,7 +672,7 @@ SMILE_EXTERNAL_FUNCTION(Count)
 
 void SmileByteArray_Setup(SmileUserObject base)
 {
-	SetupFunction("of-size", OfSize, (void *)base, "count", 0, 0, 0, 0, NULL);
+	SetupFunction("of-size", OfSize, (void *)base, "count value", 0, 0, 0, 0, NULL);
 
 	SetupFunction("bool", ToBool, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 	SetupFunction("int", ToInt, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);

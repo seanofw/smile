@@ -57,6 +57,7 @@ struct KnownBasesStruct {
 	SmileUserObject     Bool;
 	SmileUserObject     Symbol;
 	SmileUserObject     Exception;
+	SmileUserObject     Handle;
 };
 
 extern void KnownBases_Preload(struct KnownBasesStruct *knownBases);
