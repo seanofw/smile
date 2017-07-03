@@ -190,6 +190,9 @@ SMILE_API_FUNC String String_RegexEscape(const String str);
 SMILE_API_FUNC Bool String_WildcardMatch(const String pattern, const String text, Int wildcardOptions);
 SMILE_API_FUNC String String_JoinEnglishNames(const String *items, Int numItems, const String conjunction);
 
+SMILE_API_FUNC String String_FromUtf16(const UInt16 *text, Int length);
+SMILE_API_FUNC UInt16 *String_ToUtf16(const String str, Int *length);
+
 //-------------------------------------------------------------------------------------------------
 //  External parts of the implementation (HTML-specific transformations)
 
@@ -561,6 +564,15 @@ Inline String String_TrimStart(const String str)
 Inline String String_TrimEnd(const String str)
 {
 	return String_TrimWhitespace(str, False, True);
+}
+
+/// <summary>
+/// Determine if this string contains a '\0' (nul) character — in other words, determine
+/// if it can be safely passed to a standard C string function, or if it would break.
+/// </summary>
+Inline Bool String_ContainsNul(const String str)
+{
+	return (String_IndexOfChar(str, '\0', 0) >= 0);
 }
 
 #endif

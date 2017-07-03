@@ -120,6 +120,11 @@ Inline void StringBuilder_SetLength(StringBuilder stringBuilder, Int length)
 	}
 }
 
+Inline Byte StringBuilder_At(const StringBuilder stringBuilder, Int index)
+{
+	return ((const struct StringBuilderInt *)stringBuilder)->text[index];
+}
+
 Inline const Byte *StringBuilder_GetBytes(const StringBuilder stringBuilder)
 {
 	return ((const struct StringBuilderInt *)stringBuilder)->text;

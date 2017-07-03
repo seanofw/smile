@@ -922,6 +922,7 @@
     <ClCompile Include="lib\stdio\stdio_file_base.c" />
     <ClCompile Include="lib\stdio\stdio_path_base.c" />
     <ClCompile Include="src\smiletypes\smilehandle.c" />
+    <ClCompile Include="src\string\string_utf16.c" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">

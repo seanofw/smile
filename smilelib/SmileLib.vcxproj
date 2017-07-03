@@ -883,6 +883,7 @@
     <ClCompile Include="src\string\string_parsereal.c" />
     <ClCompile Include="src\string\string_static.c" />
     <ClCompile Include="src\string\string_unicode.c" />
+    <ClCompile Include="src\string\string_utf16.c" />
     <ClCompile Include="src\ticks.c" />
     <ClCompile Include="src\unicode\casefolding.c" />
     <ClCompile Include="src\unicode\codepages_cpx.c" />
