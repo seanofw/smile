@@ -509,6 +509,8 @@ static Int ParseAndEval(CommandLineArgs options, String string, String filename,
 	}
 }
 
+void ReplMain();
+
 int main(int argc, const char **argv)
 {
 	String script;
@@ -549,8 +551,7 @@ int main(int argc, const char **argv)
 				"\n",
 				MAJOR_VERSION, MINOR_VERSION, BUILDSTRING);
 		
-			// TODO: FIXME: Create the REPL and invoke it here :-)
-			printf("] (TODO: Add REPL here.)\n\n");
+			ReplMain();
 
 			return 0;
 		}

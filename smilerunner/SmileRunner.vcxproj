@@ -69,7 +69,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <AdditionalLibraryDirectories>$(SolutionDir)smilelib\bin\$(Platform)-$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;smilelib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;smilelib.lib;$(ProjectDir)vendor\wineditline-2.202\lib32\edit_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy /y "$(SolutionDir)smilelib\bin\$(Platform)-$(Configuration)\smilelib.*" "$(ProjectDir)bin\$(Platform)-$(Configuration)"</Command>
@@ -110,6 +110,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.c" />
+    <ClCompile Include="repl.c" />
   </ItemGroup>
   <ItemGroup>
     <Media Include="..\smilelib\bin\$(Platform)-$(Configuration)\SmileLib.dll">
