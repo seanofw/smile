@@ -24,6 +24,11 @@
 #	include "vendor/wineditline-2.202/include/editline/readline.h"
 #endif
 
+extern void ListFiles(String commandLine, Bool longMode, Int consoleWidth);
+extern void ShowHelp(String commandLine);
+
+static Int ProcessCommand(String input);
+
 static ClosureInfo SetupGlobalClosureInfo()
 {
 	ClosureInfo closureInfo = ClosureInfo_Create(NULL, CLOSURE_KIND_GLOBAL);
@@ -88,7 +93,6 @@ static Bool PrintParseMessages(Parser parser)
 
 	return hasErrors;
 }
-
 
 static Int ParseAndEval(String string, ParseScope globalScope, ClosureInfo globalClosureInfo, SmileObject *result)
 {
@@ -166,6 +170,20 @@ static Int ParseAndEval(String string, ParseScope globalScope, ClosureInfo globa
 	}
 }
 
+static Int CalculateConsoleWidth()
+{
+#	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+		HANDLE stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+		CONSOLE_SCREEN_BUFFER_INFO consoleScreenBufferInfo;
+		if (!GetConsoleScreenBufferInfo(stdoutHandle, &consoleScreenBufferInfo))
+			return 80;
+
+		return (Int)consoleScreenBufferInfo.dwSize.X;
+#	else
+#		error Unsupported OS.
+#	endif
+}
+
 static String GetCurDir()
 {
 #	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
@@ -177,7 +195,7 @@ static String GetCurDir()
 			return String_Empty;
 		}
 
-		result = String_FromUtf16(buffer, wcslen(buffer));
+		result = String_ReplaceChar(String_FromUtf16(buffer, wcslen(buffer)), '\\', '/');
 		return result;
 #	else
 #		error Unsupported OS.
@@ -218,7 +236,7 @@ static String GetCurDir()
 static void SetCurDir(String path)
 {
 #	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
-		UInt16 *path16 = String_ToUtf16(path, NULL);
+		UInt16 *path16 = String_ToUtf16(String_ReplaceChar(path, '/', '\\'), NULL);
 
 		if (!SetCurrentDirectoryW(path16)) {
 			printf("Error: %s", String_ToC(GetLastErrorString()));
@@ -226,48 +244,6 @@ static void SetCurDir(String path)
 #	else
 #		error Unsupported OS.
 #	endif
-}
-
-static SmileList GetRawFileList(Bool includeAllFiles)
-{
-#	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
-		WIN32_FIND_DATAW findData;
-		HANDLE findFileHandle;
-		SmileList head = NullList, tail = NullList;
-
-		findFileHandle = FindFirstFileW(L"*", &findData);
-		if (findFileHandle == NULL) {
-			printf("Error: %s", String_ToC(GetLastErrorString()));
-		}
-
-		if (includeAllFiles || findData.cFileName[0] != '.') {
-			LIST_APPEND(head, tail, String_FromUtf16(findData.cFileName, wcslen(findData.cFileName)));
-		}
-
-		while (FindNextFileW(findFileHandle, &findData)) {
-			if (includeAllFiles || findData.cFileName[0] != '.') {
-				LIST_APPEND(head, tail, String_FromUtf16(findData.cFileName, wcslen(findData.cFileName)));
-			}
-		}
-
-		FindClose(findFileHandle);
-
-		return head;
-#	else
-#		error Unsupported OS.
-#	endif
-}
-
-static void ListFiles(void)
-{
-	SmileList fileList;
-
-	fileList = GetRawFileList(False);
-
-	for (; SMILE_KIND(fileList) != SMILE_KIND_NULL; fileList = LIST_REST(fileList)) {
-		String fileName = (String)LIST_FIRST(fileList);
-		printf("%s\n", String_ToC(fileName));
-	}
 }
 
 static void ClearScreen(void)
@@ -292,25 +268,21 @@ static void ClearScreen(void)
 #	endif
 }
 
+enum {
+	UnknownCommand = 0,
+	ProcessedCommand = +1,
+	ExitCommand = -1,
+};
+
 void ReplMain()
 {
 	ClosureInfo globalClosureInfo;
 	ParseScope globalScope;
 	SmileObject result;
 	String resultText;
-
-	String cdSpaceString = String_FromC("cd ");
-	String cdSlashString = String_FromC("cd/");
-	String cdBackslashString = String_FromC("cd\\");
-	String cdDotString = String_FromC("cd.");
-	String cdString = String_FromC("cd");
-	String clearString = String_FromC("clear");
-	String clsString = String_FromC("cls");
-	String lsString = String_FromC("ls");
-	String lsSpaceString = String_FromC("ls ");
-	String pwdString = String_FromC("pwd");
-	String exitString = String_FromC("exit");
-	String quitString = String_FromC("quit");
+	String input;
+	char *line;
+	Int commandType;
 
 	globalClosureInfo = SetupGlobalClosureInfo();
 	globalScope = ParseScope_CreateRoot();
@@ -321,69 +293,18 @@ void ReplMain()
 #	endif
 
 	for (;;) {
-		String input;
-		char *line = readline("] ");
+		line = readline("] ");
 		if (line == NULL) break;
 		input = String_FromC(line);
 
-		input = String_Trim(input);
-		if (String_Length(input) == 0) continue;
+		if (String_IsNullOrWhitespace(input)) continue;
 
 		add_history(line);
 		free(line);
 
-		switch (String_At(input, 0)) {
-			case 'c':
-				if (String_StartsWith(input, cdSpaceString)
-					|| String_StartsWith(input, cdSlashString)
-					|| String_StartsWith(input, cdBackslashString)
-					|| String_StartsWith(input, cdDotString)
-					|| String_Equals(input, cdString)) {
-					String newDir = String_Trim(String_SubstringAt(input, 2));
-					if (!String_IsNullOrEmpty(newDir)) {
-						SetCurDir(newDir);
-						printf("\n");
-					}
-					else {
-						String curDir = GetCurDir();
-						printf("%s\n\n", String_ToC(curDir));
-					}
-					continue;
-				}
-				if (String_Equals(input, clsString)
-					|| String_Equals(input, clearString)) {
-					ClearScreen();
-					continue;
-				}
-				break;
-			case 'l':
-				if (String_StartsWith(input, lsSpaceString)
-					|| String_Equals(input, lsString)) {
-					ListFiles();
-					printf("\n");
-					continue;
-				}
-				break;
-			case 'p':
-				if (String_Equals(input, pwdString)) {
-					String curDir = GetCurDir();
-					printf("%s\n\n", String_ToC(curDir));
-					continue;
-				}
-				break;
-			case 'e':
-				if (String_Equals(input, exitString)) {
-					printf("\n");
-					goto done;
-				}
-				break;
-			case 'q':
-				if (String_Equals(input, quitString)) {
-					printf("\n");
-					goto done;
-				}
-				break;
-		}
+		commandType = ProcessCommand(input);
+		if (commandType == ProcessedCommand) continue;
+		if (commandType == ExitCommand) break;
 
 		if (!ParseAndEval(input, globalScope, globalClosureInfo, &result))
 		{
@@ -394,10 +315,97 @@ void ReplMain()
 		printf("\n");
 	}
 
-done:
 #	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
 		SetConsoleCtrlHandler(NULL, False);
 #	else
 		;
 #	endif
+}
+
+static Int ProcessCommand(String input)
+{
+	Byte ch;
+
+	switch (String_At(input, 0)) {
+
+		case 'c':
+			// Handle "cd" including various special DOSy forms of it like "cd.." .
+			if (String_StartsWithC(input, "cd")
+				&& (String_Length(input) == 2
+					|| (ch = String_At(input, 2)) == ' ' || ch == '/' || ch == '\\' || ch == '.')) {
+				String newDir = String_Trim(String_SubstringAt(input, 2));
+				if (!String_IsNullOrEmpty(newDir)) {
+					SetCurDir(newDir);
+					printf("\n");
+				}
+				else {
+					String curDir = GetCurDir();
+					printf("%s\n\n", String_ToC(curDir));
+				}
+				return ProcessedCommand;
+			}
+
+			// "cls" and "clear".
+			if (String_EqualsC(input, "cls") || String_EqualsC(input, "clear")) {
+				ClearScreen();
+				return ProcessedCommand;
+			}
+			break;
+
+		case 'd':
+			// Handle "dir", possibly with arguments.
+			if (String_StartsWithC(input, "dir")
+				&& (String_Length(input) == 3 || String_At(input, 3) == ' ')) {
+				ListFiles(String_SubstringAt(input, 4), True, CalculateConsoleWidth());
+				printf("\n");
+				return ProcessedCommand;
+			}
+			break;
+
+		case 'e':
+			// "exit".
+			if (String_EqualsC(input, "exit")) {
+				printf("\n");
+				return ExitCommand;
+			}
+			break;
+
+		case 'h':
+			// "help".
+			if (String_StartsWithC(input, "help")
+				&& (String_Length(input) == 4 || String_At(input, 4) == ' ')) {
+				ShowHelp(String_SubstringAt(input, 5));
+				return ProcessedCommand;
+			}
+			break;
+
+		case 'l':
+			// Handle "ls", possibly with arguments.
+			if (String_StartsWithC(input, "ls")
+				&& (String_Length(input) == 2 || String_At(input, 2) == ' ')) {
+				ListFiles(String_SubstringAt(input, 3), False, CalculateConsoleWidth());
+				printf("\n");
+				return ProcessedCommand;
+			}
+			break;
+
+		case 'p':
+			// "pwd".
+			if (String_EqualsC(input, "pwd")) {
+				String curDir = GetCurDir();
+				printf("%s\n\n", String_ToC(curDir));
+				return ProcessedCommand;
+			}
+			break;
+
+		case 'q':
+			// "quit".
+			if (String_EqualsC(input, "quit")) {
+				printf("\n");
+				return ExitCommand;
+			}
+			break;
+	}
+
+	return UnknownCommand;
 }

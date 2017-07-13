@@ -111,6 +111,8 @@
   <ItemGroup>
     <ClCompile Include="main.c" />
     <ClCompile Include="repl.c" />
+    <ClCompile Include="repl_help.c" />
+    <ClCompile Include="repl_ls.c" />
   </ItemGroup>
   <ItemGroup>
     <Media Include="..\smilelib\bin\$(Platform)-$(Configuration)\SmileLib.dll">
