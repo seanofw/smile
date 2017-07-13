@@ -19,6 +19,7 @@
 #include <smile/string.h>
 #include <smile/stringbuilder.h>
 #include <smile/internal/staticstring.h>
+#include <smile/smiletypes/smilelist.h>
 
 STATIC_STRING(CommaSpace, ", ");
 
@@ -891,4 +892,94 @@ String String_JoinEnglishNames(const String *items, Int numItems, const String c
 	}
 
 	return StringBuilder_ToString(stringBuilder);
+}
+
+/// <summary>
+/// Given a string that contains something like a command line, split it on whitespace
+/// and return a list of its arguments.  This parses "quoted sections" and 'quoted sections'
+/// within the command line, and within the quoted sections, it allows backslash to escape
+/// both itself and the quotation mark.  Outside of quoted sections, backslash has no special
+/// meaning.  This is neither the same as Bash semantics nor as Cmd.exe semantics, and is much
+/// simpler than either shell's rules.  For a really complicated command-line system, you'd
+/// probably want more power than this, but for many simple programs, this is more than
+/// sufficient, so we include it as a built-in.
+/// </summary>
+/// <param name="commandLine">The command line to split into pieces.</param>
+/// <returns>A list of the command-line arguments.</returns>
+SmileList String_SplitCommandLine(String commandLine)
+{
+	DECLARE_INLINE_STRINGBUILDER(stringBuilder, 256);
+	SmileList head = NullList, tail = NullList;
+	const Byte *text, *end;
+	Byte ch;
+	Int length;
+
+	INIT_INLINE_STRINGBUILDER(stringBuilder);
+
+	text = String_GetBytes(commandLine);
+	end = text + String_Length(commandLine);
+
+	while (text < end) {
+
+		if ((ch = *text) <= 0x20) {
+
+			// Handle whitespace argument breaks.
+			length = StringBuilder_GetLength(stringBuilder);
+			if (length > 0) {
+				LIST_APPEND(head, tail, StringBuilder_ToString(stringBuilder));
+				StringBuilder_SetLength(stringBuilder, 0);
+			}
+			text++;
+
+			// Consume any subsequent whitespace quickly.
+			while (text < end && *text <= 0x20) text++;
+			continue;
+		}
+		else if (ch == '\"' || ch == '\'') {
+			Byte startChar = ch;
+
+			// If we got a double-quote mark or apostrophe, enter quoted mode.  In quoted mode,
+			// we collect all characters verbatim except quote and backslash.  A closing
+			// quote ends quoted mode, and a backslash can be used to escape quote and
+			// backslash itself.  All other backslash-escapes are *not* resolved; we're
+			// splitting a command-line, not parsing a general-purpose C-style string.
+			text++;
+			while (text < end && (ch = *text) != startChar) {
+				const Byte *start = text;
+				while (text < end && (ch = *text) != startChar && ch != '\\') text++;
+				if (text > start) {
+					// Append any raw characters we found inside the quotes.
+					StringBuilder_Append(stringBuilder, start, 0, text - start);
+				}
+				if (text < end && ch == '\\') {
+					// Got an escape, so consume it and the character that follows it.
+					text++;
+					if (text < end) {
+						ch = *text++;
+						StringBuilder_AppendByte(stringBuilder, ch);
+					}
+				}
+			}
+
+			// Discard the trailing quote mark.
+			if (text < end && ch == startChar) text++;
+		}
+		else {
+
+			// General-purpose mode.  Count characters until we reach either whitespace
+			// or a quote, then jam them onto the StringBuilder.
+			const Byte *start = text++;
+			while (text < end && (ch = *text) > 0x20 && ch != '\"' && ch != '\'') text++;
+			StringBuilder_Append(stringBuilder, start, 0, text - start);
+		}
+	}
+
+	// If there's anything in the StringBuilder that hasn't been added, add it.
+	length = StringBuilder_GetLength(stringBuilder);
+	if (length > 0) {
+		LIST_APPEND(head, tail, StringBuilder_ToString(stringBuilder));
+		StringBuilder_SetLength(stringBuilder, 0);
+	}
+
+	return head;
 }
