@@ -895,6 +895,35 @@ String String_JoinEnglishNames(const String *items, Int numItems, const String c
 }
 
 /// <summary>
+/// This is like a super-sized version of String_IsNullOrEmpty(), in that it
+/// also detects strings that consist entirely of whitespace characters in the
+/// range of [0x00, 0x20].
+/// </summary>
+/// <param name="str">The string to test.</param>
+/// <returns>True if the string is NULL, the empty string, or consists entirely
+/// of whitespace characters in the range of [0x00, 0x20] (inclusive); False if
+/// it contains at least one character outside that range.</returns>
+Bool String_IsNullOrWhitespace(const String str)
+{
+	const Byte *text, *end;
+	Int length;
+
+	if (str == NULL) return True;
+
+	length = String_Length(str);
+	if (!length) return True;
+
+	text = String_GetBytes(str);
+	end = text + length;
+
+	for (; text < end; text++) {
+		if (*text > 0x20) return False;
+	}
+
+	return True;
+}
+
+/// <summary>
 /// Given a string that contains something like a command line, split it on whitespace
 /// and return a list of its arguments.  This parses "quoted sections" and 'quoted sections'
 /// within the command line, and within the quoted sections, it allows backslash to escape
