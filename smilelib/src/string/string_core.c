@@ -218,6 +218,18 @@ Bool String_Equals(const String a, const String b)
 }
 
 /// <summary>
+/// Answer whether two strings are equal, i.e., of the same length and containing the same bytes.
+/// </summary>
+/// <param name="str">The Smile string to compare.</param>
+/// <param name="other">The C string to compare.</param>
+/// <returns>True if they are equal, False if they are not of the same length or contain different bytes.</returns>
+Bool String_EqualsC(const String str, const char *other)
+{
+	Int length = StrLen(other);
+	return String_EqualsInternal(str, (const Byte *)other, length);
+}
+
+/// <summary>
 /// Answer whether a string equals a given chunk of bytes.
 /// </summary>
 /// <param name="a">The first string to compare (which can be NULL).</param>
@@ -518,6 +530,19 @@ Int String_LastIndexOf(const String str, const String pattern, Int start)
 /// <summary>
 /// Test the starting bytes of the string against the given pattern.
 /// </summary>
+/// <param name="str">The Smile string to compare.</param>
+/// <param name="pattern">The C pattern to test the string against.</param>
+/// <returns>True if the start of the string exactly matches the pattern; False if the start of the string does not exactly match the pattern.</returns>
+Bool String_StartsWithC(const String str, const char *pattern)
+{
+	Int length = StrLen(pattern);
+	return length <= String_Length(str)
+		&& IsMatch(String_GetBytes(str), (const Byte *)pattern, 0, length);
+}
+
+/// <summary>
+/// Test the starting bytes of the string against the given pattern.
+/// </summary>
 /// <param name="str">The string to compare.</param>
 /// <param name="pattern">The pattern to test the string against.</param>
 /// <returns>True if the start of the string exactly matches the pattern; False if the start of the string does not exactly match the pattern.</returns>
@@ -525,6 +550,19 @@ Bool String_StartsWith(const String str, const String pattern)
 {
 	return String_Length(pattern) <= String_Length(str)
 		&& IsMatch(String_GetBytes(str), String_GetBytes(pattern), 0, String_Length(pattern));
+}
+
+/// <summary>
+/// Test the ending bytes of the string against the given pattern.
+/// </summary>
+/// <param name="str">The Smile string to compare.</param>
+/// <param name="pattern">The C pattern to test the string against.</param>
+/// <returns>True if the end of the string exactly matches the pattern; False if the end of the string does not exactly match the pattern.</returns>
+Bool String_EndsWithC(const String str, const char *pattern)
+{
+	Int length = StrLen(pattern);
+	return length <= String_Length(str)
+		&& IsMatch(String_GetBytes(str), (const Byte *)pattern, String_Length(str) - length, length);
 }
 
 /// <summary>

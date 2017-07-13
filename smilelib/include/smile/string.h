@@ -147,6 +147,7 @@ SMILE_API_FUNC String String_Join(const String glue, const String *strs, Int num
 SMILE_API_FUNC String String_SlashAppend(const String *strs, Int numStrs);
 
 SMILE_API_FUNC Bool String_Equals(const String str, const String other);
+SMILE_API_FUNC Bool String_EqualsC(const String str, const char *other);
 SMILE_API_FUNC Bool String_EqualsInternal(const String str, const Byte *otherText, Int otherLength);
 SMILE_API_FUNC Int String_Compare(const String a, const String b);
 SMILE_API_FUNC Int String_CompareRange(const String a, Int astart, Int alength, const String b, Int bstart, Int blength);
@@ -158,7 +159,9 @@ SMILE_API_FUNC String String_ConcatByte(const String str, Byte ch);
 
 SMILE_API_FUNC Int String_IndexOf(const String str, const String pattern, Int start);
 SMILE_API_FUNC Int String_LastIndexOf(const String str, const String pattern, Int start);
+SMILE_API_FUNC Bool String_StartsWithC(const String str, const char *pattern);
 SMILE_API_FUNC Bool String_StartsWith(const String str, const String pattern);
+SMILE_API_FUNC Bool String_EndsWithC(const String str, const char *pattern);
 SMILE_API_FUNC Bool String_EndsWith(const String str, const String pattern);
 SMILE_API_FUNC Int String_IndexOfChar(const String str, Byte ch, Int start);
 SMILE_API_FUNC Int String_LastIndexOfChar(const String str, Byte ch, Int start);
