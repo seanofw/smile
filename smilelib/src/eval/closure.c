@@ -143,11 +143,15 @@ void Closure_SetGlobalVariable(Closure closure, Symbol name, SmileObject value)
 		}
 
 		if (closure->parent == NULL) {
+			varInfo = GC_MALLOC_STRUCT(struct VarInfoStruct);
+			if (varInfo == NULL)
+				Smile_Abort_OutOfMemory();
 			varInfo->symbol = name;
 			varInfo->kind = VAR_KIND_GLOBAL;
 			varInfo->offset = 0;
 			varInfo->value = value;
 			VarDict_Add(nearestGlobal->closureInfo->variableDictionary, name, varInfo);
+			return;
 		}
 	}
 }

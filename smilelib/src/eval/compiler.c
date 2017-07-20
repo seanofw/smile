@@ -31,8 +31,13 @@ Int Compiler_SetSourceLocation(Compiler compiler, LexerPosition lexerPosition)
 
 	// Update the source-location tracking to include a new lexer position.
 	CompiledSourceLocation sourceLocation = &compiler->compiledTables->sourcelocations[oldSourceLocation];
-	compiler->currentFunction->currentSourceLocation =
-		Compiler_AddNewSourceLocation(compiler, lexerPosition->filename, lexerPosition->line, lexerPosition->column, sourceLocation->assignedName);
+	if (lexerPosition == NULL) {
+		compiler->currentFunction->currentSourceLocation = 0;
+	}
+	else {
+		compiler->currentFunction->currentSourceLocation =
+			Compiler_AddNewSourceLocation(compiler, lexerPosition->filename, lexerPosition->line, lexerPosition->column, sourceLocation->assignedName);
+	}
 
 	return oldSourceLocation;
 }

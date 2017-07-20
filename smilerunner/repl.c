@@ -18,6 +18,8 @@
 #include "stdafx.h"
 #include <stdlib.h>
 
+#include <smile/parsing/internal/parserinternal.h>
+
 #if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
 #	define WIN32_LEAN_AND_MEAN
 #	include <windows.h>
@@ -98,14 +100,19 @@ static Int ParseAndEval(String string, ParseScope globalScope, ClosureInfo globa
 {
 	Lexer lexer;
 	Parser parser;
-	SmileObject parsedScript;
+	SmileList head, tail;
+	SmileObject expr;
 	EvalResult evalResult;
 
 	lexer = Lexer_Create(string, 0, String_Length(string), NULL, 1, 1);
 	lexer->symbolTable = Smile_SymbolTable;
 	parser = Parser_Create();
+	parser->lexer = lexer;
+	parser->currentScope = globalScope;
 
-	parsedScript = Parser_Parse(parser, lexer, globalScope);
+	// Parse the input into a list of expressions.
+	head = tail = NullList;
+	Parser_ParseExprsOpt(parser, &head, &tail, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
 
 	if (parser->firstMessage != NullList) {
 		Bool hasErrors = PrintParseMessages(parser);
@@ -115,33 +122,13 @@ static Int ParseAndEval(String string, ParseScope globalScope, ClosureInfo globa
 		}
 	}
 
-	// If the script is wrapped with a [$scope], merge that scope's local variables into
-	// the global scope so the user gets more-or-less what they expect:  Their statement's
-	// declared variables will leak into the global parsing scope and global execution closure.
-	if (SMILE_KIND(parsedScript) == SMILE_KIND_LIST
-		&& SMILE_KIND(((SmileList)parsedScript)->a) == SMILE_KIND_SYMBOL
-		&& ((SmileSymbol)((SmileList)parsedScript)->a)->symbol == SMILE_SPECIAL_SYMBOL__SCOPE) {
+	// Turn the list of expressions into a [$progn ...].
+	expr = (SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects._prognSymbol, (SmileObject)head, NULL);
 
-		SmileList scopeList = (SmileList)parsedScript;
-		SmileList variableList = (SmileList)LIST_SECOND(scopeList);
-		
-		// Walk the variable list, and declare them in the global parsing scope and the global
-		// execution closure.
-		for (; SMILE_KIND(variableList) != SMILE_KIND_NULL; variableList = LIST_REST(variableList)) {
-			SmileSymbol smileSymbol = (SmileSymbol)LIST_FIRST(variableList);
-			ParseScope_DeclareHere(globalScope, smileSymbol->symbol, PARSEDECL_VARIABLE, NULL, NULL);
-			Smile_SetGlobalVariable(smileSymbol->symbol, NullObject);
-		}
+	// Compile and eval the [$progn] expression.
+	evalResult = Smile_EvalInScope(globalClosureInfo, expr);
 
-		// Construct a [$progn] in place of the [$scope] for the rest of its arguments.
-		parsedScript = (SmileObject)SmileList_Cons(
-			(SmileObject)SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__PROGN),
-			(SmileObject)LIST_REST(LIST_REST(scopeList))
-		);
-	}
-
-	evalResult = Smile_EvalInScope(globalClosureInfo, parsedScript);
-
+	// Handle errors or aborts.
 	switch (evalResult->evalResultKind) {
 
 		case EVAL_RESULT_EXCEPTION:
