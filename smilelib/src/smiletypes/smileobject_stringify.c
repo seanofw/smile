@@ -266,6 +266,23 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 		StringifyRecursive(((SmileSyntax)obj)->replacement, stringBuilder, indent + 1);
 		return;
 
+	case SMILE_KIND_FUNCTION:
+		{
+			SmileFunction function = (SmileFunction)obj;
+			if (obj->kind & SMILE_FLAG_EXTERNAL_FUNCTION) {
+				StringBuilder_AppendFormat(stringBuilder, "[$fn [%S] <native>]", function->u.externalFunctionInfo.argNames);
+			}
+			else {
+				StringBuilder_AppendFormat(stringBuilder, "[$fn ");
+
+				StringifyRecursive((SmileObject)function->u.u.userFunctionInfo->argList, stringBuilder, indent + 1);
+				StringBuilder_AppendByte(stringBuilder, ' ');
+				StringifyRecursive(function->u.u.userFunctionInfo->body, stringBuilder, indent + 1);
+				StringBuilder_AppendFormat(stringBuilder, "]");
+			}
+		}
+		return;
+
 	default:
 		StringBuilder_AppendFormat(stringBuilder, "<%d>", SMILE_KIND(obj));
 		return;
