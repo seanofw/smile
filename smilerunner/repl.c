@@ -27,7 +27,7 @@
 extern void ListFiles(String commandLine, Bool longMode, Int consoleWidth);
 extern void ShowHelp(String commandLine);
 
-static Int ProcessCommand(String input);
+static Int ProcessCommand(String input, ParseScope globalScope, ClosureInfo globalClosureInfo, SmileObject *result);
 
 static ClosureInfo SetupGlobalClosureInfo()
 {
@@ -60,12 +60,12 @@ static Bool PrintParseMessages(Parser parser)
 
 			case PARSEMESSAGE_WARNING:
 				shouldPrint = True;
-				prefix = "! Warning:";
+				prefix = "!Warning:";
 				break;
 
 			case PARSEMESSAGE_ERROR:
 				shouldPrint = True;
-				prefix = "? Error:";
+				prefix = "?Error:";
 				hasErrors = True;
 				break;
 		}
@@ -302,7 +302,7 @@ void ReplMain()
 		add_history(line);
 		free(line);
 
-		commandType = ProcessCommand(input);
+		commandType = ProcessCommand(input, globalScope, globalClosureInfo, &result);
 		if (commandType == ProcessedCommand) continue;
 		if (commandType == ExitCommand) break;
 
@@ -322,7 +322,7 @@ void ReplMain()
 #	endif
 }
 
-static Int ProcessCommand(String input)
+static Int ProcessCommand(String input, ParseScope globalScope, ClosureInfo globalClosureInfo, SmileObject *result)
 {
 	Byte ch;
 
@@ -346,8 +346,35 @@ static Int ProcessCommand(String input)
 			}
 
 			// "cls" and "clear".
-			if (String_EqualsC(input, "cls") || String_EqualsC(input, "clear")) {
+			if (String_StartsWithC(input, "cls")
+				&& (String_Length(input) == 3 || String_At(input, 3) == ' ')) {
 				ClearScreen();
+				return ProcessedCommand;
+			}
+			if (String_StartsWithC(input, "clear")
+				&& (String_Length(input) == 5 || String_At(input, 5) == ' ')) {
+				ClearScreen();
+				return ProcessedCommand;
+			}
+
+			// "closure".
+			if (String_StartsWithC(input, "closure")
+				&& (String_Length(input) == 7 || String_At(input, 7) == ' ')) {
+				printf("Error: The 'closure' command is not yet supported.\n\n");
+				return ProcessedCommand;
+			}
+
+			// "closures".
+			if (String_StartsWithC(input, "closures")
+				&& (String_Length(input) == 8 || String_At(input, 8) == ' ')) {
+				printf("Error: The 'closures' command is not yet supported.\n\n");
+				return ProcessedCommand;
+			}
+
+			// "continue".
+			if (String_StartsWithC(input, "continue")
+				&& (String_Length(input) == 8 || String_At(input, 8) == ' ')) {
+				printf("Error: The 'continue'/'go' command is not yet supported.\n\n");
 				return ProcessedCommand;
 			}
 			break;
@@ -364,9 +391,31 @@ static Int ProcessCommand(String input)
 
 		case 'e':
 			// "exit".
-			if (String_EqualsC(input, "exit")) {
+			if (String_StartsWithC(input, "exit")
+				&& (String_Length(input) == 4 || String_At(input, 4) == ' ')) {
 				printf("\n");
 				return ExitCommand;
+			}
+
+			// "eval".
+			if (String_StartsWithC(input, "eval")
+				&& (String_Length(input) == 4 || String_At(input, 4) == ' ')) {
+				String expr = String_SubstringAt(input, 5);
+				if (!ParseAndEval(expr, globalScope, globalClosureInfo, result))
+				{
+					String resultText = SmileObject_Stringify(*result);
+					printf("%s\n", String_ToC(resultText));
+				}
+				printf("\n");
+				return ProcessedCommand;
+			}
+			break;
+
+		case 'g':
+			if (String_StartsWithC(input, "go")
+				&& (String_Length(input) == 2 || String_At(input, 2) == ' ')) {
+				printf("Error: The 'continue'/'go' command is not yet supported.\n\n");
+				return ProcessedCommand;
 			}
 			break;
 
@@ -387,11 +436,22 @@ static Int ProcessCommand(String input)
 				printf("\n");
 				return ProcessedCommand;
 			}
+			if (String_StartsWithC(input, "loc")
+				&& (String_Length(input) == 3 || String_At(input, 3) == ' ')) {
+				printf("Error: The 'loc'/'location' command is not yet supported.\n\n");
+				return ProcessedCommand;
+			}
+			if (String_StartsWithC(input, "location")
+				&& (String_Length(input) == 8 || String_At(input, 8) == ' ')) {
+				printf("Error: The 'loc'/'location' command is not yet supported.\n\n");
+				return ProcessedCommand;
+			}
 			break;
 
 		case 'p':
 			// "pwd".
-			if (String_EqualsC(input, "pwd")) {
+			if (String_StartsWithC(input, "pwd")
+				&& (String_Length(input) == 3 || String_At(input, 3) == ' ')) {
 				String curDir = GetCurDir();
 				printf("%s\n\n", String_ToC(curDir));
 				return ProcessedCommand;
@@ -400,9 +460,19 @@ static Int ProcessCommand(String input)
 
 		case 'q':
 			// "quit".
-			if (String_EqualsC(input, "quit")) {
+			if (String_StartsWithC(input, "quit")
+				&& (String_Length(input) == 4 || String_At(input, 4) == ' ')) {
 				printf("\n");
 				return ExitCommand;
+			}
+			break;
+
+		case 'r':
+			// Handle "run", possibly with arguments.
+			if (String_StartsWithC(input, "run")
+				&& (String_Length(input) == 3 || String_At(input, 3) == ' ')) {
+				printf("Error: The 'run' command is not yet supported.\n\n");
+				return ProcessedCommand;
 			}
 			break;
 	}
