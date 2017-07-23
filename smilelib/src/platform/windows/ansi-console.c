@@ -1,11 +1,14 @@
-// Yasuhiro Matsumoto's (mattn's) "ansicolor-w32.c" library,
-// found at https://github.com/mattn/ansicolor-w32.c .
-// It is covered under the MIT open-source license.
+// This code is based on Yasuhiro Matsumoto's (mattn's) "ansicolor-w32.c" library,
+// found at https://github.com/mattn/ansicolor-w32.c , heavily refactored and
+// with lots of additional functionality.
+//
+// The original is covered under the MIT open-source license, and unlike the rest
+// of SmileLib this file is covered under the MIT open-source license as well.
 
 #ifdef _WIN32
+
+#include <smile/platform/windows/ansi-console.h>
 #include <windows.h>
-#include <stdarg.h>
-#include <stdio.h>
 #include <errno.h>
 
 #ifndef FOREGROUND_MASK
@@ -312,26 +315,23 @@ static void ProcessAnsiEscapeCode(HANDLE handle, ConsoleState consoleState, char
 	}
 }
 
-static const char *ParseAndExecuteEscapeCode(FILE *fp, const char *ptr, HANDLE handle, ConsoleState consoleState)
+static const char *ParseAndExecuteEscapeCode(FILE *fp, const char *ptr, const char *end, HANDLE handle, ConsoleState consoleState)
 {
-	char mode;
-	int values[8];
-	int i, numValues, modifier;
+	char ch, mode;
+	int values[65];
+	int numValues, modifier;
 
 	// Reset the 'values' collection.
-	for (i = 0; i < 8; i++) {
-		values[i] = -1;
-	}
 	numValues = 0;
+	values[0] = -1;
 
 	// Consume the '\e' itself.
 	ptr++;
 
-	// Parse the input into a list of  until we reach either the action code or an EOI.
-	for (;;) {
-		char ch;
-		if ((ch = *ptr++) == '\0')
-			return ptr - 1;
+	// Parse the input into a list of numbers until we reach either the action code or an EOI.
+	mode = '\0';
+	while (ptr < end) {
+		ch = *ptr++;
 
 		if (isdigit(ch)) {
 			if (values[numValues] == -1)
@@ -343,7 +343,8 @@ static const char *ParseAndExecuteEscapeCode(FILE *fp, const char *ptr, HANDLE h
 			continue;
 		}
 		else if (ch == ';') {
-			if (numValues < 7) numValues++;
+			if (numValues < 64)
+				values[++numValues] = -1;
 		}
 		else if (ch == '>' || ch == '?') {
 			modifier = ch;
@@ -360,33 +361,29 @@ static const char *ParseAndExecuteEscapeCode(FILE *fp, const char *ptr, HANDLE h
 	return ptr;
 }
 
-int __write_w32(FILE *fp, const char *buf)
+size_t fwrite_ansi_win32(const void *data, size_t size, size_t count, FILE *fp)
 {
 	static int first = 1;
 	HANDLE handle = INVALID_HANDLE_VALUE;
 	struct ConsoleStateStruct consoleState;
-	const char *ptr = buf;
-
-	if (fp != stdout && fp != stderr) {
-		int len = strlen(buf);
-		fwrite(buf, 1, len, fp);
-		return len;
-	}
+	const char *ptr = (const char *)data;
+	const char *end = ptr + size * count;
 
 	handle = (HANDLE)_get_osfhandle(fileno(fp));
-	GetConsoleScreenBufferInfo(handle, &consoleState.consoleScreenBufferInfo);
+	if (!GetConsoleScreenBufferInfo(handle, &consoleState.consoleScreenBufferInfo))
+		return fwrite(data, size, count, fp);
 
 	consoleState.attrOld = consoleState.consoleScreenBufferInfo.wAttributes;
 
-	while (*ptr) {
+	while (ptr < end) {
 		if (*ptr == '\033') {
 			// Handle this escape code.
-			ptr = ParseAndExecuteEscapeCode(fp, ptr, handle, &consoleState);
+			ptr = ParseAndExecuteEscapeCode(fp, ptr, end, handle, &consoleState);
 		}
 		else {
 			// Find the extent of this sequence of characters that *isn't* escape codes.
 			const char *start = ptr;
-			while (*ptr != '\033' && *ptr != '\0') ptr++;
+			while (ptr < end && *ptr != '\033') ptr++;
 
 			// Write the whole sequence.
 			if (ptr > start) {
@@ -395,36 +392,75 @@ int __write_w32(FILE *fp, const char *buf)
 		}
 	}
 
-	return (int)(ptr - buf);
+	return (size_t)(ptr - (const char *)data) / size;
 }
 
-int _fprintf_w32(FILE* fp, const char* format, ...)
+int vfprintf_ansi_win32(FILE *fp, const char *format, va_list v)
 {
-	va_list args;
 	int r;
-	char *buf = NULL;
+	char inlineBuf[256];
+	char *tempBuf = NULL;
+	char *buf;
 
-	va_start(args, format);
-	r = _vscprintf(format, args);
-	buf = malloc(sizeof(char) * (r + 1));
-	if (buf == NULL) return 0;
+	r = _vscprintf(format, v);
+	if (r >= 256) {
+		tempBuf = malloc(sizeof(char) * (r + 1));
+		if (tempBuf == NULL)
+			Smile_Abort_OutOfMemory();
+		buf = tempBuf;
+	}
+	else buf = inlineBuf;
+	
+	r = vsprintf(buf, format, v);
+	if (r > 0)
+		r = fwrite_ansi_win32(buf, 1, r, fp);
 
-	r = vsprintf(buf, format, args);
-	va_end(args);
-
-	if (r != -1)
-		r = __write_w32(fp, buf);
-	if (buf) free(buf);
+	if (tempBuf != NULL)
+		free(tempBuf);
 
 	return r;
 }
 
-int _fputs_w32(FILE* fp, const char* s)
+int fprintf_ansi_win32(FILE *fp, const char *format, ...)
 {
-	int r = __write_w32(fp, s);
-	r += __write_w32(fp, "\n");
+	int r;
+	va_list v;
+
+	va_start(v, format);
+	r = vfprintf_ansi_win32(fp, format, v);
+	va_end(v);
 
 	return r;
+}
+
+int fputs_ansi_win32(FILE *fp, const char *s)
+{
+	int r = fwrite_ansi_win32(s, 1, strlen(s), fp);
+	r += fwrite_ansi_win32("\n", 1, 1, fp);
+
+	return r;
+}
+
+int printf_ansi_win32(const char *format, ...)
+{
+	int r;
+	va_list v;
+
+	va_start(v, format);
+	r = vfprintf_ansi_win32(stdout, format, v);
+	va_end(v);
+
+	return r;
+}
+
+int vprintf_ansi_win32(const char *format, va_list v)
+{
+	return vfprintf_ansi_win32(stdout, format, v);
+}
+
+int puts_ansi_win32(const char *s)
+{
+	fputs_ansi_win32(stdout, s);
 }
 
 #endif

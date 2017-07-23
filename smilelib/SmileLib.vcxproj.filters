@@ -923,6 +923,7 @@
     <ClCompile Include="lib\stdio\stdio_path_base.c" />
     <ClCompile Include="src\smiletypes\smilehandle.c" />
     <ClCompile Include="src\string\string_utf16.c" />
+    <ClCompile Include="src\platform\windows\ansi-console.c" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">
@@ -1268,6 +1269,7 @@
       <Filter>include\smiletypes\raw</Filter>
     </ClInclude>
     <ClInclude Include="include\smile\smiletypes\smilehandle.h" />
+    <ClInclude Include="include\smile\platform\windows\ansi-console.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\smile\array.h">

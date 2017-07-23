@@ -106,6 +106,7 @@ int main(int argc, const char **argv)
 
 	if (InteractiveMode) {
 		printf(" Press any key to exit the test runner. ");
+		fflush(stdout);
 		WaitForAnyKey();
 	}
 

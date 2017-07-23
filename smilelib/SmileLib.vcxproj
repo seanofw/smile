@@ -172,6 +172,7 @@
     <ClInclude Include="include\smile\platform\platform.h" />
     <ClInclude Include="include\smile\platform\windows-msvc-x64\platform.h" />
     <ClInclude Include="include\smile\platform\windows-msvc-x86\platform.h" />
+    <ClInclude Include="include\smile\platform\windows\ansi-console.h" />
     <ClInclude Include="include\smile\simplestats.h" />
     <ClInclude Include="include\smile\smiletypes\base.h" />
     <ClInclude Include="include\smile\smiletypes\easyobject.h" />
@@ -840,6 +841,12 @@
     <ClCompile Include="src\parsing\parser\parsesyntax.c" />
     <ClCompile Include="src\parsing\parser\parseterm.c" />
     <ClCompile Include="src\parsing\parser\parsetill.c" />
+    <ClCompile Include="src\platform\windows\ansi-console.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
     <ClCompile Include="src\siphash.c" />
     <ClCompile Include="src\smiletypes\numeric\smilebyte.c" />
     <ClCompile Include="src\smiletypes\numeric\smilebyte_base.c" />
