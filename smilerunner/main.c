@@ -18,6 +18,13 @@
 #include "stdafx.h"
 #include "buildnum.h"
 
+#include "style.h"
+
+#if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+#	define WIN32_LEAN_AND_MEAN
+#	include <windows.h>
+#endif
+
 #define MAJOR_VERSION 0
 #define MINOR_VERSION 1
 
@@ -49,9 +56,9 @@ static void Verbose(const char *format, ...)
 {
 	va_list v;
 	va_start(v, format);
-	puts("- ");
-	vfprintf(stdout, format, v);
-	puts("\n");
+	printf_styled("\033[0;37m- ");
+	vprintf_styled(format, v);
+	printf_styled("\033[0m\n");
 	va_end(v);
 }
 
@@ -60,44 +67,48 @@ static void Error(const char *filename, Int line, const char *format, ...)
 	va_list v;
 	va_start(v, format);
 
+	fprintf_styled(stderr, "\033[0;31;1m");
+
 	if (filename != NULL) {
 		if (line > 0) {
-			fprintf(stderr, "%s:%d: ", filename, (int)line);
+			fprintf_styled(stderr, "%s:%d: ", filename, (int)line);
 		}
 		else {
-			fprintf(stderr, "%s: ", filename);
+			fprintf_styled(stderr, "%s: ", filename);
 		}
 	}
 
-	vfprintf(stderr, format, v);
-	fputs("\n", stderr);
+	fprintf_styled(stderr, "\033[33;1m");
+
+	vfprintf_styled(stderr, format, v);
+	fprintf_styled(stderr, "\033[0m\n");
 
 	va_end(v);
 }
 
 static void PrintHelp()
 {
-	printf(
+	printf_styled(
 		"\n"
-		"Usage: smile [options] [--] program.sm ...\n"
+		"\033[0;37;1mUsage: \033[33msmile \033[0;36m[\033[1moptions\033[0;36m] [\033[1m--\033[0;36m] \033[1;37mprogram.sm \033[0;36m...\n"
 		"\n"
-		"Execution options:\n"
-		"  -c --check     Check syntax and for warnings/errors, but do not run\n"
-		"  -Dname=value   Define a global variable with the given constant value.\n"
-		"  -e 'script'    One line of program (several -e's allowed; omit program.sm)\n"
-		"  -n             Wrap script with \"till done { line = get-line Stdin ... }\"\n"
-		"  -o             Print program's resulting value to Stdout\n"
-		"  -p             Like '-n', but also add \"Stdout print line\" in the loop\n"
+		"\033[0;37;1mExecution options:\033[0;37m\n"
+		"  \033[0;1;36m-c --check     \033[0;37mCheck syntax and for warnings/errors, but do not run\n"
+		"  \033[0;1;36m-D\033[0;36mname=value   \033[0;37mDefine a global variable with the given constant value.\n"
+		"  \033[0;1;36m-e \033[0;36m'script'    \033[0;37mOne line of program (several -e's allowed; omit program.sm)\n"
+		"  \033[0;1;36m-n             \033[0;37mWrap script with \"till done { line = get-line Stdin ... }\"\n"
+		"  \033[0;1;36m-o             \033[0;37mPrint program's resulting value to Stdout\n"
+		"  \033[0;1;36m-p             \033[0;37mLike '-n', but also add \"Stdout print line\" in the loop\n"
 		"\n"
-		"Information options:\n"
-		"  -h --help      Help (you're looking at it)\n"
-		"  -q --quiet     Do not display any warning messages\n"
-		"  -v --verbose   Display additional version and/or debugging information\n"
-		"  --warnings-as-errors\n"
-		"                 Treat any warnings found the same as errors, and abort\n"
+		"\033[0;37;1mInformation options:\033[0;37m\n"
+		"  \033[0;1;36m-h --help      \033[0;37mHelp (you're looking at it)\n"
+		"  \033[0;1;36m-q --quiet     \033[0;37mDo not display any warning messages\n"
+		"  \033[0;1;36m-v --verbose   \033[0;37mDisplay additional version and/or debugging information\n"
+		"  \033[0;1;36m--warnings-as-errors\n"
+		"                 \033[0;37mTreat any warnings found the same as errors, and abort\n"
 		"\n"
-		"Control options:\n"
-		"  --             Treat subsequent arguments as program name/args.\n"
+		"\033[0;37;1mControl options:\033[0;37m\n"
+		"  \033[0;1;36m--             \033[0;37mTreat subsequent arguments as program name/args.\n"
 		"\n"
 	);
 }
@@ -510,8 +521,31 @@ static Int ParseAndEval(CommandLineArgs options, String string, String filename,
 }
 
 void ReplMain();
+static int SmileMain(int argc, const char **argv);
 
 int main(int argc, const char **argv)
+{
+	UInt32 oldConsoleCP, oldConsoleOutputCP;
+	int result;
+
+#	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+		oldConsoleCP = GetConsoleCP();
+		oldConsoleOutputCP = GetConsoleOutputCP();
+		SetConsoleCP(CP_UTF8);
+		SetConsoleOutputCP(CP_UTF8);
+#	endif
+
+	result = SmileMain(argc, argv);
+
+#	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+		SetConsoleCP(oldConsoleCP);
+		SetConsoleOutputCP(oldConsoleOutputCP);
+#	endif
+
+	return result;
+}
+
+static int SmileMain(int argc, const char **argv)
 {
 	String script;
 	String scriptName;
@@ -539,15 +573,16 @@ int main(int argc, const char **argv)
 				Verbose("No script given, so entering REPL.");
 			}
 		
-			printf(
-				"+--------------------------------+\n"
-				"  Smile Programming Language\n"
-				"  v%d.%d / %s\n"
-				"+--------------------------------+\n"
+			printf_styled(
 				"\n"
-				"Welcome to Smile! :-)\n"
+				"\033[0;36;44;38;5;26;48;5;20m+----------------------------+\033[0m\n"
+				"\033[0;36;44;38;5;26;48;5;20m| \033[0;33;44;1mSmile Programming Language \033[0;36;44;38;5;26;48;5;20m|\033[0m\n"
+				"\033[0;36;44;38;5;26;48;5;20m|  \033[1mv%d.%d / %s  \033[0;36;44;38;5;26;48;5;20m|\033[0m\n"
+				"\033[0;36;44;38;5;26;48;5;20m+----------------------------+\033[0m\n"
 				"\n"
-				"For help, type \"help\" and press Enter.\n"
+				"\033[0;37;1mWelcome to Smile! \033[33;1m:-)\033[0m\n"
+				"\n"
+				"For help, type \"\033[0;1;36mhelp\033[0m\" and press Enter.\n"
 				"\n",
 				MAJOR_VERSION, MINOR_VERSION, BUILDSTRING);
 		

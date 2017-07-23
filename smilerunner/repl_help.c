@@ -18,6 +18,8 @@
 #include "stdafx.h"
 #include <stdlib.h>
 
+#include "style.h"
+
 static Bool _firstTime = True;
 static UInt32 _rand = 0;
 
@@ -46,22 +48,22 @@ static String GenerateMazeOfTwistyPassages(void)
 	_rand = _rand * 69069 + 1;
 	switch ((_rand >> 16) % 6) {
 		case 0:
-			StringBuilder_AppendFormat(stringBuilder, "a little maze of twisty passages");
+			StringBuilder_AppendFormat(stringBuilder, "\033[0;1ma little maze of twisty passages\033[0m");
 			break;
 		case 1:
-			StringBuilder_AppendFormat(stringBuilder, "a twisty maze of little passages");
+			StringBuilder_AppendFormat(stringBuilder, "\033[0;1ma twisty maze of little passages\033[0m");
 			break;
 		case 2:
-			StringBuilder_AppendFormat(stringBuilder, "a little twisty maze of passages");
+			StringBuilder_AppendFormat(stringBuilder, "\033[0;1ma little twisty maze of passages\033[0m");
 			break;
 		case 3:
-			StringBuilder_AppendFormat(stringBuilder, "a twisty little maze of passages");
+			StringBuilder_AppendFormat(stringBuilder, "\033[0;1ma twisty little maze of passages\033[0m");
 			break;
 		case 4:
-			StringBuilder_AppendFormat(stringBuilder, "a maze of twisty little passages");
+			StringBuilder_AppendFormat(stringBuilder, "\033[0;1ma maze of twisty little passages\033[0m");
 			break;
 		case 5:
-			StringBuilder_AppendFormat(stringBuilder, "a maze of little twisty passages");
+			StringBuilder_AppendFormat(stringBuilder, "\033[0;1ma maze of little twisty passages\033[0m");
 			break;
 	}
 
@@ -101,7 +103,7 @@ static String GenerateJokeResponse(void)
 					"Command lines really aren't that complicated.",
 					"We put a detailed user's manual under your chair, just for you.\n"
 						"You should bend over and check it out.",
-					"Step 1. Unplug the computer.  Step 2. Leave it unplugged.",
+					"\033[0;1mStep 1.\033[0m Unplug the computer.  \033[0;1mStep 2.\033[0m Leave it unplugged.",
 				};
 				_rand = _rand * 69069 + 1;
 				return String_FromC(putDowns[(_rand >> 16) % (sizeof(putDowns) / sizeof(char *))]);
@@ -109,13 +111,13 @@ static String GenerateJokeResponse(void)
 		case 1:
 			{
 				static const char *funnyAnswers[] = {
-					"Don't panic!",
+					"\033[0;1;33mDon't panic!\033[0m",
 					"A Saint Bernard with a small barrel of brandy will be along shortly.",
 					"Do you need somebody?  And not just anybody?",
 					"Start bailing out the boat, and I'll throw you a life jacket!",
 					"Have you tried turning it off and back on again?",
 					"This is the helpdesk.  Please hold.",
-					"This is Judy from Time Life Magazines, how can I help you?",
+					"This is Judy from \033[0;1;36mTime Life Magazines\033[0m, how can I help you?",
 					"Your call is important to us.  Please stay on the line.",
 					"We are experiencing abnormal call volume at this time.",
 					"You see a lamp and a grue here.  Try not to be eaten by the grue.",
@@ -128,9 +130,9 @@ static String GenerateJokeResponse(void)
 		case 2:
 			{
 				static const char *actualHelp[] = {
-					"If things are that bad, have you considered dialing 911?",
-					"Have you considered asking the fine people at StackOverflow?",
-					"There's lots of documentation on smile-lang.org.",
+					"If things are that bad, have you considered dialing \033[0;1;36m911\033[0m?",
+					"Have you considered asking the fine people at \033[0;1;36mStackOverflow\033[0m?",
+					"There's lots of documentation on \033[0;1;36msmile-lang.org\033[0m.",
 				};
 				_rand = _rand * 69069 + 1;
 				return String_FromC(actualHelp[(_rand >> 16) % (sizeof(actualHelp) / sizeof(char *))]);
@@ -155,8 +157,9 @@ static String GenerateJokeResponse(void)
 		case 4:
 			{
 				static const char *searchEngines[] = {
-					"A Google", "A Bing", "A Yahoo", "A Baidu", "A Duck Duck Go", "A Wolfram Alpha",
-					"An AltaVista", "A Wikipedia", "An archive.org",
+					"A \033[0;1;36mGoogle\033[0m", "A \033[0;1;36mBing\033[0m", "A \033[0;1;36mYahoo\033[0m",
+					"A \033[0;1;36mBaidu\033[0m", "A \033[0;1;36mDuck Duck Go\033[0m", "A \033[0;1;36mWolfram Alpha\033[0m",
+					"An \033[0;1;36mAltaVista\033[0m", "A \033[0;1;36mWikipedia\033[0m", "An \033[0;1;36marchive.org\033[0m",
 				};
 				_rand = _rand * 69069 + 1;
 				return String_Format("%s search can answer a lot of questions.",
@@ -169,7 +172,7 @@ static String GenerateJokeResponse(void)
 					"Pinterest", "YouTube", "LinkedIn", "Flickr", "Reddit", "WhatsApp",
 				};
 				_rand = _rand * 69069 + 1;
-				return String_Format("Try asking your friends on %s.",
+				return String_Format("Try asking your friends on \033[0;1;36m%s\033[0m.",
 					socialMediaSites[(_rand >> 16) % (sizeof(socialMediaSites) / sizeof(char *))]);
 			}
 		case 6:
@@ -193,28 +196,28 @@ void ShowHelp(String commandLine)
 	String input = String_Trim(commandLine);
 
 	if (String_IsNullOrEmpty(input)) {
-		printf(
-			"\n"
+		printf_styled(
+			"\033[0m\n"
 			"This is the Smile REPL (read-evaluate-print loop).  At the\n"
 			"REPL, you can type ordinary Smile code to run it, and you can\n"
 			"type special commands to perform common operations for\n"
 			"manipulating, running, testing, and debugging Smile programs.\n"
 			"\n"
-			"Commands:\n"
-			"  cd        cls       exit  location  run\n"
-			"  clear     continue  go    ls\n"
-			"  closure   dir       help  pwd\n"
-			"  closures  eval      loc   quit\n"
+			"\033[1mCommands:\033[0m\n"
+			"\033[1;36m  cd        cls       exit  location  run\033[0m\n"
+			"\033[1;36m  clear     continue  go    ls\033[0m\n"
+			"\033[1;36m  closure   dir       help  pwd\033[0m\n"
+			"\033[1;36m  closures  eval      loc   quit\033[0m\n"
 			"\n"
-			"For help on any specific command, type \"help [command]\".\n"
+			"For help on any specific command, type \"\033[1;36mhelp \033[0;36m[command]\033[0m\".\n"
 			"\n"
-			"To exit the Smile REPL, type \"exit\" and press Enter.\n"
+			"To exit the Smile REPL, type \"\033[1;36mexit\033[0m\" and press Enter.\n"
 			"\n"
 		);
 	}
 	else if (String_EqualsC(input, "cd")) {
-		printf(
-			"Usage: cd [path]\n"
+		printf_styled(
+			"\033[0;1;37mUsage: \033[1;33mcd \033[0;36m[path]\033[0m\n"
 			"\n"
 			"Change the current working directory to the given path (which\n"
 			"may be either absolute or relative, just like with the shell's cd\n"
@@ -225,8 +228,8 @@ void ShowHelp(String commandLine)
 		);
 	}
 	else if (String_EqualsC(input, "clear") || String_EqualsC(input, "cls")) {
-		printf(
-			"Usage: %s\n"
+		printf_styled(
+			"\033[0;1;37mUsage: \033[1;33m%s\033[0m\n"
 			"\n"
 			"Clear the screen.\n"
 			"\n",
@@ -234,8 +237,8 @@ void ShowHelp(String commandLine)
 		);
 	}
 	else if (String_EqualsC(input, "closure")) {
-		printf(
-			"Usage: closure [number]\n"
+		printf_styled(
+			"\033[0;1;37mUsage: \033[1;33mclosure \033[0;36m[number]\033[0m\n"
 			"\n"
 			"Show the state of the current (deepest) closure.  This will list\n"
 			"the variables defined within the given closure, along with their\n"
@@ -248,8 +251,8 @@ void ShowHelp(String commandLine)
 		);
 	}
 	else if (String_EqualsC(input, "closures")) {
-		printf(
-			"Usage: closures\n"
+		printf_styled(
+			"\033[0;1;37mUsage: \033[1;33mclosures\033[0m\n"
 			"\n"
 			"Show the state of all of the current closures, all the way back to\n"
 			"the root.  This is a shorthand for simply running \"closure 0\",\n"
@@ -258,8 +261,8 @@ void ShowHelp(String commandLine)
 		);
 	}
 	else if (String_EqualsC(input, "continue") || String_EqualsC(input, "go")) {
-		printf(
-			"Usage: %s\n"
+		printf_styled(
+			"\033[0;1;37mUsage: \033[1;33m%s\033[0m\n"
 			"\n"
 			"Continue executing the program from the current location.\n"
 			"\n",
@@ -267,8 +270,8 @@ void ShowHelp(String commandLine)
 		);
 	}
 	else if (String_EqualsC(input, "dir") || String_EqualsC(input, "ls")) {
-		printf(
-			"Usage: %s [options] [path]\n"
+		printf_styled(
+			"\033[0;1;37mUsage: \033[1;33m%s \033[0;36m[options] [path]\033[0m\n"
 			"\n"
 			"Display a list of files in the current directory, or in the given\n"
 			"directory if a path is provided.\n"
@@ -276,17 +279,17 @@ void ShowHelp(String commandLine)
 			"This implementation of dir/ls is somewhat primitive, but it includes\n"
 			"enough options to be useful:\n"
 			"\n"
-			"  -l   Long mode ('dir' uses this automatically).\n"
-			"  -a   Show all files, including dotfiles and hidden files.\n"
-			"  -f   Plain mode:  Don't include type suffixes like '/' and '*'.\n"
-			"  -F   Full mode:  Include type suffixes like '/' and '*'.\n"
+			"  \033[0;1;36m-l   \033[0mLong mode ('dir' uses this automatically).\n"
+			"  \033[0;1;36m-a   \033[0mShow all files, including dotfiles and hidden files.\n"
+			"  \033[0;1;36m-f   \033[0mPlain mode:  Don't include type suffixes like '/' and '*'.\n"
+			"  \033[0;1;36m-F   \033[0mFull mode:  Include type suffixes like '/' and '*'.\n"
 			"\n",
 			String_ToC(input)
 		);
 	}
 	else if (String_EqualsC(input, "eval")) {
-		printf(
-			"Usage: eval expression\n"
+		printf_styled(
+			"\033[0;1;37mUsage: \033[1;33meval \033[0;36mexpression\033[0m\n"
 			"\n"
 			"Perform the given expression within the current closure, and display the\n"
 			"result of evaluating it.  You can also evaluate most expressions by typing\n"
@@ -308,8 +311,8 @@ void ShowHelp(String commandLine)
 		);
 	}
 	else if (String_EqualsC(input, "exit") || String_EqualsC(input, "quit")) {
-		printf(
-			"Usage: %s\n"
+		printf_styled(
+			"\033[0;1;37mUsage: \033[1;33m%s\033[0m\n"
 			"\n"
 			"Stop the current program and exit the REPL.\n"
 			"\n",
@@ -317,7 +320,7 @@ void ShowHelp(String commandLine)
 		);
 	}
 	else if (String_EqualsC(input, "help")) {
-		printf(
+		printf_styled(
 			"\n"
 			"%s\n"
 			"\n",
@@ -325,8 +328,8 @@ void ShowHelp(String commandLine)
 		);
 	}
 	else if (String_EqualsC(input, "loc") || String_EqualsC(input, "location")) {
-		printf(
-			"Usage: %s\n"
+		printf_styled(
+			"\033[0;1;37mUsage: \033[1;33m%s\033[0m\n"
 			"\n"
 			"Show the source location where the current program is stopped,\n"
 			"i.e., where the continue/go commands will resume execution.\n"
@@ -335,8 +338,8 @@ void ShowHelp(String commandLine)
 		);
 	}
 	else if (String_EqualsC(input, "pwd")) {
-		printf(
-			"Usage: pwd\n"
+		printf_styled(
+			"\033[0;1;37mUsage: \033[1;33mpwd\033[0m\n"
 			"\n"
 			"Like the shell command of the same name, this prints the current\n"
 			"directory path.  The path is always shown with components separated\n"
@@ -346,14 +349,14 @@ void ShowHelp(String commandLine)
 		);
 	}
 	else if (String_EqualsC(input, "run")) {
-		printf(
-			"Usage: run file.sm\n"
+		printf_styled(
+			"\033[0;1;37mUsage: \033[1;33mrun \033[0;36mfile.sm\033[0m\n"
 			"\n"
 			"Load, parse, and evaluate the code in the given source file.\n"
 			"\n"
 		);
 	}
 	else {
-		printf("No help available.\n\n");
+		printf_styled("\033[0;1;31mNo help available.\033[0m\n\n");
 	}
 }

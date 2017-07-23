@@ -113,6 +113,7 @@
     <ClCompile Include="repl.c" />
     <ClCompile Include="repl_help.c" />
     <ClCompile Include="repl_ls.c" />
+    <ClCompile Include="style.c" />
   </ItemGroup>
   <ItemGroup>
     <Media Include="..\smilelib\bin\$(Platform)-$(Configuration)\SmileLib.dll">
@@ -123,6 +124,7 @@
   <ItemGroup>
     <ClInclude Include="buildnum.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="style.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

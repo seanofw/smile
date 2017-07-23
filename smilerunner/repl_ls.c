@@ -23,6 +23,8 @@
 #	include <windows.h>
 #endif
 
+#include "style.h"
+
 #define FILE_TYPE_MASK	0170000
 #define FILE_TYPE_DIR	0040000
 #define FILE_TYPE_CHR	0020000
@@ -343,6 +345,8 @@ static void ListFilesMultiColumnMode(FileInfo *files, Int numFiles, Int consoleW
 	String name, line;
 	Int row, column;
 	Int index, i;
+	const char *color;
+	char typeChar;
 	DECLARE_INLINE_STRINGBUILDER(stringBuilder, 256);
 
 	INIT_INLINE_STRINGBUILDER(stringBuilder);
@@ -355,7 +359,7 @@ static void ListFilesMultiColumnMode(FileInfo *files, Int numFiles, Int consoleW
 				case FILE_TYPE_DIR: name = String_ConcatByte(name, '/'); break;
 				case FILE_TYPE_CHR: break;
 				case FILE_TYPE_BLK: break;
-				case FILE_TYPE_LNK: break;
+				case FILE_TYPE_LNK: name = String_ConcatByte(name, '@'); break;
 				case FILE_TYPE_SOCK: break;
 				case FILE_TYPE_FIFO: break;
 				default: name = (files[i]->mode & 0111 ? String_ConcatByte(name, '*') : name); break;
@@ -381,7 +385,22 @@ static void ListFilesMultiColumnMode(FileInfo *files, Int numFiles, Int consoleW
 			index = column * numRows + row;
 			if (index >= numFiles) continue;
 			name = files[index]->name;
+			switch (files[index]->mode & FILE_TYPE_MASK) {
+				case FILE_TYPE_DIR: typeChar = 'd'; break;
+				case FILE_TYPE_CHR: typeChar = 'c'; break;
+				case FILE_TYPE_BLK: typeChar = 'b'; break;
+				case FILE_TYPE_LNK: typeChar = 'l'; break;
+				case FILE_TYPE_SOCK: typeChar = 's'; break;
+				case FILE_TYPE_FIFO: typeChar = 'f'; break;
+				default: typeChar = ' '; break;
+			}
+			color = typeChar == 'd' ? "\033[0;37;44;1m"
+				: typeChar == 'l' ? "\033[0;36m"
+				: (files[index]->mode & (FILE_MODE_OWNER_EXEC | FILE_MODE_GROUP_EXEC | FILE_MODE_WORLD_EXEC)) ? "\033[0;32m"
+				: "\033[0;37m";
+			StringBuilder_Append(stringBuilder, (const Byte *)color, 0, StrLen(color));
 			StringBuilder_AppendString(stringBuilder, name);
+			StringBuilder_Append(stringBuilder, (const Byte *)"\033[0;37;40m", 0, 10);
 			StringBuilder_AppendRepeat(stringBuilder, ' ', columnWidths[column] - String_Length(name));
 			if (column < numColumns - 1) {
 				StringBuilder_AppendRepeat(stringBuilder, ' ', 2);
@@ -393,7 +412,7 @@ static void ListFilesMultiColumnMode(FileInfo *files, Int numFiles, Int consoleW
 		line = StringBuilder_ToString(stringBuilder);
 		
 		// Write it to stdout.
-		fwrite(String_GetBytes(line), 1, String_Length(line), stdout);
+		fwrite_styled(String_GetBytes(line), 1, String_Length(line), stdout);
 	}
 }
 
@@ -408,6 +427,7 @@ static void ListFilesLongMode(FileInfo *files, Int numFiles, Bool typeMode)
 	char typeChar;
 	char dateBuffer[32];
 	char *suffix;
+	const char *color;
 
 	static char *months[] = {
 		"",
@@ -454,7 +474,12 @@ static void ListFilesLongMode(FileInfo *files, Int numFiles, Bool typeMode)
 				files[i]->month < 13 ? months[files[i]->month] : "???", files[i]->day, files[i]->year);
 		}
 
-		printf("%c%c%c%c%c%c%c%c%c%c %7llu  %s  %s%s\n",
+		color = typeChar == 'd' ? "\033[0;37;44;1m"
+			: typeChar == 'l' ? "\033[0;36m"
+			: (files[i]->mode & (FILE_MODE_OWNER_EXEC | FILE_MODE_GROUP_EXEC | FILE_MODE_WORLD_EXEC)) ? "\033[0;32m"
+			: "\033[0m";
+
+		printf_styled("%c%c%c%c%c%c%c%c%c%c %7llu  %s  %s%s%s\033[0;37;40m\n",
 			typeChar,
 			files[i]->mode & FILE_MODE_OWNER_READ ? 'r' : '-',
 			files[i]->mode & FILE_MODE_OWNER_WRITE ? 'w' : '-',
@@ -467,6 +492,7 @@ static void ListFilesLongMode(FileInfo *files, Int numFiles, Bool typeMode)
 			files[i]->mode & FILE_MODE_WORLD_EXEC ? 'x' : '-',
 			files[i]->size,
 			dateBuffer,
+			color,
 			String_ToC(files[i]->name),
 			suffix
 		);

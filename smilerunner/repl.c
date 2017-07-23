@@ -20,6 +20,8 @@
 
 #include <smile/parsing/internal/parserinternal.h>
 
+#include "style.h"
+
 #if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
 #	define WIN32_LEAN_AND_MEAN
 #	include <windows.h>
@@ -62,13 +64,17 @@ static Bool PrintParseMessages(Parser parser)
 
 			case PARSEMESSAGE_WARNING:
 				shouldPrint = True;
-				prefix = "!Warning:";
+				prefix = "\033[0;33;1m!Warning:\033[0;37;1m";
 				break;
 
 			case PARSEMESSAGE_ERROR:
 				shouldPrint = True;
-				prefix = "?Error:";
+				prefix = "\033[0;31;1m?Error:\033[0;33;1m";
 				hasErrors = True;
+				break;
+
+			default:
+				prefix = "\033[0m";
 				break;
 		}
 
@@ -78,19 +84,19 @@ static Bool PrintParseMessages(Parser parser)
 		if (position->filename != NULL) {
 			if (position->line > 0) {
 				// Have a filename and a line number.
-				message = String_Format("%s %S:%d: %S\r\n", prefix, position->filename, position->line, parseMessage->message);
+				message = String_Format("%s %S:%d: %S\033[0m\n", prefix, position->filename, position->line, parseMessage->message);
 			}
 			else {
 				// Have a filename but no line number.
-				message = String_Format("%s %S: %S\r\n", prefix, position->filename, parseMessage->message);
+				message = String_Format("%s %S: %S\033[0m\n", prefix, position->filename, parseMessage->message);
 			}
 		}
 		else {
 			// Have no filename.
-			message = String_Format("%s %S\r\n", prefix, parseMessage->message);
+			message = String_Format("%s %S\033[0m\n", prefix, parseMessage->message);
 		}
 
-		fwrite(String_GetBytes(message), 1, String_Length(message), stderr);
+		fwrite_styled(String_GetBytes(message), 1, String_Length(message), stderr);
 	}
 
 	return hasErrors;
@@ -135,8 +141,8 @@ static Int ParseAndEval(String string, ParseScope globalScope, ClosureInfo globa
 			{
 				SmileArg unboxedException = SmileArg_Unbox(evalResult->exception);
 				String stringified = SMILE_VCALL1(unboxedException.obj, toString, unboxedException.unboxed);
-				String message = String_Format("Uncaught exception thrown: %S\r\n", stringified);
-				fwrite(String_GetBytes(message), 1, String_Length(message), stderr);
+				String message = String_Format("\033[0;33;1mUncaught exception thrown: %S\033[0m\n", stringified);
+				fwrite_styled(String_GetBytes(message), 1, String_Length(message), stderr);
 				fflush(stderr);
 				*result = NullObject;
 			}
@@ -144,8 +150,8 @@ static Int ParseAndEval(String string, ParseScope globalScope, ClosureInfo globa
 
 		case EVAL_RESULT_BREAK:
 			{
-				String message = String_Format("Stopped at breakpoint.\r\n");
-				fwrite(String_GetBytes(message), 1, String_Length(message), stderr);
+				String message = String_Format("\033[0;33;1mStopped at breakpoint.\033[0m\n");
+				fwrite_styled(String_GetBytes(message), 1, String_Length(message), stderr);
 				fflush(stderr);
 				*result = NullObject;
 			}
@@ -178,7 +184,7 @@ static String GetCurDir()
 		String result;
 
 		if (!GetCurrentDirectoryW(MAX_PATH + 1, buffer)) {
-			printf("Error: Unable to get current directory.\n");
+			printf_styled("\033[0;31;1m?Error: \033[0;37;1mUnable to get current directory.\033[0m\n");
 			return String_Empty;
 		}
 
@@ -226,7 +232,7 @@ static void SetCurDir(String path)
 		UInt16 *path16 = String_ToUtf16(String_ReplaceChar(path, '/', '\\'), NULL);
 
 		if (!SetCurrentDirectoryW(path16)) {
-			printf("Error: %s", String_ToC(GetLastErrorString()));
+			printf_styled("\033[0;31;1m?Error: \033[0;33;1m%s\033[0m", String_ToC(GetLastErrorString()));
 		}
 #	else
 #		error Unsupported OS.
@@ -280,7 +286,11 @@ void ReplMain()
 #	endif
 
 	for (;;) {
-		line = readline("] ");
+		printf_styled("\033[0;33;1m] \033[0;37;1m");
+		line = readline("");
+		printf_styled("\033[0m");
+		fflush(stdout);
+
 		if (line == NULL) break;
 		input = String_FromC(line);
 

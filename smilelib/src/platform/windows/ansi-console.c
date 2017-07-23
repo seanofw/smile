@@ -8,6 +8,7 @@
 #ifdef _WIN32
 
 #include <smile/platform/windows/ansi-console.h>
+
 #include <windows.h>
 #include <errno.h>
 
@@ -91,8 +92,6 @@ static void SetColors(HANDLE handle, ConsoleState consoleState, int *values, int
 			attr |= FOREGROUND_INTENSITY;
 		else if (values[i] == 4)
 			attr |= FOREGROUND_INTENSITY;
-		else if (values[i] == 5)
-			attr |= FOREGROUND_INTENSITY;
 		else if (values[i] == 7)
 			attr =
 				((attr & FOREGROUND_MASK) << 4) |
@@ -104,8 +103,6 @@ static void SetColors(HANDLE handle, ConsoleState consoleState, int *values, int
 		else if (values[i] == 22)
 			attr &= ~FOREGROUND_INTENSITY;
 		else if (values[i] == 24)
-			attr &= ~FOREGROUND_INTENSITY;
-		else if (values[i] == 25)
 			attr &= ~FOREGROUND_INTENSITY;
 		else if (values[i] == 27)
 			attr =
