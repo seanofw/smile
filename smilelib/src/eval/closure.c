@@ -116,7 +116,7 @@ SmileObject Closure_GetGlobalVariable(Closure closure, Symbol name)
 			return varInfo->value;
 
 		if (closure->parent == NULL)
-			return NULL;
+			return NullObject;
 	}
 }
 
