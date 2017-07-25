@@ -286,6 +286,11 @@ void ReplMain()
 	globalScope = ParseScope_CreateRoot();
 	ParseScope_DeclareVariablesFromClosureInfo(globalScope, globalClosureInfo);
 
+	ParseScope_DeclareHereC(globalScope, "$a", PARSEDECL_GLOBAL, NULL, NULL);
+	ParseScope_DeclareHereC(globalScope, "$p", PARSEDECL_GLOBAL, NULL, NULL);
+	ParseScope_DeclareHereC(globalScope, "$e", PARSEDECL_GLOBAL, NULL, NULL);
+	ParseScope_DeclareHereC(globalScope, "$_", PARSEDECL_GLOBAL, NULL, NULL);
+
 #	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
 		SetConsoleCtrlHandler(NULL, True);
 #	endif

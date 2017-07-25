@@ -190,4 +190,13 @@ Inline ParseError ParseScope_Declare(ParseScope scope, Symbol symbol, Int kind, 
 	return ParseScope_DeclareHere(scope, symbol, kind, position, decl);
 }
 
+/// <summary>
+/// Declare a named variable in the given scope, using a C-style name.
+/// </summary>
+Inline ParseError ParseScope_DeclareHereC(ParseScope scope, const char *name, Int kind, LexerPosition position, ParseDecl *decl)
+{
+	Symbol symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, name);
+	return ParseScope_DeclareHere(scope, symbol, kind, position, decl);
+}
+
 #endif
