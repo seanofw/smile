@@ -871,6 +871,7 @@
     <ClCompile Include="src\smiletypes\smileobject.c" />
     <ClCompile Include="src\smiletypes\smileobject_stringify.c" />
     <ClCompile Include="src\smiletypes\smilepair.c" />
+    <ClCompile Include="src\smiletypes\smilepair_class.c" />
     <ClCompile Include="src\smiletypes\smilesyntax.c" />
     <ClCompile Include="src\smiletypes\smileuserobject.c" />
     <ClCompile Include="src\smiletypes\text\smilestring.c" />
