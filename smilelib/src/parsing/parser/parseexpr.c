@@ -62,6 +62,9 @@ ParseError Parser_ParseStmt(Parser parser, SmileObject *expr, Int modeFlags)
 			Lexer_Unget(parser->lexer);
 			return Parser_ParseScope(parser, expr);
 
+		case TOKEN_LOANWORD_INCLUDE:
+			return Parser_ParseInclude(parser, expr);
+
 		case TOKEN_ALPHANAME:
 		case TOKEN_UNKNOWNALPHANAME:
 			switch (token->data.symbol) {

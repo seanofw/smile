@@ -217,7 +217,7 @@ SmileObject Smile_ParseInScope(ClosureInfo globalClosureInfo, String text, Strin
 	result = Parser_Parse(parser, lexer, globalScope);
 
 	// Deal with any errors resulting from the user's source code.
-	if (parser->firstMessage != NULL) {
+	if (SMILE_KIND(parser->firstMessage) != SMILE_KIND_NULL) {
 		*numParseMessages = numMessages = Parser_GetErrorOrWarningCount(parser);
 		*parseMessages = destMessage = GC_MALLOC_STRUCT_ARRAY(struct ParseMessageStruct *, numMessages);
 		if (*parseMessages == NULL)

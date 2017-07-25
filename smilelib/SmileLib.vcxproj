@@ -830,6 +830,7 @@
     <ClCompile Include="src\parsing\parser\parseassign.c" />
     <ClCompile Include="src\parsing\parser\parseexpr.c" />
     <ClCompile Include="src\parsing\parser\parsefunc.c" />
+    <ClCompile Include="src\parsing\parser\parseinclude.c" />
     <ClCompile Include="src\parsing\parser\parsemessage.c" />
     <ClCompile Include="src\parsing\parser\parsenew.c" />
     <ClCompile Include="src\parsing\parser\parsequote.c" />

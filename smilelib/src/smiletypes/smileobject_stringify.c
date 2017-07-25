@@ -31,6 +31,7 @@
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/numeric/smileinteger128.h>
 #include <smile/smiletypes/text/smilesymbol.h>
+#include <smile/smiletypes/raw/smilebytearray.h>
 
 static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int indent);
 
@@ -217,6 +218,10 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 
 	case SMILE_KIND_STRING:
 		StringBuilder_AppendFormat(stringBuilder, "\"%S\"", String_AddCSlashes((String)obj));
+		return;
+
+	case SMILE_KIND_BYTEARRAY:
+		StringBuilder_AppendFormat(stringBuilder, "(ByteArray of %ld)", (Int64)((SmileByteArray)obj)->length);
 		return;
 
 	case SMILE_KIND_USEROBJECT:

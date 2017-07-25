@@ -925,6 +925,7 @@
     <ClCompile Include="src\string\string_utf16.c" />
     <ClCompile Include="src\platform\windows\ansi-console.c" />
     <ClCompile Include="src\smiletypes\smilepair_class.c" />
+    <ClCompile Include="src\parsing\parser\parseinclude.c" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">

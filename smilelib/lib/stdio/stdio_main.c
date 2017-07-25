@@ -34,7 +34,8 @@
 STATIC_STRING(_stdioFilename, "stdio");
 
 STATIC_STRING(_stdioBootstrap,
-	"\n"
+	"new { File:File Dir:Dir Path:Path Stdin:Stdin Stdout:Stdout Stderr:Stderr }"
+	/*"\n"
 	"#syntax STMT [print [EXPR+ exprs ,]] => (Stdout.print ## exprs)\n"
 	"\n"
 	"File.print = |file exprs...| {\n"
@@ -47,7 +48,7 @@ STATIC_STRING(_stdioBootstrap,
 		"file write byte-array str\n"
 		"file write-byte '\\n'\n"
 	"}\n"
-	"\n"
+	"\n"*/
 );
 
 SMILE_INTERNAL_FUNC SmileObject Stdio_File_CreateFromCFile(SmileObject base, FILE *fp);

@@ -43,6 +43,8 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseScope(Parser parser, SmileObject *exp
 SMILE_INTERNAL_FUNC SmileObject Parser_ParseScopeBody(Parser parser);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseStmt(Parser parser, SmileObject *expr, Int modeFlags);
 
+SMILE_INTERNAL_FUNC ParseError Parser_ParseInclude(Parser parser, SmileObject *expr);
+
 SMILE_INTERNAL_FUNC ParseError Parser_ParseIfUnless(Parser parser, SmileObject *expr, Int modeFlags, Bool invert);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseDo(Parser parser, SmileObject *expr, Int modeFlags);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseWhileUntil(Parser parser, SmileObject *expr, Int modeFlags, Bool invert);
