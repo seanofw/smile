@@ -80,6 +80,24 @@ const char *SmileObject_StringifyToC(SmileObject obj)
 	return String_ToC(SmileObject_Stringify(obj));
 }
 
+Inline Bool CanKindSkipParenthesisWhenUsedInPairs(Int kind, Bool isLeftSide)
+{
+	switch (kind) {
+		case SMILE_KIND_PAIR:
+			return isLeftSide;
+		case SMILE_KIND_NULL:
+		case SMILE_KIND_LIST:
+		case SMILE_KIND_BOOL:
+		case SMILE_KIND_UNBOXED_BOOL:
+		case SMILE_KIND_SYMBOL:
+		case SMILE_KIND_UNBOXED_SYMBOL:
+		case SMILE_KIND_STRING:
+			return True;
+		default:
+			return False;
+	}
+}
+
 static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int indent)
 {
 	SmileList list;
@@ -158,22 +176,22 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 	
 	case SMILE_KIND_PAIR:
 		pair = (SmilePair)obj;
-		if (SMILE_KIND(pair->left) == SMILE_KIND_PAIR || ((SMILE_KIND(pair->left) & 0xF0) == 0x10)) {  // Pairs and numbers
+		if (CanKindSkipParenthesisWhenUsedInPairs(SMILE_KIND(pair->left), True)) {
+			StringifyRecursive(pair->left, stringBuilder, indent);
+		}
+		else {
 			StringBuilder_AppendByte(stringBuilder, '(');
 			StringifyRecursive(pair->left, stringBuilder, indent + 1);
 			StringBuilder_AppendByte(stringBuilder, ')');
 		}
-		else {
-			StringifyRecursive(pair->left, stringBuilder, indent);
-		}
 		StringBuilder_AppendByte(stringBuilder, '.');
-		if (SMILE_KIND(pair->right) == SMILE_KIND_PAIR || ((SMILE_KIND(pair->right) & 0xF0) == 0x10)) {  // Pairs and numbers
+		if (CanKindSkipParenthesisWhenUsedInPairs(SMILE_KIND(pair->right), False)) {
+			StringifyRecursive(pair->right, stringBuilder, indent);
+		}
+		else {
 			StringBuilder_AppendByte(stringBuilder, '(');
 			StringifyRecursive(pair->right, stringBuilder, indent + 1);
 			StringBuilder_AppendByte(stringBuilder, ')');
-		}
-		else {
-			StringifyRecursive(pair->right, stringBuilder, indent);
 		}
 		return;
 
