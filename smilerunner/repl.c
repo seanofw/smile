@@ -134,14 +134,19 @@ static Int ParseAndEval(String string, ParseScope globalScope, ClosureInfo globa
 	// Compile and eval the [$progn] expression.
 	evalResult = Smile_EvalInScope(globalClosureInfo, expr);
 
+	// Expose the current results as variables in the global scope.
+	Smile_SetGlobalVariableC("$a", SMILE_KIND(head) == SMILE_KIND_LIST ? head->a : NullObject);
+	Smile_SetGlobalVariableC("$p", expr);
+	Smile_SetGlobalVariableC("$e", evalResult->exception);
+	Smile_SetGlobalVariableC("$_", evalResult->value);
+
 	// Handle errors or aborts.
 	switch (evalResult->evalResultKind) {
 
 		case EVAL_RESULT_EXCEPTION:
 			{
-				SmileArg unboxedException = SmileArg_Unbox(evalResult->exception);
-				String stringified = SMILE_VCALL1(unboxedException.obj, toString, unboxedException.unboxed);
-				String message = String_Format("\033[0;33;1mUncaught exception thrown: %S\033[0m\n", stringified);
+				String stringified = SmileObject_Stringify(evalResult->exception);
+				String message = String_Format("\033[0;33;1mUncaught exception:\033[0m\n\033[1;31m%S\033[0m\n", stringified);
 				fwrite_styled(String_GetBytes(message), 1, String_Length(message), stderr);
 				fflush(stderr);
 				*result = NullObject;
