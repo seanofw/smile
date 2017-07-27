@@ -34,6 +34,7 @@ typedef unsigned char Bool;
 // Compatibility macros.
 #define SMILE_DECLARATION_STATIC_PROTOTYPE extern
 #define SMILE_DECLARATION_EXTERN_OF_UNKNOWN_SIZE
+#define SMILE_NO_RETURN
 
 // How to export API functions and data.
 #ifdef SMILELIB_BUILD

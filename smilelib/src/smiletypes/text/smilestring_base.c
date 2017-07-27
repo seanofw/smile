@@ -149,8 +149,6 @@ SMILE_EXTERNAL_FUNCTION(Plus)
 				break;
 			default:
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _plusSuccessiveTypeError);
-				value = 0;
-				break;
 		}
 	
 		if (value < 256 && value >= 0) {

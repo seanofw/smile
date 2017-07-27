@@ -103,8 +103,6 @@ SMILE_EXTERNAL_FUNCTION(GetMember)
 		default:
 			Smile_ThrowException(Smile_KnownSymbols.native_method_error, invalidIndexType);
 	}
-
-	return (SmileArg){ NULL };
 }
 
 SMILE_EXTERNAL_FUNCTION(SetMember)
@@ -128,8 +126,6 @@ SMILE_EXTERNAL_FUNCTION(SetMember)
 		default:
 			Smile_ThrowException(Smile_KnownSymbols.native_method_error, invalidIndexType);
 	}
-
-	return (SmileArg){ NULL };
 }
 
 //-------------------------------------------------------------------------------------------------

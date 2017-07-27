@@ -132,12 +132,12 @@ Inline struct EvalResultStruct *Smile_ParseAndEvalC(const char *text, const char
 //-------------------------------------------------------------------------------------------------
 //  Exception support
 
-SMILE_API_FUNC void Smile_Throw(SmileObject object);
+SMILE_API_FUNC void SMILE_NO_RETURN Smile_Throw(SmileObject object);
 SMILE_API_FUNC SmileUserObject Smile_CreateException(Symbol exceptionKind, String message);
 SMILE_API_FUNC SmileUserObject Smile_CreateExceptionC(const char *exceptionKind, const char *format, ...);
 SMILE_API_FUNC SmileUserObject Smile_CreateExceptionCV(const char *exceptionKind, const char *format, va_list v);
-SMILE_API_FUNC void Smile_ThrowException(Symbol exceptionKind, String message);
-SMILE_API_FUNC void Smile_ThrowExceptionC(const char *exceptionKind, const char *format, ...);
-SMILE_API_FUNC void Smile_ThrowExceptionCV(const char *exceptionKind, const char *format, va_list v);
+SMILE_API_FUNC void SMILE_NO_RETURN Smile_ThrowException(Symbol exceptionKind, String message);
+SMILE_API_FUNC void SMILE_NO_RETURN Smile_ThrowExceptionC(const char *exceptionKind, const char *format, ...);
+SMILE_API_FUNC void SMILE_NO_RETURN Smile_ThrowExceptionCV(const char *exceptionKind, const char *format, va_list v);
 
 #endif

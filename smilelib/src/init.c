@@ -133,10 +133,14 @@ void Smile_ThrowExceptionCV(const char *exceptionKind, const char *format, va_li
 
 void Smile_ThrowExceptionC(const char *exceptionKind, const char *format, ...)
 {
+	SmileObject exception;
 	va_list v;
+
 	va_start(v, format);
-	Smile_ThrowExceptionCV(exceptionKind, format, v);
+	exception = (SmileObject)Smile_CreateExceptionCV(exceptionKind, format, v);
 	va_end(v);
+
+	Smile_Throw(exception);
 }
 
 SmileUserObject Smile_CreateException(Symbol exceptionKind, String message)
