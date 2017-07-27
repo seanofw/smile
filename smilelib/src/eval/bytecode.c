@@ -51,6 +51,29 @@ ByteCodeSegment ByteCodeSegment_CreateWithSize(Int size)
 }
 
 /// <summary>
+/// Create a new byte-code segment, populating it from the given set of byte codes, automatically
+/// appending an Op_Ret instruction if desired.
+/// </summary>
+/// <param name="byteCodes">The byte codes to add to the segment.</param>
+/// <param name="numByteCodes">The number of byte codes to add to the segment.</param>
+/// <param name="addRet">Whether to add an Op_Ret instruction on the end.</param>
+/// <returns>The new ByteCodeSegment, created from the provided set of ByteCodes.</returns>
+ByteCodeSegment ByteCodeSegment_CreateFromByteCodes(const ByteCode byteCodes, Int numByteCodes, Bool withRet)
+{
+	ByteCodeSegment byteCodeSegment;
+
+	byteCodeSegment = ByteCodeSegment_CreateWithSize(numByteCodes + (withRet ? 1 : 0));
+
+	MemCpy(byteCodeSegment->byteCodes, byteCodes, sizeof(struct ByteCodeStruct) * numByteCodes);
+
+	if (withRet) {
+		byteCodeSegment->byteCodes[numByteCodes].opcode = Op_Ret;
+	}
+
+	return byteCodeSegment;
+}
+
+/// <summary>
 /// Grow the given byte-code segment until it has at least 'count' empty instruction slots
 /// at the end.
 /// </summary>

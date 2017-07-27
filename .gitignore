@@ -13,6 +13,7 @@ bld/
 [Bb]in/
 [Oo]bj/
 cov-int/
+CoverageReport*/
 
 # Intermediate files
 *_i.c

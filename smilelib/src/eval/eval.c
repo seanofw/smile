@@ -35,6 +35,7 @@ ByteCode _byteCode;
 
 EscapeContinuation _exceptionContinuation;
 
+static Bool Eval_RunCore(void);
 static Bool Is(SmileArg descendant, SmileArg ancestor);
 
 EvalResult EvalResult_Create(Int kind)
@@ -46,6 +47,14 @@ EvalResult EvalResult_Create(Int kind)
 	result->parseMessages = NULL;
 	result->numMessages = 0;
 	return result;
+}
+
+void Eval_GetCurrentBreakpointInfo(Closure *closure, CompiledTables *compiledTables, ByteCodeSegment *segment, ByteCode *byteCode)
+{
+	if (closure != NULL) *closure = _closure;
+	if (compiledTables != NULL) *compiledTables = _compiledTables;
+	if (segment != NULL) *segment = _segment;
+	if (byteCode != NULL) *byteCode = _byteCode;
 }
 
 EvalResult Eval_Run(CompiledTables tables, UserFunctionInfo functionInfo)
@@ -121,7 +130,7 @@ static void SMILE_NO_RETURN ThrowUnknownMethodError(Symbol name)
 #define LOAD_REGISTERS \
 	(closure = _closure, byteCode = _byteCode)
 
-Bool Eval_RunCore(void)
+static Bool Eval_RunCore(void)
 {
 	// We prefer keeping these pointers in registers, because they're used by nearly every instruction.
 	register Closure closure;

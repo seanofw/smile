@@ -53,7 +53,7 @@ SMILE_API_FUNC EvalResult Eval_Run(CompiledTables tables, UserFunctionInfo funct
 SMILE_API_FUNC EvalResult Eval_Continue(void);
 SMILE_API_FUNC ClosureStateMachine Eval_BeginStateMachine(StateMachine stateMachineStart, StateMachine stateMachineBody);
 
-SMILE_API_FUNC Bool Eval_RunCore(void);
+SMILE_API_FUNC void Eval_GetCurrentBreakpointInfo(Closure *closure, CompiledTables *compiledTables, ByteCodeSegment *segment, ByteCode *byteCode);
 
 Inline EscapeContinuation EscapeContinuation_Create(Int escapeKind)
 {

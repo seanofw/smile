@@ -70,6 +70,7 @@ struct UserFunctionInfoStruct;
 
 SMILE_API_FUNC void ByteCodeSegment_Grow(ByteCodeSegment segment, Int count);
 SMILE_API_FUNC ByteCodeSegment ByteCodeSegment_CreateWithSize(Int size);
+SMILE_API_FUNC ByteCodeSegment ByteCodeSegment_CreateFromByteCodes(const ByteCode byteCodes, Int numByteCodes, Bool addRet);
 SMILE_API_FUNC String ByteCodeSegment_ToString(ByteCodeSegment segment, struct UserFunctionInfoStruct *userFunctionInfo, struct CompiledTablesStruct *compiledTables);
 SMILE_API_FUNC String ByteCodeSegment_Stringify(ByteCodeSegment segment);
 SMILE_API_FUNC String ByteCode_ToString(ByteCode byteCode, Int address, struct UserFunctionInfoStruct *userFunctionInfo, struct CompiledTablesStruct *compiledTables);
