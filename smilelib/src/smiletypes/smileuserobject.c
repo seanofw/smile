@@ -54,6 +54,20 @@ void SmileUserObject_InitWithSize(SmileUserObject userObject, SmileObject base, 
 	Int32Dict_ClearWithSize((Int32Dict)&userObject->dict, (Int32)initialSize);
 }
 
+SmileUserObject SmileUserObject_CreateFromArgPairs(SmileObject base, SmileArg *argPairs, Int numArgPairs)
+{
+	SmileUserObject userObject = SmileUserObject_CreateWithSize(base, numArgPairs);
+	Int i;
+
+	for (i = 0; i < numArgPairs; i++) {
+		Symbol propertyName = argPairs[i << 1].unboxed.symbol;
+		SmileObject value = SmileArg_Box(argPairs[(i << 1) + 1]);
+		Int32Dict_SetValue((Int32Dict)&userObject->dict, (Int32)propertyName, value);
+	}
+
+	return userObject;
+}
+
 Bool SmileUserObject_CompareEqual(SmileUserObject self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData)
 {
 	UNUSED(selfData);

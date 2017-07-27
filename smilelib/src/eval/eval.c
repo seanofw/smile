@@ -629,7 +629,17 @@ next:
 			goto next;
 
 		case Op_NewObj:
-			goto unsupportedOpcode;
+			{
+				Int index = byteCode->u.index;
+				value = (SmileObject)SmileUserObject_CreateFromArgPairs(
+					SmileArg_Box(Closure_GetArgument(closure, (index << 1) - 1)),
+					closure->stackTop - (index << 1),
+					index);
+				closure->stackTop -= (index << 1) + 1;
+				Closure_PushBoxed(closure, value);
+				byteCode++;
+			}
+			goto next;
 		
 		case Op_SuperEq:
 			arg2 = Closure_Pop(closure);
