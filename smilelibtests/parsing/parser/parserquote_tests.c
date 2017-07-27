@@ -125,7 +125,7 @@ START_TEST(CanParseAPairTemplateForm)
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedForm = SimpleParse("[(List . of) [(Pair . of) [(1 . +) [(2 . *) 3]] -] [$quote x]]");
+	SmileObject expectedForm = SimpleParse("[(List . of) [(Pair . of) [(1 . +) [(2 . *) 3]] [$quote -]] [$quote x]]");
 
 	ASSERT(RecursiveEquals(result, expectedForm));
 }
