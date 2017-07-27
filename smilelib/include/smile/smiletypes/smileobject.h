@@ -249,7 +249,7 @@ typedef struct {
 		Real64 (*toReal64)(__type__ self, SmileUnboxedData unboxedData); \
 		String (*toString)(__type__ self, SmileUnboxedData unboxedData); \
 		\
-		void (*call)(__type__ self, Int argc); \
+		void (*call)(__type__ self, Int argc, Int extra); \
 		LexerPosition (*getSourceLocation)(__type__ self); \
 		\
 		SmileArg (*unbox)(__type__ self); \
@@ -346,6 +346,15 @@ typedef struct {
 /// <returns>The return value from the method.</returns>
 #define SMILE_VCALL4(__obj__, __method__, __arg1__, __arg2__, __arg3__, __arg4__) \
 	((__obj__)->vtable->__method__((SmileObject)(__obj__), __arg1__, __arg2__, __arg3__, __arg4__))
+
+/// <summary>
+/// Perform a virtual call to the getProperty method on the object.
+/// </summary>
+/// <param name="__obj__">The object whose getProperty method you would like to call.</param>
+/// <param name="__name__">The name of the property you would like getProperty to return.</param>
+/// <returns>The resulting property value, or NullObject if no property exists by that name.</returns>
+#define SMILE_GET_PROPERTY(__obj__, __name__) \
+	((__obj__)->vtable->getProperty((SmileObject)(__obj__), __name__))
 
 //-------------------------------------------------------------------------------------------------
 //  Declare the core SmileObject itself, its virtual table, and common (external) operations

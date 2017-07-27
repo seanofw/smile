@@ -121,6 +121,10 @@ STATIC_STRING(DOTEXPR_, "DOTEXPR");
 STATIC_STRING(TERM_, "TERM");
 STATIC_STRING(NAME_, "NAME");
 
+// The special get-member and set-member methods.
+STATIC_STRING(get_member, "get-member");
+STATIC_STRING(set_member, "set-member");
+
 Inline Symbol AddSpecialSymbol(SymbolTable symbolTable, String name, Symbol expectedValue)
 {
 	Symbol actualValue = SymbolTableInt_AddFast(symbolTable, name);
@@ -235,6 +239,9 @@ static void KnownSymbolsInt_PreloadSpecials(SymbolTable symbolTable, KnownSymbol
 	knownSymbols->DOTEXPR = AddSpecialSymbol(symbolTable, DOTEXPR_, SMILE_SPECIAL_SYMBOL_DOTEXPR);
 	knownSymbols->TERM = AddSpecialSymbol(symbolTable, TERM_, SMILE_SPECIAL_SYMBOL_TERM);
 	knownSymbols->NAME = AddSpecialSymbol(symbolTable, NAME_, SMILE_SPECIAL_SYMBOL_NAME);
+
+	knownSymbols->get_member = AddSpecialSymbol(symbolTable, get_member, SMILE_SPECIAL_SYMBOL_GET_MEMBER);
+	knownSymbols->set_member = AddSpecialSymbol(symbolTable, set_member, SMILE_SPECIAL_SYMBOL_SET_MEMBER);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -454,7 +461,6 @@ STATIC_STRING(first, "first");
 STATIC_STRING(floor_, "floor");
 STATIC_STRING(fold, "fold");
 STATIC_STRING(from_seed, "from-seed");
-STATIC_STRING(get_member, "get-member");
 STATIC_STRING(get_object_security, "get-object-security");
 STATIC_STRING(get_property, "get-property");
 STATIC_STRING(handle_kind, "handle-kind");
@@ -583,7 +589,6 @@ STATIC_STRING(separator, "separator");
 STATIC_STRING(separator_line, "separator-line");
 STATIC_STRING(separator_paragraph, "separator-paragraph");
 STATIC_STRING(separator_space, "separator-space");
-STATIC_STRING(set_member, "set-member");
 STATIC_STRING(set_object_security, "set-object-security");
 STATIC_STRING(set_property, "set-property");
 STATIC_STRING(sign, "sign");
@@ -732,7 +737,6 @@ static void KnownSymbolsInt_PreloadGeneralSymbols(SymbolTable symbolTable, Known
 	knownSymbols->floor = SymbolTableInt_AddFast(symbolTable, floor_);
 	knownSymbols->fold = SymbolTableInt_AddFast(symbolTable, fold);
 	knownSymbols->from_seed = SymbolTableInt_AddFast(symbolTable, from_seed);
-	knownSymbols->get_member = SymbolTableInt_AddFast(symbolTable, get_member);
 	knownSymbols->get_object_security = SymbolTableInt_AddFast(symbolTable, get_object_security);
 	knownSymbols->get_property = SymbolTableInt_AddFast(symbolTable, get_property);
 	knownSymbols->handle_kind = SymbolTableInt_AddFast(symbolTable, handle_kind);
@@ -861,7 +865,6 @@ static void KnownSymbolsInt_PreloadGeneralSymbols(SymbolTable symbolTable, Known
 	knownSymbols->separator_line = SymbolTableInt_AddFast(symbolTable, separator_line);
 	knownSymbols->separator_paragraph = SymbolTableInt_AddFast(symbolTable, separator_paragraph);
 	knownSymbols->separator_space = SymbolTableInt_AddFast(symbolTable, separator_space);
-	knownSymbols->set_member = SymbolTableInt_AddFast(symbolTable, set_member);
 	knownSymbols->set_object_security = SymbolTableInt_AddFast(symbolTable, set_object_security);
 	knownSymbols->set_property = SymbolTableInt_AddFast(symbolTable, set_property);
 	knownSymbols->sign = SymbolTableInt_AddFast(symbolTable, sign);

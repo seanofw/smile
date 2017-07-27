@@ -108,13 +108,17 @@ typedef enum SmileSpecialSymbolEnum {
 	SMILE_SPECIAL_SYMBOL_TERM	= 85,
 	SMILE_SPECIAL_SYMBOL_NAME	= 86,
 
+	// The special 'get-member' and 'set-member' method names.
+	SMILE_SPECIAL_SYMBOL_GET_MEMBER	= 87,
+	SMILE_SPECIAL_SYMBOL_SET_MEMBER = 88,
+
 } SmileSpecialSymbol;
 
 // The set of known symbols, preregistered at startup time to save on runtime-initialization costs.
 typedef struct KnownSymbolsStruct {
 
 	//------------------------------------------
-	// The 70-ish special symbols from the list above first.
+	// The 80-ish special symbols from the list above first.
 
 	// The twenty core special forms.
 	Symbol _set, _opset;
@@ -148,6 +152,9 @@ typedef struct KnownSymbolsStruct {
 	Symbol TERM;
 	Symbol NAME;
 
+	// The special 'get-member' and 'set-member' methods.
+	Symbol get_member, set_member;
+
 	// End of special symbols.
 	//------------------------------------------
 
@@ -167,7 +174,7 @@ typedef struct KnownSymbolsStruct {
 	Symbol d, decompose, default_, diacritic_q, digit_q, div, divide_by_zero, does_not_understand;
 	Symbol each, end, ends_with, ends_with_i, escape, eval, even_q, exit, exp, extend_object, extend_where_new;
 	Symbol false_, filename_mode, first, floor, fold, from_seed;
-	Symbol get_member, get_object_security, get_property;
+	Symbol get_object_security, get_property;
 	Symbol handle_kind, has_property, hash, hex_string, hex_string_pretty, html_decode, html_encode, hyphenize;
 	Symbol id, in_, include, index_of, index_of_i, int_, int16_, int32_, int64_, int_lg;
 	Symbol join;
@@ -186,7 +193,7 @@ typedef struct KnownSymbolsStruct {
 	Symbol range_to, raw_reverse, read_append, read_only, read_write, read_write_append, real_, real32_, real64_, rem, repeat, replace, replacement, resize, rest, result;
 	Symbol reverse, reverse_bits, reverse_bytes, right, rot_13;
 	Symbol separator, separator_line, separator_paragraph, separator_space;
-	Symbol set_member, set_object_security, set_property, sign, sin, space_q, splice, split, sprintf;
+	Symbol set_object_security, set_property, sign, sin, space_q, splice, split, sprintf;
 	Symbol sqrt, sqrt_domain, start, starts_with, starts_with_i, step, stepping;
 	Symbol string_, strip_c_slashes, studied_, study, substr, substring, symbol;
 	Symbol symbol_currency, symbol_math, symbol_modifier, symbol_other;

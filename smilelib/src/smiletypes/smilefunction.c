@@ -550,7 +550,7 @@ LexerPosition SmileExternalFunction_GetSourceLocation(SmileFunction self)
 
 #define USER_FUNCTION_VTABLE(__checkKind__) \
 	\
-	extern void SmileUserFunction_##__checkKind__##_Call(SmileFunction self, Int argc); \
+	extern void SmileUserFunction_##__checkKind__##_Call(SmileFunction self, Int argc, Int extra); \
 	\
 	SMILE_VTABLE(SmileUserFunction_##__checkKind__##_VTable, SmileFunction) \
 	{ \
@@ -594,7 +594,7 @@ USER_FUNCTION_VTABLE(CheckedRest);	// Function with at least one type-checked ar
 
 #define EXTERNAL_FUNCTION_VTABLE(__checkKind__) \
 	\
-	extern void SmileExternalFunction_##__checkKind__##_Call(SmileFunction self, Int argc); \
+	extern void SmileExternalFunction_##__checkKind__##_Call(SmileFunction self, Int argc, Int extra); \
 	\
 	SMILE_VTABLE(SmileExternalFunction_##__checkKind__##_VTable, SmileFunction) \
 	{ \

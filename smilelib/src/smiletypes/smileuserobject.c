@@ -273,17 +273,17 @@ String SmileUserObject_ToString(SmileUserObject self, SmileUnboxedData unboxedDa
 	return String_Format("user object");
 }
 
-void SmileUserObject_Call(SmileUserObject self, Int argc)
+void SmileUserObject_Call(SmileUserObject self, Int argc, Int extra)
 {
 	SmileObject fn;
 	if (Int32Dict_TryGetValue((Int32Dict)&self->dict, (Int32)Smile_KnownSymbols._fn, &fn)
 		&& SMILE_KIND(fn) == SMILE_KIND_FUNCTION) {
 		// This has a 'fn' property that is a function.  Invoke that instead, with the same args.
-		SMILE_VCALL1(fn, call, argc);
+		SMILE_VCALL2(fn, call, argc, extra);
 	}
 	else {
 		// This has no 'fn' property, so go ask the base object to do the call instead, since this isn't itself callable.
-		SMILE_VCALL1(self->base, call, argc);
+		SMILE_VCALL2(self->base, call, argc, extra);
 	}
 }
 
