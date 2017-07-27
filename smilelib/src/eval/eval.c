@@ -1190,16 +1190,18 @@ next:
 		case Op_F2: case Op_F3: case Op_F4: case Op_F5: case Op_F6: case Op_F7:
 		case Op_F9: case Op_FA: case Op_FB: case Op_FC:
 			STORE_REGISTERS;
-			Smile_Abort_FatalError(String_ToC(String_Format("Compiler bug: Unknown opcode 0x%02X", byteCode->opcode)));
+			Smile_ThrowException(Smile_KnownSymbols.eval_error,
+				String_Format("Compiler bug: Unknown opcode 0x%02X", byteCode->opcode));
 		
 		unsupportedOpcode:
 			STORE_REGISTERS;
-			Smile_Abort_FatalError(String_ToC(String_Format("Eval: Unsuported opcode 0x%02X", byteCode->opcode)));
+			Smile_ThrowException(Smile_KnownSymbols.eval_error,
+				String_Format("Eval: Unsuported opcode 0x%02X", byteCode->opcode));
 	}
 
 	STORE_REGISTERS;
-	Smile_Abort_FatalError(String_ToC(String_Format("Eval bug: Unhandled opcode 0x%02X", byteCode->opcode)));
-	return False;
+	Smile_ThrowException(Smile_KnownSymbols.eval_error,
+		String_Format("Eval bug: Unhandled opcode 0x%02X", byteCode->opcode));
 }
 
 //-------------------------------------------------------------------------------------------------
