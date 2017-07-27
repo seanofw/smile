@@ -113,6 +113,7 @@
     <ClCompile Include="parsing\parser\parserstmt_tests.c">
       <Filter>parsing\parser</Filter>
     </ClCompile>
+    <ClCompile Include="eval\evalconstant_tests.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />

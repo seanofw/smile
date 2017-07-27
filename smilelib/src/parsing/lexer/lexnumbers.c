@@ -502,7 +502,7 @@ Int Lexer_ParseZero(Lexer lexer, Bool isFirstContentOnLine)
 				lexer->token->text = String_FormatString(IllegalNumericSuffixMessage, String_Format("x%c", ch));
 				return END_TOKEN(TOKEN_ERROR);
 			}
-			END_TOKEN(TOKEN_INTEGER32);
+			END_TOKEN(TOKEN_INTEGER64);
 			return ProcessIntegerValue(lexer, 0, ZeroString, LowercaseXString);
 		}
 		else {
@@ -519,7 +519,7 @@ Int Lexer_ParseZero(Lexer lexer, Bool isFirstContentOnLine)
 				lexer->token->text = String_FormatString(IllegalNumericSuffixMessage, String_Format("%c", *lexer->src));
 				return END_TOKEN(TOKEN_ERROR);
 			}
-			END_TOKEN(TOKEN_INTEGER32);
+			END_TOKEN(TOKEN_INTEGER64);
 			return ProcessIntegerValue(lexer, value, String_Create(start, digitsEnd - start), suffix);
 		}
 	}
@@ -544,7 +544,7 @@ Int Lexer_ParseZero(Lexer lexer, Bool isFirstContentOnLine)
 				lexer->token->text = String_FormatString(IllegalNumericSuffixMessage, String_Format("%c", *lexer->src));
 				return END_TOKEN(TOKEN_ERROR);
 			}
-			END_TOKEN(TOKEN_INTEGER32);
+			END_TOKEN(TOKEN_INTEGER64);
 			return ProcessIntegerValue(lexer, value, String_Create(start, digitsEnd - start), suffix);
 		}
 	}
@@ -578,7 +578,7 @@ Int Lexer_ParseDigit(Lexer lexer, Bool isFirstContentOnLine)
 		suffix = CollectAlphanumericSuffix(lexer);
 		src = lexer->src;	// END_TOKEN needs the correct 'src' value.
 		if (!EnsureEndOfNumber(lexer)) return END_TOKEN(TOKEN_ERROR);
-		END_TOKEN(TOKEN_INTEGER32);
+		END_TOKEN(TOKEN_INTEGER64);
 		return ProcessIntegerValue(lexer, value, String_Create(start, digitsEnd - start), suffix);
 	}
 }
