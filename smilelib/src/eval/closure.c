@@ -64,7 +64,7 @@ Closure Closure_CreateGlobal(ClosureInfo closureInfo, Closure parent)
 }
 
 Closure Closure_CreateLocal(ClosureInfo closureInfo, Closure parent,
-	Closure returnClosure, struct ByteCodeSegmentStruct *returnSegment, Int returnPc)
+	Closure returnClosure, ByteCodeSegment returnSegment, Int returnPc)
 {
 	Closure closure = (Closure)GC_MALLOC(sizeof(struct ClosureStruct)
 		+ sizeof(SmileArg) * (closureInfo->numVariables + closureInfo->tempSize - 1));
@@ -85,7 +85,7 @@ Closure Closure_CreateLocal(ClosureInfo closureInfo, Closure parent,
 }
 
 ClosureStateMachine Closure_CreateStateMachine(StateMachine stateMachineStart, StateMachine stateMachineBody,
-	Closure returnClosure, struct ByteCodeSegmentStruct *returnSegment, Int returnPc)
+	Closure returnClosure, ByteCodeSegment returnSegment, Int returnPc)
 {
 	ClosureStateMachine closure = GC_MALLOC_STRUCT(struct ClosureStateMachineStruct);
 	if (closure == NULL)

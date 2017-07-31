@@ -72,6 +72,11 @@ ParseError Parser_ParseDynamicString(Parser parser, SmileObject *expr, String te
 	SmileObject parsedContent;
 	Int i;
 
+	if (String_IsNullOrEmpty(text)) {
+		*expr = (SmileObject)text;
+		return NULL;
+	}
+
 	stringLexer = Lexer_Create(text, 0, String_Length(text), startPosition->filename, startPosition->line, startPosition->column);
 
 	parseError = Parser_SplitDynamicString(stringLexer, &dynamicStringPieces, &numDynamicStringPieces, startPosition);

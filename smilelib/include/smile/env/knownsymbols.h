@@ -112,6 +112,9 @@ typedef enum SmileSpecialSymbolEnum {
 	SMILE_SPECIAL_SYMBOL_GET_MEMBER	= 87,
 	SMILE_SPECIAL_SYMBOL_SET_MEMBER = 88,
 
+	// Miscellaneous.
+	SMILE_SPECIAL_SYMBOL_AS = 89,
+
 } SmileSpecialSymbol;
 
 // The set of known symbols, preregistered at startup time to save on runtime-initialization costs.
@@ -154,6 +157,9 @@ typedef struct KnownSymbolsStruct {
 
 	// The special 'get-member' and 'set-member' methods.
 	Symbol get_member, set_member;
+
+	// Miscellaneous.
+	Symbol as;
 
 	// End of special symbols.
 	//------------------------------------------

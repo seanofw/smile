@@ -107,8 +107,10 @@ Int CompilerFunction_AddLocal(CompilerFunction compilerFunction, Symbol local)
 	// If we're out of space, grow the array.
 	if (compilerFunction->localSize >= compilerFunction->localMax) {
 		newMax = compilerFunction->localMax * 2;
+		if (newMax < 8) newMax = 8;
 		newLocals = (Symbol *)GC_MALLOC_ATOMIC(sizeof(Symbol) * newMax);
-		MemCpy(newLocals, compilerFunction->localNames, sizeof(Symbol) * compilerFunction->localSize);
+		if (compilerFunction->localSize > 0)
+			MemCpy(newLocals, compilerFunction->localNames, sizeof(Symbol) * compilerFunction->localSize);
 		compilerFunction->localMax = (Int32)newMax;
 		compilerFunction->localNames = newLocals;
 	}
@@ -155,10 +157,12 @@ Int Compiler_AddUserFunctionInfo(Compiler compiler, UserFunctionInfo userFunctio
 		Int newMax;
 	
 		newMax = compiledTables->maxUserFunctions * 2;
+		if (newMax < 8) newMax = 8;
 		newUserFunctions = GC_MALLOC_STRUCT_ARRAY(UserFunctionInfo, newMax);
 		if (newUserFunctions == NULL)
 			Smile_Abort_OutOfMemory();
-		MemCpy(newUserFunctions, compiledTables->userFunctions, compiledTables->numUserFunctions);
+		if (compiledTables->numUserFunctions > 0)
+			MemCpy(newUserFunctions, compiledTables->userFunctions, compiledTables->numUserFunctions);
 		compiledTables->userFunctions = newUserFunctions;
 		compiledTables->maxUserFunctions = newMax;
 	}
@@ -193,10 +197,12 @@ Int Compiler_AddNewSourceLocation(Compiler compiler, String filename, Int line, 
 		Int newMax;
 
 		newMax = compiledTables->maxSourceLocations * 2;
+		if (newMax < 8) newMax = 8;
 		newSourceLocations = GC_MALLOC_STRUCT_ARRAY(struct CompiledSourceLocationStruct, newMax);
 		if (newSourceLocations == NULL)
 			Smile_Abort_OutOfMemory();
-		MemCpy(newSourceLocations, compiledTables->sourcelocations, compiledTables->numSourceLocations);
+		if (compiledTables->numSourceLocations > 0)
+			MemCpy(newSourceLocations, compiledTables->sourcelocations, compiledTables->numSourceLocations);
 		compiledTables->sourcelocations = newSourceLocations;
 		compiledTables->maxSourceLocations = newMax;
 	}
@@ -347,10 +353,12 @@ Int Compiler_AddString(Compiler compiler, String string)
 		Int newMax;
 	
 		newMax = compiledTables->maxStrings * 2;
+		if (newMax < 8) newMax = 8;
 		newStrings = GC_MALLOC_STRUCT_ARRAY(String, newMax);
 		if (newStrings == NULL)
 			Smile_Abort_OutOfMemory();
-		MemCpy(newStrings, compiledTables->strings, compiledTables->numStrings);
+		if (compiledTables->numStrings > 0)
+			MemCpy(newStrings, compiledTables->strings, compiledTables->numStrings);
 		compiledTables->strings = newStrings;
 		compiledTables->maxStrings = newMax;
 	}
@@ -381,10 +389,12 @@ TillContinuationInfo Compiler_AddTillContinuationInfo(Compiler compiler, UserFun
 		Int newMax;
 
 		newMax = compiledTables->maxTillInfos * 2;
+		if (newMax < 8) newMax = 8;
 		newTillInfos = GC_MALLOC_STRUCT_ARRAY(TillContinuationInfo, newMax);
 		if (newTillInfos == NULL)
 			Smile_Abort_OutOfMemory();
-		MemCpy(newTillInfos, compiledTables->tillInfos, compiledTables->numTillInfos);
+		if (compiledTables->numTillInfos > 0)
+			MemCpy(newTillInfos, compiledTables->tillInfos, compiledTables->numTillInfos);
 		compiledTables->tillInfos = newTillInfos;
 		compiledTables->maxTillInfos = newMax;
 	}
@@ -420,10 +430,12 @@ Int Compiler_AddObject(Compiler compiler, SmileObject obj)
 		Int newMax;
 
 		newMax = compiledTables->maxObjects * 2;
+		if (newMax < 8) newMax = 8;
 		newObjects = GC_MALLOC_STRUCT_ARRAY(SmileObject, newMax);
 		if (newObjects == NULL)
 			Smile_Abort_OutOfMemory();
-		MemCpy(newObjects, compiledTables->objects, compiledTables->numObjects);
+		if (compiledTables->numObjects > 0)
+			MemCpy(newObjects, compiledTables->objects, compiledTables->numObjects);
 		compiledTables->objects = newObjects;
 		compiledTables->maxObjects = newMax;
 	}

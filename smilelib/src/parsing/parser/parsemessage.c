@@ -39,4 +39,45 @@ SMILE_EASY_OBJECT_NO_UNBOX(ParseMessage)
 
 SMILE_EASY_OBJECT_TOBOOL(ParseMessage, True);
 SMILE_EASY_OBJECT_TOINT(ParseMessage, 0);
-SMILE_EASY_OBJECT_TOSTRING(ParseMessage, obj->message);
+
+static String ParseMessage_ToString(ParseMessage parseMessage, SmileUnboxedData unboxedData)
+{
+	LexerPosition position = parseMessage->position;
+	String message;
+	const char *prefix;
+
+	UNUSED(unboxedData);
+
+	switch (parseMessage->messageKind) {
+
+		case PARSEMESSAGE_WARNING:
+			prefix = "Warning: ";
+			break;
+		case PARSEMESSAGE_ERROR:
+			prefix = "Error: ";
+			break;
+		case PARSEMESSAGE_FATAL:
+			prefix = "Fatal: ";
+			break;
+		default:
+			prefix = "";
+			break;
+	}
+
+	if (position->filename != NULL) {
+		if (position->line > 0) {
+			// Have a filename and a line number.
+			message = String_Format("%s %S:%d: %S\033[0m\n", prefix, position->filename, position->line, parseMessage->message);
+		}
+		else {
+			// Have a filename but no line number.
+			message = String_Format("%s %S: %S\033[0m\n", prefix, position->filename, parseMessage->message);
+		}
+	}
+	else {
+		// Have no filename.
+		message = String_Format("%s %S\033[0m\n", prefix, parseMessage->message);
+	}
+
+	return message;
+}

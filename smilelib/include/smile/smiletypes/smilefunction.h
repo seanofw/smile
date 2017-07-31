@@ -74,8 +74,6 @@ typedef struct UserFunctionArgStruct {
 
 } *UserFunctionArg;
 
-struct ByteCodeSegmentStruct;
-
 typedef struct UserFunctionInfoStruct {
 
 	struct UserFunctionInfoStruct *parent;	// The parent (declaring) user function, if any.
@@ -92,7 +90,7 @@ typedef struct UserFunctionInfoStruct {
 		
 	struct ClosureInfoStruct closureInfo;	// The ClosureInfo that describes this function's stack behavior. 
 		
-	struct ByteCodeSegmentStruct *byteCodeSegment;	// The byte-code instructions that describe this function's compiled body.
+	ByteCodeSegment byteCodeSegment;	// The byte-code instructions that describe this function's compiled body.
 
 } *UserFunctionInfo;
 

@@ -162,6 +162,7 @@
     <ClInclude Include="include\smile\parsing\internal\parsescope.h" />
     <ClInclude Include="include\smile\parsing\internal\parsesyntax.h" />
     <ClInclude Include="include\smile\parsing\lexer.h" />
+    <ClInclude Include="include\smile\parsing\parseinclude.h" />
     <ClInclude Include="include\smile\parsing\parsemessage.h" />
     <ClInclude Include="include\smile\parsing\parser.h" />
     <ClInclude Include="include\smile\parsing\parsertypes.h" />

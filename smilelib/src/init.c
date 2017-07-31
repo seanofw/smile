@@ -113,7 +113,7 @@ void Smile_Abort_OutOfMemory(void)
 /// </summary>
 void Smile_Abort_FatalError(const char *message)
 {
-	fprintf(stderr, "Fatal error:  %s  Aborting program.", message);
+	fprintf(stderr, "\nFatal error:  %s\nAborting program.\n", message);
 	exit(-1);
 }
 

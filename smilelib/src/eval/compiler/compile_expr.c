@@ -114,11 +114,11 @@ CompiledBlock Compiler_CompileExpr(Compiler compiler, SmileObject expr, CompileF
 		// User data evaluates to iteself.
 		case SMILE_KIND_FUNCTION:
 		case SMILE_KIND_HANDLE:
-		case SMILE_KIND_NONTERMINAL:
 		case SMILE_KIND_USEROBJECT:
+		case SMILE_KIND_NONTERMINAL:
 		case SMILE_KIND_CLOSURE:
 		case SMILE_KIND_FACADE:
-			Smile_Abort_FatalError("These special forms are not yet supported.");
+			COMPILE_PRIMITIVE_EXPR(Op_LdObj, index = Compiler_AddObject(compiler, expr));
 
 		// Intermediate forms (if they somehow make it this far) throw errors.
 		case SMILE_KIND_MACRO:

@@ -225,21 +225,29 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 		return;
 
 	case SMILE_KIND_USEROBJECT:
-		StringBuilder_Append(stringBuilder, (const Byte *)"{\n", 0, 2);
 		{
 			Int32DictKeyValuePair *pairs = Int32Dict_GetAll((Int32Dict)&((SmileUserObject)obj)->dict);
 			Int numPairs = Int32Dict_Count((Int32Dict)&((SmileUserObject)obj)->dict);
 			Int i;
 		
-			for (i = 0; i < numPairs; i++) {
-				StringBuilder_AppendRepeat(stringBuilder, ' ', (indent + 1) * 4);
-				StringBuilder_AppendString(stringBuilder, SymbolTable_GetName(Smile_SymbolTable, pairs[i].key));
-				StringBuilder_Append(stringBuilder, (const Byte *)": ", 0, 2);
-				StringifyRecursive((SmileObject)pairs[i].value, stringBuilder, indent + 2);
-				StringBuilder_AppendByte(stringBuilder, '\n');
+			if (numPairs == 0) {
+				StringBuilder_Append(stringBuilder, (const Byte *)"{ }", 0, 3);
+			}
+			else {
+				StringBuilder_Append(stringBuilder, (const Byte *)"{\n", 0, 2);
+
+				for (i = 0; i < numPairs; i++) {
+					StringBuilder_AppendRepeat(stringBuilder, ' ', (indent + 1) * 4);
+					StringBuilder_AppendString(stringBuilder, SymbolTable_GetName(Smile_SymbolTable, pairs[i].key));
+					StringBuilder_Append(stringBuilder, (const Byte *)": ", 0, 2);
+					StringifyRecursive((SmileObject)pairs[i].value, stringBuilder, indent + 2);
+					StringBuilder_AppendByte(stringBuilder, '\n');
+				}
+
+				StringBuilder_AppendRepeat(stringBuilder, ' ', indent * 4);
+				StringBuilder_AppendByte(stringBuilder, '}');
 			}
 		}
-		StringBuilder_AppendByte(stringBuilder, '}');
 		return;
 	
 	case SMILE_KIND_NONTERMINAL:

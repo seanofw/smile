@@ -125,6 +125,9 @@ STATIC_STRING(NAME_, "NAME");
 STATIC_STRING(get_member, "get-member");
 STATIC_STRING(set_member, "set-member");
 
+// Miscellaneous.
+STATIC_STRING(as, "as");
+
 Inline Symbol AddSpecialSymbol(SymbolTable symbolTable, String name, Symbol expectedValue)
 {
 	Symbol actualValue = SymbolTableInt_AddFast(symbolTable, name);
@@ -242,6 +245,7 @@ static void KnownSymbolsInt_PreloadSpecials(SymbolTable symbolTable, KnownSymbol
 
 	knownSymbols->get_member = AddSpecialSymbol(symbolTable, get_member, SMILE_SPECIAL_SYMBOL_GET_MEMBER);
 	knownSymbols->set_member = AddSpecialSymbol(symbolTable, set_member, SMILE_SPECIAL_SYMBOL_SET_MEMBER);
+	knownSymbols->as = AddSpecialSymbol(symbolTable, as, SMILE_SPECIAL_SYMBOL_AS);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -255,7 +259,7 @@ STATIC_STRING(Byte_, "Byte");
 STATIC_STRING(ByteRange_, "ByteRange");
 STATIC_STRING(ByteArray_, "ByteArray");
 STATIC_STRING(Char_, "Char");
-STATIC_STRING(Closure, "Closure");
+STATIC_STRING(Closure_, "Closure");
 STATIC_STRING(Enumerable_, "Enumerable");
 STATIC_STRING(Exception_, "Exception");
 STATIC_STRING(Facade_, "Facade");
@@ -317,7 +321,7 @@ static void KnownSymbolsInt_PreloadTypenames(SymbolTable symbolTable, KnownSymbo
 	knownSymbols->ByteRange_ = SymbolTableInt_AddFast(symbolTable, ByteRange_);
 	knownSymbols->ByteArray_ = SymbolTableInt_AddFast(symbolTable, ByteArray_);
 	knownSymbols->Char_ = SymbolTableInt_AddFast(symbolTable, Char_);
-	knownSymbols->Closure = SymbolTableInt_AddFast(symbolTable, Closure);
+	knownSymbols->Closure = SymbolTableInt_AddFast(symbolTable, Closure_);
 	knownSymbols->Enumerable_ = SymbolTableInt_AddFast(symbolTable, Enumerable_);
 	knownSymbols->Exception_ = SymbolTableInt_AddFast(symbolTable, Exception_);
 	knownSymbols->Facade_ = SymbolTableInt_AddFast(symbolTable, Facade_);

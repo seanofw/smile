@@ -27,7 +27,7 @@
 ///
 /// Total size:  16 bytes.
 /// </summary>
-typedef struct ByteCodeStruct {
+struct ByteCodeStruct {
 	Byte opcode;	// The opcode for this instruction.
 	Byte reserved[3];	
 	Int32 sourceLocation;	// The index of the source location that generated this (for debugging).
@@ -51,7 +51,7 @@ typedef struct ByteCodeStruct {
 			Int32 a, b;
 		} i2;
 	} u;
-} *ByteCode;
+};
 
 /// <summary>
 /// A byte-code segment is nothing more than an easily-growable array of byte codes.

@@ -1272,6 +1272,7 @@
     </ClInclude>
     <ClInclude Include="include\smile\smiletypes\smilehandle.h" />
     <ClInclude Include="include\smile\platform\windows\ansi-console.h" />
+    <ClInclude Include="include\smile\parsing\parseinclude.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\smile\array.h">

@@ -234,6 +234,8 @@ SmileObject Smile_ParseInScope(ClosureInfo globalClosureInfo, String text, Strin
 	}
 
 	// Done!
+	*parseMessages = NULL;
+	*numParseMessages = 0;
 	return result;
 }
 

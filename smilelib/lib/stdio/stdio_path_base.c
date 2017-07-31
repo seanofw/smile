@@ -89,7 +89,7 @@ SMILE_EXTERNAL_FUNCTION(Resolve)
 	Int pathLength;
 
 	// Get the original path.
-	original = (String)argv[0].obj;
+	original = (String)argv[1].obj;
 	pathText = String_GetBytes(original);
 	pathLength = String_Length(original);
 
@@ -184,7 +184,7 @@ SMILE_EXTERNAL_FUNCTION(Join)
 
 SMILE_EXTERNAL_FUNCTION(Split)
 {
-	String path = (String)argv[0].obj;
+	String path = (String)argv[1].obj;
 	Int splitIndex = 0, startIndex = 0;
 	SmileList head = NullList, tail = NullList;
 
@@ -210,7 +210,7 @@ SMILE_EXTERNAL_FUNCTION(IsRelative)
 
 SMILE_EXTERNAL_FUNCTION(GetExt)
 {
-	String path = (String)argv[0].obj;
+	String path = (String)argv[1].obj;
 	const Byte *pathText = String_GetBytes(path);
 	Int pathLength = String_Length(path);
 	const Byte *pathEnd = pathText + pathLength;
@@ -219,12 +219,12 @@ SMILE_EXTERNAL_FUNCTION(GetExt)
 
 	// Start at the end, and rewind to just before any trailing '/' or '\' marks.
 	ptr = pathEnd;
-	while (ptr >= pathText && (*ptr == '/' || *ptr == '\\')) ptr--;
-	if (ptr < pathText)
+	while (ptr > pathText && (ptr[-1] == '/' || ptr[-1] == '\\')) ptr--;
+	if (ptr <= pathText)
 		return SmileArg_From((SmileObject)String_Empty);
 
 	// Rewind back to the nearest '/' or '\' or '.' before this spot.
-	extEnd = ptr + 1;
+	extEnd = ptr--;
 	while (ptr >= pathText && !(*ptr == '.' || *ptr == '/' || *ptr == '\\')) ptr--;
 	if (ptr < pathText)
 		return SmileArg_From((SmileObject)String_Empty);
@@ -239,7 +239,7 @@ SMILE_EXTERNAL_FUNCTION(GetExt)
 
 SMILE_EXTERNAL_FUNCTION(GetFilename)
 {
-	String path = (String)argv[0].obj;
+	String path = (String)argv[1].obj;
 	const Byte *pathText = String_GetBytes(path);
 	Int pathLength = String_Length(path);
 	const Byte *pathEnd = pathText + pathLength;
@@ -248,12 +248,12 @@ SMILE_EXTERNAL_FUNCTION(GetFilename)
 
 	// Start at the end, and rewind to just before any trailing '/' or '\' marks.
 	ptr = pathEnd;
-	while (ptr >= pathText && (*ptr == '/' || *ptr == '\\')) ptr--;
+	while (ptr >= pathText && (ptr[-1] == '/' || ptr[-1] == '\\')) ptr--;
 	if (ptr < pathText)
 		return SmileArg_From((SmileObject)String_Empty);
 
 	// Rewind back to the nearest '/' or '\' before this spot.
-	nameEnd = ++ptr;
+	nameEnd = ptr;
 	while (ptr > pathText && !(ptr[-1] == '/' || ptr[-1] == '\\')) ptr--;
 
 	// Extract and return the filename.
@@ -262,7 +262,7 @@ SMILE_EXTERNAL_FUNCTION(GetFilename)
 
 SMILE_EXTERNAL_FUNCTION(GetFilenameWithoutExt)
 {
-	String path = (String)argv[0].obj;
+	String path = (String)argv[1].obj;
 	const Byte *pathText = String_GetBytes(path);
 	Int pathLength = String_Length(path);
 	const Byte *pathEnd = pathText + pathLength;
@@ -271,12 +271,12 @@ SMILE_EXTERNAL_FUNCTION(GetFilenameWithoutExt)
 
 	// Start at the end, and rewind to just before any trailing '/' or '\' marks.
 	ptr = pathEnd;
-	while (ptr >= pathText && (*ptr == '/' || *ptr == '\\')) ptr--;
+	while (ptr >= pathText && (ptr[-1] == '/' || ptr[-1] == '\\')) ptr--;
 	if (ptr < pathText)
 		return SmileArg_From((SmileObject)String_Empty);
 
 	// Rewind back to the nearest '/' or '\' or '.' before this spot.
-	nameEnd = ++ptr;
+	nameEnd = ptr;
 	while (ptr > pathText && !(ptr[-1] == '.' || ptr[-1] == '/' || ptr[-1] == '\\')) ptr--;
 
 	// If we reached the start of the string, or we hit a '/' or '\', take the whole thing, since there is no extension.
@@ -294,7 +294,7 @@ SMILE_EXTERNAL_FUNCTION(GetFilenameWithoutExt)
 
 SMILE_EXTERNAL_FUNCTION(GetDirname)
 {
-	String path = (String)argv[0].obj;
+	String path = (String)argv[1].obj;
 	const Byte *pathText = String_GetBytes(path);
 	Int pathLength = String_Length(path);
 	const Byte *pathEnd = pathText + pathLength;
@@ -303,7 +303,7 @@ SMILE_EXTERNAL_FUNCTION(GetDirname)
 
 	// Start at the end, and rewind to just before any trailing '/' or '\' marks.
 	ptr = pathEnd;
-	while (ptr >= pathText && (*ptr == '/' || *ptr == '\\')) ptr--;
+	while (ptr >= pathText && (ptr[-1] == '/' || ptr[-1] == '\\')) ptr--;
 	if (ptr < pathText)
 		return SmileArg_From((SmileObject)String_Empty);
 
