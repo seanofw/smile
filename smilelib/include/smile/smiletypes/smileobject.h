@@ -378,6 +378,8 @@ SMILE_API_FUNC Bool SmileObject_ContainsNestedList(SmileObject obj);
 SMILE_API_FUNC Bool SmileObject_DeepCompare(SmileObject self, SmileObject other);
 SMILE_API_FUNC Bool SmileArg_DeepCompare(SmileArg self, SmileArg other);
 
+SMILE_API_FUNC String SmileKind_GetName(Int kind);
+
 //-------------------------------------------------------------------------------------------------
 //  Inline operations on SmileObject.
 

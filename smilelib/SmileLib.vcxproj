@@ -852,6 +852,7 @@
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="src\siphash.c" />
+    <ClCompile Include="src\smiletypes\kind.c" />
     <ClCompile Include="src\smiletypes\numeric\smilebyte.c" />
     <ClCompile Include="src\smiletypes\numeric\smilebyte_base.c" />
     <ClCompile Include="src\smiletypes\numeric\smileinteger128.c" />

@@ -927,6 +927,7 @@
     <ClCompile Include="src\smiletypes\smilepair_class.c" />
     <ClCompile Include="src\parsing\parser\parseinclude.c" />
     <ClCompile Include="src\smiletypes\smileobject_class.c" />
+    <ClCompile Include="src\smiletypes\kind.c" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">
