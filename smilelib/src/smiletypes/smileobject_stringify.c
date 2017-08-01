@@ -226,9 +226,17 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 
 	case SMILE_KIND_USEROBJECT:
 		{
-			Int32DictKeyValuePair *pairs = Int32Dict_GetAll((Int32Dict)&((SmileUserObject)obj)->dict);
-			Int numPairs = Int32Dict_Count((Int32Dict)&((SmileUserObject)obj)->dict);
+			SmileUserObject userObject = (SmileUserObject)obj;
+			Int32DictKeyValuePair *pairs = Int32Dict_GetAll((Int32Dict)&userObject->dict);
+			Int numPairs = Int32Dict_Count((Int32Dict)&userObject->dict);
 			Int i;
+			String name;
+
+			name = SymbolTable_GetName(Smile_SymbolTable, userObject->name);
+			if (name != NULL) {
+				StringBuilder_AppendString(stringBuilder, name);
+				StringBuilder_AppendByte(stringBuilder, ' ');
+			}
 		
 			if (numPairs == 0) {
 				StringBuilder_Append(stringBuilder, (const Byte *)"{ }", 0, 3);
@@ -301,15 +309,44 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 		{
 			SmileFunction function = (SmileFunction)obj;
 			if (obj->kind & SMILE_FLAG_EXTERNAL_FUNCTION) {
-				StringBuilder_AppendFormat(stringBuilder, "[$fn [%S] <native>]", function->u.externalFunctionInfo.argNames);
+				StringBuilder_AppendFormat(stringBuilder, "|%S| <native>", function->u.externalFunctionInfo.argNames);
 			}
 			else {
-				StringBuilder_AppendFormat(stringBuilder, "[$fn ");
+				SmileObject body = function->u.u.userFunctionInfo->body;
+				SmileList argList = function->u.u.userFunctionInfo->argList;
+				Bool isFirst = True;
 
-				StringifyRecursive((SmileObject)function->u.u.userFunctionInfo->argList, stringBuilder, indent + 1);
+				StringBuilder_AppendByte(stringBuilder, '|');
+
+				if (SmileObject_IsRegularList((SmileObject)argList)) {
+					while (SMILE_KIND(argList) == SMILE_KIND_LIST) {
+						if (!isFirst) {
+							StringBuilder_AppendByte(stringBuilder, ' ');
+						}
+						StringifyRecursive((SmileObject)argList->a, stringBuilder, indent + 1);
+						argList = LIST_REST(argList);
+						isFirst = False;
+					}
+				}
+				else StringifyRecursive((SmileObject)argList, stringBuilder, indent + 1);
+
+				StringBuilder_AppendByte(stringBuilder, '|');
 				StringBuilder_AppendByte(stringBuilder, ' ');
-				StringifyRecursive(function->u.u.userFunctionInfo->body, stringBuilder, indent + 1);
-				StringBuilder_AppendFormat(stringBuilder, "]");
+
+				if (SMILE_KIND(body) == SMILE_KIND_LIST) {
+					if (SmileObject_IsRegularList(body)) {
+						// Don't need parentheses when we're outputting a list form anyway.
+						StringifyRecursive(body, stringBuilder, indent);
+					}
+					else {
+						StringBuilder_AppendByte(stringBuilder, '(');
+						StringifyRecursive(body, stringBuilder, indent + 1);
+						StringBuilder_AppendByte(stringBuilder, ')');
+					}
+				}
+				else {
+					StringifyRecursive(body, stringBuilder, indent + 1);
+				}
 			}
 		}
 		return;
