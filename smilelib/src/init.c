@@ -145,7 +145,7 @@ void Smile_ThrowExceptionC(const char *exceptionKind, const char *format, ...)
 
 SmileUserObject Smile_CreateException(Symbol exceptionKind, String message)
 {
-	SmileUserObject exception = SmileUserObject_Create((SmileObject)Smile_KnownBases.Exception);
+	SmileUserObject exception = SmileUserObject_Create((SmileObject)Smile_KnownBases.Exception, Smile_KnownSymbols.Exception_);
 	SmileUserObject_Set(exception, Smile_KnownSymbols.kind, SmileSymbol_Create(exceptionKind));
 	SmileUserObject_Set(exception, Smile_KnownSymbols.message, message);
 	return exception;

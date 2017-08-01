@@ -187,13 +187,16 @@ SMILE_EXTERNAL_FUNCTION(Split)
 	String path = (String)argv[1].obj;
 	Int splitIndex = 0, startIndex = 0;
 	SmileList head = NullList, tail = NullList;
+	Int length = String_Length(path);
 
 	while ((splitIndex = String_IndexOfAnyChar(path, (const Byte *)"/\\", 2, startIndex)) >= 0) {
-		if (splitIndex != startIndex) {
+		if (splitIndex != startIndex)
 			LIST_APPEND(head, tail, String_Substring(path, startIndex, splitIndex - startIndex));
-		}
 		startIndex = splitIndex + 1;
 	}
+
+	if (startIndex < length)
+		LIST_APPEND(head, tail, String_Substring(path, startIndex, length - startIndex));
 
 	return SmileArg_From((SmileObject)head);
 }

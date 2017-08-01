@@ -53,7 +53,7 @@ struct KnownBasesStruct {
 	SmileUserObject           FloatMapBase;
 	SmileUserObject             Float32Map, Float64Map, Float128Map;
 	SmileUserObject     Pair;
-	SmileUserObject     Function;
+	SmileUserObject     Fn;
 	SmileUserObject     Bool;
 	SmileUserObject     Symbol;
 	SmileUserObject     Exception;

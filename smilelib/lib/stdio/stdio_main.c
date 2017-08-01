@@ -54,7 +54,7 @@ STATIC_STRING(_stdioBootstrap,
 	"\n"*/
 );
 
-SMILE_INTERNAL_FUNC SmileObject Stdio_File_CreateFromCFile(SmileObject base, FILE *fp);
+SMILE_INTERNAL_FUNC SmileObject Stdio_File_CreateFromCFile(SmileObject base, String name, FILE *fp);
 
 SMILE_INTERNAL_FUNC void Stdio_File_Init(SmileUserObject base);
 SMILE_INTERNAL_FUNC void Stdio_Dir_Init(SmileUserObject base);
@@ -71,10 +71,13 @@ LibraryInfo Stdio_Main(void)
 	SmileUserObject dirBase;
 	SmileUserObject pathBase;
 	STATIC_STRING(stdioName, "stdio");
+	STATIC_STRING(stdinName, "<stdin>");
+	STATIC_STRING(stdoutName, "<stdout>");
+	STATIC_STRING(stderrName, "<stderr>");
 
-	fileBase = SmileUserObject_Create((SmileObject)Smile_KnownBases.Handle);
-	dirBase = SmileUserObject_Create((SmileObject)Smile_KnownBases.Handle);
-	pathBase = SmileUserObject_Create((SmileObject)Smile_KnownBases.Handle);
+	fileBase = SmileUserObject_Create((SmileObject)Smile_KnownBases.Handle, SymbolTable_GetSymbolC(Smile_SymbolTable, "File"));
+	dirBase = SmileUserObject_Create((SmileObject)Smile_KnownBases.Handle, SymbolTable_GetSymbolC(Smile_SymbolTable, "Dir"));
+	pathBase = SmileUserObject_Create((SmileObject)Smile_KnownBases.Handle, SymbolTable_GetSymbolC(Smile_SymbolTable, "Path"));
 
 	Stdio_File_Init(fileBase);
 	Stdio_Dir_Init(dirBase);
@@ -86,9 +89,9 @@ LibraryInfo Stdio_Main(void)
 	Closure_SetGlobalVariable(globalClosure, SymbolTable_GetSymbolC(Smile_SymbolTable, "File"), (SmileObject)fileBase);
 	Closure_SetGlobalVariable(globalClosure, SymbolTable_GetSymbolC(Smile_SymbolTable, "Dir"), (SmileObject)dirBase);
 	Closure_SetGlobalVariable(globalClosure, SymbolTable_GetSymbolC(Smile_SymbolTable, "Path"), (SmileObject)pathBase);
-	Closure_SetGlobalVariable(globalClosure, SymbolTable_GetSymbolC(Smile_SymbolTable, "Stdin"), Stdio_File_CreateFromCFile((SmileObject)fileBase, stdin));
-	Closure_SetGlobalVariable(globalClosure, SymbolTable_GetSymbolC(Smile_SymbolTable, "Stdout"), Stdio_File_CreateFromCFile((SmileObject)fileBase, stdout));
-	Closure_SetGlobalVariable(globalClosure, SymbolTable_GetSymbolC(Smile_SymbolTable, "Stderr"), Stdio_File_CreateFromCFile((SmileObject)fileBase, stderr));
+	Closure_SetGlobalVariable(globalClosure, SymbolTable_GetSymbolC(Smile_SymbolTable, "Stdin"), Stdio_File_CreateFromCFile((SmileObject)fileBase, stdinName, stdin));
+	Closure_SetGlobalVariable(globalClosure, SymbolTable_GetSymbolC(Smile_SymbolTable, "Stdout"), Stdio_File_CreateFromCFile((SmileObject)fileBase, stdoutName, stdout));
+	Closure_SetGlobalVariable(globalClosure, SymbolTable_GetSymbolC(Smile_SymbolTable, "Stderr"), Stdio_File_CreateFromCFile((SmileObject)fileBase, stderrName, stderr));
 
 	parseResult = Smile_ParseInScope(globalClosureInfo, _stdioBootstrap, _stdioFilename, &parseMessages, &numParseMessages);
 

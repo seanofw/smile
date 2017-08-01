@@ -165,11 +165,32 @@ typedef struct KnownSymbolsStruct {
 	//------------------------------------------
 
 	// Typename symbols.
-	Symbol Actor_, Array_, ArrayBase_, Bool_, Byte_, ByteRange_, ByteArray_, Char_, Closure, Enumerable_, Exception_, Facade_, FacadeProper_, Fn_, Handle_;
-	Symbol IntegerArrayBase_, Integer_, Integer16_, Integer32_, Integer32Array_, Integer32Map_, Integer32Range_, Integer64_, Integer64Array_, Integer64Map_, Integer64Range_, IntegerBase_, IntegerRange_, IntegerRangeBase_;
-	Symbol List_, Map_, MapBase_, MathException, Number_, NumericArrayBase_, Null_, Object_, Pair_, Program_, Random_, Range_;
-	Symbol RealArrayBase_, Real_, Real32_, Real32Array_, Real32Range_, Real64_, Real64Array_, Real64Range_, RealBase_, RealRange_, RealRangeBase_;
-	Symbol Regex_, String_, StringMap_, Symbol_, SymbolMap_, UChar_, UserObject_;
+	Symbol Actor_, Array_, ArrayBase_, Bool_, BoolArray_, Char_, Closure, Enumerable_, Exception_, Facade_, FacadeProper_, Fn_, Handle_;
+	Symbol List_, Map_, MapBase_, MathException, Null_, Object_, Pair_, Program_, Random_, Range_;
+	Symbol Regex_, String_, StringArray_, StringMap_, Symbol_, SymbolArray_, SymbolMap_, UserObject_;
+
+	// Numeric typename symbols.
+	Symbol Number_, NumericArray_, NumericRange_, NumericMap_;
+
+	// Integer typename symbols.
+	Symbol Integer_, IntegerBase_, IntegerArrayBase_, IntegerRange_, IntegerRangeBase_, IntegerMap_, IntegerMapBase_;
+	Symbol Byte_, ByteArray_, ByteRange_, ByteMap_;
+	Symbol Integer16_, Integer16Array_, Integer16Range_, Integer16Map_;
+	Symbol Integer32_, Integer32Array_, Integer32Range_, Integer32Map_;
+	Symbol Integer64_, Integer64Array_, Integer64Range_, Integer64Map_;
+	Symbol Integer128_, Integer128Array_, Integer128Range_, Integer128Map_;
+
+	// Real typename symbols.
+	Symbol Real_, RealBase_, RealArrayBase_, RealRange_, RealRangeBase_, RealMap_, RealMapBase_;
+	Symbol Real32_, Real32Array_, Real32Range_, Real32Map_;
+	Symbol Real64_, Real64Array_, Real64Range_, Real64Map_;
+	Symbol Real128_, Real128Array_, Real128Range_, Real128Map_;
+
+	// Float typename symbols.
+	Symbol Float_, FloatBase_, FloatArrayBase_, FloatRange_, FloatRangeBase_, FloatMap_, FloatMapBase_;
+	Symbol Float32_, Float32Array_, Float32Range_, Float32Map_;
+	Symbol Float64_, Float64Array_, Float64Range_, Float64Map_;
+	Symbol Float128_, Float128Array_, Float128Range_, Float128Map_;
 
 	// General symbols.
 	Symbol a, abs, acos, add_c_slashes, alnum_q, alpha_q, apply, apply_method, arguments, asin, assertions, assigned_name, atan, atan2;
@@ -204,7 +225,7 @@ typedef struct KnownSymbolsStruct {
 	Symbol string_, strip_c_slashes, studied_, study, substr, substring, symbol;
 	Symbol symbol_currency, symbol_math, symbol_modifier, symbol_other;
 	Symbol tan, text, this_, this_closure, throw_, title, titlecase, titlecase_q, trim, trim_end, trim_start, true_, type;
-	Symbol uchar, underscorize, unknown, upper, uppercase, uppercase_q, url_decode, url_encode, url_query_encode, utf8_to_latin1;
+	Symbol underscorize, unknown, upper, uppercase, uppercase_q, url_decode, url_encode, url_query_encode, utf8_to_latin1;
 	Symbol values;
 	Symbol where_, whitespace_q, wildcard_matches, without;
 	Symbol xdigit_q, xor;

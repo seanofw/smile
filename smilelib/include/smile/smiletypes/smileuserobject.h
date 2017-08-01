@@ -20,15 +20,16 @@
 struct SmileUserObjectInt {
 	DECLARE_BASE_OBJECT_PROPERTIES;
 	SmileObject securityKey;
+	Symbol name;
 	struct Int32DictInt dict;
 };
 
 //-------------------------------------------------------------------------------------------------
 //  Public interface
 
-SMILE_API_FUNC SmileUserObject SmileUserObject_CreateWithSize(SmileObject base, Int initialSize);
-SMILE_API_FUNC SmileUserObject SmileUserObject_CreateFromArgPairs(SmileObject base, SmileArg *argPairs, Int numArgPairs);
-SMILE_API_FUNC void SmileUserObject_InitWithSize(SmileUserObject userObject, SmileObject base, Int initialSize);
+SMILE_API_FUNC SmileUserObject SmileUserObject_CreateWithSize(SmileObject base, Symbol name, Int initialSize);
+SMILE_API_FUNC SmileUserObject SmileUserObject_CreateFromArgPairs(SmileObject base, Symbol name, SmileArg *argPairs, Int numArgPairs);
+SMILE_API_FUNC void SmileUserObject_InitWithSize(SmileUserObject userObject, SmileObject base, Symbol name, Int initialSize);
 SMILE_API_FUNC void SmileUserObject_SetC(SmileUserObject self, const char *name, SmileObject value);
 SMILE_API_FUNC void SmileUserObject_SetupFunction(SmileUserObject base, ExternalFunction function, void *param,
 	const char *name, const char *argNames, Int argCheckFlags, Int minArgs, Int maxArgs, Int numArgsToTypeCheck, const Byte *argTypeChecks);
@@ -39,14 +40,14 @@ SMILE_API_FUNC void SmileUserObject_SetupSynonym(SmileUserObject base, const cha
 #define SmileUserObject_Get(__obj__, __symbol__) \
 	(SMILE_VCALL1((__obj__), getProperty, (__symbol__)))
 
-Inline SmileUserObject SmileUserObject_Create(SmileObject base)
+Inline SmileUserObject SmileUserObject_Create(SmileObject base, Symbol name)
 {
-	return SmileUserObject_CreateWithSize(base, 8);
+	return SmileUserObject_CreateWithSize(base, name, 8);
 }
 
-Inline void SmileUserObject_Init(SmileUserObject userObject, SmileObject base)
+Inline void SmileUserObject_Init(SmileUserObject userObject, SmileObject base, Symbol name)
 {
-	SmileUserObject_InitWithSize(userObject, base, 8);
+	SmileUserObject_InitWithSize(userObject, base, name, 8);
 }
 
 #endif

@@ -31,164 +31,164 @@ struct SmileUserObjectInt String_BaseObjectStruct = { 0 };
 
 static void SetupNumericTypes(struct KnownBasesStruct *knownBases)
 {
-	knownBases->Number = SmileUserObject_Create((SmileObject)knownBases->Object);
+	knownBases->Number = SmileUserObject_Create((SmileObject)knownBases->Object, Smile_KnownSymbols.Number_);
 
-	knownBases->IntegerBase = SmileUserObject_Create((SmileObject)knownBases->Number);
+	knownBases->IntegerBase = SmileUserObject_Create((SmileObject)knownBases->Number, Smile_KnownSymbols.IntegerBase_);
 
-	knownBases->Byte = SmileUserObject_Create((SmileObject)knownBases->IntegerBase);
-	knownBases->Integer16 = SmileUserObject_Create((SmileObject)knownBases->IntegerBase);
-	knownBases->Integer32 = SmileUserObject_Create((SmileObject)knownBases->IntegerBase);
-	knownBases->Integer64 = SmileUserObject_Create((SmileObject)knownBases->IntegerBase);
-	knownBases->Integer128 = SmileUserObject_Create((SmileObject)knownBases->IntegerBase);
+	knownBases->Byte = SmileUserObject_Create((SmileObject)knownBases->IntegerBase, Smile_KnownSymbols.Byte_);
+	knownBases->Integer16 = SmileUserObject_Create((SmileObject)knownBases->IntegerBase, Smile_KnownSymbols.Integer16_);
+	knownBases->Integer32 = SmileUserObject_Create((SmileObject)knownBases->IntegerBase, Smile_KnownSymbols.Integer32_);
+	knownBases->Integer64 = SmileUserObject_Create((SmileObject)knownBases->IntegerBase, Smile_KnownSymbols.Integer64_);
+	knownBases->Integer128 = SmileUserObject_Create((SmileObject)knownBases->IntegerBase, Smile_KnownSymbols.Integer128_);
 
-	knownBases->RealBase = SmileUserObject_Create((SmileObject)knownBases->Number);
+	knownBases->RealBase = SmileUserObject_Create((SmileObject)knownBases->Number, Smile_KnownSymbols.RealBase_);
 
-	knownBases->Real32 = SmileUserObject_Create((SmileObject)knownBases->RealBase);
-	knownBases->Real64 = SmileUserObject_Create((SmileObject)knownBases->RealBase);
-	knownBases->Real128 = SmileUserObject_Create((SmileObject)knownBases->RealBase);
+	knownBases->Real32 = SmileUserObject_Create((SmileObject)knownBases->RealBase, Smile_KnownSymbols.Real32_);
+	knownBases->Real64 = SmileUserObject_Create((SmileObject)knownBases->RealBase, Smile_KnownSymbols.Real64_);
+	knownBases->Real128 = SmileUserObject_Create((SmileObject)knownBases->RealBase, Smile_KnownSymbols.Real128_);
 
-	knownBases->FloatBase = SmileUserObject_Create((SmileObject)knownBases->Number);
+	knownBases->FloatBase = SmileUserObject_Create((SmileObject)knownBases->Number, Smile_KnownSymbols.FloatBase_);
 
-	knownBases->Float32 = SmileUserObject_Create((SmileObject)knownBases->FloatBase);
-	knownBases->Float64 = SmileUserObject_Create((SmileObject)knownBases->FloatBase);
-	knownBases->Float128 = SmileUserObject_Create((SmileObject)knownBases->FloatBase);
+	knownBases->Float32 = SmileUserObject_Create((SmileObject)knownBases->FloatBase, Smile_KnownSymbols.Float32_);
+	knownBases->Float64 = SmileUserObject_Create((SmileObject)knownBases->FloatBase, Smile_KnownSymbols.Float64_);
+	knownBases->Float128 = SmileUserObject_Create((SmileObject)knownBases->FloatBase, Smile_KnownSymbols.Float128_);
 }
 
 static void SetupNumericRangeTypes(struct KnownBasesStruct *knownBases)
 {
-	knownBases->NumericRange = SmileUserObject_Create((SmileObject)knownBases->Range);
+	knownBases->NumericRange = SmileUserObject_Create((SmileObject)knownBases->Range, Smile_KnownSymbols.NumericRange_);
 
-	knownBases->IntegerRangeBase = SmileUserObject_Create((SmileObject)knownBases->NumericRange);
+	knownBases->IntegerRangeBase = SmileUserObject_Create((SmileObject)knownBases->NumericRange, Smile_KnownSymbols.IntegerRangeBase_);
 
-	knownBases->ByteRange = SmileUserObject_Create((SmileObject)knownBases->IntegerRangeBase);
-	knownBases->Integer16Range = SmileUserObject_Create((SmileObject)knownBases->IntegerRangeBase);
-	knownBases->Integer32Range = SmileUserObject_Create((SmileObject)knownBases->IntegerRangeBase);
-	knownBases->Integer64Range = SmileUserObject_Create((SmileObject)knownBases->IntegerRangeBase);
-	knownBases->Integer128Range = SmileUserObject_Create((SmileObject)knownBases->IntegerRangeBase);
+	knownBases->ByteRange = SmileUserObject_Create((SmileObject)knownBases->IntegerRangeBase, Smile_KnownSymbols.ByteRange_);
+	knownBases->Integer16Range = SmileUserObject_Create((SmileObject)knownBases->IntegerRangeBase, Smile_KnownSymbols.Integer16Range_);
+	knownBases->Integer32Range = SmileUserObject_Create((SmileObject)knownBases->IntegerRangeBase, Smile_KnownSymbols.Integer32Range_);
+	knownBases->Integer64Range = SmileUserObject_Create((SmileObject)knownBases->IntegerRangeBase, Smile_KnownSymbols.Integer64Range_);
+	knownBases->Integer128Range = SmileUserObject_Create((SmileObject)knownBases->IntegerRangeBase, Smile_KnownSymbols.Integer128Range_);
 
-	knownBases->RealRangeBase = SmileUserObject_Create((SmileObject)knownBases->NumericRange);
+	knownBases->RealRangeBase = SmileUserObject_Create((SmileObject)knownBases->NumericRange, Smile_KnownSymbols.RealRangeBase_);
 
-	knownBases->Real32Range = SmileUserObject_Create((SmileObject)knownBases->RealRangeBase);
-	knownBases->Real64Range = SmileUserObject_Create((SmileObject)knownBases->RealRangeBase);
-	knownBases->Real128Range = SmileUserObject_Create((SmileObject)knownBases->RealRangeBase);
+	knownBases->Real32Range = SmileUserObject_Create((SmileObject)knownBases->RealRangeBase, Smile_KnownSymbols.Real32Range_);
+	knownBases->Real64Range = SmileUserObject_Create((SmileObject)knownBases->RealRangeBase, Smile_KnownSymbols.Real64Range_);
+	knownBases->Real128Range = SmileUserObject_Create((SmileObject)knownBases->RealRangeBase, Smile_KnownSymbols.Real128Range_);
 
-	knownBases->FloatRangeBase = SmileUserObject_Create((SmileObject)knownBases->NumericRange);
+	knownBases->FloatRangeBase = SmileUserObject_Create((SmileObject)knownBases->NumericRange, Smile_KnownSymbols.FloatRangeBase_);
 
-	knownBases->Float32Range = SmileUserObject_Create((SmileObject)knownBases->FloatRangeBase);
-	knownBases->Float64Range = SmileUserObject_Create((SmileObject)knownBases->FloatRangeBase);
-	knownBases->Float128Range = SmileUserObject_Create((SmileObject)knownBases->FloatRangeBase);
+	knownBases->Float32Range = SmileUserObject_Create((SmileObject)knownBases->FloatRangeBase, Smile_KnownSymbols.Float32Range_);
+	knownBases->Float64Range = SmileUserObject_Create((SmileObject)knownBases->FloatRangeBase, Smile_KnownSymbols.Float64Range_);
+	knownBases->Float128Range = SmileUserObject_Create((SmileObject)knownBases->FloatRangeBase, Smile_KnownSymbols.Float128Range_);
 }
 
 static void SetupNumericArrayTypes(struct KnownBasesStruct *knownBases)
 {
-	knownBases->NumericArray = SmileUserObject_Create((SmileObject)knownBases->ArrayBase);
+	knownBases->NumericArray = SmileUserObject_Create((SmileObject)knownBases->ArrayBase, Smile_KnownSymbols.NumericArray_);
 
-	knownBases->IntegerArrayBase = SmileUserObject_Create((SmileObject)knownBases->NumericArray);
+	knownBases->IntegerArrayBase = SmileUserObject_Create((SmileObject)knownBases->NumericArray, Smile_KnownSymbols.IntegerArrayBase_);
 
-	knownBases->ByteArray = SmileUserObject_Create((SmileObject)knownBases->IntegerArrayBase);
-	knownBases->Integer16Array = SmileUserObject_Create((SmileObject)knownBases->IntegerArrayBase);
-	knownBases->Integer32Array = SmileUserObject_Create((SmileObject)knownBases->IntegerArrayBase);
-	knownBases->Integer64Array = SmileUserObject_Create((SmileObject)knownBases->IntegerArrayBase);
-	knownBases->Integer128Array = SmileUserObject_Create((SmileObject)knownBases->IntegerArrayBase);
+	knownBases->ByteArray = SmileUserObject_Create((SmileObject)knownBases->IntegerArrayBase, Smile_KnownSymbols.ByteArray_);
+	knownBases->Integer16Array = SmileUserObject_Create((SmileObject)knownBases->IntegerArrayBase, Smile_KnownSymbols.Integer16Array_);
+	knownBases->Integer32Array = SmileUserObject_Create((SmileObject)knownBases->IntegerArrayBase, Smile_KnownSymbols.Integer32Array_);
+	knownBases->Integer64Array = SmileUserObject_Create((SmileObject)knownBases->IntegerArrayBase, Smile_KnownSymbols.Integer64Array_);
+	knownBases->Integer128Array = SmileUserObject_Create((SmileObject)knownBases->IntegerArrayBase, Smile_KnownSymbols.Integer128Array_);
 
-	knownBases->RealArrayBase = SmileUserObject_Create((SmileObject)knownBases->NumericArray);
+	knownBases->RealArrayBase = SmileUserObject_Create((SmileObject)knownBases->NumericArray, Smile_KnownSymbols.RealArrayBase_);
 
-	knownBases->Real32Array = SmileUserObject_Create((SmileObject)knownBases->RealArrayBase);
-	knownBases->Real64Array = SmileUserObject_Create((SmileObject)knownBases->RealArrayBase);
-	knownBases->Real128Array = SmileUserObject_Create((SmileObject)knownBases->RealArrayBase);
+	knownBases->Real32Array = SmileUserObject_Create((SmileObject)knownBases->RealArrayBase, Smile_KnownSymbols.Real32Array_);
+	knownBases->Real64Array = SmileUserObject_Create((SmileObject)knownBases->RealArrayBase, Smile_KnownSymbols.Real64Array_);
+	knownBases->Real128Array = SmileUserObject_Create((SmileObject)knownBases->RealArrayBase, Smile_KnownSymbols.Real128Array_);
 
-	knownBases->FloatArrayBase = SmileUserObject_Create((SmileObject)knownBases->NumericArray);
+	knownBases->FloatArrayBase = SmileUserObject_Create((SmileObject)knownBases->NumericArray, Smile_KnownSymbols.FloatArrayBase_);
 
-	knownBases->Float32Array = SmileUserObject_Create((SmileObject)knownBases->FloatArrayBase);
-	knownBases->Float64Array = SmileUserObject_Create((SmileObject)knownBases->FloatArrayBase);
-	knownBases->Float128Array = SmileUserObject_Create((SmileObject)knownBases->FloatArrayBase);
+	knownBases->Float32Array = SmileUserObject_Create((SmileObject)knownBases->FloatArrayBase, Smile_KnownSymbols.Float32Array_);
+	knownBases->Float64Array = SmileUserObject_Create((SmileObject)knownBases->FloatArrayBase, Smile_KnownSymbols.Float64Array_);
+	knownBases->Float128Array = SmileUserObject_Create((SmileObject)knownBases->FloatArrayBase, Smile_KnownSymbols.Float128Array_);
 }
 
 static void SetupNumericMapTypes(struct KnownBasesStruct *knownBases)
 {
-	knownBases->NumericMap = SmileUserObject_Create((SmileObject)knownBases->MapBase);
+	knownBases->NumericMap = SmileUserObject_Create((SmileObject)knownBases->MapBase, Smile_KnownSymbols.NumericMap_);
 
-	knownBases->IntegerMapBase = SmileUserObject_Create((SmileObject)knownBases->NumericMap);
+	knownBases->IntegerMapBase = SmileUserObject_Create((SmileObject)knownBases->NumericMap, Smile_KnownSymbols.IntegerMapBase_);
 
-	knownBases->ByteMap = SmileUserObject_Create((SmileObject)knownBases->IntegerMapBase);
-	knownBases->Integer16Map = SmileUserObject_Create((SmileObject)knownBases->IntegerMapBase);
-	knownBases->Integer32Map = SmileUserObject_Create((SmileObject)knownBases->IntegerMapBase);
-	knownBases->Integer64Map = SmileUserObject_Create((SmileObject)knownBases->IntegerMapBase);
-	knownBases->Integer128Map = SmileUserObject_Create((SmileObject)knownBases->IntegerMapBase);
+	knownBases->ByteMap = SmileUserObject_Create((SmileObject)knownBases->IntegerMapBase, Smile_KnownSymbols.ByteMap_);
+	knownBases->Integer16Map = SmileUserObject_Create((SmileObject)knownBases->IntegerMapBase, Smile_KnownSymbols.Integer16Map_);
+	knownBases->Integer32Map = SmileUserObject_Create((SmileObject)knownBases->IntegerMapBase, Smile_KnownSymbols.Integer32Map_);
+	knownBases->Integer64Map = SmileUserObject_Create((SmileObject)knownBases->IntegerMapBase, Smile_KnownSymbols.Integer64Map_);
+	knownBases->Integer128Map = SmileUserObject_Create((SmileObject)knownBases->IntegerMapBase, Smile_KnownSymbols.Integer128Map_);
 
-	knownBases->RealMapBase = SmileUserObject_Create((SmileObject)knownBases->NumericMap);
+	knownBases->RealMapBase = SmileUserObject_Create((SmileObject)knownBases->NumericMap, Smile_KnownSymbols.RealMapBase_);
 
-	knownBases->Real32Map = SmileUserObject_Create((SmileObject)knownBases->RealMapBase);
-	knownBases->Real64Map = SmileUserObject_Create((SmileObject)knownBases->RealMapBase);
-	knownBases->Real128Map = SmileUserObject_Create((SmileObject)knownBases->RealMapBase);
+	knownBases->Real32Map = SmileUserObject_Create((SmileObject)knownBases->RealMapBase, Smile_KnownSymbols.Real32Map_);
+	knownBases->Real64Map = SmileUserObject_Create((SmileObject)knownBases->RealMapBase, Smile_KnownSymbols.Real64Map_);
+	knownBases->Real128Map = SmileUserObject_Create((SmileObject)knownBases->RealMapBase, Smile_KnownSymbols.Real128Map_);
 
-	knownBases->FloatMapBase = SmileUserObject_Create((SmileObject)knownBases->NumericMap);
+	knownBases->FloatMapBase = SmileUserObject_Create((SmileObject)knownBases->NumericMap, Smile_KnownSymbols.FloatMapBase_);
 
-	knownBases->Float32Map = SmileUserObject_Create((SmileObject)knownBases->FloatMapBase);
-	knownBases->Float64Map = SmileUserObject_Create((SmileObject)knownBases->FloatMapBase);
-	knownBases->Float128Map = SmileUserObject_Create((SmileObject)knownBases->FloatMapBase);
+	knownBases->Float32Map = SmileUserObject_Create((SmileObject)knownBases->FloatMapBase, Smile_KnownSymbols.Float32Map_);
+	knownBases->Float64Map = SmileUserObject_Create((SmileObject)knownBases->FloatMapBase, Smile_KnownSymbols.Float64Map_);
+	knownBases->Float128Map = SmileUserObject_Create((SmileObject)knownBases->FloatMapBase, Smile_KnownSymbols.Float128Map_);
 }
 
 static void SetupRangeTypes(struct KnownBasesStruct *knownBases)
 {
-	knownBases->Range = SmileUserObject_Create((SmileObject)knownBases->Enumerable);
+	knownBases->Range = SmileUserObject_Create((SmileObject)knownBases->Enumerable, Smile_KnownSymbols.Range_);
 
 	SetupNumericRangeTypes(knownBases);
 }
 
 static void SetupArrayTypes(struct KnownBasesStruct *knownBases)
 {
-	knownBases->ArrayBase = SmileUserObject_Create((SmileObject)knownBases->Enumerable);
+	knownBases->ArrayBase = SmileUserObject_Create((SmileObject)knownBases->Enumerable, Smile_KnownSymbols.ArrayBase_);
 
-	knownBases->Array = SmileUserObject_Create((SmileObject)knownBases->ArrayBase);
+	knownBases->Array = SmileUserObject_Create((SmileObject)knownBases->ArrayBase, Smile_KnownSymbols.Array_);
 
-	knownBases->BoolArray = SmileUserObject_Create((SmileObject)knownBases->ArrayBase);
-	knownBases->StringArray = SmileUserObject_Create((SmileObject)knownBases->ArrayBase);
-	knownBases->SymbolArray = SmileUserObject_Create((SmileObject)knownBases->ArrayBase);
+	knownBases->BoolArray = SmileUserObject_Create((SmileObject)knownBases->ArrayBase, Smile_KnownSymbols.BoolArray_);
+	knownBases->StringArray = SmileUserObject_Create((SmileObject)knownBases->ArrayBase, Smile_KnownSymbols.StringArray_);
+	knownBases->SymbolArray = SmileUserObject_Create((SmileObject)knownBases->ArrayBase, Smile_KnownSymbols.SymbolArray_);
 
 	SetupNumericArrayTypes(knownBases);
 }
 
 static void SetupMapTypes(struct KnownBasesStruct *knownBases)
 {
-	knownBases->MapBase = SmileUserObject_Create((SmileObject)knownBases->Enumerable);
+	knownBases->MapBase = SmileUserObject_Create((SmileObject)knownBases->Enumerable, Smile_KnownSymbols.MapBase_);
 
-	knownBases->Map = SmileUserObject_Create((SmileObject)knownBases->MapBase);
-	knownBases->StringMap = SmileUserObject_Create((SmileObject)knownBases->MapBase);
-	knownBases->SymbolMap = SmileUserObject_Create((SmileObject)knownBases->MapBase);
+	knownBases->Map = SmileUserObject_Create((SmileObject)knownBases->MapBase, Smile_KnownSymbols.Map_);
+	knownBases->StringMap = SmileUserObject_Create((SmileObject)knownBases->MapBase, Smile_KnownSymbols.StringMap_);
+	knownBases->SymbolMap = SmileUserObject_Create((SmileObject)knownBases->MapBase, Smile_KnownSymbols.SymbolMap_);
 
 	SetupNumericMapTypes(knownBases);
 }
 
 static void SetupEnumerableTypes(struct KnownBasesStruct *knownBases)
 {
-	knownBases->Enumerable = SmileUserObject_Create((SmileObject)knownBases->Object);
+	knownBases->Enumerable = SmileUserObject_Create((SmileObject)knownBases->Object, Smile_KnownSymbols.Enumerable_);
 
 	SetupRangeTypes(knownBases);
 	SetupArrayTypes(knownBases);
 	SetupMapTypes(knownBases);
 
-	knownBases->List = SmileUserObject_Create((SmileObject)knownBases->Enumerable);
+	knownBases->List = SmileUserObject_Create((SmileObject)knownBases->Enumerable, Smile_KnownSymbols.List_);
 
 	knownBases->String = &String_BaseObjectStruct;
-	SmileUserObject_Init(&String_BaseObjectStruct, (SmileObject)knownBases->Enumerable);
+	SmileUserObject_Init(&String_BaseObjectStruct, (SmileObject)knownBases->Enumerable, Smile_KnownSymbols.String_);
 }
 
 static void SetupMiscTypes(struct KnownBasesStruct *knownBases)
 {
-	knownBases->Pair = SmileUserObject_Create((SmileObject)knownBases->Object);
-	knownBases->Function = SmileUserObject_Create((SmileObject)knownBases->Object);
-	knownBases->Bool = SmileUserObject_Create((SmileObject)knownBases->Object);
-	knownBases->Symbol = SmileUserObject_Create((SmileObject)knownBases->Object);
-	knownBases->Exception = SmileUserObject_Create((SmileObject)knownBases->Object);
-	knownBases->Handle = SmileUserObject_Create((SmileObject)knownBases->Object);
+	knownBases->Pair = SmileUserObject_Create((SmileObject)knownBases->Object, Smile_KnownSymbols.Pair_);
+	knownBases->Fn = SmileUserObject_Create((SmileObject)knownBases->Object, Smile_KnownSymbols.Fn_);
+	knownBases->Bool = SmileUserObject_Create((SmileObject)knownBases->Object, Smile_KnownSymbols.Bool_);
+	knownBases->Symbol = SmileUserObject_Create((SmileObject)knownBases->Object, Smile_KnownSymbols.Symbol_);
+	knownBases->Exception = SmileUserObject_Create((SmileObject)knownBases->Object, Smile_KnownSymbols.Exception_);
+	knownBases->Handle = SmileUserObject_Create((SmileObject)knownBases->Object, Smile_KnownSymbols.Handle_);
 }
 
 void KnownBases_Preload(struct KnownBasesStruct *knownBases)
 {
 	knownBases->Primitive = SmileObject_Create();
 
-	knownBases->Object = SmileUserObject_Create((SmileObject)knownBases->Primitive);
+	knownBases->Object = SmileUserObject_Create((SmileObject)knownBases->Primitive, Smile_KnownSymbols.Object_);
 	
 	SetupNumericTypes(knownBases);
 	SetupEnumerableTypes(knownBases);

@@ -678,6 +678,7 @@ next:
 				Int index = byteCode->u.index;
 				value = (SmileObject)SmileUserObject_CreateFromArgPairs(
 					SmileArg_Box(Closure_GetTemp(closure, (index << 1))),
+					0,
 					closure->stackTop - (index << 1),
 					index);
 				Closure_PopCount(closure, (index << 1) + 1);

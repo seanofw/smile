@@ -58,7 +58,7 @@ void Smile_InitCommonGlobals(ClosureInfo globalClosureInfo)
 	DeclareCommonGlobal(Smile_KnownSymbols.ArrayBase_,	    Smile_KnownBases.ArrayBase);
 	DeclareCommonGlobal(Smile_KnownSymbols.Array_,	      Smile_KnownBases.Array);
 	DeclareCommonGlobal(Smile_KnownSymbols.Pair_,	  Smile_KnownBases.Pair);
-	DeclareCommonGlobal(Smile_KnownSymbols.Fn_,	  Smile_KnownBases.Function);
+	DeclareCommonGlobal(Smile_KnownSymbols.Fn_,	  Smile_KnownBases.Fn);
 	DeclareCommonGlobal(Smile_KnownSymbols.Bool_,	  Smile_KnownBases.Bool);
 	DeclareCommonGlobal(Smile_KnownSymbols.Symbol_,	  Smile_KnownBases.Symbol);
 	DeclareCommonGlobal(Smile_KnownSymbols.Exception_,	  Smile_KnownBases.Exception);

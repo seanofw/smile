@@ -20,12 +20,13 @@
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/base.h>
 
-SMILE_INTERNAL_FUNC SmileObject Stdio_File_CreateFromCFile(SmileObject base, FILE *fp);
+SMILE_INTERNAL_FUNC SmileObject Stdio_File_CreateFromCFile(SmileObject base, String name, FILE *fp);
 SMILE_INTERNAL_FUNC SmileObject Stdio_File_CreateFromPath(SmileObject base, String path);
 
-SmileObject Stdio_File_CreateFromCFile(SmileObject base, FILE *fp)
+SmileObject Stdio_File_CreateFromCFile(SmileObject base, String name, FILE *fp)
 {
 	UNUSED(base);
+	UNUSED(name);
 	UNUSED(fp);
 
 	return NullObject;

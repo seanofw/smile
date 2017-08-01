@@ -27,7 +27,7 @@ extern SmileVTable SmileUserObject_VTable_ReadWrite;
 extern SmileVTable SmileUserObject_VTable_ReadAppend;
 extern SmileVTable SmileUserObject_VTable_ReadWriteAppend;
 
-SmileUserObject SmileUserObject_CreateWithSize(SmileObject base, Int initialSize)
+SmileUserObject SmileUserObject_CreateWithSize(SmileObject base, Symbol name, Int initialSize)
 {
 	SmileUserObject userObject = GC_MALLOC_STRUCT(struct SmileUserObjectInt);
 	if (userObject == NULL || initialSize >= Int32Max) Smile_Abort_OutOfMemory();
@@ -36,13 +36,14 @@ SmileUserObject SmileUserObject_CreateWithSize(SmileObject base, Int initialSize
 	userObject->kind = SMILE_KIND_USEROBJECT | SMILE_SECURITY_READWRITEAPPEND;
 	userObject->vtable = SmileUserObject_VTable_ReadWriteAppend;
 	userObject->securityKey = NullObject;
+	userObject->name = name;
 
 	Int32Dict_ClearWithSize((Int32Dict)&userObject->dict, (Int32)initialSize);
 
 	return userObject;
 }
 
-void SmileUserObject_InitWithSize(SmileUserObject userObject, SmileObject base, Int initialSize)
+void SmileUserObject_InitWithSize(SmileUserObject userObject, SmileObject base, Symbol name, Int initialSize)
 {
 	if (initialSize >= Int32Max) Smile_Abort_OutOfMemory();
 
@@ -50,13 +51,14 @@ void SmileUserObject_InitWithSize(SmileUserObject userObject, SmileObject base, 
 	userObject->kind = SMILE_KIND_USEROBJECT | SMILE_SECURITY_READWRITEAPPEND;
 	userObject->vtable = SmileUserObject_VTable_ReadWriteAppend;
 	userObject->securityKey = NullObject;
+	userObject->name = name;
 
 	Int32Dict_ClearWithSize((Int32Dict)&userObject->dict, (Int32)initialSize);
 }
 
-SmileUserObject SmileUserObject_CreateFromArgPairs(SmileObject base, SmileArg *argPairs, Int numArgPairs)
+SmileUserObject SmileUserObject_CreateFromArgPairs(SmileObject base, Symbol name, SmileArg *argPairs, Int numArgPairs)
 {
-	SmileUserObject userObject = SmileUserObject_CreateWithSize(base, numArgPairs);
+	SmileUserObject userObject = SmileUserObject_CreateWithSize(base, name, numArgPairs);
 	Int i;
 
 	for (i = 0; i < numArgPairs; i++) {
