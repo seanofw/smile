@@ -62,6 +62,7 @@ ParseError Parser_ParseInclude(Parser parser, SmileObject *expr)
 	ParseError error;
 	Symbol oldName, newName;
 	SmileList head, tail;
+	SmileList resultHead, resultTail;
 	SmileObject setExpr;
 
 	*expr = NullObject;
@@ -104,6 +105,7 @@ ParseError Parser_ParseInclude(Parser parser, SmileObject *expr)
 	}
 
 	head = tail = NullList;
+	resultHead = resultTail = NullList;
 
 	// Parse the first include name.
 	error = Parser_ParseIncludeName(parser, &oldName, &newName);
@@ -113,6 +115,7 @@ ParseError Parser_ParseInclude(Parser parser, SmileObject *expr)
 	// Expose it in the current scope.
 	setExpr = LibraryInfo_ExposeOne(libraryInfo, parser, parser->currentScope, oldName, newName);
 	LIST_APPEND(head, tail, setExpr);
+	LIST_APPEND(resultHead, resultTail, SmileSymbol_Create(newName));
 
 	// If there's a comma, keep doing that.
 	while (Lexer_Next(parser->lexer) == TOKEN_COMMA) {
@@ -137,8 +140,15 @@ ParseError Parser_ParseInclude(Parser parser, SmileObject *expr)
 		// Expose it in the current scope.
 		setExpr = LibraryInfo_ExposeOne(libraryInfo, parser, parser->currentScope, oldName, newName);
 		LIST_APPEND(head, tail, setExpr);
+		LIST_APPEND(resultHead, resultTail, SmileSymbol_Create(newName));
 	}
 	Lexer_Unget(parser->lexer);
+
+	// Turn the list of symbols into a [$quote ...] expression, and attach it to the end of the work.
+	LIST_APPEND(head, tail,
+		(SmileObject)SmileList_Cons((SmileObject)Smile_KnownObjects._quoteSymbol,
+			(SmileObject)SmileList_Cons((SmileObject)resultHead,
+				NullObject)));
 
 	// Prepend a [$progn ...] on the front of the list to make it executable.
 	head = SmileList_Cons((SmileObject)Smile_KnownObjects._prognSymbol, (SmileObject)head);
@@ -237,7 +247,7 @@ LibraryInfo LibraryInfo_Create(String name, Bool loadedSuccessfully, ClosureInfo
 
 /// <summary>
 /// Expose all of the library's global objects into the given scope with their original
-/// names, and return an expression that will properlly assign all of those names
+/// names, and return an expression that will properly assign all of those names
 /// at execution time.
 /// </summary>
 /// <param name="libraryInfo">The library that contains the symbol to expose.</param>
@@ -249,6 +259,7 @@ SmileObject LibraryInfo_ExposeAll(LibraryInfo libraryInfo, Parser parser, ParseS
 	Symbol *symbols;
 	Int i, numSymbols;
 	SmileList head, tail;
+	SmileList resultHead, resultTail;
 	SmileObject expr;
 
 	// Get all the names that need to be exposed.
@@ -258,10 +269,18 @@ SmileObject LibraryInfo_ExposeAll(LibraryInfo libraryInfo, Parser parser, ParseS
 
 	// Create an expression that exposes each one, and join them all into a big list of work.
 	LIST_INIT(head, tail);
+	LIST_INIT(resultHead, resultTail);
 	for (i = 0; i < numSymbols; i++) {
 		expr = LibraryInfo_ExposeOne(libraryInfo, parser, target, symbols[i], symbols[i]);
 		LIST_APPEND(head, tail, expr);
+		LIST_APPEND(resultHead, resultTail, SmileSymbol_Create(symbols[i]));
 	}
+
+	// Turn the list of symbols into a [$quote ...] expression, and attach it to the end of the work.
+	LIST_APPEND(head, tail,
+		(SmileObject)SmileList_Cons((SmileObject)Smile_KnownObjects._quoteSymbol,
+			(SmileObject)SmileList_Cons((SmileObject)resultHead,
+				NullObject)));
 
 	// Prepend a [$progn ...] on the front of the list to make it executable.
 	head = SmileList_Cons((SmileObject)Smile_KnownObjects._prognSymbol, (SmileObject)head);
