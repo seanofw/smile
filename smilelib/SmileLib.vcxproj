@@ -125,6 +125,7 @@
     <ClInclude Include="gc\include\private\gc_locks.h" />
     <ClInclude Include="gc\include\private\gc_pmark.h" />
     <ClInclude Include="gc\include\private\gc_priv.h" />
+    <ClInclude Include="lib\stdio\stdio_internal.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\smile.h" />

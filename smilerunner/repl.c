@@ -200,44 +200,13 @@ static String GetCurDir()
 #	endif
 }
 
-#if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
-	static String GetLastErrorString()
-	{
-		DWORD errorMessageID;
-		LPWSTR messageBuffer;
-		Int messageLength;
-		String result;
-
-		errorMessageID = GetLastError();
-		if (!errorMessageID)
-			return String_Empty;
-
-		messageBuffer = NULL;
-		messageLength = FormatMessageW(
-			FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-			NULL,
-			errorMessageID,
-			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-			(LPWSTR)&messageBuffer,
-			0,
-			NULL
-		);
-
-		result = String_FromUtf16(messageBuffer, messageLength);
-
-		LocalFree(messageBuffer);
-
-		return result;
-	}
-#endif
-
 static void SetCurDir(String path)
 {
 #	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
 		UInt16 *path16 = String_ToUtf16(String_ReplaceChar(path, '/', '\\'), NULL);
 
 		if (!SetCurrentDirectoryW(path16)) {
-			printf_styled("\033[0;31;1m?Error: \033[0;33;1m%s\033[0m", String_ToC(GetLastErrorString()));
+			printf_styled("\033[0;31;1m?Error: \033[0;33;1m%s\033[0m", String_ToC(Smile_Win32_GetErrorString(GetLastError())));
 		}
 #	else
 #		error Unsupported OS.

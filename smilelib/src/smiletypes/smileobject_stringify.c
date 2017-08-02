@@ -32,6 +32,7 @@
 #include <smile/smiletypes/numeric/smileinteger128.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/raw/smilebytearray.h>
+#include <smile/smiletypes/smilehandle.h>
 
 static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int indent);
 
@@ -349,6 +350,11 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 				}
 			}
 		}
+		return;
+
+	case SMILE_KIND_HANDLE:
+		StringBuilder_AppendString(stringBuilder,
+			SymbolTable_GetName(Smile_SymbolTable, ((SmileHandle)obj)->handleKind));
 		return;
 
 	default:

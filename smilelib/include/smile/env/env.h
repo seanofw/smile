@@ -136,4 +136,6 @@ SMILE_API_FUNC void SMILE_NO_RETURN Smile_ThrowException(Symbol exceptionKind, S
 SMILE_API_FUNC void SMILE_NO_RETURN Smile_ThrowExceptionC(const char *exceptionKind, const char *format, ...);
 SMILE_API_FUNC void SMILE_NO_RETURN Smile_ThrowExceptionCV(const char *exceptionKind, const char *format, va_list v);
 
+SMILE_API_FUNC String Smile_Win32_GetErrorString(UInt32 errorCode);
+
 #endif

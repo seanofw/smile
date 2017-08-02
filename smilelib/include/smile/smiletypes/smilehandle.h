@@ -20,14 +20,14 @@
 /// resources held by the handle, whatever they may be.  If 'userInvoked' is False, this must
 /// not allocate memory on the GC heap.
 /// </summary>
-typedef void (*SmileHandleEnd)(void *handle, Bool userInvoked);
+typedef void (*SmileHandleEnd)(SmileHandle handle, Bool userInvoked);
 
 struct SmileHandleInt {
 	DECLARE_BASE_OBJECT_PROPERTIES;
-	Symbol handleName;	// What kind of handle this is (unique a "class" name, like 'file')
-	Int32 costEstimate;	// How "expensive" this handle is, relative to a one-byte memory allocation.
-	void *handle;	// The raw handle itself
 	SmileHandleEnd end;	// Clean up the handle, implicitly or explicitly
+	Symbol handleKind;	// What kind of handle this is (unique a "class" name, like 'file')
+	Int32 costEstimate;	// How "expensive" this handle is, relative to a one-byte memory allocation.
+	void *ptr;	// A pointer to the handle's actual data.
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -35,6 +35,6 @@ struct SmileHandleInt {
 
 SMILE_API_DATA SmileVTable SmileHandle_VTable;
 
-SMILE_API_FUNC SmileHandle SmileHandle_Create(SmileObject base, Symbol handleName, Int32 costEstimate, void *handle, SmileHandleEnd end);
+SMILE_API_FUNC SmileHandle SmileHandle_Create(SmileObject base, SmileHandleEnd end, Symbol handleKind, Int32 costEstimate, void *ptr);
 
 #endif

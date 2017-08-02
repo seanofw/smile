@@ -176,3 +176,47 @@ SmileUserObject Smile_CreateExceptionCV(const char *exceptionKind, const char *f
 
 	return Smile_CreateException(symbol, message);
 }
+
+#if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+
+#	define WIN32_LEAN_AND_MEAN
+#	pragma warning(push)
+#	pragma warning(disable: 4255)
+#	include <windows.h>
+#	pragma warning(pop)
+
+	String Smile_Win32_GetErrorString(UInt32 errorCode)
+	{
+		LPWSTR messageBuffer;
+		Int messageLength;
+		String result;
+
+		if (!errorCode)
+			return String_Empty;
+
+		messageBuffer = NULL;
+		messageLength = FormatMessageW(
+			FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+			NULL,
+			errorCode,
+			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+			(LPWSTR)&messageBuffer,
+			0,
+			NULL
+		);
+
+		result = String_FromUtf16(messageBuffer, messageLength);
+
+		LocalFree(messageBuffer);
+
+		return result;
+	}
+
+#else
+
+	String Smile_Win32_GetErrorString(UInt32 errorCode)
+	{
+		return String_Empty;
+	}
+
+#endif
