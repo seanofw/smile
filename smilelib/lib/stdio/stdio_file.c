@@ -32,26 +32,32 @@ STATIC_STRING(_stderrName, "<stderr>");
 
 	static const Int FileCostEstimate = 0x1000;
 
-	static void Stdio_File_Win32End(SmileHandle handle, Bool userInvoked)
+	static Bool Stdio_File_Win32End(SmileHandle handle, Bool userInvoked)
 	{
 		UNUSED(userInvoked);
 
-		if (handle->ptr != NULL) {
-			HANDLE win32Handle = (HANDLE)handle->ptr;
+		HANDLE win32Handle = ((Stdio_File)handle->ptr)->handle;
 
-			HANDLE stdinHandle = GetStdHandle(STD_INPUT_HANDLE);
-			HANDLE stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-			HANDLE stderrHandle = GetStdHandle(STD_ERROR_HANDLE);
+		if (win32Handle == NULL) return True;
 
-			if (win32Handle != stdinHandle && win32Handle != stdoutHandle && win32Handle != stderrHandle) {
-				CloseHandle(win32Handle);
-			}
-		}
+		HANDLE stdinHandle = GetStdHandle(STD_INPUT_HANDLE);
+		HANDLE stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+		HANDLE stderrHandle = GetStdHandle(STD_ERROR_HANDLE);
+
+		if (win32Handle == stdinHandle || win32Handle == stdoutHandle || win32Handle == stderrHandle)
+			return False;
+
+		CloseHandle(win32Handle);
+		((Stdio_File)handle->ptr)->handle = NULL;
+
+		return True;
 	}
 
 	SMILE_INTERNAL_FUNC SmileHandle Stdio_File_CreateFromWin32Handle(SmileObject base, String name, HANDLE win32Handle, UInt32 mode)
 	{
 		Stdio_File file = GC_MALLOC_STRUCT(struct Stdio_FileStruct);
+		if (file == NULL)
+			Smile_Abort_OutOfMemory();
 
 		SmileHandle handle = SmileHandle_Create(base, Stdio_File_Win32End, SymbolTable_GetSymbolC(Smile_SymbolTable, "File"), FileCostEstimate, file);
 

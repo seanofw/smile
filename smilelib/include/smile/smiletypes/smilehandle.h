@@ -20,7 +20,13 @@
 /// resources held by the handle, whatever they may be.  If 'userInvoked' is False, this must
 /// not allocate memory on the GC heap.
 /// </summary>
-typedef void (*SmileHandleEnd)(SmileHandle handle, Bool userInvoked);
+/// <param name="handle">The handle that is to be ended/closed/cleaned-up.</param>
+/// <param name="userInvoked">Whether this was triggered by an explicit user call in code,
+/// either by [handle.end] or by the 'auto' keyword (True), or whether this was triggered
+/// late by the garbage collector (False).</param>
+/// <returns>True if the handle could be successfully ended (or was already successfully ended),
+/// False if the attempt to end the handle failed.</returns>
+typedef Bool (*SmileHandleEnd)(SmileHandle handle, Bool userInvoked);
 
 struct SmileHandleInt {
 	DECLARE_BASE_OBJECT_PROPERTIES;

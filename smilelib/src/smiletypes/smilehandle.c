@@ -40,7 +40,7 @@ SmileHandle SmileHandle_Create(SmileObject base, SmileHandleEnd end, Symbol hand
 	smileHandleInt->end = end;
 	smileHandleInt->handleKind = handleKind;
 	smileHandleInt->costEstimate = costEstimate;
-	smileHandleInt->ptr = NULL;
+	smileHandleInt->ptr = ptr;
 
 	return smileHandleInt;
 }
