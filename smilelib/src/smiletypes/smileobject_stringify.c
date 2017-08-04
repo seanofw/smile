@@ -33,6 +33,7 @@
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/raw/smilebytearray.h>
 #include <smile/smiletypes/smilehandle.h>
+#include <smile/internal/staticstring.h>
 
 static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int indent);
 
@@ -104,9 +105,10 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 {
 	SmileList list;
 	SmilePair pair;
+	STATIC_STRING(nullName, "<NULL>");
 
 	if (obj == NULL) {
-		StringBuilder_AppendC(stringBuilder, "<NULL>", 0, 6);
+		StringBuilder_AppendString(stringBuilder, nullName);
 		return;
 	}
 
@@ -198,7 +200,10 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 		return;
 
 	case SMILE_KIND_SYMBOL:
-		StringBuilder_AppendString(stringBuilder, SymbolTable_GetName(Smile_SymbolTable, ((SmileSymbol)obj)->symbol));
+		{
+			String keyName = SymbolTable_GetName(Smile_SymbolTable, ((SmileSymbol)obj)->symbol);
+			StringBuilder_AppendString(stringBuilder, keyName != NULL ? keyName : nullName);
+		}
 		return;
 
 	case SMILE_KIND_BYTE:
@@ -246,8 +251,9 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 				StringBuilder_Append(stringBuilder, (const Byte *)"{\n", 0, 2);
 
 				for (i = 0; i < numPairs; i++) {
+					String keyName = SymbolTable_GetName(Smile_SymbolTable, pairs[i].key);
 					StringBuilder_AppendRepeat(stringBuilder, ' ', (indent + 1) * 4);
-					StringBuilder_AppendString(stringBuilder, SymbolTable_GetName(Smile_SymbolTable, pairs[i].key));
+					StringBuilder_AppendString(stringBuilder, keyName != NULL ? keyName : nullName);
 					StringBuilder_Append(stringBuilder, (const Byte *)": ", 0, 2);
 					StringifyRecursive((SmileObject)pairs[i].value, stringBuilder, indent + 2);
 					StringBuilder_AppendByte(stringBuilder, '\n');

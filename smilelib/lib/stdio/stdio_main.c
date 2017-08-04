@@ -39,10 +39,6 @@
 STATIC_STRING(_stdioFilename, "stdio");
 
 STATIC_STRING(_stdioBootstrap,
-	"[]"
-	/*"\n"
-	"#syntax STMT [print [EXPR+ exprs ,]] => (Stdout.print ## exprs)\n"
-	"\n"
 	"File.print = |file exprs...| {\n"
 		"str = join exprs\n"
 		"file write byte-array str\n"
@@ -53,6 +49,8 @@ STATIC_STRING(_stdioBootstrap,
 		"file write byte-array str\n"
 		"file write-byte '\\n'\n"
 	"}\n"
+	/*"\n"
+	"#syntax STMT [print [EXPR+ exprs ,]] => (Stdout.print ## exprs)\n"
 	"\n"*/
 );
 
@@ -101,6 +99,8 @@ LibraryInfo Stdio_Main(void)
 		}
 		Smile_ThrowException(Smile_KnownSymbols.load_error, String_Format("Parse errors in library:"));
 	}
+
+	Smile_EvalInScope(globalClosureInfo, parseResult);
 
 	return LibraryInfo_Create(stdioName, True, globalClosureInfo, NULL, 0);
 }

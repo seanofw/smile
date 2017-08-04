@@ -197,6 +197,7 @@ SmileObject Smile_ParseInScope(ClosureInfo globalClosureInfo, String text, Strin
 
 	// Construct the parsing environment.
 	lexer = Lexer_Create(text, 0, String_Length(text), filename, 1, 0);
+	Lexer_SetSymbolTable(lexer, Smile_SymbolTable);
 	parser = Parser_Create();
 	globalScope = ParseScope_CreateRoot();
 

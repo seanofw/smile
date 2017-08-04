@@ -54,6 +54,7 @@ static const char *_maxArgCountErrorMessage = "'%S' allows at most %d arguments,
 		/* Copy the arguments. */ \
 		__copyArgs__; \
 		Closure_PopCount(_closure, extra + (__numArgs__)); \
+		childClosure->stackTop = childClosure->variables + (__numArgs__); \
 		\
 		/* We're now in the child, so set up the globals for running inside it. */ \
 		_closure = childClosure; \
@@ -142,6 +143,9 @@ void SmileUserFunction_Slow_Call(SmileFunction self, Int argc, Int extra)
 	}
 	Closure_PopCount(_closure, extra + argc);
 
+	// Set the stack pointer of the child.
+	childClosure->stackTop = childClosure->variables + numArgs;
+
 	// We're now in the child, so set up the globals for running inside it.
 	_closure = childClosure;
 	_segment = userFunctionInfo->byteCodeSegment;
@@ -181,6 +185,9 @@ void SmileUserFunction_Optional_Call(SmileFunction self, Int argc, Int extra)
 	for (; i < numArgs; i++) {
 		childClosure->variables[i] = argInfo[i].defaultValue;
 	}
+
+	// Set the stack pointer of the child.
+	childClosure->stackTop = childClosure->variables + numArgs;
 
 	// We're now in the child, so set up the globals for running inside it.
 	_closure = childClosure;
@@ -242,6 +249,9 @@ void SmileUserFunction_Rest_Call(SmileFunction self, Int argc, Int extra)
 		arg.obj = (SmileObject)restHead;
 		childClosure->variables[numArgs - 1] = arg;
 	}
+
+	// Set the stack pointer of the child.
+	childClosure->stackTop = childClosure->variables + numArgs;
 
 	// Clean up the calling stack.
 	Closure_PopCount(_closure, extra + argc);

@@ -13,15 +13,17 @@
 #include <smile/string.h>
 #endif
 
+#include <stdio.h>
+
 #if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
 
 #	define WIN32_LEAN_AND_MEAN
 #	pragma warning(push)
 #	pragma warning(disable: 4255)
 #	include <windows.h>
+#	include <fcntl.h>
+#	include <io.h>
 #	pragma warning(pop)
-
-	SMILE_INTERNAL_FUNC SmileHandle Stdio_File_CreateFromWin32Handle(SmileObject base, String name, HANDLE handle, UInt32 mode);
 
 	typedef struct Stdio_FileStruct {
 		String path;
@@ -29,9 +31,13 @@
 		UInt32 lastErrorCode;
 		String lastErrorMessage;
 		Bool isOpen;
+		Bool isEof;
+		Int32 fd;
 
 		HANDLE handle;
 	} *Stdio_File;
+
+	SMILE_INTERNAL_FUNC SmileHandle Stdio_File_CreateFromWin32Handle(SmileObject base, String name, HANDLE handle, UInt32 mode);
 
 #elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
 
@@ -43,7 +49,6 @@
 		UInt32 lastErrorCode;
 		String lastErrorMessage;
 		Bool isOpen;
-
 		Int32 fd;
 	} *Stdio_File;
 
@@ -63,6 +68,8 @@ typedef enum {
 	FILE_MODE_CREATE_ONLY = (1 << 4),	// At opening, create it if it doesn't exist, fail if it does
 	FILE_MODE_OPEN_ONLY = (2 << 4),	// At opening, fail if it doesn't exist, open if it does
 	FILE_MODE_CREATE_OR_OPEN = (3 << 4),	// At opening, create if it doesn't exist, open if it does
+
+	FILE_MODE_STD = (1 << 8),	// This file is one of the three specials: Stdin, Stdout, Stderr
 } Stdio_FileMode;
 
 SMILE_INTERNAL_FUNC void Stdio_File_DeclareStdInOutErr(Closure globalClosure, SmileObject fileBase);
