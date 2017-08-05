@@ -399,9 +399,10 @@
 
   <!-- ByteCodeStruct -->
   <Type Name="ByteCodeStruct">
-    <DisplayString>ByteCode (opcode {opcode,X})</DisplayString>
+    <DisplayString>ByteCode ({Opcode_Names[opcode] != 0 ? Opcode_Names[opcode]->_opaque.text : String_Empty->_opaque.text,s} {u.int64,X})</DisplayString>
     <Expand>
       <Item Name="opcode">opcode,X</Item>
+      <Item Name="opcodeName">Opcode_Names[opcode] != 0 ? Opcode_Names[opcode]->_opaque.text : String_Empty->_opaque.text,s</Item>
       <Item Name="u.int64">u.int64,X</Item>
     </Expand>
   </Type>
@@ -412,6 +413,10 @@
     <Expand>
       <Item Name="numByteCodes">numByteCodes</Item>
       <Item Name="[stringified]">ByteCodeSegment_ToString(this, 0, 0)->_opaque.text</Item>
+      <ArrayItems>
+        <Size>numByteCodes</Size>
+        <ValuePointer>byteCodes</ValuePointer>
+      </ArrayItems>
     </Expand>
   </Type>
 
