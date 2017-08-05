@@ -37,8 +37,9 @@ ClosureInfo ClosureInfo_Create(ClosureInfo parent, Int kind)
 		: NULL);
 	closureInfo->variableDictionary = VarDict_Create();
 	closureInfo->kind = (Int16)kind;
-	closureInfo->tempSize = 0;
 	closureInfo->numVariables = 0;
+	closureInfo->numArgs = 0;
+	closureInfo->tempSize = 0;
 	closureInfo->variableNames = NULL;
 
 	return closureInfo;
@@ -58,6 +59,7 @@ Closure Closure_CreateGlobal(ClosureInfo closureInfo, Closure parent)
 	closure->returnSegment = NULL;
 	closure->returnPc = 0;
 
+	closure->locals = NULL;
 	closure->stackTop = NULL;
 
 	return closure;
@@ -79,6 +81,7 @@ Closure Closure_CreateLocal(ClosureInfo closureInfo, Closure parent,
 	closure->returnSegment = returnSegment;
 	closure->returnPc = returnPc;
 
+	closure->locals = closure->variables + closureInfo->numArgs;
 	closure->stackTop = closure->variables + closureInfo->numVariables;
 
 	return closure;

@@ -502,10 +502,18 @@ ClosureInfo Compiler_MakeClosureInfoForCompilerFunction(Compiler compiler, Compi
 		CLOSURE_KIND_LOCAL);
 
 	closureInfo->global = closureInfo->parent != NULL ? closureInfo->parent->global : compiler->compiledTables->globalClosureInfo;
-	
+
+	if (compilerFunction->numArgs > Int16Max / 2)
+		Smile_Abort_FatalError("Function cannot be compiled because it has too many arguments (> 16383).");
+	if (compilerFunction->localSize > Int16Max / 2)
+		Smile_Abort_FatalError("Function cannot be compiled because it has too many local variables (> 16383).");
+	if (compilerFunction->stackSize > Int16Max)
+		Smile_Abort_FatalError("Function cannot be compiled because it is too complex (calls nested more than 32767 levels deep).");
+
 	numVariables = compilerFunction->numArgs + compilerFunction->localSize;
 	closureInfo->numVariables = (Int16)numVariables;
-	closureInfo->tempSize = (Int32)compilerFunction->stackSize;
+	closureInfo->numArgs = (Int16)compilerFunction->numArgs;
+	closureInfo->tempSize = (Int16)compilerFunction->stackSize;
 
 	variableNames = (Symbol *)GC_MALLOC_ATOMIC(sizeof(Symbol) * numVariables);
 	if (variableNames == NULL)

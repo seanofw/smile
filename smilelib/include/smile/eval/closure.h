@@ -58,8 +58,9 @@ struct ClosureInfoStruct {
 	ClosureInfo global;	// A pointer to the closest global info struct, if any.
 		
 	Int16 kind;	// What kind of closure this is (see the CLOSURE_KIND enum).
-	Int16 numVariables;	// The number of variables in this closure.
-	Int32 tempSize;	// The maximum amount of temporary variables required by this closure.
+	Int16 numVariables;	// The total number of variables in this closure.
+	Int16 numArgs;	// How many of the variables in the numVariables array are arguments.
+	Int16 tempSize;	// The maximum amount of temporary variables required by this closure.
 		
 	VarDict variableDictionary;	// A dictionary that maps Symbol IDs to VarInfo objects.
 		// For local closures, this is used only for debugging, and the values are always null;
@@ -85,7 +86,8 @@ struct ClosureStruct {
 	Closure returnClosure;	// The continuation's closure.
 	ByteCodeSegment returnSegment;	// The segment that contains the continuation's code.
 	Int returnPc;	// The continuation's program counter.
-		
+	
+	SmileArg *locals;	// The base address of the start of the closure's local variables.
 	SmileArg *stackTop;	// The current address of the top of the temporary variables (NULL for global closures).
 	SmileArg variables[1];	// The array of variables (matches the ClosureInfo's numVariables + tempSize; size 0 for global closures).
 
@@ -194,10 +196,10 @@ SMILE_API_FUNC void Closure_SetArgumentInScope(Closure closure, Int scope, Int i
 //-------------------------------------------------------------------------------------------------
 
 #define Closure_GetLocalVariable(__closure__, __index__) \
-	((__closure__)->variables[(__index__)])
+	((__closure__)->locals[(__index__)])
 
 #define Closure_SetLocalVariable(__closure__, __index__, __arg__) \
-	(((__closure__)->variables[(__index__)]) = (__arg__))
+	(((__closure__)->locals[(__index__)]) = (__arg__))
 
 #define Closure_GetLocalVariableInScope0(__closure__, __index__) \
 	Closure_GetLocalVariable((__closure__), (__index__))
