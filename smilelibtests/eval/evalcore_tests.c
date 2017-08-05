@@ -60,7 +60,7 @@ static Compiler CreateRawGlobalCode(const ByteCode byteCodes, Int numByteCodes, 
 
 	globalFunction->byteCodeSegment = ByteCodeSegment_CreateFromByteCodes(byteCodes, numByteCodes, True);
 	compilerFunction->stackSize = stackSize;
-	compilerFunction->localSize = compilerFunction->localMax = localSize;
+	compilerFunction->localSize = compilerFunction->localMax = (Int32)localSize;
 
 	Compiler_EndFunction(compiler);
 

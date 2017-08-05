@@ -29,7 +29,7 @@ IntermediateInstruction IntermediateInstruction_Create(Int opcode)
 	instruction->next = NULL;
 	instruction->prev = NULL;
 
-	instruction->opcode = opcode;
+	instruction->opcode = (UInt32)opcode;
 	instruction->sourceLocation = 0;
 	instruction->instructionAddress = 0;
 
@@ -266,7 +266,7 @@ Int CompiledBlock_CalculateAddresses(CompiledBlock compiledBlock, Int startAddre
 	// any child blocks to assign their addresses too.
 	for (instr = compiledBlock->first; instr != NULL; instr = instr->next) {
 
-		instr->instructionAddress = startAddress;
+		instr->instructionAddress = (UInt32)startAddress;
 
 		if (instr->opcode == Op_Block) {
 			// Child blocks need to be recursed into.  Note that this completely and
@@ -307,7 +307,7 @@ void CompiledBlock_ResolveBranches(CompiledBlock compiledBlock)
 				// We also have an extra safety check here against a NULL branch target,
 				// which should never happen, but we don't want to crash if it does.
 				instr->u.index = instr->p.branchTarget != NULL
-					? (instr->p.branchTarget->instructionAddress - instr->instructionAddress) : 0;
+					? ((Int)instr->p.branchTarget->instructionAddress - (Int)instr->instructionAddress) : 0;
 				break;
 
 			case Op_NewTill:
@@ -400,7 +400,7 @@ IntermediateInstruction CompiledBlock_AppendChild(CompiledBlock parentBlock, Com
 IntermediateInstruction CompiledBlock_Emit(CompiledBlock compiledBlock, Int opcode, Int stackDelta, Int sourceLocation)
 {
 	IntermediateInstruction instruction = IntermediateInstruction_Create(opcode);
-	instruction->sourceLocation = sourceLocation;
+	instruction->sourceLocation = (UInt32)sourceLocation;
 
 	CompiledBlock_AttachInstruction(compiledBlock, compiledBlock->last, instruction);
 

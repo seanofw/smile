@@ -114,7 +114,7 @@ String ByteCodeSegment_Stringify(ByteCodeSegment segment)
 /// Add spaces/tabs to make the resulting "assembly" code look pretty while still being able
 /// to be block-indented code.
 /// </summary>
-static void AssemblyIndent(StringBuilder stringBuilder, int depth)
+static void AssemblyIndent(StringBuilder stringBuilder, Int depth)
 {
 	if (depth > 0) {
 		StringBuilder_AppendByte(stringBuilder, '\t');
@@ -247,12 +247,12 @@ static String ByteCode_OperandsToString(ByteCode byteCode, Int address, UserFunc
 		case Op_LdBool:
 			return String_Format("%s", byteCode->u.boolean ? "true" : "false");
 		case Op_LdStr:
-			return String_Format("%d\t; \"%S\"", byteCode->u.index,
+			return String_Format("%lld\t; \"%S\"", (Int64)byteCode->u.index,
 				compiledTables != NULL ? String_AddCSlashes(compiledTables->strings[byteCode->u.index]) : String_FromC("???"));
 		case Op_LdSym:
 			return String_Format("%d\t; %S", byteCode->u.symbol, SymbolTable_GetName(Smile_SymbolTable, byteCode->u.symbol));
 		case Op_LdObj:
-			return String_Format("@%d", byteCode->u.index);
+			return String_Format("@%lld", (Int64)byteCode->u.index);
 		
 		// 18-1F
 		case Op_Ld8:
@@ -264,7 +264,7 @@ static String ByteCode_OperandsToString(ByteCode byteCode, Int address, UserFunc
 		case Op_Ld64:
 			return String_Format("%ld", byteCode->u.int64);
 		case Op_Ld128:
-			return String_Format("@%u", (Int32)byteCode->u.index);
+			return String_Format("@%llu", (Int64)byteCode->u.index);
 		
 		// 20-27
 		case Op_LdR16:
@@ -274,7 +274,7 @@ static String ByteCode_OperandsToString(ByteCode byteCode, Int address, UserFunc
 		case Op_LdR64:
 			return String_Format("%g", byteCode->u.real64);
 		case Op_LdR128:
-			return String_Format("@%u", (Int32)byteCode->u.index);
+			return String_Format("@%llu", (Int64)byteCode->u.index);
 
 		// 28-2F
 		case Op_LdF16:
@@ -284,7 +284,7 @@ static String ByteCode_OperandsToString(ByteCode byteCode, Int address, UserFunc
 		case Op_LdF64:
 			return String_Format("%g", byteCode->u.float64);
 		case Op_LdF128:
-			return String_Format("@%u", (Int32)byteCode->u.index);
+			return String_Format("@%llu", (Int64)byteCode->u.index);
 
 		// 30-33
 		case Op_LdLoc:
@@ -347,7 +347,7 @@ static String ByteCode_OperandsToString(ByteCode byteCode, Int address, UserFunc
 		case Op_Jmp:
 		case Op_Bt:
 		case Op_Bf:
-			return String_Format(byteCode->u.index < 0 ? "L%d" : ">L%d", (Int32)(address + byteCode->u.index));
+			return String_Format(byteCode->u.index < 0 ? "L%lld" : ">L%lld", (Int64)(address + byteCode->u.index));
 		case Op_Met:
 		case Op_TMet:
 			return String_Format("%d, %d\t; %S", byteCode->u.i2.a, byteCode->u.i2.b, SymbolTable_GetName(Smile_SymbolTable, (Symbol)byteCode->u.i2.a));
