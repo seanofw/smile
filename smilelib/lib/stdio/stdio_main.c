@@ -39,16 +39,20 @@
 STATIC_STRING(_stdioFilename, "stdio");
 
 STATIC_STRING(_stdioBootstrap,
-	"File.print = |file exprs...| {\n"
-		"str = join exprs\n"
+	"File.print = |file exprs...| file print-list exprs\n"
+	"\n"
+	"File.print-line = |file exprs...| file print-list-line exprs\n"
+	"\n"
+	"File.print-list = |file list| {\n"
+		"str = join list\n"
 		"file write byte-array str\n"
 	"}\n"
 	"\n"
-	"File.print-line = |file exprs...| {\n"
-		"str = join exprs\n"
-		"file write byte-array str\n"
+	"File.print-list-line = |file list| {\n"
+		"file print-list list\n"
 		"file write-byte '\\n'\n"
 	"}\n"
+	"\n"
 	/*"\n"
 	"#syntax STMT [print [EXPR+ exprs ,]] => (Stdout.print ## exprs)\n"
 	"\n"*/

@@ -32,6 +32,8 @@ SMILE_IGNORE_UNUSED_VARIABLES
 
 SMILE_INTERNAL_FUNC void Stdio_File_Init(SmileUserObject base);
 
+Bool Stdio_Invoked;
+
 typedef struct FileInfoStruct {
 	SmileObject fileBase;
 
@@ -324,6 +326,9 @@ SMILE_EXTERNAL_FUNCTION(ReadByte)
 	Byte buffer[1];
 	int count;
 
+	if (file->mode & FILE_MODE_STD)
+		Stdio_Invoked = True;
+
 #	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
 		count = _read(file->fd, buffer, 1);
 #	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
@@ -355,6 +360,9 @@ SMILE_EXTERNAL_FUNCTION(WriteByte)
 	Byte buffer[1];
 	int count;
 
+	if (file->mode & FILE_MODE_STD)
+		Stdio_Invoked = True;
+
 	buffer[0] = argv[1].unboxed.i8;
 
 #	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
@@ -368,7 +376,7 @@ SMILE_EXTERNAL_FUNCTION(WriteByte)
 	if (count > 0) {
 		file->lastErrorCode = 0;
 		file->lastErrorMessage = String_Empty;
-		return argv[0];
+		return SmileUnboxedInteger64_From(count);
 	}
 	else {
 		UpdateLastError(file);
@@ -382,6 +390,9 @@ SMILE_EXTERNAL_FUNCTION(Read)
 	Int64 start, length, count;
 	SmileByteArray byteArray;
 	Byte *buffer;
+
+	if (file->mode & FILE_MODE_STD)
+		Stdio_Invoked = True;
 
 	switch (argc) {
 		default:
@@ -458,6 +469,9 @@ SMILE_EXTERNAL_FUNCTION(Write)
 	Int64 start, length, count;
 	SmileByteArray byteArray;
 	Byte *buffer;
+
+	if (file->mode & FILE_MODE_STD)
+		Stdio_Invoked = True;
 
 	switch (argc) {
 		default:

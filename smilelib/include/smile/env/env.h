@@ -91,6 +91,8 @@ SMILE_API_FUNC EvalResult Smile_EvalInScope(ClosureInfo globalClosureInfo, Smile
 SMILE_API_FUNC EvalResult Smile_ParseAndEval(String text, String filename);
 SMILE_API_FUNC EvalResult Smile_ParseAndEvalInScope(ClosureInfo globalClosureInfo, String text, String filename);
 
+SMILE_API_DATA Bool Stdio_Invoked;
+
 /// <summary>
 /// Assign a variable in the global closure.
 /// </summary>

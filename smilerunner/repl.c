@@ -282,10 +282,14 @@ void ReplMain()
 		if (commandType == ProcessedCommand) continue;
 		if (commandType == ExitCommand) break;
 
+		Stdio_Invoked = False;
+
 		if (!ParseAndEval(input, globalScope, globalClosureInfo, &result))
 		{
-			resultText = SmileObject_Stringify(result);
-			printf("%s\n", String_ToC(resultText));
+			if (!Stdio_Invoked) {
+				resultText = SmileObject_Stringify(result);
+				printf("%s\n", String_ToC(resultText));
+			}
 		}
 
 		printf("\n");
