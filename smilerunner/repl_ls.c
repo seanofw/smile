@@ -335,7 +335,7 @@ static int CompareFilesForSorting(const void *a, const void *b)
 	FileInfo aInfo = *(FileInfo *)a;
 	FileInfo bInfo = *(FileInfo *)b;
 
-	return String_Compare(aInfo->nameCaseFolded, bInfo->nameCaseFolded);
+	return (int)String_Compare(aInfo->nameCaseFolded, bInfo->nameCaseFolded);
 }
 
 static void ListFilesMultiColumnMode(FileInfo *files, Int numFiles, Int consoleWidth, Bool typeMode)

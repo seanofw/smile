@@ -5,13 +5,13 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|Win32">
-      <Configuration>Release</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
@@ -47,16 +47,7 @@
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <TargetName>smile</TargetName>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <TargetName>smile</TargetName>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <TargetName>smile</TargetName>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+  <PropertyGroup>
     <TargetName>smile</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>
@@ -69,7 +60,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <AdditionalLibraryDirectories>$(SolutionDir)smilelib\bin\$(Platform)-$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;smilelib.lib;$(ProjectDir)vendor\wineditline-2.202\lib32\edit_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Platform)'=='Win32'">kernel32.lib;user32.lib;gdi32.lib;smilelib.lib;$(ProjectDir)vendor\wineditline-2.202\lib32\edit_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Platform)'=='x64'">kernel32.lib;user32.lib;gdi32.lib;smilelib.lib;$(ProjectDir)vendor\wineditline-2.202\lib64\edit_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy /y "$(SolutionDir)smilelib\bin\$(Platform)-$(Configuration)\smilelib.*" "$(ProjectDir)bin\$(Platform)-$(Configuration)"</Command>
@@ -109,17 +101,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <Media Include="..\smilelib\bin\$(Platform)-$(Configuration)\SmileLib.dll">
+      <ExcludedFromBuild>false</ExcludedFromBuild>
+      <FileType>Document</FileType>
+    </Media>
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="main.c" />
     <ClCompile Include="repl.c" />
     <ClCompile Include="repl_help.c" />
     <ClCompile Include="repl_ls.c" />
     <ClCompile Include="style.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <Media Include="..\smilelib\bin\$(Platform)-$(Configuration)\SmileLib.dll">
-      <ExcludedFromBuild>false</ExcludedFromBuild>
-      <FileType>Document</FileType>
-    </Media>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="buildnum.h" />
