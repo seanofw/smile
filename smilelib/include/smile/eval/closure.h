@@ -108,6 +108,7 @@ typedef struct ClosureStateMachineStruct {
 	ByteCodeSegment returnSegment;	// The segment that contains the continuation's code.
 	Int returnPc;	// The continuation's program counter.
 		
+	SmileArg *locals;	// The base address of the start of the closure's local variables.
 	SmileArg *stackTop;	// The current address of the top of the temporary variables.
 	SmileArg variables[16];	// Always a max of 16 variables for a C state machine.
 		

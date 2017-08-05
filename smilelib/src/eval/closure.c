@@ -103,6 +103,7 @@ ClosureStateMachine Closure_CreateStateMachine(StateMachine stateMachineStart, S
 	closure->returnPc = returnPc;
 
 	closure->stackTop = closure->variables;
+	closure->locals = closure->variables;
 
 	closure->stateMachineStart = stateMachineStart;
 	closure->stateMachineBody = stateMachineBody;
