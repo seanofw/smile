@@ -2,6 +2,12 @@
 #ifndef __SMILE_GC_H__
 #define __SMILE_GC_H__
 
+#ifdef _DEBUG
+#	ifndef GC_DEBUG
+#		define GC_DEBUG
+#	endif
+#endif
+
 // The GC is inside a DLL, along with the rest of Smile's interpeter.
 #if !defined(GC_DLL) && !defined(GC_NOT_DLL)
 	#define GC_DLL

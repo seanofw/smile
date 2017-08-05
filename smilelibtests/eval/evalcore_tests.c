@@ -38,8 +38,8 @@ TEST_SUITE(EvalCoreTests)
 static Compiler CreateRawGlobalCode(const ByteCode byteCodes, Int numByteCodes, Int stackSize, Int localSize)
 {
 	Compiler compiler;
-	ClosureInfo globalClosureInfo;
-	UserFunctionInfo globalFunction;
+	ClosureInfo globalClosureInfo, closureInfo;
+	UserFunctionInfo userFunctionInfo;
 	CompilerFunction compilerFunction;
 	String errorMessage;
 
@@ -51,20 +51,24 @@ static Compiler CreateRawGlobalCode(const ByteCode byteCodes, Int numByteCodes, 
 
 	compiler = Compiler_Create();
 
-	globalFunction = UserFunctionInfo_Create(NULL, NULL, NullList, NullObject, &errorMessage);
+	userFunctionInfo = UserFunctionInfo_Create(NULL, NULL, NullList, NullObject, &errorMessage);
 	compilerFunction = Compiler_BeginFunction(compiler, NullList, NullObject);
-	compilerFunction->userFunctionInfo = globalFunction;
-	compiler->compiledTables->globalFunctionInfo = globalFunction;
+	compilerFunction->userFunctionInfo = userFunctionInfo;
+	compiler->compiledTables->globalFunctionInfo = userFunctionInfo;
 
 	compiler->currentFunction->currentSourceLocation = 0;
 
-	globalFunction->byteCodeSegment = ByteCodeSegment_CreateFromByteCodes(byteCodes, numByteCodes, True);
 	compilerFunction->stackSize = stackSize;
 	compilerFunction->localSize = compilerFunction->localMax = (Int32)localSize;
 
+	userFunctionInfo->byteCodeSegment = ByteCodeSegment_CreateFromByteCodes(byteCodes, numByteCodes, True);
+
+	closureInfo = Compiler_MakeClosureInfoForCompilerFunction(compiler, compilerFunction);
+	MemCpy(&userFunctionInfo->closureInfo, closureInfo, sizeof(struct ClosureInfoStruct));
+
 	Compiler_EndFunction(compiler);
 
-	Compiler_AddUserFunctionInfo(compiler, globalFunction);
+	Compiler_AddUserFunctionInfo(compiler, userFunctionInfo);
 
 	return compiler;
 }

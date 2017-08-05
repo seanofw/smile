@@ -515,35 +515,40 @@ ClosureInfo Compiler_MakeClosureInfoForCompilerFunction(Compiler compiler, Compi
 	closureInfo->numArgs = (Int16)compilerFunction->numArgs;
 	closureInfo->tempSize = (Int16)compilerFunction->stackSize;
 
-	variableNames = (Symbol *)GC_MALLOC_ATOMIC(sizeof(Symbol) * numVariables);
-	if (variableNames == NULL)
-		Smile_Abort_OutOfMemory();
+	if (numVariables > 0) {
+		variableNames = (Symbol *)GC_MALLOC_ATOMIC(sizeof(Symbol) * numVariables);
+		if (variableNames == NULL)
+			Smile_Abort_OutOfMemory();
+	}
+	else variableNames = NULL;
 
 	closureInfo->variableNames = variableNames;
 	dest = 0;
 
-	for (SmileList args = compilerFunction->args; SMILE_KIND(args) != SMILE_KIND_NULL; args = LIST_REST(args)) {
-		symbol = ((SmileSymbol)args->a)->symbol;
+	if (numVariables > 0) {
+		for (SmileList args = compilerFunction->args; SMILE_KIND(args) != SMILE_KIND_NULL; args = LIST_REST(args)) {
+			symbol = ((SmileSymbol)args->a)->symbol;
 
-		varInfo.kind = VAR_KIND_ARG;
-		varInfo.offset = (Int32)dest;
-		varInfo.symbol = symbol;
-		varInfo.value = NullObject;
-		VarDict_SetValue(closureInfo->variableDictionary, symbol, &varInfo);
-	
-		variableNames[dest++] = symbol;
-	}
+			varInfo.kind = VAR_KIND_ARG;
+			varInfo.offset = (Int32)dest;
+			varInfo.symbol = symbol;
+			varInfo.value = NullObject;
+			VarDict_SetValue(closureInfo->variableDictionary, symbol, &varInfo);
 
-	for (src = 0; src < compilerFunction->localSize; src++) {
-		symbol = compilerFunction->localNames[src];
-	
-		varInfo.kind = VAR_KIND_VAR;
-		varInfo.offset = (Int32)dest;
-		varInfo.symbol = symbol;
-		varInfo.value = NullObject;
-		VarDict_SetValue(closureInfo->variableDictionary, symbol, &varInfo);
+			variableNames[dest++] = symbol;
+		}
 
-		variableNames[dest++] = symbol;
+		for (src = 0; src < compilerFunction->localSize; src++) {
+			symbol = compilerFunction->localNames[src];
+
+			varInfo.kind = VAR_KIND_VAR;
+			varInfo.offset = (Int32)dest;
+			varInfo.symbol = symbol;
+			varInfo.value = NullObject;
+			VarDict_SetValue(closureInfo->variableDictionary, symbol, &varInfo);
+
+			variableNames[dest++] = symbol;
+		}
 	}
 
 	return closureInfo;

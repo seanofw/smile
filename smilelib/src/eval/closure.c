@@ -68,8 +68,10 @@ Closure Closure_CreateGlobal(ClosureInfo closureInfo, Closure parent)
 Closure Closure_CreateLocal(ClosureInfo closureInfo, Closure parent,
 	Closure returnClosure, ByteCodeSegment returnSegment, Int returnPc)
 {
-	Closure closure = (Closure)GC_MALLOC(sizeof(struct ClosureStruct)
-		+ sizeof(SmileArg) * (closureInfo->numVariables + closureInfo->tempSize - 1));
+	const Int variablesStart = offsetof(struct ClosureStruct, variables);
+	Int closureSize = variablesStart + sizeof(SmileArg) * ((Int)closureInfo->numVariables + (Int)closureInfo->tempSize);
+
+	Closure closure = (Closure)GC_MALLOC(closureSize);
 	if (closure == NULL)
 		Smile_Abort_OutOfMemory();
 
