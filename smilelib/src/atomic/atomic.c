@@ -17,8 +17,10 @@
 
 #include <smile/atomic.h>
 
-#if defined(SMILE_OS_WINDOWS) && defined(SMILE_COMPILER_MSVC)
+#if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY) && SMILE_COMPILER == SMILE_COMPILER_MSVC
 	#include "atomic_windows_msvc.inc"
+#elif SMILE_OS == SMILE_OS_LINUX && SMILE_COMPILER == SMILE_COMPILER_GCC
+	#include "atomic_linux_gcc.inc"
 #else
 	#error Atomic operations suitable for the current CPU/OS combination are not defined in 'atomic.c'.
 #endif

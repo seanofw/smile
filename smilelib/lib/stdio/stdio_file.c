@@ -181,7 +181,7 @@ STATIC_STRING(_stderrName, "<stderr>");
 
 	static const Int FileCostEstimate = 0x1000;
 
-	static void Stdio_File_UnixEnd(SmileHandle handle, Bool userInvoked)
+	static Bool Stdio_File_UnixEnd(SmileHandle handle, Bool userInvoked)
 	{
 		Stdio_File file = (Stdio_File)handle->ptr;
 
@@ -197,33 +197,35 @@ STATIC_STRING(_stderrName, "<stderr>");
 		return True;
 	}
 
-	SMILE_INTERNAL_FUNC SmileObject Stdio_File_CreateFromUnixFD(SmileObject base, String name, Int32 fd, UInt32 mode)
+	SMILE_INTERNAL_FUNC SmileHandle Stdio_File_CreateFromUnixFD(SmileObject base, String name, Int32 fd, UInt32 mode)
 	{
 		SmileHandle handle;
 		Stdio_File file;
 		
+		// Make the Stdio_File object first.
 		file = GC_MALLOC_STRUCT(struct Stdio_FileStruct);
+		if (file == NULL)
+			Smile_Abort_OutOfMemory();
 
 		handle = SmileHandle_Create(base, Stdio_File_UnixEnd, SymbolTable_GetSymbolC(Smile_SymbolTable, "File"), FileCostEstimate, file);
 
+		// Fill in the Stdio_File with real data.
 		file->path = name;
 		file->mode = mode;
 		file->lastErrorCode = 0;
 		file->lastErrorMessage = String_Empty;
 		file->isOpen = True;
-
+		file->isEof = False;
 		file->fd = fd;
 
-#		error Not yet implemented.
-
-		return (SmileObject)handle;
+		return handle;
 	}
 
 	void Stdio_File_DeclareStdInOutErr(Closure globalClosure, SmileObject fileBase)
 	{
-		SmileHandle stdinHandle = Stdio_File_CreateFromFD((SmileObject)fileBase, _stdinName, STDIN_FILENO, FILE_MODE_READ | FILE_MODE_STD);
-		SmileHandle stdoutHandle = Stdio_File_CreateFromFD((SmileObject)fileBase, _stdoutName, STDOUT_FILENO, FILE_MODE_WRITE | FILE_MODE_APPEND | FILE_MODE_STD);
-		SmileHandle stderrHandle = Stdio_File_CreateFromFD((SmileObject)fileBase, _stderrName, STDERR_FILENO, FILE_MODE_WRITE | FILE_MODE_APPEND | FILE_MODE_STD);
+		SmileHandle stdinHandle = Stdio_File_CreateFromUnixFD((SmileObject)fileBase, _stdinName, STDIN_FILENO, FILE_MODE_READ | FILE_MODE_STD);
+		SmileHandle stdoutHandle = Stdio_File_CreateFromUnixFD((SmileObject)fileBase, _stdoutName, STDOUT_FILENO, FILE_MODE_WRITE | FILE_MODE_APPEND | FILE_MODE_STD);
+		SmileHandle stderrHandle = Stdio_File_CreateFromUnixFD((SmileObject)fileBase, _stderrName, STDERR_FILENO, FILE_MODE_WRITE | FILE_MODE_APPEND | FILE_MODE_STD);
 
 		Closure_SetGlobalVariable(globalClosure, SymbolTable_GetSymbolC(Smile_SymbolTable, "Stdin"), (SmileObject)stdinHandle);
 		Closure_SetGlobalVariable(globalClosure, SymbolTable_GetSymbolC(Smile_SymbolTable, "Stdout"), (SmileObject)stdoutHandle);

@@ -25,7 +25,7 @@ SMILE_API_FUNC void *Atomic_LoadPointer(const void **src);
 SMILE_API_FUNC void Atomic_StorePointer(void **dest, const void *value);
 SMILE_API_FUNC void *Atomic_AddPointer(void **value, Int delta);
 SMILE_API_FUNC void *Atomic_CompareAndSwapPointer(void **value, const void *comparator, const void *replacement);
-SMILE_API_FUNC void *Atomic_SwapPointer(void **value, void *replacement);
+SMILE_API_FUNC void *Atomic_SwapPointer(void **value, const void *replacement);
 
 //------------------------------------------------------------------------------------------------
 //  Inline helper functions for common operations.
