@@ -107,13 +107,11 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="ansicolor-w32.h" />
     <ClInclude Include="parsing\parser\testhelpers.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="testlib.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ansicolor-w32.c" />
     <ClCompile Include="dict\int32dict_tests.c" />
     <ClCompile Include="dict\pointerset_tests.c" />
     <ClCompile Include="dict\stringdict_tests.c" />
@@ -121,6 +119,8 @@
     <ClCompile Include="env\symboltable_tests.c" />
     <ClCompile Include="eval\bytecode_tests.c" />
     <ClCompile Include="eval\compiler_tests.c" />
+    <ClCompile Include="eval\evalconstant_tests.c" />
+    <ClCompile Include="eval\evalcore_tests.c" />
     <ClCompile Include="eval\eval_tests.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="numeric\real128_tests.c" />

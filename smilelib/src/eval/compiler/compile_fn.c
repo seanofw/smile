@@ -91,12 +91,12 @@ CompiledBlock Compiler_CompileFn(Compiler compiler, SmileList args, CompileFlags
 
 	// Now transform it into finished bytecodes.
 	byteCodeSegment = CompiledBlock_Finish(compiledBlock, False);
+	userFunctionInfo->byteCodeSegment = byteCodeSegment;
 	compilerFunction->stackSize = compiledBlock->maxStackDepth;
 
 	// Make a suitable closure decriptor for it, and an actual function object.
 	closureInfo = Compiler_MakeClosureInfoForCompilerFunction(compiler, compilerFunction);
 	MemCpy(&userFunctionInfo->closureInfo, closureInfo, sizeof(struct ClosureInfoStruct));
-	userFunctionInfo->byteCodeSegment = byteCodeSegment;
 
 	Compiler_RevertSourceLocation(compiler, oldSourceLocation);
 

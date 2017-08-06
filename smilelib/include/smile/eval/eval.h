@@ -34,7 +34,7 @@ typedef struct EscapeContinuationStruct {
 	SmileObject result;	// The resulting value from invoking the escape (a return value, or an exception object).
 } *EscapeContinuation;
 
-typedef struct EvalResultStruct {
+struct EvalResultStruct {
 	Int evalResultKind;	// How eval() exited, from the EVAL_RESULT_* enumeration.
 		
 	SmileObject value;	// The value resulting from the evaluation.
@@ -42,7 +42,7 @@ typedef struct EvalResultStruct {
 		
 	ParseMessage *parseMessages;	// For "wrapper" functions, this holds an array of any parse errors/warnings that were generated (NULL if none).
 	Int numMessages;	// For "wrapper" functions, this is the number of parse errors/warnings that were generated.
-} *EvalResult;
+};
 
 //-------------------------------------------------------------------------------------------------
 //  The core Smile eval() function
@@ -53,7 +53,7 @@ SMILE_API_FUNC EvalResult Eval_Run(CompiledTables tables, UserFunctionInfo funct
 SMILE_API_FUNC EvalResult Eval_Continue(void);
 SMILE_API_FUNC ClosureStateMachine Eval_BeginStateMachine(StateMachine stateMachineStart, StateMachine stateMachineBody);
 
-SMILE_API_FUNC Bool Eval_RunCore(void);
+SMILE_API_FUNC void Eval_GetCurrentBreakpointInfo(Closure *closure, CompiledTables *compiledTables, ByteCodeSegment *segment, ByteCode *byteCode);
 
 Inline EscapeContinuation EscapeContinuation_Create(Int escapeKind)
 {

@@ -110,6 +110,8 @@ void StringBuilder_Append(StringBuilder stringBuilder, const Byte *text, Int sta
 {
 	struct StringBuilderInt *sb = (struct StringBuilderInt *)stringBuilder;
 
+	if (length <= 0) return;
+
 	StringBuilder_Grow(sb, length);
 	MemCpy((Byte *)sb->text + sb->length, text + start, length);
 	sb->text[sb->length += length] = '\0';
@@ -139,6 +141,8 @@ void StringBuilder_AppendByte(StringBuilder stringBuilder, Byte ch)
 void StringBuilder_AppendRepeat(StringBuilder stringBuilder, Byte ch, Int length)
 {
 	struct StringBuilderInt *sb = (struct StringBuilderInt *)stringBuilder;
+
+	if (length <= 0) return;
 
 	StringBuilder_Grow(sb, length);
 	MemSet((Byte *)sb->text + sb->length, ch, length);

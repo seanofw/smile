@@ -5,6 +5,9 @@
 //------------------------------------------------------------------------------------------------
 //  Operating system IDs.
 
+#define SMILE_OS_FAMILY	0xFF00
+
+#define SMILE_OS_UNIX_FAMILY	0x0100
 #define SMILE_OS_LINUX	0x0101	// GNU/Linux, to be precise :-)
 #define SMILE_OS_FREEBSD	0x0102
 #define SMILE_OS_MACOSX	0x0103
@@ -14,10 +17,9 @@
 #define SMILE_OS_ULTRIX	0x0107
 #define SMILE_OS_HPUX	0x0108
 #define SMILE_OS_AIX	0x0109
-#define SMILE_OS_UNIX_FAMILY	0x01FF
 	
+#define SMILE_OS_WINDOWS_FAMILY	0x0200
 #define SMILE_OS_WINDOWS	0x0201	// Any flavor of Win32/Win64: WinNT or Win9x
-#define SMILE_OS_WINDOWS_FAMILY	0x02FF
 
 //------------------------------------------------------------------------------------------------
 //  Compiler IDs.

@@ -31,6 +31,9 @@
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/numeric/smileinteger128.h>
 #include <smile/smiletypes/text/smilesymbol.h>
+#include <smile/smiletypes/raw/smilebytearray.h>
+#include <smile/smiletypes/smilehandle.h>
+#include <smile/internal/staticstring.h>
 
 static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int indent);
 
@@ -80,13 +83,32 @@ const char *SmileObject_StringifyToC(SmileObject obj)
 	return String_ToC(SmileObject_Stringify(obj));
 }
 
+Inline Bool CanKindSkipParenthesisWhenUsedInPairs(Int kind, Bool isLeftSide)
+{
+	switch (kind) {
+		case SMILE_KIND_PAIR:
+			return isLeftSide;
+		case SMILE_KIND_NULL:
+		case SMILE_KIND_LIST:
+		case SMILE_KIND_BOOL:
+		case SMILE_KIND_UNBOXED_BOOL:
+		case SMILE_KIND_SYMBOL:
+		case SMILE_KIND_UNBOXED_SYMBOL:
+		case SMILE_KIND_STRING:
+			return True;
+		default:
+			return False;
+	}
+}
+
 static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int indent)
 {
 	SmileList list;
 	SmilePair pair;
+	STATIC_STRING(nullName, "<NULL>");
 
 	if (obj == NULL) {
-		StringBuilder_AppendC(stringBuilder, "<NULL>", 0, 6);
+		StringBuilder_AppendString(stringBuilder, nullName);
 		return;
 	}
 
@@ -158,27 +180,30 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 	
 	case SMILE_KIND_PAIR:
 		pair = (SmilePair)obj;
-		if (SMILE_KIND(pair->left) == SMILE_KIND_PAIR || ((SMILE_KIND(pair->left) & 0xF0) == 0x10)) {  // Pairs and numbers
+		if (CanKindSkipParenthesisWhenUsedInPairs(SMILE_KIND(pair->left), True)) {
+			StringifyRecursive(pair->left, stringBuilder, indent);
+		}
+		else {
 			StringBuilder_AppendByte(stringBuilder, '(');
 			StringifyRecursive(pair->left, stringBuilder, indent + 1);
 			StringBuilder_AppendByte(stringBuilder, ')');
 		}
-		else {
-			StringifyRecursive(pair->left, stringBuilder, indent);
-		}
 		StringBuilder_AppendByte(stringBuilder, '.');
-		if (SMILE_KIND(pair->right) == SMILE_KIND_PAIR || ((SMILE_KIND(pair->right) & 0xF0) == 0x10)) {  // Pairs and numbers
+		if (CanKindSkipParenthesisWhenUsedInPairs(SMILE_KIND(pair->right), False)) {
+			StringifyRecursive(pair->right, stringBuilder, indent);
+		}
+		else {
 			StringBuilder_AppendByte(stringBuilder, '(');
 			StringifyRecursive(pair->right, stringBuilder, indent + 1);
 			StringBuilder_AppendByte(stringBuilder, ')');
 		}
-		else {
-			StringifyRecursive(pair->right, stringBuilder, indent);
-		}
 		return;
 
 	case SMILE_KIND_SYMBOL:
-		StringBuilder_AppendString(stringBuilder, SymbolTable_GetName(Smile_SymbolTable, ((SmileSymbol)obj)->symbol));
+		{
+			String keyName = SymbolTable_GetName(Smile_SymbolTable, ((SmileSymbol)obj)->symbol);
+			StringBuilder_AppendString(stringBuilder, keyName != NULL ? keyName : nullName);
+		}
 		return;
 
 	case SMILE_KIND_BYTE:
@@ -201,22 +226,43 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 		StringBuilder_AppendFormat(stringBuilder, "\"%S\"", String_AddCSlashes((String)obj));
 		return;
 
+	case SMILE_KIND_BYTEARRAY:
+		StringBuilder_AppendFormat(stringBuilder, "(ByteArray of %ld)", (Int64)((SmileByteArray)obj)->length);
+		return;
+
 	case SMILE_KIND_USEROBJECT:
-		StringBuilder_Append(stringBuilder, (const Byte *)"{\n", 0, 2);
 		{
-			Int32DictKeyValuePair *pairs = Int32Dict_GetAll((Int32Dict)&((SmileUserObject)obj)->dict);
-			Int numPairs = Int32Dict_Count((Int32Dict)&((SmileUserObject)obj)->dict);
+			SmileUserObject userObject = (SmileUserObject)obj;
+			Int32DictKeyValuePair *pairs = Int32Dict_GetAll((Int32Dict)&userObject->dict);
+			Int numPairs = Int32Dict_Count((Int32Dict)&userObject->dict);
 			Int i;
+			String name;
+
+			name = SymbolTable_GetName(Smile_SymbolTable, userObject->name);
+			if (name != NULL) {
+				StringBuilder_AppendString(stringBuilder, name);
+				StringBuilder_AppendByte(stringBuilder, ' ');
+			}
 		
-			for (i = 0; i < numPairs; i++) {
-				StringBuilder_AppendRepeat(stringBuilder, ' ', (indent + 1) * 4);
-				StringBuilder_AppendString(stringBuilder, SymbolTable_GetName(Smile_SymbolTable, pairs[i].key));
-				StringBuilder_Append(stringBuilder, (const Byte *)": ", 0, 2);
-				StringifyRecursive((SmileObject)pairs[i].value, stringBuilder, indent + 2);
-				StringBuilder_AppendByte(stringBuilder, '\n');
+			if (numPairs == 0) {
+				StringBuilder_Append(stringBuilder, (const Byte *)"{ }", 0, 3);
+			}
+			else {
+				StringBuilder_Append(stringBuilder, (const Byte *)"{\n", 0, 2);
+
+				for (i = 0; i < numPairs; i++) {
+					String keyName = SymbolTable_GetName(Smile_SymbolTable, pairs[i].key);
+					StringBuilder_AppendRepeat(stringBuilder, ' ', (indent + 1) * 4);
+					StringBuilder_AppendString(stringBuilder, keyName != NULL ? keyName : nullName);
+					StringBuilder_Append(stringBuilder, (const Byte *)": ", 0, 2);
+					StringifyRecursive((SmileObject)pairs[i].value, stringBuilder, indent + 2);
+					StringBuilder_AppendByte(stringBuilder, '\n');
+				}
+
+				StringBuilder_AppendRepeat(stringBuilder, ' ', indent * 4);
+				StringBuilder_AppendByte(stringBuilder, '}');
 			}
 		}
-		StringBuilder_AppendByte(stringBuilder, '}');
 		return;
 	
 	case SMILE_KIND_NONTERMINAL:
@@ -264,6 +310,57 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 		StringifyRecursive((SmileObject)((SmileSyntax)obj)->pattern, stringBuilder, indent + 1);
 		StringBuilder_AppendC(stringBuilder, " => ", 0, 4);
 		StringifyRecursive(((SmileSyntax)obj)->replacement, stringBuilder, indent + 1);
+		return;
+
+	case SMILE_KIND_FUNCTION:
+		{
+			SmileFunction function = (SmileFunction)obj;
+			if (obj->kind & SMILE_FLAG_EXTERNAL_FUNCTION) {
+				StringBuilder_AppendFormat(stringBuilder, "|%S| <native>", function->u.externalFunctionInfo.argNames);
+			}
+			else {
+				SmileObject body = function->u.u.userFunctionInfo->body;
+				SmileList argList = function->u.u.userFunctionInfo->argList;
+				Bool isFirst = True;
+
+				StringBuilder_AppendByte(stringBuilder, '|');
+
+				if (SmileObject_IsRegularList((SmileObject)argList)) {
+					while (SMILE_KIND(argList) == SMILE_KIND_LIST) {
+						if (!isFirst) {
+							StringBuilder_AppendByte(stringBuilder, ' ');
+						}
+						StringifyRecursive((SmileObject)argList->a, stringBuilder, indent + 1);
+						argList = LIST_REST(argList);
+						isFirst = False;
+					}
+				}
+				else StringifyRecursive((SmileObject)argList, stringBuilder, indent + 1);
+
+				StringBuilder_AppendByte(stringBuilder, '|');
+				StringBuilder_AppendByte(stringBuilder, ' ');
+
+				if (SMILE_KIND(body) == SMILE_KIND_LIST) {
+					if (SmileObject_IsRegularList(body)) {
+						// Don't need parentheses when we're outputting a list form anyway.
+						StringifyRecursive(body, stringBuilder, indent);
+					}
+					else {
+						StringBuilder_AppendByte(stringBuilder, '(');
+						StringifyRecursive(body, stringBuilder, indent + 1);
+						StringBuilder_AppendByte(stringBuilder, ')');
+					}
+				}
+				else {
+					StringifyRecursive(body, stringBuilder, indent + 1);
+				}
+			}
+		}
+		return;
+
+	case SMILE_KIND_HANDLE:
+		StringBuilder_AppendString(stringBuilder,
+			SymbolTable_GetName(Smile_SymbolTable, ((SmileHandle)obj)->handleKind));
 		return;
 
 	default:

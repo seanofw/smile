@@ -397,5 +397,49 @@
 		</Expand>
 	</Type>
 
+  <!-- ByteCodeStruct -->
+  <Type Name="ByteCodeStruct">
+    <DisplayString>ByteCode ({Opcode_Names[opcode] != 0 ? Opcode_Names[opcode]->_opaque.text : String_Empty->_opaque.text,s} {u.int64,X})</DisplayString>
+    <Expand>
+      <Item Name="opcode">opcode,X</Item>
+      <Item Name="opcodeName">Opcode_Names[opcode] != 0 ? Opcode_Names[opcode]->_opaque.text : String_Empty->_opaque.text,s</Item>
+      <Item Name="u.int64">u.int64,X</Item>
+    </Expand>
+  </Type>
+
+  <!-- ByteCodeSegmentStruct -->
+  <Type Name="ByteCodeSegmentStruct">
+    <DisplayString>ByteCodeSegment ({numByteCodes} instrs)</DisplayString>
+    <Expand>
+      <Item Name="numByteCodes">numByteCodes</Item>
+      <Item Name="[stringified]">ByteCodeSegment_ToString(this, 0, 0)->_opaque.text</Item>
+      <ArrayItems>
+        <Size>numByteCodes</Size>
+        <ValuePointer>byteCodes</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <Type Name="ClosureStruct">
+    <DisplayString>Closure (size {closureInfo->numVariables + closureInfo->tempSize})</DisplayString>
+    <Expand>
+      <Item Name="parent">parent</Item>
+      <Item Name="closureInfo">closureInfo</Item>
+      <Item Name="[stackMax]">closureInfo->numVariables + closureInfo->tempSize</Item>
+      <Item Name="[stackTop]">stackTop > variables ? stackTop - variables : 0</Item>
+      <ArrayItems>
+        <Size>stackTop > variables ? stackTop - variables : 0</Size>
+        <ValuePointer>variables</ValuePointer>
+      </ArrayItems>
+      <Synthetic Name="[returnInfo]">
+        <Expand>
+          <Item Name="returnClosure">returnClosure</Item>
+          <Item Name="returnSegment">returnSegment</Item>
+          <Item Name="returnPc">returnPc</Item>
+        </Expand>
+      </Synthetic>
+    </Expand>
+  </Type>
+
 </AutoVisualizer>
 

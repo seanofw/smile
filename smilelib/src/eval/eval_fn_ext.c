@@ -31,7 +31,16 @@ extern ByteCode _byteCode;
 //-------------------------------------------------------------------------------------------------
 // External function checking helpers
 
-static Int PerformTypeChecks(Int argc, SmileArg *argv, Int numTypeChecks, const Byte *typeChecks)
+static void ThrowTypeMismatchException(SmileFunction self, Int failingArg, Int expectedType, Int actualType)
+{
+	String expectedTypeName = SmileKind_GetName(expectedType);
+	String actualTypeName = SmileKind_GetName(actualType);
+
+	Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("Argument %d to '%S' should be a %S but is a %S.",
+		failingArg + 1, self->u.externalFunctionInfo.name, expectedTypeName, actualTypeName));
+}
+
+static void PerformTypeChecks(SmileFunction self, Int argc, SmileArg *argv, Int numTypeChecks, const Byte *typeChecks)
 {
 	Int i;
 
@@ -41,7 +50,7 @@ static Int PerformTypeChecks(Int argc, SmileArg *argv, Int numTypeChecks, const 
 		// If there are more args than type checks, perform the type checks that are defined...
 		for (i = 0; i < numTypeChecks; i++) {
 			if ((argv[i].obj->kind & typeChecks[i * 2]) != typeChecks[i * 2 + 1])
-				return i;
+				ThrowTypeMismatchException(self, i, typeChecks[i * 2 + 1], argv[i].obj->kind);
 		}
 
 		mask = typeChecks[i * 2 - 2];
@@ -50,10 +59,10 @@ static Int PerformTypeChecks(Int argc, SmileArg *argv, Int numTypeChecks, const 
 		// ...and then repeatedly use the last type check for the rest of the arguments.
 		for (; i < argc; i++) {
 			if ((argv[i].obj->kind & mask) != compare)
-				return i;
+				ThrowTypeMismatchException(self, i, compare, argv[i].obj->kind);
 		}
 
-		return -1;
+		return;
 	}
 
 	// If there are fewer or equal args to type checks, perform the checks as-is,
@@ -64,34 +73,34 @@ static Int PerformTypeChecks(Int argc, SmileArg *argv, Int numTypeChecks, const 
 		default:
 			for (i = 0; i < argc; i++) {
 				if ((argv[i].obj->kind & typeChecks[i * 2]) != typeChecks[i * 2 + 1])
-					return i;
+					ThrowTypeMismatchException(self, i, typeChecks[i * 2 + 1], argv[i].obj->kind);
 			}
-			return -1;
+			return;
 
 		case 7:
 			if ((argv[6].obj->kind & typeChecks[12]) != typeChecks[13])
-				return 6;
+				ThrowTypeMismatchException(self, 6, typeChecks[13], argv[6].obj->kind);
 		case 6:
 			if ((argv[5].obj->kind & typeChecks[10]) != typeChecks[11])
-				return 5;
+				ThrowTypeMismatchException(self, 5, typeChecks[11], argv[5].obj->kind);
 		case 5:
 			if ((argv[4].obj->kind & typeChecks[8]) != typeChecks[9])
-				return 4;
+				ThrowTypeMismatchException(self, 4, typeChecks[9], argv[4].obj->kind);
 		case 4:
 			if ((argv[3].obj->kind & typeChecks[6]) != typeChecks[7])
-				return 3;
+				ThrowTypeMismatchException(self, 3, typeChecks[7], argv[3].obj->kind);
 		case 3:
 			if ((argv[2].obj->kind & typeChecks[4]) != typeChecks[5])
-				return 2;
+				ThrowTypeMismatchException(self, 2, typeChecks[5], argv[2].obj->kind);
 		case 2:
 			if ((argv[1].obj->kind & typeChecks[2]) != typeChecks[3])
-				return 1;
+				ThrowTypeMismatchException(self, 1, typeChecks[3], argv[1].obj->kind);
 		case 1:
 			if ((argv[0].obj->kind & typeChecks[0]) != typeChecks[1])
-				return 0;
+				ThrowTypeMismatchException(self, 0, typeChecks[1], argv[0].obj->kind);
 
 		case 0:
-			return -1;
+			return;
 	}
 }
 
@@ -111,12 +120,6 @@ static void ThrowExactCheckError(SmileFunction self, Int argc)
 {
 	Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'%S' requires exactly %d arguments, but was called with %d.",
 		self->u.externalFunctionInfo.name, (int)self->u.externalFunctionInfo.minArgs, argc));
-}
-
-static void ThrowTypeMismatchException(SmileFunction self, Int failingArg)
-{
-	Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("Argument %d to '%S' is of the wrong type.",
-		failingArg + 1, self->u.externalFunctionInfo.name));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -147,17 +150,16 @@ static void ThrowTypeMismatchException(SmileFunction self, Int failingArg)
 
 // Check the given arguments against this external function's required argument types.
 #define DO_TYPE_CHECK(__self__, __argc__, __argv__) \
-	if ((failingArg = PerformTypeChecks((__argc__), (__argv__), (__self__)->u.externalFunctionInfo.numArgsToTypeCheck, (__self__)->u.externalFunctionInfo.argTypeChecks)) >= 0) \
-		ThrowTypeMismatchException((__self__), failingArg)
+	PerformTypeChecks((__self__), (__argc__), (__argv__), (__self__)->u.externalFunctionInfo.numArgsToTypeCheck, (__self__)->u.externalFunctionInfo.argTypeChecks)
 
 // Invoke the function itself, passing the stack from the closure, and pushing the result back on the stack.
-#define INVOKE(__self__, __argc__, __argv__, __closure__) \
-	( ((__closure__)->stackTop = (__argv__)), \
+#define INVOKE(__self__, __argc__, __argv__, __extra__, __closure__) \
+	( ((__closure__)->stackTop = (__argv__) - (__extra__)), \
 	  (*(__closure__)->stackTop++ = (__self__)->u.externalFunctionInfo.externalFunction((__argc__), (__argv__), (__self__)->u.externalFunctionInfo.param)) )
 
 // Invoke the function as a state machine initiator, pushing onto the stack only if the state machine returns non-NULL.
-#define INVOKE_STATE_MACHINE(__self__, __argc__, __argv__, __closure__) \
-	(__closure__)->stackTop = (__argv__); \
+#define INVOKE_STATE_MACHINE(__self__, __argc__, __argv__, __extra__, __closure__) \
+	(__closure__)->stackTop = (__argv__) - (__extra__); \
 	stateMachineResult = (__self__)->u.externalFunctionInfo.externalFunction((__argc__), (__argv__), (__self__)->u.externalFunctionInfo.param); \
 	if (stateMachineResult.obj != NULL) { \
 		/* Didn't start the state machine, and instead produced a result directly. */ \
@@ -167,178 +169,178 @@ static void ThrowTypeMismatchException(SmileFunction self, Int failingArg)
 //-------------------------------------------------------------------------------------------------
 // External functions (normal kind)
 
-void SmileExternalFunction_NoCheck_Call(SmileFunction self, Int argc)
+void SmileExternalFunction_NoCheck_Call(SmileFunction self, Int argc, Int extra)
 {
 	INVOKE_DECL(_closure, argv);
 
-	INVOKE(self, argc, argv, _closure);
+	INVOKE(self, argc, argv, extra, _closure);
 }
 
-void SmileExternalFunction_MinCheck_Call(SmileFunction self, Int argc)
-{
-	INVOKE_DECL(_closure, argv);
-
-	DO_MIN_CHECK(self, argc);
-	INVOKE(self, argc, argv, _closure);
-}
-
-void SmileExternalFunction_MaxCheck_Call(SmileFunction self, Int argc)
-{
-	INVOKE_DECL(_closure, argv);
-
-	DO_MAX_CHECK(self, argc);
-	INVOKE(self, argc, argv, _closure);
-}
-
-void SmileExternalFunction_MinMaxCheck_Call(SmileFunction self, Int argc)
+void SmileExternalFunction_MinCheck_Call(SmileFunction self, Int argc, Int extra)
 {
 	INVOKE_DECL(_closure, argv);
 
 	DO_MIN_CHECK(self, argc);
-	DO_MAX_CHECK(self, argc);
-
-	INVOKE(self, argc, argv, _closure);
+	INVOKE(self, argc, argv, extra, _closure);
 }
 
-void SmileExternalFunction_ExactCheck_Call(SmileFunction self, Int argc)
+void SmileExternalFunction_MaxCheck_Call(SmileFunction self, Int argc, Int extra)
+{
+	INVOKE_DECL(_closure, argv);
+
+	DO_MAX_CHECK(self, argc);
+	INVOKE(self, argc, argv, extra, _closure);
+}
+
+void SmileExternalFunction_MinMaxCheck_Call(SmileFunction self, Int argc, Int extra)
+{
+	INVOKE_DECL(_closure, argv);
+
+	DO_MIN_CHECK(self, argc);
+	DO_MAX_CHECK(self, argc);
+
+	INVOKE(self, argc, argv, extra, _closure);
+}
+
+void SmileExternalFunction_ExactCheck_Call(SmileFunction self, Int argc, Int extra)
 {
 	INVOKE_DECL(_closure, argv);
 
 	DO_EXACT_CHECK(self, argc);
-	INVOKE(self, argc, argv, _closure);
+	INVOKE(self, argc, argv, extra, _closure);
 }
 
-void SmileExternalFunction_TypesCheck_Call(SmileFunction self, Int argc)
+void SmileExternalFunction_TypesCheck_Call(SmileFunction self, Int argc, Int extra)
 {
 	INVOKE_DECL(_closure, argv);
 
 	DO_TYPE_CHECK(self, argc, argv);
-	INVOKE(self, argc, argv, _closure);
+	INVOKE(self, argc, argv, extra, _closure);
 }
 
-void SmileExternalFunction_MinTypesCheck_Call(SmileFunction self, Int argc)
+void SmileExternalFunction_MinTypesCheck_Call(SmileFunction self, Int argc, Int extra)
 {
 	INVOKE_DECL(_closure, argv);
 
 	DO_MIN_CHECK(self, argc);
 	DO_TYPE_CHECK(self, argc, argv);
-	INVOKE(self, argc, argv, _closure);
+	INVOKE(self, argc, argv, extra, _closure);
 }
 
-void SmileExternalFunction_MaxTypesCheck_Call(SmileFunction self, Int argc)
+void SmileExternalFunction_MaxTypesCheck_Call(SmileFunction self, Int argc, Int extra)
 {
 	INVOKE_DECL(_closure, argv);
 
 	DO_MAX_CHECK(self, argc);
 	DO_TYPE_CHECK(self, argc, argv);
-	INVOKE(self, argc, argv, _closure);
+	INVOKE(self, argc, argv, extra, _closure);
 }
 
-void SmileExternalFunction_MinMaxTypesCheck_Call(SmileFunction self, Int argc)
+void SmileExternalFunction_MinMaxTypesCheck_Call(SmileFunction self, Int argc, Int extra)
 {
 	INVOKE_DECL(_closure, argv);
 
 	DO_MIN_CHECK(self, argc);
 	DO_MAX_CHECK(self, argc);
 	DO_TYPE_CHECK(self, argc, argv);
-	INVOKE(self, argc, argv, _closure);
+	INVOKE(self, argc, argv, extra, _closure);
 }
 
-void SmileExternalFunction_ExactTypesCheck_Call(SmileFunction self, Int argc)
+void SmileExternalFunction_ExactTypesCheck_Call(SmileFunction self, Int argc, Int extra)
 {
 	INVOKE_DECL(_closure, argv);
 
 	DO_EXACT_CHECK(self, argc);
 	DO_TYPE_CHECK(self, argc, argv);
-	INVOKE(self, argc, argv, _closure);
+	INVOKE(self, argc, argv, extra, _closure);
 }
 
 //-------------------------------------------------------------------------------------------------
 // State-machine external functions
 
-void SmileExternalFunction_StateMachineNoCheck_Call(SmileFunction self, Int argc)
+void SmileExternalFunction_StateMachineNoCheck_Call(SmileFunction self, Int argc, Int extra)
 {
 	INVOKE_DECL(_closure, argv);
 
-	INVOKE_STATE_MACHINE(self, argc, argv, _closure);
+	INVOKE_STATE_MACHINE(self, argc, argv, extra, _closure);
 }
 
-void SmileExternalFunction_StateMachineMinCheck_Call(SmileFunction self, Int argc)
-{
-	INVOKE_DECL(_closure, argv);
-
-	DO_MIN_CHECK(self, argc);
-	INVOKE_STATE_MACHINE(self, argc, argv, _closure);
-}
-
-void SmileExternalFunction_StateMachineMaxCheck_Call(SmileFunction self, Int argc)
-{
-	INVOKE_DECL(_closure, argv);
-
-	DO_MAX_CHECK(self, argc);
-	INVOKE_STATE_MACHINE(self, argc, argv, _closure);
-}
-
-void SmileExternalFunction_StateMachineMinMaxCheck_Call(SmileFunction self, Int argc)
+void SmileExternalFunction_StateMachineMinCheck_Call(SmileFunction self, Int argc, Int extra)
 {
 	INVOKE_DECL(_closure, argv);
 
 	DO_MIN_CHECK(self, argc);
-	DO_MAX_CHECK(self, argc);
-	INVOKE_STATE_MACHINE(self, argc, argv, _closure);
+	INVOKE_STATE_MACHINE(self, argc, argv, extra, _closure);
 }
 
-void SmileExternalFunction_StateMachineExactCheck_Call(SmileFunction self, Int argc)
+void SmileExternalFunction_StateMachineMaxCheck_Call(SmileFunction self, Int argc, Int extra)
+{
+	INVOKE_DECL(_closure, argv);
+
+	DO_MAX_CHECK(self, argc);
+	INVOKE_STATE_MACHINE(self, argc, argv, extra, _closure);
+}
+
+void SmileExternalFunction_StateMachineMinMaxCheck_Call(SmileFunction self, Int argc, Int extra)
+{
+	INVOKE_DECL(_closure, argv);
+
+	DO_MIN_CHECK(self, argc);
+	DO_MAX_CHECK(self, argc);
+	INVOKE_STATE_MACHINE(self, argc, argv, extra, _closure);
+}
+
+void SmileExternalFunction_StateMachineExactCheck_Call(SmileFunction self, Int argc, Int extra)
 {
 	INVOKE_DECL(_closure, argv);
 
 	DO_EXACT_CHECK(self, argc);
-	INVOKE_STATE_MACHINE(self, argc, argv, _closure);
+	INVOKE_STATE_MACHINE(self, argc, argv, extra, _closure);
 }
 
-void SmileExternalFunction_StateMachineTypesCheck_Call(SmileFunction self, Int argc)
+void SmileExternalFunction_StateMachineTypesCheck_Call(SmileFunction self, Int argc, Int extra)
 {
 	INVOKE_DECL(_closure, argv);
 
 	DO_TYPE_CHECK(self, argc, argv);
-	INVOKE_STATE_MACHINE(self, argc, argv, _closure);
+	INVOKE_STATE_MACHINE(self, argc, argv, extra, _closure);
 }
 
-void SmileExternalFunction_StateMachineMinTypesCheck_Call(SmileFunction self, Int argc)
+void SmileExternalFunction_StateMachineMinTypesCheck_Call(SmileFunction self, Int argc, Int extra)
 {
 	INVOKE_DECL(_closure, argv);
 
 	DO_MIN_CHECK(self, argc);
 	DO_TYPE_CHECK(self, argc, argv);
-	INVOKE_STATE_MACHINE(self, argc, argv, _closure);
+	INVOKE_STATE_MACHINE(self, argc, argv, extra, _closure);
 }
 
-void SmileExternalFunction_StateMachineMaxTypesCheck_Call(SmileFunction self, Int argc)
+void SmileExternalFunction_StateMachineMaxTypesCheck_Call(SmileFunction self, Int argc, Int extra)
 {
 	INVOKE_DECL(_closure, argv);
 
 	DO_MAX_CHECK(self, argc);
 	DO_TYPE_CHECK(self, argc, argv);
-	INVOKE_STATE_MACHINE(self, argc, argv, _closure);
+	INVOKE_STATE_MACHINE(self, argc, argv, extra, _closure);
 }
 
-void SmileExternalFunction_StateMachineMinMaxTypesCheck_Call(SmileFunction self, Int argc)
+void SmileExternalFunction_StateMachineMinMaxTypesCheck_Call(SmileFunction self, Int argc, Int extra)
 {
 	INVOKE_DECL(_closure, argv);
 
 	DO_MIN_CHECK(self, argc);
 	DO_MAX_CHECK(self, argc);
 	DO_TYPE_CHECK(self, argc, argv);
-	INVOKE_STATE_MACHINE(self, argc, argv, _closure);
+	INVOKE_STATE_MACHINE(self, argc, argv, extra, _closure);
 }
 
-void SmileExternalFunction_StateMachineExactTypesCheck_Call(SmileFunction self, Int argc)
+void SmileExternalFunction_StateMachineExactTypesCheck_Call(SmileFunction self, Int argc, Int extra)
 {
 	INVOKE_DECL(_closure, argv);
 
 	DO_EXACT_CHECK(self, argc);
 	DO_TYPE_CHECK(self, argc, argv);
-	INVOKE_STATE_MACHINE(self, argc, argv, _closure);
+	INVOKE_STATE_MACHINE(self, argc, argv, extra, _closure);
 }
 
 //-------------------------------------------------------------------------------------------------

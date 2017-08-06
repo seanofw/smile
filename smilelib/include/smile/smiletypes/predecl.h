@@ -7,6 +7,8 @@ typedef struct SmileVTableInt *SmileVTable;
 
 typedef struct SmileObjectInt *SmileObject;
 
+typedef struct SmileHandleInt *SmileHandle;
+
 typedef struct SmileListInt *SmileList;
 typedef struct SmileListInt *SmileNull;
 typedef struct SmilePairInt *SmilePair;
@@ -32,5 +34,16 @@ typedef struct SmileUnboxedSymbolInt *SmileUnboxedSymbol;
 
 typedef struct SmileSyntaxInt *SmileSyntax;
 typedef struct SmileNonterminalInt *SmileNonterminal;
+
+typedef struct SmileByteArrayInt *SmileByteArray;
+
+typedef struct ParseMessageStruct *ParseMessage;
+typedef struct EvalResultStruct *EvalResult;
+typedef struct ClosureInfoStruct *ClosureInfo;
+typedef struct ClosureStruct *Closure;
+typedef struct ByteCodeSegmentStruct *ByteCodeSegment;
+typedef struct ByteCodeStruct *ByteCode;
+
+typedef struct LibraryInfoStruct *LibraryInfo;
 
 #endif

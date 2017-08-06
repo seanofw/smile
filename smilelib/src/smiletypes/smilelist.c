@@ -290,7 +290,10 @@ String SmileList_Join(SmileList list, String glue)
 
 	INIT_INLINE_STRINGBUILDER(stringBuilder);
 
-	piece = SMILE_VCALL1(tortoise->a, toString, (SmileUnboxedData){ 0 });
+	if (SMILE_KIND(tortoise->a) == SMILE_KIND_STRING)
+		piece = (String)tortoise->a;
+	else
+		piece = SMILE_VCALL1(tortoise->a, toString, (SmileUnboxedData) { 0 });
 	StringBuilder_AppendString(stringBuilder, piece);
 
 	hare = tortoise = (SmileList)tortoise->d;
@@ -300,8 +303,12 @@ String SmileList_Join(SmileList list, String glue)
 		if (hasGlue) {
 			StringBuilder_AppendString(stringBuilder, glue);
 		}
-	
-		piece = SMILE_VCALL1(tortoise->a, toString, (SmileUnboxedData){ 0 });
+
+		if (SMILE_KIND(tortoise->a) == SMILE_KIND_STRING)
+			piece = (String)tortoise->a;
+		else
+			piece = SMILE_VCALL1(tortoise->a, toString, (SmileUnboxedData) { 0 });
+
 		StringBuilder_AppendString(stringBuilder, piece);
 
 		tortoise = (SmileList)tortoise->d;

@@ -141,6 +141,7 @@ enum Opcode {
 	Op_73	= 0x73,		
 	Op_LdMember	= 0x74,	// -2, +1	; Call 'get-member', passing member (top-1) and object (top-2).
 	Op_StMember	= 0x75,	// -2, +1	; Call 'set-member', passing value (top-1), member (top-2), and object (top-3).  Results in the stack top value.
+			// ; Warning: Op_StMember MUST ALWAYS be preceded by an otherwise-unnecessary Op_LdNull instruction!
 	Op_StpMember	= 0x76,	// -3	; Call 'set-member', passing value (top-1), member (top-2), and object (top-3).  Pops the stack top value.
 	Op_77	= 0x77,		
 	Op_78	= 0x78,		

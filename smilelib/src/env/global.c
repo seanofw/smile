@@ -58,7 +58,7 @@ void Smile_InitCommonGlobals(ClosureInfo globalClosureInfo)
 	DeclareCommonGlobal(Smile_KnownSymbols.ArrayBase_,	    Smile_KnownBases.ArrayBase);
 	DeclareCommonGlobal(Smile_KnownSymbols.Array_,	      Smile_KnownBases.Array);
 	DeclareCommonGlobal(Smile_KnownSymbols.Pair_,	  Smile_KnownBases.Pair);
-	DeclareCommonGlobal(Smile_KnownSymbols.Fn_,	  Smile_KnownBases.Function);
+	DeclareCommonGlobal(Smile_KnownSymbols.Fn_,	  Smile_KnownBases.Fn);
 	DeclareCommonGlobal(Smile_KnownSymbols.Bool_,	  Smile_KnownBases.Bool);
 	DeclareCommonGlobal(Smile_KnownSymbols.Symbol_,	  Smile_KnownBases.Symbol);
 	DeclareCommonGlobal(Smile_KnownSymbols.Exception_,	  Smile_KnownBases.Exception);
@@ -197,6 +197,7 @@ SmileObject Smile_ParseInScope(ClosureInfo globalClosureInfo, String text, Strin
 
 	// Construct the parsing environment.
 	lexer = Lexer_Create(text, 0, String_Length(text), filename, 1, 0);
+	Lexer_SetSymbolTable(lexer, Smile_SymbolTable);
 	parser = Parser_Create();
 	globalScope = ParseScope_CreateRoot();
 
@@ -217,7 +218,7 @@ SmileObject Smile_ParseInScope(ClosureInfo globalClosureInfo, String text, Strin
 	result = Parser_Parse(parser, lexer, globalScope);
 
 	// Deal with any errors resulting from the user's source code.
-	if (parser->firstMessage != NULL) {
+	if (SMILE_KIND(parser->firstMessage) != SMILE_KIND_NULL) {
 		*numParseMessages = numMessages = Parser_GetErrorOrWarningCount(parser);
 		*parseMessages = destMessage = GC_MALLOC_STRUCT_ARRAY(struct ParseMessageStruct *, numMessages);
 		if (*parseMessages == NULL)
@@ -234,6 +235,8 @@ SmileObject Smile_ParseInScope(ClosureInfo globalClosureInfo, String text, Strin
 	}
 
 	// Done!
+	*parseMessages = NULL;
+	*numParseMessages = 0;
 	return result;
 }
 

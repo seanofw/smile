@@ -185,6 +185,7 @@ CompiledBlock Compiler_CompileOpEquals(Compiler compiler, SmileList args, Compil
 			EMIT0(Op_StpMember, -4);
 		}
 		else {
+			EMIT0(Op_LdNull, +1);
 			EMIT0(Op_StMember, -3);
 		}
 		return compiledBlock;

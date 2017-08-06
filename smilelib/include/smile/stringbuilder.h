@@ -36,9 +36,9 @@ struct StringBuilderInt {
 /// A StringBuilder, which is a tool for efficiently constructing strings by repeatedly
 /// appending text to them.
 /// </summary>
-typedef struct StringBuilderStruct {
+struct StringBuilderStruct {
 	struct StringBuilderInt _opaque;
-} *StringBuilder;
+};
 
 //-------------------------------------------------------------------------------------------------
 //  External parts of the implementation
@@ -118,6 +118,11 @@ Inline void StringBuilder_SetLength(StringBuilder stringBuilder, Int length)
 	{
 		StringBuilder_AppendRepeat(stringBuilder, '\0', length - sb->length);
 	}
+}
+
+Inline Byte StringBuilder_At(const StringBuilder stringBuilder, Int index)
+{
+	return ((const struct StringBuilderInt *)stringBuilder)->text[index];
 }
 
 Inline const Byte *StringBuilder_GetBytes(const StringBuilder stringBuilder)

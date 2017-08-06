@@ -27,7 +27,7 @@
 ///
 /// Total size:  16 bytes.
 /// </summary>
-typedef struct ByteCodeStruct {
+struct ByteCodeStruct {
 	Byte opcode;	// The opcode for this instruction.
 	Byte reserved[3];	
 	Int32 sourceLocation;	// The index of the source location that generated this (for debugging).
@@ -51,7 +51,7 @@ typedef struct ByteCodeStruct {
 			Int32 a, b;
 		} i2;
 	} u;
-} *ByteCode;
+};
 
 /// <summary>
 /// A byte-code segment is nothing more than an easily-growable array of byte codes.
@@ -70,6 +70,7 @@ struct UserFunctionInfoStruct;
 
 SMILE_API_FUNC void ByteCodeSegment_Grow(ByteCodeSegment segment, Int count);
 SMILE_API_FUNC ByteCodeSegment ByteCodeSegment_CreateWithSize(Int size);
+SMILE_API_FUNC ByteCodeSegment ByteCodeSegment_CreateFromByteCodes(const ByteCode byteCodes, Int numByteCodes, Bool addRet);
 SMILE_API_FUNC String ByteCodeSegment_ToString(ByteCodeSegment segment, struct UserFunctionInfoStruct *userFunctionInfo, struct CompiledTablesStruct *compiledTables);
 SMILE_API_FUNC String ByteCodeSegment_Stringify(ByteCodeSegment segment);
 SMILE_API_FUNC String ByteCode_ToString(ByteCode byteCode, Int address, struct UserFunctionInfoStruct *userFunctionInfo, struct CompiledTablesStruct *compiledTables);

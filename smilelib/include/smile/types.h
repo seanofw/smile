@@ -34,6 +34,7 @@ typedef unsigned char Bool;
 // Compatibility macros.
 #define SMILE_DECLARATION_STATIC_PROTOTYPE extern
 #define SMILE_DECLARATION_EXTERN_OF_UNKNOWN_SIZE
+#define SMILE_NO_RETURN
 
 // How to export API functions and data.
 #ifdef SMILELIB_BUILD
@@ -89,6 +90,7 @@ typedef unsigned char Bool;
 #define UInt32Max (~(UInt32)0)
 #define UInt64Max (~(UInt64)0)
 #define UIntMax (~(UInt)0)
+#define PtrIntMax (~(PtrInt)0)
 
 // Global functions for the core runtime.
 SMILE_API_FUNC void Smile_Init(void);

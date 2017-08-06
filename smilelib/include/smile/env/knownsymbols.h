@@ -108,13 +108,20 @@ typedef enum SmileSpecialSymbolEnum {
 	SMILE_SPECIAL_SYMBOL_TERM	= 85,
 	SMILE_SPECIAL_SYMBOL_NAME	= 86,
 
+	// The special 'get-member' and 'set-member' method names.
+	SMILE_SPECIAL_SYMBOL_GET_MEMBER	= 87,
+	SMILE_SPECIAL_SYMBOL_SET_MEMBER = 88,
+
+	// Miscellaneous.
+	SMILE_SPECIAL_SYMBOL_AS = 89,
+
 } SmileSpecialSymbol;
 
 // The set of known symbols, preregistered at startup time to save on runtime-initialization costs.
 typedef struct KnownSymbolsStruct {
 
 	//------------------------------------------
-	// The 70-ish special symbols from the list above first.
+	// The 80-ish special symbols from the list above first.
 
 	// The twenty core special forms.
 	Symbol _set, _opset;
@@ -148,15 +155,42 @@ typedef struct KnownSymbolsStruct {
 	Symbol TERM;
 	Symbol NAME;
 
+	// The special 'get-member' and 'set-member' methods.
+	Symbol get_member, set_member;
+
+	// Miscellaneous.
+	Symbol as;
+
 	// End of special symbols.
 	//------------------------------------------
 
 	// Typename symbols.
-	Symbol Actor_, Array_, ArrayBase_, Bool_, Byte_, ByteRange_, ByteArray_, Char_, Closure, Enumerable_, Exception_, Facade_, FacadeProper_, Fn_, Handle_;
-	Symbol IntegerArrayBase_, Integer_, Integer16_, Integer32_, Integer32Array_, Integer32Map_, Integer32Range_, Integer64_, Integer64Array_, Integer64Map_, Integer64Range_, IntegerBase_, IntegerRange_, IntegerRangeBase_;
-	Symbol List_, Map_, MapBase_, MathException, Number_, NumericArrayBase_, Null_, Object_, Pair_, Program_, Random_, Range_;
-	Symbol RealArrayBase_, Real_, Real32_, Real32Array_, Real32Range_, Real64_, Real64Array_, Real64Range_, RealBase_, RealRange_, RealRangeBase_;
-	Symbol Regex_, String_, StringMap_, Symbol_, SymbolMap_, UChar_, UserObject_;
+	Symbol Actor_, Array_, ArrayBase_, Bool_, BoolArray_, Char_, Closure, Enumerable_, Exception_, Facade_, FacadeProper_, Fn_, Handle_;
+	Symbol List_, Map_, MapBase_, MathException, Null_, Object_, Pair_, Program_, Random_, Range_;
+	Symbol Regex_, String_, StringArray_, StringMap_, Symbol_, SymbolArray_, SymbolMap_, UserObject_;
+
+	// Numeric typename symbols.
+	Symbol Number_, NumericArray_, NumericRange_, NumericMap_;
+
+	// Integer typename symbols.
+	Symbol Integer_, IntegerBase_, IntegerArrayBase_, IntegerRange_, IntegerRangeBase_, IntegerMap_, IntegerMapBase_;
+	Symbol Byte_, ByteArray_, ByteRange_, ByteMap_;
+	Symbol Integer16_, Integer16Array_, Integer16Range_, Integer16Map_;
+	Symbol Integer32_, Integer32Array_, Integer32Range_, Integer32Map_;
+	Symbol Integer64_, Integer64Array_, Integer64Range_, Integer64Map_;
+	Symbol Integer128_, Integer128Array_, Integer128Range_, Integer128Map_;
+
+	// Real typename symbols.
+	Symbol Real_, RealBase_, RealArrayBase_, RealRange_, RealRangeBase_, RealMap_, RealMapBase_;
+	Symbol Real32_, Real32Array_, Real32Range_, Real32Map_;
+	Symbol Real64_, Real64Array_, Real64Range_, Real64Map_;
+	Symbol Real128_, Real128Array_, Real128Range_, Real128Map_;
+
+	// Float typename symbols.
+	Symbol Float_, FloatBase_, FloatArrayBase_, FloatRange_, FloatRangeBase_, FloatMap_, FloatMapBase_;
+	Symbol Float32_, Float32Array_, Float32Range_, Float32Map_;
+	Symbol Float64_, Float64Array_, Float64Range_, Float64Map_;
+	Symbol Float128_, Float128Array_, Float128Range_, Float128Map_;
 
 	// General symbols.
 	Symbol a, abs, acos, add_c_slashes, alnum_q, alpha_q, apply, apply_method, arguments, asin, assertions, assigned_name, atan, atan2;
@@ -167,7 +201,7 @@ typedef struct KnownSymbolsStruct {
 	Symbol d, decompose, default_, diacritic_q, digit_q, div, divide_by_zero, does_not_understand;
 	Symbol each, end, ends_with, ends_with_i, escape, eval, even_q, exit, exp, extend_object, extend_where_new;
 	Symbol false_, filename_mode, first, floor, fold, from_seed;
-	Symbol get_member, get_object_security, get_property;
+	Symbol get_object_security, get_property;
 	Symbol handle_kind, has_property, hash, hex_string, hex_string_pretty, html_decode, html_encode, hyphenize;
 	Symbol id, in_, include, index_of, index_of_i, int_, int16_, int32_, int64_, int_lg;
 	Symbol join;
@@ -186,12 +220,12 @@ typedef struct KnownSymbolsStruct {
 	Symbol range_to, raw_reverse, read_append, read_only, read_write, read_write_append, real_, real32_, real64_, rem, repeat, replace, replacement, resize, rest, result;
 	Symbol reverse, reverse_bits, reverse_bytes, right, rot_13;
 	Symbol separator, separator_line, separator_paragraph, separator_space;
-	Symbol set_member, set_object_security, set_property, sign, sin, space_q, splice, split, sprintf;
+	Symbol set_object_security, set_property, sign, sin, space_q, splice, split, sprintf;
 	Symbol sqrt, sqrt_domain, start, starts_with, starts_with_i, step, stepping;
 	Symbol string_, strip_c_slashes, studied_, study, substr, substring, symbol;
 	Symbol symbol_currency, symbol_math, symbol_modifier, symbol_other;
 	Symbol tan, text, this_, this_closure, throw_, title, titlecase, titlecase_q, trim, trim_end, trim_start, true_, type;
-	Symbol uchar, underscorize, unknown, upper, uppercase, uppercase_q, url_decode, url_encode, url_query_encode, utf8_to_latin1;
+	Symbol underscorize, unknown, upper, uppercase, uppercase_q, url_decode, url_encode, url_query_encode, utf8_to_latin1;
 	Symbol values;
 	Symbol where_, whitespace_q, wildcard_matches, without;
 	Symbol xdigit_q, xor;

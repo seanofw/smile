@@ -37,8 +37,9 @@ ClosureInfo ClosureInfo_Create(ClosureInfo parent, Int kind)
 		: NULL);
 	closureInfo->variableDictionary = VarDict_Create();
 	closureInfo->kind = (Int16)kind;
-	closureInfo->tempSize = 0;
 	closureInfo->numVariables = 0;
+	closureInfo->numArgs = 0;
+	closureInfo->tempSize = 0;
 	closureInfo->variableNames = NULL;
 
 	return closureInfo;
@@ -58,16 +59,19 @@ Closure Closure_CreateGlobal(ClosureInfo closureInfo, Closure parent)
 	closure->returnSegment = NULL;
 	closure->returnPc = 0;
 
+	closure->locals = NULL;
 	closure->stackTop = NULL;
 
 	return closure;
 }
 
 Closure Closure_CreateLocal(ClosureInfo closureInfo, Closure parent,
-	Closure returnClosure, struct ByteCodeSegmentStruct *returnSegment, Int returnPc)
+	Closure returnClosure, ByteCodeSegment returnSegment, Int returnPc)
 {
-	Closure closure = (Closure)GC_MALLOC(sizeof(struct ClosureStruct)
-		+ sizeof(SmileArg) * (closureInfo->numVariables + closureInfo->tempSize - 1));
+	const Int variablesStart = offsetof(struct ClosureStruct, variables);
+	Int closureSize = variablesStart + sizeof(SmileArg) * ((Int)closureInfo->numVariables + (Int)closureInfo->tempSize);
+
+	Closure closure = (Closure)GC_MALLOC(closureSize);
 	if (closure == NULL)
 		Smile_Abort_OutOfMemory();
 
@@ -79,13 +83,14 @@ Closure Closure_CreateLocal(ClosureInfo closureInfo, Closure parent,
 	closure->returnSegment = returnSegment;
 	closure->returnPc = returnPc;
 
+	closure->locals = closure->variables + closureInfo->numArgs;
 	closure->stackTop = closure->variables + closureInfo->numVariables;
 
 	return closure;
 }
 
 ClosureStateMachine Closure_CreateStateMachine(StateMachine stateMachineStart, StateMachine stateMachineBody,
-	Closure returnClosure, struct ByteCodeSegmentStruct *returnSegment, Int returnPc)
+	Closure returnClosure, ByteCodeSegment returnSegment, Int returnPc)
 {
 	ClosureStateMachine closure = GC_MALLOC_STRUCT(struct ClosureStateMachineStruct);
 	if (closure == NULL)
@@ -100,6 +105,7 @@ ClosureStateMachine Closure_CreateStateMachine(StateMachine stateMachineStart, S
 	closure->returnPc = returnPc;
 
 	closure->stackTop = closure->variables;
+	closure->locals = closure->variables;
 
 	closure->stateMachineStart = stateMachineStart;
 	closure->stateMachineBody = stateMachineBody;
@@ -116,7 +122,7 @@ SmileObject Closure_GetGlobalVariable(Closure closure, Symbol name)
 			return varInfo->value;
 
 		if (closure->parent == NULL)
-			return NULL;
+			return NullObject;
 	}
 }
 
@@ -143,11 +149,15 @@ void Closure_SetGlobalVariable(Closure closure, Symbol name, SmileObject value)
 		}
 
 		if (closure->parent == NULL) {
+			varInfo = GC_MALLOC_STRUCT(struct VarInfoStruct);
+			if (varInfo == NULL)
+				Smile_Abort_OutOfMemory();
 			varInfo->symbol = name;
 			varInfo->kind = VAR_KIND_GLOBAL;
 			varInfo->offset = 0;
 			varInfo->value = value;
 			VarDict_Add(nearestGlobal->closureInfo->variableDictionary, name, varInfo);
+			return;
 		}
 	}
 }

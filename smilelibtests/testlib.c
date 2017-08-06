@@ -20,7 +20,7 @@
 
 #ifdef _WIN32
 	#include <conio.h>
-	#include "ansicolor-w32.h"
+	#include <smile/platform/windows/ansi-console.h>
 #else
 	#include <termios.h>
 #endif

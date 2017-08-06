@@ -306,6 +306,7 @@ START_TEST(CanCompileWritesToMembers)
 		"\tLdX %d\t; ga\n"
 		"\tLd64 10\n"
 		"\tLdX %d\t; gb\n"
+		"\tLdNull\n"
 		"\tStMember\n"
 		"\tRet\n",
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "ga"),

@@ -27,7 +27,7 @@ extern SmileVTable SmileUserObject_VTable_ReadWrite;
 extern SmileVTable SmileUserObject_VTable_ReadAppend;
 extern SmileVTable SmileUserObject_VTable_ReadWriteAppend;
 
-SmileUserObject SmileUserObject_CreateWithSize(SmileObject base, Int initialSize)
+SmileUserObject SmileUserObject_CreateWithSize(SmileObject base, Symbol name, Int initialSize)
 {
 	SmileUserObject userObject = GC_MALLOC_STRUCT(struct SmileUserObjectInt);
 	if (userObject == NULL || initialSize >= Int32Max) Smile_Abort_OutOfMemory();
@@ -36,13 +36,14 @@ SmileUserObject SmileUserObject_CreateWithSize(SmileObject base, Int initialSize
 	userObject->kind = SMILE_KIND_USEROBJECT | SMILE_SECURITY_READWRITEAPPEND;
 	userObject->vtable = SmileUserObject_VTable_ReadWriteAppend;
 	userObject->securityKey = NullObject;
+	userObject->name = name;
 
 	Int32Dict_ClearWithSize((Int32Dict)&userObject->dict, (Int32)initialSize);
 
 	return userObject;
 }
 
-void SmileUserObject_InitWithSize(SmileUserObject userObject, SmileObject base, Int initialSize)
+void SmileUserObject_InitWithSize(SmileUserObject userObject, SmileObject base, Symbol name, Int initialSize)
 {
 	if (initialSize >= Int32Max) Smile_Abort_OutOfMemory();
 
@@ -50,8 +51,23 @@ void SmileUserObject_InitWithSize(SmileUserObject userObject, SmileObject base, 
 	userObject->kind = SMILE_KIND_USEROBJECT | SMILE_SECURITY_READWRITEAPPEND;
 	userObject->vtable = SmileUserObject_VTable_ReadWriteAppend;
 	userObject->securityKey = NullObject;
+	userObject->name = name;
 
 	Int32Dict_ClearWithSize((Int32Dict)&userObject->dict, (Int32)initialSize);
+}
+
+SmileUserObject SmileUserObject_CreateFromArgPairs(SmileObject base, Symbol name, SmileArg *argPairs, Int numArgPairs)
+{
+	SmileUserObject userObject = SmileUserObject_CreateWithSize(base, name, numArgPairs);
+	Int i;
+
+	for (i = 0; i < numArgPairs; i++) {
+		Symbol propertyName = argPairs[i << 1].unboxed.symbol;
+		SmileObject value = SmileArg_Box(argPairs[(i << 1) + 1]);
+		Int32Dict_SetValue((Int32Dict)&userObject->dict, (Int32)propertyName, value);
+	}
+
+	return userObject;
 }
 
 Bool SmileUserObject_CompareEqual(SmileUserObject self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData)
@@ -259,17 +275,17 @@ String SmileUserObject_ToString(SmileUserObject self, SmileUnboxedData unboxedDa
 	return String_Format("user object");
 }
 
-void SmileUserObject_Call(SmileUserObject self, Int argc)
+void SmileUserObject_Call(SmileUserObject self, Int argc, Int extra)
 {
 	SmileObject fn;
 	if (Int32Dict_TryGetValue((Int32Dict)&self->dict, (Int32)Smile_KnownSymbols._fn, &fn)
 		&& SMILE_KIND(fn) == SMILE_KIND_FUNCTION) {
 		// This has a 'fn' property that is a function.  Invoke that instead, with the same args.
-		SMILE_VCALL1(fn, call, argc);
+		SMILE_VCALL2(fn, call, argc, extra);
 	}
 	else {
 		// This has no 'fn' property, so go ask the base object to do the call instead, since this isn't itself callable.
-		SMILE_VCALL1(self->base, call, argc);
+		SMILE_VCALL2(self->base, call, argc, extra);
 	}
 }
 

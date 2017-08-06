@@ -34,7 +34,18 @@ Inline CompiledBlock Compiler_CompileLoadGlobalVariable(Compiler compiler, Symbo
 	CompiledBlock compiledBlock = CompiledBlock_Create();
 
 	if (!(compileFlags & COMPILE_FLAG_NORESULT)) {
-		EMIT1(Op_LdX, +1, symbol = symbol);
+		if (symbol == Smile_KnownSymbols.true_) {
+			EMIT1(Op_LdBool, +1, boolean = True);
+		}
+		else if (symbol == Smile_KnownSymbols.false_) {
+			EMIT1(Op_LdBool, +1, boolean = False);
+		}
+		else if (symbol == Smile_KnownSymbols.null_) {
+			EMIT0(Op_LdNull, +1);
+		}
+		else {
+			EMIT1(Op_LdX, +1, symbol = symbol);
+		}
 		if (localSymbol != NULL)
 			localSymbol->wasReadDeep = True;
 	}
@@ -49,6 +60,13 @@ Inline CompiledBlock Compiler_CompileLoadGlobalVariable(Compiler compiler, Symbo
 Inline void Compiler_CompileStoreGlobalVariable(Compiler compiler, Symbol symbol, CompiledLocalSymbol localSymbol, CompileFlags compileFlags, CompiledBlock compiledBlock)
 {
 	IntermediateInstruction instr;
+
+	if (symbol == Smile_KnownSymbols.true_ || symbol == Smile_KnownSymbols.false_ || symbol == Smile_KnownSymbols.null_) {
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, NULL,
+			String_Format("{0} is a constant, read-only global and cannot be assigned to.",
+				SymbolTable_GetName(Smile_SymbolTable, symbol))));
+		return;
+	}
 
 	if (compileFlags & COMPILE_FLAG_NORESULT) {
 		EMIT1(Op_StpX, -1, symbol = symbol);

@@ -124,6 +124,21 @@
     <Filter Include="src\eval\compiler">
       <UniqueIdentifier>{e0e7fac1-228e-44a1-a77e-62e668efbe6e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\smiletypes\raw">
+      <UniqueIdentifier>{7e3ca066-7df7-4dcc-865f-1327d90bb8bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\smiletypes\raw">
+      <UniqueIdentifier>{b3a528c1-668a-4f81-8dda-6e17097b6c2f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib">
+      <UniqueIdentifier>{57bbb8bd-78da-45fd-96fe-1c5b996a427f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\stdio">
+      <UniqueIdentifier>{458c38ee-26b7-4db6-8d32-0d6f31026828}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="bootstrap">
+      <UniqueIdentifier>{55eef49e-d533-49db-a7e6-cc75ae10e7a8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gc\src\allchblk.c">
@@ -894,6 +909,25 @@
     <ClCompile Include="src\eval\compiler\compiledblock.c">
       <Filter>src\eval\compiler</Filter>
     </ClCompile>
+    <ClCompile Include="src\smiletypes\raw\smilebytearray.c">
+      <Filter>src\smiletypes\raw</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\raw\smilebytearray_base.c">
+      <Filter>src\smiletypes\raw</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\stdio\stdio_main.c" />
+    <ClCompile Include="lib\stdio\stdio_dir.c" />
+    <ClCompile Include="lib\stdio\stdio_dir_base.c" />
+    <ClCompile Include="lib\stdio\stdio_file.c" />
+    <ClCompile Include="lib\stdio\stdio_file_base.c" />
+    <ClCompile Include="lib\stdio\stdio_path_base.c" />
+    <ClCompile Include="src\smiletypes\smilehandle.c" />
+    <ClCompile Include="src\string\string_utf16.c" />
+    <ClCompile Include="src\platform\windows\ansi-console.c" />
+    <ClCompile Include="src\smiletypes\smilepair_class.c" />
+    <ClCompile Include="src\parsing\parser\parseinclude.c" />
+    <ClCompile Include="src\smiletypes\smileobject_class.c" />
+    <ClCompile Include="src\smiletypes\kind.c" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">
@@ -1235,6 +1269,13 @@
     <ClInclude Include="include\smile\eval\compiledblock.h">
       <Filter>include\eval</Filter>
     </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\raw\smilebytearray.h">
+      <Filter>include\smiletypes\raw</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\smilehandle.h" />
+    <ClInclude Include="include\smile\platform\windows\ansi-console.h" />
+    <ClInclude Include="include\smile\parsing\parseinclude.h" />
+    <ClInclude Include="lib\stdio\stdio_internal.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\smile\array.h">

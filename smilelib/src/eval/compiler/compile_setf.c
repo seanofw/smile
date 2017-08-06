@@ -153,6 +153,7 @@ CompiledBlock Compiler_CompileSetf(Compiler compiler, SmileList args, CompileFla
 			return compiledBlock;
 		}
 		else {
+			EMIT0(Op_LdNull, +1);
 			EMIT0(Op_StMember, -2);
 			return compiledBlock;
 		}

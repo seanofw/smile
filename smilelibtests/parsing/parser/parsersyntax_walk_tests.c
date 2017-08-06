@@ -298,7 +298,7 @@ END_TEST
 START_TEST(CanDeclareKeywords)
 {
 	Lexer lexer = SetupLexer(
-		"keyword my-if, then, else\n"
+		"keyword my-if\n"
 		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if x y]\n"
 		"#syntax STMT: [my-if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
 		"4 + 5\n"
@@ -324,22 +324,22 @@ START_TEST(DeclaringKeywordsChangesParsingBehavior)
 {
 	// Without the keyword declaration, this is a series of operators.
 	Lexer lexer = SetupLexer(
-		"my-if 4 then 5 else 6\n"
+		"my-if 4 my-then 5 my-else 6\n"
 	);
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileList result = (SmileList)Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedResult = SimpleParse("[([([(4 . my-if)] . then) 5] . else) 6]");
+	SmileObject expectedResult = SimpleParse("[([([(4 . my-if)] . my-then) 5] . my-else) 6]");
 
 	ASSERT(parser->firstMessage == NullList);
 	ASSERT(RecursiveEquals((SmileObject)result, expectedResult));
 
-	// With the keyword declaration, this is a syntax error, because 'if' and 'then' and 'else'
+	// With the keyword declaration, this is a syntax error, because 'my-if' and 'my-then' and 'my-else'
 	// cannot be used as unary or binary operators.
 	lexer = SetupLexer(
-		"keyword my-if, then, else\n"
-		"my-if 4 then 5 else 6\n"
+		"keyword my-if, my-then, my-else\n"
+		"my-if 4 my-then 5 my-else 6\n"
 	);
 	parser = Parser_Create();
 	parseScope = ParseScope_CreateRoot();
@@ -348,11 +348,11 @@ START_TEST(DeclaringKeywordsChangesParsingBehavior)
 	ASSERT(parser->firstMessage != NullList);
 
 	// And now the kicker:  *With* the keyword declaration, *and* a syntax rule, this is allowed again,
-	// because 'my-if' and 'then' and 'else' are still valid for use as syntax keywords.
+	// because 'my-if' and 'my-then' and 'my-else' are still valid for use as syntax keywords.
 	lexer = SetupLexer(
-		"#syntax STMT: [my-if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
-		"keyword my-if, then, else\n"
-		"my-if 4 then 5 else 6\n"
+		"#syntax STMT: [my-if [EXPR x] my-then [STMT y] my-else [STMT z]] => [$if x y z]\n"
+		"keyword my-if, my-then, my-else\n"
+		"my-if 4 my-then 5 my-else 6\n"
 	);
 	parser = Parser_Create();
 	parseScope = ParseScope_CreateRoot();

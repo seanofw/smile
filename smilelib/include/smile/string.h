@@ -45,6 +45,12 @@ typedef struct StringStruct {
 } *String;
 
 /// <summary>
+/// A StringBuilder, which is a tool for efficiently constructing strings by repeatedly
+/// appending text to them.  This is an incomplete type, as declared here.
+/// </summary>
+typedef struct StringBuilderStruct *StringBuilder;
+
+/// <summary>
 /// Options for use in String_Split().
 /// </summary>
 enum StringSplitOptions {
@@ -141,6 +147,7 @@ SMILE_API_FUNC String String_Join(const String glue, const String *strs, Int num
 SMILE_API_FUNC String String_SlashAppend(const String *strs, Int numStrs);
 
 SMILE_API_FUNC Bool String_Equals(const String str, const String other);
+SMILE_API_FUNC Bool String_EqualsC(const String str, const char *other);
 SMILE_API_FUNC Bool String_EqualsInternal(const String str, const Byte *otherText, Int otherLength);
 SMILE_API_FUNC Int String_Compare(const String a, const String b);
 SMILE_API_FUNC Int String_CompareRange(const String a, Int astart, Int alength, const String b, Int bstart, Int blength);
@@ -152,7 +159,9 @@ SMILE_API_FUNC String String_ConcatByte(const String str, Byte ch);
 
 SMILE_API_FUNC Int String_IndexOf(const String str, const String pattern, Int start);
 SMILE_API_FUNC Int String_LastIndexOf(const String str, const String pattern, Int start);
+SMILE_API_FUNC Bool String_StartsWithC(const String str, const char *pattern);
 SMILE_API_FUNC Bool String_StartsWith(const String str, const String pattern);
+SMILE_API_FUNC Bool String_EndsWithC(const String str, const char *pattern);
 SMILE_API_FUNC Bool String_EndsWith(const String str, const String pattern);
 SMILE_API_FUNC Int String_IndexOfChar(const String str, Byte ch, Int start);
 SMILE_API_FUNC Int String_LastIndexOfChar(const String str, Byte ch, Int start);
@@ -183,6 +192,11 @@ SMILE_API_FUNC String String_Rot13(const String str);
 SMILE_API_FUNC String String_RegexEscape(const String str);
 SMILE_API_FUNC Bool String_WildcardMatch(const String pattern, const String text, Int wildcardOptions);
 SMILE_API_FUNC String String_JoinEnglishNames(const String *items, Int numItems, const String conjunction);
+SMILE_API_FUNC Bool String_IsNullOrWhitespace(const String str);
+SMILE_API_FUNC SmileList String_SplitCommandLine(String commandLine);
+
+SMILE_API_FUNC String String_FromUtf16(const UInt16 *text, Int length);
+SMILE_API_FUNC UInt16 *String_ToUtf16(const String str, Int *length);
 
 //-------------------------------------------------------------------------------------------------
 //  External parts of the implementation (HTML-specific transformations)
@@ -555,6 +569,15 @@ Inline String String_TrimStart(const String str)
 Inline String String_TrimEnd(const String str)
 {
 	return String_TrimWhitespace(str, False, True);
+}
+
+/// <summary>
+/// Determine if this string contains a '\0' (nul) character — in other words, determine
+/// if it can be safely passed to a standard C string function, or if it would break.
+/// </summary>
+Inline Bool String_ContainsNul(const String str)
+{
+	return (String_IndexOfChar(str, '\0', 0) >= 0);
 }
 
 #endif

@@ -31,7 +31,7 @@
 	static Float64 __type__##_ToFloat64(__type__ obj, SmileUnboxedData unboxedData); \
 	static Real64 __type__##_ToReal64(__type__ obj, SmileUnboxedData unboxedData); \
 	static String __type__##_ToString(__type__ obj, SmileUnboxedData unboxedData); \
-	static void __type__##_Call(__type__ obj, Int argc); \
+	static void __type__##_Call(__type__ obj, Int argc, Int extra); \
 	static LexerPosition __type__##_GetSourceLocation(__type__ obj); \
 	static SmileArg __type__##_Unbox(__type__ self); \
 	static SmileObject __type__##_Box(SmileArg src); \
@@ -187,8 +187,8 @@
 /// </summary>
 /// <param name="__type__">The type of the object you want to declare virtual functions for.</param>
 #define SMILE_EASY_OBJECT_NO_CALL(__type__) \
-	static void __type__##_Call(__type__ obj, Int argc) { \
-		UNUSED(obj); UNUSED(argc); \
+	static void __type__##_Call(__type__ obj, Int argc, Int extra) { \
+		UNUSED(obj); UNUSED(argc); UNUSED(extra); \
 		Smile_ThrowException(Smile_KnownSymbols.eval_error, String_InvalidFunctionError); }
 
 /// <summary>

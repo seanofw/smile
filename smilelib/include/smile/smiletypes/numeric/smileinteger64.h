@@ -47,7 +47,7 @@ Inline SmileInteger64 SmileInteger64_Create(Int64 value)
 	if ((UInt64)(value + 100) <= 200)
 		return Smile_KnownObjects.SmallInt64s[value + 100];
 	else
-		return SmileInteger64_CreateInternal((Int)value);
+		return SmileInteger64_CreateInternal(value);
 }
 
 #endif

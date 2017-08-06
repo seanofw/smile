@@ -34,7 +34,6 @@
     <ClCompile Include="env\symboltable_tests.c">
       <Filter>env</Filter>
     </ClCompile>
-    <ClCompile Include="ansicolor-w32.c" />
     <ClCompile Include="numeric\real128_tests.c">
       <Filter>numeric</Filter>
     </ClCompile>
@@ -114,11 +113,12 @@
     <ClCompile Include="parsing\parser\parserstmt_tests.c">
       <Filter>parsing\parser</Filter>
     </ClCompile>
+    <ClCompile Include="eval\evalconstant_tests.c" />
+    <ClCompile Include="eval\evalcore_tests.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="testlib.h" />
-    <ClInclude Include="ansicolor-w32.h" />
     <ClInclude Include="parsing\parser\testhelpers.h">
       <Filter>parsing\parser</Filter>
     </ClInclude>

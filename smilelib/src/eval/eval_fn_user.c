@@ -36,7 +36,7 @@ static const char *_minArgCountErrorMessage = "'%S' requires at least %d argumen
 static const char *_maxArgCountErrorMessage = "'%S' allows at most %d arguments, but was called with %d.";
 
 #define FAST_USER_FUNCTION(__name__, __numArgs__, __copyArgs__) \
-	void __name__(SmileFunction self, Int argc) \
+	void __name__(SmileFunction self, Int argc, Int extra) \
 	{ \
 		UserFunctionInfo userFunctionInfo; \
 		Closure childClosure; \
@@ -53,7 +53,7 @@ static const char *_maxArgCountErrorMessage = "'%S' allows at most %d arguments,
 		\
 		/* Copy the arguments. */ \
 		__copyArgs__; \
-		Closure_PopCount(_closure, 1 + (__numArgs__)); \
+		Closure_PopCount(_closure, extra + (__numArgs__)); \
 		\
 		/* We're now in the child, so set up the globals for running inside it. */ \
 		_closure = childClosure; \
@@ -119,7 +119,7 @@ childClosure->variables[7] = _closure->stackTop[-1]))
 // User functions, with optional arguments, rest arguments, or type-checked arguments.
 
 // This handles the case where the number of arguments is fixed, but larger than 8.
-void SmileUserFunction_Slow_Call(SmileFunction self, Int argc)
+void SmileUserFunction_Slow_Call(SmileFunction self, Int argc, Int extra)
 {
 	Int numArgs = self->u.u.userFunctionInfo->numArgs;
 	Int i;
@@ -140,7 +140,7 @@ void SmileUserFunction_Slow_Call(SmileFunction self, Int argc)
 	for (i = 0; i < numArgs; i++) {
 		childClosure->variables[i] = _closure->stackTop[-argc + i];
 	}
-	Closure_PopCount(_closure, 1 + argc);
+	Closure_PopCount(_closure, extra + argc);
 
 	// We're now in the child, so set up the globals for running inside it.
 	_closure = childClosure;
@@ -150,7 +150,7 @@ void SmileUserFunction_Slow_Call(SmileFunction self, Int argc)
 
 // This handles the case where the number of arguments is variable, because
 // there are trailing optional arguments with default values assigned.
-void SmileUserFunction_Optional_Call(SmileFunction self, Int argc)
+void SmileUserFunction_Optional_Call(SmileFunction self, Int argc, Int extra)
 {
 	UserFunctionInfo userFunctionInfo = self->u.u.userFunctionInfo;
 	UserFunctionArg argInfo = userFunctionInfo->args;
@@ -175,7 +175,7 @@ void SmileUserFunction_Optional_Call(SmileFunction self, Int argc)
 	for (i = 0; i < argc; i++) {
 		childClosure->variables[i] = _closure->stackTop[-argc + i];
 	}
-	Closure_PopCount(_closure, 1 + argc);
+	Closure_PopCount(_closure, extra + argc);
 
 	// Fill in any missing default values.
 	for (; i < numArgs; i++) {
@@ -190,7 +190,7 @@ void SmileUserFunction_Optional_Call(SmileFunction self, Int argc)
 
 // This handles the case where the number of arguments is variable, because there
 // is a 'rest' list that will collect the leftover (and possibly optional arguments too).
-void SmileUserFunction_Rest_Call(SmileFunction self, Int argc)
+void SmileUserFunction_Rest_Call(SmileFunction self, Int argc, Int extra)
 {
 	UserFunctionInfo userFunctionInfo = self->u.u.userFunctionInfo;
 	UserFunctionArg argInfo = userFunctionInfo->args;
@@ -244,7 +244,7 @@ void SmileUserFunction_Rest_Call(SmileFunction self, Int argc)
 	}
 
 	// Clean up the calling stack.
-	Closure_PopCount(_closure, 1 + argc);
+	Closure_PopCount(_closure, extra + argc);
 
 	// We're now in the child, so set up the globals for running inside it.
 	_closure = childClosure;
@@ -252,14 +252,14 @@ void SmileUserFunction_Rest_Call(SmileFunction self, Int argc)
 	_byteCode = &_segment->byteCodes[0];
 }
 
-void SmileUserFunction_Checked_Call(SmileFunction self, Int argc)
+void SmileUserFunction_Checked_Call(SmileFunction self, Int argc, Int extra)
 {
 	// TODO: FIXME: There is no type-checking currently.
-	SmileUserFunction_Slow_Call(self, argc);
+	SmileUserFunction_Slow_Call(self, argc, extra);
 }
 
-void SmileUserFunction_CheckedRest_Call(SmileFunction self, Int argc)
+void SmileUserFunction_CheckedRest_Call(SmileFunction self, Int argc, Int extra)
 {
 	// TODO: FIXME: There is no type-checking currently.
-	SmileUserFunction_Rest_Call(self, argc);
+	SmileUserFunction_Rest_Call(self, argc, extra);
 }

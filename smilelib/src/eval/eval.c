@@ -35,6 +35,7 @@ ByteCode _byteCode;
 
 EscapeContinuation _exceptionContinuation;
 
+static Bool Eval_RunCore(void);
 static Bool Is(SmileArg descendant, SmileArg ancestor);
 
 EvalResult EvalResult_Create(Int kind)
@@ -46,6 +47,14 @@ EvalResult EvalResult_Create(Int kind)
 	result->parseMessages = NULL;
 	result->numMessages = 0;
 	return result;
+}
+
+void Eval_GetCurrentBreakpointInfo(Closure *closure, CompiledTables *compiledTables, ByteCodeSegment *segment, ByteCode *byteCode)
+{
+	if (closure != NULL) *closure = _closure;
+	if (compiledTables != NULL) *compiledTables = _compiledTables;
+	if (segment != NULL) *segment = _segment;
+	if (byteCode != NULL) *byteCode = _byteCode;
 }
 
 EvalResult Eval_Run(CompiledTables tables, UserFunctionInfo functionInfo)
@@ -98,6 +107,20 @@ EvalResult Eval_Continue(void)
 	}
 }
 
+static void SMILE_NO_RETURN ThrowUnknownMethodError(Symbol name)
+{
+	Smile_ThrowException(Smile_KnownSymbols.property_error,
+		String_Format("Object has no \"%S\" method.", SymbolTable_GetName(Smile_SymbolTable, name)));
+}
+
+// Get and then call the named method in the given object, but if the object
+// doesn't have a method with that name, throw an exception.
+#define SMILE_CALL_METHOD(__obj__, __name__, __argc__) \
+	target = SMILE_GET_PROPERTY(__obj__, __name__); \
+	if (SMILE_KIND(target) != SMILE_KIND_FUNCTION) \
+		ThrowUnknownMethodError(__name__); \
+	SMILE_VCALL2(target, call, __argc__, 0);
+	
 // Ensure that we've stored any of eval's core registers in the global state, so that they can be
 // safely mutated or recorded by external actors.
 #define STORE_REGISTERS \
@@ -107,7 +130,7 @@ EvalResult Eval_Continue(void)
 #define LOAD_REGISTERS \
 	(closure = _closure, byteCode = _byteCode)
 
-Bool Eval_RunCore(void)
+static Bool Eval_RunCore(void)
 {
 	// We prefer keeping these pointers in registers, because they're used by nearly every instruction.
 	register Closure closure;
@@ -553,9 +576,31 @@ next:
 			goto next;
 
 		case Op_LdMember:
+			target = Closure_GetTemp(closure, 1).obj;	// Get the target object
+			byteCode++;
+			STORE_REGISTERS;
+			SMILE_CALL_METHOD(target, SMILE_SPECIAL_SYMBOL_GET_MEMBER, 2)
+			LOAD_REGISTERS;
+			goto next;
 		case Op_StMember:
+			// This instruction is awkward.  We must keep the variables in their proper order
+			// in order to call the set-member function, but the *last* of those variables is
+			// the one we want to keep.  So there's no real choice here:  We have to
+			// rotate the stack upward into the mandatory Null space, and then clone the
+			// resulting value below the rotated stack values.  Once that's done, we can just
+			// let Op_StpMember do its thing and clean up the stack afterward.
+			Closure_SetTemp(closure, 0, Closure_GetTemp(closure, 1));
+			Closure_SetTemp(closure, 1, Closure_GetTemp(closure, 2));
+			Closure_SetTemp(closure, 2, Closure_GetTemp(closure, 3));
+			Closure_SetTemp(closure, 3, Closure_GetTemp(closure, 0));
+			// Intentional fall-through:
 		case Op_StpMember:
-			goto unsupportedOpcode;
+			target = Closure_GetTemp(closure, 2).obj;	// Get the target object
+			byteCode++;
+			STORE_REGISTERS;
+			SMILE_CALL_METHOD(target, SMILE_SPECIAL_SYMBOL_SET_MEMBER, 3);
+			LOAD_REGISTERS;
+			goto next;
 
 		//-------------------------------------------------------
 		// 80-8F: Specialty type management
@@ -629,7 +674,18 @@ next:
 			goto next;
 
 		case Op_NewObj:
-			goto unsupportedOpcode;
+			{
+				Int index = byteCode->u.index;
+				value = (SmileObject)SmileUserObject_CreateFromArgPairs(
+					SmileArg_Box(Closure_GetTemp(closure, (index << 1))),
+					0,
+					closure->stackTop - (index << 1),
+					index);
+				Closure_PopCount(closure, (index << 1) + 1);
+				Closure_PushBoxed(closure, value);
+				byteCode++;
+			}
+			goto next;
 		
 		case Op_SuperEq:
 			arg2 = Closure_Pop(closure);
@@ -677,7 +733,7 @@ next:
 			target = Closure_GetTemp(closure, 0).obj;
 			byteCode++;
 			STORE_REGISTERS;
-			SMILE_VCALL1(target, call, 0);
+			SMILE_VCALL2(target, call, 0, 1);
 			LOAD_REGISTERS;
 			goto next;
 
@@ -685,7 +741,7 @@ next:
 			target = Closure_GetTemp(closure, 1).obj;
 			byteCode++;
 			STORE_REGISTERS;
-			SMILE_VCALL1(target, call, 1);
+			SMILE_VCALL2(target, call, 1, 1);
 			LOAD_REGISTERS;
 			goto next;
 
@@ -693,7 +749,7 @@ next:
 			target = Closure_GetTemp(closure, 2).obj;
 			byteCode++;
 			STORE_REGISTERS;
-			SMILE_VCALL1(target, call, 2);
+			SMILE_VCALL2(target, call, 2, 1);
 			LOAD_REGISTERS;
 			goto next;
 		
@@ -701,7 +757,7 @@ next:
 			target = Closure_GetTemp(closure, 3).obj;
 			byteCode++;
 			STORE_REGISTERS;
-			SMILE_VCALL1(target, call, 3);
+			SMILE_VCALL2(target, call, 3, 1);
 			LOAD_REGISTERS;
 			goto next;
 
@@ -709,7 +765,7 @@ next:
 			target = Closure_GetTemp(closure, 4).obj;
 			byteCode++;
 			STORE_REGISTERS;
-			SMILE_VCALL1(target, call, 4);
+			SMILE_VCALL2(target, call, 4, 1);
 			LOAD_REGISTERS;
 			goto next;
 
@@ -717,7 +773,7 @@ next:
 			target = Closure_GetTemp(closure, 5).obj;
 			byteCode++;
 			STORE_REGISTERS;
-			SMILE_VCALL1(target, call, 5);
+			SMILE_VCALL2(target, call, 5, 1);
 			LOAD_REGISTERS;
 			goto next;
 
@@ -725,7 +781,7 @@ next:
 			target = Closure_GetTemp(closure, 6).obj;
 			byteCode++;
 			STORE_REGISTERS;
-			SMILE_VCALL1(target, call, 6);
+			SMILE_VCALL2(target, call, 6, 1);
 			LOAD_REGISTERS;
 			goto next;
 
@@ -733,7 +789,7 @@ next:
 			target = Closure_GetTemp(closure, 7).obj;
 			byteCode++;
 			STORE_REGISTERS;
-			SMILE_VCALL1(target, call, 7);
+			SMILE_VCALL2(target, call, 7, 1);
 			LOAD_REGISTERS;
 			goto next;
 
@@ -741,8 +797,7 @@ next:
 			target = Closure_GetTemp(closure, 0).obj;	// Get the target object
 			byteCode++;	
 			STORE_REGISTERS;	
-			target = SMILE_VCALL1(target, getProperty, byteCode[-1].u.symbol);	// Turn it into a function (hopefully)
-			SMILE_VCALL1(target, call, 1);	// Invoke it, whatever it is.
+			SMILE_CALL_METHOD(target, byteCode[-1].u.symbol, 1);
 			LOAD_REGISTERS;
 			goto next;
 
@@ -750,17 +805,15 @@ next:
 			target = Closure_GetTemp(closure, 1).obj;	// Get the target object
 			byteCode++;	
 			STORE_REGISTERS;	
-			target = SMILE_VCALL1(target, getProperty, byteCode[-1].u.symbol);	// Turn it into a function (hopefully)
-			SMILE_VCALL1(target, call, 2);	// Invoke it, whatever it is.
+			SMILE_CALL_METHOD(target, byteCode[-1].u.symbol, 2);
 			LOAD_REGISTERS;
 			goto next;
 
 		case Op_Met2:
 			target = Closure_GetTemp(closure, 2).obj;	// Get the target object
 			byteCode++;	
-			STORE_REGISTERS;	
-			target = SMILE_VCALL1(target, getProperty, byteCode[-1].u.symbol);	// Turn it into a function (hopefully)
-			SMILE_VCALL1(target, call, 3);	// Invoke it, whatever it is.
+			STORE_REGISTERS;
+			SMILE_CALL_METHOD(target, byteCode[-1].u.symbol, 3);
 			LOAD_REGISTERS;
 			goto next;
 
@@ -768,17 +821,15 @@ next:
 			target = Closure_GetTemp(closure, 3).obj;	// Get the target object
 			byteCode++;	
 			STORE_REGISTERS;	
-			target = SMILE_VCALL1(target, getProperty, byteCode[-1].u.symbol);	// Turn it into a function (hopefully)
-			SMILE_VCALL1(target, call, 4);	// Invoke it, whatever it is.
+			SMILE_CALL_METHOD(target, byteCode[-1].u.symbol, 4);
 			LOAD_REGISTERS;
 			goto next;
 
 		case Op_Met4:
 			target = Closure_GetTemp(closure, 4).obj;	// Get the target object
 			byteCode++;	
-			STORE_REGISTERS;	
-			target = SMILE_VCALL1(target, getProperty, byteCode[-1].u.symbol);	// Turn it into a function (hopefully)
-			SMILE_VCALL1(target, call, 5);	// Invoke it, whatever it is.
+			STORE_REGISTERS;
+			SMILE_CALL_METHOD(target, byteCode[-1].u.symbol, 5);
 			LOAD_REGISTERS;
 			goto next;
 
@@ -786,17 +837,15 @@ next:
 			target = Closure_GetTemp(closure, 5).obj;	// Get the target object
 			byteCode++;	
 			STORE_REGISTERS;	
-			target = SMILE_VCALL1(target, getProperty, byteCode[-1].u.symbol);	// Turn it into a function (hopefully)
-			SMILE_VCALL1(target, call, 6);	// Invoke it, whatever it is.
+			SMILE_CALL_METHOD(target, byteCode[-1].u.symbol, 6);
 			LOAD_REGISTERS;
 			goto next;
 
 		case Op_Met6:
 			target = Closure_GetTemp(closure, 6).obj;	// Get the target object
 			byteCode++;	
-			STORE_REGISTERS;	
-			target = SMILE_VCALL1(target, getProperty, byteCode[-1].u.symbol);	// Turn it into a function (hopefully)
-			SMILE_VCALL1(target, call, 7);	// Invoke it, whatever it is.
+			STORE_REGISTERS;
+			SMILE_CALL_METHOD(target, byteCode[-1].u.symbol, 7);
 			LOAD_REGISTERS;
 			goto next;
 
@@ -804,8 +853,7 @@ next:
 			target = Closure_GetTemp(closure, 7).obj;	// Get the target object
 			byteCode++;	
 			STORE_REGISTERS;	
-			target = SMILE_VCALL1(target, getProperty, byteCode[-1].u.symbol);	// Turn it into a function (hopefully)
-			SMILE_VCALL1(target, call, 8);	// Invoke it, whatever it is.
+			SMILE_CALL_METHOD(target, byteCode[-1].u.symbol, 8);
 			LOAD_REGISTERS;
 			goto next;
 
@@ -881,9 +929,8 @@ next:
 		case Op_Met:
 			target = Closure_GetTemp(closure, byteCode->u.i2.b + 1).obj;	// Get the target object
 			byteCode++;	
-			STORE_REGISTERS;	
-			target = SMILE_VCALL1(target, getProperty, byteCode[-1].u.i2.a);	// Turn it into a function (hopefully)
-			SMILE_VCALL1(target, call, byteCode[-1].u.i2.b + 1);	// Invoke it.
+			STORE_REGISTERS;
+			SMILE_CALL_METHOD(target, byteCode[-1].u.i2.a, byteCode[-1].u.i2.b + 1);
 			LOAD_REGISTERS;
 			goto next;
 
@@ -894,7 +941,7 @@ next:
 			target = Closure_GetTemp(closure, byteCode->u.index).obj;
 			byteCode++;
 			STORE_REGISTERS;
-			SMILE_VCALL1(target, call, byteCode[-1].u.index);
+			SMILE_VCALL2(target, call, byteCode[-1].u.index, 1);
 			LOAD_REGISTERS;
 			goto next;
 
@@ -1124,7 +1171,7 @@ next:
 				if ((argc = ((ClosureStateMachine)closure)->stateMachineStart((ClosureStateMachine)closure)) >= 0) {
 					LOAD_REGISTERS;
 					STORE_REGISTERS;
-					SMILE_VCALL1(Closure_GetTemp(closure, argc).obj, call, argc);
+					SMILE_VCALL2(Closure_GetTemp(closure, argc).obj, call, argc, 1);
 					LOAD_REGISTERS;
 					goto next;
 				}
@@ -1148,7 +1195,7 @@ next:
 				if ((argc = ((ClosureStateMachine)closure)->stateMachineBody((ClosureStateMachine)closure)) >= 0) {
 					LOAD_REGISTERS;
 					STORE_REGISTERS;
-					SMILE_VCALL1(Closure_GetTemp(closure, argc).obj, call, argc);
+					SMILE_VCALL2(Closure_GetTemp(closure, argc).obj, call, argc, 1);
 					LOAD_REGISTERS;
 					goto next;
 				}
@@ -1180,16 +1227,18 @@ next:
 		case Op_F2: case Op_F3: case Op_F4: case Op_F5: case Op_F6: case Op_F7:
 		case Op_F9: case Op_FA: case Op_FB: case Op_FC:
 			STORE_REGISTERS;
-			Smile_Abort_FatalError(String_ToC(String_Format("Compiler bug: Unknown opcode 0x%02X", byteCode->opcode)));
+			Smile_ThrowException(Smile_KnownSymbols.eval_error,
+				String_Format("Compiler bug: Unknown opcode 0x%02X", byteCode->opcode));
 		
 		unsupportedOpcode:
 			STORE_REGISTERS;
-			Smile_Abort_FatalError(String_ToC(String_Format("Eval: Unsuported opcode 0x%02X", byteCode->opcode)));
+			Smile_ThrowException(Smile_KnownSymbols.eval_error,
+				String_Format("Eval: Unsuported opcode 0x%02X", byteCode->opcode));
 	}
 
 	STORE_REGISTERS;
-	Smile_Abort_FatalError(String_ToC(String_Format("Eval bug: Unhandled opcode 0x%02X", byteCode->opcode)));
-	return False;
+	Smile_ThrowException(Smile_KnownSymbols.eval_error,
+		String_Format("Eval bug: Unhandled opcode 0x%02X", byteCode->opcode));
 }
 
 //-------------------------------------------------------------------------------------------------

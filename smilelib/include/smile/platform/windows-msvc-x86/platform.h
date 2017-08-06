@@ -88,6 +88,8 @@ typedef struct { UInt64 value[2]; } Real128;
 #define SMILE_DECLARATION_STATIC_PROTOTYPE extern
 #undef SMILE_DECLARATION_EXTERN_OF_UNKNOWN_SIZE
 #define SMILE_DECLARATION_EXTERN_OF_UNKNOWN_SIZE
+#undef SMILE_NO_RETURN
+#define SMILE_NO_RETURN __declspec(noreturn)
 
 // Pragma warning macros.
 #define SMILE_IGNORE_UNUSED_VARIABLES __pragma(warning(disable:4100))

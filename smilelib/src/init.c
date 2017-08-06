@@ -113,7 +113,7 @@ void Smile_Abort_OutOfMemory(void)
 /// </summary>
 void Smile_Abort_FatalError(const char *message)
 {
-	fprintf(stderr, "Fatal error:  %s  Aborting program.", message);
+	fprintf(stderr, "\nFatal error:  %s\nAborting program.\n", message);
 	exit(-1);
 }
 
@@ -133,15 +133,19 @@ void Smile_ThrowExceptionCV(const char *exceptionKind, const char *format, va_li
 
 void Smile_ThrowExceptionC(const char *exceptionKind, const char *format, ...)
 {
+	SmileObject exception;
 	va_list v;
+
 	va_start(v, format);
-	Smile_ThrowExceptionCV(exceptionKind, format, v);
+	exception = (SmileObject)Smile_CreateExceptionCV(exceptionKind, format, v);
 	va_end(v);
+
+	Smile_Throw(exception);
 }
 
 SmileUserObject Smile_CreateException(Symbol exceptionKind, String message)
 {
-	SmileUserObject exception = SmileUserObject_Create((SmileObject)Smile_KnownBases.Exception);
+	SmileUserObject exception = SmileUserObject_Create((SmileObject)Smile_KnownBases.Exception, Smile_KnownSymbols.Exception_);
 	SmileUserObject_Set(exception, Smile_KnownSymbols.kind, SmileSymbol_Create(exceptionKind));
 	SmileUserObject_Set(exception, Smile_KnownSymbols.message, message);
 	return exception;
@@ -172,3 +176,47 @@ SmileUserObject Smile_CreateExceptionCV(const char *exceptionKind, const char *f
 
 	return Smile_CreateException(symbol, message);
 }
+
+#if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+
+#	define WIN32_LEAN_AND_MEAN
+#	pragma warning(push)
+#	pragma warning(disable: 4255)
+#	include <windows.h>
+#	pragma warning(pop)
+
+	String Smile_Win32_GetErrorString(UInt32 errorCode)
+	{
+		LPWSTR messageBuffer;
+		Int messageLength;
+		String result;
+
+		if (!errorCode)
+			return String_Empty;
+
+		messageBuffer = NULL;
+		messageLength = FormatMessageW(
+			FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+			NULL,
+			errorCode,
+			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+			(LPWSTR)&messageBuffer,
+			0,
+			NULL
+		);
+
+		result = String_FromUtf16(messageBuffer, messageLength);
+
+		LocalFree(messageBuffer);
+
+		return result;
+	}
+
+#else
+
+	String Smile_Win32_GetErrorString(UInt32 errorCode)
+	{
+		return String_Empty;
+	}
+
+#endif

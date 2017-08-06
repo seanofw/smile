@@ -31,8 +31,13 @@ Int Compiler_SetSourceLocation(Compiler compiler, LexerPosition lexerPosition)
 
 	// Update the source-location tracking to include a new lexer position.
 	CompiledSourceLocation sourceLocation = &compiler->compiledTables->sourcelocations[oldSourceLocation];
-	compiler->currentFunction->currentSourceLocation =
-		Compiler_AddNewSourceLocation(compiler, lexerPosition->filename, lexerPosition->line, lexerPosition->column, sourceLocation->assignedName);
+	if (lexerPosition == NULL) {
+		compiler->currentFunction->currentSourceLocation = 0;
+	}
+	else {
+		compiler->currentFunction->currentSourceLocation =
+			Compiler_AddNewSourceLocation(compiler, lexerPosition->filename, lexerPosition->line, lexerPosition->column, sourceLocation->assignedName);
+	}
 
 	return oldSourceLocation;
 }
@@ -102,8 +107,10 @@ Int CompilerFunction_AddLocal(CompilerFunction compilerFunction, Symbol local)
 	// If we're out of space, grow the array.
 	if (compilerFunction->localSize >= compilerFunction->localMax) {
 		newMax = compilerFunction->localMax * 2;
+		if (newMax < 8) newMax = 8;
 		newLocals = (Symbol *)GC_MALLOC_ATOMIC(sizeof(Symbol) * newMax);
-		MemCpy(newLocals, compilerFunction->localNames, sizeof(Symbol) * compilerFunction->localSize);
+		if (compilerFunction->localSize > 0)
+			MemCpy(newLocals, compilerFunction->localNames, sizeof(Symbol) * compilerFunction->localSize);
 		compilerFunction->localMax = (Int32)newMax;
 		compilerFunction->localNames = newLocals;
 	}
@@ -150,10 +157,12 @@ Int Compiler_AddUserFunctionInfo(Compiler compiler, UserFunctionInfo userFunctio
 		Int newMax;
 	
 		newMax = compiledTables->maxUserFunctions * 2;
+		if (newMax < 8) newMax = 8;
 		newUserFunctions = GC_MALLOC_STRUCT_ARRAY(UserFunctionInfo, newMax);
 		if (newUserFunctions == NULL)
 			Smile_Abort_OutOfMemory();
-		MemCpy(newUserFunctions, compiledTables->userFunctions, compiledTables->numUserFunctions);
+		if (compiledTables->numUserFunctions > 0)
+			MemCpy(newUserFunctions, compiledTables->userFunctions, compiledTables->numUserFunctions);
 		compiledTables->userFunctions = newUserFunctions;
 		compiledTables->maxUserFunctions = newMax;
 	}
@@ -188,10 +197,12 @@ Int Compiler_AddNewSourceLocation(Compiler compiler, String filename, Int line, 
 		Int newMax;
 
 		newMax = compiledTables->maxSourceLocations * 2;
+		if (newMax < 8) newMax = 8;
 		newSourceLocations = GC_MALLOC_STRUCT_ARRAY(struct CompiledSourceLocationStruct, newMax);
 		if (newSourceLocations == NULL)
 			Smile_Abort_OutOfMemory();
-		MemCpy(newSourceLocations, compiledTables->sourcelocations, compiledTables->numSourceLocations);
+		if (compiledTables->numSourceLocations > 0)
+			MemCpy(newSourceLocations, compiledTables->sourcelocations, compiledTables->numSourceLocations);
 		compiledTables->sourcelocations = newSourceLocations;
 		compiledTables->maxSourceLocations = newMax;
 	}
@@ -342,10 +353,12 @@ Int Compiler_AddString(Compiler compiler, String string)
 		Int newMax;
 	
 		newMax = compiledTables->maxStrings * 2;
+		if (newMax < 8) newMax = 8;
 		newStrings = GC_MALLOC_STRUCT_ARRAY(String, newMax);
 		if (newStrings == NULL)
 			Smile_Abort_OutOfMemory();
-		MemCpy(newStrings, compiledTables->strings, compiledTables->numStrings);
+		if (compiledTables->numStrings > 0)
+			MemCpy(newStrings, compiledTables->strings, compiledTables->numStrings);
 		compiledTables->strings = newStrings;
 		compiledTables->maxStrings = newMax;
 	}
@@ -376,10 +389,12 @@ TillContinuationInfo Compiler_AddTillContinuationInfo(Compiler compiler, UserFun
 		Int newMax;
 
 		newMax = compiledTables->maxTillInfos * 2;
+		if (newMax < 8) newMax = 8;
 		newTillInfos = GC_MALLOC_STRUCT_ARRAY(TillContinuationInfo, newMax);
 		if (newTillInfos == NULL)
 			Smile_Abort_OutOfMemory();
-		MemCpy(newTillInfos, compiledTables->tillInfos, compiledTables->numTillInfos);
+		if (compiledTables->numTillInfos > 0)
+			MemCpy(newTillInfos, compiledTables->tillInfos, compiledTables->numTillInfos);
 		compiledTables->tillInfos = newTillInfos;
 		compiledTables->maxTillInfos = newMax;
 	}
@@ -415,10 +430,12 @@ Int Compiler_AddObject(Compiler compiler, SmileObject obj)
 		Int newMax;
 
 		newMax = compiledTables->maxObjects * 2;
+		if (newMax < 8) newMax = 8;
 		newObjects = GC_MALLOC_STRUCT_ARRAY(SmileObject, newMax);
 		if (newObjects == NULL)
 			Smile_Abort_OutOfMemory();
-		MemCpy(newObjects, compiledTables->objects, compiledTables->numObjects);
+		if (compiledTables->numObjects > 0)
+			MemCpy(newObjects, compiledTables->objects, compiledTables->numObjects);
 		compiledTables->objects = newObjects;
 		compiledTables->maxObjects = newMax;
 	}
@@ -485,40 +502,53 @@ ClosureInfo Compiler_MakeClosureInfoForCompilerFunction(Compiler compiler, Compi
 		CLOSURE_KIND_LOCAL);
 
 	closureInfo->global = closureInfo->parent != NULL ? closureInfo->parent->global : compiler->compiledTables->globalClosureInfo;
-	
+
+	if (compilerFunction->numArgs > Int16Max / 2)
+		Smile_Abort_FatalError("Function cannot be compiled because it has too many arguments (> 16383).");
+	if (compilerFunction->localSize > Int16Max / 2)
+		Smile_Abort_FatalError("Function cannot be compiled because it has too many local variables (> 16383).");
+	if (compilerFunction->stackSize > Int16Max)
+		Smile_Abort_FatalError("Function cannot be compiled because it is too complex (calls nested more than 32767 levels deep).");
+
 	numVariables = compilerFunction->numArgs + compilerFunction->localSize;
 	closureInfo->numVariables = (Int16)numVariables;
-	closureInfo->tempSize = (Int32)compilerFunction->stackSize;
+	closureInfo->numArgs = (Int16)compilerFunction->numArgs;
+	closureInfo->tempSize = (Int16)compilerFunction->stackSize;
 
-	variableNames = (Symbol *)GC_MALLOC_ATOMIC(sizeof(Symbol) * numVariables);
-	if (variableNames == NULL)
-		Smile_Abort_OutOfMemory();
+	if (numVariables > 0) {
+		variableNames = (Symbol *)GC_MALLOC_ATOMIC(sizeof(Symbol) * numVariables);
+		if (variableNames == NULL)
+			Smile_Abort_OutOfMemory();
+	}
+	else variableNames = NULL;
 
 	closureInfo->variableNames = variableNames;
 	dest = 0;
 
-	for (SmileList args = compilerFunction->args; SMILE_KIND(args) != SMILE_KIND_NULL; args = LIST_REST(args)) {
-		symbol = ((SmileSymbol)args->a)->symbol;
+	if (numVariables > 0) {
+		for (SmileList args = compilerFunction->args; SMILE_KIND(args) != SMILE_KIND_NULL; args = LIST_REST(args)) {
+			symbol = ((SmileSymbol)args->a)->symbol;
 
-		varInfo.kind = VAR_KIND_ARG;
-		varInfo.offset = (Int32)dest;
-		varInfo.symbol = symbol;
-		varInfo.value = NullObject;
-		VarDict_SetValue(closureInfo->variableDictionary, symbol, &varInfo);
-	
-		variableNames[dest++] = symbol;
-	}
+			varInfo.kind = VAR_KIND_ARG;
+			varInfo.offset = (Int32)dest;
+			varInfo.symbol = symbol;
+			varInfo.value = NullObject;
+			VarDict_SetValue(closureInfo->variableDictionary, symbol, &varInfo);
 
-	for (src = 0; src < compilerFunction->localSize; src++) {
-		symbol = compilerFunction->localNames[src];
-	
-		varInfo.kind = VAR_KIND_VAR;
-		varInfo.offset = (Int32)dest;
-		varInfo.symbol = symbol;
-		varInfo.value = NullObject;
-		VarDict_SetValue(closureInfo->variableDictionary, symbol, &varInfo);
+			variableNames[dest++] = symbol;
+		}
 
-		variableNames[dest++] = symbol;
+		for (src = 0; src < compilerFunction->localSize; src++) {
+			symbol = compilerFunction->localNames[src];
+
+			varInfo.kind = VAR_KIND_VAR;
+			varInfo.offset = (Int32)dest;
+			varInfo.symbol = symbol;
+			varInfo.value = NullObject;
+			VarDict_SetValue(closureInfo->variableDictionary, symbol, &varInfo);
+
+			variableNames[dest++] = symbol;
+		}
 	}
 
 	return closureInfo;

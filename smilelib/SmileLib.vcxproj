@@ -69,6 +69,8 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</MultiProcessorCompilation>
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -123,6 +125,7 @@
     <ClInclude Include="gc\include\private\gc_locks.h" />
     <ClInclude Include="gc\include\private\gc_pmark.h" />
     <ClInclude Include="gc\include\private\gc_priv.h" />
+    <ClInclude Include="lib\stdio\stdio_internal.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\smile.h" />
@@ -160,6 +163,7 @@
     <ClInclude Include="include\smile\parsing\internal\parsescope.h" />
     <ClInclude Include="include\smile\parsing\internal\parsesyntax.h" />
     <ClInclude Include="include\smile\parsing\lexer.h" />
+    <ClInclude Include="include\smile\parsing\parseinclude.h" />
     <ClInclude Include="include\smile\parsing\parsemessage.h" />
     <ClInclude Include="include\smile\parsing\parser.h" />
     <ClInclude Include="include\smile\parsing\parsertypes.h" />
@@ -172,9 +176,12 @@
     <ClInclude Include="include\smile\platform\platform.h" />
     <ClInclude Include="include\smile\platform\windows-msvc-x64\platform.h" />
     <ClInclude Include="include\smile\platform\windows-msvc-x86\platform.h" />
+    <ClInclude Include="include\smile\platform\windows\ansi-console.h" />
     <ClInclude Include="include\smile\simplestats.h" />
     <ClInclude Include="include\smile\smiletypes\base.h" />
     <ClInclude Include="include\smile\smiletypes\easyobject.h" />
+    <ClInclude Include="include\smile\smiletypes\raw\smilebytearray.h" />
+    <ClInclude Include="include\smile\smiletypes\smilehandle.h" />
     <ClInclude Include="include\smile\smiletypes\smilebool.h" />
     <ClInclude Include="include\smile\smiletypes\smilefunction.h" />
     <ClInclude Include="include\smile\smiletypes\smilelist.h" />
@@ -753,6 +760,12 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="lib\stdio\stdio_dir.c" />
+    <ClCompile Include="lib\stdio\stdio_dir_base.c" />
+    <ClCompile Include="lib\stdio\stdio_file.c" />
+    <ClCompile Include="lib\stdio\stdio_file_base.c" />
+    <ClCompile Include="lib\stdio\stdio_main.c" />
+    <ClCompile Include="lib\stdio\stdio_path_base.c" />
     <ClCompile Include="src\atomic\atomic.c" />
     <Text Include="src\atomic\atomic_windows_msvc.inc">
       <FileType>Document</FileType>
@@ -819,6 +832,7 @@
     <ClCompile Include="src\parsing\parser\parseassign.c" />
     <ClCompile Include="src\parsing\parser\parseexpr.c" />
     <ClCompile Include="src\parsing\parser\parsefunc.c" />
+    <ClCompile Include="src\parsing\parser\parseinclude.c" />
     <ClCompile Include="src\parsing\parser\parsemessage.c" />
     <ClCompile Include="src\parsing\parser\parsenew.c" />
     <ClCompile Include="src\parsing\parser\parsequote.c" />
@@ -832,7 +846,14 @@
     <ClCompile Include="src\parsing\parser\parsesyntax.c" />
     <ClCompile Include="src\parsing\parser\parseterm.c" />
     <ClCompile Include="src\parsing\parser\parsetill.c" />
+    <ClCompile Include="src\platform\windows\ansi-console.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
     <ClCompile Include="src\siphash.c" />
+    <ClCompile Include="src\smiletypes\kind.c" />
     <ClCompile Include="src\smiletypes\numeric\smilebyte.c" />
     <ClCompile Include="src\smiletypes\numeric\smilebyte_base.c" />
     <ClCompile Include="src\smiletypes\numeric\smileinteger128.c" />
@@ -842,6 +863,9 @@
     <ClCompile Include="src\smiletypes\numeric\smileinteger32_base.c" />
     <ClCompile Include="src\smiletypes\numeric\smileinteger64.c" />
     <ClCompile Include="src\smiletypes\numeric\smileinteger64_base.c" />
+    <ClCompile Include="src\smiletypes\raw\smilebytearray.c" />
+    <ClCompile Include="src\smiletypes\raw\smilebytearray_base.c" />
+    <ClCompile Include="src\smiletypes\smilehandle.c" />
     <ClCompile Include="src\smiletypes\smilebool.c" />
     <ClCompile Include="src\smiletypes\smilefunction.c" />
     <ClCompile Include="src\smiletypes\smilelist.c" />
@@ -849,8 +873,10 @@
     <ClCompile Include="src\smiletypes\smilenonterminal.c" />
     <ClCompile Include="src\smiletypes\smilenull.c" />
     <ClCompile Include="src\smiletypes\smileobject.c" />
+    <ClCompile Include="src\smiletypes\smileobject_class.c" />
     <ClCompile Include="src\smiletypes\smileobject_stringify.c" />
     <ClCompile Include="src\smiletypes\smilepair.c" />
+    <ClCompile Include="src\smiletypes\smilepair_class.c" />
     <ClCompile Include="src\smiletypes\smilesyntax.c" />
     <ClCompile Include="src\smiletypes\smileuserobject.c" />
     <ClCompile Include="src\smiletypes\text\smilestring.c" />
@@ -872,6 +898,7 @@
     <ClCompile Include="src\string\string_parsereal.c" />
     <ClCompile Include="src\string\string_static.c" />
     <ClCompile Include="src\string\string_unicode.c" />
+    <ClCompile Include="src\string\string_utf16.c" />
     <ClCompile Include="src\ticks.c" />
     <ClCompile Include="src\unicode\casefolding.c" />
     <ClCompile Include="src\unicode\codepages_cpx.c" />

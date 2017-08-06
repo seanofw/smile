@@ -74,14 +74,10 @@ SMILE_API_FUNC void Smile_ResetEnvironment(void);
 //-------------------------------------------------------------------------------------------------
 //  Global-variable and global-evaluation helper functions.
 
-struct ParseMessageStruct;
-struct EvalResultStruct;
-struct ClosureInfoStruct;
+SMILE_API_FUNC void Smile_InitCommonGlobals(ClosureInfo globalClosureInfo);
 
-SMILE_API_FUNC void Smile_InitCommonGlobals(struct ClosureInfoStruct *globalClosureInfo);
-
-SMILE_API_FUNC struct ClosureInfoStruct *Smile_GetGlobalClosureInfo(void);
-SMILE_API_FUNC void Smile_SetGlobalClosureInfo(struct ClosureInfoStruct *globalClosureInfo);
+SMILE_API_FUNC ClosureInfo Smile_GetGlobalClosureInfo(void);
+SMILE_API_FUNC void Smile_SetGlobalClosureInfo(ClosureInfo globalClosureInfo);
 SMILE_API_FUNC void Smile_SetGlobalVariable(Symbol name, SmileObject value);
 SMILE_API_FUNC Bool Smile_HasGlobalVariable(Symbol name);
 SMILE_API_FUNC void Smile_DeleteGlobalVariable(Symbol name);
@@ -89,11 +85,13 @@ SMILE_API_FUNC SmileObject Smile_GetGlobalVariable(Symbol name);
 SMILE_API_FUNC SmileObject Smile_GetGlobalVariableC(const char *name);
 
 SMILE_API_FUNC SmileObject Smile_Parse(String text, String filename, struct ParseMessageStruct ***parseMessages, Int *numParseMessages);
-SMILE_API_FUNC SmileObject Smile_ParseInScope(struct ClosureInfoStruct *globalClosureInfo, String text, String filename, struct ParseMessageStruct ***parseMessages, Int *numParseMessages);
-SMILE_API_FUNC struct EvalResultStruct *Smile_Eval(SmileObject expression);
-SMILE_API_FUNC struct EvalResultStruct *Smile_EvalInScope(struct ClosureInfoStruct *globalClosureInfo, SmileObject expression);
-SMILE_API_FUNC struct EvalResultStruct *Smile_ParseAndEval(String text, String filename);
-SMILE_API_FUNC struct EvalResultStruct *Smile_ParseAndEvalInScope(struct ClosureInfoStruct *globalClosureInfo, String text, String filename);
+SMILE_API_FUNC SmileObject Smile_ParseInScope(ClosureInfo globalClosureInfo, String text, String filename, struct ParseMessageStruct ***parseMessages, Int *numParseMessages);
+SMILE_API_FUNC EvalResult Smile_Eval(SmileObject expression);
+SMILE_API_FUNC EvalResult Smile_EvalInScope(ClosureInfo globalClosureInfo, SmileObject expression);
+SMILE_API_FUNC EvalResult Smile_ParseAndEval(String text, String filename);
+SMILE_API_FUNC EvalResult Smile_ParseAndEvalInScope(ClosureInfo globalClosureInfo, String text, String filename);
+
+SMILE_API_DATA Bool Stdio_Invoked;
 
 /// <summary>
 /// Assign a variable in the global closure.
@@ -124,7 +122,7 @@ Inline SmileObject Smile_ParseC(const char *text, const char *filename, struct P
 /// <param name="text">The actual Smile source code to parse.</param>
 /// <param name="filename">The name of the file that source code came from (for error-reporting).</param>
 /// <returns>The result of parsing, compiling, and evaluating the given expression in the given global scope.</returns>
-Inline struct EvalResultStruct *Smile_ParseAndEvalC(const char *text, const char *filename)
+Inline EvalResult Smile_ParseAndEvalC(const char *text, const char *filename)
 {
 	return Smile_ParseAndEval(String_Create((const Byte *)text, StrLen(text)), String_Create((const Byte *)filename, StrLen(filename)));
 }
@@ -132,12 +130,14 @@ Inline struct EvalResultStruct *Smile_ParseAndEvalC(const char *text, const char
 //-------------------------------------------------------------------------------------------------
 //  Exception support
 
-SMILE_API_FUNC void Smile_Throw(SmileObject object);
+SMILE_API_FUNC void SMILE_NO_RETURN Smile_Throw(SmileObject object);
 SMILE_API_FUNC SmileUserObject Smile_CreateException(Symbol exceptionKind, String message);
 SMILE_API_FUNC SmileUserObject Smile_CreateExceptionC(const char *exceptionKind, const char *format, ...);
 SMILE_API_FUNC SmileUserObject Smile_CreateExceptionCV(const char *exceptionKind, const char *format, va_list v);
-SMILE_API_FUNC void Smile_ThrowException(Symbol exceptionKind, String message);
-SMILE_API_FUNC void Smile_ThrowExceptionC(const char *exceptionKind, const char *format, ...);
-SMILE_API_FUNC void Smile_ThrowExceptionCV(const char *exceptionKind, const char *format, va_list v);
+SMILE_API_FUNC void SMILE_NO_RETURN Smile_ThrowException(Symbol exceptionKind, String message);
+SMILE_API_FUNC void SMILE_NO_RETURN Smile_ThrowExceptionC(const char *exceptionKind, const char *format, ...);
+SMILE_API_FUNC void SMILE_NO_RETURN Smile_ThrowExceptionCV(const char *exceptionKind, const char *format, va_list v);
+
+SMILE_API_FUNC String Smile_Win32_GetErrorString(UInt32 errorCode);
 
 #endif

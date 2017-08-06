@@ -27,6 +27,7 @@
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/base.h>
+#include <smile/smiletypes/raw/smilebytearray.h>
 #include <smile/internal/staticstring.h>
 
 SMILE_IGNORE_UNUSED_VARIABLES
@@ -49,14 +50,14 @@ static Byte _stringComparisonChecks[] = {
 
 static Byte _stringNumberChecks[] = {
 	SMILE_KIND_MASK, SMILE_KIND_STRING,
-	SMILE_KIND_MASK, SMILE_KIND_INTEGER64,
-	SMILE_KIND_MASK, SMILE_KIND_INTEGER64,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER64,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER64,
 };
 
 static Byte _indexOfChecks[] = {
 	SMILE_KIND_MASK, SMILE_KIND_STRING,
 	SMILE_KIND_MASK, SMILE_KIND_STRING,
-	SMILE_KIND_MASK, SMILE_KIND_INTEGER64,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER64,
 };
 
 static Byte _eachChecks[] = {
@@ -148,8 +149,6 @@ SMILE_EXTERNAL_FUNCTION(Plus)
 				break;
 			default:
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _plusSuccessiveTypeError);
-				value = 0;
-				break;
 		}
 	
 		if (value < 256 && value >= 0) {
@@ -229,7 +228,7 @@ SMILE_EXTERNAL_FUNCTION(Repeat)
 	String x;
 
 	x = (String)argv[0].obj;
-	x = String_Repeat(x, (Int)((SmileInteger64)argv[1].obj)->value);
+	x = String_Repeat(x, (Int)argv[1].unboxed.i64);
 	return SmileArg_From((SmileObject)x);
 }
 
@@ -555,6 +554,8 @@ UnaryProxyFunction(UrlEncode, String_UrlEncode)
 UnaryProxyFunction(UrlQueryEncode, String_UrlQueryEncode)
 UnaryProxyFunction(UrlDecode, String_UrlDecode)
 UnaryProxyFunction(RegexEscape, String_RegexEscape)
+
+UnaryProxyFunction(ByteArray, String_ToByteArray)
 
 //-------------------------------------------------------------------------------------------------
 
@@ -1079,8 +1080,8 @@ void String_Setup(SmileUserObject base)
 	SetupFunction("/", SlashAppend, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _stringChecks);
 
 	SetupFunction("substr", Substr, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _stringNumberChecks);
-	SetupSynonym("mid", "substr");
-	SetupSynonym("substring", "substr");
+	SetupSynonym("substr", "mid");
+	SetupSynonym("substr", "substring");
 	SetupFunction("left", Left, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringNumberChecks);
 	SetupFunction("right", Right, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringNumberChecks);
 
@@ -1144,4 +1145,6 @@ void String_Setup(SmileUserObject base)
 	SetupFunction("map", Map, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
 	SetupFunction("where", Where, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
 	SetupFunction("count", Count, NULL, "string", ARG_STATE_MACHINE, 0, 0, 0, NULL);
+
+	SetupFunction("byte-array", ByteArray, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 }

@@ -16,7 +16,6 @@
 #endif
 
 struct CompilerFunctionStruct;
-struct ByteCodeSegmentStruct;
 
 //-------------------------------------------------------------------------------------------------
 // Closure Structures.
@@ -40,8 +39,8 @@ struct ByteCodeSegmentStruct;
 /// </summary>
 struct ClosureInfoBaseStruct {
 
-	struct ClosureInfoStruct *parent;	// A pointer to the parent info struct, if any.
-	struct ClosureInfoStruct *global;	// A pointer to the closest global info struct, if any.
+	ClosureInfo parent;	// A pointer to the parent info struct, if any.
+	ClosureInfo global;	// A pointer to the closest global info struct, if any.
 		
 	Int16 kind;	// What kind of closure this is (see the CLOSURE_KIND enum).
 	Int16 reserved1;	// Reserved for use by other closure-info types.
@@ -53,14 +52,15 @@ struct ClosureInfoBaseStruct {
 /// A ClosureInfo structure is a reusable object that provides all of the metadata about the
 /// information stored in similarly-shaped closures.
 /// </summary>
-typedef struct ClosureInfoStruct {
+struct ClosureInfoStruct {
 
-	struct ClosureInfoStruct *parent;	// A pointer to the parent info struct, if any.
-	struct ClosureInfoStruct *global;	// A pointer to the closest global info struct, if any.
+	ClosureInfo parent;	// A pointer to the parent info struct, if any.
+	ClosureInfo global;	// A pointer to the closest global info struct, if any.
 		
 	Int16 kind;	// What kind of closure this is (see the CLOSURE_KIND enum).
-	Int16 numVariables;	// The number of variables in this closure.
-	Int32 tempSize;	// The maximum amount of temporary variables required by this closure.
+	Int16 numVariables;	// The total number of variables in this closure.
+	Int16 numArgs;	// How many of the variables in the numVariables array are arguments.
+	Int16 tempSize;	// The maximum amount of temporary variables required by this closure.
 		
 	VarDict variableDictionary;	// A dictionary that maps Symbol IDs to VarInfo objects.
 		// For local closures, this is used only for debugging, and the values are always null;
@@ -69,28 +69,29 @@ typedef struct ClosureInfoStruct {
 	Symbol *variableNames;	// If this is a local closure, this is an array of the names of the variables in
 		// this closure, in stack order (used only for debugging).
 
-} *ClosureInfo;
+};
 
 /// <summary>
 /// A Closure object stores the current instance data of a closure, and is designed to be as
 /// small as possible.  Anything that doesn't absolutely have to be stored here is stored in the
 /// ClosureInfo struct, to which this object points.
 /// </summary>
-typedef struct ClosureStruct {
+struct ClosureStruct {
 
-	struct ClosureStruct *parent;	// A pointer to the parent closure, if any.
-	struct ClosureStruct *global;	// A pointer to the closest global closure, if any.
+	Closure parent;	// A pointer to the parent closure, if any.
+	Closure global;	// A pointer to the closest global closure, if any.
 		
 	ClosureInfo closureInfo;	// Shared metadata about this closure.
 		
-	struct ClosureStruct *returnClosure;	// The continuation's closure.
-	struct ByteCodeSegmentStruct *returnSegment;	// The segment that contains the continuation's code.
+	Closure returnClosure;	// The continuation's closure.
+	ByteCodeSegment returnSegment;	// The segment that contains the continuation's code.
 	Int returnPc;	// The continuation's program counter.
-		
+	
+	SmileArg *locals;	// The base address of the start of the closure's local variables.
 	SmileArg *stackTop;	// The current address of the top of the temporary variables (NULL for global closures).
 	SmileArg variables[1];	// The array of variables (matches the ClosureInfo's numVariables + tempSize; size 0 for global closures).
 
-} *Closure;
+};
 
 struct ClosureStateMachineStruct;
 
@@ -103,10 +104,11 @@ typedef struct ClosureStateMachineStruct {
 		
 	ClosureInfo closureInfo;	// Shared metadata about this closure.
 		
-	struct ClosureStruct *returnClosure;	// The continuation's closure.
-	struct ByteCodeSegmentStruct *returnSegment;	// The segment that contains the continuation's code.
+	Closure returnClosure;	// The continuation's closure.
+	ByteCodeSegment returnSegment;	// The segment that contains the continuation's code.
 	Int returnPc;	// The continuation's program counter.
 		
+	SmileArg *locals;	// The base address of the start of the closure's local variables.
 	SmileArg *stackTop;	// The current address of the top of the temporary variables.
 	SmileArg variables[16];	// Always a max of 16 variables for a C state machine.
 		
@@ -123,9 +125,9 @@ SMILE_API_FUNC ClosureInfo ClosureInfo_Create(ClosureInfo parent, Int kind);
 
 SMILE_API_FUNC Closure Closure_CreateGlobal(ClosureInfo info, Closure parent);
 SMILE_API_FUNC Closure Closure_CreateLocal(ClosureInfo info, Closure parent,
-	Closure returnClosure, struct ByteCodeSegmentStruct *returnSegment, Int returnPc);
+	Closure returnClosure, ByteCodeSegment returnSegment, Int returnPc);
 SMILE_API_FUNC ClosureStateMachine Closure_CreateStateMachine(StateMachine stateMachineStart, StateMachine stateMachineBody,
-	Closure returnClosure, struct ByteCodeSegmentStruct *returnSegment, Int returnPc);
+	Closure returnClosure, ByteCodeSegment returnSegment, Int returnPc);
 
 SMILE_API_FUNC SmileObject Closure_GetGlobalVariable(Closure closure, Symbol name);
 SMILE_API_FUNC Bool Closure_HasGlobalVariable(Closure closure, Symbol name);
@@ -195,10 +197,10 @@ SMILE_API_FUNC void Closure_SetArgumentInScope(Closure closure, Int scope, Int i
 //-------------------------------------------------------------------------------------------------
 
 #define Closure_GetLocalVariable(__closure__, __index__) \
-	((__closure__)->variables[(__index__)])
+	((__closure__)->locals[(__index__)])
 
 #define Closure_SetLocalVariable(__closure__, __index__, __arg__) \
-	(((__closure__)->variables[(__index__)]) = (__arg__))
+	(((__closure__)->locals[(__index__)]) = (__arg__))
 
 #define Closure_GetLocalVariableInScope0(__closure__, __index__) \
 	Closure_GetLocalVariable((__closure__), (__index__))

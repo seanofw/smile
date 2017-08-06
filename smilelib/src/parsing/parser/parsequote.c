@@ -295,7 +295,7 @@ ParseError Parser_ParseRawListDotExpr(Parser parser, SmileObject *result, Bool *
 				*result = (SmileObject)SmilePair_CreateWithSource(*result, (SmileObject)SmileSymbol_Create(symbol), lexerPosition);
 			}
 			else {
-				// If this is a template, then generate [Pair.of (expr) symbol] as output.
+				// If this is a template, then generate [Pair.of (expr) [$quote symbol]] as output.
 				*result = (SmileObject)SmileList_ConsWithSource(
 					(SmileObject)SmilePair_CreateWithSource(
 						(SmileObject)Smile_KnownObjects.PairSymbol,
@@ -305,7 +305,15 @@ ParseError Parser_ParseRawListDotExpr(Parser parser, SmileObject *result, Bool *
 					(SmileObject)SmileList_ConsWithSource(
 						*result,
 						(SmileObject)SmileList_ConsWithSource(
-							(SmileObject)SmileSymbol_Create(symbol),
+							(SmileObject)SmileList_ConsWithSource(
+								(SmileObject)Smile_KnownObjects._quoteSymbol,
+								(SmileObject)SmileList_ConsWithSource(
+									(SmileObject)SmileSymbol_Create(symbol),
+									NullObject,
+									lexerPosition
+								),
+								lexerPosition
+							),
 							NullObject,
 							lexerPosition
 						),

@@ -264,7 +264,7 @@ SmileFunction SmileFunction_CreateUserFunction(UserFunctionInfo userFunctionInfo
 
 	smileFunction->kind = SMILE_KIND_FUNCTION;
 	smileFunction->vtable = GetUserFunctionVTableByFlags(userFunctionInfo->flags, userFunctionInfo->numArgs);
-	smileFunction->base = (SmileObject)Smile_KnownBases.Function;
+	smileFunction->base = (SmileObject)Smile_KnownBases.Fn;
 
 	smileFunction->u.u.userFunctionInfo = userFunctionInfo;
 	smileFunction->u.u.declaringClosure = declaringClosure;
@@ -366,7 +366,7 @@ SmileFunction SmileFunction_CreateExternalFunction(ExternalFunction externalFunc
 
 	smileFunction->kind = SMILE_KIND_FUNCTION | SMILE_FLAG_EXTERNAL_FUNCTION;
 	smileFunction->vtable = GetExternalFunctionVTableByFlags(argCheckFlags);
-	smileFunction->base = (SmileObject)Smile_KnownBases.Function;
+	smileFunction->base = (SmileObject)Smile_KnownBases.Fn;
 
 	smileFunction->u.externalFunctionInfo.argNames = String_FromC(argNames);
 	smileFunction->u.externalFunctionInfo.name = String_FromC(name);
@@ -550,7 +550,7 @@ LexerPosition SmileExternalFunction_GetSourceLocation(SmileFunction self)
 
 #define USER_FUNCTION_VTABLE(__checkKind__) \
 	\
-	extern void SmileUserFunction_##__checkKind__##_Call(SmileFunction self, Int argc); \
+	extern void SmileUserFunction_##__checkKind__##_Call(SmileFunction self, Int argc, Int extra); \
 	\
 	SMILE_VTABLE(SmileUserFunction_##__checkKind__##_VTable, SmileFunction) \
 	{ \
@@ -594,7 +594,7 @@ USER_FUNCTION_VTABLE(CheckedRest);	// Function with at least one type-checked ar
 
 #define EXTERNAL_FUNCTION_VTABLE(__checkKind__) \
 	\
-	extern void SmileExternalFunction_##__checkKind__##_Call(SmileFunction self, Int argc); \
+	extern void SmileExternalFunction_##__checkKind__##_Call(SmileFunction self, Int argc, Int extra); \
 	\
 	SMILE_VTABLE(SmileExternalFunction_##__checkKind__##_VTable, SmileFunction) \
 	{ \
