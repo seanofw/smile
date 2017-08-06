@@ -30,7 +30,7 @@ STATIC_STRING(_stderrName, "<stderr>");
 
 #if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
 
-	static const Int FileCostEstimate = 0x1000;
+	static const Int32 FileCostEstimate = 0x1000;
 
 	static Bool Stdio_File_Win32End(SmileHandle handle, Bool userInvoked)
 	{
