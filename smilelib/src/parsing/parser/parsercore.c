@@ -120,7 +120,7 @@ SmileObject Parser_ParseConstant(Parser parser, Lexer lexer, ParseScope scope)
 	ParseScope parentScope;
 	Lexer oldLexer;
 	SmileObject result;
-	Bool isTemplate;
+	Int templateKind;
 	ParseError parseError;
 
 	parentScope = parser->currentScope;
@@ -129,13 +129,13 @@ SmileObject Parser_ParseConstant(Parser parser, Lexer lexer, ParseScope scope)
 	parser->currentScope = scope;
 	parser->lexer = lexer;
 
-	parseError = Parser_ParseRawListTerm(parser, &result, &isTemplate, 0);
+	parseError = Parser_ParseRawListTerm(parser, &result, &templateKind, 0);
 
 	if (parseError != NULL) {
 		Parser_AddMessage(parser, parseError);
 		result = NullObject;
 	}
-	else if (isTemplate) {
+	else if (templateKind != TemplateKind_None) {
 		Parser_AddError(parser, Token_GetPosition(parser->lexer->token), "Template and variable data is not allowed in constant values.");
 		result = NullObject;
 	}

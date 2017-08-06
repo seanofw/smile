@@ -36,6 +36,12 @@ typedef enum {
 	CustomSyntaxResult_SuccessfullyParsed = 1,
 } CustomSyntaxResult;
 
+typedef enum {
+	TemplateKind_None = 0,
+	TemplateKind_Template = 1,
+	TemplateKind_TemplateWithSplicing = 2,
+} TemplateKind;
+
 //-------------------------------------------------------------------------------------------------
 // Parser-internal methods
 
@@ -81,9 +87,9 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseParentheses(Parser parser, SmileObjec
 SMILE_INTERNAL_FUNC ParseError Parser_ParseAnyName(Parser parser, SmileObject *expr);
 
 SMILE_INTERNAL_FUNC ParseError Parser_ParseQuotedTerm(Parser parser, SmileObject *result, Int modeFlags, LexerPosition position);
-SMILE_INTERNAL_FUNC ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Bool *isTemplate, Int modeFlags);
-SMILE_INTERNAL_FUNC ParseError Parser_ParseRawListItemsOpt(Parser parser, SmileList *head, SmileList *tail, Bool *isTemplate, Int modeFlags);
-SMILE_INTERNAL_FUNC ParseError Parser_ParseRawListDotExpr(Parser parser, SmileObject *result, Bool *isTemplate, Int modeFlags);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Int *templateKind, Int modeFlags);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseRawListItemsOpt(Parser parser, SmileList *head, SmileList *tail, Int *templateKind, Int modeFlags);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseRawListDotExpr(Parser parser, SmileObject *result, Int *templateKind, Int modeFlags);
 
 SMILE_INTERNAL_FUNC ParseError Parser_ParseDynamicString(Parser parser, SmileObject *expr, String text, LexerPosition startPosition);
 

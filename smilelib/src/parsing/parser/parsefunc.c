@@ -208,7 +208,7 @@ ParseError Parser_ParseParam(Parser parser, SmileObject *param, LexerPosition *p
 	Symbol nameSymbol;
 	ParseDecl decl;
 	SmileObject defaultValue;
-	Bool isTemplate;
+	Int templateKind;
 	SmileList tail = NullList;
 
 	tokenKind = Lexer_Next(parser->lexer);
@@ -298,12 +298,12 @@ ParseError Parser_ParseParam(Parser parser, SmileObject *param, LexerPosition *p
 	
 		// Optional parameter, with an assigned default value.
 		defaultPosition = Lexer_GetPosition(parser->lexer);
-		parseError = Parser_ParseRawListTerm(parser, &defaultValue, &isTemplate, 0);
+		parseError = Parser_ParseRawListTerm(parser, &defaultValue, &templateKind, 0);
 		if (parseError != NULL) {
 			*param = NullObject;
 			return parseError;
 		}
-		if (isTemplate) {
+		if (templateKind != TemplateKind_None) {
 			*param = NullObject;
 			return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
 				String_Format("Default value for argument '%S' is not a constant value.", SymbolTable_GetName(Smile_SymbolTable, nameSymbol)));
@@ -397,18 +397,18 @@ ParseError Parser_ParseClassicFn(Parser parser, SmileObject *result, LexerPositi
 	ParseError error;
 	SmileList args, temp;
 	SmileObject body;
-	Bool argsAreTemplate;
+	Int argsTemplateKind;
 
 	Parser_BeginScope(parser, PARSESCOPE_FUNCTION);
 
-	error = Parser_ParseRawListTerm(parser, (SmileObject *)&args, &argsAreTemplate, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
+	error = Parser_ParseRawListTerm(parser, (SmileObject *)&args, &argsTemplateKind, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
 	if (error != NULL) {
 		Parser_EndScope(parser);
 		*result = NullObject;
 		return error;
 	}
 
-	if ((SMILE_KIND(args) != SMILE_KIND_LIST && SMILE_KIND(args) != SMILE_KIND_NULL) || argsAreTemplate) {
+	if ((SMILE_KIND(args) != SMILE_KIND_LIST && SMILE_KIND(args) != SMILE_KIND_NULL) || argsTemplateKind != TemplateKind_None) {
 		error = ParseMessage_Create(PARSEMESSAGE_ERROR, startPosition,
 			String_Format("First argument to [$fn] must be a list of symbols.", startPosition->line));
 		Parser_EndScope(parser);

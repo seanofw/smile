@@ -507,6 +507,7 @@ STATIC_STRING(clip, "clip");
 STATIC_STRING(clone, "clone");
 STATIC_STRING(code_at, "code-at");
 STATIC_STRING(code_length, "code-length");
+STATIC_STRING(combine, "combine");
 STATIC_STRING(compare, "compare");
 STATIC_STRING(compare_i, "compare-i");
 STATIC_STRING(compose, "compose");
@@ -782,6 +783,7 @@ static void KnownSymbolsInt_PreloadGeneralSymbols(SymbolTable symbolTable, Known
 	knownSymbols->clone = SymbolTableInt_AddFast(symbolTable, clone);
 	knownSymbols->code_at = SymbolTableInt_AddFast(symbolTable, code_at);
 	knownSymbols->code_length = SymbolTableInt_AddFast(symbolTable, code_length);
+	knownSymbols->combine = SymbolTableInt_AddFast(symbolTable, combine);
 	knownSymbols->compare = SymbolTableInt_AddFast(symbolTable, compare);
 	knownSymbols->compare_i = SymbolTableInt_AddFast(symbolTable, compare_i);
 	knownSymbols->compose = SymbolTableInt_AddFast(symbolTable, compose);

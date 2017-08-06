@@ -54,6 +54,8 @@ struct KnownObjectsStruct {
 	SmileSymbol getMemberSymbol;
 	SmileSymbol setMemberSymbol;
 	SmileSymbol ofSymbol;
+	SmileSymbol combineSymbol;
+	SmileSymbol consSymbol;
 	SmileSymbol typeSymbol;
 	SmileSymbol defaultSymbol;
 	SmileSymbol restSymbol;
