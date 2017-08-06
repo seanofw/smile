@@ -21,6 +21,10 @@
 
 #include "style.h"
 
+#if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+#	include <unistd.h>
+#endif
+
 /// <summary>
 /// Implementation of vscprinf(), since not all platforms have an equivalent.
 /// </summary>
@@ -52,13 +56,13 @@ size_t fwrite_styled(const char *string, size_t size, size_t count, FILE *fp)
 	size_t result;
 
 	// If this is a TTY, write the output as given.
-	if (_isatty(fileno(fp))) {
-#		if _WIN32
+#	if _WIN32
+		if (_isatty(fileno(fp)))
 			return fwrite_ansi_win32(string, size, count, fp);
-#		else
+#	else
+		if (isatty(fileno(fp)))
 			return fwrite(string, size, count, fp);
-#		endif
-	}
+#	endif
 
 	// Find the extent of the string.
 	ptr = string;

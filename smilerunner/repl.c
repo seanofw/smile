@@ -25,7 +25,13 @@
 #if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
 #	define WIN32_LEAN_AND_MEAN
 #	include <windows.h>
+#	include <io.h>
 #	include "vendor/wineditline-2.202/include/editline/readline.h"
+#elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+#	include <limits.h>
+#	include <unistd.h>
+#	include <errno.h>
+#	include <editline/readline.h>
 #endif
 
 extern void ListFiles(String commandLine, Bool longMode, Int consoleWidth);
@@ -178,7 +184,7 @@ static Int CalculateConsoleWidth()
 
 		return (Int)consoleScreenBufferInfo.dwSize.X;
 #	else
-#		error Unsupported OS.
+		return 80;
 #	endif
 }
 
@@ -195,6 +201,19 @@ static String GetCurDir()
 
 		result = String_ReplaceChar(String_FromUtf16(buffer, wcslen(buffer)), '\\', '/');
 		return result;
+
+#	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+		char buffer[PATH_MAX + 1];
+		String result;
+
+		if (getcwd(buffer, PATH_MAX) == NULL) {
+			printf_styled("\033[0;31;1m?Error: \033[0;37;1mUnable to get current directory.\033[0m\n");
+			return String_Empty;
+		}
+
+		result = String_FromC(buffer);
+		return result;
+
 #	else
 #		error Unsupported OS.
 #	endif
@@ -208,6 +227,15 @@ static void SetCurDir(String path)
 		if (!SetCurrentDirectoryW(path16)) {
 			printf_styled("\033[0;31;1m?Error: \033[0;33;1m%s\033[0m", String_ToC(Smile_Win32_GetErrorString(GetLastError())));
 		}
+
+#	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+
+		const char *pathChars = String_ToC(path);
+
+		if (!chdir(pathChars)) {
+			printf_styled("\033[0;31;1m?Error: \033[0;33;1m%d\033[0m", String_ToC(Smile_Unix_GetErrorString(errno)));
+		}
+
 #	else
 #		error Unsupported OS.
 #	endif
@@ -230,6 +258,10 @@ static void ClearScreen(void)
 		FillConsoleOutputCharacterW(stdoutHandle, ' ', consoleSize, topLeftScreenCoordinate, &numberOfCharsWritten);
 		FillConsoleOutputAttribute(stdoutHandle, csbi.wAttributes, consoleSize, topLeftScreenCoordinate, &numberOfCharsWritten);
 		SetConsoleCursorPosition(stdoutHandle, topLeftScreenCoordinate);
+
+#	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+		printf_styled("\033[2J\033[0;0H");
+
 #	else
 #		error Unsupported OS.
 #	endif

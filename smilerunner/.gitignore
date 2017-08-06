@@ -1,1 +1,7 @@
+*.user
+*.old
+bin
+obj
+Makefile.dep
+Makefile.src
 buildnum.h
