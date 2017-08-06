@@ -28,10 +28,10 @@ STATIC_STRING(IllegalNameMessage, "Names must not mix characters from different 
 //---------------------------------------------------------------------------
 //  Alphabetic name parsing.
 
-static Bool IsValidRestartCharacter(const char *src, const char *end)
+static Bool IsValidRestartCharacter(const Byte *src, const Byte *end)
 {
 	Int code, charsets, identifierCharacterKind;
-	char ch;
+	Byte ch;
 
 	switch (ch = *src) {
 

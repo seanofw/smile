@@ -1266,6 +1266,8 @@ void Smile_Throw(SmileObject thrownObject)
 		
 		Smile_Abort_FatalError(String_ToC(message));
 	}
+
+	SMILE_UNREACHABLE
 }
 
 Inline Bool Is(SmileArg descendant, SmileArg ancestor)

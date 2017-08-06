@@ -123,11 +123,11 @@ SMILE_INTERNAL_FUNC ParseError Parser_ExpectLeftBracket(Parser parser, SmileObje
 SMILE_INTERNAL_FUNC ParseError Parser_ExpectRightBracket(Parser parser, SmileObject *result,
 	Token firstUnaryTokenForErrorReporting, const char *name, LexerPosition startPosition);
 
-SMILE_INTERNAL_DATA Int Parser_BracesBracketsParenthesesBar_Recovery[];
+SMILE_INTERNAL_DATA Int *Parser_BracesBracketsParenthesesBar_Recovery;
 SMILE_INTERNAL_DATA Int Parser_BracesBracketsParenthesesBar_Count;
-SMILE_INTERNAL_DATA Int Parser_RightBracesBracketsParentheses_Recovery[];
+SMILE_INTERNAL_DATA Int *Parser_RightBracesBracketsParentheses_Recovery;
 SMILE_INTERNAL_DATA Int Parser_RightBracesBracketsParentheses_Count;
-SMILE_INTERNAL_DATA Int Parser_BracesBracketsParenthesesBarName_Recovery[];
+SMILE_INTERNAL_DATA Int *Parser_BracesBracketsParenthesesBarName_Recovery;
 SMILE_INTERNAL_DATA Int Parser_BracesBracketsParenthesesBarName_Count;
 
 SMILE_INTERNAL_DATA SmileObject Parser_IgnorableObject;

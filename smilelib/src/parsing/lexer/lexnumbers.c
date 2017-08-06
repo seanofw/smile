@@ -414,7 +414,7 @@ Int Lexer_ParseReal(Lexer lexer, Bool isFirstContentOnLine)
 		return END_TOKEN(TOKEN_ERROR);
 	}
 
-	suffixText = suffix != NULL ? String_GetBytes(suffix) : "";
+	suffixText = suffix != NULL ? String_GetBytes(suffix) : (const Byte *)"";
 	if (suffixText[0] == '\0') {
 		// Real64.
 		if (!Real64_TryParse(digitString, &token->data.real64)) {

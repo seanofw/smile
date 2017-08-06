@@ -138,4 +138,5 @@ static struct SmileUnboxedByteInt SmileUnboxedByte_Instance_Struct = {
 	(SmileVTable)&SmileUnboxedByte_VTableData,
 };
 
-extern SmileUnboxedByte SmileUnboxedByte_Instance = &SmileUnboxedByte_Instance_Struct;
+extern SmileUnboxedByte SmileUnboxedByte_Instance;
+SmileUnboxedByte SmileUnboxedByte_Instance = &SmileUnboxedByte_Instance_Struct;

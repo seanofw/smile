@@ -221,6 +221,32 @@ STATIC_STRING(_stderrName, "<stderr>");
 		return handle;
 	}
 
+	SmileHandle Stdio_File_CreateFromPath(SmileObject base, String path, UInt32 mode)
+	{
+		Stdio_File file;
+		SmileHandle handle;
+
+		// Unix wants forward slashes in the path, not backslashes.
+		if (String_IndexOfChar(path, '\\', 0) >= 0) {
+			path = String_ReplaceChar(path, '/', '\\');
+		}
+
+		// TODO: IMPLEMENT ME.
+
+		// Create a wrapper object around it, even if it's not open.
+		handle = Stdio_File_CreateFromUnixFD(base, path, 0, mode);
+		file = (Stdio_File)handle->ptr;
+
+		// Record any errors.
+		if (errno) {
+			file->isOpen = False;
+			file->lastErrorCode = errno;
+			file->lastErrorMessage = String_Empty;
+		}
+
+		return handle;
+	}
+
 	void Stdio_File_DeclareStdInOutErr(Closure globalClosure, SmileObject fileBase)
 	{
 		SmileHandle stdinHandle = Stdio_File_CreateFromUnixFD((SmileObject)fileBase, _stdinName, STDIN_FILENO, FILE_MODE_READ | FILE_MODE_STD);

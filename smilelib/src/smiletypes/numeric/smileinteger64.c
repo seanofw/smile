@@ -143,4 +143,5 @@ static struct SmileUnboxedInteger64Int SmileUnboxedInteger64_Instance_Struct = {
 	(SmileVTable)&SmileUnboxedInteger64_VTableData,
 };
 
-extern SmileUnboxedInteger64 SmileUnboxedInteger64_Instance = &SmileUnboxedInteger64_Instance_Struct;
+extern SmileUnboxedInteger64 SmileUnboxedInteger64_Instance;
+SmileUnboxedInteger64 SmileUnboxedInteger64_Instance = &SmileUnboxedInteger64_Instance_Struct;

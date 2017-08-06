@@ -72,7 +72,7 @@ static ParserSyntaxClass GetSyntaxClass(Parser parser, Symbol syntaxClassSymbol)
 			return NULL;
 
 		default:
-			if (!Int32Dict_TryGetValue(syntaxTable->syntaxClasses, syntaxClassSymbol, &syntaxClass))
+			if (!Int32Dict_TryGetValue(syntaxTable->syntaxClasses, syntaxClassSymbol, (void **)&syntaxClass))
 				return NULL;
 			return syntaxClass;
 	}
@@ -120,7 +120,7 @@ static ParserSyntaxNode Parser_MatchCustomTerminal(Token token, Int32Dict nextDi
 	haveSymbolToken:
 		// We have a symbol of some kind from the input stream.  So check the current
 		// tree node (dictionary) to see if this symbol appears as a terminal in it.
-		return Int32Dict_TryGetValue(nextDict, tokenSymbol, &nextNode) ? nextNode : NULL;
+		return Int32Dict_TryGetValue(nextDict, tokenSymbol, (void **)&nextNode) ? nextNode : NULL;
 
 	default:
 		// Not a symbol, so not matchable.
@@ -248,7 +248,7 @@ static SmileObject Parser_RecursivelyApplyReplacementVariables(SmileObject expr,
 		{
 			SmileSymbol symbol = (SmileSymbol)expr;
 			SmileObject newExpr;
-			if (!Int32Dict_TryGetValue(replacements, symbol->symbol, &newExpr)) {
+			if (!Int32Dict_TryGetValue(replacements, symbol->symbol, (void **)&newExpr)) {
 				return expr;
 			}
 			if (!Int32Int32Dict_Add(usageDict, symbol->symbol, 1)) {
@@ -489,7 +489,7 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 		// transition table, since the nextTerminals set will be sufficient.
 		tokenKind = Lexer_Next(parser->lexer);
 		tokenSymbol = GetSymbolForToken(parser->lexer->token);
-		if (node->nextTerminals == NULL || !Int32Dict_TryGetValue(node->nextTerminals, tokenSymbol, &nextNode)) {
+		if (node->nextTerminals == NULL || !Int32Dict_TryGetValue(node->nextTerminals, tokenSymbol, (void **)&nextNode)) {
 			Lexer_Unget(parser->lexer);
 			return CustomSyntaxResult_NotMatchedAndNoTokensConsumed;
 		}
@@ -499,7 +499,7 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 	else if (syntaxRootMode == SYNTAXROOT_NONTERMINAL) {
 		// We need to skip over the given initial nonterminal (which should already have been
 		// parsed and sitting in *expr), and then parse everything after it.
-		if (node->nextNonterminals == NULL || !Int32Dict_TryGetValue(node->nextNonterminals, rootSkipSymbol, &nextNode))
+		if (node->nextNonterminals == NULL || !Int32Dict_TryGetValue(node->nextNonterminals, rootSkipSymbol, (void **)&nextNode))
 			return CustomSyntaxResult_NotMatchedAndNoTokensConsumed;
 		node = nextNode;
 	}
@@ -521,9 +521,9 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 		// Try to actually transition to the next state based on the next token in the input.
 		tokenKind = Lexer_Next(parser->lexer);
 		tokenSymbol = GetSymbolForToken(parser->lexer->token);
-		if (!Int32Dict_TryGetValue(transitionTable, tokenSymbol, &nextNode)) {
+		if (!Int32Dict_TryGetValue(transitionTable, tokenSymbol, (void **)&nextNode)) {
 			// Didn't match it exactly.  See if this transition table has an "every symbol" catch-all rule.
-			if (!Int32Dict_TryGetValue(transitionTable, -1, &nextNode)) {
+			if (!Int32Dict_TryGetValue(transitionTable, -1, (void **)&nextNode)) {
 				// Nothing in the transition table matches the next incoming token, so we're done with this rule.
 				Lexer_Unget(parser->lexer);
 				break;

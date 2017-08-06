@@ -106,7 +106,7 @@ SMILE_EXTERNAL_FUNCTION(Resolve)
 		resolvedPath = realpath((const char *)pathText, NULL);
 		resolvedLength = StrLen(resolvedPath);
 		result = String_Create((const Byte *)resolvedPath, resolvedLength);
-		free(resolvedPath);
+		free((void *)resolvedPath);
 	}
 #	elif  (SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY
 	{
