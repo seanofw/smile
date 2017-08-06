@@ -82,7 +82,7 @@ static Real32 RR(const char *str)
 	return u.real;
 }
 
-Inline Eq(Real32 a, Real32 b)
+Inline Bool Eq(Real32 a, Real32 b)
 {
 	return a.value == b.value;
 }
@@ -91,20 +91,20 @@ Inline Eq(Real32 a, Real32 b)
 //  Static constants.
 
 // Common limits.
-static const Real32 _int32Max = { { 0x3420C49CUL } };
-static const Real32 _int32Min = { { 0xB420C49CUL } };
-static const Real32 _int64Max = { { 0x6E2CBCCCUL } };
-static const Real32 _int64Min = { { 0xEE2CBCCCUL } };
+static const Real32 _int32Max = { 0x3420C49CUL };
+static const Real32 _int32Min = { 0xB420C49CUL };
+static const Real32 _int64Max = { 0x6E2CBCCCUL };
+static const Real32 _int64Min = { 0xEE2CBCCCUL };
 
 // Miscellaneous integers.
-static const Real32 _fiveSevenNine = { { 0x32800243UL } };
-static const Real32 _fiveSevenNineOhOh = { { 0x3180E22CUL } };
-static const Real32 _shortBigPi = { { 0x33AFEFD9UL } };
-static const Real32 _longBigPi = { { 0x382FEFD9UL } };
-static const Real32 _longMediumPi = { { 0x312FEFD9UL } };
-static const Real32 _pi = { { 0x2FAFEFD9UL } };
-static const Real32 _longNegMediumPi = { { 0xB12FEFD9UL } };
-static const Real32 _negPi = { { 0xAFAFEFD9UL } };
+static const Real32 _fiveSevenNine = { 0x32800243UL };
+static const Real32 _fiveSevenNineOhOh = { 0x3180E22CUL };
+static const Real32 _shortBigPi = { 0x33AFEFD9UL };
+static const Real32 _longBigPi = { 0x382FEFD9UL };
+static const Real32 _longMediumPi = { 0x312FEFD9UL };
+static const Real32 _pi = { 0x2FAFEFD9UL };
+static const Real32 _longNegMediumPi = { 0xB12FEFD9UL };
+static const Real32 _negPi = { 0xAFAFEFD9UL };
 
 //-------------------------------------------------------------------------------------------------
 //  Type-Conversion Tests.
