@@ -1,6 +1,6 @@
 
 #---------------------------------------------------------------------------
-#  Primary Makefile for SmileLib.
+#  Makefile for SmileLibTests.
 #
 #  This is not designed to be user-edited.
 
@@ -58,7 +58,7 @@ obj/$(PLATFORM_NAME)/%.o : %.c
 #  in Makefile.src.
 
 dep:
-	@$(PRINTF) 'Generating source list from SmileLib.vcxproj.\n'
+	@$(PRINTF) 'Generating source list from SmileLibTests.vcxproj.\n'
 	$(SHELL) ../scripts/getsrc.sh SmileLibTests.vcxproj > Makefile.src
 	@$(PRINTF) '\nGenerating dependencies in Makefile.dep (this may take a moment).\n'
 	@$(MAKE) dep2
