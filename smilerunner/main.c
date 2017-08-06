@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter (Command-Line Runner)
 //  Copyright 2004-2017 Sean Werkema
 //
@@ -572,20 +572,35 @@ static int SmileMain(int argc, const char **argv)
 			if (options->verbose) {
 				Verbose("No script given, so entering REPL.");
 			}
-		
-			printf_styled(
-				"\n"
-				"\033[0;36;44;38;5;26;48;5;20m+----------------------------+\033[0m\n"
-				"\033[0;36;44;38;5;26;48;5;20m| \033[0;33;44;1mSmile Programming Language \033[0;36;44;38;5;26;48;5;20m|\033[0m\n"
-				"\033[0;36;44;38;5;26;48;5;20m|  \033[1mv%d.%d / %s  \033[0;36;44;38;5;26;48;5;20m|\033[0m\n"
-				"\033[0;36;44;38;5;26;48;5;20m+----------------------------+\033[0m\n"
-				"\n"
-				"\033[0;37;1mWelcome to Smile! \033[33;1m:-)\033[0m\n"
-				"\n"
-				"For help, type \"\033[0;1;36mhelp\033[0m\" and press Enter.\n"
-				"\n",
-				MAJOR_VERSION, MINOR_VERSION, BUILDSTRING);
-		
+
+#			if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+				// Only systems with proper UTF-8 support can do the pretty box-drawing characters.
+				printf_styled(
+					"\n"
+					" \033[0;36;44m█\033[0;34;46m▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅\033[0;36;44m█\033[0;34m┐\n"
+					" \033[0;36;44m█ \033[0;33;44;1mSmile Programming Language \033[0;36;44m█\033[0;34m│\n"
+					" \033[0;36;44m█  \033[1mv%d.%d / %s  \033[0;36;44m█\033[0;34m│\n"
+					" \033[0;36;44m█▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃█\033[0;34m│\n"
+					" \033[0;34;40m└─────────────────────────────┘\033[0m\n"
+					"\033[0;37;1m       Welcome to Smile! \033[33;1m:-)\033[0m\n"
+					"\n"
+					" For help, type \"\033[0;1;36mhelp\033[0m\" and press Enter.\n"
+					"\n",
+					MAJOR_VERSION, MINOR_VERSION, BUILDSTRING);
+#			else
+				printf_styled(
+					" \033[0;36;44m+----------------------------+\033[0m\n"
+					" \033[0;36;44m| \033[0;33;44;1mSmile Programming Language \033[0;36;44m|\033[0m\n"
+					" \033[0;36;44m|  \033[1mv%d.%d / %s  \033[0;36;44m|\033[0m\n"
+					" \033[0;36;44m+----------------------------+\033[0m\n"
+					"\n"
+					"\033[0;37;1m       Welcome to Smile! \033[33;1m:-)\033[0m\n"
+					"\n"
+					" For help, type \"\033[0;1;36mhelp\033[0m\" and press Enter.\n"
+					"\n",
+					MAJOR_VERSION, MINOR_VERSION, BUILDSTRING);
+#			endif
+
 			ReplMain();
 
 			return 0;

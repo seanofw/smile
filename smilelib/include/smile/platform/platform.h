@@ -81,13 +81,13 @@
 	#include "linux-gcc-x64/platform.h"
 
 #elif defined(__APPLE__) && defined(__MACH__) && defined(__ppc__)
-	#error OSX PPC support hasn't been implemented yet.  If you want to implement it, we'd love to have it.
+	#error OSX PPC support hasn`t been implemented yet.  If you want to implement it, we`d love to have it.
 
 #elif defined(__APPLE__) && defined(__MACH__) && defined(__ppc64__)
-	#error OSX PPC support hasn't been implemented yet.  If you want to implement it, we'd love to have it.
+	#error OSX PPC support hasn`t been implemented yet.  If you want to implement it, we`d love to have it.
 
 #elif defined(__APPLE__) && defined(__MACH__) && defined(__i386__)
-	#error We haven't started i386 OSX support yet... 
+	#error We haven`t started i386 OSX support yet... 
 
 #elif defined(__APPLE__) && defined(__MACH__) && defined(__x86_64__)
 	#include "macosx-clang-x64/platform.h"

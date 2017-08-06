@@ -1,6 +1,6 @@
 
 #---------------------------------------------------------------------------
-#  Makefile for SmileLibTests.
+#  Makefile for SmileRunner.
 #
 #  This is not designed to be user-edited.
 
@@ -27,9 +27,9 @@ DEFS :=
 
 LIBPATHS := $(SMILELIBDIR)/bin/$(PLATFORM_NAME)
 
-LIBS := -lsmile -lm
+LIBS := -lsmile -lm -ledit -lncurses
 
-TESTBIN := bin/$(PLATFORM_NAME)/smilelibtests$(BIN_EXT)
+TESTBIN := bin/$(PLATFORM_NAME)/smile$(BIN_EXT)
 
 LINKRPATH := -Wl,-rpath '-Wl,$$ORIGIN'
 
@@ -58,8 +58,8 @@ obj/$(PLATFORM_NAME)/%.o : %.c
 #  in Makefile.src.
 
 dep:
-	@$(PRINTF) 'Generating source list from SmileLibTests.vcxproj.\n'
-	$(SHELL) ../scripts/getsrc.sh SmileLibTests.vcxproj > Makefile.src
+	@$(PRINTF) 'Generating source list from SmileRunner.vcxproj.\n'
+	$(SHELL) ../scripts/getsrc.sh SmileRunner.vcxproj > Makefile.src
 	@$(PRINTF) '\nGenerating dependencies in Makefile.dep (this may take a moment).\n'
 	@$(MAKE) dep2
 
@@ -67,12 +67,6 @@ dep2:
 	$(RM) Makefile.dep
 	$(foreach SRC,$(SRCS), \
 		$(CC) $(ALL_CFLAGS) $(DEFS) $(INCLUDES) $(DEPFLAGS) $(SRC) -MT 'obj/$(PLATFORM_NAME)/$(basename $(SRC)).o' >> Makefile.dep;)
-
-#---------------------------------------------------------------------------
-#  Unit tests.
-
-check: $(TESTBIN)
-	$(TESTBIN)
 
 #---------------------------------------------------------------------------
 #  Installation.

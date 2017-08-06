@@ -38,7 +38,7 @@ static ParserSyntaxClass GetSyntaxClassSafely(ParserSyntaxTable table, const cha
 
 	if (table == NULL) return NULL;
 	if (table->syntaxClasses == NULL) return NULL;
-	if (!Int32Dict_TryGetValue(table->syntaxClasses, nonterminalSymbol, &syntaxClass)) return NULL;
+	if (!Int32Dict_TryGetValue(table->syntaxClasses, nonterminalSymbol, (void **)&syntaxClass)) return NULL;
 	return syntaxClass;
 }
 
@@ -68,7 +68,7 @@ static ParserSyntaxNode WalkSyntaxPattern(ParserSyntaxClass cls, const char *exp
 			nextDict = numPieces > 1 ? node->nextNonterminals : node->nextTerminals;
 			if (nextDict == NULL) return NULL;
 
-			if (!Int32Dict_TryGetValue(nextDict, symbol, &nextNode)) return NULL;
+			if (!Int32Dict_TryGetValue(nextDict, symbol, (void **)&nextNode)) return NULL;
 
 			node = nextNode;
 		}

@@ -137,4 +137,4 @@ static struct SmileUnboxedSymbolInt SmileUnboxedSymbol_Instance_Struct = {
 	(SmileVTable)&SmileUnboxedSymbol_VTableData,
 };
 
-extern SmileUnboxedSymbol SmileUnboxedSymbol_Instance = &SmileUnboxedSymbol_Instance_Struct;
+SmileUnboxedSymbol SmileUnboxedSymbol_Instance = &SmileUnboxedSymbol_Instance_Struct;

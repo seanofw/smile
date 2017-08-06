@@ -41,7 +41,10 @@
 
 #elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
 
+#	include <sys/types.h>
 #	include <unistd.h>
+#	include <errno.h>
+#	include <limits.h>
 
 	typedef struct Stdio_FileStruct {
 		String path;
@@ -49,6 +52,7 @@
 		UInt32 lastErrorCode;
 		String lastErrorMessage;
 		Bool isOpen;
+		Bool isEof;
 		Int32 fd;
 	} *Stdio_File;
 

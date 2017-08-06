@@ -19,17 +19,19 @@ include $(MAKEFILE_DIR)../scripts/Makefile.extra
 
 INCLUDES := -Iinclude
 
-GC_OBJS := $(addprefix obj/$(PLATFORM_NAME)/gc/,$(notdir $(GC_SRCS:.c=.o)))
 DECIMAL_OBJS := $(addprefix obj/$(PLATFORM_NAME)/decimal/,$(notdir $(DECIMAL_SRCS:.c=.o)))
+GC_OBJS := $(addprefix obj/$(PLATFORM_NAME)/gc/,$(notdir $(GC_SRCS:.c=.o)))
 SMILE_OBJS := $(subst src/,obj/$(PLATFORM_NAME)/smile/,$(SMILE_SRCS:.c=.o))
+LIB_OBJS := $(subst lib/,obj/$(PLATFORM_NAME)/lib/,$(LIB_SRCS:.c=.o))
 
-ALL_SRCS := $(GC_SRCS) $(DECIMAL_SRCS) $(SMILE_SRCS)
+ALL_SRCS := $(DECIMAL_SRCS) $(GC_SRCS) $(LIB_SRCS) $(SMILE_SRCS)
 
-ALL_OBJS := $(GC_OBJS) $(DECIMAL_OBJS) $(SMILE_OBJS)
+ALL_OBJS := $(DECIMAL_OBJS) $(GC_OBJS) $(LIB_OBJS) $(SMILE_OBJS)
 
 GC_DEFS := -DGC_BUILD -DGC_DLL -DSMILELIB_BUILD
 DECIMAL_DEFS := -DSMILELIB_BUILD
 SMILE_DEFS := -DGC_BUILD -DSMILELIB_BUILD
+LIB_DEFS := -DGC_BUILD -DSMILELIB_BUILD
 
 SMILELIB := bin/$(PLATFORM_NAME)/libsmile$(SO_EXT)
 
@@ -40,6 +42,10 @@ LIBS := -lm
 
 all: $(SMILELIB)
 
+flarg:
+	echo $(LIB_SRCS)
+	echo $(LIB_OBJS)
+
 $(SMILELIB): $(ALL_OBJS)
 	@$(MKDIR_P) $(dir $@)
 
@@ -48,13 +54,17 @@ $(SMILELIB): $(ALL_OBJS)
 	$(LINKSO) $(ALL_LINKSOFLAGS) -o ../../$@ $(LIBS) $(subst obj/$(PLATFORM_NAME)/,,$(ALL_OBJS)) ; \
 	cd ../..
 
+obj/$(PLATFORM_NAME)/decimal/%.o : decimal/%.c
+	@$(MKDIR_P) $(dir $@)
+	$(CC) $(ALL_CFLAGS) $(DECIMAL_DEFS) $(INCLUDES) -c $< -o $@
+
 obj/$(PLATFORM_NAME)/gc/%.o : gc/src/%.c
 	@$(MKDIR_P) $(dir $@)
 	$(CC) $(ALL_CFLAGS) $(GC_DEFS) $(INCLUDES) -Igc/include -c $< -o $@
 
-obj/$(PLATFORM_NAME)/decimal/%.o : decimal/%.c
+obj/$(PLATFORM_NAME)/lib/%.o : lib/%.c
 	@$(MKDIR_P) $(dir $@)
-	$(CC) $(ALL_CFLAGS) $(DECIMAL_DEFS) $(INCLUDES) -c $< -o $@
+	$(CC) $(ALL_CFLAGS) $(LIB_DEFS) $(INCLUDES) -c $< -o $@
 
 obj/$(PLATFORM_NAME)/smile/%.o : src/%.c
 	@$(MKDIR_P) $(dir $@)
@@ -74,12 +84,14 @@ dep:
 
 dep2:
 	$(RM) Makefile.dep
-	$(foreach SRC,$(GC_SRCS), \
-		$(CC) $(ALL_CFLAGS) $(GC_DEFS) $(INCLUDES) -Igc/include $(DEPFLAGS) $(SRC) -MT 'obj/$(PLATFORM_NAME)/gc/$(basename $(notdir $(SRC))).o'  >> Makefile.dep;)
 	$(foreach SRC,$(DECIMAL_SRCS), \
-		$(CC) $(ALL_CFLAGS) $(DECIMAL_DEFS) $(INCLUDES) $(DEPFLAGS) $(SRC) -MT 'obj/$(PLATFORM_NAME)/decimal/$(basename $(notdir $(SRC))).o' >> Makefile.dep;)
+		$(CC) $(ALL_CFLAGS) $(DECIMAL_DEFS) $(INCLUDES) $(DEPFLAGS) $(SRC) -MT 'obj/$(PLATFORM_NAME)/decimal/$(basename $(notdir $(SRC))).o' >> Makefile.dep; $(PRINTF) '\n' >> Makefile.dep;)
+	$(foreach SRC,$(GC_SRCS), \
+		$(CC) $(ALL_CFLAGS) $(GC_DEFS) $(INCLUDES) -Igc/include $(DEPFLAGS) $(SRC) -MT 'obj/$(PLATFORM_NAME)/gc/$(basename $(notdir $(SRC))).o'  >> Makefile.dep; $(PRINTF) '\n' >> Makefile.dep;)
+	$(foreach SRC,$(LIB_SRCS), \
+		$(CC) $(ALL_CFLAGS) $(LIB_DEFS) $(INCLUDES) $(DEPFLAGS) $(SRC) -MT 'obj/$(PLATFORM_NAME)/lib/$(basename $(subst lib/,,$(SRC))).o' >> Makefile.dep; $(PRINTF) '\n' >> Makefile.dep;)
 	$(foreach SRC,$(SMILE_SRCS), \
-		$(CC) $(ALL_CFLAGS) $(SMILE_DEFS) $(INCLUDES) $(DEPFLAGS) $(SRC) -MT 'obj/$(PLATFORM_NAME)/smile/$(basename $(subst src/,,$(SRC))).o' >> Makefile.dep;)
+		$(CC) $(ALL_CFLAGS) $(SMILE_DEFS) $(INCLUDES) $(DEPFLAGS) $(SRC) -MT 'obj/$(PLATFORM_NAME)/smile/$(basename $(subst src/,,$(SRC))).o' >> Makefile.dep; $(PRINTF) '\n' >> Makefile.dep;)
 
 #---------------------------------------------------------------------------
 #  Unit tests (not here).
@@ -103,4 +115,9 @@ clean:
 
 distclean: clean
 	$(RM) Makefile.dep Makefile.src
+
+#---------------------------------------------------------------------------
+#  Dependencies.
+
+-include $(MAKEFILE_DIR)Makefile.dep
 

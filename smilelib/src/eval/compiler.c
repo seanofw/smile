@@ -318,7 +318,7 @@ CompiledLocalSymbol CompileScope_FindSymbol(CompileScope compileScope, Symbol sy
 
 	for (; compileScope != NULL; compileScope = compileScope->parent)
 	{
-		if (Int32Dict_TryGetValue(compileScope->symbolDict, symbol, &localSymbol))
+		if (Int32Dict_TryGetValue(compileScope->symbolDict, symbol, (void **)&localSymbol))
 			return localSymbol;
 	}
 
@@ -328,7 +328,7 @@ CompiledLocalSymbol CompileScope_FindSymbol(CompileScope compileScope, Symbol sy
 CompiledLocalSymbol CompileScope_FindSymbolHere(CompileScope compileScope, Symbol symbol)
 {
 	CompiledLocalSymbol localSymbol;
-	return Int32Dict_TryGetValue(compileScope->symbolDict, symbol, &localSymbol) ? localSymbol : NULL;
+	return Int32Dict_TryGetValue(compileScope->symbolDict, symbol, (void **)&localSymbol) ? localSymbol : NULL;
 }
 
 /// <summary>

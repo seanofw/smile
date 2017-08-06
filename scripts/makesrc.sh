@@ -19,14 +19,19 @@ grep '<ClCompile Include' $VCXPROJ \
 
 printf '# This file is generated.  Do not edit!'
 
+printf '\nDECIMAL_SRCS = \\\n'
+
+egrep '^decimal\/' $ALLSRC \
+	| $SED -e 's/^(.*)$/    \1 \\/; $s/\\//;'
+
 printf '\nGC_SRCS = \\\n'
 
 egrep '^gc\/' $ALLSRC \
 	| $SED -e 's/^(.*)$/    \1 \\/; $s/\\//;'
 
-printf '\nDECIMAL_SRCS = \\\n'
+printf '\nLIB_SRCS = \\\n'
 
-egrep '^decimal\/' $ALLSRC \
+egrep '^lib\/' $ALLSRC \
 	| $SED -e 's/^(.*)$/    \1 \\/; $s/\\//;'
 
 printf '\nSMILE_SRCS = \\\n'

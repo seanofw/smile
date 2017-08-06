@@ -26,23 +26,26 @@
 //-------------------------------------------------------------------------------------------------
 // Recovery modes
 
-Int Parser_BracesBracketsParenthesesBar_Recovery[] = {
+static Int _parser_BracesBracketsParenthesesBar_Recovery[] = {
 	TOKEN_LEFTBRACE, TOKEN_LEFTBRACKET, TOKEN_LEFTPARENTHESIS,
 	TOKEN_RIGHTBRACE, TOKEN_RIGHTBRACKET, TOKEN_RIGHTPARENTHESIS,
 	TOKEN_BAR
 };
+Int *Parser_BracesBracketsParenthesesBar_Recovery = _parser_BracesBracketsParenthesesBar_Recovery;
 Int Parser_BracesBracketsParenthesesBar_Count = sizeof(Parser_BracesBracketsParenthesesBar_Recovery) / sizeof(Int);
 
-Int Parser_BracesBracketsParenthesesBarName_Recovery[] = {
+static Int _parser_BracesBracketsParenthesesBarName_Recovery[] = {
 	TOKEN_LEFTBRACE, TOKEN_LEFTBRACKET, TOKEN_LEFTPARENTHESIS,
 	TOKEN_RIGHTBRACE, TOKEN_RIGHTBRACKET, TOKEN_RIGHTPARENTHESIS,
 	TOKEN_BAR, TOKEN_ALPHANAME, TOKEN_UNKNOWNALPHANAME,
 };
+Int *Parser_BracesBracketsParenthesesBarName_Recovery = _parser_BracesBracketsParenthesesBarName_Recovery;
 Int Parser_BracesBracketsParenthesesBarName_Count = sizeof(Parser_BracesBracketsParenthesesBarName_Recovery) / sizeof(Int);
 
-Int Parser_RightBracesBracketsParentheses_Recovery[] = {
+static Int _parser_RightBracesBracketsParentheses_Recovery[] = {
 	TOKEN_RIGHTBRACE, TOKEN_RIGHTBRACKET, TOKEN_RIGHTPARENTHESIS
 };
+Int *Parser_RightBracesBracketsParentheses_Recovery = _parser_RightBracesBracketsParentheses_Recovery;
 Int Parser_RightBracesBracketsParentheses_Count = sizeof(Parser_RightBracesBracketsParentheses_Recovery) / sizeof(Int);
 
 //-------------------------------------------------------------------------------------------------

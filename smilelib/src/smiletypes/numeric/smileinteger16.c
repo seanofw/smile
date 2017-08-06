@@ -138,4 +138,5 @@ static struct SmileUnboxedInteger16Int SmileUnboxedInteger16_Instance_Struct = {
 	(SmileVTable)&SmileUnboxedInteger16_VTableData,
 };
 
-extern SmileUnboxedInteger16 SmileUnboxedInteger16_Instance = &SmileUnboxedInteger16_Instance_Struct;
+extern SmileUnboxedInteger16 SmileUnboxedInteger16_Instance;
+SmileUnboxedInteger16 SmileUnboxedInteger16_Instance = &SmileUnboxedInteger16_Instance_Struct;

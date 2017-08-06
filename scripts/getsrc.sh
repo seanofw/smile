@@ -4,7 +4,7 @@ VCXPROJ=
 
 while [ "$1" != "" ]; do
 case $1 in
-	-h | --help )	printf "Usage: makesrc.sh Project.vcxproj"
+	-h | --help )	printf "Usage: getsrc.sh Project.vcxproj"
 			exit 1
 			;;
 	* )		VCXPROJ=$1

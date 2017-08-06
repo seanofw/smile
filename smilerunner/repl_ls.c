@@ -21,6 +21,14 @@
 #if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
 #	define WIN32_LEAN_AND_MEAN
 #	include <windows.h>
+#	include <io.h>
+#elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+#	include <time.h>
+#	include <unistd.h>
+#	include <sys/types.h>
+#	include <sys/stat.h>
+#	include <dirent.h>
+#	include <errno.h>
 #endif
 
 #include "style.h"
@@ -132,6 +140,19 @@ static void GetTodaysDateAsFileInfo(FileInfo fileInfo)
 		fileInfo->day = (Byte)systemTime.wDay;
 		fileInfo->hour = (Byte)systemTime.wHour;
 		fileInfo->minute = (Byte)systemTime.wMinute;
+
+#	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+		time_t now = time(NULL);
+		struct tm tm;
+
+		localtime_r(&now, &tm);
+
+		fileInfo->year = tm.tm_year + 1900;
+		fileInfo->month = tm.tm_mon + 1;
+		fileInfo->day = tm.tm_mday;
+		fileInfo->hour = tm.tm_hour;
+		fileInfo->minute = tm.tm_min;
+
 #	else
 #		error Unsupported OS.
 #	endif
@@ -166,6 +187,8 @@ static FileInfo *GetRawFileList(Bool allMode, Bool longMode, Int *numFiles)
 		findFileHandle = FindFirstFileW(L"*", &findData);
 		if (findFileHandle == NULL) {
 			printf("Error: %s", String_ToC(GetLastErrorString()));
+			*numFiles = 0;
+			return files;
 		}
 
 		if (allMode || !(findData.cFileName[0] == '.' || (findData.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN))) {
@@ -217,6 +240,49 @@ static FileInfo *GetRawFileList(Bool allMode, Bool longMode, Int *numFiles)
 
 		FindClose(findFileHandle);
 	}
+
+#	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+
+	{
+		DIR *dir;
+		struct dirent *dirent;
+		struct stat statbuf;
+		String name;
+		struct tm tm;
+
+		dir = opendir(".");
+		if (dir == NULL) {
+			printf("Error opening directory: %s", String_ToC(Smile_Unix_GetErrorString(errno)));
+			*numFiles = 0;
+			return files;
+		}
+
+		while ((dirent = readdir(dir)) != NULL) {
+
+			if (allMode || !(dirent->d_name[0] == '.')) {
+				if (lstat(dirent->d_name, &statbuf)) {
+					printf("Error stat'ing file: %s", String_ToC(Smile_Unix_GetErrorString(errno)));
+					*numFiles = 0;
+					return files;
+				}
+
+				name = String_FromC(dirent->d_name);
+
+				localtime_r(&statbuf.st_mtime, &tm);
+
+				AppendFile(&files, &len, &max,
+					name,
+					statbuf.st_size,
+					statbuf.st_mode,
+					tm.tm_year + 1900, (Byte)(tm.tm_mon + 1), (Byte)tm.tm_mday,
+					(Byte)tm.tm_hour, (Byte)tm.tm_min);
+			}
+			
+		}
+
+		closedir(dir);
+	}
+
 #	else
 #		error Unsupported OS.
 #	endif
@@ -351,6 +417,8 @@ static void ListFilesMultiColumnMode(FileInfo *files, Int numFiles, Int consoleW
 
 	INIT_INLINE_STRINGBUILDER(stringBuilder);
 
+	printf_styled("\033[0;37;40m");
+
 	// Tack on suffixes, if we need them.
 	if (typeMode) {
 		for (i = 0; i < numFiles; i++) {
@@ -447,6 +515,8 @@ static void ListFilesLongMode(FileInfo *files, Int numFiles, Bool typeMode)
 		lastMonth = 12;
 		lastMonthsYear--;
 	}
+
+	printf_styled("\033[0;37;40m");
 
 	for (i = 0; i < numFiles; i++) {
 		switch (files[i]->mode & FILE_TYPE_MASK) {

@@ -101,7 +101,7 @@ Bool SmileUserObject_DeepEqual(SmileUserObject self, SmileUnboxedData selfData, 
 
 	for (i = 0; i < numKeys; i++) {
 		key = keys[i];
-		if (!Int32Dict_TryGetValue((Int32Dict)&otherUserObject->dict, key, &otherValue))
+		if (!Int32Dict_TryGetValue((Int32Dict)&otherUserObject->dict, key, (void **)&otherValue))
 			return False;
 		value = (SmileObject)Int32Dict_GetValue((Int32Dict)&self->dict, key);
 		
@@ -278,7 +278,7 @@ String SmileUserObject_ToString(SmileUserObject self, SmileUnboxedData unboxedDa
 void SmileUserObject_Call(SmileUserObject self, Int argc, Int extra)
 {
 	SmileObject fn;
-	if (Int32Dict_TryGetValue((Int32Dict)&self->dict, (Int32)Smile_KnownSymbols._fn, &fn)
+	if (Int32Dict_TryGetValue((Int32Dict)&self->dict, (Int32)Smile_KnownSymbols._fn, (void **)&fn)
 		&& SMILE_KIND(fn) == SMILE_KIND_FUNCTION) {
 		// This has a 'fn' property that is a function.  Invoke that instead, with the same args.
 		SMILE_VCALL2(fn, call, argc, extra);

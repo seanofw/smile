@@ -171,7 +171,7 @@ static ParserSyntaxClass ParserSyntaxClass_FindOrCreate(ParserSyntaxTable *table
 	ParserSyntaxClass syntaxClass;
 
 	// Find or create the syntax class.
-	if (Int32Dict_TryGetValue((*table)->syntaxClasses, nonterminal, &syntaxClass))
+	if (Int32Dict_TryGetValue((*table)->syntaxClasses, nonterminal, (void **)&syntaxClass))
 		return syntaxClass;
 
 	// Virtually fork the syntax table, if it's not unique.  This makes a shallow copy of
@@ -295,7 +295,7 @@ static Bool ParserSyntaxClass_Extend(Parser parser, LexerPosition position,
 	else if (variable) {
 		// This is a nonterminal that we'd like to add to a preexisting dictionary.
 		
-		if (!Int32Dict_TryGetValue(parent->nextNonterminals, name, &syntaxNode)) {
+		if (!Int32Dict_TryGetValue(parent->nextNonterminals, name, (void **)&syntaxNode)) {
 			// Nonterminal doesn't exist yet, so it's safe to add it.
 			if (newCls->referenceCount > 1) {
 				newCls = ParserSyntaxClass_VFork(newCls);
@@ -318,7 +318,7 @@ static Bool ParserSyntaxClass_Extend(Parser parser, LexerPosition position,
 	else {
 		// This is a nonterminal that we'd like to add to a preexisting dictionary.
 
-		if (Int32Dict_TryGetValue(parent->nextTerminals, name, &syntaxNode)) {
+		if (Int32Dict_TryGetValue(parent->nextTerminals, name, (void **)&syntaxNode)) {
 			// Just a terminal, correctly mimicked in a new rule.
 			// Nothing to do here.
 		}
@@ -433,7 +433,7 @@ static void ParserSyntaxTable_RecursivelyComputeFirstSet(ParserSyntaxTable table
 	}
 
 	// Find the rule pointed-to by the current nonterminal.
-	if (!Int32Dict_TryGetValue(table->syntaxClasses, nonterminal, &syntaxClass)) {
+	if (!Int32Dict_TryGetValue(table->syntaxClasses, nonterminal, (void **)&syntaxClass)) {
 		// If we got here, then we ended up nowhere (i.e., this set of syntax rules is
 		// currently incomplete or broken or something, and not parse-able).
 		return;
@@ -619,7 +619,7 @@ Int32Int32Dict ParserSyntaxTable_GetFirstSet(ParserSyntaxTable table, Symbol non
 		table->firstSets = Int32Dict_Create();
 	}
 
-	if (!Int32Dict_TryGetValue(table->firstSets, nonterminal, &firstSet)) {
+	if (!Int32Dict_TryGetValue(table->firstSets, nonterminal, (void **)&firstSet)) {
 		firstSet = ParserSyntaxTable_ComputeFirstSet(table, nonterminal);
 		Int32Dict_Add(table->firstSets, nonterminal, firstSet);
 	}
@@ -652,7 +652,7 @@ Int32Int32Dict ParserSyntaxTable_GetFollowSet(ParserSyntaxTable table, ParserSyn
 		table->followSets = Int32Dict_Create();
 	}
 
-	if (!Int32Dict_TryGetValue(table->followSets, node->nodeID, &followSet)) {
+	if (!Int32Dict_TryGetValue(table->followSets, node->nodeID, (void **)&followSet)) {
 		followSet = ParserSyntaxTable_ComputeFollowSet(table, node);
 		Int32Dict_Add(table->firstSets, node->nodeID, followSet);
 	}
@@ -676,7 +676,7 @@ Int32Dict ParserSyntaxTable_GetTransitionTable(Parser parser, ParserSyntaxTable 
 		table->transitionTables = Int32Dict_Create();
 	}
 
-	if (!Int32Dict_TryGetValue(table->transitionTables, node->nodeID, &transitionTable)) {
+	if (!Int32Dict_TryGetValue(table->transitionTables, node->nodeID, (void **)&transitionTable)) {
 		transitionTable = ParserSyntaxTable_ComputeTransitionTable(parser, table, node);
 		Int32Dict_Add(table->transitionTables, node->nodeID, transitionTable);
 	}
@@ -721,7 +721,7 @@ Bool ParserSyntaxTable_AddRule(Parser parser, ParserSyntaxTable *table, SmileSyn
 
 	// Locate the appropriate class within the syntax table for the new rule's
 	// nonterminal.  If no such class exists, create one.
-	if (!Int32Dict_TryGetValue(syntaxTable->syntaxClasses, rule->nonterminal, &syntaxClass)) {
+	if (!Int32Dict_TryGetValue(syntaxTable->syntaxClasses, rule->nonterminal, (void **)&syntaxClass)) {
 		// Don't have a preexisting class, so create one, and add it to the set of known
 		// classes within this table.
 		syntaxClass = ParserSyntaxClass_CreateNew();

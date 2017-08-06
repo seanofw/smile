@@ -57,6 +57,9 @@ typedef struct __attribute__((aligned(4))) { UInt32 value; } Real32;
 typedef struct __attribute__((aligned(8))) { UInt64 value; } Real64;
 typedef struct __attribute__((aligned(16))) { UInt64 value[2]; } Real128;
 
+// Needed for Linux to support 64-bit system calls.
+#define _LARGEFILE64_SOURCE
+
 //------------------------------------------------------------------------------------------------
 //  Declaration prefixes.
 
@@ -74,9 +77,9 @@ typedef struct __attribute__((aligned(16))) { UInt64 value[2]; } Real128;
 
 #if __GNUC__ >= 4
 	#undef SMILE_API_FUNC
-	#define SMILE_API_FUNC __attribute__ ((visibility ("default")))
+	#define SMILE_API_FUNC extern
 	#undef SMILE_API_DATA
-	#define SMILE_API_DATA __attribute__ ((visibility ("default")))
+	#define SMILE_API_DATA extern
 
 	#undef SMILE_INTERNAL_FUNC
 	#define SMILE_INTERNAL_FUNC __attribute__ ((visibility ("hidden")))
@@ -88,6 +91,8 @@ typedef struct __attribute__((aligned(16))) { UInt64 value[2]; } Real128;
 #undef SMILE_NO_RETURN
 #define SMILE_NO_RETURN __attribute((noreturn))
 #define SMILE_IGNORE_UNUSED_VARIABLES _Pragma("GCC diagnostic ignored \"-Wunused-variable\"")
+#undef SMILE_UNREACHABLE
+#define SMILE_UNREACHABLE __builtin_unreachable();
 
 //------------------------------------------------------------------------------------------------
 //  Entropy.
