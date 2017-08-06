@@ -31,6 +31,8 @@ LIBS := -lsmile -lm
 
 TESTBIN := bin/$(PLATFORM_NAME)/smilelibtests$(BIN_EXT)
 
+LINKRPATH := -Wl,-rpath '-Wl,$$ORIGIN'
+
 #---------------------------------------------------------------------------
 #  Compile rules.
 
@@ -41,8 +43,9 @@ $(TESTBIN): $(OBJS)
 
 	# Use a directory-change trick to shorten the command line before linking.
 	cd obj/$(PLATFORM_NAME) ; \
-	$(LINK) $(ALL_LINKFLAGS) -o ../../$@ $(subst obj/$(PLATFORM_NAME)/,,$(OBJS)) $(addprefix -L../../,$(LIBPATHS)) $(LIBS) ; \
+	$(LINK) $(ALL_LINKFLAGS) $(LINKRPATH) -o ../../$@ $(subst obj/$(PLATFORM_NAME)/,,$(OBJS)) $(addprefix -L../../,$(LIBPATHS)) $(LIBS); \
 	cd ../..
+	cp $(addsuffix /*,$(LIBPATHS)) bin/$(PLATFORM_NAME)
 
 obj/$(PLATFORM_NAME)/%.o : %.c
 	@$(MKDIR_P) $(dir $@)
@@ -69,7 +72,7 @@ dep2:
 #  Unit tests.
 
 check: $(TESTBIN)
-	@LD_LIBRARY_PATH=$(LIBPATHS); PATH=$$PATH:$(LIBPATHS); $(TESTBIN)
+	$(TESTBIN)
 
 #---------------------------------------------------------------------------
 #  Installation.
