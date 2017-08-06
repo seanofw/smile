@@ -216,6 +216,34 @@ SmileUserObject Smile_CreateExceptionCV(const char *exceptionKind, const char *f
 
 	String Smile_Win32_GetErrorString(UInt32 errorCode)
 	{
+		UNUSED(errorCode);
+
+		return String_Empty;
+	}
+
+#endif
+
+#if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+
+#	include <errno.h>
+
+	String Smile_Unix_GetErrorString(Int32 errorCode)
+	{
+		char buffer[1024];
+
+		if (!strerror_r(errorCode, buffer, 1023)) {
+			return String_Format("unknown error %d", errorCode);
+		}
+		buffer[1023] = '\0';
+		return String_FromC(buffer);
+	}
+
+#else
+
+	String Smile_Unix_GetErrorString(Int32 errorCode)
+	{
+		UNUSED(errorCode);
+
 		return String_Empty;
 	}
 
