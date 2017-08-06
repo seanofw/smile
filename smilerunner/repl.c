@@ -232,8 +232,8 @@ static void SetCurDir(String path)
 
 		const char *pathChars = String_ToC(path);
 
-		if (!chdir(pathChars)) {
-			printf_styled("\033[0;31;1m?Error: \033[0;33;1m%d\033[0m", String_ToC(Smile_Unix_GetErrorString(errno)));
+		if (chdir(pathChars)) {
+			printf_styled("\033[0;31;1m?Error: \033[0;33;1m%s\033[0m\n", String_ToC(Smile_Unix_GetErrorString(errno)));
 		}
 
 #	else
@@ -297,10 +297,21 @@ void ReplMain()
 #	endif
 
 	for (;;) {
+
+#	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
 		printf_styled("\033[0;33;1m] \033[0;37;1m");
 		line = readline("");
 		printf_styled("\033[0m");
 		fflush(stdout);
+#	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+		//line = readline("\1\033[0;33;1m\2] \1\033[0;37;1m\2");	// EditLine doesn't support color prompts (yet).
+		printf_styled("\033[0;37;40;1m");
+		line = readline("] ");
+		printf_styled("\033[0m");
+		fflush(stdout);
+#	else
+#		error Unsupported OS.
+#	endif
 
 		if (line == NULL) break;
 		input = String_FromC(line);

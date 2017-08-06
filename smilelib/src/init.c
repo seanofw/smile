@@ -231,7 +231,7 @@ SmileUserObject Smile_CreateExceptionCV(const char *exceptionKind, const char *f
 	{
 		char buffer[1024];
 
-		if (!strerror_r(errorCode, buffer, 1023)) {
+		if (strerror_r(errorCode, buffer, 1023)) {
 			return String_Format("unknown error %d", errorCode);
 		}
 		buffer[1023] = '\0';

@@ -252,35 +252,32 @@ static FileInfo *GetRawFileList(Bool allMode, Bool longMode, Int *numFiles)
 
 		dir = opendir(".");
 		if (dir == NULL) {
-			printf("Error: %s", String_ToC(Smile_Win32_GetErrorString(errno)));
+			printf("Error opening directory: %s", String_ToC(Smile_Unix_GetErrorString(errno)));
 			*numFiles = 0;
 			return files;
 		}
 
 		while ((dirent = readdir(dir)) != NULL) {
-			if (lstat(dirent->d_name, &statbuf)) {
-				printf("Error: %s", String_ToC(Smile_Win32_GetErrorString(errno)));
-				*numFiles = 0;
-				return files;
+
+			if (allMode || !(dirent->d_name[0] == '.')) {
+				if (lstat(dirent->d_name, &statbuf)) {
+					printf("Error stat'ing file: %s", String_ToC(Smile_Unix_GetErrorString(errno)));
+					*numFiles = 0;
+					return files;
+				}
+
+				name = String_FromC(dirent->d_name);
+
+				localtime_r(&statbuf.st_mtime, &tm);
+
+				AppendFile(&files, &len, &max,
+					name,
+					statbuf.st_size,
+					statbuf.st_mode,
+					tm.tm_year + 1900, (Byte)(tm.tm_mon + 1), (Byte)tm.tm_mday,
+					(Byte)tm.tm_hour, (Byte)tm.tm_min);
 			}
-
-			name = String_FromC(dirent->d_name);
-
-			localtime_r(&statbuf.st_mtime, &tm);
-
-			AppendFile(&files, &len, &max,
-				name,
-				statbuf.st_size,
-				statbuf.st_mode,
-				tm.tm_year + 1900, (Byte)(tm.tm_mon + 1), (Byte)tm.tm_mday,
-				(Byte)tm.tm_hour, (Byte)tm.tm_min);
 			
-		}
-
-		if (errno) {
-			printf("Error: %s", String_ToC(Smile_Win32_GetErrorString(errno)));
-			*numFiles = 0;
-			return files;
 		}
 
 		closedir(dir);
@@ -420,6 +417,8 @@ static void ListFilesMultiColumnMode(FileInfo *files, Int numFiles, Int consoleW
 
 	INIT_INLINE_STRINGBUILDER(stringBuilder);
 
+	printf_styled("\033[0;37;40m");
+
 	// Tack on suffixes, if we need them.
 	if (typeMode) {
 		for (i = 0; i < numFiles; i++) {
@@ -516,6 +515,8 @@ static void ListFilesLongMode(FileInfo *files, Int numFiles, Bool typeMode)
 		lastMonth = 12;
 		lastMonthsYear--;
 	}
+
+	printf_styled("\033[0;37;40m");
 
 	for (i = 0; i < numFiles; i++) {
 		switch (files[i]->mode & FILE_TYPE_MASK) {
