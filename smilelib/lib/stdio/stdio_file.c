@@ -106,13 +106,15 @@ STATIC_STRING(_stderrName, "<stderr>");
 		Closure_SetGlobalVariable(globalClosure, SymbolTable_GetSymbolC(Smile_SymbolTable, "Stderr"), (SmileObject)stderrHandle);
 	}
 
-	SmileHandle Stdio_File_CreateFromPath(SmileObject base, String path, UInt32 mode)
+	SmileHandle Stdio_File_CreateFromPath(SmileObject base, String path, UInt32 mode, UInt32 newFileMode)
 	{
 		HANDLE win32Handle;
 		wchar_t *path16;
 		UInt32 desiredAccess, shareMode, creationDisposition, flagsAndAttributes;
 		Stdio_File file;
 		SmileHandle handle;
+
+		UNUSED(newFileMode);
 
 		// Windows wants backslashes in the path, not forward slashes.
 		if (String_IndexOfChar(path, '/', 0) >= 0) {
@@ -168,16 +170,19 @@ STATIC_STRING(_stderrName, "<stderr>");
 
 		// Record any errors.
 		if (win32Handle == NULL) {
-			UInt32 lastError = GetLastError();
 			file->isOpen = False;
-			file->lastErrorCode = lastError;
-			file->lastErrorMessage = Smile_Win32_GetErrorString(lastError);
+			Stdio_File_UpdateLastError(file);
 		}
 
 		return handle;
 	}
 
 #elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+
+#	include <unistd.h>
+#	include <fcntl.h>
+#	include <sys/types.h>
+#	include <sys/stat.h>
 
 	static const Int FileCostEstimate = 0x1000;
 
@@ -221,27 +226,78 @@ STATIC_STRING(_stderrName, "<stderr>");
 		return handle;
 	}
 
-	SmileHandle Stdio_File_CreateFromPath(SmileObject base, String path, UInt32 mode)
+	SmileHandle Stdio_File_CreateFromPath(SmileObject base, String path, UInt32 mode, UInt32 newFileMode)
 	{
 		Stdio_File file;
 		SmileHandle handle;
+		int openFlags;
+		int fd;
 
 		// Unix wants forward slashes in the path, not backslashes.
 		if (String_IndexOfChar(path, '\\', 0) >= 0) {
 			path = String_ReplaceChar(path, '/', '\\');
 		}
 
-		// TODO: IMPLEMENT ME.
+		// Figure out whether we're creating or opening.
+		switch (mode & (FILE_MODE_OPEN_MASK | FILE_MODE_TRUNCATE)) {
+			case FILE_MODE_OPEN_ONLY:
+				openFlags = 0;
+				break;
+			case FILE_MODE_CREATE_ONLY:
+			case FILE_MODE_CREATE_ONLY | FILE_MODE_TRUNCATE:
+				openFlags = O_CREAT | O_EXCL;
+				break;
+			case FILE_MODE_CREATE_OR_OPEN:
+				openFlags = O_CREAT;
+				break;
+			case FILE_MODE_OPEN_ONLY | FILE_MODE_TRUNCATE:
+				openFlags = O_TRUNC;
+				break;
+			case FILE_MODE_CREATE_OR_OPEN | FILE_MODE_TRUNCATE:
+				openFlags = O_CREAT | O_TRUNC;
+				break;
+			default:
+				handle = Stdio_File_CreateFromUnixFD(base, path, -1, mode);
+				file = (Stdio_File)handle->ptr;
+				file->isOpen = False;
+				file->lastErrorCode = (UInt32)~0;
+				file->lastErrorMessage = String_FromC("Invalid mode flags.");
+				return handle;
+		}
+
+		// Figure out whether this is read, write, or append I/O.
+		switch (mode & (FILE_MODE_READ | FILE_MODE_WRITE | FILE_MODE_APPEND)) {
+			case 0:
+			case FILE_MODE_READ:
+				openFlags |= O_RDONLY;
+				break;
+			case FILE_MODE_WRITE:
+				openFlags |= O_WRONLY;
+				break;
+			case FILE_MODE_READ | FILE_MODE_WRITE:
+				openFlags |= O_RDWR;
+				break;
+			case FILE_MODE_APPEND:
+			case FILE_MODE_APPEND | FILE_MODE_WRITE:
+				openFlags |= O_WRONLY | O_APPEND;
+				break;
+			case FILE_MODE_APPEND | FILE_MODE_READ:
+			case FILE_MODE_APPEND | FILE_MODE_READ | FILE_MODE_WRITE:
+				openFlags |= O_RDWR | O_APPEND;
+				break;
+		}
+
+		// Do it.
+		fd = open(String_ToC(path), openFlags, newFileMode);
 
 		// Create a wrapper object around it, even if it's not open.
-		handle = Stdio_File_CreateFromUnixFD(base, path, 0, mode);
+		handle = Stdio_File_CreateFromUnixFD(base, path, fd, mode);
 		file = (Stdio_File)handle->ptr;
 
 		// Record any errors.
-		if (errno) {
+		if (fd < 0) {
 			file->isOpen = False;
-			file->lastErrorCode = errno;
-			file->lastErrorMessage = String_Empty;
+			Stdio_File_UpdateLastError(file);
 		}
 
 		return handle;

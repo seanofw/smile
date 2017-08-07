@@ -77,7 +77,8 @@ typedef enum {
 } Stdio_FileMode;
 
 SMILE_INTERNAL_FUNC void Stdio_File_DeclareStdInOutErr(Closure globalClosure, SmileObject fileBase);
-SMILE_INTERNAL_FUNC SmileHandle Stdio_File_CreateFromPath(SmileObject base, String path, UInt32 mode);
+SMILE_INTERNAL_FUNC SmileHandle Stdio_File_CreateFromPath(SmileObject base, String path, UInt32 openMode, UInt32 newFileMode);
+SMILE_INTERNAL_FUNC void Stdio_File_UpdateLastError(Stdio_File file);
 
 SMILE_INTERNAL_FUNC void Stdio_File_Init(SmileUserObject base);
 SMILE_INTERNAL_FUNC void Stdio_Dir_Init(SmileUserObject base);

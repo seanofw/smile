@@ -74,13 +74,14 @@ static Byte _readWriteChecks[] = {
 	SMILE_KIND_MASK, SMILE_KIND_INTEGER64,
 };
 
-Inline void UpdateLastError(Stdio_File file)
+void Stdio_File_UpdateLastError(Stdio_File file)
 {
 #	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
 		file->lastErrorCode = GetLastError();
-		file->lastErrorMessage = Smile_Win32_GetErrorString(file->lastErrorCode);
+		file->lastErrorMessage = file->lastErrorCode ? Smile_Win32_GetErrorString(file->lastErrorCode) : String_Empty;
 #	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
 		file->lastErrorCode = errno;
+		file->lastErrorMessage = errno ? Smile_Unix_GetErrorString(errno) : String_Empty;
 #	else
 #		error Unsupported OS.
 #	endif
@@ -163,7 +164,7 @@ SMILE_EXTERNAL_FUNCTION(Open)
 	}
 
 	// We're all set, so go do it!
-	fileHandle = Stdio_File_CreateFromPath(fileInfo->fileBase, path, flags);
+	fileHandle = Stdio_File_CreateFromPath(fileInfo->fileBase, path, flags, fileMode);
 
 	// Right or wrong, return the file.
 	return SmileArg_From((SmileObject)fileHandle);
@@ -235,7 +236,7 @@ SMILE_EXTERNAL_FUNCTION(Close)
 		return SmileUnboxedSymbol_From(fileInfo->error);
 	}
 	else {
-		UpdateLastError(file);
+		Stdio_File_UpdateLastError(file);
 		file->isOpen = False;
 		return SmileUnboxedSymbol_From(fileInfo->closed);
 	}
@@ -254,7 +255,7 @@ SMILE_EXTERNAL_FUNCTION(Tell)
 #		error Unsupported OS.
 #	endif
 
-	UpdateLastError(file);
+	Stdio_File_UpdateLastError(file);
 
 	return SmileUnboxedInteger64_From(pos);
 }
@@ -271,7 +272,7 @@ static void SeekForReal(Stdio_File file, Int64 offset, int whence)
 
 	file->isEof = False;
 
-	UpdateLastError(file);
+	Stdio_File_UpdateLastError(file);
 }
 
 SMILE_EXTERNAL_FUNCTION(Seek)
@@ -349,7 +350,7 @@ SMILE_EXTERNAL_FUNCTION(ReadByte)
 		return SmileArg_From(NullObject);
 	}
 	else {
-		UpdateLastError(file);
+		Stdio_File_UpdateLastError(file);
 		return SmileUnboxedSymbol_From(((FileInfo)param)->error);
 	}
 }
@@ -379,7 +380,7 @@ SMILE_EXTERNAL_FUNCTION(WriteByte)
 		return SmileUnboxedInteger64_From(count);
 	}
 	else {
-		UpdateLastError(file);
+		Stdio_File_UpdateLastError(file);
 		return SmileUnboxedSymbol_From(((FileInfo)param)->error);
 	}
 }
@@ -448,7 +449,7 @@ SMILE_EXTERNAL_FUNCTION(Read)
 #	endif
 
 	if (count < 0) {
-		UpdateLastError(file);
+		Stdio_File_UpdateLastError(file);
 	}
 	else if (count == 0) {
 		file->isEof = True;
@@ -527,7 +528,7 @@ SMILE_EXTERNAL_FUNCTION(Write)
 #	endif
 
 	if (count < 0) {
-		UpdateLastError(file);
+		Stdio_File_UpdateLastError(file);
 	}
 	else {
 		file->lastErrorCode = 0;
