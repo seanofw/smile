@@ -112,6 +112,7 @@
     <ClCompile Include="repl_help.c" />
     <ClCompile Include="repl_ls.c" />
     <ClCompile Include="style.c" />
+    <ClCompile Include="welcome.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="buildnum.h" />
