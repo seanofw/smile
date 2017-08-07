@@ -23,6 +23,8 @@
 
 #if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
 #	include <unistd.h>
+#elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+#	include <io.h>
 #endif
 
 /// <summary>
@@ -56,12 +58,14 @@ size_t fwrite_styled(const char *string, size_t size, size_t count, FILE *fp)
 	size_t result;
 
 	// If this is a TTY, write the output as given.
-#	if _WIN32
+#	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
 		if (_isatty(fileno(fp)))
 			return fwrite_ansi_win32(string, size, count, fp);
-#	else
+#	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
 		if (isatty(fileno(fp)))
 			return fwrite(string, size, count, fp);
+#	else
+		// For unknown OSes, just strip all the ANSI escape codes.
 #	endif
 
 	// Find the extent of the string.
