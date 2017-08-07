@@ -38,7 +38,7 @@ LINKRPATH := -Wl,-rpath '-Wl,$$ORIGIN'
 
 all: $(TESTBIN)
 
-$(TESTBIN): $(OBJS)
+$(TESTBIN): $(OBJS) ../smilelib/bin/$(PLATFORM_NAME)/libsmile.so
 	@$(MKDIR_P) $(dir $@)
 
 	# Use a directory-change trick to shorten the command line before linking.

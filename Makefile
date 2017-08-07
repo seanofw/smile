@@ -7,7 +7,7 @@
 include Makefile.conf
 include scripts/Makefile.extra
 
-PACKAGES := smilelib smilelibtests
+PACKAGES := smilelib smilelibtests smilerunner
 
 all dep check clean distclean install install-strip uninstall:
 	@for package in $(PACKAGES); do $(MAKE) -C $$package $@; done
