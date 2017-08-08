@@ -89,28 +89,12 @@ ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Int *temp
 	switch (token->kind) {
 
 	case TOKEN_LEFTPARENTHESIS:
-		/*if (Lexer_Peek(parser->lexer) == TOKEN_LEFTPARENTHESIS) {
-			// This list needs to be spliced.
-			Lexer_Next(parser->lexer);
-			*templateKind = TemplateKind_TemplateWithSplicing;
-		}
-		else {*/
-			Lexer_Unget(parser->lexer);
-			*templateKind = TemplateKind_Template;
-		//}
+		Lexer_Unget(parser->lexer);
+		*templateKind = TemplateKind_Template;
 		startPosition = Token_GetPosition(parser->lexer->token);
 		error = Parser_ParseParentheses(parser, result, modeFlags);
 		if (error != NULL)
 			return error;
-		/*if (*templateKind == TemplateKind_TemplateWithSplicing) {
-			*result = WrapForSplicing(*result);
-			if (Lexer_Next(parser->lexer) != TOKEN_RIGHTPARENTHESIS) {
-				error = ParseMessage_Create(PARSEMESSAGE_ERROR,
-					startPosition, String_Format("Missing ')' in spliced list starting on line %d.", startPosition->line));
-				*result = NullObject;
-				return error;
-			}
-		}*/
 		return NULL;
 
 	case TOKEN_LEFTBRACE:
@@ -150,24 +134,27 @@ ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Int *temp
 
 	case TOKEN_BACKTICK:
 		{
-			Int childTemplateKind;
+			Int childTemplateKind, tokenKind;
 			startPosition = Token_GetPosition(token);
-			error = Parser_ParseRawListTerm(parser, result, &childTemplateKind, modeFlags);
+			if ((tokenKind = Lexer_Peek(parser->lexer)) == TOKEN_LEFTPARENTHESIS
+				|| tokenKind == TOKEN_LEFTBRACE) {
+				error = Parser_ParseTerm(parser, result, modeFlags, Token_Clone(token));
+			}
+			else {
+				error = Parser_ParseRawListTerm(parser, result, &childTemplateKind, modeFlags);
+			}
 			if (error != NULL)
 				return error;
-			if (childTemplateKind == TemplateKind_None) {
-				*result = (SmileObject)SmileList_ConsWithSource(
-					(SmileObject)Smile_KnownObjects._quoteSymbol,
-					(SmileObject)SmileList_ConsWithSource(
-						*result,
-						NullObject,
-						startPosition
-					),
+			*result = (SmileObject)SmileList_ConsWithSource(
+				(SmileObject)Smile_KnownObjects._quoteSymbol,
+				(SmileObject)SmileList_ConsWithSource(
+					*result,
+					NullObject,
 					startPosition
-				);
-				*templateKind = TemplateKind_None;
-			}
-			else *templateKind = TemplateKind_Template;
+				),
+				startPosition
+			);
+			*templateKind = TemplateKind_None;
 			return NULL;
 		}
 
@@ -175,9 +162,22 @@ ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Int *temp
 	case TOKEN_PUNCTNAME:
 	case TOKEN_UNKNOWNALPHANAME:
 	case TOKEN_UNKNOWNPUNCTNAME:
-		*result = (SmileObject)SmileSymbol_Create(token->data.symbol);
-		*templateKind = TemplateKind_None;
-		return NULL;
+		if (token->data.symbol == SMILE_SPECIAL_SYMBOL_ATSIGN && Lexer_Peek(parser->lexer) == TOKEN_LEFTPARENTHESIS) {
+			// This is the special '@(...)' form, which works like ',@' in Lisp, and
+			// captures the inner list, and then splices it into the current list.
+			*templateKind = TemplateKind_TemplateWithSplicing;
+			startPosition = Token_GetPosition(parser->lexer->token);
+			error = Parser_ParseParentheses(parser, result, modeFlags);
+			if (error != NULL)
+				return error;
+			*templateKind = TemplateKind_TemplateWithSplicing;
+			return NULL;
+		}
+		else {
+			*result = (SmileObject)SmileSymbol_Create(token->data.symbol);
+			*templateKind = TemplateKind_None;
+			return NULL;
+		}
 
 	case TOKEN_RAWSTRING:
 		*result = (SmileObject)token->text;

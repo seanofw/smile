@@ -53,6 +53,11 @@ static Byte _indexOfChecks[] = {
 	0, 0,
 };
 
+static Byte _combineChecks[] = {
+	0, 0,
+	SMILE_KIND_MASK & ~SMILE_KIND_LIST_BIT, SMILE_KIND_NULL,
+};
+
 //-------------------------------------------------------------------------------------------------
 // Generic type conversion
 
@@ -117,6 +122,30 @@ SMILE_EXTERNAL_FUNCTION(Cons)
 	if (argc == 2)
 		return SmileArg_From((SmileObject)SmileList_Cons(SmileArg_Box(argv[0]), SmileArg_Box(argv[1])));
 	return SmileArg_From((SmileObject)SmileList_Cons(SmileArg_Box(argv[1]), SmileArg_Box(argv[2])));
+}
+
+SMILE_EXTERNAL_FUNCTION(Combine)
+{
+	SmileList head = NullList, tail = NullList;
+	SmileList source;
+	SmileUserObject base = (SmileUserObject)param;
+	STATIC_STRING(wellFormedError, "Object cannot be used with List.combine because it is not a List or is not well-formed.");
+	Int i;
+
+	i = 0;
+	if (argv[i].obj == (SmileObject)base)
+		i++;
+
+	for (; i < argc; i++) {
+		source = (SmileList)argv[i].obj;
+		if (!SmileList_IsWellFormed((SmileObject)source))
+			Smile_ThrowException(Smile_KnownSymbols.native_method_error, wellFormedError);
+		for (; SMILE_KIND(source) != SMILE_KIND_NULL; source = (SmileList)source->d) {
+			LIST_APPEND(head, tail, source->a);
+		}
+	}
+
+	return SmileArg_From((SmileObject)head);
 }
 
 SMILE_EXTERNAL_FUNCTION(Length)
@@ -1111,7 +1140,8 @@ void SmileList_Setup(SmileUserObject base)
 	SetupFunction("hash", Hash, NULL, "list", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 
 	SetupFunction("of", Of, (void *)base, "items", ARG_CHECK_MIN, 1, 0, 0, NULL);
-	SetupFunction("cons", Cons, NULL, "a b", ARG_CHECK_MIN | ARG_CHECK_MAX, 2, 3, 0, NULL);
+	SetupFunction("cons", Cons, (void *)base, "a b", ARG_CHECK_MIN | ARG_CHECK_MAX, 2, 3, 0, NULL);
+	SetupFunction("combine", Combine, (void *)base, "lists...", ARG_CHECK_MIN, 2, 0, 2, _combineChecks);
 
 	SetupFunction("join", Join, NULL, "list", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _joinChecks);
 

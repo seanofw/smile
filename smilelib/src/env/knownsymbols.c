@@ -98,6 +98,7 @@ STATIC_STRING(Colon, ":");
 STATIC_STRING(QuestionMark, "?");
 STATIC_STRING(Implies, "=>");
 STATIC_STRING(Caret, "^");
+STATIC_STRING(AtSign, "@");
 STATIC_STRING(ShiftLeft, "<<<");
 STATIC_STRING(ShiftRight, ">>>");
 STATIC_STRING(ArithmeticShiftLeft, "<<");
@@ -220,6 +221,7 @@ static void KnownSymbolsInt_PreloadSpecials(SymbolTable symbolTable, KnownSymbol
 	knownSymbols->question_mark = AddSpecialSymbol(symbolTable, QuestionMark, SMILE_SPECIAL_SYMBOL_QUESTIONMARK);
 	knownSymbols->implies = AddSpecialSymbol(symbolTable, Implies, SMILE_SPECIAL_SYMBOL_IMPLIES);
 	knownSymbols->caret = AddSpecialSymbol(symbolTable, Caret, SMILE_SPECIAL_SYMBOL_CARET);
+	knownSymbols->at_sign = AddSpecialSymbol(symbolTable, AtSign, SMILE_SPECIAL_SYMBOL_ATSIGN);
 	knownSymbols->shift_left = AddSpecialSymbol(symbolTable, ShiftLeft, SMILE_SPECIAL_SYMBOL_SHL);
 	knownSymbols->shift_right = AddSpecialSymbol(symbolTable, ShiftRight, SMILE_SPECIAL_SYMBOL_SHR);
 	knownSymbols->arithmetic_shift_left = AddSpecialSymbol(symbolTable, ArithmeticShiftLeft, SMILE_SPECIAL_SYMBOL_SAL);
