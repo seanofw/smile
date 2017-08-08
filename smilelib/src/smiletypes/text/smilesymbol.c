@@ -36,7 +36,7 @@ SmileSymbol SmileSymbol_Create(Symbol symbol)
 }
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileSymbol)
-SMILE_EASY_OBJECT_NO_CALL(SmileSymbol)
+SMILE_EASY_OBJECT_NO_CALL(SmileSymbol, "A Symbol object")
 SMILE_EASY_OBJECT_NO_SOURCE(SmileSymbol)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileSymbol)
 
@@ -86,7 +86,7 @@ SmileArg SmileSymbol_Unbox(SmileSymbol smileSymbol)
 SMILE_EASY_OBJECT_VTABLE(SmileUnboxedSymbol);
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileUnboxedSymbol)
-SMILE_EASY_OBJECT_NO_CALL(SmileUnboxedSymbol)
+SMILE_EASY_OBJECT_NO_CALL(SmileUnboxedSymbol, "A Symbol")
 SMILE_EASY_OBJECT_NO_SOURCE(SmileUnboxedSymbol)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileUnboxedSymbol)
 

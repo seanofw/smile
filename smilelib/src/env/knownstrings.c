@@ -23,4 +23,4 @@ EXTERN_STATIC_STRING(String_Object, "Object");
 EXTERN_STATIC_STRING(String_True, "true");
 EXTERN_STATIC_STRING(String_False, "false");
 EXTERN_STATIC_STRING(String_InvalidSecurityKey, "Invalid security key.");
-EXTERN_STATIC_STRING(String_InvalidFunctionError, "Object is not a callable function.");
+EXTERN_STATIC_STRING(String_InvalidFunctionError, "%s cannot be called because it is not a function.");

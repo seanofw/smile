@@ -33,7 +33,7 @@ SMILE_EASY_OBJECT_HASH(ParseMessage, obj->position->line * 100 + obj->position->
 SMILE_EASY_OBJECT_READONLY_SECURITY(ParseMessage);
 SMILE_EASY_OBJECT_NO_REALS(ParseMessage);
 SMILE_EASY_OBJECT_NO_PROPERTIES(ParseMessage);
-SMILE_EASY_OBJECT_NO_CALL(ParseMessage);
+SMILE_EASY_OBJECT_NO_CALL(ParseMessage, "A ParseMessage object");
 SMILE_EASY_OBJECT_NO_SOURCE(ParseMessage);
 SMILE_EASY_OBJECT_NO_UNBOX(ParseMessage)
 

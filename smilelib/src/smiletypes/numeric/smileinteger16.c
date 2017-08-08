@@ -37,7 +37,7 @@ SmileInteger16 SmileInteger16_CreateInternal(Int16 value)
 }
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileInteger16)
-SMILE_EASY_OBJECT_NO_CALL(SmileInteger16)
+SMILE_EASY_OBJECT_NO_CALL(SmileInteger16, "An Integer16 object")
 SMILE_EASY_OBJECT_NO_SOURCE(SmileInteger16)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileInteger16)
 
@@ -87,7 +87,7 @@ SmileArg SmileInteger16_Unbox(SmileInteger16 smileInt)
 SMILE_EASY_OBJECT_VTABLE(SmileUnboxedInteger16);
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileUnboxedInteger16)
-SMILE_EASY_OBJECT_NO_CALL(SmileUnboxedInteger16)
+SMILE_EASY_OBJECT_NO_CALL(SmileUnboxedInteger16, "An Integer16")
 SMILE_EASY_OBJECT_NO_SOURCE(SmileUnboxedInteger16)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileUnboxedInteger16)
 

@@ -186,10 +186,10 @@
 /// This macro can be used to declare virtual functions for a type that can't be readily invoked as a function.
 /// </summary>
 /// <param name="__type__">The type of the object you want to declare virtual functions for.</param>
-#define SMILE_EASY_OBJECT_NO_CALL(__type__) \
+#define SMILE_EASY_OBJECT_NO_CALL(__type__, __description__) \
 	static void __type__##_Call(__type__ obj, Int argc, Int extra) { \
 		UNUSED(obj); UNUSED(argc); UNUSED(extra); \
-		Smile_ThrowException(Smile_KnownSymbols.eval_error, String_InvalidFunctionError); }
+		Smile_ThrowException(Smile_KnownSymbols.eval_error, String_FormatString(String_InvalidFunctionError, __description__)); }
 
 /// <summary>
 /// This macro can be used to declare virtual functions for a type that has no properties.

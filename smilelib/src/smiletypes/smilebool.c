@@ -37,7 +37,7 @@ SmileBool SmileBool_Create(Bool value)
 }
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileBool)
-SMILE_EASY_OBJECT_NO_CALL(SmileBool)
+SMILE_EASY_OBJECT_NO_CALL(SmileBool, "A Bool object")
 SMILE_EASY_OBJECT_NO_SOURCE(SmileBool)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileBool)
 
@@ -87,7 +87,7 @@ SmileArg SmileBool_Unbox(SmileBool smileBool)
 SMILE_EASY_OBJECT_VTABLE(SmileUnboxedBool);
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileUnboxedBool)
-SMILE_EASY_OBJECT_NO_CALL(SmileUnboxedBool)
+SMILE_EASY_OBJECT_NO_CALL(SmileUnboxedBool, "A Bool")
 SMILE_EASY_OBJECT_NO_SOURCE(SmileUnboxedBool)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileUnboxedBool)
 

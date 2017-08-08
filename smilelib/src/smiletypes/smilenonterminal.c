@@ -31,7 +31,7 @@ SMILE_EASY_OBJECT_VTABLE(SmileNonterminal);
 SMILE_EASY_OBJECT_NO_SOURCE(SmileNonterminal);
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileNonterminal);
 SMILE_EASY_OBJECT_NO_REALS(SmileNonterminal);
-SMILE_EASY_OBJECT_NO_CALL(SmileNonterminal);
+SMILE_EASY_OBJECT_NO_CALL(SmileNonterminal, "A syntax-nonterminal object");
 SMILE_EASY_OBJECT_NO_UNBOX(SmileNonterminal)
 
 SmileNonterminal SmileNonterminal_Create(Symbol nonterminal, Symbol name, Symbol repeat, Symbol separator, Int numWithSymbols, Symbol *withSymbols)

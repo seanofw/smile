@@ -57,7 +57,7 @@ static Bool SmileNull_DeepEqual(SmileNull self, SmileUnboxedData selfData, Smile
 STATIC_STRING(NullString, "null");
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileNull)
-SMILE_EASY_OBJECT_NO_CALL(SmileNull)
+SMILE_EASY_OBJECT_NO_CALL(SmileNull, "Null")
 SMILE_EASY_OBJECT_NO_SOURCE(SmileNull)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileNull)
 SMILE_EASY_OBJECT_NO_UNBOX(SmileNull)

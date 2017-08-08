@@ -151,9 +151,22 @@ static Int ParseAndEval(String string, ParseScope globalScope, ClosureInfo globa
 
 		case EVAL_RESULT_EXCEPTION:
 			{
-				String stringified = SmileObject_Stringify(evalResult->exception);
-				String message = String_Format("\033[0;33;1mUncaught exception:\033[0m\n\033[1;31m%S\033[0m\n", stringified);
-				fwrite_styled(String_GetBytes(message), 1, String_Length(message), stderr);
+				String exceptionMessage = (String)SMILE_VCALL1(evalResult->exception, getProperty, Smile_KnownSymbols.message);
+				SmileSymbol exceptionKindWrapped = (SmileSymbol)SMILE_VCALL1(evalResult->exception, getProperty, Smile_KnownSymbols.kind);
+				String displayMessage;
+				Symbol exceptionKind;
+
+				if (SMILE_KIND(exceptionMessage) != SMILE_KIND_STRING)
+					exceptionMessage = String_Empty;
+				if (SMILE_KIND(exceptionKindWrapped) != SMILE_KIND_SYMBOL)
+					exceptionKind = SymbolTable_GetSymbolC(Smile_SymbolTable, "unknown-error");
+				else exceptionKind = exceptionKindWrapped->symbol;
+
+				displayMessage = String_Format("\033[0;31;1m!Exception thrown (%S)%s\033[0;33;1m%S\033[0m\n",
+					SymbolTable_GetName(Smile_SymbolTable, exceptionKind),
+					!String_IsNullOrEmpty(exceptionMessage) ? ": " : "",
+					exceptionMessage);
+				fwrite_styled(String_GetBytes(displayMessage), 1, String_Length(displayMessage), stderr);
 				fflush(stderr);
 				*result = NullObject;
 			}

@@ -43,7 +43,7 @@ static UInt32 SmileInteger64_Hash(SmileInteger64 self)
 }
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileInteger64)
-SMILE_EASY_OBJECT_NO_CALL(SmileInteger64)
+SMILE_EASY_OBJECT_NO_CALL(SmileInteger64, "An Integer64 object")
 SMILE_EASY_OBJECT_NO_SOURCE(SmileInteger64)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileInteger64)
 
@@ -92,7 +92,7 @@ SmileArg SmileInteger64_Unbox(SmileInteger64 smileInt)
 SMILE_EASY_OBJECT_VTABLE(SmileUnboxedInteger64);
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileUnboxedInteger64)
-SMILE_EASY_OBJECT_NO_CALL(SmileUnboxedInteger64)
+SMILE_EASY_OBJECT_NO_CALL(SmileUnboxedInteger64, "An Integer64")
 SMILE_EASY_OBJECT_NO_SOURCE(SmileUnboxedInteger64)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileUnboxedInteger64)
 

@@ -46,7 +46,7 @@ SmileHandle SmileHandle_Create(SmileObject base, SmileHandleEnd end, Symbol hand
 }
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileHandle)
-SMILE_EASY_OBJECT_NO_CALL(SmileHandle)
+SMILE_EASY_OBJECT_NO_CALL(SmileHandle, "A Handle object")
 SMILE_EASY_OBJECT_NO_SOURCE(SmileHandle)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileHandle)
 SMILE_EASY_OBJECT_NO_UNBOX(SmileHandle)

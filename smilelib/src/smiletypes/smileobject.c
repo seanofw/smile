@@ -103,7 +103,7 @@ SmileList SmileObject_GetPropertyNames(SmileObject self)
 STATIC_STRING(PrimitiveString, "Primitive");
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileObject)
-SMILE_EASY_OBJECT_NO_CALL(SmileObject)
+SMILE_EASY_OBJECT_NO_CALL(SmileObject, "The Primitive object")
 SMILE_EASY_OBJECT_NO_SOURCE(SmileObject)
 SMILE_EASY_OBJECT_NO_UNBOX(SmileObject)
 

@@ -27,7 +27,7 @@ SMILE_EASY_OBJECT_VTABLE(SmilePair);
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmilePair);
 SMILE_EASY_OBJECT_NO_REALS(SmilePair);
-SMILE_EASY_OBJECT_NO_CALL(SmilePair);
+SMILE_EASY_OBJECT_NO_CALL(SmilePair, "A Pair");
 SMILE_EASY_OBJECT_NO_UNBOX(SmilePair)
 
 SmilePair SmilePair_Create(SmileObject left, SmileObject right)

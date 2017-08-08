@@ -30,7 +30,7 @@ SMILE_IGNORE_UNUSED_VARIABLES
 extern SmileVTable SmileByteArray_VTable_ReadWrite;
 extern SmileVTable SmileByteArray_VTable_ReadOnly;
 
-SMILE_EASY_OBJECT_NO_CALL(SmileByteArray)
+SMILE_EASY_OBJECT_NO_CALL(SmileByteArray, "A ByteArray")
 SMILE_EASY_OBJECT_NO_SOURCE(SmileByteArray)
 SMILE_EASY_OBJECT_NO_UNBOX(SmileByteArray)
 

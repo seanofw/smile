@@ -37,7 +37,7 @@ SmileInteger32 SmileInteger32_CreateInternal(Int32 value)
 }
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileInteger32)
-SMILE_EASY_OBJECT_NO_CALL(SmileInteger32)
+SMILE_EASY_OBJECT_NO_CALL(SmileInteger32, "An Integer32 Object")
 SMILE_EASY_OBJECT_NO_SOURCE(SmileInteger32)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileInteger32)
 
@@ -87,7 +87,7 @@ SmileArg SmileInteger32_Unbox(SmileInteger32 smileInt)
 SMILE_EASY_OBJECT_VTABLE(SmileUnboxedInteger32);
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileUnboxedInteger32)
-SMILE_EASY_OBJECT_NO_CALL(SmileUnboxedInteger32)
+SMILE_EASY_OBJECT_NO_CALL(SmileUnboxedInteger32, "An Integer32")
 SMILE_EASY_OBJECT_NO_SOURCE(SmileUnboxedInteger32)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileUnboxedInteger32)
 

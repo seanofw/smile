@@ -37,7 +37,7 @@ SmileByte SmileByte_CreateInternal(Byte value)
 }
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileByte)
-SMILE_EASY_OBJECT_NO_CALL(SmileByte)
+SMILE_EASY_OBJECT_NO_CALL(SmileByte, "A Byte object")
 SMILE_EASY_OBJECT_NO_SOURCE(SmileByte)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileByte)
 
@@ -87,7 +87,7 @@ SmileArg SmileByte_Unbox(SmileByte smileByte)
 SMILE_EASY_OBJECT_VTABLE(SmileUnboxedByte);
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileUnboxedByte)
-SMILE_EASY_OBJECT_NO_CALL(SmileUnboxedByte)
+SMILE_EASY_OBJECT_NO_CALL(SmileUnboxedByte, "A Byte")
 SMILE_EASY_OBJECT_NO_SOURCE(SmileUnboxedByte)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileUnboxedByte)
 
