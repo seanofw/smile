@@ -914,6 +914,7 @@
     <ClCompile Include="src\unicode\uppercase.c" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="README.md" />
     <None Include="src\eval\opnames.inc" />
     <None Include="src\string\string_parsefloat.generated.inc" />
   </ItemGroup>

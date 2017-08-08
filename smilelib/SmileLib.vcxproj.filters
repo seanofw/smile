@@ -1332,6 +1332,7 @@
     <None Include="src\eval\opnames.inc">
       <Filter>src\eval</Filter>
     </None>
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="grammar.txt" />
