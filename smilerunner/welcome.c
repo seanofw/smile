@@ -96,14 +96,14 @@ static void PrintSmileWelcomeASCII(void)
 }
 
 #if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
-static Bool WindowsSupportsCodePage437 = False;
+	static Bool WindowsSupportsCodePage437 = False;
 
-static BOOL CodePageEnumProc(LPTSTR lpCodePageString)
-{
-	if (!wcscmp(lpCodePageString, L"437"))
-		WindowsSupportsCodePage437 = True;
-	return TRUE;
-}
+	static BOOL CALLBACK CodePageEnumProc(LPWSTR lpCodePageString)
+	{
+		if (!wcscmp(lpCodePageString, L"437"))
+			WindowsSupportsCodePage437 = True;
+		return TRUE;
+	}
 #endif
 
 void PrintSmileWelcome(void)
@@ -120,7 +120,7 @@ void PrintSmileWelcome(void)
 
 #	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
 	// Windows can't do UTF-8 box-drawing characters, but it often CAN do IBM code page 437 box-drawing!
-	EnumSystemCodePages(CodePageEnumProc, CP_INSTALLED);
+	EnumSystemCodePagesW(CodePageEnumProc, CP_INSTALLED);
 	if (WindowsSupportsCodePage437) {
 		SetConsoleOutputCP(437);
 		PrintSmileWelcomeCodePage437();
