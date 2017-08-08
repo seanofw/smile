@@ -516,7 +516,7 @@ SMILE_EXTERNAL_FUNCTION(Write)
 		buffer = byteArray->data + (Int32)start;
 #	endif
 
-	// Read the data for real.
+	// Write the data for real.
 #	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
 		if (length > Int32Max) length = Int32Max;
 		count = _write(file->fd, buffer, (Int32)length);
