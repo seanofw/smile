@@ -26,23 +26,23 @@ TEST_SUITE(ByteCodeTests)
 
 START_TEST(CanEmitNop)
 {
-	ByteCodeSegment segment = ByteCodeSegment_Create();
 	CompiledTables compiledTables = CompiledTables_Create();
+	ByteCodeSegment segment = ByteCodeSegment_Create(compiledTables);
 	String result;
 
 	const char *expectedResult = "\tNop\n";
 
 	ByteCodeSegment_Emit(segment, Op_Nop, 0);
 
-	result = ByteCodeSegment_ToString(segment, NULL, compiledTables);
+	result = ByteCodeSegment_ToString(segment, NULL);
 	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
 }
 END_TEST
 
 START_TEST(CanEmitIntegerLoads)
 {
-	ByteCodeSegment segment = ByteCodeSegment_Create();
 	CompiledTables compiledTables = CompiledTables_Create();
+	ByteCodeSegment segment = ByteCodeSegment_Create(compiledTables);
 	String result;
 
 	const char *expectedResult =
@@ -56,15 +56,15 @@ START_TEST(CanEmitIntegerLoads)
 	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Ld32, 0)].u.int32 = 12345678;
 	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Ld64, 0)].u.int64 = 1234567890;
 
-	result = ByteCodeSegment_ToString(segment, NULL, compiledTables);
+	result = ByteCodeSegment_ToString(segment, NULL);
 	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
 }
 END_TEST
 
 START_TEST(CanEmitBranches)
 {
-	ByteCodeSegment segment = ByteCodeSegment_Create();
 	CompiledTables compiledTables = CompiledTables_Create();
+	ByteCodeSegment segment = ByteCodeSegment_Create(compiledTables);
 	String result;
 
 	String expectedResult = String_Format(
@@ -88,7 +88,7 @@ START_TEST(CanEmitBranches)
 	ByteCodeSegment_Emit(segment, Op_Dup1, 0);
 	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Bt, 0)].u.index = -5;
 
-	result = ByteCodeSegment_ToString(segment, NULL, compiledTables);
+	result = ByteCodeSegment_ToString(segment, NULL);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
 END_TEST

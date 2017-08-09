@@ -294,7 +294,7 @@ EvalResult Smile_EvalInScope(ClosureInfo globalClosureInfo, SmileObject expressi
 	Compiler_EndScope(compiler);
 
 	// Now run the compiled bytecode!
-	result = Eval_Run(compiler->compiledTables, globalFunction);
+	result = Eval_Run(globalFunction);
 
 	return result;
 }

@@ -57,6 +57,7 @@ struct ByteCodeStruct {
 /// A byte-code segment is nothing more than an easily-growable array of byte codes.
 /// </summary>
 typedef struct ByteCodeSegmentStruct {
+	struct CompiledTablesStruct *compiledTables;	// These tables contain any data this segment references.
 	ByteCode byteCodes;
 	Int32 numByteCodes;
 	Int32 maxByteCodes;
@@ -69,11 +70,11 @@ struct CompiledTablesStruct;
 struct UserFunctionInfoStruct;
 
 SMILE_API_FUNC void ByteCodeSegment_Grow(ByteCodeSegment segment, Int count);
-SMILE_API_FUNC ByteCodeSegment ByteCodeSegment_CreateWithSize(Int size);
-SMILE_API_FUNC ByteCodeSegment ByteCodeSegment_CreateFromByteCodes(const ByteCode byteCodes, Int numByteCodes, Bool addRet);
-SMILE_API_FUNC String ByteCodeSegment_ToString(ByteCodeSegment segment, struct UserFunctionInfoStruct *userFunctionInfo, struct CompiledTablesStruct *compiledTables);
+SMILE_API_FUNC ByteCodeSegment ByteCodeSegment_CreateWithSize(struct CompiledTablesStruct *compiledTables, Int size);
+SMILE_API_FUNC ByteCodeSegment ByteCodeSegment_CreateFromByteCodes(struct CompiledTablesStruct *compiledTables, const ByteCode byteCodes, Int numByteCodes, Bool addRet);
+SMILE_API_FUNC String ByteCodeSegment_ToString(ByteCodeSegment segment, struct UserFunctionInfoStruct *userFunctionInfo);
 SMILE_API_FUNC String ByteCodeSegment_Stringify(ByteCodeSegment segment);
-SMILE_API_FUNC String ByteCode_ToString(ByteCode byteCode, Int address, struct UserFunctionInfoStruct *userFunctionInfo, struct CompiledTablesStruct *compiledTables);
+SMILE_API_FUNC String ByteCode_ToString(ByteCodeSegment segment, ByteCode byteCode, Int address, struct UserFunctionInfoStruct *userFunctionInfo);
 
 SMILE_API_DATA String *Opcode_Names;
 
@@ -83,9 +84,9 @@ SMILE_API_DATA String *Opcode_Names;
 /// <summary>
 /// Create a new byte-code segment, with room for 16 instructions initially.
 /// </summary>
-Inline ByteCodeSegment ByteCodeSegment_Create(void)
+Inline ByteCodeSegment ByteCodeSegment_Create(struct CompiledTablesStruct *compiledTables)
 {
-	return ByteCodeSegment_CreateWithSize(16);
+	return ByteCodeSegment_CreateWithSize(compiledTables, 16);
 }
 
 /// <summary>

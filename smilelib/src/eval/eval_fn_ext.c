@@ -352,7 +352,7 @@ static struct ByteCodeStruct _stateMachineByteCode[] = {
 };
 
 static struct ByteCodeSegmentStruct _stateMachineSegment = {
-	_stateMachineByteCode, 2, 2,
+	NULL, _stateMachineByteCode, 2, 2,
 };
 
 ClosureStateMachine Eval_BeginStateMachine(StateMachine stateMachineStart, StateMachine stateMachineBody)

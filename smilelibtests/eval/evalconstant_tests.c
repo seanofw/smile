@@ -35,7 +35,7 @@
 
 TEST_SUITE(EvalConstantTests)
 
-static CompiledTables Compile(const char *text)
+static UserFunctionInfo Compile(const char *text)
 {
 	String source;
 	Lexer lexer;
@@ -65,7 +65,7 @@ static CompiledTables Compile(const char *text)
 	Compiler_SetGlobalClosureInfo(compiler, globalClosureInfo);
 	globalFunction = Compiler_CompileGlobal(compiler, expr);
 
-	return compiler->compiledTables;
+	return globalFunction;
 }
 
 //-----------------------------------------------------------------------------
@@ -73,9 +73,9 @@ static CompiledTables Compile(const char *text)
 
 START_TEST(CanEvalAConstantInteger64)
 {
-	CompiledTables compiledTables = Compile("31415926535");
+	UserFunctionInfo globalFunctionInfo = Compile("31415926535");
 
-	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+	EvalResult result = Eval_Run(globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
@@ -85,9 +85,9 @@ END_TEST
 
 START_TEST(CanEvalAConstantInteger32)
 {
-	CompiledTables compiledTables = Compile("314159265t");
+	UserFunctionInfo globalFunctionInfo = Compile("314159265t");
 
-	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+	EvalResult result = Eval_Run(globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER32);
@@ -97,9 +97,9 @@ END_TEST
 
 START_TEST(CanEvalAConstantInteger16)
 {
-	CompiledTables compiledTables = Compile("31415s");
+	UserFunctionInfo globalFunctionInfo = Compile("31415s");
 
-	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+	EvalResult result = Eval_Run(globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER16);
@@ -109,9 +109,9 @@ END_TEST
 
 START_TEST(CanEvalAConstantByte)
 {
-	CompiledTables compiledTables = Compile("31x");
+	UserFunctionInfo globalFunctionInfo = Compile("31x");
 
-	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+	EvalResult result = Eval_Run(globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_BYTE);
@@ -121,9 +121,9 @@ END_TEST
 
 START_TEST(CanEvalAConstantSymbol)
 {
-	CompiledTables compiledTables = Compile("`a");
+	UserFunctionInfo globalFunctionInfo = Compile("`a");
 
-	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+	EvalResult result = Eval_Run(globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_SYMBOL);
@@ -133,9 +133,9 @@ END_TEST
 
 START_TEST(CanEvalAConstantString)
 {
-	CompiledTables compiledTables = Compile("\"Hello World\"");
+	UserFunctionInfo globalFunctionInfo = Compile("\"Hello World\"");
 
-	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+	EvalResult result = Eval_Run(globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_STRING);
@@ -145,9 +145,9 @@ END_TEST
 
 START_TEST(CanEvalAConstantFalse)
 {
-	CompiledTables compiledTables = Compile("false");
+	UserFunctionInfo globalFunctionInfo = Compile("false");
 
-	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+	EvalResult result = Eval_Run(globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_BOOL);
@@ -157,9 +157,9 @@ END_TEST
 
 START_TEST(CanEvalAConstantTrue)
 {
-	CompiledTables compiledTables = Compile("true");
+	UserFunctionInfo globalFunctionInfo = Compile("true");
 
-	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+	EvalResult result = Eval_Run(globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_BOOL);
@@ -169,9 +169,9 @@ END_TEST
 
 START_TEST(CanEvalAConstantNull)
 {
-	CompiledTables compiledTables = Compile("null");
+	UserFunctionInfo globalFunctionInfo = Compile("null");
 
-	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+	EvalResult result = Eval_Run(globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_NULL);
@@ -180,9 +180,9 @@ END_TEST
 
 START_TEST(CanEvalAConstantEmptyListAsNull)
 {
-	CompiledTables compiledTables = Compile("[]");
+	UserFunctionInfo globalFunctionInfo = Compile("[]");
 
-	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+	EvalResult result = Eval_Run(globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_NULL);
@@ -191,9 +191,9 @@ END_TEST
 
 START_TEST(AQuotedEmptyListIsAlsoNull)
 {
-	CompiledTables compiledTables = Compile("`[]");
+	UserFunctionInfo globalFunctionInfo = Compile("`[]");
 
-	EvalResult result = Eval_Run(compiledTables, compiledTables->globalFunctionInfo);
+	EvalResult result = Eval_Run(globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_NULL);

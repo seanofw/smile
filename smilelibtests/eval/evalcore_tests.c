@@ -35,7 +35,7 @@
 
 TEST_SUITE(EvalCoreTests)
 
-static Compiler CreateRawGlobalCode(const ByteCode byteCodes, Int numByteCodes, Int stackSize, Int localSize)
+static UserFunctionInfo CreateRawGlobalCode(const ByteCode byteCodes, Int numByteCodes, Int stackSize, Int localSize)
 {
 	Compiler compiler;
 	ClosureInfo globalClosureInfo, closureInfo;
@@ -61,7 +61,7 @@ static Compiler CreateRawGlobalCode(const ByteCode byteCodes, Int numByteCodes, 
 	compilerFunction->stackSize = stackSize;
 	compilerFunction->localSize = compilerFunction->localMax = (Int32)localSize;
 
-	userFunctionInfo->byteCodeSegment = ByteCodeSegment_CreateFromByteCodes(byteCodes, numByteCodes, True);
+	userFunctionInfo->byteCodeSegment = ByteCodeSegment_CreateFromByteCodes(compiler->compiledTables, byteCodes, numByteCodes, True);
 
 	closureInfo = Compiler_MakeClosureInfoForCompilerFunction(compiler, compilerFunction);
 	MemCpy(&userFunctionInfo->closureInfo, closureInfo, sizeof(struct ClosureInfoStruct));
@@ -70,7 +70,7 @@ static Compiler CreateRawGlobalCode(const ByteCode byteCodes, Int numByteCodes, 
 
 	Compiler_AddUserFunctionInfo(compiler, userFunctionInfo);
 
-	return compiler;
+	return userFunctionInfo;
 }
 
 //-----------------------------------------------------------------------------
@@ -86,8 +86,8 @@ START_TEST(CanEvalNop)
 		{ .opcode = Op_Nop },
 	};
 
-	Compiler compiler = CreateRawGlobalCode(byteCode, sizeof(byteCode) / sizeof(struct ByteCodeStruct), 1, 0);
-	EvalResult result = Eval_Run(compiler->compiledTables, compiler->compiledTables->globalFunctionInfo);
+	UserFunctionInfo globalFunctionInfo = CreateRawGlobalCode(byteCode, sizeof(byteCode) / sizeof(struct ByteCodeStruct), 1, 0);
+	EvalResult result = Eval_Run(globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
@@ -118,23 +118,23 @@ START_TEST(CanEvalDup1)
 		{ .opcode = Op_Pop1 },
 	};
 
-	Compiler compiler;
+	UserFunctionInfo globalFunctionInfo;
 	EvalResult result;
 
-	compiler = CreateRawGlobalCode(byteCode, sizeof(byteCode) / sizeof(struct ByteCodeStruct), 3, 0);
-	result = Eval_Run(compiler->compiledTables, compiler->compiledTables->globalFunctionInfo);
+	globalFunctionInfo = CreateRawGlobalCode(byteCode, sizeof(byteCode) / sizeof(struct ByteCodeStruct), 3, 0);
+	result = Eval_Run(globalFunctionInfo);
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
 	ASSERT(((SmileInteger64)result->value)->value == 12345);
 
-	compiler = CreateRawGlobalCode(byteCode2, sizeof(byteCode2) / sizeof(struct ByteCodeStruct), 3, 0);
-	result = Eval_Run(compiler->compiledTables, compiler->compiledTables->globalFunctionInfo);
+	globalFunctionInfo = CreateRawGlobalCode(byteCode2, sizeof(byteCode2) / sizeof(struct ByteCodeStruct), 3, 0);
+	result = Eval_Run(globalFunctionInfo);
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
 	ASSERT(((SmileInteger64)result->value)->value == 12345);
 
-	compiler = CreateRawGlobalCode(byteCode3, sizeof(byteCode3) / sizeof(struct ByteCodeStruct), 3, 0);
-	result = Eval_Run(compiler->compiledTables, compiler->compiledTables->globalFunctionInfo);
+	globalFunctionInfo = CreateRawGlobalCode(byteCode3, sizeof(byteCode3) / sizeof(struct ByteCodeStruct), 3, 0);
+	result = Eval_Run(globalFunctionInfo);
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
 	ASSERT(((SmileInteger64)result->value)->value == 42);
@@ -149,8 +149,8 @@ START_TEST(CanEvalDup2)
 		{ .opcode = Op_Dup2 },
 	};
 
-	Compiler compiler = CreateRawGlobalCode(byteCode, sizeof(byteCode) / sizeof(struct ByteCodeStruct), 3, 0);
-	EvalResult result = Eval_Run(compiler->compiledTables, compiler->compiledTables->globalFunctionInfo);
+	UserFunctionInfo globalFunctionInfo = CreateRawGlobalCode(byteCode, sizeof(byteCode) / sizeof(struct ByteCodeStruct), 3, 0);
+	EvalResult result = Eval_Run(globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
@@ -168,8 +168,8 @@ START_TEST(CanEvalDupN)
 		{ .opcode = Op_Dup, .u.index = 4 },
 	};
 
-	Compiler compiler = CreateRawGlobalCode(byteCode, sizeof(byteCode) / sizeof(struct ByteCodeStruct), 5, 0);
-	EvalResult result = Eval_Run(compiler->compiledTables, compiler->compiledTables->globalFunctionInfo);
+	UserFunctionInfo globalFunctionInfo = CreateRawGlobalCode(byteCode, sizeof(byteCode) / sizeof(struct ByteCodeStruct), 5, 0);
+	EvalResult result = Eval_Run(globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
@@ -187,8 +187,8 @@ START_TEST(CanEvalPop2)
 		{ .opcode = Op_Pop2 },
 	};
 
-	Compiler compiler = CreateRawGlobalCode(byteCode, sizeof(byteCode) / sizeof(struct ByteCodeStruct), 5, 0);
-	EvalResult result = Eval_Run(compiler->compiledTables, compiler->compiledTables->globalFunctionInfo);
+	UserFunctionInfo globalFunctionInfo = CreateRawGlobalCode(byteCode, sizeof(byteCode) / sizeof(struct ByteCodeStruct), 5, 0);
+	EvalResult result = Eval_Run(globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
@@ -206,8 +206,8 @@ START_TEST(CanEvalPopN)
 		{ .opcode = Op_Pop, .u.index = 3 },
 	};
 
-	Compiler compiler = CreateRawGlobalCode(byteCode, sizeof(byteCode) / sizeof(struct ByteCodeStruct), 5, 0);
-	EvalResult result = Eval_Run(compiler->compiledTables, compiler->compiledTables->globalFunctionInfo);
+	UserFunctionInfo globalFunctionInfo = CreateRawGlobalCode(byteCode, sizeof(byteCode) / sizeof(struct ByteCodeStruct), 5, 0);
+	EvalResult result = Eval_Run(globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
 	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
@@ -226,11 +226,11 @@ START_TEST(CanEvalRep1)
 		{ .opcode = Op_Brk },
 	};
 
-	Compiler compiler;
+	UserFunctionInfo globalFunctionInfo;
 	Closure closure;
 
-	compiler = CreateRawGlobalCode(byteCode, sizeof(byteCode) / sizeof(struct ByteCodeStruct), 5, 0);
-	Eval_Run(compiler->compiledTables, compiler->compiledTables->globalFunctionInfo);
+	globalFunctionInfo = CreateRawGlobalCode(byteCode, sizeof(byteCode) / sizeof(struct ByteCodeStruct), 5, 0);
+	Eval_Run(globalFunctionInfo);
 
 	Eval_GetCurrentBreakpointInfo(&closure, NULL, NULL, NULL);
 
@@ -258,11 +258,11 @@ START_TEST(CanEvalRep2)
 		{ .opcode = Op_Brk },
 	};
 
-	Compiler compiler;
+	UserFunctionInfo globalFunctionInfo;
 	Closure closure;
 
-	compiler = CreateRawGlobalCode(byteCode, sizeof(byteCode) / sizeof(struct ByteCodeStruct), 5, 0);
-	Eval_Run(compiler->compiledTables, compiler->compiledTables->globalFunctionInfo);
+	globalFunctionInfo = CreateRawGlobalCode(byteCode, sizeof(byteCode) / sizeof(struct ByteCodeStruct), 5, 0);
+	Eval_Run(globalFunctionInfo);
 
 	Eval_GetCurrentBreakpointInfo(&closure, NULL, NULL, NULL);
 
@@ -288,11 +288,11 @@ START_TEST(CanEvalRepN)
 		{ .opcode = Op_Brk },
 	};
 
-	Compiler compiler;
+	UserFunctionInfo globalFunctionInfo;
 	Closure closure;
 
-	compiler = CreateRawGlobalCode(byteCode, sizeof(byteCode) / sizeof(struct ByteCodeStruct), 5, 0);
-	Eval_Run(compiler->compiledTables, compiler->compiledTables->globalFunctionInfo);
+	globalFunctionInfo = CreateRawGlobalCode(byteCode, sizeof(byteCode) / sizeof(struct ByteCodeStruct), 5, 0);
+	Eval_Run(globalFunctionInfo);
 
 	Eval_GetCurrentBreakpointInfo(&closure, NULL, NULL, NULL);
 

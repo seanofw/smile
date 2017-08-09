@@ -58,6 +58,7 @@ static const char *_maxArgCountErrorMessage = "'%S' allows at most %d arguments,
 		/* We're now in the child, so set up the globals for running inside it. */ \
 		_closure = childClosure; \
 		_segment = userFunctionInfo->byteCodeSegment; \
+		_compiledTables = _segment->compiledTables; \
 		_byteCode = &_segment->byteCodes[0]; \
 	}
 
@@ -145,6 +146,7 @@ void SmileUserFunction_Slow_Call(SmileFunction self, Int argc, Int extra)
 	// We're now in the child, so set up the globals for running inside it.
 	_closure = childClosure;
 	_segment = userFunctionInfo->byteCodeSegment;
+	_compiledTables = _segment->compiledTables;
 	_byteCode = &_segment->byteCodes[0];
 }
 
@@ -185,6 +187,7 @@ void SmileUserFunction_Optional_Call(SmileFunction self, Int argc, Int extra)
 	// We're now in the child, so set up the globals for running inside it.
 	_closure = childClosure;
 	_segment = userFunctionInfo->byteCodeSegment;
+	_compiledTables = _segment->compiledTables;
 	_byteCode = &_segment->byteCodes[0];
 }
 
@@ -249,6 +252,7 @@ void SmileUserFunction_Rest_Call(SmileFunction self, Int argc, Int extra)
 	// We're now in the child, so set up the globals for running inside it.
 	_closure = childClosure;
 	_segment = userFunctionInfo->byteCodeSegment;
+	_compiledTables = _segment->compiledTables;
 	_byteCode = &_segment->byteCodes[0];
 }
 

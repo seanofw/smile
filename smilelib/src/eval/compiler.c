@@ -473,7 +473,7 @@ UserFunctionInfo Compiler_CompileGlobal(Compiler compiler, SmileObject expr)
 	compiler->currentFunction->currentSourceLocation = 0;
 	EMIT0(Op_Ret, -1);
 
-	byteCodeSegment = CompiledBlock_Finish(compiledBlock, False);
+	byteCodeSegment = CompiledBlock_Finish(compiledBlock, compiler->compiledTables, False);
 	compilerFunction->stackSize = compiledBlock->maxStackDepth;
 
 	Compiler_EndFunction(compiler);

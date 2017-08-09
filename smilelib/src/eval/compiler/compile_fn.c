@@ -90,7 +90,7 @@ CompiledBlock Compiler_CompileFn(Compiler compiler, SmileList args, CompileFlags
 	Compiler_EndFunction(compiler);
 
 	// Now transform it into finished bytecodes.
-	byteCodeSegment = CompiledBlock_Finish(compiledBlock, False);
+	byteCodeSegment = CompiledBlock_Finish(compiledBlock, compiler->compiledTables, False);
 	userFunctionInfo->byteCodeSegment = byteCodeSegment;
 	compilerFunction->stackSize = compiledBlock->maxStackDepth;
 

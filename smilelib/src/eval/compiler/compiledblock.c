@@ -415,9 +415,9 @@ IntermediateInstruction CompiledBlock_Emit(CompiledBlock compiledBlock, Int opco
 /// Finish the entire given CompiledBlock, assigning it real addresses, resolving its branches,
 /// and transforming it into an executable ByteCodeSegment.
 /// </summary>
-ByteCodeSegment CompiledBlock_Finish(CompiledBlock compiledBlock, Bool includePseudoOps)
+ByteCodeSegment CompiledBlock_Finish(CompiledBlock compiledBlock, struct CompiledTablesStruct *compiledTables, Bool includePseudoOps)
 {
-	ByteCodeSegment segment = ByteCodeSegment_Create();
+	ByteCodeSegment segment = ByteCodeSegment_Create(compiledTables);
 
 	CompiledBlock_CalculateAddresses(compiledBlock, 0, includePseudoOps);
 	CompiledBlock_ResolveBranches(compiledBlock);
@@ -432,8 +432,8 @@ ByteCodeSegment CompiledBlock_Finish(CompiledBlock compiledBlock, Bool includePs
 /// for it, but other than resolving addresses, the block's contents are unchanged.
 /// This is primarily only useful for debugging.
 /// </summary>
-String CompiledBlock_Stringify(CompiledBlock compiledBlock)
+String CompiledBlock_Stringify(CompiledBlock compiledBlock, struct CompiledTablesStruct *compiledTables)
 {
-	ByteCodeSegment segment = CompiledBlock_Finish(compiledBlock, True);
+	ByteCodeSegment segment = CompiledBlock_Finish(compiledBlock, compiledTables, True);
 	return ByteCodeSegment_Stringify(segment);
 }

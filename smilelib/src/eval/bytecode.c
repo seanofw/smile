@@ -24,13 +24,13 @@
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/internal/staticstring.h>
 
-static String ByteCode_OperandsToString(ByteCode byteCode, Int address, UserFunctionInfo userFunctionInfo, struct CompiledTablesStruct *compiledTables);
+static String ByteCode_OperandsToString(ByteCodeSegment segment, ByteCode byteCode, Int address, UserFunctionInfo userFunctionInfo);
 
 /// <summary>
 /// Create a new byte-code segment, with room for 'size' instructions initially.
 /// </summary>
 /// <param name="size">The number of initial empty instruction slots.</param>
-ByteCodeSegment ByteCodeSegment_CreateWithSize(Int size)
+ByteCodeSegment ByteCodeSegment_CreateWithSize(struct CompiledTablesStruct *compiledTables, Int size)
 {
 	ByteCode byteCodes;
 	ByteCodeSegment segment;
@@ -43,6 +43,7 @@ ByteCodeSegment ByteCodeSegment_CreateWithSize(Int size)
 	if (byteCodes == NULL)
 		Smile_Abort_OutOfMemory();
 
+	segment->compiledTables = compiledTables;
 	segment->byteCodes = byteCodes;
 	segment->numByteCodes = 0;
 	segment->maxByteCodes = (Int32)size;
@@ -58,11 +59,11 @@ ByteCodeSegment ByteCodeSegment_CreateWithSize(Int size)
 /// <param name="numByteCodes">The number of byte codes to add to the segment.</param>
 /// <param name="addRet">Whether to add an Op_Ret instruction on the end.</param>
 /// <returns>The new ByteCodeSegment, created from the provided set of ByteCodes.</returns>
-ByteCodeSegment ByteCodeSegment_CreateFromByteCodes(const ByteCode byteCodes, Int numByteCodes, Bool withRet)
+ByteCodeSegment ByteCodeSegment_CreateFromByteCodes(struct CompiledTablesStruct *compiledTables, const ByteCode byteCodes, Int numByteCodes, Bool withRet)
 {
 	ByteCodeSegment byteCodeSegment;
 
-	byteCodeSegment = ByteCodeSegment_CreateWithSize(numByteCodes + (withRet ? 1 : 0));
+	byteCodeSegment = ByteCodeSegment_CreateWithSize(compiledTables, numByteCodes + (withRet ? 1 : 0));
 
 	MemCpy(byteCodeSegment->byteCodes, byteCodes, sizeof(struct ByteCodeStruct) * numByteCodes);
 
@@ -107,7 +108,7 @@ void ByteCodeSegment_Grow(ByteCodeSegment segment, Int count)
 /// </summary>
 String ByteCodeSegment_Stringify(ByteCodeSegment segment)
 {
-	return ByteCodeSegment_ToString(segment, NULL, NULL);
+	return ByteCodeSegment_ToString(segment, NULL);
 }
 
 /// <summary>
@@ -133,7 +134,7 @@ static void AssemblyIndent(StringBuilder stringBuilder, Int depth)
 /// <param name="compiledTables">The compiled tables of objects and functions and strings
 /// that this segment may reference.</param>
 /// <returns>The byte-code segment's instructions, as a string.</returns>
-String ByteCodeSegment_ToString(ByteCodeSegment segment, UserFunctionInfo userFunctionInfo, struct CompiledTablesStruct *compiledTables)
+String ByteCodeSegment_ToString(ByteCodeSegment segment, UserFunctionInfo userFunctionInfo)
 {
 	Int i, end, depth = 1;
 	DECLARE_INLINE_STRINGBUILDER(stringBuilder, 256);
@@ -144,7 +145,7 @@ String ByteCodeSegment_ToString(ByteCodeSegment segment, UserFunctionInfo userFu
 
 	for (i = 0, end = segment->numByteCodes; i < end; i++) {
 		byteCode = segment->byteCodes + i;
-		string = ByteCode_ToString(byteCode, i, userFunctionInfo, compiledTables);
+		string = ByteCode_ToString(segment, byteCode, i, userFunctionInfo);
 		if (byteCode->opcode < Op_Pseudo) {
 			AssemblyIndent(stringBuilder, depth);
 		}
@@ -170,7 +171,7 @@ String ByteCodeSegment_ToString(ByteCodeSegment segment, UserFunctionInfo userFu
 /// <param name="compiledTables">The compiled tables of objects and functions and strings
 /// that this byte code may reference.</param>
 /// <returns>The byte code's contents, as a string.</returns>
-String ByteCode_ToString(ByteCode byteCode, Int address, UserFunctionInfo userFunctionInfo, struct CompiledTablesStruct *compiledTables)
+String ByteCode_ToString(ByteCodeSegment segment, ByteCode byteCode, Int address, UserFunctionInfo userFunctionInfo)
 {
 	String opcode, operands;
 	DECLARE_INLINE_STRINGBUILDER(stringBuilder, 64);
@@ -185,7 +186,7 @@ String ByteCode_ToString(ByteCode byteCode, Int address, UserFunctionInfo userFu
 	opcode = Opcode_Names[byteCode->opcode];
 	if (opcode == NULL) opcode = String_Format("Op%02X", byteCode->opcode);
 
-	operands = ByteCode_OperandsToString(byteCode, address, userFunctionInfo, compiledTables);
+	operands = ByteCode_OperandsToString(segment, byteCode, address, userFunctionInfo);
 	if (operands == NULL)
 		return opcode;
 
@@ -228,7 +229,7 @@ static Symbol GetSymbolForArgument(UserFunctionInfo userFunctionInfo, Int scope,
 /// <param name="compiledTables">The compiled tables of objects and functions and strings
 /// that this byte code may reference.</param>
 /// <returns>The byte code's operands, as a string.</returns>
-static String ByteCode_OperandsToString(ByteCode byteCode, Int address, UserFunctionInfo userFunctionInfo, struct CompiledTablesStruct *compiledTables)
+static String ByteCode_OperandsToString(ByteCodeSegment segment, ByteCode byteCode, Int address, UserFunctionInfo userFunctionInfo)
 {
 	Int opcode = byteCode->opcode;
 	Symbol symbol;
@@ -248,7 +249,7 @@ static String ByteCode_OperandsToString(ByteCode byteCode, Int address, UserFunc
 			return String_Format("%s", byteCode->u.boolean ? "true" : "false");
 		case Op_LdStr:
 			return String_Format("%lld\t; \"%S\"", (Int64)byteCode->u.index,
-				compiledTables != NULL ? String_AddCSlashes(compiledTables->strings[byteCode->u.index]) : String_FromC("???"));
+				segment->compiledTables != NULL ? String_AddCSlashes(segment->compiledTables->strings[byteCode->u.index]) : String_FromC("???"));
 		case Op_LdSym:
 			return String_Format("%d\t; %S", byteCode->u.symbol, SymbolTable_GetName(Smile_SymbolTable, byteCode->u.symbol));
 		case Op_LdObj:

@@ -49,7 +49,7 @@ struct EvalResultStruct {
 
 SMILE_API_FUNC EvalResult EvalResult_Create(Int kind);
 
-SMILE_API_FUNC EvalResult Eval_Run(CompiledTables tables, UserFunctionInfo function);
+SMILE_API_FUNC EvalResult Eval_Run(UserFunctionInfo function);
 SMILE_API_FUNC EvalResult Eval_Continue(void);
 SMILE_API_FUNC ClosureStateMachine Eval_BeginStateMachine(StateMachine stateMachineStart, StateMachine stateMachineBody);
 

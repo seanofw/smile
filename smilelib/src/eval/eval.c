@@ -57,11 +57,11 @@ void Eval_GetCurrentBreakpointInfo(Closure *closure, CompiledTables *compiledTab
 	if (byteCode != NULL) *byteCode = _byteCode;
 }
 
-EvalResult Eval_Run(CompiledTables tables, UserFunctionInfo functionInfo)
+EvalResult Eval_Run(UserFunctionInfo functionInfo)
 {
-	_compiledTables = tables;
 	_segment = functionInfo->byteCodeSegment;
-	_closure = Closure_CreateGlobal(tables->globalClosureInfo, NULL);
+	_compiledTables = _segment->compiledTables;
+	_closure = Closure_CreateGlobal(_compiledTables->globalClosureInfo, NULL);
 	_byteCode = &_segment->byteCodes[0];
 
 	_closure = Closure_CreateLocal(&functionInfo->closureInfo, _closure, NULL, NULL, 0);

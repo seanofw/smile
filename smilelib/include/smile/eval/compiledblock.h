@@ -89,7 +89,7 @@ extern void CompiledBlock_ResolveBranches(CompiledBlock compiledBlock);
 extern void CompiledBlock_AppendToByteCodeSegment(CompiledBlock compiledBlock, ByteCodeSegment segment, Bool includePseudoOps);
 extern IntermediateInstruction CompiledBlock_AppendChild(CompiledBlock parentBlock, CompiledBlock newChild);
 extern IntermediateInstruction CompiledBlock_Emit(CompiledBlock compiledBlock, Int opcode, Int stackDelta, Int sourceLocation);
-extern ByteCodeSegment CompiledBlock_Finish(CompiledBlock compiledBlock, Bool includePseudoOps);
-extern String CompiledBlock_Stringify(CompiledBlock compiledBlock);
+extern ByteCodeSegment CompiledBlock_Finish(CompiledBlock compiledBlock, struct CompiledTablesStruct *compiledTables, Bool includePseudoOps);
+extern String CompiledBlock_Stringify(CompiledBlock compiledBlock, struct CompiledTablesStruct *compiledTables);
 
 #endif
