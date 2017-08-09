@@ -45,6 +45,13 @@ static Byte _integer64ComparisonChecks[] = {
 	0, 0,
 };
 
+typedef struct MathInfoStruct {
+	Bool isLoud;
+} *MathInfo;
+
+static struct MathInfoStruct _loudMath[] = { True };
+static struct MathInfoStruct _quietMath[] = { False };
+
 STATIC_STRING(_divideByZero, "Divide by zero error");
 STATIC_STRING(_negativeLog, "Logarithm of negative or zero value");
 STATIC_STRING(_negativeSqrt, "Square root of negative number");
@@ -340,6 +347,21 @@ SMILE_EXTERNAL_FUNCTION(UStar)
 }
 
 /// <summary>
+/// Deal with division-by-zero.
+/// </summary>
+/// <param name="param">A pointer to a MathInfo struct that describes how to handle divide-by-zero.</param>
+/// <returns>0 if this is a quiet divide-by-zero, or a thrown exception if this is supposed to be an error.</returns>
+Inline SmileArg DivideByZero(void *param)
+{
+	MathInfo mathInfo = (MathInfo)param;
+
+	if (mathInfo->isLoud)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
+
+	return SmileUnboxedInteger64_From(0);
+}
+
+/// <summary>
 /// Perform division classic-C-style, which rounds towards zero no matter what the sign is.
 /// </summary>
 Inline Int64 CDiv(Int64 dividend, Int64 divisor)
@@ -390,30 +412,30 @@ SMILE_EXTERNAL_FUNCTION(Slash)
 		case 2:
 			x = argv[0].unboxed.i64;
 			if ((y = argv[1].unboxed.i64) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
+				return DivideByZero(param);
 			x = MathematiciansDiv(x, y);
 			return SmileUnboxedInteger64_From(x);
 
 		case 3:
 			x = argv[0].unboxed.i64;
 			if ((y = argv[1].unboxed.i64) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
+				return DivideByZero(param);
 			x = MathematiciansDiv(x, y);
 			if ((y = argv[2].unboxed.i64) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
+				return DivideByZero(param);
 			x = MathematiciansDiv(x, y);
 			return SmileUnboxedInteger64_From(x);
 
 		case 4:
 			x = argv[0].unboxed.i64;
 			if ((y = argv[1].unboxed.i64) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
+				return DivideByZero(param);
 			x = MathematiciansDiv(x, y);
 			if ((y = argv[2].unboxed.i64) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
+				return DivideByZero(param);
 			x = MathematiciansDiv(x, y);
 			if ((y = argv[3].unboxed.i64) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
+				return DivideByZero(param);
 			x = MathematiciansDiv(x, y);
 			return SmileUnboxedInteger64_From(x);
 
@@ -421,7 +443,7 @@ SMILE_EXTERNAL_FUNCTION(Slash)
 			x = argv[0].unboxed.i64;
 			for (i = 1; i < argc; i++) {
 				if ((y = argv[i].unboxed.i64) == 0)
-					Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
+					return DivideByZero(param);
 				x = MathematiciansDiv(x, y);
 			}
 			return SmileUnboxedInteger64_From(x);
@@ -437,30 +459,30 @@ SMILE_EXTERNAL_FUNCTION(USlash)
 		case 2:
 			x = (UInt64)argv[0].unboxed.i64;
 			if ((y = (UInt64)argv[1].unboxed.i64) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
+				return DivideByZero(param);
 			x /= y;
 			return SmileUnboxedInteger64_From(x);
 
 		case 3:
 			x = (UInt64)argv[0].unboxed.i64;
 			if ((y = (UInt64)argv[1].unboxed.i64) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
+				return DivideByZero(param);
 			x /= y;
 			if ((y = (UInt64)argv[2].unboxed.i64) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
+				return DivideByZero(param);
 			x /= y;
 			return SmileUnboxedInteger64_From(x);
 
 		case 4:
 			x = (UInt64)argv[0].unboxed.i64;
 			if ((y = (UInt64)argv[1].unboxed.i64) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
+				return DivideByZero(param);
 			x /= y;
 			if ((y = (UInt64)argv[2].unboxed.i64) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
+				return DivideByZero(param);
 			x /= y;
 			if ((y = (UInt64)argv[3].unboxed.i64) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
+				return DivideByZero(param);
 			x /= y;
 			return SmileUnboxedInteger64_From(x);
 
@@ -468,7 +490,7 @@ SMILE_EXTERNAL_FUNCTION(USlash)
 			x = (UInt64)argv[0].unboxed.i64;
 			for (i = 1; i < argc; i++) {
 				if ((y = (UInt64)argv[i].unboxed.i64) == 0)
-					Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
+					return DivideByZero(param);
 				x /= y;
 			}
 			return SmileUnboxedInteger64_From(x);
@@ -484,30 +506,30 @@ SMILE_EXTERNAL_FUNCTION(Div)
 		case 2:
 			x = argv[0].unboxed.i64;
 			if ((y = argv[1].unboxed.i64) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
+				return DivideByZero(param);
 			x = CDiv(x, y);
 			return SmileUnboxedInteger64_From(x);
 
 		case 3:
 			x = argv[0].unboxed.i64;
 			if ((y = argv[1].unboxed.i64) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
+				return DivideByZero(param);
 			x = CDiv(x, y);
 			if ((y = argv[2].unboxed.i64) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
+				return DivideByZero(param);
 			x = CDiv(x, y);
 			return SmileUnboxedInteger64_From(x);
 
 		case 4:
 			x = argv[0].unboxed.i64;
 			if ((y = argv[1].unboxed.i64) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
+				return DivideByZero(param);
 			x = CDiv(x, y);
 			if ((y = argv[2].unboxed.i64) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
+				return DivideByZero(param);
 			x = CDiv(x, y);
 			if ((y = argv[3].unboxed.i64) == 0)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
+				return DivideByZero(param);
 			x = CDiv(x, y);
 			return SmileUnboxedInteger64_From(x);
 
@@ -515,7 +537,7 @@ SMILE_EXTERNAL_FUNCTION(Div)
 			x = argv[0].unboxed.i64;
 			for (i = 1; i < argc; i++) {
 				if ((y = argv[i].unboxed.i64) == 0)
-					Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
+					return DivideByZero(param);
 				x = CDiv(x, y);
 			}
 			return SmileUnboxedInteger64_From(x);
@@ -574,7 +596,7 @@ SMILE_EXTERNAL_FUNCTION(Mod)
 	Int64 y = argv[1].unboxed.i64;
 
 	if (y == 0)
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
+		return DivideByZero(param);
 
 	return SmileUnboxedInteger64_From(MathematiciansModulus(x, y));
 }
@@ -585,7 +607,7 @@ SMILE_EXTERNAL_FUNCTION(UMod)
 	UInt64 y = (UInt64)argv[1].unboxed.i64;
 
 	if (y == 0)
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
+		return DivideByZero(param);
 
 	return SmileUnboxedInteger64_From(x % y);
 }
@@ -596,7 +618,7 @@ SMILE_EXTERNAL_FUNCTION(Rem)
 	Int64 y = argv[1].unboxed.i64;
 
 	if (y == 0)
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
+		return DivideByZero(param);
 
 	return SmileUnboxedInteger64_From(MathematiciansRemainder(x, y));
 }
@@ -874,8 +896,12 @@ SMILE_EXTERNAL_FUNCTION(Sqrt)
 {
 	Int64 value = argv[0].unboxed.i64;
 
-	if (value < 0)
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _negativeSqrt);
+	if (value < 0) {
+		MathInfo mathInfo = (MathInfo)param;
+		if (mathInfo->isLoud)
+			Smile_ThrowException(Smile_KnownSymbols.native_method_error, _negativeSqrt);
+		return SmileUnboxedInteger64_From(0);
+	}
 
 	return SmileUnboxedInteger64_From(IntSqrt(value));
 }
@@ -913,8 +939,12 @@ SMILE_EXTERNAL_FUNCTION(IntLg)
 	UInt64 uvalue = (UInt64)value;
 	UInt64 log;
 
-	if (value <= 0)
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _negativeLog);
+	if (value <= 0) {
+		MathInfo mathInfo = (MathInfo)param;
+		if (mathInfo->isLoud)
+			Smile_ThrowException(Smile_KnownSymbols.native_method_error, _negativeLog);
+		return SmileUnboxedInteger64_From(0);
+	}
 
 	log = 0;
 	if ((uvalue & 0xFFFFFFFF00000000) != 0) uvalue >>= 32, log += 32;
@@ -1320,14 +1350,23 @@ void SmileInteger64_Setup(SmileUserObject base)
 	SetupSynonym("-", "-~");
 	SetupFunction("*", Star, NULL, "multiplier multiplicand", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _integer64Checks);
 	SetupFunction("*~", UStar, NULL, "multiplier multiplicand", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _integer64Checks);
-	SetupFunction("/", Slash, NULL, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _integer64Checks);
-	SetupFunction("/~", USlash, NULL, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _integer64Checks);
-	SetupFunction("div", Div, NULL, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _integer64Checks);
-	SetupFunction("div~", USlash, NULL, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _integer64Checks);
-	SetupFunction("mod", Mod, NULL, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer64Checks);
-	SetupFunction("mod~", UMod, NULL, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer64Checks);
-	SetupFunction("rem", Rem, NULL, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer64Checks);
-	SetupFunction("rem~", UMod, NULL, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer64Checks);
+
+	SetupFunction("/", Slash, &_quietMath, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _integer64Checks);
+	SetupFunction("/!", Slash, &_loudMath, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _integer64Checks);
+	SetupFunction("/~", USlash, &_quietMath, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _integer64Checks);
+	SetupFunction("/!~", USlash, &_loudMath, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _integer64Checks);
+	SetupFunction("div", Div, &_quietMath, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _integer64Checks);
+	SetupFunction("div!", Div, &_loudMath, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _integer64Checks);
+	SetupFunction("div~", USlash, &_quietMath, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _integer64Checks);
+	SetupFunction("div!~", USlash, &_loudMath, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _integer64Checks);
+	SetupFunction("mod", Mod, &_quietMath, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer64Checks);
+	SetupFunction("mod!", Mod, &_loudMath, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer64Checks);
+	SetupFunction("mod~", UMod, &_quietMath, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer64Checks);
+	SetupFunction("mod!~", UMod, &_loudMath, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer64Checks);
+	SetupFunction("rem", Rem, &_quietMath, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer64Checks);
+	SetupFunction("rem!", Rem, &_loudMath, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer64Checks);
+	SetupFunction("rem~", UMod, &_quietMath, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer64Checks);
+	SetupFunction("rem!~", UMod, &_loudMath, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer64Checks);
 
 	SetupFunction("sign", Sign, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
 	SetupFunction("abs", Abs, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
@@ -1338,10 +1377,12 @@ void SmileInteger64_Setup(SmileUserObject base)
 	SetupFunction("max", Max, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _integer64Checks);
 	SetupFunction("max~", UMax, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _integer64Checks);
 	SetupFunction("^", Power, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _integer64Checks);
-	SetupFunction("sqrt", Sqrt, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupFunction("sqrt", Sqrt, &_quietMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupFunction("sqrt!", Sqrt, &_loudMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
 	SetupFunction("pow2?", Pow2Q, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
 	SetupFunction("next-pow2", NextPow2, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
-	SetupFunction("int-lg", IntLg, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupFunction("int-lg", IntLg, &_quietMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupFunction("int-lg!", IntLg, &_loudMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
 
 	SetupFunction("band", BitAnd, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _integer64Checks);
 	SetupFunction("bor", BitOr, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _integer64Checks);
