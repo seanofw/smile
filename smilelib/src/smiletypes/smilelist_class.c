@@ -1145,6 +1145,28 @@ void SmileList_Setup(SmileUserObject base)
 
 	SetupFunction("join", Join, NULL, "list", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _joinChecks);
 
+	/*
+	SetupFunction("append", Append, NULL, "list elements...", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 1, _joinChecks);
+	SetupSynonym("append", "conc");
+	SetupFunction("append!", AppendInPlace, NULL, "list elements...", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 2, _joinChecks);
+	SetupSynonym("append!", "conc!");
+	SetupFunction("append-list", AppendList, NULL, "list lists...", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 1, _listChecks);
+	SetupSynonym("append-list", "conc-list");
+	SetupFunction("append-list!", AppendListInPlace, NULL, "list lists...", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 1, _listChecks);
+	SetupSynonym("append-list!", "conc-list!");
+	SetupSynonym("append", "+");
+
+	SetupFunction("get-member", GetMember, NULL, "list index", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _joinChecks);
+	SetupFunction("set-member", SetMember, NULL, "list index value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 2, _joinChecks);
+	SetupSynonym("get-member", "nth");
+	SetupFunction("nth-cell", NthCell, NULL, "list index", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _joinChecks);
+
+	SetupFunction("splice", Splice, NULL, "list index elements...", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 1, _joinChecks);
+	SetupFunction("splice!", SpliceInPlace, NULL, "list index elements...", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 2, _joinChecks);
+	SetupFunction("splice-list", SpliceList, NULL, "list index lists...", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 1, _listChecks);
+	SetupFunction("splice-list!", SpliceListInPlace, NULL, "list index lists...", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 1, _listChecks);
+	*/
+
 	SetupFunction("each", Each, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
 	SetupFunction("map", Map, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
 	SetupFunction("where", Where, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
