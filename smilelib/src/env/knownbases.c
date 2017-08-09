@@ -202,6 +202,7 @@ extern void SmileByteArray_Setup(SmileUserObject base);
 extern void SmileInteger16_Setup(SmileUserObject base);
 extern void SmileInteger32_Setup(SmileUserObject base);
 extern void SmileInteger64_Setup(SmileUserObject base);
+extern void SmileInteger64Range_Setup(SmileUserObject base);
 extern void SmileList_Setup(SmileUserObject base);
 extern void SmilePair_Setup(SmileUserObject base);
 extern void SmileObject_Setup(SmileUserObject base);
@@ -218,6 +219,7 @@ void KnownBases_Setup(struct KnownBasesStruct *knownBases)
 	SmilePair_Setup(knownBases->Pair);
 	SmileObject_Setup(knownBases->Object);
 	String_Setup(knownBases->String);
+	SmileInteger64Range_Setup(knownBases->Integer64Range);
 
 	SmileUnboxedBool_Instance->base = (SmileObject)knownBases->Bool;
 	SmileUnboxedSymbol_Instance->base = (SmileObject)knownBases->Symbol;

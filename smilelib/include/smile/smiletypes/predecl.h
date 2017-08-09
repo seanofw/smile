@@ -32,6 +32,8 @@ typedef struct SmileUnboxedInteger64Int *SmileUnboxedInteger64;
 typedef struct SmileUnboxedBoolInt *SmileUnboxedBool;
 typedef struct SmileUnboxedSymbolInt *SmileUnboxedSymbol;
 
+typedef struct SmileInteger64RangeInt *SmileInteger64Range;
+
 typedef struct SmileSyntaxInt *SmileSyntax;
 typedef struct SmileNonterminalInt *SmileNonterminal;
 

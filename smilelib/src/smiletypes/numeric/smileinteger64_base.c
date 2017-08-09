@@ -22,6 +22,7 @@
 #include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
+#include <smile/smiletypes/range/smileinteger64range.h>
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/base.h>
 #include <smile/internal/staticstring.h>
@@ -123,6 +124,17 @@ SMILE_EXTERNAL_FUNCTION(ToInt16)
 SMILE_EXTERNAL_FUNCTION(ToByte)
 {
 	return SmileUnboxedByte_From((Byte)argv[0].unboxed.i64);
+}
+
+SMILE_EXTERNAL_FUNCTION(RangeTo)
+{
+	Int64 start, end, step;
+
+	start = argv[0].unboxed.i64;
+	end = argv[1].unboxed.i64;
+	step = end >= start ? +1 : -1;
+
+	return SmileArg_From((SmileObject)SmileInteger64Range_Create(start, end, step));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1368,4 +1380,6 @@ void SmileInteger64_Setup(SmileUserObject base)
 	SetupSynonym("cmp", "compare");
 	SetupFunction("compare~", UCompare, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer64Checks);
 	SetupSynonym("cmp~", "compare~");
+
+	SetupFunction("range-to", RangeTo, NULL, "start end", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer64Checks);
 }

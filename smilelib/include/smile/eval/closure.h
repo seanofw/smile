@@ -114,7 +114,7 @@ typedef struct ClosureStateMachineStruct {
 		
 	StateMachine stateMachineStart;	// The startup function for the state machine.
 	StateMachine stateMachineBody;	// The body function to repeatedly invoke for the state machine.
-	Byte state[sizeof(void*) * 8];	// The state of this machine, with enough space to store it inline for most machines.
+	Byte state[sizeof(Int64) * 8];	// The state of this machine, with enough space to store it inline for most machines.
 
 } *ClosureStateMachine;
 

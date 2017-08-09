@@ -1167,19 +1167,19 @@ void SmileList_Setup(SmileUserObject base)
 	SetupFunction("splice-list!", SpliceListInPlace, NULL, "list index lists...", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 1, _listChecks);
 	*/
 
-	SetupFunction("each", Each, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
-	SetupFunction("map", Map, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
-	SetupFunction("where", Where, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
+	SetupFunction("each", Each, NULL, "list fn", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
+	SetupFunction("map", Map, NULL, "list fn", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
+	SetupFunction("where", Where, NULL, "list fn", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
 
 	SetupFunction("empty?", Empty, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _listChecks);
 	SetupFunction("null?", Empty, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _listChecks);
 
-	SetupFunction("any?", Any, NULL, "list", ARG_STATE_MACHINE, 0, 0, 0, NULL);
-	SetupFunction("contains?", Contains, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _indexOfChecks);
-	SetupFunction("all?", All, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _indexOfChecks);
-	SetupFunction("first", First, NULL, "list", ARG_STATE_MACHINE, 0, 0, 0, NULL);
-	SetupFunction("index-of", IndexOf, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _indexOfChecks);
-	SetupFunction("count", Count, NULL, "list", ARG_STATE_MACHINE, 0, 0, 0, NULL);
+	SetupFunction("any?", Any, NULL, "list fn", ARG_STATE_MACHINE, 0, 0, 0, NULL);
+	SetupFunction("contains?", Contains, NULL, "list fn", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _indexOfChecks);
+	SetupFunction("all?", All, NULL, "list fn", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _indexOfChecks);
+	SetupFunction("first", First, NULL, "list fn", ARG_STATE_MACHINE, 0, 0, 0, NULL);
+	SetupFunction("index-of", IndexOf, NULL, "list fn", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _indexOfChecks);
+	SetupFunction("count", Count, NULL, "list fn", ARG_STATE_MACHINE, 0, 0, 0, NULL);
 
 	SetupFunction("length", Length, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _listChecks);
 	SetupFunction("cycle?", HasCycle, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _listChecks);

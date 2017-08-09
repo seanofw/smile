@@ -45,6 +45,7 @@ void Smile_InitCommonGlobals(ClosureInfo globalClosureInfo)
 	varInfo.offset = 0;
 
 	DeclareCommonGlobal(Smile_KnownSymbols.Object_,	Smile_KnownBases.Object);
+
 	DeclareCommonGlobal(Smile_KnownSymbols.Number_,	  Smile_KnownBases.Number);
 	DeclareCommonGlobal(Smile_KnownSymbols.IntegerBase_,	    Smile_KnownBases.IntegerBase);
 	DeclareCommonGlobal(Smile_KnownSymbols.Byte_,	      Smile_KnownBases.Byte);
@@ -52,6 +53,7 @@ void Smile_InitCommonGlobals(ClosureInfo globalClosureInfo)
 	DeclareCommonGlobal(Smile_KnownSymbols.Integer32_,	      Smile_KnownBases.Integer32);
 	DeclareCommonGlobal(Smile_KnownSymbols.Integer64_,	      Smile_KnownBases.Integer64);
 	DeclareCommonGlobal(Smile_KnownSymbols.Integer_,	      Smile_KnownBases.Integer64);
+
 	DeclareCommonGlobal(Smile_KnownSymbols.Enumerable_,	  Smile_KnownBases.Enumerable);
 	DeclareCommonGlobal(Smile_KnownSymbols.List_,	    Smile_KnownBases.List);
 	DeclareCommonGlobal(Smile_KnownSymbols.String_,	    Smile_KnownBases.String);
@@ -62,6 +64,15 @@ void Smile_InitCommonGlobals(ClosureInfo globalClosureInfo)
 	DeclareCommonGlobal(Smile_KnownSymbols.Bool_,	  Smile_KnownBases.Bool);
 	DeclareCommonGlobal(Smile_KnownSymbols.Symbol_,	  Smile_KnownBases.Symbol);
 	DeclareCommonGlobal(Smile_KnownSymbols.Exception_,	  Smile_KnownBases.Exception);
+
+	DeclareCommonGlobal(Smile_KnownSymbols.Range_, Smile_KnownBases.Range);
+	DeclareCommonGlobal(Smile_KnownSymbols.NumericRange_, Smile_KnownBases.NumericRange);
+	DeclareCommonGlobal(Smile_KnownSymbols.IntegerRangeBase_, Smile_KnownBases.IntegerRangeBase);
+	DeclareCommonGlobal(Smile_KnownSymbols.ByteRange_, Smile_KnownBases.ByteRange);
+	DeclareCommonGlobal(Smile_KnownSymbols.Integer16Range_, Smile_KnownBases.Integer16Range);
+	DeclareCommonGlobal(Smile_KnownSymbols.Integer32Range_, Smile_KnownBases.Integer32Range);
+	DeclareCommonGlobal(Smile_KnownSymbols.Integer64Range_, Smile_KnownBases.Integer64Range);
+	DeclareCommonGlobal(Smile_KnownSymbols.IntegerRange_, Smile_KnownBases.Integer64Range);
 
 	DeclareCommonGlobal(Smile_KnownSymbols.true_,	Smile_KnownObjects.TrueObj);
 	DeclareCommonGlobal(Smile_KnownSymbols.false_,	Smile_KnownObjects.FalseObj);
