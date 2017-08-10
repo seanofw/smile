@@ -815,7 +815,7 @@ typedef struct FirstInfoStruct {
 	Bool indexOfMode;
 } *FirstInfo;
 
-static Int FirstStart(ClosureStateMachine closure)
+static Int FindStart(ClosureStateMachine closure)
 {
 	register FirstInfo loopInfo = (FirstInfo)closure->state;
 
@@ -833,7 +833,7 @@ static Int FirstStart(ClosureStateMachine closure)
 	return 1;
 }
 
-static Int FirstBody(ClosureStateMachine closure)
+static Int FindBody(ClosureStateMachine closure)
 {
 	register FirstInfo loopInfo = (FirstInfo)closure->state;
 
@@ -906,7 +906,7 @@ SMILE_EXTERNAL_FUNCTION(First)
 	}
 
 	// Iterating with a search predicate.
-	closure = Eval_BeginStateMachine(FirstStart, FirstBody);
+	closure = Eval_BeginStateMachine(FindStart, FindBody);
 
 	firstInfo = (FirstInfo)closure->state;
 	firstInfo->function = (SmileFunction)argv[1].obj;
@@ -939,7 +939,7 @@ SMILE_EXTERNAL_FUNCTION(IndexOf)
 	}
 
 	// Iterating with a search predicate.
-	closure = Eval_BeginStateMachine(FirstStart, FirstBody);
+	closure = Eval_BeginStateMachine(FindStart, FindBody);
 
 	firstInfo = (FirstInfo)closure->state;
 	firstInfo->function = function;
@@ -1163,7 +1163,10 @@ void SmileList_Setup(SmileUserObject base)
 
 	SetupFunction("each", Each, NULL, "list fn", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
 	SetupFunction("map", Map, NULL, "list fn", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
+	SetupSynonym("map", "select");
+	SetupSynonym("map", "project");
 	SetupFunction("where", Where, NULL, "list fn", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
+	SetupSynonym("where", "filter");
 
 	SetupFunction("empty?", Empty, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _listChecks);
 	SetupFunction("null?", Empty, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _listChecks);

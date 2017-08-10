@@ -27,6 +27,15 @@
 
 SMILE_IGNORE_UNUSED_VARIABLES
 
+typedef enum {
+	FindMode_First,
+	FindMode_IndexOf,
+	FindMode_Count,
+	FindMode_Where,
+	FindMode_Any,
+	FindMode_All,
+} FindMode;
+
 STATIC_STRING(_stringTypeError, "Second argument to 'string' must be of type 'Integer64'");
 STATIC_STRING(_numericBaseError, "Valid numeric base must be in the range of 2..36");
 STATIC_STRING(_integer64TypeError, "%s argument to '%s' must be of type 'Integer64'");
@@ -35,6 +44,11 @@ STATIC_STRING(_argCountError, "Too many arguments to 'Integer64Range.%s'");
 static Byte _eachChecks[] = {
 	SMILE_KIND_MASK, SMILE_KIND_INTEGER64RANGE,
 	SMILE_KIND_MASK, SMILE_KIND_FUNCTION,
+};
+
+static Byte _findChecks[] = {
+	SMILE_KIND_MASK, SMILE_KIND_INTEGER64RANGE,
+	0, 0,
 };
 
 static Byte _integer64Checks[] = {
@@ -145,14 +159,18 @@ SMILE_EXTERNAL_FUNCTION(Of)
 
 SMILE_EXTERNAL_FUNCTION(Step)
 {
-	if (argv[1].unboxed.i64 == 0)
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FromC("Argument to 'Integer64Range.step' cannot be zero."));
+	Int64 stepping = argv[1].unboxed.i64;
+	Int64 start = ((SmileInteger64Range)argv[0].obj)->start;
+	Int64 end = ((SmileInteger64Range)argv[0].obj)->end;
 
-	return SmileArg_From((SmileObject)SmileInteger64Range_Create(
-		((SmileInteger64Range)argv[0].obj)->start,
-		((SmileInteger64Range)argv[0].obj)->end,
-		argv[1].unboxed.i64)
-	);
+	if (stepping == 0)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FromC("Argument to 'Integer64Range.step' cannot be zero."));
+	if (start < end && stepping < 0)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FromC("Cannot apply a negative step to a forward range."));
+	if (end < start && stepping > 0)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FromC("Cannot apply a positive step to a reverse range."));
+
+	return SmileArg_From((SmileObject)SmileInteger64Range_Create(start, end, stepping));
 }
 
 SMILE_EXTERNAL_FUNCTION(Reverse)
@@ -162,6 +180,81 @@ SMILE_EXTERNAL_FUNCTION(Reverse)
 		((SmileInteger64Range)argv[0].obj)->start,
 		-((SmileInteger64Range)argv[0].obj)->stepping)
 	);
+}
+
+//-------------------------------------------------------------------------------------------------
+
+static SmileArg FindFixedValue(SmileInteger64Range range, SmileArg valueArg, FindMode fixedMode)
+{
+	Int64 current = range->start;
+	Int64 step = range->stepping;
+	Int64 end = range->end;
+	Bool up = range->end > range->start;
+	Int64 value;
+
+	if (!up) {
+		// Handle the downward case by swapping endpoints and directions.
+		Int64 temp;
+		step = -step;
+		temp = current;
+		current = end;
+		end = temp;
+	}
+
+	// An Integer64 range cannot contain non-Integer64 values, so only test if the input value was of a sane type.
+	if (SMILE_KIND(valueArg.obj) == SMILE_KIND_UNBOXED_INTEGER64) {
+		value = valueArg.unboxed.i64;
+
+		// Use a shortcut for a step of +1 on a forward range.
+		if (step == 1) {
+			if (value <= end) {
+				// Found it.
+				switch (fixedMode) {
+					case FindMode_IndexOf:
+						return SmileUnboxedInteger64_From(value - current);
+					case FindMode_First:
+					case FindMode_Where:
+						return SmileUnboxedInteger64_From(value);
+					case FindMode_Count:
+						return SmileUnboxedInteger64_From(1);
+					case FindMode_Any:
+						return SmileUnboxedBool_From(True);
+					case FindMode_All:
+						return SmileUnboxedBool_From(current == end);	// 'All' can only be true if there's one value total.
+				}
+			}
+		}
+		else {
+			// General case:  Do some math and see if the target is something we'd hit by iterating.
+			UInt64 delta = (UInt64)(value - current);
+			if (delta % (UInt64)step == 0) {
+				switch (fixedMode) {
+					case FindMode_IndexOf:
+						return SmileUnboxedInteger64_From((Int64)(delta / (UInt64)step));
+					case FindMode_First:
+					case FindMode_Where:
+						return SmileUnboxedInteger64_From(value);
+					case FindMode_Count:
+						return SmileUnboxedInteger64_From(1);
+					case FindMode_Any:
+						return SmileUnboxedBool_From(True);
+					case FindMode_All:
+						return SmileUnboxedBool_From(current == end);	// 'All' can only be true if there's one value total.
+				}
+			}
+		}
+	}
+
+	// Didn't find it.
+	switch (fixedMode) {
+		case FindMode_Count:
+			return SmileUnboxedInteger64_From(0);
+		case FindMode_Any:
+		case FindMode_All:
+			return SmileUnboxedBool_From(False);
+		default:
+			return SmileArg_From(NullObject);
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -404,6 +497,9 @@ SMILE_EXTERNAL_FUNCTION(Where)
 	WhereInfo loopInfo;
 	ClosureStateMachine closure;
 
+	if (SMILE_KIND(function) != SMILE_KIND_FUNCTION)
+		return FindFixedValue(range, argv[1], FindMode_Count);
+
 	SmileFunction_GetArgCounts(function, &minArgs, &maxArgs);
 
 	closure = Eval_BeginStateMachine(WhereStart, WhereBody);
@@ -510,6 +606,9 @@ SMILE_EXTERNAL_FUNCTION(Count)
 
 	function = (SmileFunction)argv[1].obj;
 
+	if (SMILE_KIND(function) != SMILE_KIND_FUNCTION)
+		return FindFixedValue(range, argv[1], FindMode_Count);
+
 	SmileFunction_GetArgCounts(function, &minArgs, &maxArgs);
 
 	closure = Eval_BeginStateMachine(CountStart, CountBody);
@@ -530,7 +629,7 @@ SMILE_EXTERNAL_FUNCTION(Count)
 
 //-------------------------------------------------------------------------------------------------
 
-typedef struct FirstInfoStruct {
+typedef struct FindInfoStruct {
 	SmileFunction function;
 	Int64 current;
 	Int64 step;
@@ -539,17 +638,28 @@ typedef struct FirstInfoStruct {
 	Byte numArgs;
 	Bool done;
 	Bool up;
-} *FirstInfo;
+	Byte findMode;
+} *FindInfo;
 
-static Int FirstStart(ClosureStateMachine closure)
+static Int FindStart(ClosureStateMachine closure)
 {
-	register FirstInfo loopInfo = (FirstInfo)closure->state;
+	register FindInfo loopInfo = (FindInfo)closure->state;
 
 	//---------- begin first for-loop iteration ----------
 
 	// Condition: If we've run out of values, we're done.
 	if (loopInfo->done) {
-		Closure_PushBoxed(closure, NullObject);	// Push 'null' as the output, since we didn't find the answer.
+		switch (loopInfo->findMode) {
+			case FindMode_Count:
+				Closure_PushUnboxedInt64(closure, 0);
+				break;
+			case FindMode_Any:
+				Closure_PushUnboxedBool(closure, False);
+				break;
+			default:
+				Closure_PushBoxed(closure, NullObject);
+				break;
+		}
 		return -1;
 	}
 
@@ -562,9 +672,9 @@ static Int FirstStart(ClosureStateMachine closure)
 	return loopInfo->numArgs;
 }
 
-static Int FirstBody(ClosureStateMachine closure)
+static Int FindBody(ClosureStateMachine closure)
 {
-	register FirstInfo loopInfo = (FirstInfo)closure->state;
+	register FindInfo loopInfo = (FindInfo)closure->state;
 
 	// Body: Append the user function's most recent result to the output list.
 	SmileArg fnResult = Closure_Pop(closure);
@@ -572,7 +682,23 @@ static Int FirstBody(ClosureStateMachine closure)
 
 	// If it's truthy, we found the result!
 	if (booleanResult) {
-		Closure_PushUnboxedInt64(closure, loopInfo->current);
+		switch (loopInfo->findMode) {
+			case FindMode_First:
+				Closure_PushUnboxedInt64(closure, loopInfo->current);
+				break;
+			case FindMode_IndexOf:
+				Closure_PushUnboxedInt64(closure, loopInfo->index);
+				break;
+			case FindMode_Count:
+				Closure_PushUnboxedInt64(closure, 1);
+				break;
+			case FindMode_Any:
+				Closure_PushUnboxedBool(closure, True);
+				break;
+			default:
+				Closure_PushBoxed(closure, NullObject);
+				break;
+		}
 		return -1;
 	}
 
@@ -591,7 +717,7 @@ static Int FirstBody(ClosureStateMachine closure)
 
 	//---------- end previous for-loop iteration ----------
 
-	return FirstStart(closure);
+	return FindStart(closure);
 }
 
 SMILE_EXTERNAL_FUNCTION(First)
@@ -600,7 +726,7 @@ SMILE_EXTERNAL_FUNCTION(First)
 	SmileInteger64Range range = (SmileInteger64Range)argv[0].obj;
 	SmileFunction function;
 	Int minArgs, maxArgs;
-	FirstInfo loopInfo;
+	FindInfo loopInfo;
 	ClosureStateMachine closure;
 
 	// With no predicate, this is just a synonym for the 'start' property.
@@ -609,11 +735,14 @@ SMILE_EXTERNAL_FUNCTION(First)
 
 	function = (SmileFunction)argv[1].obj;
 
+	if (SMILE_KIND(function) != SMILE_KIND_FUNCTION)
+		return FindFixedValue(range, argv[1], FindMode_First);
+
 	SmileFunction_GetArgCounts(function, &minArgs, &maxArgs);
 
-	closure = Eval_BeginStateMachine(FirstStart, FirstBody);
+	closure = Eval_BeginStateMachine(FindStart, FindBody);
 
-	loopInfo = (FirstInfo)closure->state;
+	loopInfo = (FindInfo)closure->state;
 	loopInfo->function = function;
 	loopInfo->index = 0;
 	loopInfo->current = range->start;
@@ -621,6 +750,71 @@ SMILE_EXTERNAL_FUNCTION(First)
 	loopInfo->end = range->end;
 	loopInfo->up = range->end >= range->start;
 	loopInfo->done = range->end >= range->start ? range->stepping <= 0 : range->stepping >= 0;
+	loopInfo->findMode = FindMode_First;
+	loopInfo->numArgs = (Byte)(maxArgs <= 2 ? maxArgs : 2);
+
+	return (SmileArg) { NULL };	// We have to return something, but this value will be ignored.
+}
+
+SMILE_EXTERNAL_FUNCTION(IndexOf)
+{
+	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
+	SmileInteger64Range range = (SmileInteger64Range)argv[0].obj;
+	SmileFunction function;
+	Int minArgs, maxArgs;
+	FindInfo loopInfo;
+	ClosureStateMachine closure;
+
+	function = (SmileFunction)argv[1].obj;
+
+	if (SMILE_KIND(function) != SMILE_KIND_FUNCTION)
+		return FindFixedValue(range, argv[1], FindMode_IndexOf);
+
+	SmileFunction_GetArgCounts(function, &minArgs, &maxArgs);
+
+	closure = Eval_BeginStateMachine(FindStart, FindBody);
+
+	loopInfo = (FindInfo)closure->state;
+	loopInfo->function = function;
+	loopInfo->index = 0;
+	loopInfo->current = range->start;
+	loopInfo->step = range->stepping;
+	loopInfo->end = range->end;
+	loopInfo->up = range->end >= range->start;
+	loopInfo->done = range->end >= range->start ? range->stepping <= 0 : range->stepping >= 0;
+	loopInfo->findMode = FindMode_IndexOf;
+	loopInfo->numArgs = (Byte)(maxArgs <= 2 ? maxArgs : 2);
+
+	return (SmileArg) { NULL };	// We have to return something, but this value will be ignored.
+}
+
+SMILE_EXTERNAL_FUNCTION(Any)
+{
+	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
+	SmileInteger64Range range = (SmileInteger64Range)argv[0].obj;
+	SmileFunction function;
+	Int minArgs, maxArgs;
+	FindInfo loopInfo;
+	ClosureStateMachine closure;
+
+	function = (SmileFunction)argv[1].obj;
+
+	if (SMILE_KIND(function) != SMILE_KIND_FUNCTION)
+		return FindFixedValue(range, argv[1], FindMode_Any);
+
+	SmileFunction_GetArgCounts(function, &minArgs, &maxArgs);
+
+	closure = Eval_BeginStateMachine(FindStart, FindBody);
+
+	loopInfo = (FindInfo)closure->state;
+	loopInfo->function = function;
+	loopInfo->index = 0;
+	loopInfo->current = range->start;
+	loopInfo->step = range->stepping;
+	loopInfo->end = range->end;
+	loopInfo->up = range->end >= range->start;
+	loopInfo->done = range->end >= range->start ? range->stepping <= 0 : range->stepping >= 0;
+	loopInfo->findMode = FindMode_Any;
 	loopInfo->numArgs = (Byte)(maxArgs <= 2 ? maxArgs : 2);
 
 	return (SmileArg) { NULL };	// We have to return something, but this value will be ignored.
@@ -628,7 +822,7 @@ SMILE_EXTERNAL_FUNCTION(First)
 
 //-------------------------------------------------------------------------------------------------
 
-typedef struct IndexOfInfoStruct {
+typedef struct AllInfoStruct {
 	SmileFunction function;
 	Int64 current;
 	Int64 step;
@@ -637,17 +831,17 @@ typedef struct IndexOfInfoStruct {
 	Byte numArgs;
 	Bool done;
 	Bool up;
-} *IndexOfInfo;
+} *AllInfo;
 
-static Int IndexOfStart(ClosureStateMachine closure)
+static Int AllStart(ClosureStateMachine closure)
 {
-	register IndexOfInfo loopInfo = (IndexOfInfo)closure->state;
+	register AllInfo loopInfo = (AllInfo)closure->state;
 
 	//---------- begin first for-loop iteration ----------
 
-	// Condition: If we've run out of values, we're done.
+	// Condition: If we've run out of values to test, we're done.
 	if (loopInfo->done) {
-		Closure_PushBoxed(closure, NullObject);	// Didn't find it.
+		Closure_PushUnboxedBool(closure, True);
 		return -1;
 	}
 
@@ -660,17 +854,17 @@ static Int IndexOfStart(ClosureStateMachine closure)
 	return loopInfo->numArgs;
 }
 
-static Int IndexOfBody(ClosureStateMachine closure)
+static Int AllBody(ClosureStateMachine closure)
 {
-	register IndexOfInfo loopInfo = (IndexOfInfo)closure->state;
+	register AllInfo loopInfo = (AllInfo)closure->state;
 
 	// Body: Append the user function's most recent result to the output list.
 	SmileArg fnResult = Closure_Pop(closure);
 	Bool booleanResult = SMILE_VCALL1(fnResult.obj, toBool, fnResult.unboxed);
 
-	// If it's truthy, we found its position.
-	if (booleanResult) {
-		Closure_PushUnboxedInt64(closure, loopInfo->index);
+	// If it's falsy, this element fails, and so does the set.
+	if (!booleanResult) {
+		Closure_PushUnboxedBool(closure, False);
 		return -1;
 	}
 
@@ -689,25 +883,28 @@ static Int IndexOfBody(ClosureStateMachine closure)
 
 	//---------- end previous for-loop iteration ----------
 
-	return IndexOfStart(closure);
+	return AllStart(closure);
 }
 
-SMILE_EXTERNAL_FUNCTION(IndexOf)
+SMILE_EXTERNAL_FUNCTION(All)
 {
 	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
 	SmileInteger64Range range = (SmileInteger64Range)argv[0].obj;
 	SmileFunction function;
 	Int minArgs, maxArgs;
-	IndexOfInfo loopInfo;
+	AllInfo loopInfo;
 	ClosureStateMachine closure;
 
 	function = (SmileFunction)argv[1].obj;
 
+	if (SMILE_KIND(function) != SMILE_KIND_FUNCTION)
+		return FindFixedValue(range, argv[1], FindMode_All);
+
 	SmileFunction_GetArgCounts(function, &minArgs, &maxArgs);
 
-	closure = Eval_BeginStateMachine(IndexOfStart, IndexOfBody);
+	closure = Eval_BeginStateMachine(AllStart, AllBody);
 
-	loopInfo = (IndexOfInfo)closure->state;
+	loopInfo = (AllInfo)closure->state;
 	loopInfo->function = function;
 	loopInfo->index = 0;
 	loopInfo->current = range->start;
@@ -736,9 +933,15 @@ void SmileInteger64Range_Setup(SmileUserObject base)
 
 	SetupFunction("each", Each, NULL, "range fn", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
 	SetupFunction("map", Map, NULL, "range fn", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
-	SetupFunction("where", Where, NULL, "range fn", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
+	SetupSynonym("map", "select");
+	SetupSynonym("map", "project");
+	SetupFunction("where", Where, NULL, "range fn", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _findChecks);
+	SetupSynonym("where", "filter");
 
-	SetupFunction("count", Count, NULL, "range fn", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 1, 2, 2, _eachChecks);
-	SetupFunction("first", First, NULL, "range fn", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 1, 2, 2, _eachChecks);
-	SetupFunction("index-of", IndexOf, NULL, "range fn", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
+	SetupFunction("count", Count, NULL, "range fn", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 1, 2, 2, _findChecks);
+	SetupFunction("first", First, NULL, "range fn", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 1, 2, 2, _findChecks);
+	SetupFunction("index-of", IndexOf, NULL, "range fn", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _findChecks);
+	SetupFunction("any?", Any, NULL, "range fn", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _findChecks);
+	SetupFunction("all?", All, NULL, "range fn", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _findChecks);
+	SetupSynonym("any?", "contains?");
 }
