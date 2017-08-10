@@ -823,10 +823,7 @@ static Int FirstStart(ClosureStateMachine closure)
 
 	// Condition: If we've run out of list nodes, we're done.
 	if (SMILE_KIND(loopInfo->list) != SMILE_KIND_LIST) {
-		if (loopInfo->indexOfMode)
-			Closure_PushUnboxedInt64(closure, -1);
-		else
-			Closure_PushBoxed(closure, NullObject);
+		Closure_PushBoxed(closure, NullObject);
 		return -1;
 	}
 
@@ -863,10 +860,7 @@ static Int FirstBody(ClosureStateMachine closure)
 
 	// Condition: If we've run out of list nodes, we're done.
 	if (SMILE_KIND(loopInfo->list) != SMILE_KIND_LIST) {
-		if (loopInfo->indexOfMode)
-			Closure_PushUnboxedInt64(closure, -1);
-		else
-			Closure_PushBoxed(closure, NullObject);
+		Closure_PushBoxed(closure, NullObject);
 		return -1;
 	}
 
@@ -941,7 +935,7 @@ SMILE_EXTERNAL_FUNCTION(IndexOf)
 				return SmileUnboxedInteger64_From(index);
 			}
 		}
-		return SmileUnboxedInteger64_From(-1);
+		return SmileArg_From(NullObject);
 	}
 
 	// Iterating with a search predicate.

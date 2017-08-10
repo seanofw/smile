@@ -789,7 +789,7 @@ START_TEST(CanUseStateMachinesToFindIndexOf)
 	EvalResult result = Eval_Run(globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
-	ASSERT(result->value == (SmileObject)Smile_KnownObjects.NegOneInt64);
+	ASSERT(result->value == NullObject);
 
 	globalFunctionInfo = Compile("`[1 2 4 8 15 16 32 64 128] index-of 15\n");
 	result = Eval_Run(globalFunctionInfo);
@@ -806,7 +806,7 @@ START_TEST(CanUseStateMachinesToFindIndexOfWithPredicates)
 	EvalResult result = Eval_Run(globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
-	ASSERT(result->value == (SmileObject)Smile_KnownObjects.NegOneInt64);
+	ASSERT(result->value == NullObject);
 
 	globalFunctionInfo = Compile("`[1 2 4 8 15 16 32 64 128] index-of |x| x mod 3 == 0\n");
 	result = Eval_Run(globalFunctionInfo);
@@ -817,19 +817,19 @@ START_TEST(CanUseStateMachinesToFindIndexOfWithPredicates)
 }
 END_TEST
 
-START_TEST(IndexOfReturnsNegativeOneForEmptyLists)
+START_TEST(IndexOfReturnsNullForEmptyLists)
 {
 	UserFunctionInfo globalFunctionInfo = Compile("`[] index-of 15\n");
 	EvalResult result = Eval_Run(globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
-	ASSERT(result->value == (SmileObject)Smile_KnownObjects.NegOneInt64);
+	ASSERT(result->value == NullObject);
 
 	globalFunctionInfo = Compile("`[] index-of |x| x mod 3 == 0\n");
 	result = Eval_Run(globalFunctionInfo);
 
 	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
-	ASSERT(result->value == (SmileObject)Smile_KnownObjects.NegOneInt64);
+	ASSERT(result->value == NullObject);
 }
 END_TEST
 

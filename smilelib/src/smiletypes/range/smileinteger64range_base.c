@@ -145,10 +145,22 @@ SMILE_EXTERNAL_FUNCTION(Of)
 
 SMILE_EXTERNAL_FUNCTION(Step)
 {
+	if (argv[1].unboxed.i64 == 0)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FromC("Argument to 'Integer64Range.step' cannot be zero."));
+
 	return SmileArg_From((SmileObject)SmileInteger64Range_Create(
 		((SmileInteger64Range)argv[0].obj)->start,
 		((SmileInteger64Range)argv[0].obj)->end,
 		argv[1].unboxed.i64)
+	);
+}
+
+SMILE_EXTERNAL_FUNCTION(Reverse)
+{
+	return SmileArg_From((SmileObject)SmileInteger64Range_Create(
+		((SmileInteger64Range)argv[0].obj)->end,
+		((SmileInteger64Range)argv[0].obj)->start,
+		-((SmileInteger64Range)argv[0].obj)->stepping)
 	);
 }
 
@@ -635,7 +647,7 @@ static Int IndexOfStart(ClosureStateMachine closure)
 
 	// Condition: If we've run out of values, we're done.
 	if (loopInfo->done) {
-		Closure_PushUnboxedInt64(closure, -1);	// Didn't find it.
+		Closure_PushBoxed(closure, NullObject);	// Didn't find it.
 		return -1;
 	}
 
@@ -720,6 +732,7 @@ void SmileInteger64Range_Setup(SmileUserObject base)
 	SetupFunction("of", Of, (void *)base, "range start end", ARG_CHECK_MIN | ARG_CHECK_MAX, 2, 4, 0, NULL);
 
 	SetupFunction("step", Step, (void *)base, "range stepping", ARG_CHECK_EXACT, 2, 2, 2, _integer64Checks);
+	SetupFunction("reverse", Reverse, NULL, "range", ARG_CHECK_EXACT, 1, 1, 1, _integer64Checks);
 
 	SetupFunction("each", Each, NULL, "range fn", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
 	SetupFunction("map", Map, NULL, "range fn", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);

@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: d098ba96fec0eb383c64a851d0853ce8
+// SourceHash: 296d4010d4ff0441239dd4e82997c251
 
 START_TEST_SUITE(EvalTests)
 {
@@ -51,7 +51,7 @@ START_TEST_SUITE(EvalTests)
 	FirstInUnaryFormReturnsTheFirstItem,
 	CanUseStateMachinesToFindIndexOf,
 	CanUseStateMachinesToFindIndexOfWithPredicates,
-	IndexOfReturnsNegativeOneForEmptyLists,
+	IndexOfReturnsNullForEmptyLists,
 	CanUseStateMachinesToCountItems,
 	CanUseStateMachinesToCountWithPredicates,
 	CountReturnsZeroForEmptyLists,

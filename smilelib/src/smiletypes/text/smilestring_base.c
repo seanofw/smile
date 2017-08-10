@@ -425,6 +425,7 @@ SMILE_EXTERNAL_FUNCTION(IndexOf)
 	Int result;
 
 	result = startIndex < stringLength ? String_IndexOf(x, y, (Int)startIndex) : -1;
+	if (result < 0) return SmileArg_From(NullObject);
 
 	return SmileUnboxedInteger64_From(result);
 }
@@ -439,6 +440,7 @@ SMILE_EXTERNAL_FUNCTION(IndexOfI)
 	Int result;
 
 	result = startIndex < stringLength ? String_IndexOfI(x, y, (Int)startIndex) : -1;
+	if (result < 0) return SmileArg_From(NullObject);
 
 	return SmileUnboxedInteger64_From(result);
 }
@@ -453,6 +455,7 @@ SMILE_EXTERNAL_FUNCTION(LastIndexOf)
 	Int result;
 
 	result = startIndex < stringLength ? String_LastIndexOf(x, y, (Int)startIndex) : -1;
+	if (result < 0) return SmileArg_From(NullObject);
 
 	return SmileUnboxedInteger64_From(result);
 }
@@ -467,6 +470,7 @@ SMILE_EXTERNAL_FUNCTION(LastIndexOfI)
 	Int result;
 
 	result = startIndex < stringLength ? String_LastIndexOfI(x, y, (Int)startIndex) : -1;
+	if (result < 0) return SmileArg_From(NullObject);
 
 	return SmileUnboxedInteger64_From(result);
 }
