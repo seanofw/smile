@@ -115,10 +115,11 @@ ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Int *temp
 	case TOKEN_LEFTBRACKET:
 		{
 			SmileList head = NullList, tail = NullList;
+			Int childTemplateKind;
 
 			startPosition = Token_GetPosition(token);
 
-			Parser_ParseRawListItemsOpt(parser, &head, &tail, templateKind, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
+			Parser_ParseRawListItemsOpt(parser, &head, &tail, &childTemplateKind, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
 
 			if (!Parser_HasLookahead(parser, TOKEN_RIGHTBRACKET)) {
 				error = ParseMessage_Create(PARSEMESSAGE_ERROR,
@@ -128,6 +129,7 @@ ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Int *temp
 			}
 			Parser_NextToken(parser);
 
+			*templateKind = (childTemplateKind == TemplateKind_None ? TemplateKind_None : TemplateKind_Template);
 			*result = (SmileObject)head;
 			return NULL;
 		}
@@ -139,22 +141,14 @@ ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Int *temp
 			if ((tokenKind = Lexer_Peek(parser->lexer)) == TOKEN_LEFTPARENTHESIS
 				|| tokenKind == TOKEN_LEFTBRACE) {
 				error = Parser_ParseTerm(parser, result, modeFlags, Token_Clone(token));
+				childTemplateKind = TemplateKind_None;
 			}
 			else {
 				error = Parser_ParseRawListTerm(parser, result, &childTemplateKind, modeFlags);
 			}
 			if (error != NULL)
 				return error;
-			*result = (SmileObject)SmileList_ConsWithSource(
-				(SmileObject)Smile_KnownObjects._quoteSymbol,
-				(SmileObject)SmileList_ConsWithSource(
-					*result,
-					NullObject,
-					startPosition
-				),
-				startPosition
-			);
-			*templateKind = TemplateKind_None;
+			*templateKind = (childTemplateKind == TemplateKind_None ? TemplateKind_None : TemplateKind_Template);
 			return NULL;
 		}
 

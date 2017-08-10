@@ -105,6 +105,71 @@ START_TEST(CanParseAListTemplateForm)
 }
 END_TEST
 
+START_TEST(CanParseAQuoteFormContainingQuotedContent)
+{
+	Lexer lexer = SetupLexer("`[x y z `(1 + 2 * 3)]");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedForm = SimpleParse("[$quote [x y z [(1 . +) [(2 . *) 3]]]]");
+
+	ASSERT(RecursiveEquals(result, expectedForm));
+}
+END_TEST
+
+START_TEST(CanParseATemplateFormContainingQuotedContent)
+{
+	Lexer lexer = SetupLexer("`[x (a) z `(1 + 2 * 3)]");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileObject result, expectedForm;
+
+	ParseScope_DeclareHereC(parseScope, "a", PARSEDECL_VARIABLE, NULL, NULL);
+	result = Parser_Parse(parser, lexer, parseScope);
+
+	expectedForm = SimpleParse("[(List . of) [$quote x] a [$quote z] [$quote [(1 . +) [(2 . *) 3]]]]]");
+
+	ASSERT(RecursiveEquals(result, expectedForm));
+}
+END_TEST
+
+START_TEST(CanParseASplicingTemplateForm)
+{
+	Lexer lexer = SetupLexer("`[x @(a) z @(b)]");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileObject result, expectedForm;
+
+	ParseScope_DeclareHereC(parseScope, "a", PARSEDECL_VARIABLE, NULL, NULL);
+	ParseScope_DeclareHereC(parseScope, "b", PARSEDECL_VARIABLE, NULL, NULL);
+	result = Parser_Parse(parser, lexer, parseScope);
+
+	expectedForm = SimpleParse("[(List . combine) [$quote [x]] a [$quote [z]] b]");
+
+	ASSERT(RecursiveEquals(result, expectedForm));
+}
+END_TEST
+
+START_TEST(CanParseANestedSplicingTemplateForm)
+{
+	Lexer lexer = SetupLexer("`[x y z [c @(a) d]]");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileObject result, expectedForm;
+
+	ParseScope_DeclareHereC(parseScope, "a", PARSEDECL_VARIABLE, NULL, NULL);
+	result = Parser_Parse(parser, lexer, parseScope);
+
+	expectedForm = SimpleParse(
+		"[(List . of) [$quote x] [$quote y] [$quote z]"
+			"[(List . combine) [$quote [c]] a [$quote [d]] ]"
+		"]");
+
+	ASSERT(RecursiveEquals(result, expectedForm));
+}
+END_TEST
+
 START_TEST(CanParseAListTemplateFormUsingCurlyBraces)
 {
 	Lexer lexer = SetupLexer("`[x y z { 1 + 2 * 3 }]");

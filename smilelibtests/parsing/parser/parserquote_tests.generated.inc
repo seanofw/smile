@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: aa29e5f955daddabbc1e768ff9dd278f
+// SourceHash: 2c038aec5e1682fed4798fdd22999329
 
 START_TEST_SUITE(ParserQuoteTests)
 {
@@ -10,6 +10,10 @@ START_TEST_SUITE(ParserQuoteTests)
 	CanParseAQuotedListWithNestedLists,
 	CanParseAQuotedExpression,
 	CanParseAListTemplateForm,
+	CanParseAQuoteFormContainingQuotedContent,
+	CanParseATemplateFormContainingQuotedContent,
+	CanParseASplicingTemplateForm,
+	CanParseANestedSplicingTemplateForm,
 	CanParseAListTemplateFormUsingCurlyBraces,
 	CanParseAPairTemplateForm,
 	CanParseAStringTemplateForm,
