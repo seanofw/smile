@@ -293,6 +293,25 @@ EvalResult Smile_EvalInScope(ClosureInfo globalClosureInfo, SmileObject expressi
 	globalFunction = Compiler_CompileGlobal(compiler, expression);
 	Compiler_EndScope(compiler);
 
+	// If the compile failed, stop now.
+	if (compiler->firstMessage != NullList) {
+		SmileList parseMessage;
+		Int index;
+
+		result = EvalResult_Create(EVAL_RESULT_PARSEERRORS);
+		result->numMessages = SmileList_Length(compiler->firstMessage);
+		result->parseMessages = GC_MALLOC_STRUCT_ARRAY(ParseMessage, result->numMessages);
+		if (result->parseMessages == NULL)
+			Smile_Abort_OutOfMemory();
+
+		index = 0;
+		for (parseMessage = compiler->firstMessage; SMILE_KIND(parseMessage) != SMILE_KIND_NULL; parseMessage = LIST_REST(parseMessage)) {
+			result->parseMessages[index++] = (ParseMessage)LIST_FIRST(parseMessage);
+		}
+
+		return result;
+	}
+
 	// Now run the compiled bytecode!
 	result = Eval_Run(globalFunction);
 

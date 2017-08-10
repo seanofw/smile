@@ -149,6 +149,18 @@ static Int ParseAndEval(String string, ParseScope globalScope, ClosureInfo globa
 	// Handle errors or aborts.
 	switch (evalResult->evalResultKind) {
 
+		case EVAL_RESULT_PARSEERRORS:
+			{
+				Int i;
+				for (i = 0; i < evalResult->numMessages; i++) {
+					String message = String_Format("\033[0;31;1m?Error: \033[0;33;1m%S\033[0m\n", evalResult->parseMessages[i]->message);
+					fwrite_styled(String_GetBytes(message), 1, String_Length(message), stderr);
+				}
+				fflush(stderr);
+				*result = NullObject;
+			}
+			return 1;
+
 		case EVAL_RESULT_EXCEPTION:
 			{
 				String exceptionMessage = (String)SMILE_VCALL1(evalResult->exception, getProperty, Smile_KnownSymbols.message);

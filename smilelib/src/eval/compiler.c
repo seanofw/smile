@@ -137,8 +137,8 @@ Compiler Compiler_Create(void)
 	compiler->compiledTables = CompiledTables_Create();
 	compiler->currentFunction = NULL;
 
-	compiler->firstMessage = NULL;
-	compiler->lastMessage = NULL;
+	compiler->firstMessage = NullList;
+	compiler->lastMessage = NullList;
 
 	return compiler;
 }
