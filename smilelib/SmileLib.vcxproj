@@ -812,8 +812,8 @@
     <ClCompile Include="src\eval\compiler\compile_variable.c" />
     <ClCompile Include="src\eval\compiler\compile_while.c" />
     <ClCompile Include="src\eval\eval.c" />
-    <ClCompile Include="src\eval\eval_fn_ext.c" />
-    <ClCompile Include="src\eval\eval_fn_user.c" />
+    <ClCompile Include="src\eval\eval_fn_ext.generated.c" />
+    <ClCompile Include="src\eval\eval_fn_user.generated.c" />
     <ClCompile Include="src\fnvhash.c" />
     <ClCompile Include="src\init.c">
       <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</PreprocessToFile>
@@ -927,6 +927,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />
+    <None Include="src\eval\eval_fn_ext.template" />
+    <None Include="src\eval\eval_fn_user.template" />
+    <None Include="src\eval\makefn.pl" />
     <None Include="src\eval\opnames.inc" />
     <None Include="src\smiletypes\range\makerangetypes.pl" />
     <None Include="src\smiletypes\range\smilerange.template" />

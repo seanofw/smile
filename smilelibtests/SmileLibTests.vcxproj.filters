@@ -61,7 +61,6 @@
     <ClCompile Include="parsing\lexer\lexerunicode_tests.c">
       <Filter>parsing\lexer</Filter>
     </ClCompile>
-    <ClCompile Include="parsing\lexer\lexerloanword_tests.c" />
     <ClCompile Include="parsing\parser\parsercore_tests.c">
       <Filter>parsing\parser</Filter>
     </ClCompile>
@@ -113,8 +112,15 @@
     <ClCompile Include="parsing\parser\parserstmt_tests.c">
       <Filter>parsing\parser</Filter>
     </ClCompile>
-    <ClCompile Include="eval\evalconstant_tests.c" />
-    <ClCompile Include="eval\evalcore_tests.c" />
+    <ClCompile Include="eval\evalconstant_tests.c">
+      <Filter>eval</Filter>
+    </ClCompile>
+    <ClCompile Include="eval\evalcore_tests.c">
+      <Filter>eval</Filter>
+    </ClCompile>
+    <ClCompile Include="parsing\lexer\lexerloanword_tests.c">
+      <Filter>parsing\lexer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
