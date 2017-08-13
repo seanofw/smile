@@ -22,6 +22,7 @@
 #include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
+#include <smile/smiletypes/range/smilebyterange.h>
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/base.h>
 #include <smile/internal/staticstring.h>
@@ -136,6 +137,17 @@ SMILE_EXTERNAL_FUNCTION(ToInt16)
 SMILE_EXTERNAL_FUNCTION(ToByte)
 {
 	return argv[0];
+}
+
+SMILE_EXTERNAL_FUNCTION(RangeTo)
+{
+	Byte start, end, step;
+
+	start = argv[0].unboxed.i8;
+	end = argv[1].unboxed.i8;
+	step = end >= start ? +1 : -1;
+
+	return SmileArg_From((SmileObject)SmileByteRange_Create(start, end, step));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1374,4 +1386,6 @@ void SmileByte_Setup(SmileUserObject base)
 	SetupSynonym("compare", "cmp");
 	SetupFunction("compare~", UCompare, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _byteChecks);
 	SetupSynonym("compare~", "cmp~");
+
+	SetupFunction("range-to", RangeTo, NULL, "start end", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _byteChecks);
 }

@@ -223,21 +223,6 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 		StringBuilder_AppendFormat(stringBuilder, "%ld", ((SmileInteger64)obj)->value);
 		return;
 
-	case SMILE_KIND_INTEGER64RANGE:
-		{
-			SmileInteger64Range range = (SmileInteger64Range)obj;
-			if (range->end >= range->start && range->stepping != +1
-				|| range->end < range->start && range->stepping != -1) {
-				StringBuilder_AppendFormat(stringBuilder, "%ld..%ld step %ld",
-					range->start, range->end, range->stepping);
-			}
-			else {
-				StringBuilder_AppendFormat(stringBuilder, "%ld..%ld",
-					range->start, range->end);
-			}
-		}
-		return;
-
 	case SMILE_KIND_STRING:
 		StringBuilder_AppendFormat(stringBuilder, "\"%S\"", String_AddCSlashes((String)obj));
 		return;
@@ -380,7 +365,7 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 		return;
 
 	default:
-		StringBuilder_AppendFormat(stringBuilder, "<%d>", SMILE_KIND(obj));
+		StringBuilder_AppendString(stringBuilder, SMILE_VCALL1(obj, toString, (SmileUnboxedData) { 0 }));
 		return;
 	}
 }

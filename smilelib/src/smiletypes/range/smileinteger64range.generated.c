@@ -1,3 +1,7 @@
+// ===================================================
+//   WARNING: THIS IS A GENERATED FILE. DO NOT EDIT!
+// ===================================================
+
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
 //  Copyright 2004-2017 Sean Werkema
@@ -18,6 +22,7 @@
 #include <smile/numeric/real64.h>
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
+#include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/range/smileinteger64range.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/smilelist.h>
@@ -36,7 +41,16 @@ SMILE_EASY_OBJECT_TOBOOL(SmileInteger64Range, True)
 SMILE_EASY_OBJECT_TOINT(SmileInteger64Range, (Int32)(obj->end - obj->start))
 SMILE_EASY_OBJECT_TOREAL(SmileInteger64Range, Real64_FromInt64(obj->end - obj->start))
 SMILE_EASY_OBJECT_TOFLOAT(SmileInteger64Range, (Float64)(obj->end - obj->start))
-SMILE_EASY_OBJECT_TOSTRING(SmileInteger64Range, String_Format("%ld..%ld", obj->start, obj->end))
+SMILE_EASY_OBJECT_TOSTRING(SmileInteger64Range, 			((obj->end >= obj->start && obj->stepping != +1
+				|| obj->end < obj->start && obj->stepping != -1)
+				? String_Format("%S..%S step %S",
+					String_CreateFromInteger(obj->start, 10, False),
+					String_CreateFromInteger(obj->end, 10, False),
+					String_CreateFromInteger(obj->stepping, 10, False))
+				: String_Format("%S..%S",
+					String_CreateFromInteger(obj->start, 10, False),
+					String_CreateFromInteger(obj->end, 10, False)))
+)
 
 SmileInteger64Range SmileInteger64Range_Create(Int64 start, Int64 end, Int64 stepping)
 {
@@ -52,12 +66,15 @@ SmileInteger64Range SmileInteger64Range_Create(Int64 start, Int64 end, Int64 ste
 	return smileRange;
 }
 
-static UInt32 SmileInteger64Range_Hash(SmileInteger64Range self)
+static UInt32 SmileInteger64Range_Hash(SmileInteger64Range range)
 {
-	UInt64 start = (UInt64)self->start;
-	UInt64 end = (UInt64)self->end;
-	UInt64 stepping = (UInt64)self->stepping;
-	return (UInt32)(start ^ (start >> 32)) ^ (UInt32)(end ^ (end >> 32)) ^ (UInt32)(stepping ^ (stepping >> 32));
+	UInt32 result;
+		UInt64 start = (UInt64)range->start;
+		UInt64 end = (UInt64)range->end;
+		UInt64 stepping = (UInt64)range->stepping;
+		result = (UInt32)(start ^ (start >> 32)) ^ (UInt32)(end ^ (end >> 32)) ^ (UInt32)(stepping ^ (stepping >> 32));
+
+	return result;
 }
 
 static SmileObject SmileInteger64Range_GetProperty(SmileInteger64Range self, Symbol propertyName)
