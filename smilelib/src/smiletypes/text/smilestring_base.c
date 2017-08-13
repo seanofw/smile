@@ -223,6 +223,48 @@ SMILE_EXTERNAL_FUNCTION(Remove)
 	}
 }
 
+/// <summary>
+/// Remove all Byte-Order-Marks from string x.  This is needed so often for interoperability
+/// that we provide a special optimized method for it.
+/// </summary>
+SMILE_EXTERNAL_FUNCTION(RemoveBOM)
+{
+	String x;
+	STATIC_STRING(bom, "\xEF\xBB\xBF");
+
+	x = (String)argv[0].obj;
+	x = String_Replace(x, bom, String_Empty);
+	return SmileArg_From((SmileObject)x);
+}
+
+/// <summary>
+/// Remove a single, initial Byte-Order-Mark from string x, if one exists.
+/// </summary>
+SMILE_EXTERNAL_FUNCTION(TrimBOM)
+{
+	String x;
+	STATIC_STRING(bom, "\xEF\xBB\xBF");
+
+	x = (String)argv[0].obj;
+	if (String_StartsWith(x, bom))
+		x = String_SubstringAt(x, 3);
+	return SmileArg_From((SmileObject)x);
+}
+
+/// <summary>
+/// Add a single, initial Byte-Order-Mark to string x, if one does not already exist.
+/// </summary>
+SMILE_EXTERNAL_FUNCTION(AddBOM)
+{
+	String x;
+	STATIC_STRING(bom, "\xEF\xBB\xBF");
+
+	x = (String)argv[0].obj;
+	if (!String_StartsWith(x, bom))
+		x = String_Concat(bom, x);
+	return SmileArg_From((SmileObject)x);
+}
+
 SMILE_EXTERNAL_FUNCTION(Repeat)
 {
 	String x;
@@ -1098,6 +1140,9 @@ void String_Setup(SmileUserObject base)
 	SetupFunction("trim-start", TrimStart, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupFunction("trim-end", TrimEnd, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupFunction("compact-whitespace", CompactWhitespace, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupFunction("remove-bom", RemoveBOM, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupFunction("trim-bom", TrimBOM, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupFunction("add-bom", AddBOM, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 
 	SetupFunction("case-fold", CaseFold, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupSynonym("case-fold", "fold");
