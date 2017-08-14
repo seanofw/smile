@@ -312,6 +312,8 @@ ParseError Parser_ParseEquals(Parser parser, SmileObject *expr, Int modeFlags)
 
 		// Collect the rvalue, recursively.
 		error = Parser_ParseEquals(parser, &rvalue, modeFlags);
+		if (error != NULL)
+			return error;
 	
 		// If the target is a variable, ensure proper variable-declaration semantics are followed by looking up
 		// the variable's current declaration.
