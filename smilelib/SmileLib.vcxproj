@@ -879,6 +879,7 @@
     <ClCompile Include="src\smiletypes\range\smileinteger64range_base.generated.c" />
     <ClCompile Include="src\smiletypes\raw\smilebytearray.c" />
     <ClCompile Include="src\smiletypes\raw\smilebytearray_base.c" />
+    <ClCompile Include="src\smiletypes\smilefunction_base.c" />
     <ClCompile Include="src\smiletypes\smilehandle.c" />
     <ClCompile Include="src\smiletypes\smilebool.c" />
     <ClCompile Include="src\smiletypes\smilefunction.c" />

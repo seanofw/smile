@@ -123,6 +123,15 @@ static void ThrowExactCheckError(SmileFunction self, Int argc)
 }
 
 //-------------------------------------------------------------------------------------------------
+// External functions (raw)
+
+void SmileExternalFunction_Raw_Call(SmileFunction self, Int argc, Int extra)
+{
+	((ExternalRawFunction)(self->u.externalFunctionInfo.externalFunction))(argc,
+		_closure->stackTop - argc - extra, self->u.externalFunctionInfo.param);
+}
+
+//-------------------------------------------------------------------------------------------------
 // External functions (normal kind)
 
 void SmileExternalFunction_NoCheck_Call(SmileFunction self, Int argc, Int extra)

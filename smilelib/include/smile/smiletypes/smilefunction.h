@@ -26,6 +26,7 @@
 #define ARG_CHECK_EXACT	(1 << 2)	
 #define ARG_CHECK_TYPES	(1 << 3)
 #define ARG_STATE_MACHINE	(1 << 4)	// This is a special "state machine" function.
+#define ARG_MODE_RAW	(1 << 5)	// This function accesses the call stack directly, and has no frame. (Use with caution!)
 
 /// <summary>
 /// This macro knows how to declare a function that is externally-callable by a Smile program.
@@ -34,11 +35,14 @@
 /// </summary>
 #define SMILE_EXTERNAL_FUNCTION(__name__) \
 	static SmileArg __name__(Int argc, SmileArg *argv, void *param)
+#define SMILE_EXTERNAL_RAW_FUNCTION(__name__) \
+	static void __name__(Int argc, SmileArg *argv, void *param)
 
 /// <summary>
 /// This is the type of an externally-callable function.
 /// </summary>
 typedef SmileArg (*ExternalFunction)(Int argc, SmileArg *argv, void *param);
+typedef void (*ExternalRawFunction)(Int argc, SmileArg *argv, void *param);
 
 typedef struct ExternalFunctionInfoStruct {
 

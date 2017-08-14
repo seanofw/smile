@@ -984,6 +984,7 @@
     <ClCompile Include="src\smiletypes\kind.c">
       <Filter>src\smiletypes</Filter>
     </ClCompile>
+    <ClCompile Include="src\smiletypes\smilefunction_base.c" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">

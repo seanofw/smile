@@ -36,6 +36,8 @@ extern SmileVTable SmileUserFunction_Rest_VTable;
 extern SmileVTable SmileUserFunction_Checked_VTable;
 extern SmileVTable SmileUserFunction_CheckedRest_VTable;
 
+extern SmileVTable SmileExternalFunction_Raw_VTable;
+
 extern SmileVTable SmileExternalFunction_NoCheck_VTable;
 extern SmileVTable SmileExternalFunction_MinCheck_VTable;
 extern SmileVTable SmileExternalFunction_MaxCheck_VTable;
@@ -274,6 +276,8 @@ SmileFunction SmileFunction_CreateUserFunction(UserFunctionInfo userFunctionInfo
 
 Inline SmileVTable GetExternalFunctionVTableByFlags(Int argCheckFlags)
 {
+	if (argCheckFlags & ARG_MODE_RAW) return SmileExternalFunction_Raw_VTable;
+
 	// Choose a VTable with a function that has optimized hardwired argument checks
 	// for the types of checks they want.
 	switch (argCheckFlags) {
@@ -620,6 +624,8 @@ USER_FUNCTION_VTABLE(CheckedRest);	// Function with at least one type-checked ar
 		SmileExternalFunction_##__checkKind__##_Call, \
 		SmileExternalFunction_GetSourceLocation, \
 	}
+
+EXTERNAL_FUNCTION_VTABLE(Raw);
 
 EXTERNAL_FUNCTION_VTABLE(NoCheck);
 EXTERNAL_FUNCTION_VTABLE(MinCheck);
