@@ -412,7 +412,7 @@
     <DisplayString>ByteCodeSegment ({numByteCodes} instrs)</DisplayString>
     <Expand>
       <Item Name="numByteCodes">numByteCodes</Item>
-      <Item Name="[stringified]">ByteCodeSegment_ToString(this, 0, 0)->_opaque.text</Item>
+      <Item Name="[stringified]">ByteCodeSegment_ToString(this, 0)->_opaque.text</Item>
       <ArrayItems>
         <Size>numByteCodes</Size>
         <ValuePointer>byteCodes</ValuePointer>
