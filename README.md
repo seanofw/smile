@@ -31,9 +31,9 @@ Lisp, but it reads more like Python or Ruby.
     * [C Header Overview](smilelib/include)
 
 (_Note: This C implementation is currently incomplete but growing,
-and it will eventually become the official implementation.  It is **not**
-usable in its current form (yet).  If you want the much-more-complete and
-fairly-usable (but slow) C# implementation, you'll need to look elsewhere,
+and it will eventually become the official implementation.  It is **minimally**
+usable in its current form.  If you want the more-complete
+(but slow) C# implementation, you'll need to look elsewhere,
 as it's not hosted here._)
 
 -------------
