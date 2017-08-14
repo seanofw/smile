@@ -101,7 +101,7 @@ $fastUserFunctions = ApplyTemplate($fastUserFunctionTemplate, \%noArgs);
 for ($numArgs = 1; $numArgs <= 8; $numArgs++) {
 	$copyArgs = "";
 	for ($i = 0; $i < $numArgs; $i++) {
-		$copyArgs .= "\tchildClosure->variables[$i] = _closure->stackTop[" . (-1 - $i) . "];\r\n";
+		$copyArgs .= "\tchildClosure->variables[$i] = _closure->stackTop[" . (-($numArgs - $i)) . "];\r\n";
 	}
 	%args = ("name" => "SmileUserFunction_Fast" . $numArgs . "_Call", "numArgs" => "$numArgs", "copyArgs" => $copyArgs);
 

@@ -108,8 +108,8 @@ void SmileUserFunction_Fast2_Call(SmileFunction self, Int argc, Int extra)
 		_closure, _segment, _byteCode - _segment->byteCodes);
 
 	/* Copy the arguments. */
-	childClosure->variables[0] = _closure->stackTop[-1];
-	childClosure->variables[1] = _closure->stackTop[-2];
+	childClosure->variables[0] = _closure->stackTop[-2];
+	childClosure->variables[1] = _closure->stackTop[-1];
 
 	Closure_PopCount(_closure, extra + 2);
 
@@ -136,9 +136,9 @@ void SmileUserFunction_Fast3_Call(SmileFunction self, Int argc, Int extra)
 		_closure, _segment, _byteCode - _segment->byteCodes);
 
 	/* Copy the arguments. */
-	childClosure->variables[0] = _closure->stackTop[-1];
+	childClosure->variables[0] = _closure->stackTop[-3];
 	childClosure->variables[1] = _closure->stackTop[-2];
-	childClosure->variables[2] = _closure->stackTop[-3];
+	childClosure->variables[2] = _closure->stackTop[-1];
 
 	Closure_PopCount(_closure, extra + 3);
 
@@ -165,10 +165,10 @@ void SmileUserFunction_Fast4_Call(SmileFunction self, Int argc, Int extra)
 		_closure, _segment, _byteCode - _segment->byteCodes);
 
 	/* Copy the arguments. */
-	childClosure->variables[0] = _closure->stackTop[-1];
-	childClosure->variables[1] = _closure->stackTop[-2];
-	childClosure->variables[2] = _closure->stackTop[-3];
-	childClosure->variables[3] = _closure->stackTop[-4];
+	childClosure->variables[0] = _closure->stackTop[-4];
+	childClosure->variables[1] = _closure->stackTop[-3];
+	childClosure->variables[2] = _closure->stackTop[-2];
+	childClosure->variables[3] = _closure->stackTop[-1];
 
 	Closure_PopCount(_closure, extra + 4);
 
@@ -195,11 +195,11 @@ void SmileUserFunction_Fast5_Call(SmileFunction self, Int argc, Int extra)
 		_closure, _segment, _byteCode - _segment->byteCodes);
 
 	/* Copy the arguments. */
-	childClosure->variables[0] = _closure->stackTop[-1];
-	childClosure->variables[1] = _closure->stackTop[-2];
+	childClosure->variables[0] = _closure->stackTop[-5];
+	childClosure->variables[1] = _closure->stackTop[-4];
 	childClosure->variables[2] = _closure->stackTop[-3];
-	childClosure->variables[3] = _closure->stackTop[-4];
-	childClosure->variables[4] = _closure->stackTop[-5];
+	childClosure->variables[3] = _closure->stackTop[-2];
+	childClosure->variables[4] = _closure->stackTop[-1];
 
 	Closure_PopCount(_closure, extra + 5);
 
@@ -226,12 +226,12 @@ void SmileUserFunction_Fast6_Call(SmileFunction self, Int argc, Int extra)
 		_closure, _segment, _byteCode - _segment->byteCodes);
 
 	/* Copy the arguments. */
-	childClosure->variables[0] = _closure->stackTop[-1];
-	childClosure->variables[1] = _closure->stackTop[-2];
-	childClosure->variables[2] = _closure->stackTop[-3];
-	childClosure->variables[3] = _closure->stackTop[-4];
-	childClosure->variables[4] = _closure->stackTop[-5];
-	childClosure->variables[5] = _closure->stackTop[-6];
+	childClosure->variables[0] = _closure->stackTop[-6];
+	childClosure->variables[1] = _closure->stackTop[-5];
+	childClosure->variables[2] = _closure->stackTop[-4];
+	childClosure->variables[3] = _closure->stackTop[-3];
+	childClosure->variables[4] = _closure->stackTop[-2];
+	childClosure->variables[5] = _closure->stackTop[-1];
 
 	Closure_PopCount(_closure, extra + 6);
 
@@ -258,13 +258,13 @@ void SmileUserFunction_Fast7_Call(SmileFunction self, Int argc, Int extra)
 		_closure, _segment, _byteCode - _segment->byteCodes);
 
 	/* Copy the arguments. */
-	childClosure->variables[0] = _closure->stackTop[-1];
-	childClosure->variables[1] = _closure->stackTop[-2];
-	childClosure->variables[2] = _closure->stackTop[-3];
+	childClosure->variables[0] = _closure->stackTop[-7];
+	childClosure->variables[1] = _closure->stackTop[-6];
+	childClosure->variables[2] = _closure->stackTop[-5];
 	childClosure->variables[3] = _closure->stackTop[-4];
-	childClosure->variables[4] = _closure->stackTop[-5];
-	childClosure->variables[5] = _closure->stackTop[-6];
-	childClosure->variables[6] = _closure->stackTop[-7];
+	childClosure->variables[4] = _closure->stackTop[-3];
+	childClosure->variables[5] = _closure->stackTop[-2];
+	childClosure->variables[6] = _closure->stackTop[-1];
 
 	Closure_PopCount(_closure, extra + 7);
 
@@ -291,14 +291,14 @@ void SmileUserFunction_Fast8_Call(SmileFunction self, Int argc, Int extra)
 		_closure, _segment, _byteCode - _segment->byteCodes);
 
 	/* Copy the arguments. */
-	childClosure->variables[0] = _closure->stackTop[-1];
-	childClosure->variables[1] = _closure->stackTop[-2];
-	childClosure->variables[2] = _closure->stackTop[-3];
-	childClosure->variables[3] = _closure->stackTop[-4];
-	childClosure->variables[4] = _closure->stackTop[-5];
-	childClosure->variables[5] = _closure->stackTop[-6];
-	childClosure->variables[6] = _closure->stackTop[-7];
-	childClosure->variables[7] = _closure->stackTop[-8];
+	childClosure->variables[0] = _closure->stackTop[-8];
+	childClosure->variables[1] = _closure->stackTop[-7];
+	childClosure->variables[2] = _closure->stackTop[-6];
+	childClosure->variables[3] = _closure->stackTop[-5];
+	childClosure->variables[4] = _closure->stackTop[-4];
+	childClosure->variables[5] = _closure->stackTop[-3];
+	childClosure->variables[6] = _closure->stackTop[-2];
+	childClosure->variables[7] = _closure->stackTop[-1];
 
 	Closure_PopCount(_closure, extra + 8);
 
