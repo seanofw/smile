@@ -1164,6 +1164,7 @@ void String_Setup(SmileUserObject base)
 	SetupFunction("hash", Hash, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 
 	SetupFunction("+", Plus, NULL, "x y", ARG_CHECK_MIN, 1, 0, 0, NULL);
+	SetupSynonym("+", "concat");
 	SetupFunction("remove", Remove, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _stringChecks);
 	SetupSynonym("remove", "-");
 	SetupFunction("repeat", Repeat, NULL, "x count", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringNumberChecks);
