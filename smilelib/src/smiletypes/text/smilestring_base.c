@@ -25,6 +25,7 @@
 #include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
+#include <smile/smiletypes/range/smileinteger64range.h>
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/base.h>
 #include <smile/smiletypes/raw/smilebytearray.h>
@@ -536,29 +537,59 @@ SMILE_EXTERNAL_FUNCTION(LastIndexOfI)
 SMILE_EXTERNAL_FUNCTION(GetMember)
 {
 	String x = (String)argv[0].obj;
-	Int64 index = argv[1].unboxed.i64;
+	Int64 index;
+	SmileInteger64Range range;
 	Byte ch;
 	STATIC_STRING(indexOutOfRangeError, "Index to 'get-member' is beyond the length of the string.");
+	STATIC_STRING(indexTypeError, "Index to 'get-member' must be an Integer or an IntegerRange.");
 
-	if (index < 0 || index >= String_Length(x))
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, indexOutOfRangeError);
+	switch (SMILE_KIND(argv[1].obj)) {
+		case SMILE_KIND_UNBOXED_INTEGER64:
+			index = argv[1].unboxed.i64;
 
-	ch = String_At(x, (Int)index);
+			if (index < 0 || index >= String_Length(x))
+				Smile_ThrowException(Smile_KnownSymbols.native_method_error, indexOutOfRangeError);
 
-	return SmileUnboxedByte_From(ch);
+			ch = String_At(x, (Int)index);
+
+			return SmileUnboxedByte_From(ch);
+
+		case SMILE_KIND_INTEGER64RANGE:
+			range = (SmileInteger64Range)argv[1].obj;
+			return SmileArg_From((SmileObject)String_SubstringByRange(x, range->start, range->end, range->stepping));
+
+		default:
+			Smile_ThrowException(Smile_KnownSymbols.native_method_error, indexTypeError);
+	}
 }
 
 SMILE_EXTERNAL_FUNCTION(Substr)
 {
+	STATIC_STRING(indexTypeError, "Index to 'substr' must be an Integer or an IntegerRange.");
 	String x = (String)argv[0].obj;
+	Int64 index, length;
+	SmileInteger64Range range;
 
 	if (argc == 2) {
-		Int64 index = argv[1].unboxed.i64;
-		return SmileArg_From((SmileObject)String_SubstringAt(x, (Int)index));
+		switch (SMILE_KIND(argv[1].obj)) {
+			case SMILE_KIND_UNBOXED_INTEGER64:
+				index = argv[1].unboxed.i64;
+				return SmileArg_From((SmileObject)String_SubstringAt(x, (Int)index));
+
+			case SMILE_KIND_INTEGER64RANGE:
+				range = (SmileInteger64Range)argv[1].obj;
+				return SmileArg_From((SmileObject)String_SubstringByRange(x, range->start, range->end, range->stepping));
+
+			default:
+				Smile_ThrowException(Smile_KnownSymbols.native_method_error, indexTypeError);
+		}
 	}
 	else {
-		Int64 index = argv[1].unboxed.i64;
-		Int64 length = argv[2].unboxed.i64;
+		if (SMILE_KIND(argv[1].obj) != SMILE_KIND_UNBOXED_INTEGER64
+			|| SMILE_KIND(argv[2].obj) != SMILE_KIND_UNBOXED_INTEGER64)
+			Smile_ThrowException(Smile_KnownSymbols.native_method_error, indexTypeError);
+		index = argv[1].unboxed.i64;
+		length = argv[2].unboxed.i64;
 		return SmileArg_From((SmileObject)String_Substring(x, (Int)index, (Int)length));
 	}
 }
@@ -1139,7 +1170,7 @@ void String_Setup(SmileUserObject base)
 	SetupSynonym("repeat", "*");
 	SetupFunction("/", SlashAppend, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _stringChecks);
 
-	SetupFunction("substr", Substr, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _stringNumberChecks);
+	SetupFunction("substr", Substr, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 2, _stringComparisonChecks);
 	SetupSynonym("substr", "mid");
 	SetupSynonym("substr", "substring");
 	SetupFunction("left", Left, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringNumberChecks);
@@ -1204,7 +1235,7 @@ void String_Setup(SmileUserObject base)
 	SetupFunction("compare~", CompareI, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringChecks);
 	SetupSynonym("compare~", "cmp~");
 
-	SetupFunction("get-member", GetMember, NULL, "str index", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringNumberChecks);
+	SetupFunction("get-member", GetMember, NULL, "str index", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringComparisonChecks);
 
 	SetupFunction("each", Each, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
 	SetupFunction("map", Map, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);

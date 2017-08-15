@@ -396,6 +396,115 @@ String String_Substring(const String str, Int start, Int length)
 }
 
 /// <summary>
+/// Extract a substring from the given string that starts at the given start position and continues
+/// up to and including the given end position, stepping by the given step value.
+/// </summary>
+/// <param name="str">The string from which a substring will be extracted.</param>
+/// <param name="start">The starting offset within the string.  If this lies outside the string, it will be clipped to the string.</param>
+/// <param name="end">The ending offset within the string.  If this lies outside the string, it will be clipped to the string.</param>
+/// <param name="step">How far to step between characters when extracting the substring.</param>
+/// <returns>The extracted (copied) substring.</returns>
+String String_SubstringByRange(const String str, Int64 start, Int64 end, Int64 step)
+{
+	Int64 length = String_Length(str);
+	Int64 substringLength, resultLength;
+	Int64 leftover;
+	String result;
+	Byte *resultBytes, *dest;
+	const Byte *strBytes, *src, *srcEnd;
+
+	// Handle the special (but common) case of a strict forward substring, not skipping characters.
+	if (step == 1 && start <= end)
+		return String_Substring(str, (Int)start, (Int)(end - start + 1));
+
+	if (start <= end) {
+		// Handle scenarios where the step is nonsensical or the range is entirely outside the string.
+		if (step <= 0 || start >= length)
+			return String_Empty;
+
+		// Calculate a length that's actually on a 'step', one 'step' past the end marker.
+		substringLength = (end + 1 - start);
+		leftover = substringLength % step;
+		substringLength += step - leftover;
+
+		// If start is negative, clip it to the lowest step greater than or equal to zero.
+		if (start < 0) {
+			Int64 steps = (-start / step);
+			start += steps * step, substringLength -= steps * step;
+			if (start < 0) start += step, substringLength -= step;
+			if (start >= length || substringLength < step) return String_Empty;
+		}
+
+		// If the end of the substring is past the end of the string, clip it to the string.
+		if (start + substringLength > length + (step - 1)) {
+			substringLength = ((length + (step - 1) - start) / step) * step;
+			if (substringLength < step) return String_Empty;
+		}
+
+		// Calculate the resulting length of the extracted substring.  This should be at least 1.
+		resultLength = substringLength / step;
+
+		// Make some space for the new substring.
+		result = String_CreateInternal((Int)resultLength);
+
+		// Get pointers to the actual buffers.
+		resultBytes = (Byte *)String_GetBytes(result);
+		strBytes = (const Byte *)String_GetBytes(str);
+		
+		// Copy bytes.
+		for (srcEnd = (src = strBytes + start) + substringLength, dest = resultBytes; src < srcEnd; src += step) {
+			*dest++ = *src;
+		}
+		*dest = '\0';
+
+		return result;
+	}
+	else {
+		// Handle scenarios where the step is nonsensical or the range is entirely outside the string.
+		if (step >= 0 || start < 0)
+			return String_Empty;
+
+		// Calculate a length that's actually on a 'step', one 'step' past the end marker.
+		substringLength = (start + 1 - end);
+		leftover = substringLength % -step;
+		substringLength += -step - leftover;
+
+		// If start is past the end of the string, clip it to the highest step less than or equal
+		// to the last character of the string.
+		if (start >= length) {
+			Int64 steps = ((start - length) / -step);
+			start -= steps * -step, substringLength -= steps * -step;
+			if (start >= length) start += step, substringLength += step;
+			if (start < 0 || substringLength < -step) return String_Empty;
+		}
+
+		// If the end of the substring is past the start of the string, clip it to the string.
+		if (start - substringLength < -(-step - 1)) {
+			substringLength = ((length + (-step - 1) - (length - start - 1)) / -step) * -step;
+			if (substringLength < -step) return String_Empty;
+		}
+
+		// Calculate the resulting length of the extracted substring.  This should be at least 1.
+		resultLength = substringLength / -step;
+
+		// Make some space for the new substring.
+		result = String_CreateInternal((Int)resultLength);
+
+		// Get pointers to the actual buffers.
+		resultBytes = (Byte *)String_GetBytes(result);
+		strBytes = (const Byte *)String_GetBytes(str);
+
+		// Copy bytes backwards from the source.
+		for (srcEnd = (src = strBytes + start) - substringLength, dest = resultBytes; src > srcEnd; src += step) {
+			*dest++ = *src;
+		}
+		*dest = '\0';
+
+		return result;
+	}
+}
+
+/// <summary>
 /// Construct a new String instance by concatenating exactly two strings together.
 /// </summary>
 /// <param name="s1">The first string to concatenate.</param>

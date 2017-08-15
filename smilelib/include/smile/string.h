@@ -154,6 +154,7 @@ SMILE_API_FUNC Int String_CompareRange(const String a, Int astart, Int alength, 
 
 SMILE_API_FUNC String String_SubstringAt(const String str, Int start);
 SMILE_API_FUNC String String_Substring(const String str, Int start, Int length);
+SMILE_API_FUNC String String_SubstringByRange(const String str, Int64 start, Int64 end, Int64 step);
 SMILE_API_FUNC String String_Concat(const String str, const String other);
 SMILE_API_FUNC String String_ConcatByte(const String str, Byte ch);
 
