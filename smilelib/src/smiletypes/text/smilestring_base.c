@@ -455,6 +455,20 @@ SMILE_EXTERNAL_FUNCTION(ContainsI)
 	return SmileUnboxedBool_From(result);
 }
 
+SMILE_EXTERNAL_FUNCTION(IsEmpty)
+{
+	String str = (String)argv[0].obj;
+	Bool result = String_IsNullOrEmpty(str);
+	return SmileUnboxedBool_From(result);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsWhitespace)
+{
+	String str = (String)argv[0].obj;
+	Bool result = String_IsNullOrWhitespace(str);
+	return SmileUnboxedBool_From(result);
+}
+
 //-------------------------------------------------------------------------------------------------
 
 SMILE_EXTERNAL_FUNCTION(IndexOf)
@@ -1159,6 +1173,8 @@ void String_Setup(SmileUserObject base)
 	SetupFunction("ends-with~?", EndsWithI, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringChecks);
 	SetupFunction("contains?", Contains, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringChecks);
 	SetupFunction("contains~?", ContainsI, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringChecks);
+	SetupFunction("empty?", IsEmpty, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupFunction("whitespace?", IsWhitespace, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 
 	SetupFunction("rot13", Rot13, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupFunction("add-c-slashes", AddCSlashes, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
