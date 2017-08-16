@@ -388,3 +388,82 @@ static LexerPosition SmileList_GetSourceLocation(SmileList list)
 	}
 	else return NULL;
 }
+
+/// <summary>
+/// Sort the given list "in place" by mutating its pointers.  This uses
+/// a derivative of Simon Tatham's linked-list mergesort, so it runs in
+/// O(n lg n) time.  This is a stable sort.  The list to be sorted must
+/// not be circular, and the last 'd' pointer's data will always be discarded
+/// (so it *should* be Null, but if you do not provide a well-formed list,
+/// it may not be).
+/// </summary>
+SmileList SmileList_Sort(SmileList list, Int (*cmp)(SmileObject a, SmileObject b, void *param), void *param)
+{
+	SmileList p, q, e, tail;
+	Int stepSize, numMerges, psize, qsize, i;
+
+	if (SMILE_KIND(list) == SMILE_KIND_NULL)
+		return list;
+
+	stepSize = 1;
+
+	for (;;) {
+		p = list;
+		list = NullList;
+		tail = NullList;
+
+		numMerges = 0;				// Count number of merges we do in this pass.
+
+		while (SMILE_KIND(p) == SMILE_KIND_LIST) {
+			numMerges++;			// There exists a merge to be done.
+
+			// Step 'stepSize' places along from p.
+			q = p;
+			psize = 0;
+			for (i = 0; i < stepSize; i++) {
+				psize++;
+				q = (SmileList)q->d;
+				if (SMILE_KIND(q) != SMILE_KIND_LIST) break;
+			}
+
+			// If q hasn't fallen off the end, we have two lists to merge.
+			qsize = stepSize;
+
+			// Now we have two lists; merge them.
+			while (psize > 0 || (qsize > 0 && SMILE_KIND(q) == SMILE_KIND_LIST)) {
+
+				if (psize == 0) {
+					e = q; q = (SmileList)q->d; qsize--;
+				}
+				else if (qsize == 0 || SMILE_KIND(q) != SMILE_KIND_LIST) {
+					e = p; p = (SmileList)p->d; psize--;
+				}
+				else {
+					if (cmp(p->a, q->a, param) <= 0) {
+						e = p; p = (SmileList)p->d; psize--;
+					}
+					else {
+						e = q; q = (SmileList)q->d; qsize--;
+					}
+				}
+
+				if (SMILE_KIND(tail) == SMILE_KIND_LIST) {
+					tail->d = (SmileObject)e;
+				}
+				else {
+					list = e;
+				}
+				tail = e;
+			}
+
+			// Now p has stepped 'stepSize' places along, and q has too.
+			p = q;
+		}
+		tail->d = NullObject;
+
+		if (numMerges <= 1)
+			return list;
+
+		stepSize <<= 1;
+	}
+}

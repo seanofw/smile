@@ -61,10 +61,22 @@ SMILE_EXTERNAL_FUNCTION(Base)
 	return SmileArg_From(target == Smile_KnownBases.Primitive ? target : target->base);
 }
 
+static Int PropertyNameComparer(SmileObject a, SmileObject b, void *param)
+{
+	SmileSymbol sa = (SmileSymbol)a;
+	SmileSymbol sb = (SmileSymbol)b;
+
+	String na = SymbolTable_GetName(Smile_SymbolTable, sa->symbol);
+	String nb = SymbolTable_GetName(Smile_SymbolTable, sb->symbol);
+
+	return String_Compare(na, nb);
+}
+
 SMILE_EXTERNAL_FUNCTION(PropertyNames)
 {
 	SmileObject target = argv[argc - 1].obj;
 	SmileList propertyNames = SMILE_VCALL(target, getPropertyNames);
+	propertyNames = SmileList_Sort(propertyNames, PropertyNameComparer, NULL);
 	return SmileArg_From((SmileObject)propertyNames);
 }
 
