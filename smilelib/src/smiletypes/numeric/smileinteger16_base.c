@@ -1226,6 +1226,83 @@ SMILE_EXTERNAL_FUNCTION(CountLeftOnes)
 }
 
 //-------------------------------------------------------------------------------------------------
+// Number Theoretics
+
+/// <summary>
+/// Calculate the greatest common divisor of two numbers.  This implementation is very similar to
+/// the binary GCD described on Wikipedia (https://en.wikipedia.org/wiki/Binary_GCD_algorithm), and
+/// runs in O(max(lg a + lg b)^2) time, or at most 255 iterations for unsigned 16-bit integers.
+/// </summary>
+static UInt16 CalculateBinaryGcd(UInt16 a, UInt16 b)
+{
+	UInt shift = 0;
+
+	while (((a | b) & 1) == 0)
+		a >>= 1, b >>= 1, shift++;
+
+	while ((a & 1) == 0)
+		a >>= 1;
+
+	do {
+		while ((b & 1) == 0)
+			b >>= 1;
+
+		if (a > b) {
+			UInt16 temp = a;
+			a = b;
+			b = temp;
+		}
+	} while ((b -= a) != 0);
+
+	return a << shift;
+}
+
+SMILE_EXTERNAL_FUNCTION(Gcd)
+{
+	Int16 value1 = argv[0].unboxed.i16;
+	Int16 value2 = argv[1].unboxed.i16;
+	UInt16 gcd;
+	UInt16 a, b;
+
+	if (value1 <= 0 || value2 <= 0) return SmileUnboxedInteger16_From(0);
+
+	a = (UInt16)value1, b = (UInt16)value2;
+	gcd = CalculateBinaryGcd(a, b);
+
+	return SmileUnboxedInteger16_From((Int16)gcd);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsCoprime)
+{
+	Int16 value1 = argv[0].unboxed.i16;
+	Int16 value2 = argv[1].unboxed.i16;
+	UInt16 gcd;
+	UInt16 a, b;
+
+	if (value1 <= 0 || value2 <= 0) return SmileUnboxedBool_From(False);
+
+	a = (UInt16)value1, b = (UInt16)value2;
+	gcd = CalculateBinaryGcd(a, b);
+
+	return SmileUnboxedBool_From(gcd == 1);
+}
+
+SMILE_EXTERNAL_FUNCTION(Lcm)
+{
+	Int16 value1 = argv[0].unboxed.i16;
+	Int16 value2 = argv[1].unboxed.i16;
+	UInt16 gcd;
+	UInt16 a, b;
+
+	if (value1 <= 0 || value2 <= 0) return SmileUnboxedInteger16_From(0);
+
+	a = (UInt16)value1, b = (UInt16)value2;
+	gcd = CalculateBinaryGcd(a, b);
+
+	return SmileUnboxedInteger16_From((Int16)((a / gcd) * b));
+}
+
+//-------------------------------------------------------------------------------------------------
 // Comparisons
 
 SMILE_EXTERNAL_FUNCTION(Eq)
@@ -1385,6 +1462,10 @@ void SmileInteger16_Setup(SmileUserObject base)
 	SetupFunction("count-right-ones", CountRightOnes, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer16Checks);
 	SetupFunction("count-left-zeros", CountLeftZeros , NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer16Checks);
 	SetupFunction("count-left-ones", CountLeftOnes, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer16Checks);
+
+	SetupFunction("gcd", Gcd, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer16Checks);
+	SetupFunction("lcm", Lcm, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer16Checks);
+	SetupFunction("coprime?", IsCoprime, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer16Checks);
 
 	SetupFunction("==", Eq, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer16ComparisonChecks);
 	SetupFunction("!=", Ne, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer16ComparisonChecks);

@@ -1233,6 +1233,83 @@ SMILE_EXTERNAL_FUNCTION(CountLeftOnes)
 }
 
 //-------------------------------------------------------------------------------------------------
+// Number Theoretics
+
+/// <summary>
+/// Calculate the greatest common divisor of two numbers.  This implementation is very similar to
+/// the binary GCD described on Wikipedia (https://en.wikipedia.org/wiki/Binary_GCD_algorithm), and
+/// runs in O(max(lg a + lg b)^2) time, or at most 1023 iterations for unsigned 32-bit integers.
+/// </summary>
+static UInt32 CalculateBinaryGcd(UInt32 a, UInt32 b)
+{
+	UInt shift = 0;
+
+	while (((a | b) & 1) == 0)
+		a >>= 1, b >>= 1, shift++;
+
+	while ((a & 1) == 0)
+		a >>= 1;
+
+	do {
+		while ((b & 1) == 0)
+			b >>= 1;
+
+		if (a > b) {
+			UInt32 temp = a;
+			a = b;
+			b = temp;
+		}
+	} while ((b -= a) != 0);
+
+	return a << shift;
+}
+
+SMILE_EXTERNAL_FUNCTION(Gcd)
+{
+	Int32 value1 = argv[0].unboxed.i32;
+	Int32 value2 = argv[1].unboxed.i32;
+	UInt32 gcd;
+	UInt32 a, b;
+
+	if (value1 <= 0 || value2 <= 0) return SmileUnboxedInteger32_From(0);
+
+	a = (UInt32)value1, b = (UInt32)value2;
+	gcd = CalculateBinaryGcd(a, b);
+
+	return SmileUnboxedInteger32_From((Int32)gcd);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsCoprime)
+{
+	Int32 value1 = argv[0].unboxed.i32;
+	Int32 value2 = argv[1].unboxed.i32;
+	UInt32 gcd;
+	UInt32 a, b;
+
+	if (value1 <= 0 || value2 <= 0) return SmileUnboxedBool_From(False);
+
+	a = (UInt32)value1, b = (UInt32)value2;
+	gcd = CalculateBinaryGcd(a, b);
+
+	return SmileUnboxedBool_From(gcd == 1);
+}
+
+SMILE_EXTERNAL_FUNCTION(Lcm)
+{
+	Int32 value1 = argv[0].unboxed.i32;
+	Int32 value2 = argv[1].unboxed.i32;
+	UInt32 gcd;
+	UInt32 a, b;
+
+	if (value1 <= 0 || value2 <= 0) return SmileUnboxedInteger32_From(0);
+
+	a = (UInt32)value1, b = (UInt32)value2;
+	gcd = CalculateBinaryGcd(a, b);
+
+	return SmileUnboxedInteger32_From((Int32)((a / gcd) * b));
+}
+
+//-------------------------------------------------------------------------------------------------
 // Comparisons
 
 SMILE_EXTERNAL_FUNCTION(Eq)
@@ -1392,6 +1469,10 @@ void SmileInteger32_Setup(SmileUserObject base)
 	SetupFunction("count-right-ones", CountRightOnes, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
 	SetupFunction("count-left-zeros", CountLeftZeros , NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
 	SetupFunction("count-left-ones", CountLeftOnes, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+
+	SetupFunction("gcd", Gcd, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer32Checks);
+	SetupFunction("lcm", Lcm, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer32Checks);
+	SetupFunction("coprime?", IsCoprime, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer32Checks);
 
 	SetupFunction("==", Eq, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer32ComparisonChecks);
 	SetupFunction("!=", Ne, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer32ComparisonChecks);

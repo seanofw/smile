@@ -1211,6 +1211,77 @@ SMILE_EXTERNAL_FUNCTION(CountLeftOnes)
 }
 
 //-------------------------------------------------------------------------------------------------
+// Number Theoretics
+
+/// <summary>
+/// Calculate the greatest common divisor of two numbers.  This implementation is very similar to
+/// the binary GCD described on Wikipedia (https://en.wikipedia.org/wiki/Binary_GCD_algorithm), and
+/// runs in O(max(lg a + lg b)^2) time, or at most 63 iterations for unsigned 8-bit integers.
+/// </summary>
+static Byte CalculateBinaryGcd(Byte a, Byte b)
+{
+	UInt shift = 0;
+
+	while (((a | b) & 1) == 0)
+		a >>= 1, b >>= 1, shift++;
+
+	while ((a & 1) == 0)
+		a >>= 1;
+
+	do {
+		while ((b & 1) == 0)
+			b >>= 1;
+
+		if (a > b) {
+			Byte temp = a;
+			a = b;
+			b = temp;
+		}
+	} while ((b -= a) != 0);
+
+	return a << shift;
+}
+
+SMILE_EXTERNAL_FUNCTION(Gcd)
+{
+	Byte a = argv[0].unboxed.i8;
+	Byte b = argv[1].unboxed.i8;
+	Byte gcd;
+
+	if (!a || !b) return SmileUnboxedByte_From(0);
+
+	gcd = CalculateBinaryGcd(a, b);
+
+	return SmileUnboxedByte_From(gcd);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsCoprime)
+{
+	Byte a = argv[0].unboxed.i8;
+	Byte b = argv[1].unboxed.i8;
+	Byte gcd;
+
+	if (!a || !b) return SmileUnboxedBool_From(False);
+
+	gcd = CalculateBinaryGcd(a, b);
+
+	return SmileUnboxedBool_From(gcd == 1);
+}
+
+SMILE_EXTERNAL_FUNCTION(Lcm)
+{
+	Byte a = argv[0].unboxed.i8;
+	Byte b = argv[1].unboxed.i8;
+	Byte gcd;
+
+	if (!a || !b) return SmileUnboxedByte_From(0);
+
+	gcd = CalculateBinaryGcd(a, b);
+
+	return SmileUnboxedByte_From((Byte)((a / gcd) * b));
+}
+
+//-------------------------------------------------------------------------------------------------
 // Comparisons
 
 SMILE_EXTERNAL_FUNCTION(Eq)
@@ -1370,6 +1441,10 @@ void SmileByte_Setup(SmileUserObject base)
 	SetupFunction("count-right-ones", CountRightOnes, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
 	SetupFunction("count-left-zeros", CountLeftZeros , NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
 	SetupFunction("count-left-ones", CountLeftOnes, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+
+	SetupFunction("gcd", Gcd, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _byteChecks);
+	SetupFunction("lcm", Lcm, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _byteChecks);
+	SetupFunction("coprime?", IsCoprime, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _byteChecks);
 
 	SetupFunction("==", Eq, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _byteComparisonChecks);
 	SetupFunction("!=", Ne, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _byteComparisonChecks);
