@@ -1215,6 +1215,15 @@ SMILE_EXTERNAL_FUNCTION(Count)
 
 //-------------------------------------------------------------------------------------------------
 
+SMILE_EXTERNAL_FUNCTION(SplitCommandLine)
+{
+	String x = (String)argv[0].obj;
+	SmileList args = String_SplitCommandLine(x);
+	return SmileArg_From((SmileObject)args);
+}
+
+//-------------------------------------------------------------------------------------------------
+
 void String_Setup(SmileUserObject base)
 {
 	SetupFunction("bool", ToBool, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
@@ -1306,4 +1315,6 @@ void String_Setup(SmileUserObject base)
 	SetupFunction("count", Count, NULL, "string", ARG_STATE_MACHINE, 0, 0, 0, NULL);
 
 	SetupFunction("byte-array", ByteArray, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+
+	SetupFunction("split-command-line", SplitCommandLine, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 }

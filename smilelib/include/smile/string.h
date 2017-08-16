@@ -195,7 +195,7 @@ SMILE_API_FUNC String String_RegexEscape(const String str);
 SMILE_API_FUNC Bool String_WildcardMatch(const String pattern, const String text, Int wildcardOptions);
 SMILE_API_FUNC String String_JoinEnglishNames(const String *items, Int numItems, const String conjunction);
 SMILE_API_FUNC Bool String_IsNullOrWhitespace(const String str);
-SMILE_API_FUNC SmileList String_SplitCommandLine(String commandLine);
+SMILE_API_FUNC SmileList String_SplitCommandLine(const String commandLine);
 
 SMILE_API_FUNC String String_FromUtf16(const UInt16 *text, Int length);
 SMILE_API_FUNC UInt16 *String_ToUtf16(const String str, Int *length);

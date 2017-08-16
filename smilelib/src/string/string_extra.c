@@ -975,7 +975,7 @@ Bool String_IsNullOrWhitespace(const String str)
 /// </summary>
 /// <param name="commandLine">The command line to split into pieces.</param>
 /// <returns>A list of the command-line arguments.</returns>
-SmileList String_SplitCommandLine(String commandLine)
+SmileList String_SplitCommandLine(const String commandLine)
 {
 	DECLARE_INLINE_STRINGBUILDER(stringBuilder, 256);
 	SmileList head = NullList, tail = NullList;
