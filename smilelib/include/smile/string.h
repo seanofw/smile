@@ -185,6 +185,7 @@ SMILE_API_FUNC String String_Reverse(const String str);
 SMILE_API_FUNC String String_Repeat(const String str, Int count);
 SMILE_API_FUNC String String_PadStart(const String str, Int minLength, Byte padChar);
 SMILE_API_FUNC String String_PadEnd(const String str, Int minLength, Byte padChar);
+SMILE_API_FUNC String String_PadCenter(const String str, Int minLength, Byte padChar);
 SMILE_API_FUNC String String_TrimWhitespace(const String str, Bool trimStart, Bool trimEnd);
 SMILE_API_FUNC String String_CompactWhitespace(const String str);
 SMILE_API_FUNC String String_AddCSlashes(const String str);

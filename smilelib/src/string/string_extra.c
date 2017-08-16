@@ -291,6 +291,46 @@ String String_PadEnd(const String str, Int minLength, Byte padChar)
 }
 
 /// <summary>
+/// Pad the given string on *both* ends, if necessary, so that it is at least 'minLength' bytes long.
+/// The number of characters added will be the same on both ends, unless the total number of pad characters
+/// is odd, in which case the number of pad characters added after the string will be one more than those
+/// added before the string (i.e., any "extra" pad character goes on the end, not the start).
+/// </summary>
+/// <param name="str">The string to pad.</param>
+/// <param name="minLength">The minimum length of the resulting string.  If the given string is shorter
+/// than this, 'padChar' will be injected at both ends of the resulting string to make it at least this long.
+/// If the given string is longer than or equal to this, it will be left unchanged.</param>
+/// <param name="padChar">The character to use for padding the string, if necessary.</param>
+/// <returns>The padded string, or, if it was already long enough, the original string.</returns>
+String String_PadCenter(const String str, Int minLength, Byte padChar)
+{
+	Int length = String_Length(str);
+	String result;
+	Byte *dest;
+	Int padLength;
+	Int startPad, endPad;
+
+	if (length >= minLength) return str;
+	padLength = minLength - length;
+
+	startPad = (Int)((UInt)padLength >> 1);
+	endPad = padLength - startPad;
+
+	result = String_CreateInternal(minLength);
+	dest = (Byte *)String_GetBytes(result);
+
+	if (startPad > 0)
+		MemSet(dest, padChar, startPad);
+
+	MemCpy(dest + startPad, String_GetBytes(str), length);
+
+	// There'll always be at least one end-padding character.
+	MemSet(dest + startPad + length, padChar, endPad);
+
+	return result;
+}
+
+/// <summary>
 /// Slash-append the given strings.  This function is useful for constructing sane paths to files.<br />
 /// <br />
 /// The given strings will be concatenated together with forward slashes in between; however, any preexisting

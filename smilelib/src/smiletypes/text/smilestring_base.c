@@ -55,6 +55,12 @@ static Byte _stringNumberChecks[] = {
 	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER64,
 };
 
+static Byte _padChecks[] = {
+	SMILE_KIND_MASK, SMILE_KIND_STRING,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER64,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_BYTE,
+};
+
 static Byte _indexOfChecks[] = {
 	SMILE_KIND_MASK, SMILE_KIND_STRING,
 	SMILE_KIND_MASK, SMILE_KIND_STRING,
@@ -264,6 +270,59 @@ SMILE_EXTERNAL_FUNCTION(AddBOM)
 	if (!String_StartsWith(x, bom))
 		x = String_Concat(bom, x);
 	return SmileArg_From((SmileObject)x);
+}
+
+/// <summary>
+/// Pad the start of a string to ensure it is at least the given length.
+/// </summary>
+SMILE_EXTERNAL_FUNCTION(PadStart)
+{
+	String x, padded;
+	Int64 minLength;
+
+	x = (String)argv[0].obj;
+	minLength = argv[1].unboxed.i64;
+	if (minLength > IntMax) minLength = IntMax;
+
+	padded = String_PadStart(x, (Int)minLength, argc > 2 ? argv[2].unboxed.i8 : ' ');
+
+	return SmileArg_From((SmileObject)padded);
+}
+
+/// <summary>
+/// Pad the end of a string to ensure it is at least the given length.
+/// </summary>
+SMILE_EXTERNAL_FUNCTION(PadEnd)
+{
+	String x, padded;
+	Int64 minLength;
+
+	x = (String)argv[0].obj;
+	minLength = argv[1].unboxed.i64;
+	if (minLength > IntMax) minLength = IntMax;
+
+	padded = String_PadEnd(x, (Int)minLength, argc > 2 ? argv[2].unboxed.i8 : ' ');
+
+	return SmileArg_From((SmileObject)padded);
+}
+
+/// <summary>
+/// Pad both ends of a string to ensure it is at least the given length.  If more
+/// padding is required on one side than the other, the extra character will be added
+/// to the end of the string, not the start.
+/// </summary>
+SMILE_EXTERNAL_FUNCTION(PadCenter)
+{
+	String x, padded;
+	Int64 minLength;
+
+	x = (String)argv[0].obj;
+	minLength = argv[1].unboxed.i64;
+	if (minLength > IntMax) minLength = IntMax;
+
+	padded = String_PadCenter(x, (Int)minLength, argc > 2 ? argv[2].unboxed.i8 : ' ');
+
+	return SmileArg_From((SmileObject)padded);
 }
 
 SMILE_EXTERNAL_FUNCTION(Repeat)
@@ -1189,6 +1248,9 @@ void String_Setup(SmileUserObject base)
 	SetupFunction("remove-bom", RemoveBOM, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupFunction("trim-bom", TrimBOM, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupFunction("add-bom", AddBOM, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupFunction("pad-start", PadStart, NULL, "string length char", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _padChecks);
+	SetupFunction("pad-end", PadEnd, NULL, "string length char", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _padChecks);
+	SetupFunction("pad-center", PadCenter, NULL, "string length char", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _padChecks);
 
 	SetupFunction("case-fold", CaseFold, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupSynonym("case-fold", "fold");
