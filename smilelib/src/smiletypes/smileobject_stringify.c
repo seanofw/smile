@@ -15,6 +15,7 @@
 //  limitations under the License.
 //---------------------------------------------------------------------------------------
 
+#include <stdlib.h>
 #include <smile/types.h>
 #include <smile/string.h>
 #include <smile/stringbuilder.h>
@@ -100,6 +101,17 @@ Inline Bool CanKindSkipParenthesisWhenUsedInPairs(Int kind, Bool isLeftSide)
 		default:
 			return False;
 	}
+}
+
+static int UserObjectKeyComparer(const void *a, const void *b)
+{
+	const Int32DictKeyValuePair *aPair = (const Int32DictKeyValuePair *)a;
+	const Int32DictKeyValuePair *bPair = (const Int32DictKeyValuePair *)b;
+
+	String na = SymbolTable_GetName(Smile_SymbolTable, aPair->key);
+	String nb = SymbolTable_GetName(Smile_SymbolTable, bPair->key);
+
+	return (int)String_Compare(na, nb);
 }
 
 static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int indent)
@@ -249,6 +261,8 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 				StringBuilder_Append(stringBuilder, (const Byte *)"{ }", 0, 3);
 			}
 			else {
+				qsort(pairs, numPairs, sizeof(Int32DictKeyValuePair), UserObjectKeyComparer);
+
 				StringBuilder_Append(stringBuilder, (const Byte *)"{\n", 0, 2);
 
 				for (i = 0; i < numPairs; i++) {
