@@ -1375,6 +1375,19 @@ SMILE_EXTERNAL_FUNCTION(Cxr)
 	return SmileArg_Unbox(obj);
 }
 
+SMILE_EXTERNAL_FUNCTION(Tail)
+{
+	SmileList list = (SmileList)argv[0].obj;
+
+	SmileList tail = SmileList_SafeTail(list);
+	if (tail == NULL) {
+		STATIC_STRING(cycleError, "List has no tail because it contains a cycle.");
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, cycleError);
+	}
+
+	return SmileArg_From((SmileObject)tail);
+}
+
 //-------------------------------------------------------------------------------------------------
 
 void SmileList_Setup(SmileUserObject base)
@@ -1471,4 +1484,6 @@ void SmileList_Setup(SmileUserObject base)
 	SetupFunction("cddadr", Cxr, (void *)0x00002212, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _listChecks);
 	SetupFunction("cdddar", Cxr, (void *)0x00002221, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _listChecks);
 	SetupFunction("cddddr", Cxr, (void *)0x00002222, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _listChecks);
+
+	SetupFunction("tail", Tail, NULL, "list", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 1, _listChecks);
 }
