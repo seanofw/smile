@@ -239,7 +239,28 @@ Int SmileList_SafeLength(SmileList list)
 	return (SMILE_KIND(tortoise) != SMILE_KIND_LIST ? length : -1);
 }
 
-SmileList SmileList_SafeClone(SmileList list)
+SmileList SmileList_SafeTail(SmileList list)
+{
+	SmileList tortoise = list, hare, last;
+
+	if (SMILE_KIND(list) != SMILE_KIND_LIST)
+		return list;
+
+	last = tortoise;
+	hare = tortoise = (SmileList)tortoise->d;
+
+	hare = LIST_REST(hare);
+
+	while (tortoise != hare && SMILE_KIND(tortoise) == SMILE_KIND_LIST) {
+		last = tortoise;
+		tortoise = (SmileList)tortoise->d;
+		hare = LIST_REST(LIST_REST(hare));
+	}
+
+	return (SMILE_KIND(tortoise) != SMILE_KIND_LIST ? last : NULL);
+}
+
+SmileList SmileList_SafeClone(SmileList list, SmileList *newTail)
 {
 	SmileList tortoise = list, hare;
 	SmileList destHead = NullList, destTail = NullList;
@@ -256,6 +277,9 @@ SmileList SmileList_SafeClone(SmileList list)
 		tortoise = (SmileList)tortoise->d;
 		hare = LIST_REST(LIST_REST(hare));
 	}
+
+	if (newTail != NULL)
+		*newTail = destTail;
 
 	return (SMILE_KIND(tortoise) != SMILE_KIND_LIST ? destHead : NULL);
 }

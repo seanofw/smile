@@ -148,12 +148,100 @@ SMILE_EXTERNAL_FUNCTION(Combine)
 	return SmileArg_From((SmileObject)head);
 }
 
+SMILE_EXTERNAL_FUNCTION(AppendInPlace)
+{
+	SmileList head = NullList, tail = NullList;
+	SmileObject obj;
+	Int i;
+	STATIC_STRING(cycleError, "List cannot be appended to because it contains a cycle.");
+
+	head = (SmileList)argv[0].obj;
+	tail = SmileList_SafeTail(head);
+	if (tail == NULL)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, cycleError);
+
+	for (i = 1; i < argc; i++) {
+		obj = SmileArg_Box(argv[i]);
+		LIST_APPEND(head, tail, obj);
+	}
+
+	return SmileArg_From((SmileObject)head);
+}
+
+SMILE_EXTERNAL_FUNCTION(Append)
+{
+	SmileList head, tail;
+	SmileObject obj;
+	Int i;
+	STATIC_STRING(cycleError, "List cannot be appended to because it contains a cycle.");
+
+	head = SmileList_SafeClone((SmileList)argv[0].obj, &tail);
+	if (tail == NULL)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, cycleError);
+
+	for (i = 1; i < argc; i++) {
+		obj = SmileArg_Box(argv[i]);
+		LIST_APPEND(head, tail, obj);
+	}
+
+	return SmileArg_From((SmileObject)head);
+}
+
+SMILE_EXTERNAL_FUNCTION(AppendListInPlace)
+{
+	SmileList head, tail;
+	SmileList source;
+	Int i;
+	STATIC_STRING(cycleError, "List cannot be appended to because it contains a cycle.");
+	STATIC_STRING(wellFormedError, "Object cannot be used with List.append-list! because it is not a List or is not well-formed.");
+
+	head = (SmileList)argv[0].obj;
+	tail = SmileList_SafeTail(head);
+	if (tail == NULL)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, cycleError);
+
+	for (i = 1; i < argc; i++) {
+		source = (SmileList)argv[i].obj;
+		if (!SmileList_IsWellFormed((SmileObject)source))
+			Smile_ThrowException(Smile_KnownSymbols.native_method_error, wellFormedError);
+		for (; SMILE_KIND(source) != SMILE_KIND_NULL; source = (SmileList)source->d) {
+			LIST_APPEND(head, tail, source->a);
+		}
+	}
+
+	return SmileArg_From((SmileObject)head);
+}
+
+SMILE_EXTERNAL_FUNCTION(AppendList)
+{
+	SmileList head, tail;
+	SmileList source;
+	Int i;
+	STATIC_STRING(cycleError, "List cannot be appended to because it contains a cycle.");
+	STATIC_STRING(wellFormedError, "Object cannot be used with List.append-list because it is not a List or is not well-formed.");
+
+	head = SmileList_SafeClone((SmileList)argv[0].obj, &tail);
+	if (tail == NULL)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, cycleError);
+
+	for (i = 1; i < argc; i++) {
+		source = (SmileList)argv[i].obj;
+		if (!SmileList_IsWellFormed((SmileObject)source))
+			Smile_ThrowException(Smile_KnownSymbols.native_method_error, wellFormedError);
+		for (; SMILE_KIND(source) != SMILE_KIND_NULL; source = (SmileList)source->d) {
+			LIST_APPEND(head, tail, source->a);
+		}
+	}
+
+	return SmileArg_From((SmileObject)head);
+}
+
 SMILE_EXTERNAL_FUNCTION(Clone)
 {
 	SmileList source = (SmileList)argv[0].obj, clone;
 	STATIC_STRING(cycleError, "List has infinite length because it contains a cycle.");
 
-	clone = SmileList_SafeClone(source);
+	clone = SmileList_SafeClone(source, NULL);
 	if (clone == NULL)
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, cycleError);
 
@@ -1099,7 +1187,7 @@ SMILE_EXTERNAL_FUNCTION(Sort)
 		cmp = (SmileFunction)argv[1].obj;
 	}
 
-	list = SmileList_SafeClone(list);
+	list = SmileList_SafeClone(list, NULL);
 	if (list == NULL)
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, cycleError);
 
@@ -1303,17 +1391,17 @@ void SmileList_Setup(SmileUserObject base)
 
 	SetupFunction("join", Join, NULL, "list", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _joinChecks);
 
-	/*
-	SetupFunction("append", Append, NULL, "list elements...", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 1, _joinChecks);
+	SetupFunction("append", Append, NULL, "list elements...", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 2, _indexOfChecks);
 	SetupSynonym("append", "conc");
-	SetupFunction("append!", AppendInPlace, NULL, "list elements...", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 2, _joinChecks);
+	SetupFunction("append!", AppendInPlace, NULL, "list elements...", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 2, _indexOfChecks);
 	SetupSynonym("append!", "conc!");
+	SetupSynonym("append", "+");
 	SetupFunction("append-list", AppendList, NULL, "list lists...", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 1, _listChecks);
 	SetupSynonym("append-list", "conc-list");
 	SetupFunction("append-list!", AppendListInPlace, NULL, "list lists...", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 1, _listChecks);
 	SetupSynonym("append-list!", "conc-list!");
-	SetupSynonym("append", "+");
 
+	/*
 	SetupFunction("get-member", GetMember, NULL, "list index", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _joinChecks);
 	SetupFunction("set-member", SetMember, NULL, "list index value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 2, _joinChecks);
 	SetupSynonym("get-member", "nth");
