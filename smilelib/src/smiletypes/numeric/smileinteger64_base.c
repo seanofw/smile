@@ -1499,9 +1499,9 @@ void SmileInteger64_Setup(SmileUserObject base)
 	SetupFunction(">=~", UGe, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer64Checks);
 
 	SetupFunction("compare", Compare, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer64Checks);
-	SetupSynonym("cmp", "compare");
+	SetupSynonym("compare", "cmp");
 	SetupFunction("compare~", UCompare, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer64Checks);
-	SetupSynonym("cmp~", "compare~");
+	SetupSynonym("compare~", "cmp~");
 
 	SetupFunction("range-to", RangeTo, NULL, "start end", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer64Checks);
 }
