@@ -46,6 +46,7 @@ SMILE_API_FUNC SmileList SmileList_CreateList(SmileObject firstObject, ...);
 SMILE_API_FUNC SmileList SmileList_CreateListv(SmileObject firstObject, va_list v);
 SMILE_API_FUNC Int SmileList_Length(SmileList list);
 SMILE_API_FUNC Int SmileList_SafeLength(SmileList list);
+SMILE_API_FUNC SmileList SmileList_SafeClone(SmileList list);
 SMILE_API_FUNC Bool SmileList_IsWellFormed(SmileObject probableList);
 SMILE_API_FUNC Bool SmileList_HasCycle(SmileObject probableList);
 SMILE_API_FUNC String SmileList_Join(SmileList list, String glue);

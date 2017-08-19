@@ -148,6 +148,18 @@ SMILE_EXTERNAL_FUNCTION(Combine)
 	return SmileArg_From((SmileObject)head);
 }
 
+SMILE_EXTERNAL_FUNCTION(Clone)
+{
+	SmileList source = (SmileList)argv[0].obj, clone;
+	STATIC_STRING(cycleError, "List has infinite length because it contains a cycle.");
+
+	clone = SmileList_SafeClone(source);
+	if (clone == NULL)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, cycleError);
+
+	return SmileArg_From((SmileObject)clone);
+}
+
 SMILE_EXTERNAL_FUNCTION(Length)
 {
 	Int length;
@@ -1027,6 +1039,40 @@ static Int SortBody(ClosureStateMachine closure)
 	return 2;
 }
 
+SMILE_EXTERNAL_FUNCTION(SortInPlace)
+{
+	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
+	SmileList list = (SmileList)argv[0].obj;
+	SortInfo sortInfo;
+	ClosureStateMachine closure;
+	SmileFunction cmp;
+
+	if (argc < 1)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'sort!' requires at least 1 argument, but was called with %d.", argc));
+	if ((SMILE_KIND(argv[0].obj) & ~SMILE_KIND_LIST_BIT) != SMILE_KIND_NULL)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FromC("Argument 1 to 'sort!' is of the wrong type."));
+
+	if (argc == 1) {
+		// Degenerate form: Sort the list nodes using the 'cmp' method on each node.
+		cmp = NULL;
+	}
+	else {
+		if (argc > 2)
+			Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'sort!' allows at most 2 arguments, but was called with %d.", argc));
+		if (SMILE_KIND(argv[1].obj) != SMILE_KIND_FUNCTION)
+			Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("Argument 2 to 'sort!' must be a function."));
+		cmp = (SmileFunction)argv[1].obj;
+	}
+
+	closure = Eval_BeginStateMachine(SortStart, SortBody);
+
+	sortInfo = (SortInfo)closure->state;
+	sortInfo->cmp = cmp;
+	sortInfo->actualSortInfo = InterruptibleListSort_Start(list);
+
+	return (SmileArg) { NULL };	// We have to return something, but this value will be ignored.
+}
+
 SMILE_EXTERNAL_FUNCTION(Sort)
 {
 	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
@@ -1034,6 +1080,7 @@ SMILE_EXTERNAL_FUNCTION(Sort)
 	SortInfo sortInfo;
 	ClosureStateMachine closure;
 	SmileFunction cmp;
+	STATIC_STRING(cycleError, "List has infinite length because it contains a cycle.");
 
 	if (argc < 1)
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'sort' requires at least 1 argument, but was called with %d.", argc));
@@ -1051,6 +1098,10 @@ SMILE_EXTERNAL_FUNCTION(Sort)
 			Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("Argument 2 to 'sort' must be a function."));
 		cmp = (SmileFunction)argv[1].obj;
 	}
+
+	list = SmileList_SafeClone(list);
+	if (list == NULL)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, cycleError);
 
 	closure = Eval_BeginStateMachine(SortStart, SortBody);
 
@@ -1248,6 +1299,7 @@ void SmileList_Setup(SmileUserObject base)
 	SetupFunction("of", Of, (void *)base, "items", ARG_CHECK_MIN, 1, 0, 0, NULL);
 	SetupFunction("cons", Cons, (void *)base, "a b", ARG_CHECK_MIN | ARG_CHECK_MAX, 2, 3, 0, NULL);
 	SetupFunction("combine", Combine, (void *)base, "lists...", ARG_CHECK_MIN, 2, 0, 2, _combineChecks);
+	SetupFunction("clone", Clone, NULL, "list", ARG_CHECK_EXACT, 1, 1, 1, _listChecks);
 
 	SetupFunction("join", Join, NULL, "list", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _joinChecks);
 
@@ -1290,7 +1342,8 @@ void SmileList_Setup(SmileUserObject base)
 	SetupFunction("index-of", IndexOf, NULL, "list fn", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _indexOfChecks);
 	SetupFunction("count", Count, NULL, "list fn", ARG_STATE_MACHINE, 0, 0, 0, NULL);
 
-	SetupFunction("sort!", Sort, NULL, "list fn", ARG_STATE_MACHINE, 0, 0, 0, NULL);
+	SetupFunction("sort!", SortInPlace, NULL, "list fn", ARG_STATE_MACHINE, 0, 0, 0, NULL);
+	SetupFunction("sort", Sort, NULL, "list fn", ARG_STATE_MACHINE, 0, 0, 0, NULL);
 
 	SetupFunction("length", Length, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _listChecks);
 	SetupFunction("cycle?", HasCycle, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _listChecks);
