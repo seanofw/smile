@@ -507,6 +507,7 @@ STATIC_STRING(chop, "chop");
 STATIC_STRING(cident_q, "cident?");
 STATIC_STRING(clip, "clip");
 STATIC_STRING(clone, "clone");
+STATIC_STRING(cmp, "cmp");
 STATIC_STRING(code_at, "code-at");
 STATIC_STRING(code_length, "code-length");
 STATIC_STRING(combine, "combine");
@@ -783,6 +784,7 @@ static void KnownSymbolsInt_PreloadGeneralSymbols(SymbolTable symbolTable, Known
 	knownSymbols->cident_q = SymbolTableInt_AddFast(symbolTable, cident_q);
 	knownSymbols->clip = SymbolTableInt_AddFast(symbolTable, clip);
 	knownSymbols->clone = SymbolTableInt_AddFast(symbolTable, clone);
+	knownSymbols->cmp = SymbolTableInt_AddFast(symbolTable, cmp);
 	knownSymbols->code_at = SymbolTableInt_AddFast(symbolTable, code_at);
 	knownSymbols->code_length = SymbolTableInt_AddFast(symbolTable, code_length);
 	knownSymbols->combine = SymbolTableInt_AddFast(symbolTable, combine);

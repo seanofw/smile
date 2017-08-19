@@ -951,6 +951,118 @@ SMILE_EXTERNAL_FUNCTION(IndexOf)
 
 //-------------------------------------------------------------------------------------------------
 
+typedef struct SortInfoStruct {
+	SmileFunction cmp;
+	InterruptibleListSortInfo actualSortInfo;
+} *SortInfo;
+
+static Int SortStart(ClosureStateMachine closure)
+{
+	register SortInfo loopInfo = (SortInfo)closure->state;
+
+	//---------- begin first for-loop iteration ----------
+
+	SmileObject cmpA, cmpB;
+	SmileList sortResult;
+	Bool continueSort = InterruptibleListSort_Continue(loopInfo->actualSortInfo, 0, &cmpA, &cmpB, &sortResult);
+
+	if (!continueSort) {
+		Closure_PushBoxed(closure, sortResult);
+		return -1;
+	}
+
+	// Body: Set up to call the user's function with the first pair.
+	if (loopInfo->cmp != NULL)
+		Closure_PushBoxed(closure, loopInfo->cmp);
+	else {
+		SmileFunction cmp = (SmileFunction)SMILE_VCALL1(cmpA, getProperty, Smile_KnownSymbols.cmp);
+		if (SMILE_KIND(cmp) != SMILE_KIND_FUNCTION) {
+			Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+				String_FromC("Cannot continue 'sort': Object does not have an associated 'cmp' method."));
+		}
+		Closure_PushBoxed(closure, cmp);
+	}
+	Closure_UnboxAndPush(closure, cmpA);
+	Closure_UnboxAndPush(closure, cmpB);
+	return 2;
+}
+
+static Int SortBody(ClosureStateMachine closure)
+{
+	register SortInfo loopInfo = (SortInfo)closure->state;
+	SmileArg fnResult;
+	Int64 cmpResult;
+	SmileObject cmpA, cmpB;
+	SmileList sortResult;
+	Bool continueSort;
+
+	// Body: Get integer comparison result.
+	fnResult = Closure_Pop(closure);
+	if (SMILE_KIND(fnResult.obj) != SMILE_KIND_UNBOXED_INTEGER64)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+			String_FromC("Cannot continue 'sort': Comparison result must be an Integer64."));
+	cmpResult = fnResult.unboxed.i64;
+
+	// Continue doing the actual sorting work, inside-out.
+	continueSort = InterruptibleListSort_Continue(loopInfo->actualSortInfo, cmpResult, &cmpA, &cmpB, &sortResult);
+
+	if (!continueSort) {
+		Closure_PushBoxed(closure, sortResult);
+		return -1;
+	}
+
+	// Body: Set up to call the user's function with the first pair.
+	if (loopInfo->cmp != NULL)
+		Closure_PushBoxed(closure, loopInfo->cmp);
+	else {
+		SmileFunction cmp = (SmileFunction)SMILE_VCALL1(cmpA, getProperty, Smile_KnownSymbols.cmp);
+		if (SMILE_KIND(cmp) != SMILE_KIND_FUNCTION) {
+			Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+				String_FromC("Cannot continue 'sort': Object does not have an associated 'cmp' method."));
+		}
+		Closure_PushBoxed(closure, cmp);
+	}
+	Closure_UnboxAndPush(closure, cmpA);
+	Closure_UnboxAndPush(closure, cmpB);
+	return 2;
+}
+
+SMILE_EXTERNAL_FUNCTION(Sort)
+{
+	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
+	SmileList list = (SmileList)argv[0].obj;
+	SortInfo sortInfo;
+	ClosureStateMachine closure;
+	SmileFunction cmp;
+
+	if (argc < 1)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'sort' requires at least 1 argument, but was called with %d.", argc));
+	if ((SMILE_KIND(argv[0].obj) & ~SMILE_KIND_LIST_BIT) != SMILE_KIND_NULL)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FromC("Argument 1 to 'sort' is of the wrong type."));
+
+	if (argc == 1) {
+		// Degenerate form: Sort the list nodes using the 'cmp' method on each node.
+		cmp = NULL;
+	}
+	else {
+		if (argc > 2)
+			Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("'sort' allows at most 2 arguments, but was called with %d.", argc));
+		if (SMILE_KIND(argv[1].obj) != SMILE_KIND_FUNCTION)
+			Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("Argument 2 to 'sort' must be a function."));
+		cmp = (SmileFunction)argv[1].obj;
+	}
+
+	closure = Eval_BeginStateMachine(SortStart, SortBody);
+
+	sortInfo = (SortInfo)closure->state;
+	sortInfo->cmp = cmp;
+	sortInfo->actualSortInfo = InterruptibleListSort_Start(list);
+
+	return (SmileArg) { NULL };	// We have to return something, but this value will be ignored.
+}
+
+//-------------------------------------------------------------------------------------------------
+
 SMILE_EXTERNAL_FUNCTION(Car)
 {
 	return SmileArg_Unbox(((SmileList)argv[0].obj)->a);
@@ -1177,6 +1289,8 @@ void SmileList_Setup(SmileUserObject base)
 	SetupFunction("first", First, NULL, "list fn", ARG_STATE_MACHINE, 0, 0, 0, NULL);
 	SetupFunction("index-of", IndexOf, NULL, "list fn", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _indexOfChecks);
 	SetupFunction("count", Count, NULL, "list fn", ARG_STATE_MACHINE, 0, 0, 0, NULL);
+
+	SetupFunction("sort!", Sort, NULL, "list fn", ARG_STATE_MACHINE, 0, 0, 0, NULL);
 
 	SetupFunction("length", Length, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _listChecks);
 	SetupFunction("cycle?", HasCycle, NULL, "list", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _listChecks);

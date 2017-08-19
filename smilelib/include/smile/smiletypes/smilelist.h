@@ -51,6 +51,12 @@ SMILE_API_FUNC Bool SmileList_HasCycle(SmileObject probableList);
 SMILE_API_FUNC String SmileList_Join(SmileList list, String glue);
 SMILE_API_FUNC SmileList SmileList_Sort(SmileList list, Int (*cmp)(SmileObject a, SmileObject b, void *param), void *param);
 
+typedef struct InterruptibleListSortInfoStruct *InterruptibleListSortInfo;
+
+SMILE_API_FUNC InterruptibleListSortInfo InterruptibleListSort_Start(SmileList list);
+SMILE_API_FUNC Bool InterruptibleListSort_Continue(InterruptibleListSortInfo sortInfo, Int64 cmpResult,
+	SmileObject *cmpA, SmileObject *cmpB, SmileList *sortResult);
+
 //-------------------------------------------------------------------------------------------------
 //  Inline operations
 

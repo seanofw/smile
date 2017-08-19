@@ -467,3 +467,158 @@ SmileList SmileList_Sort(SmileList list, Int (*cmp)(SmileObject a, SmileObject b
 		stepSize <<= 1;
 	}
 }
+
+struct InterruptibleListSortInfoStruct {
+	SmileList list, p, q, e, tail;
+	Int stepSize, psize, qsize;
+	Byte state, numMerges;
+	Byte reserved;
+	SByte cmpResult;
+	SmileObject cmpA, cmpB;
+};
+
+enum {
+	INITIAL,
+	OUTER_LOOP,
+	AFTER_OUTER_LOOP,
+	STEP_LOOP,
+	AFTER_STEP_LOOP,
+	MERGE_LOOP,
+	COMPARE_ITEMS,
+	AFTER_COMPARE_ITEMS,
+	GOT_NEXT_LOWEST,
+	AFTER_MERGE_LOOP,
+};
+
+#define STATE(s) case s: label_##s
+#define GOTO_STATE(s) goto label_##s
+
+InterruptibleListSortInfo InterruptibleListSort_Start(SmileList list)
+{
+	InterruptibleListSortInfo sortInfo = GC_MALLOC_STRUCT(struct InterruptibleListSortInfoStruct);
+	if (sortInfo == NULL)
+		Smile_Abort_OutOfMemory();
+
+	sortInfo->list = list;
+	sortInfo->state = INITIAL;
+
+	return sortInfo;
+}
+
+Bool InterruptibleListSort_Continue(InterruptibleListSortInfo sortInfo, Int64 cmpResult,
+	SmileObject *cmpA, SmileObject *cmpB, SmileList *sortResult)
+{
+	switch (sortInfo->state) {
+
+		STATE(INITIAL):
+			if (SMILE_KIND(sortInfo->list) == SMILE_KIND_NULL) {
+				*sortResult = sortInfo->list;
+				return False;
+			}
+
+			sortInfo->stepSize = 1;
+			GOTO_STATE(OUTER_LOOP);
+
+		STATE(OUTER_LOOP):
+			sortInfo->p = sortInfo->list;
+			sortInfo->list = NullList;
+			sortInfo->tail = NullList;
+
+			sortInfo->numMerges = 0;				// Count number of merges we do in this pass.
+			GOTO_STATE(STEP_LOOP);
+
+		STATE(STEP_LOOP):
+			if (SMILE_KIND(sortInfo->p) != SMILE_KIND_LIST)
+				GOTO_STATE(AFTER_STEP_LOOP);
+
+			sortInfo->numMerges++;			// There exists a merge to be done.
+
+			// Step 'stepSize' places along from p.
+			sortInfo->q = sortInfo->p;
+			sortInfo->psize = 0;
+			{
+				Int i;
+				for (i = 0; i < sortInfo->stepSize; i++) {
+					sortInfo->psize++;
+					sortInfo->q = (SmileList)sortInfo->q->d;
+					if (SMILE_KIND(sortInfo->q) != SMILE_KIND_LIST) break;
+				}
+			}
+
+			// If q hasn't fallen off the end, we have two lists to merge.
+			sortInfo->qsize = sortInfo->stepSize;
+			GOTO_STATE(MERGE_LOOP);
+
+		STATE(MERGE_LOOP):
+			// Now we have two lists; merge them.
+			if (!(sortInfo->psize > 0 || (sortInfo->qsize > 0 && SMILE_KIND(sortInfo->q) == SMILE_KIND_LIST)))
+				GOTO_STATE(AFTER_MERGE_LOOP);
+
+			if (sortInfo->psize == 0) {
+				sortInfo->cmpResult = +1;
+				GOTO_STATE(GOT_NEXT_LOWEST);
+			}
+			else if (sortInfo->qsize == 0 || SMILE_KIND(sortInfo->q) != SMILE_KIND_LIST) {
+				sortInfo->cmpResult = -1;
+				GOTO_STATE(GOT_NEXT_LOWEST);
+			}
+			else {
+				GOTO_STATE(COMPARE_ITEMS);
+			}
+
+		STATE(GOT_NEXT_LOWEST):
+			if (sortInfo->cmpResult <= 0) {
+				sortInfo->e = sortInfo->p;
+				sortInfo->p = (SmileList)sortInfo->p->d;
+				sortInfo->psize--;
+			}
+			else {
+				sortInfo->e = sortInfo->q;
+				sortInfo->q = (SmileList)sortInfo->q->d;
+				sortInfo->qsize--;
+			}
+			if (SMILE_KIND(sortInfo->tail) == SMILE_KIND_LIST) {
+				sortInfo->tail->d = (SmileObject)sortInfo->e;
+			}
+			else {
+				sortInfo->list = sortInfo->e;
+			}
+			sortInfo->tail = sortInfo->e;
+	
+			GOTO_STATE(MERGE_LOOP);
+
+		STATE(AFTER_MERGE_LOOP):
+			// Now p has stepped 'stepSize' places along, and q has too.
+			sortInfo->p = sortInfo->q;
+			GOTO_STATE(STEP_LOOP);
+
+		STATE(AFTER_STEP_LOOP):
+			sortInfo->tail->d = NullObject;
+
+			if (sortInfo->numMerges <= 1) {
+				*sortResult = sortInfo->list;
+				return False;
+			}
+
+			sortInfo->stepSize <<= 1;
+			GOTO_STATE(OUTER_LOOP);
+
+		STATE(COMPARE_ITEMS):
+			sortInfo->state = AFTER_COMPARE_ITEMS;
+			*cmpA = sortInfo->p->a;
+			*cmpB = sortInfo->q->a;
+			return True;
+
+		STATE(AFTER_COMPARE_ITEMS):
+			sortInfo->cmpResult =
+				  cmpResult < 0 ? -1
+				: cmpResult > 0 ? +1
+				: 0;
+			GOTO_STATE(GOT_NEXT_LOWEST);
+	}
+
+	if (sortInfo) goto label_INITIAL;
+	if (sortInfo) goto label_AFTER_COMPARE_ITEMS;
+
+	return False;
+}
