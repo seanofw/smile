@@ -114,6 +114,35 @@ static int UserObjectKeyComparer(const void *a, const void *b)
 	return (int)String_Compare(na, nb);
 }
 
+static void StringifyBadlyFormedList(SmileList list, StringBuilder stringBuilder, Int indent)
+{
+	SmileList tortoise = (SmileList)list, hare;
+
+	if (SMILE_KIND(tortoise) != SMILE_KIND_LIST)
+		return;
+	StringifyRecursive((SmileObject)tortoise->a, stringBuilder, indent);
+	StringBuilder_AppendC(stringBuilder, " ## ", 0, 4);
+	hare = tortoise = (SmileList)tortoise->d;
+
+	hare = LIST_REST(hare);
+
+	for (;;) {
+		if (tortoise == hare) {
+			StringBuilder_AppendC(stringBuilder, "->", 0, 2);
+			return;
+		}
+		else if (SMILE_KIND(tortoise) != SMILE_KIND_LIST) {
+			StringifyRecursive((SmileObject)list, stringBuilder, indent);
+			return;
+		}
+		StringifyRecursive((SmileObject)tortoise->a, stringBuilder, indent);
+		StringBuilder_AppendC(stringBuilder, " ## ", 0, 4);
+
+		tortoise = (SmileList)tortoise->d;
+		hare = LIST_REST(LIST_REST(hare));
+	}
+}
+
 static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int indent)
 {
 	SmileList list;
@@ -132,14 +161,9 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 			Bool isFirst;
 
 			list = (SmileList)obj;
-			if (!SmileObject_IsRegularList(obj)) {
+			if (!SmileList_IsWellFormed(obj)) {
 				StringBuilder_AppendByte(stringBuilder, '(');
-				while (SMILE_KIND(list) == SMILE_KIND_LIST) {
-					StringifyRecursive((SmileObject)list->a, stringBuilder, indent + 1);
-					StringBuilder_AppendC(stringBuilder, " ## ", 0, 4);
-					list = LIST_REST(list);
-				}
-				StringifyRecursive((SmileObject)list, stringBuilder, indent + 1);
+				StringifyBadlyFormedList(list, stringBuilder, indent + 1);
 				StringBuilder_AppendByte(stringBuilder, ')');
 			}
 			else if (SmileObject_ContainsNestedList(obj)) {
