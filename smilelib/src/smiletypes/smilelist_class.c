@@ -20,6 +20,7 @@
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/smilebool.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
+#include <smile/smiletypes/range/smileinteger64range.h>
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/eval/eval.h>
 #include <smile/smiletypes/base.h>
@@ -1499,6 +1500,63 @@ SMILE_EXTERNAL_FUNCTION(Take)
 	return SmileArg_From((SmileObject)newList);
 }
 
+SMILE_EXTERNAL_FUNCTION(GetMember)
+{
+	SmileList list = (SmileList)argv[0].obj;
+	STATIC_STRING(argumentError, "Second argument to 'List.get-member' must be either an Integer64 or Integer64Range.");
+
+	switch (SMILE_KIND(argv[1].obj)) {
+
+		case SMILE_KIND_UNBOXED_INTEGER64:
+			{
+				Int64 index = argv[1].unboxed.i64;
+				SmileList cell;
+
+				if (index < IntMin || index > IntMax)
+					return SmileArg_From(NullObject);
+
+				cell = SmileList_CellAt(list, (Int)index);
+				if (cell == NULL)
+					return SmileArg_From(NullObject);
+
+				return SmileArg_From((SmileObject)(cell->a));
+			}
+
+		case SMILE_KIND_INTEGER64RANGE:
+			{
+				SmileInteger64Range range = (SmileInteger64Range)argv[1].obj;
+				SmileList result;
+				Int64 stepping = range->stepping;
+				Int64 start = range->start, end = range->end;
+
+				if (start <= end) {
+					if (start < 0) start = 0;
+					if (end > IntMax - 1) end = IntMax - 1;
+					result = SmileList_CloneRange(list, (Int)start, (Int)(end - start + 1), NULL);
+					if (stepping > 1) {
+						if (stepping > IntMax) stepping = IntMax;
+						result = SmileList_ApplyStepping(result, (Int)stepping);
+					}
+				}
+				else {
+					if (end < 0) end = 0;
+					if (start > IntMax - 1) start = IntMax - 1;
+					result = SmileList_CloneRange(list, (Int)end, (Int)(start - end + 1), NULL);
+					result = SmileList_Reverse(result, NULL);
+					if (stepping < -1) {
+						if (stepping < -IntMax) stepping = -IntMax;
+						result = SmileList_ApplyStepping(result, (Int)-stepping);
+					}
+				}
+
+				return SmileArg_From((SmileObject)result);
+			}
+
+		default:
+			Smile_ThrowException(Smile_KnownSymbols.native_method_error, argumentError);
+	}
+}
+
 //-------------------------------------------------------------------------------------------------
 
 void SmileList_Setup(SmileUserObject base)
@@ -1532,8 +1590,9 @@ void SmileList_Setup(SmileUserObject base)
 	SetupFunction("skip", Skip, NULL, "list index", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _nthChecks);
 	SetupFunction("take", Take, NULL, "list count", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _nthChecks);
 
+	SetupFunction("get-member", GetMember, NULL, "list index", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _indexOfChecks);
+
 	/*
-	SetupFunction("get-member", GetMember, NULL, "list index", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _joinChecks);
 	SetupFunction("set-member", SetMember, NULL, "list index value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 2, _joinChecks);
 
 	SetupFunction("splice", Splice, NULL, "list index elements...", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 1, _joinChecks);

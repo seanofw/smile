@@ -48,12 +48,15 @@ SMILE_API_FUNC Int SmileList_Length(SmileList list);
 SMILE_API_FUNC Int SmileList_SafeLength(SmileList list);
 SMILE_API_FUNC SmileList SmileList_SafeTail(SmileList list);
 SMILE_API_FUNC SmileList SmileList_SafeClone(SmileList list, SmileList *newTail);
+SMILE_API_FUNC SmileList SmileList_Reverse(SmileList list, SmileList *newTail);
+SMILE_API_FUNC SmileList SmileList_CloneReverse(SmileList list, SmileList *newTail);
 SMILE_API_FUNC Bool SmileList_IsWellFormed(SmileObject probableList);
 SMILE_API_FUNC Bool SmileList_HasCycle(SmileObject probableList);
 SMILE_API_FUNC String SmileList_Join(SmileList list, String glue);
 SMILE_API_FUNC SmileList SmileList_Sort(SmileList list, Int (*cmp)(SmileObject a, SmileObject b, void *param), void *param);
 SMILE_API_FUNC SmileList SmileList_CloneRange(SmileList list, Int start, Int end, SmileList *newTail);
 SMILE_API_FUNC SmileList SmileList_CellAt(SmileList list, Int index);
+SMILE_API_FUNC SmileList SmileList_ApplyStepping(SmileList list, Int stepping);
 
 typedef struct InterruptibleListSortInfoStruct *InterruptibleListSortInfo;
 

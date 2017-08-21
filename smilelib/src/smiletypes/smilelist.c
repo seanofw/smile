@@ -300,6 +300,34 @@ SmileList SmileList_CellAt(SmileList list, Int index)
 	return NULL;
 }
 
+SmileList SmileList_ApplyStepping(SmileList list, Int step)
+{
+	SmileList destHead = NullList, destTail = NullList;
+	Int i;
+
+	if (step <= 1) return list;
+
+	while (SMILE_KIND(list) == SMILE_KIND_LIST)
+	{
+		// Append this cell.
+		if (SMILE_KIND(destTail) == SMILE_KIND_NULL) {
+			destTail = destHead = list;
+		}
+		else {
+			destTail->d = (SmileObject)list;
+			destTail = list;
+		}
+
+		// Skip the correct number of cells.
+		for (i = 0; i < step; i++)
+			list = LIST_REST(list);
+	}
+
+	destTail->d = NullObject;
+
+	return destHead;
+}
+
 SmileList SmileList_CloneRange(SmileList list, Int start, Int length, SmileList *newTail)
 {
 	SmileList destHead = NullList, destTail = NullList;
@@ -326,6 +354,49 @@ SmileList SmileList_CloneRange(SmileList list, Int start, Int length, SmileList 
 		*newTail = destTail;
 
 	destTail->d = (SMILE_KIND(list) == SMILE_KIND_LIST ? NullObject : (SmileObject)list);
+
+	return destHead;
+}
+
+SmileList SmileList_Reverse(SmileList list, SmileList *newTail)
+{
+	SmileList destHead = NullList, destTail = NullList;
+	SmileList next;
+
+	for (; SMILE_KIND(list) == SMILE_KIND_LIST; list = next) {
+		next = (SmileList)list->d;
+
+		if (SMILE_KIND(destHead) == SMILE_KIND_NULL) {
+			list->d = NullObject;
+			destHead = destTail = list;
+		}
+		else {
+			list->d = (SmileObject)destHead;
+			destHead = list;
+		}
+	}
+
+	if (newTail != NULL)
+		*newTail = destTail;
+
+	return destHead;
+}
+
+SmileList SmileList_CloneReverse(SmileList list, SmileList *newTail)
+{
+	SmileList destHead = NullList, destTail = NullList;
+	SmileList newCell;
+
+	for (; SMILE_KIND(list) == SMILE_KIND_LIST; list = (SmileList)list->d) {
+		newCell = LIST_CONS(list->a, destHead);
+
+		if (SMILE_KIND(destTail) == SMILE_KIND_NULL)
+			destTail = list;
+		destHead = list;
+	}
+
+	if (newTail != NULL)
+		*newTail = destTail;
 
 	return destHead;
 }
