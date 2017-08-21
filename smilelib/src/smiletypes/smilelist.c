@@ -391,8 +391,8 @@ SmileList SmileList_CloneReverse(SmileList list, SmileList *newTail)
 		newCell = LIST_CONS(list->a, destHead);
 
 		if (SMILE_KIND(destTail) == SMILE_KIND_NULL)
-			destTail = list;
-		destHead = list;
+			destTail = newCell;
+		destHead = newCell;
 	}
 
 	if (newTail != NULL)

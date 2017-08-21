@@ -254,6 +254,32 @@ SMILE_EXTERNAL_FUNCTION(Clone)
 	return SmileArg_From((SmileObject)clone);
 }
 
+SMILE_EXTERNAL_FUNCTION(Reverse)
+{
+	SmileList source = (SmileList)argv[0].obj, clone;
+	STATIC_STRING(cycleError, "List has infinite length because it contains a cycle.");
+
+	if (!SmileList_IsWellFormed((SmileObject)source))
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, cycleError);
+
+	clone = SmileList_CloneReverse(source, NULL);
+
+	return SmileArg_From((SmileObject)clone);
+}
+
+SMILE_EXTERNAL_FUNCTION(ReverseInPlace)
+{
+	SmileList source = (SmileList)argv[0].obj, clone;
+	STATIC_STRING(cycleError, "List has infinite length because it contains a cycle.");
+
+	if (!SmileList_IsWellFormed((SmileObject)source))
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, cycleError);
+
+	clone = SmileList_Reverse(source, NULL);
+
+	return SmileArg_From((SmileObject)clone);
+}
+
 SMILE_EXTERNAL_FUNCTION(Length)
 {
 	Int length;
@@ -1570,6 +1596,8 @@ void SmileList_Setup(SmileUserObject base)
 	SetupFunction("cons", Cons, (void *)base, "a b", ARG_CHECK_MIN | ARG_CHECK_MAX, 2, 3, 0, NULL);
 	SetupFunction("combine", Combine, (void *)base, "lists...", ARG_CHECK_MIN, 2, 0, 2, _combineChecks);
 	SetupFunction("clone", Clone, NULL, "list", ARG_CHECK_EXACT, 1, 1, 1, _listChecks);
+	SetupFunction("reverse", Reverse, NULL, "list", ARG_CHECK_EXACT, 1, 1, 1, _listChecks);
+	SetupFunction("reverse!", ReverseInPlace, NULL, "list", ARG_CHECK_EXACT, 1, 1, 1, _listChecks);
 
 	SetupFunction("join", Join, NULL, "list", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _joinChecks);
 
