@@ -284,6 +284,52 @@ SmileList SmileList_SafeClone(SmileList list, SmileList *newTail)
 	return (SMILE_KIND(tortoise) != SMILE_KIND_LIST ? destHead : NULL);
 }
 
+SmileList SmileList_CellAt(SmileList list, Int index)
+{
+	Int length = 0;
+
+	if (index < 0)
+		return NULL;
+
+	for (; SMILE_KIND(list) == SMILE_KIND_LIST; list = (SmileList)list->d, length++)
+	{
+		if (index == length)
+			return list;
+	}
+
+	return NULL;
+}
+
+SmileList SmileList_CloneRange(SmileList list, Int start, Int length, SmileList *newTail)
+{
+	SmileList destHead = NullList, destTail = NullList;
+
+	if (start < 0) {
+		length += start;
+		start = 0;
+	}
+	if (length <= 0)
+		return NullList;
+
+	list = SmileList_CellAt(list, start);
+	if (list == NULL)
+		return NullList;
+
+	if (SMILE_KIND(list) != SMILE_KIND_LIST)
+		return list;
+
+	for (; SMILE_KIND(list) == SMILE_KIND_LIST && length; list = (SmileList)list->d, length--) {
+		LIST_APPEND(destHead, destTail, list->a);
+	}
+
+	if (newTail != NULL)
+		*newTail = destTail;
+
+	destTail->d = (SMILE_KIND(list) == SMILE_KIND_LIST ? NullObject : (SmileObject)list);
+
+	return destHead;
+}
+
 // If this list has no cycles and ends in a Null, then it is well-formed.  If it contains a cycle, or
 // it has some ->d pointer that points at anything other than a List or Null object, then it is not well-formed.
 Bool SmileList_IsWellFormed(SmileObject probableList)

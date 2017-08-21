@@ -52,6 +52,8 @@ SMILE_API_FUNC Bool SmileList_IsWellFormed(SmileObject probableList);
 SMILE_API_FUNC Bool SmileList_HasCycle(SmileObject probableList);
 SMILE_API_FUNC String SmileList_Join(SmileList list, String glue);
 SMILE_API_FUNC SmileList SmileList_Sort(SmileList list, Int (*cmp)(SmileObject a, SmileObject b, void *param), void *param);
+SMILE_API_FUNC SmileList SmileList_CloneRange(SmileList list, Int start, Int end, SmileList *newTail);
+SMILE_API_FUNC SmileList SmileList_CellAt(SmileList list, Int index);
 
 typedef struct InterruptibleListSortInfoStruct *InterruptibleListSortInfo;
 

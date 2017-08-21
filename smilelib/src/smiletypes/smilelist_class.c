@@ -58,6 +58,11 @@ static Byte _combineChecks[] = {
 	SMILE_KIND_MASK & ~SMILE_KIND_LIST_BIT, SMILE_KIND_NULL,
 };
 
+static Byte _nthChecks[] = {
+	SMILE_KIND_MASK & ~SMILE_KIND_LIST_BIT, SMILE_KIND_NULL,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER64,
+};
+
 //-------------------------------------------------------------------------------------------------
 // Generic type conversion
 
@@ -1388,6 +1393,112 @@ SMILE_EXTERNAL_FUNCTION(Tail)
 	return SmileArg_From((SmileObject)tail);
 }
 
+SMILE_EXTERNAL_FUNCTION(NthCell)
+{
+	SmileList list = (SmileList)argv[0].obj;
+	Int64 index = argv[1].unboxed.i64;
+	SmileList cell;
+
+	if (index < IntMin || index > IntMax)
+		return SmileArg_From(NullObject);
+
+	cell = SmileList_CellAt(list, (Int)index);
+	if (cell == NULL)
+		return SmileArg_From(NullObject);
+
+	return SmileArg_From((SmileObject)cell);
+}
+
+SMILE_EXTERNAL_FUNCTION(Nth)
+{
+	SmileList list = (SmileList)argv[0].obj;
+	Int64 index = argv[1].unboxed.i64;
+	SmileList cell;
+
+	if (index < IntMin || index > IntMax)
+		return SmileArg_From(NullObject);
+
+	cell = SmileList_CellAt(list, (Int)index);
+	if (cell == NULL)
+		return SmileArg_From(NullObject);
+
+	return SmileArg_From((SmileObject)(cell->a));
+}
+
+SMILE_EXTERNAL_FUNCTION(NthCellReverse)
+{
+	SmileList list = (SmileList)argv[0].obj;
+	Int64 index = argv[1].unboxed.i64;
+	Int length;
+	SmileList cell;
+
+	if (index < IntMin || index > IntMax)
+		return SmileArg_From(NullObject);
+
+	length = SmileList_SafeLength(list);
+	index = (Int64)length - index;
+
+	cell = SmileList_CellAt(list, (Int)index);
+	if (cell == NULL)
+		return SmileArg_From(NullObject);
+
+	return SmileArg_From((SmileObject)cell);
+}
+
+SMILE_EXTERNAL_FUNCTION(NthReverse)
+{
+	SmileList list = (SmileList)argv[0].obj;
+	Int64 index = argv[1].unboxed.i64;
+	Int length;
+	SmileList cell;
+
+	if (index < IntMin || index > IntMax)
+		return SmileArg_From(NullObject);
+
+	length = SmileList_SafeLength(list);
+	index = (Int64)length - index;
+
+	cell = SmileList_CellAt(list, (Int)index);
+	if (cell == NULL)
+		return SmileArg_From(NullObject);
+
+	return SmileArg_From((SmileObject)(cell->a));
+}
+
+SMILE_EXTERNAL_FUNCTION(Skip)
+{
+	SmileList list = (SmileList)argv[0].obj;
+	Int64 index = argv[1].unboxed.i64;
+	SmileList cell;
+
+	if (index < 0)
+		return argv[0];
+	if (index > IntMax)
+		return SmileArg_From(NullObject);
+
+	cell = SmileList_CellAt(list, (Int)index);
+	if (cell == NULL)
+		return SmileArg_From(NullObject);
+
+	return SmileArg_From((SmileObject)cell);
+}
+
+SMILE_EXTERNAL_FUNCTION(Take)
+{
+	SmileList list = (SmileList)argv[0].obj;
+	Int64 count = argv[1].unboxed.i64;
+	SmileList newList;
+
+	if (count <= 0)
+		return SmileArg_From(NullObject);
+	if (count > IntMax)
+		count = IntMax;
+
+	newList = SmileList_CloneRange(list, 0, (Int)count, NULL);
+
+	return SmileArg_From((SmileObject)newList);
+}
+
 //-------------------------------------------------------------------------------------------------
 
 void SmileList_Setup(SmileUserObject base)
@@ -1414,11 +1525,16 @@ void SmileList_Setup(SmileUserObject base)
 	SetupFunction("append-list!", AppendListInPlace, NULL, "list lists...", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 1, _listChecks);
 	SetupSynonym("append-list!", "conc-list!");
 
+	SetupFunction("nth", Nth, NULL, "list index", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _nthChecks);
+	SetupFunction("nth-cell", NthCell, NULL, "list index", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _nthChecks);
+	SetupFunction("nth-reverse", NthReverse, NULL, "list index", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _nthChecks);
+	SetupFunction("nth-cell-reverse", NthCellReverse, NULL, "list index", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _nthChecks);
+	SetupFunction("skip", Skip, NULL, "list index", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _nthChecks);
+	SetupFunction("take", Take, NULL, "list count", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _nthChecks);
+
 	/*
 	SetupFunction("get-member", GetMember, NULL, "list index", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _joinChecks);
 	SetupFunction("set-member", SetMember, NULL, "list index value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 2, _joinChecks);
-	SetupSynonym("get-member", "nth");
-	SetupFunction("nth-cell", NthCell, NULL, "list index", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _joinChecks);
 
 	SetupFunction("splice", Splice, NULL, "list index elements...", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 1, _joinChecks);
 	SetupFunction("splice!", SpliceInPlace, NULL, "list index elements...", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 2, _joinChecks);
