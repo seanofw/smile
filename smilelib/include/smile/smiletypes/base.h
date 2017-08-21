@@ -8,4 +8,7 @@
 #define SetupSynonym(__oldName__, __newName__) \
 	(SmileUserObject_SetupSynonym(base, (__oldName__), (__newName__)))
 
+#define SetupData(__name__, __value__) \
+	(SmileUserObject_Set(base, SymbolTable_GetSymbolC(Smile_SymbolTable, (__name__)), (__value__)))
+
 #endif

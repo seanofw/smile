@@ -1405,6 +1405,60 @@ SMILE_EXTERNAL_FUNCTION(UCompare)
 
 //-------------------------------------------------------------------------------------------------
 
+enum {
+	ZERO_TEST,
+	ONE_TEST,
+	NONZERO_TEST,
+	POS_TEST,
+	NONPOS_TEST,
+	NEG_TEST,
+	NONNEG_TEST,
+	ODD_TEST,
+	EVEN_TEST,
+	MAX_TEST,
+	MIN_TEST,
+	UMAX_TEST,
+	UMIN_TEST,
+};
+
+SMILE_EXTERNAL_FUNCTION(ValueTest)
+{
+	Int64 value = (UInt64)argv[0].unboxed.i64;
+
+	switch ((PtrInt)param) {
+		case ZERO_TEST:
+			return SmileUnboxedBool_From(value == 0);
+		case ONE_TEST:
+			return SmileUnboxedBool_From(value == 1);
+		case NONZERO_TEST:
+			return SmileUnboxedBool_From(value != 0);
+		case POS_TEST:
+			return SmileUnboxedBool_From(value > 0);
+		case NONPOS_TEST:
+			return SmileUnboxedBool_From(value <= 0);
+		case NEG_TEST:
+			return SmileUnboxedBool_From(value < 0);
+		case NONNEG_TEST:
+			return SmileUnboxedBool_From(value >= 0);
+		case ODD_TEST:
+			return SmileUnboxedBool_From((value & 1) != 0);
+		case EVEN_TEST:
+			return SmileUnboxedBool_From((value & 1) == 0);
+		case MAX_TEST:
+			return SmileUnboxedBool_From(value == Int64Max);
+		case MIN_TEST:
+			return SmileUnboxedBool_From(value == Int64Min);
+		case UMAX_TEST:
+			return SmileUnboxedBool_From((UInt64)value == UInt64Max);
+		case UMIN_TEST:
+			return SmileUnboxedBool_From(value == 0);
+		default:
+			return SmileArg_From(NullObject);
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+
 void SmileInteger64_Setup(SmileUserObject base)
 {
 	SmileUnboxedInteger64_Instance->base = (SmileObject)base;
@@ -1487,6 +1541,24 @@ void SmileInteger64_Setup(SmileUserObject base)
 	SetupFunction("lcm", Lcm, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer64Checks);
 	SetupFunction("coprime?", IsCoprime, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer64Checks);
 
+	SetupFunction("odd?", ValueTest, (void *)ODD_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupFunction("even?", ValueTest, (void *)EVEN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupFunction("zero?", ValueTest, (void *)ZERO_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupFunction("one?", ValueTest, (void *)ONE_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupFunction("nonzero?", ValueTest, (void *)NONZERO_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupFunction("positive?", ValueTest, (void *)POS_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupSynonym("positive?", "pos?");
+	SetupFunction("nonpositive?", ValueTest, (void *)NONPOS_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupSynonym("nonpositive?", "nonpos?");
+	SetupFunction("negative?", ValueTest, (void *)NEG_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupSynonym("negative?", "neg?");
+	SetupFunction("nonnegative?", ValueTest, (void *)NONNEG_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupSynonym("nonnegative?", "nonneg?");
+	SetupFunction("max?", ValueTest, (void *)MAX_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupFunction("min?", ValueTest, (void *)MIN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupFunction("max~?", ValueTest, (void *)UMAX_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupFunction("min~?", ValueTest, (void *)UMIN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+
 	SetupFunction("==", Eq, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer64ComparisonChecks);
 	SetupFunction("!=", Ne, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer64ComparisonChecks);
 	SetupFunction("<", Lt, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer64Checks);
@@ -1504,4 +1576,9 @@ void SmileInteger64_Setup(SmileUserObject base)
 	SetupSynonym("compare~", "cmp~");
 
 	SetupFunction("range-to", RangeTo, NULL, "start end", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer64Checks);
+
+	SetupData("max", SmileInteger64_CreateInternal(Int64Max));
+	SetupData("min", SmileInteger64_CreateInternal(Int64Min));
+	SetupData("max~", SmileInteger64_CreateInternal(UInt64Max));
+	SetupData("min~", Smile_KnownObjects.ZeroInt64);
 }
