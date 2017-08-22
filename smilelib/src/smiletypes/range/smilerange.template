@@ -34,9 +34,6 @@ SMILE_EASY_OBJECT_NO_SOURCE(Smile%Type%Range)
 SMILE_EASY_OBJECT_NO_UNBOX(Smile%Type%Range)
 
 SMILE_EASY_OBJECT_TOBOOL(Smile%Type%Range, True)
-SMILE_EASY_OBJECT_TOINT(Smile%Type%Range, %ToInt32%)
-SMILE_EASY_OBJECT_TOREAL(Smile%Type%Range, %ToReal64%)
-SMILE_EASY_OBJECT_TOFLOAT(Smile%Type%Range, %ToFloat64%)
 SMILE_EASY_OBJECT_TOSTRING(Smile%Type%Range, %ToStringBase10%)
 
 Smile%Type%Range Smile%Type%Range_Create(%RawType% start, %RawType% end, %RawType% stepping)

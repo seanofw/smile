@@ -27,9 +27,6 @@
 	static Bool __type__##_HasProperty(__type__ self, Symbol propertyName); \
 	static SmileList __type__##_GetPropertyNames(__type__ self); \
 	static Bool __type__##_ToBool(__type__ obj, SmileUnboxedData unboxedData); \
-	static Int32 __type__##_ToInteger32(__type__ obj, SmileUnboxedData unboxedData); \
-	static Float64 __type__##_ToFloat64(__type__ obj, SmileUnboxedData unboxedData); \
-	static Real64 __type__##_ToReal64(__type__ obj, SmileUnboxedData unboxedData); \
 	static String __type__##_ToString(__type__ obj, SmileUnboxedData unboxedData); \
 	static void __type__##_Call(__type__ obj, Int argc, Int extra); \
 	static LexerPosition __type__##_GetSourceLocation(__type__ obj); \
@@ -49,9 +46,6 @@
 		__type__##_HasProperty, \
 		__type__##_GetPropertyNames, \
 		__type__##_ToBool, \
-		__type__##_ToInteger32, \
-		__type__##_ToFloat64, \
-		__type__##_ToReal64, \
 		__type__##_ToString, \
 		__type__##_Call, \
 		__type__##_GetSourceLocation, \
@@ -111,36 +105,12 @@
 	static Bool __type__##_ToBool(__type__ obj, SmileUnboxedData unboxedData) { UNUSED(obj); UNUSED(unboxedData); return __expr__; }
 
 /// <summary>
-/// This macro makes declaring consistent Smile virtual Integer32-conversion functions easier.
-/// </summary>
-/// <param name="__type__">The type of the object you want to declare virtual functions for.</param>
-/// <param name="__expr__">A C expression that computes a suitable Integer32 equivalent of an object of the given type named 'obj'.</param>
-#define SMILE_EASY_OBJECT_TOINT(__type__, __expr__) \
-	static Int32 __type__##_ToInteger32(__type__ obj, SmileUnboxedData unboxedData) { UNUSED(obj); UNUSED(unboxedData); return __expr__; }
-
-/// <summary>
 /// This macro makes declaring consistent Smile virtual String-conversion functions easier.
 /// </summary>
 /// <param name="__type__">The type of the object you want to declare virtual functions for.</param>
 /// <param name="__expr__">A C expression that computes a suitable String equivalent of an object of the given type named 'obj'.</param>
 #define SMILE_EASY_OBJECT_TOSTRING(__type__, __expr__) \
 	static String __type__##_ToString(__type__ obj, SmileUnboxedData unboxedData) { UNUSED(obj); UNUSED(unboxedData); return __expr__; }
-
-/// <summary>
-/// This macro makes declaring consistent Smile virtual Float64-conversion functions easier.
-/// </summary>
-/// <param name="__type__">The type of the object you want to declare virtual functions for.</param>
-/// <param name="__expr__">A C expression that computes a suitable Float64 equivalent of an object of the given type named 'obj'.</param>
-#define SMILE_EASY_OBJECT_TOFLOAT(__type__, __expr__) \
-	static Float64 __type__##_ToFloat64(__type__ obj, SmileUnboxedData unboxedData) { UNUSED(obj); UNUSED(unboxedData); return __expr__; }
-
-/// <summary>
-/// This macro makes declaring consistent Smile virtual Real64-conversion functions easier.
-/// </summary>
-/// <param name="__type__">The type of the object you want to declare virtual functions for.</param>
-/// <param name="__expr__">A C expression that computes a suitable Real64 equivalent of an object of the given type named 'obj'.</param>
-#define SMILE_EASY_OBJECT_TOREAL(__type__, __expr__) \
-	static Real64 __type__##_ToReal64(__type__ obj, SmileUnboxedData unboxedData) { UNUSED(obj); UNUSED(unboxedData); return __expr__; }
 
 /// <summary>
 /// This macro can be used to declare virtual functions for a type that can't answer source locations.
@@ -172,15 +142,6 @@
 		{ UNUSED(self); UNUSED(security); UNUSED(securityKey); \
 			Smile_ThrowException(Smile_KnownSymbols.object_security_error, String_InvalidSecurityKey); } \
 	static Int __type__##_GetSecurity(__type__ obj) { UNUSED(obj); return SMILE_SECURITY_READONLY; }
-
-/// <summary>
-/// This macro can be used to declare virtual functions for a type that can't be readily converted to
-/// Float64 or Real64; with this macro, those conversions will use the Integer32 conversion instead.
-/// </summary>
-/// <param name="__type__">The type of the object you want to declare virtual functions for.</param>
-#define SMILE_EASY_OBJECT_NO_REALS(__type__) \
-	static Float64 __type__##_ToFloat64(__type__ obj, SmileUnboxedData unboxedData) { return (Float64)__type__##_ToInteger32(obj, unboxedData); } \
-	static Real64 __type__##_ToReal64(__type__ obj, SmileUnboxedData unboxedData) { return Real64_FromInt32(__type__##_ToInteger32(obj, unboxedData)); }
 
 /// <summary>
 /// This macro can be used to declare virtual functions for a type that can't be readily invoked as a function.

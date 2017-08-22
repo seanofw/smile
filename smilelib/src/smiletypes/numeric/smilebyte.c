@@ -43,9 +43,6 @@ SMILE_EASY_OBJECT_NO_PROPERTIES(SmileByte)
 
 SMILE_EASY_OBJECT_HASH(SmileByte, obj->value)
 SMILE_EASY_OBJECT_TOBOOL(SmileByte, obj->value != 0)
-SMILE_EASY_OBJECT_TOINT(SmileByte, obj->value)
-SMILE_EASY_OBJECT_TOREAL(SmileByte, Real64_FromInt32(obj->value))
-SMILE_EASY_OBJECT_TOFLOAT(SmileByte, (Float64)obj->value)
 SMILE_EASY_OBJECT_TOSTRING(SmileByte, String_Format("%ux", (UInt32)obj->value))
 
 static Bool SmileByte_CompareEqual(SmileByte a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
@@ -93,9 +90,6 @@ SMILE_EASY_OBJECT_NO_PROPERTIES(SmileUnboxedByte)
 
 SMILE_EASY_OBJECT_HASH(SmileUnboxedByte, 0)
 SMILE_EASY_OBJECT_TOBOOL(SmileUnboxedByte, (Bool)!!unboxedData.i8)
-SMILE_EASY_OBJECT_TOINT(SmileUnboxedByte, unboxedData.i8)
-SMILE_EASY_OBJECT_TOREAL(SmileUnboxedByte, Real64_FromInt32(unboxedData.i8))
-SMILE_EASY_OBJECT_TOFLOAT(SmileUnboxedByte, unboxedData.i8)
 SMILE_EASY_OBJECT_TOSTRING(SmileUnboxedByte, String_Format("%u", (UInt)unboxedData.i8))
 
 static Bool SmileUnboxedByte_CompareEqual(SmileUnboxedByte a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)

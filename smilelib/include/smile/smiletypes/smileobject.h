@@ -187,25 +187,7 @@ typedef struct {
 ///	true.  Numeric values convert to false if they are zero, and true otherwise.  Most objects
 ///	other than numbers and strings should return true, but there can be legitimate reasons
 ///	for a nontrivial object to be false (a closed network stream, for example).</p>
-///	
-/// <code>toInteger32</code>:	<p>Construct an Integer32 representation of this object.  This conversion is used in
-///	several places, and should be based on the content of the object:  Strings and arrays, for
-///	example, return their length.  This should generally be nonzero for most objects, but
-///	there can be legitimate reasons for a nontrivial object to be zero (an empty queue, for
-///	example).</p>
-///	
-/// <code>toFloat64</code>:	<p>Construct a Float64 representation of this object.  This conversion is used in only
-///	a few specific places.  It should be based on the content of the object:  Strings and arrays, for
-///	example, return their length.  This should generally be nonzero for most objects, but
-///	there can be legitimate reasons for a nontrivial object to be zero (the cartesian length of a
-///	3D vector, for example).</p>
-///	
-/// <code>toReal64</code>:	<p>Construct a Real64 representation of this object.  This conversion is used in only
-///	a few specific places.  It should be based on the content of the object:  Strings and arrays, for
-///	example, return their length.  This should generally be nonzero for most objects, but
-///	there can be legitimate reasons for a nontrivial object to be zero (the cartesian length of a
-///	3D vector, for example).</p>
-///	
+///
 /// <code>toString</code>:	<p>Construct a string representation of this object.  This conversion is used in many
 ///	places, and is intended to be <em>human-readable</em>, not necessarily a formal
 ///	serialization of the object.  It is used during debugging to observe the state of objects, and
@@ -244,9 +226,6 @@ typedef struct {
 		SmileList (*getPropertyNames)(__type__ self); \
 		\
 		Bool (*toBool)(__type__ self, SmileUnboxedData unboxedData); \
-		Int32 (*toInteger32)(__type__ self, SmileUnboxedData unboxedData); \
-		Float64 (*toFloat64)(__type__ self, SmileUnboxedData unboxedData); \
-		Real64 (*toReal64)(__type__ self, SmileUnboxedData unboxedData); \
 		String (*toString)(__type__ self, SmileUnboxedData unboxedData); \
 		\
 		void (*call)(__type__ self, Int argc, Int extra); \

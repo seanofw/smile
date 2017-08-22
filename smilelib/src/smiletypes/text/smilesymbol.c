@@ -42,9 +42,6 @@ SMILE_EASY_OBJECT_NO_PROPERTIES(SmileSymbol)
 
 SMILE_EASY_OBJECT_HASH(SmileSymbol, obj->symbol)
 SMILE_EASY_OBJECT_TOBOOL(SmileSymbol, True)
-SMILE_EASY_OBJECT_TOINT(SmileSymbol, 0)
-SMILE_EASY_OBJECT_TOREAL(SmileSymbol, Real64_Zero)
-SMILE_EASY_OBJECT_TOFLOAT(SmileSymbol, 0.0)
 SMILE_EASY_OBJECT_TOSTRING(SmileSymbol, SymbolTable_GetName(Smile_SymbolTable, obj->symbol))
 
 static Bool SmileSymbol_CompareEqual(SmileSymbol a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
@@ -92,9 +89,6 @@ SMILE_EASY_OBJECT_NO_PROPERTIES(SmileUnboxedSymbol)
 
 SMILE_EASY_OBJECT_HASH(SmileUnboxedSymbol, 0)
 SMILE_EASY_OBJECT_TOBOOL(SmileUnboxedSymbol, True)
-SMILE_EASY_OBJECT_TOINT(SmileUnboxedSymbol, 0)
-SMILE_EASY_OBJECT_TOREAL(SmileUnboxedSymbol, Real64_Zero)
-SMILE_EASY_OBJECT_TOFLOAT(SmileUnboxedSymbol, 0.0)
 SMILE_EASY_OBJECT_TOSTRING(SmileUnboxedSymbol, SymbolTable_GetName(Smile_SymbolTable, unboxedData.symbol))
 
 static Bool SmileUnboxedSymbol_CompareEqual(SmileUnboxedSymbol a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)

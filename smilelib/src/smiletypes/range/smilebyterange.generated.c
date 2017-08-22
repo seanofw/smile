@@ -38,9 +38,6 @@ SMILE_EASY_OBJECT_NO_SOURCE(SmileByteRange)
 SMILE_EASY_OBJECT_NO_UNBOX(SmileByteRange)
 
 SMILE_EASY_OBJECT_TOBOOL(SmileByteRange, True)
-SMILE_EASY_OBJECT_TOINT(SmileByteRange, ((Int32)obj->end - (Int32)obj->start))
-SMILE_EASY_OBJECT_TOREAL(SmileByteRange, Real64_FromInt64((Int32)obj->end - (Int32)obj->start))
-SMILE_EASY_OBJECT_TOFLOAT(SmileByteRange, (Float64)((Int32)obj->end - (Int32)obj->start))
 SMILE_EASY_OBJECT_TOSTRING(SmileByteRange, 			((obj->end >= obj->start && obj->stepping != +1
 				|| obj->end < obj->start && obj->stepping != -1)
 				? String_Format("%S..%S step %S",

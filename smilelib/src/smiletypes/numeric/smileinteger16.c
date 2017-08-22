@@ -43,9 +43,6 @@ SMILE_EASY_OBJECT_NO_PROPERTIES(SmileInteger16)
 
 SMILE_EASY_OBJECT_HASH(SmileInteger16, obj->value)
 SMILE_EASY_OBJECT_TOBOOL(SmileInteger16, obj->value != 0)
-SMILE_EASY_OBJECT_TOINT(SmileInteger16, obj->value)
-SMILE_EASY_OBJECT_TOREAL(SmileInteger16, Real64_FromInt32(obj->value))
-SMILE_EASY_OBJECT_TOFLOAT(SmileInteger16, (Float64)obj->value)
 SMILE_EASY_OBJECT_TOSTRING(SmileInteger16, String_Format("%ds", (Int32)obj->value))
 
 static Bool SmileInteger16_CompareEqual(SmileInteger16 a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
@@ -93,9 +90,6 @@ SMILE_EASY_OBJECT_NO_PROPERTIES(SmileUnboxedInteger16)
 
 SMILE_EASY_OBJECT_HASH(SmileUnboxedInteger16, 0)
 SMILE_EASY_OBJECT_TOBOOL(SmileUnboxedInteger16, (Bool)!!unboxedData.i16)
-SMILE_EASY_OBJECT_TOINT(SmileUnboxedInteger16, unboxedData.i16)
-SMILE_EASY_OBJECT_TOREAL(SmileUnboxedInteger16, Real64_FromInt32(unboxedData.i16))
-SMILE_EASY_OBJECT_TOFLOAT(SmileUnboxedInteger16, unboxedData.i16)
 SMILE_EASY_OBJECT_TOSTRING(SmileUnboxedInteger16, String_Format("%d", (Int)unboxedData.i16))
 
 static Bool SmileUnboxedInteger16_CompareEqual(SmileUnboxedInteger16 a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)

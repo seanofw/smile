@@ -30,7 +30,6 @@ SMILE_EASY_OBJECT_VTABLE(SmileNonterminal);
 
 SMILE_EASY_OBJECT_NO_SOURCE(SmileNonterminal);
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileNonterminal);
-SMILE_EASY_OBJECT_NO_REALS(SmileNonterminal);
 SMILE_EASY_OBJECT_NO_CALL(SmileNonterminal, "A syntax-nonterminal object");
 SMILE_EASY_OBJECT_NO_UNBOX(SmileNonterminal)
 

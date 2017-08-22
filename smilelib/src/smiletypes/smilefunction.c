@@ -572,9 +572,6 @@ LexerPosition SmileExternalFunction_GetSourceLocation(SmileFunction self)
 		SmileFunction_GetPropertyNames, \
 		\
 		SmileFunction_ToBool, \
-		SmileFunction_ToInteger32, \
-		SmileFunction_ToFloat64, \
-		SmileFunction_ToReal64, \
 		SmileUserFunction_ToString, \
 		\
 		SmileUserFunction_##__checkKind__##_Call, \
@@ -616,9 +613,6 @@ USER_FUNCTION_VTABLE(CheckedRest);	// Function with at least one type-checked ar
 		SmileFunction_GetPropertyNames, \
 		\
 		SmileFunction_ToBool, \
-		SmileFunction_ToInteger32, \
-		SmileFunction_ToFloat64, \
-		SmileFunction_ToReal64, \
 		SmileExternalFunction_ToString, \
 		\
 		SmileExternalFunction_##__checkKind__##_Call, \

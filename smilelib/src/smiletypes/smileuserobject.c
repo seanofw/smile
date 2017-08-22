@@ -334,9 +334,6 @@ SMILE_VTABLE(SmileUserObject_VTable_ReadWriteAppend, SmileUserObject)
 	SmileUserObject_GetPropertyNames,
 
 	SmileUserObject_ToBool,
-	SmileUserObject_ToInteger32,
-	SmileUserObject_ToFloat64,
-	SmileUserObject_ToReal64,
 	SmileUserObject_ToString,
 
 	SmileUserObject_Call,
@@ -359,9 +356,6 @@ SMILE_VTABLE(SmileUserObject_VTable_ReadWrite, SmileUserObject)
 	SmileUserObject_GetPropertyNames,
 
 	SmileUserObject_ToBool,
-	SmileUserObject_ToInteger32,
-	SmileUserObject_ToFloat64,
-	SmileUserObject_ToReal64,
 	SmileUserObject_ToString,
 
 	SmileUserObject_Call,
@@ -384,9 +378,6 @@ SMILE_VTABLE(SmileUserObject_VTable_ReadAppend, SmileUserObject)
 	SmileUserObject_GetPropertyNames,
 
 	SmileUserObject_ToBool,
-	SmileUserObject_ToInteger32,
-	SmileUserObject_ToFloat64,
-	SmileUserObject_ToReal64,
 	SmileUserObject_ToString,
 
 	SmileUserObject_Call,
@@ -409,9 +400,6 @@ SMILE_VTABLE(SmileUserObject_VTable_ReadOnly, SmileUserObject)
 	SmileUserObject_GetPropertyNames,
 
 	SmileUserObject_ToBool,
-	SmileUserObject_ToInteger32,
-	SmileUserObject_ToFloat64,
-	SmileUserObject_ToReal64,
 	SmileUserObject_ToString,
 
 	SmileUserObject_Call,

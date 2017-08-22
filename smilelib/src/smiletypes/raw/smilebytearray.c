@@ -338,9 +338,6 @@ SMILE_VTABLE(SmileByteArray_VTable_ReadWrite, SmileByteArray)
 	SmileByteArray_GetPropertyNames,
 
 	SmileByteArray_ToBool,
-	SmileByteArray_ToInteger32,
-	SmileByteArray_ToFloat64,
-	SmileByteArray_ToReal64,
 	SmileByteArray_ToString,
 
 	SmileByteArray_Call,
@@ -363,9 +360,6 @@ SMILE_VTABLE(SmileByteArray_VTable_ReadOnly, SmileByteArray)
 	SmileByteArray_GetPropertyNames,
 
 	SmileByteArray_ToBool,
-	SmileByteArray_ToInteger32,
-	SmileByteArray_ToFloat64,
-	SmileByteArray_ToReal64,
 	SmileByteArray_ToString,
 
 	SmileByteArray_Call,
