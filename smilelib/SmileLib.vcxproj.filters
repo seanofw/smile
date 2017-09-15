@@ -261,7 +261,7 @@
     <ClCompile Include="src\smiletypes\smileobject.c">
       <Filter>src\smiletypes</Filter>
     </ClCompile>
-    <ClCompile Include="src\smiletypes\numeric\smileinteger32.c">
+    <ClCompile Include="src\smiletypes\numeric\smileinteger32.generated.c">
       <Filter>src\smiletypes\numeric</Filter>
     </ClCompile>
     <ClCompile Include="src\smiletypes\text\smilesymbol.c">
@@ -270,7 +270,7 @@
     <ClCompile Include="src\env\knownobjects.c">
       <Filter>src\env</Filter>
     </ClCompile>
-    <ClCompile Include="src\smiletypes\numeric\smileinteger64.c">
+    <ClCompile Include="src\smiletypes\numeric\smileinteger64.generated.c">
       <Filter>src\smiletypes\numeric</Filter>
     </ClCompile>
     <ClCompile Include="src\smiletypes\smilebool.c">
@@ -768,10 +768,10 @@
     <ClCompile Include="src\parsing\parser\parsersyntaxtable.c">
       <Filter>src\parsing\parser</Filter>
     </ClCompile>
-    <ClCompile Include="src\smiletypes\numeric\smilebyte.c">
+    <ClCompile Include="src\smiletypes\numeric\smilebyte.generated.c">
       <Filter>src\smiletypes\numeric</Filter>
     </ClCompile>
-    <ClCompile Include="src\smiletypes\numeric\smileinteger16.c">
+    <ClCompile Include="src\smiletypes\numeric\smileinteger16.generated.c">
       <Filter>src\smiletypes\numeric</Filter>
     </ClCompile>
     <ClCompile Include="src\parsing\parser\parsefunc.c">
@@ -807,13 +807,13 @@
     <ClCompile Include="src\eval\closure.c">
       <Filter>src\eval</Filter>
     </ClCompile>
-    <ClCompile Include="src\smiletypes\numeric\smileinteger32_base.c">
+    <ClCompile Include="src\smiletypes\numeric\smileinteger32_base.generated.c">
       <Filter>src\smiletypes\numeric</Filter>
     </ClCompile>
     <ClCompile Include="src\smiletypes\smilefunction.c">
       <Filter>src\smiletypes</Filter>
     </ClCompile>
-    <ClCompile Include="src\smiletypes\numeric\smileinteger64_base.c">
+    <ClCompile Include="src\smiletypes\numeric\smileinteger64_base.generated.c">
       <Filter>src\smiletypes\numeric</Filter>
     </ClCompile>
     <ClCompile Include="src\string\string_createfromint.c">
@@ -822,7 +822,7 @@
     <ClCompile Include="src\smiletypes\numeric\smilebyte_base.c">
       <Filter>src\smiletypes\numeric</Filter>
     </ClCompile>
-    <ClCompile Include="src\smiletypes\numeric\smileinteger16_base.c">
+    <ClCompile Include="src\smiletypes\numeric\smileinteger16_base.generated.c">
       <Filter>src\smiletypes\numeric</Filter>
     </ClCompile>
     <ClCompile Include="src\env\global.c">

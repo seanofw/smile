@@ -1,0 +1,139 @@
+//---------------------------------------------------------------------------------------
+//  Smile Programming Language Interpreter
+//  Copyright 2004-2017 Sean Werkema
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//---------------------------------------------------------------------------------------
+
+#include <smile/smiletypes/smileobject.h>
+#include <smile/smiletypes/numeric/smile%type%.h>
+#include <smile/smiletypes/easyobject.h>
+
+SMILE_IGNORE_UNUSED_VARIABLES
+
+SMILE_EASY_OBJECT_VTABLE(Smile%Type%);
+
+Smile%Type% Smile%Type%_CreateInternal(%RawType% value)
+{
+	// We MALLOC_ATOMIC here because the base is a known pointer that will never be collected.
+	Smile%Type% smileInt = (Smile%Type%)GC_MALLOC_ATOMIC(sizeof(struct Smile%Type%Int));
+	if (smileInt == NULL) Smile_Abort_OutOfMemory();
+	smileInt->base = (SmileObject)Smile_KnownBases.%Type%;
+	smileInt->kind = SMILE_KIND_%TYPE%;
+	smileInt->vtable = Smile%Type%_VTable;
+	smileInt->value = value;
+	return smileInt;
+}
+
+static UInt32 Smile%Type%_Hash(Smile%Type% obj)
+{
+	return %HashAlgorithm%;
+}
+
+SMILE_EASY_OBJECT_READONLY_SECURITY(Smile%Type%)
+SMILE_EASY_OBJECT_NO_CALL(Smile%Type%, "An %Type% object")
+SMILE_EASY_OBJECT_NO_SOURCE(Smile%Type%)
+SMILE_EASY_OBJECT_NO_PROPERTIES(Smile%Type%)
+
+SMILE_EASY_OBJECT_TOBOOL(Smile%Type%, obj->value != 0)
+SMILE_EASY_OBJECT_TOSTRING(Smile%Type%, String_Format("%ld", obj->value))
+
+static Bool Smile%Type%_CompareEqual(Smile%Type% a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
+{
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_%TYPE%) {
+		return ((Smile%Type%)a)->value == bData.%unboxed%;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_%TYPE%) {
+		return ((Smile%Type%)a)->value == ((Smile%Type%)b)->value;
+	}
+	else return False;
+}
+
+static Bool Smile%Type%_DeepEqual(Smile%Type% a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData, PointerSet visitedPointers)
+{
+	UNUSED(visitedPointers);
+
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_%TYPE%) {
+		return ((Smile%Type%)a)->value == bData.%unboxed%;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_%TYPE%) {
+		return ((Smile%Type%)a)->value == ((Smile%Type%)b)->value;
+	}
+	else return False;
+}
+
+SmileObject Smile%Type%_Box(SmileArg src)
+{
+	return src.obj;
+}
+
+SmileArg Smile%Type%_Unbox(Smile%Type% smileInt)
+{
+	return SmileUnboxed%Type%_From(smileInt->value);
+}
+
+//-------------------------------------------------------------------------------------------------
+
+SMILE_EASY_OBJECT_VTABLE(SmileUnboxed%Type%);
+
+SMILE_EASY_OBJECT_READONLY_SECURITY(SmileUnboxed%Type%)
+SMILE_EASY_OBJECT_NO_CALL(SmileUnboxed%Type%, "An %Type%")
+SMILE_EASY_OBJECT_NO_SOURCE(SmileUnboxed%Type%)
+SMILE_EASY_OBJECT_NO_PROPERTIES(SmileUnboxed%Type%)
+
+SMILE_EASY_OBJECT_HASH(SmileUnboxed%Type%, 0)
+SMILE_EASY_OBJECT_TOBOOL(SmileUnboxed%Type%, (Bool)!!unboxedData.%unboxed%)
+SMILE_EASY_OBJECT_TOSTRING(SmileUnboxed%Type%, %ToStringBase10%)
+
+static Bool SmileUnboxed%Type%_CompareEqual(SmileUnboxed%Type% a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
+{
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_%TYPE%) {
+		return aData.%unboxed% == bData.%unboxed%;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_%TYPE%) {
+		return aData.%unboxed% == ((Smile%Type%)b)->value;
+	}
+	else return False;
+}
+
+static Bool SmileUnboxed%Type%_DeepEqual(SmileUnboxed%Type% a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData, PointerSet visitedPointers)
+{
+	UNUSED(visitedPointers);
+
+	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_%TYPE%) {
+		return aData.%unboxed% == bData.%unboxed%;
+	}
+	else if (SMILE_KIND(b) == SMILE_KIND_%TYPE%) {
+		return aData.%unboxed% == ((Smile%Type%)b)->value;
+	}
+	else return False;
+}
+
+static SmileObject SmileUnboxed%Type%_Box(SmileArg src)
+{
+	return (SmileObject)Smile%Type%_Create(src.unboxed.%unboxed%);
+}
+
+static SmileArg SmileUnboxed%Type%_Unbox(SmileUnboxed%Type% smileUnboxedInt)
+{
+	Smile_Abort_FatalError("Cannot re-unbox a unboxed object.");
+	return (SmileArg){ 0 };
+}
+
+static struct SmileUnboxed%Type%Int SmileUnboxed%Type%_Instance_Struct = {
+	SMILE_KIND_UNBOXED_%TYPE%,
+	(SmileVTable)&SmileUnboxed%Type%_VTableData,
+};
+
+extern SmileUnboxed%Type% SmileUnboxed%Type%_Instance;
+SmileUnboxed%Type% SmileUnboxed%Type%_Instance = &SmileUnboxed%Type%_Instance_Struct;

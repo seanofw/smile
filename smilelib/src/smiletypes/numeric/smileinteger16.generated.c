@@ -1,3 +1,7 @@
+// ===================================================
+//   WARNING: THIS IS A GENERATED FILE. DO NOT EDIT!
+// ===================================================
+
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
 //  Copyright 2004-2017 Sean Werkema
@@ -15,7 +19,6 @@
 //  limitations under the License.
 //---------------------------------------------------------------------------------------
 
-#include <smile/numeric/real64.h>
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/easyobject.h>
@@ -36,14 +39,18 @@ SmileInteger16 SmileInteger16_CreateInternal(Int16 value)
 	return smileInt;
 }
 
+static UInt32 SmileInteger16_Hash(SmileInteger16 obj)
+{
+	return (UInt32)obj->value;
+}
+
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileInteger16)
 SMILE_EASY_OBJECT_NO_CALL(SmileInteger16, "An Integer16 object")
 SMILE_EASY_OBJECT_NO_SOURCE(SmileInteger16)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileInteger16)
 
-SMILE_EASY_OBJECT_HASH(SmileInteger16, obj->value)
 SMILE_EASY_OBJECT_TOBOOL(SmileInteger16, obj->value != 0)
-SMILE_EASY_OBJECT_TOSTRING(SmileInteger16, String_Format("%ds", (Int32)obj->value))
+SMILE_EASY_OBJECT_TOSTRING(SmileInteger16, String_Format("%ld", obj->value))
 
 static Bool SmileInteger16_CompareEqual(SmileInteger16 a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
 {
@@ -90,7 +97,7 @@ SMILE_EASY_OBJECT_NO_PROPERTIES(SmileUnboxedInteger16)
 
 SMILE_EASY_OBJECT_HASH(SmileUnboxedInteger16, 0)
 SMILE_EASY_OBJECT_TOBOOL(SmileUnboxedInteger16, (Bool)!!unboxedData.i16)
-SMILE_EASY_OBJECT_TOSTRING(SmileUnboxedInteger16, String_Format("%d", (Int)unboxedData.i16))
+SMILE_EASY_OBJECT_TOSTRING(SmileUnboxedInteger16, String_CreateFromInteger(unboxedData.i16, 10, False))
 
 static Bool SmileUnboxedInteger16_CompareEqual(SmileUnboxedInteger16 a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
 {
@@ -121,7 +128,7 @@ static SmileObject SmileUnboxedInteger16_Box(SmileArg src)
 	return (SmileObject)SmileInteger16_Create(src.unboxed.i16);
 }
 
-static SmileArg SmileUnboxedInteger16_Unbox(SmileUnboxedInteger16 smileUnboxedInteger16)
+static SmileArg SmileUnboxedInteger16_Unbox(SmileUnboxedInteger16 smileUnboxedInt)
 {
 	Smile_Abort_FatalError("Cannot re-unbox a unboxed object.");
 	return (SmileArg){ 0 };

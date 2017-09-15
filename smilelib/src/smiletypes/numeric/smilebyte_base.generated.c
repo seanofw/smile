@@ -1,3 +1,7 @@
+// ===================================================
+//   WARNING: THIS IS A GENERATED FILE. DO NOT EDIT!
+// ===================================================
+
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
 //  Copyright 2004-2017 Sean Werkema
@@ -45,11 +49,6 @@ static Byte _byteComparisonChecks[] = {
 	0, 0,
 };
 
-static Byte _parseChecks[] = {
-	SMILE_KIND_MASK, SMILE_KIND_STRING,
-	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER64,
-};
-
 typedef struct MathInfoStruct {
 	Bool isLoud;
 } *MathInfo;
@@ -61,9 +60,9 @@ STATIC_STRING(_divideByZero, "Divide by zero error");
 STATIC_STRING(_negativeLog, "Logarithm of negative or zero value");
 STATIC_STRING(_negativeSqrt, "Square root of negative number");
 
-STATIC_STRING(_invalidTypeError, "All arguments to 'Byte.%s' must be of type 'Byte'");
+STATIC_STRING(_invalidTypeError, "All arguments to 'Byte.%s' must be of type 'Byte'.");
 
-STATIC_STRING(_stringTypeError, "Second argument to 'string' must be of type 'Integer64'");
+STATIC_STRING(_stringTypeError, "Second argument to 'string' must be of type 'Byte'");
 STATIC_STRING(_numericBaseError, "Valid numeric base must be in the range of 2..36");
 STATIC_STRING(_parseArguments, "Illegal arguments to 'parse' function");
 
@@ -81,39 +80,40 @@ SMILE_EXTERNAL_FUNCTION(ToBool)
 SMILE_EXTERNAL_FUNCTION(ToInt)
 {
 	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_UNBOXED_BYTE)
-		return SmileUnboxedInteger64_From(argv[0].unboxed.i8);
+		return SmileUnboxedInteger64_From((Int64)(UInt64)argv[0].unboxed.i8);
 
-	return SmileUnboxedInteger64_From(0);
+	return SmileUnboxedByte_From(0);
 }
-
-STATIC_STRING(_Byte, "Byte");
 
 SMILE_EXTERNAL_FUNCTION(ToString)
 {
-	Int64 numericBase;
+	Byte numericBase;
+	STATIC_STRING(byte, "Byte");
 
 	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_UNBOXED_BYTE) {
 		if (argc == 2) {
-			if (SMILE_KIND(argv[1].obj) != SMILE_KIND_UNBOXED_INTEGER64)
+			if (SMILE_KIND(argv[1].obj) != SMILE_KIND_UNBOXED_BYTE)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _stringTypeError);
-			numericBase = (Int)argv[1].unboxed.i64;
+			numericBase = (Int)argv[1].unboxed.i8;
 			if (numericBase < 2 || numericBase > 36)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _numericBaseError);
 		}
 		else numericBase = 10;
 
-		return SmileArg_From((SmileObject)String_CreateFromInteger((Int64)argv[0].unboxed.i8, (Int)numericBase, False));
+		return SmileArg_From((SmileObject)String_CreateFromInteger(argv[0].unboxed.i8, (Int)numericBase, False));
 	}
 
-	return SmileArg_From((SmileObject)_Byte);
+	return SmileArg_From((SmileObject)byte);
 }
 
 SMILE_EXTERNAL_FUNCTION(Hash)
 {
-	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_UNBOXED_BYTE)
-		return SmileUnboxedInteger64_From(argv[0].unboxed.i8);
+	SmileByte obj = (SmileByte)argv[0].obj;
 
-	return SmileUnboxedInteger64_From((PtrInt)argv[0].obj ^ Smile_HashOracle);
+	if (SMILE_KIND(obj) == SMILE_KIND_UNBOXED_BYTE)
+		return SmileUnboxedInteger32_From((UInt32)obj->value);
+
+	return SmileUnboxedInteger32_From((UInt32)((PtrInt)obj ^ Smile_HashOracle));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -121,20 +121,60 @@ SMILE_EXTERNAL_FUNCTION(Hash)
 
 SMILE_EXTERNAL_FUNCTION(ToInt64)
 {
-	return SmileUnboxedInteger64_From(argv[0].unboxed.i8);
+	return SmileUnboxedInteger64_From((Int64)(UInt64)argv[0].unboxed.i8);
+}
+
+SMILE_EXTERNAL_FUNCTION(SignExtend64)
+{
+	return SmileUnboxedInteger64_From((Int64)argv[0].unboxed.i8);
+}
+
+SMILE_EXTERNAL_FUNCTION(ZeroExtend64)
+{
+	return SmileUnboxedInteger64_From((Int64)(UInt64)argv[0].unboxed.i8);
 }
 
 SMILE_EXTERNAL_FUNCTION(ToInt32)
 {
-	return SmileUnboxedInteger32_From(argv[0].unboxed.i8);
+	return SmileUnboxedInteger32_From((Int32)(UInt32)argv[0].unboxed.i8);
+}
+
+SMILE_EXTERNAL_FUNCTION(SignExtend32)
+{
+	return SmileUnboxedInteger32_From((Int32)argv[0].unboxed.i8);
+}
+
+SMILE_EXTERNAL_FUNCTION(ZeroExtend32)
+{
+	return SmileUnboxedInteger32_From((Int32)(UInt32)argv[0].unboxed.i8);
 }
 
 SMILE_EXTERNAL_FUNCTION(ToInt16)
 {
-	return SmileUnboxedInteger16_From(argv[0].unboxed.i8);
+	return SmileUnboxedInteger16_From((Int16)(UInt16)argv[0].unboxed.i8);
+}
+
+SMILE_EXTERNAL_FUNCTION(SignExtend16)
+{
+	return SmileUnboxedInteger16_From((Int16)argv[0].unboxed.i8);
+}
+
+SMILE_EXTERNAL_FUNCTION(ZeroExtend16)
+{
+	return SmileUnboxedInteger16_From((Int16)(UInt16)argv[0].unboxed.i8);
 }
 
 SMILE_EXTERNAL_FUNCTION(ToByte)
+{
+	return argv[0];
+}
+
+SMILE_EXTERNAL_FUNCTION(SignExtend8)
+{
+	return argv[0];
+}
+
+SMILE_EXTERNAL_FUNCTION(ZeroExtend8)
 {
 	return argv[0];
 }
@@ -170,7 +210,7 @@ SMILE_EXTERNAL_FUNCTION(Parse)
 
 		case 2:
 			// Either the form [parse string base] or [obj.parse string].
-			if (SMILE_KIND(argv[0].obj) == SMILE_KIND_STRING && SMILE_KIND(argv[1].obj) == SMILE_KIND_UNBOXED_INTEGER64) {
+			if (SMILE_KIND(argv[0].obj) == SMILE_KIND_STRING && SMILE_KIND(argv[1].obj) == SMILE_KIND_UNBOXED_BYTE) {
 				// The form [parse string base].
 				numericBase = (Int)argv[1].unboxed.i64;
 				if (numericBase < 2 || numericBase > 36)
@@ -191,7 +231,7 @@ SMILE_EXTERNAL_FUNCTION(Parse)
 
 		case 3:
 			// The form [obj.parse string base].
-			if (SMILE_KIND(argv[1].obj) != SMILE_KIND_STRING || SMILE_KIND(argv[2].obj) != SMILE_KIND_UNBOXED_INTEGER64)
+			if (SMILE_KIND(argv[1].obj) != SMILE_KIND_STRING || SMILE_KIND(argv[2].obj) != SMILE_KIND_UNBOXED_BYTE)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _parseArguments);
 			numericBase = (Int)argv[2].unboxed.i64;
 			if (numericBase < 2 || numericBase > 36)
@@ -215,12 +255,12 @@ SMILE_EXTERNAL_FUNCTION(Plus)
 	switch (argc) {
 		case 1:
 			return argv[0];
-		
+
 		case 2:
 			x = argv[0].unboxed.i8;
 			x += argv[1].unboxed.i8;
 			return SmileUnboxedByte_From(x);
-		
+
 		case 3:
 			x = argv[0].unboxed.i8;
 			x += argv[1].unboxed.i8;
@@ -282,43 +322,13 @@ SMILE_EXTERNAL_FUNCTION(Minus)
 
 SMILE_EXTERNAL_FUNCTION(Star)
 {
-	SByte x;
-	Int i;
-
-	switch (argc) {
-		case 2:
-			x = (SByte)argv[0].unboxed.i8;
-			x *= (SByte)argv[1].unboxed.i8;
-			return SmileUnboxedByte_From(x);
-
-		case 3:
-			x = (SByte)argv[0].unboxed.i8;
-			x *= (SByte)argv[1].unboxed.i8;
-			x *= (SByte)argv[2].unboxed.i8;
-			return SmileUnboxedByte_From(x);
-
-		case 4:
-			x = (SByte)argv[0].unboxed.i8;
-			x *= (SByte)argv[1].unboxed.i8;
-			x *= (SByte)argv[2].unboxed.i8;
-			x *= (SByte)argv[3].unboxed.i8;
-			return SmileUnboxedByte_From(x);
-
-		default:
-			x = (SByte)argv[0].unboxed.i8;
-			for (i = 1; i < argc; i++) {
-				x *= (SByte)argv[i].unboxed.i8;
-			}
-			return SmileUnboxedByte_From(x);
-	}
-}
-
-SMILE_EXTERNAL_FUNCTION(UStar)
-{
 	Byte x;
 	Int i;
 
 	switch (argc) {
+		case 1:
+			return argv[0];
+
 		case 2:
 			x = argv[0].unboxed.i8;
 			x *= argv[1].unboxed.i8;
@@ -346,6 +356,42 @@ SMILE_EXTERNAL_FUNCTION(UStar)
 	}
 }
 
+SMILE_EXTERNAL_FUNCTION(UStar)
+{
+	Byte x;
+	Int i;
+
+	switch (argc) {
+		case 1:
+			return argv[0];
+
+		case 2:
+			x = (Byte)argv[0].unboxed.i8;
+			x *= (Byte)argv[1].unboxed.i8;
+			return SmileUnboxedByte_From(x);
+
+		case 3:
+			x = (Byte)argv[0].unboxed.i8;
+			x *= (Byte)argv[1].unboxed.i8;
+			x *= (Byte)argv[2].unboxed.i8;
+			return SmileUnboxedByte_From(x);
+
+		case 4:
+			x = (Byte)argv[0].unboxed.i8;
+			x *= (Byte)argv[1].unboxed.i8;
+			x *= (Byte)argv[2].unboxed.i8;
+			x *= (Byte)argv[3].unboxed.i8;
+			return SmileUnboxedByte_From(x);
+
+		default:
+			x = (Byte)argv[0].unboxed.i8;
+			for (i = 1; i < argc; i++) {
+				x *= (Byte)argv[i].unboxed.i8;
+			}
+			return SmileUnboxedByte_From(x);
+	}
+}
+
 /// <summary>
 /// Deal with division-by-zero.
 /// </summary>
@@ -364,39 +410,39 @@ Inline SmileArg DivideByZero(void *param)
 /// <summary>
 /// Perform division classic-C-style, which rounds towards zero no matter what the sign is.
 /// </summary>
-Inline SByte CDiv(SByte dividend, SByte divisor)
+Inline Byte CDiv(Byte dividend, Byte divisor)
 {
 	if (dividend < 0) {
 		if (divisor < 0)
-			return (SByte)((Byte)-dividend / (Byte)-divisor);
+			return (Byte)((Byte)-dividend / (Byte)-divisor);
 		else
-			return -(SByte)((Byte)-dividend / (Byte)divisor);
+			return -(Byte)((Byte)-dividend / (Byte)divisor);
 	}
 	else if (divisor < 0)
-		return -(SByte)((Byte)dividend / (Byte)-divisor);
+		return -(Byte)((Byte)dividend / (Byte)-divisor);
 	else
-		return (SByte)((Byte)dividend / (Byte)divisor);
+		return (Byte)((Byte)dividend / (Byte)divisor);
 }
 
 /// <summary>
 /// Perform division like mathematicians expect, which rounds toward negative infinity (always).
 /// </summary>
-Inline SByte MathematiciansDiv(SByte dividend, SByte divisor)
+Inline Byte MathematiciansDiv(Byte dividend, Byte divisor)
 {
 	if (dividend < 0) {
 		if (divisor < 0) {
-			return (SByte)((Byte)-dividend / (Byte)-divisor);
+			return (Byte)((Byte)-dividend / (Byte)-divisor);
 		}
 		else {
 			Byte positiveQuotient = (Byte)-dividend / (Byte)divisor;
 			Byte positiveRemainder = (Byte)-dividend % (Byte)divisor;
-			return positiveRemainder == 0 ? -(SByte)positiveQuotient : -(SByte)positiveQuotient - 1;
+			return positiveRemainder == 0 ? -(Byte)positiveQuotient : -(Byte)positiveQuotient - 1;
 		}
 	}
 	else if (divisor < 0) {
 		Byte positiveQuotient = (Byte)dividend / (Byte)-divisor;
 		Byte positiveRemainder = (Byte)dividend % (Byte)-divisor;
-		return positiveRemainder == 0 ? -(SByte)positiveQuotient : -(SByte)positiveQuotient - 1;
+		return positiveRemainder == 0 ? -(Byte)positiveQuotient : -(Byte)positiveQuotient - 1;
 	}
 	else {
 		return dividend / divisor;
@@ -405,44 +451,44 @@ Inline SByte MathematiciansDiv(SByte dividend, SByte divisor)
 
 SMILE_EXTERNAL_FUNCTION(Slash)
 {
-	SByte x, y;
+	Byte x, y;
 	Int i;
 
 	switch (argc) {
 		case 2:
-			x = (SByte)argv[0].unboxed.i8;
-			if ((y = (SByte)argv[1].unboxed.i8) == 0)
+			x = argv[0].unboxed.i8;
+			if ((y = argv[1].unboxed.i8) == 0)
 				return DivideByZero(param);
 			x = MathematiciansDiv(x, y);
 			return SmileUnboxedByte_From(x);
 
 		case 3:
-			x = (SByte)argv[0].unboxed.i8;
-			if ((y = (SByte)argv[1].unboxed.i8) == 0)
+			x = argv[0].unboxed.i8;
+			if ((y = argv[1].unboxed.i8) == 0)
 				return DivideByZero(param);
 			x = MathematiciansDiv(x, y);
-			if ((y = (SByte)argv[2].unboxed.i8) == 0)
+			if ((y = argv[2].unboxed.i8) == 0)
 				return DivideByZero(param);
 			x = MathematiciansDiv(x, y);
 			return SmileUnboxedByte_From(x);
 
 		case 4:
-			x = (SByte)argv[0].unboxed.i8;
-			if ((y = (SByte)argv[1].unboxed.i8) == 0)
+			x = argv[0].unboxed.i8;
+			if ((y = argv[1].unboxed.i8) == 0)
 				return DivideByZero(param);
 			x = MathematiciansDiv(x, y);
-			if ((y = (SByte)argv[2].unboxed.i8) == 0)
+			if ((y = argv[2].unboxed.i8) == 0)
 				return DivideByZero(param);
 			x = MathematiciansDiv(x, y);
-			if ((y = (SByte)argv[3].unboxed.i8) == 0)
+			if ((y = argv[3].unboxed.i8) == 0)
 				return DivideByZero(param);
 			x = MathematiciansDiv(x, y);
 			return SmileUnboxedByte_From(x);
 
 		default:
-			x = (SByte)argv[0].unboxed.i8;
+			x = argv[0].unboxed.i8;
 			for (i = 1; i < argc; i++) {
-				if ((y = (SByte)argv[i].unboxed.i8) == 0)
+				if ((y = argv[i].unboxed.i8) == 0)
 					return DivideByZero(param);
 				x = MathematiciansDiv(x, y);
 			}
@@ -457,39 +503,39 @@ SMILE_EXTERNAL_FUNCTION(USlash)
 
 	switch (argc) {
 		case 2:
-			x = argv[0].unboxed.i8;
-			if ((y = argv[1].unboxed.i8) == 0)
+			x = (Byte)argv[0].unboxed.i8;
+			if ((y = (Byte)argv[1].unboxed.i8) == 0)
 				return DivideByZero(param);
 			x /= y;
 			return SmileUnboxedByte_From(x);
 
 		case 3:
-			x = argv[0].unboxed.i8;
-			if ((y = argv[1].unboxed.i8) == 0)
+			x = (Byte)argv[0].unboxed.i8;
+			if ((y = (Byte)argv[1].unboxed.i8) == 0)
 				return DivideByZero(param);
 			x /= y;
-			if ((y = argv[2].unboxed.i8) == 0)
+			if ((y = (Byte)argv[2].unboxed.i8) == 0)
 				return DivideByZero(param);
 			x /= y;
 			return SmileUnboxedByte_From(x);
 
 		case 4:
-			x = argv[0].unboxed.i8;
-			if ((y = argv[1].unboxed.i8) == 0)
+			x = (Byte)argv[0].unboxed.i8;
+			if ((y = (Byte)argv[1].unboxed.i8) == 0)
 				return DivideByZero(param);
 			x /= y;
-			if ((y = argv[2].unboxed.i8) == 0)
+			if ((y = (Byte)argv[2].unboxed.i8) == 0)
 				return DivideByZero(param);
 			x /= y;
-			if ((y = argv[3].unboxed.i8) == 0)
+			if ((y = (Byte)argv[3].unboxed.i8) == 0)
 				return DivideByZero(param);
 			x /= y;
 			return SmileUnboxedByte_From(x);
 
 		default:
-			x = argv[0].unboxed.i8;
+			x = (Byte)argv[0].unboxed.i8;
 			for (i = 1; i < argc; i++) {
-				if ((y = argv[i].unboxed.i8) == 0)
+				if ((y = (Byte)argv[i].unboxed.i8) == 0)
 					return DivideByZero(param);
 				x /= y;
 			}
@@ -499,44 +545,44 @@ SMILE_EXTERNAL_FUNCTION(USlash)
 
 SMILE_EXTERNAL_FUNCTION(Div)
 {
-	SByte x, y;
+	Byte x, y;
 	Int i;
 
 	switch (argc) {
 		case 2:
-			x = (SByte)argv[0].unboxed.i8;
-			if ((y = (SByte)argv[1].unboxed.i8) == 0)
+			x = argv[0].unboxed.i8;
+			if ((y = argv[1].unboxed.i8) == 0)
 				return DivideByZero(param);
 			x = CDiv(x, y);
 			return SmileUnboxedByte_From(x);
 
 		case 3:
-			x = (SByte)argv[0].unboxed.i8;
-			if ((y = (SByte)argv[1].unboxed.i8) == 0)
+			x = argv[0].unboxed.i8;
+			if ((y = argv[1].unboxed.i8) == 0)
 				return DivideByZero(param);
 			x = CDiv(x, y);
-			if ((y = (SByte)argv[2].unboxed.i8) == 0)
+			if ((y = argv[2].unboxed.i8) == 0)
 				return DivideByZero(param);
-			x = MathematiciansDiv(x, y);
+			x = CDiv(x, y);
 			return SmileUnboxedByte_From(x);
 
 		case 4:
-			x = (SByte)argv[0].unboxed.i8;
-			if ((y = (SByte)argv[1].unboxed.i8) == 0)
+			x = argv[0].unboxed.i8;
+			if ((y = argv[1].unboxed.i8) == 0)
 				return DivideByZero(param);
 			x = CDiv(x, y);
-			if ((y = (SByte)argv[2].unboxed.i8) == 0)
+			if ((y = argv[2].unboxed.i8) == 0)
 				return DivideByZero(param);
 			x = CDiv(x, y);
-			if ((y = (SByte)argv[3].unboxed.i8) == 0)
+			if ((y = argv[3].unboxed.i8) == 0)
 				return DivideByZero(param);
 			x = CDiv(x, y);
 			return SmileUnboxedByte_From(x);
 
 		default:
-			x = (SByte)argv[0].unboxed.i8;
+			x = argv[0].unboxed.i8;
 			for (i = 1; i < argc; i++) {
-				if ((y = (SByte)argv[i].unboxed.i8) == 0)
+				if ((y = argv[i].unboxed.i8) == 0)
 					return DivideByZero(param);
 				x = CDiv(x, y);
 			}
@@ -547,9 +593,9 @@ SMILE_EXTERNAL_FUNCTION(Div)
 /// <summary>
 /// Perform modulus like mathematicians expect, in which the modulus has the same sign as the divisor (y).
 /// </summary>
-Inline SByte MathematiciansModulus(SByte x, SByte y)
+Inline Byte MathematiciansModulus(Byte x, Byte y)
 {
-	SByte rem;
+	Byte rem;
 
 	if (x < 0) {
 		if (y < 0)
@@ -570,9 +616,9 @@ Inline SByte MathematiciansModulus(SByte x, SByte y)
 /// <summary>
 /// Perform remainder, in which the result has the same sign as the dividend (x).
 /// </summary>
-Inline SByte MathematiciansRemainder(SByte x, SByte y)
+Inline Byte MathematiciansRemainder(Byte x, Byte y)
 {
-	SByte rem;
+	Byte rem;
 
 	if (x < 0) {
 		if (y < 0) {
@@ -592,8 +638,8 @@ Inline SByte MathematiciansRemainder(SByte x, SByte y)
 
 SMILE_EXTERNAL_FUNCTION(Mod)
 {
-	SByte x = (SByte)argv[0].unboxed.i8;
-	SByte y = (SByte)argv[1].unboxed.i8;
+	Byte x = argv[0].unboxed.i8;
+	Byte y = argv[1].unboxed.i8;
 
 	if (y == 0)
 		return DivideByZero(param);
@@ -603,8 +649,8 @@ SMILE_EXTERNAL_FUNCTION(Mod)
 
 SMILE_EXTERNAL_FUNCTION(UMod)
 {
-	Byte x = argv[0].unboxed.i8;
-	Byte y = argv[1].unboxed.i8;
+	Byte x = (Byte)argv[0].unboxed.i8;
+	Byte y = (Byte)argv[1].unboxed.i8;
 
 	if (y == 0)
 		return DivideByZero(param);
@@ -614,8 +660,8 @@ SMILE_EXTERNAL_FUNCTION(UMod)
 
 SMILE_EXTERNAL_FUNCTION(Rem)
 {
-	SByte x = (SByte)argv[0].unboxed.i8;
-	SByte y = (SByte)argv[1].unboxed.i8;
+	Byte x = argv[0].unboxed.i8;
+	Byte y = argv[1].unboxed.i8;
 
 	if (y == 0)
 		return DivideByZero(param);
@@ -628,37 +674,23 @@ SMILE_EXTERNAL_FUNCTION(Rem)
 
 SMILE_EXTERNAL_FUNCTION(Sign)
 {
-	SByte value = (SByte)argv[0].unboxed.i8;
+	Byte value = argv[0].unboxed.i8;
 
-	return value == 0 ? SmileUnboxedByte_From(0)
-		: value > 0 ? SmileUnboxedByte_From(1)
-		: SmileUnboxedByte_From((Byte)(SByte)-1);
+	return value == 0 ? SmileUnboxedByte_From(0) : SmileUnboxedByte_From(1);
 }
 
 SMILE_EXTERNAL_FUNCTION(Abs)
 {
-	SByte value = (SByte)argv[0].unboxed.i8;
+#if 8 > 8
+	Byte value = argv[0].unboxed.i8;
 
 	return value < 0 ? SmileUnboxedByte_From(-value) : argv[0];
+#else
+	return argv[0];
+#endif
 }
 
 SMILE_EXTERNAL_FUNCTION(Clip)
-{
-	SByte value = (SByte)argv[0].unboxed.i8;
-	SByte min = (SByte)argv[1].unboxed.i8;
-	SByte max = (SByte)argv[2].unboxed.i8;
-
-	if (value > max) {
-		value = max;
-		return value < min ? argv[1] : argv[2];
-	}
-	else if (value < min) {
-		return argv[1];
-	}
-	else return argv[0];
-}
-
-SMILE_EXTERNAL_FUNCTION(UClip)
 {
 	Byte value = argv[0].unboxed.i8;
 	Byte min = argv[1].unboxed.i8;
@@ -674,43 +706,23 @@ SMILE_EXTERNAL_FUNCTION(UClip)
 	else return argv[0];
 }
 
-SMILE_EXTERNAL_FUNCTION(Min)
+SMILE_EXTERNAL_FUNCTION(UClip)
 {
-	SByte x, y;
-	Int i;
+	Byte value = (Byte)argv[0].unboxed.i8;
+	Byte min = (Byte)argv[1].unboxed.i8;
+	Byte max = (Byte)argv[2].unboxed.i8;
 
-	switch (argc) {
-		case 1:
-			return argv[0];
-
-		case 2:
-			x = (SByte)argv[0].unboxed.i8;
-			if ((y = (SByte)argv[1].unboxed.i8) < x) x = y;
-			return SmileUnboxedByte_From(x);
-
-		case 3:
-			x = (SByte)argv[0].unboxed.i8;
-			if ((y = (SByte)argv[1].unboxed.i8) < x) x = y;
-			if ((y = (SByte)argv[2].unboxed.i8) < x) x = y;
-			return SmileUnboxedByte_From(x);
-
-		case 4:
-			x = (SByte)argv[0].unboxed.i8;
-			if ((y = (SByte)argv[1].unboxed.i8) < x) x = y;
-			if ((y = (SByte)argv[2].unboxed.i8) < x) x = y;
-			if ((y = (SByte)argv[3].unboxed.i8) < x) x = y;
-			return SmileUnboxedByte_From(x);
-
-		default:
-			x = (SByte)argv[0].unboxed.i8;
-			for (i = 1; i < argc; i++) {
-				if ((y = (SByte)argv[i].unboxed.i8) < x) x = y;
-			}
-			return SmileUnboxedByte_From(x);
+	if (value > max) {
+		value = max;
+		return value < min ? argv[1] : argv[2];
 	}
+	else if (value < min) {
+		return argv[1];
+	}
+	else return argv[0];
 }
 
-SMILE_EXTERNAL_FUNCTION(UMin)
+SMILE_EXTERNAL_FUNCTION(Min)
 {
 	Byte x, y;
 	Int i;
@@ -746,9 +758,9 @@ SMILE_EXTERNAL_FUNCTION(UMin)
 	}
 }
 
-SMILE_EXTERNAL_FUNCTION(Max)
+SMILE_EXTERNAL_FUNCTION(UMin)
 {
-	SByte x, y;
+	Byte x, y;
 	Int i;
 
 	switch (argc) {
@@ -756,33 +768,33 @@ SMILE_EXTERNAL_FUNCTION(Max)
 			return argv[0];
 
 		case 2:
-			x = (SByte)argv[0].unboxed.i8;
-			if ((y = (SByte)argv[1].unboxed.i8) > x) x = y;
+			x = (Byte)argv[0].unboxed.i8;
+			if ((y = (Byte)argv[1].unboxed.i8) < x) x = y;
 			return SmileUnboxedByte_From(x);
 
 		case 3:
-			x = (SByte)argv[0].unboxed.i8;
-			if ((y = (SByte)argv[1].unboxed.i8) > x) x = y;
-			if ((y = (SByte)argv[2].unboxed.i8) > x) x = y;
+			x = (Byte)argv[0].unboxed.i8;
+			if ((y = (Byte)argv[1].unboxed.i8) < x) x = y;
+			if ((y = (Byte)argv[2].unboxed.i8) < x) x = y;
 			return SmileUnboxedByte_From(x);
 
 		case 4:
-			x = (SByte)argv[0].unboxed.i8;
-			if ((y = (SByte)argv[1].unboxed.i8) > x) x = y;
-			if ((y = (SByte)argv[2].unboxed.i8) > x) x = y;
-			if ((y = (SByte)argv[3].unboxed.i8) > x) x = y;
+			x = (Byte)argv[0].unboxed.i8;
+			if ((y = (Byte)argv[1].unboxed.i8) < x) x = y;
+			if ((y = (Byte)argv[2].unboxed.i8) < x) x = y;
+			if ((y = (Byte)argv[3].unboxed.i8) < x) x = y;
 			return SmileUnboxedByte_From(x);
 
 		default:
-			x = (SByte)argv[0].unboxed.i8;
+			x = (Byte)argv[0].unboxed.i8;
 			for (i = 1; i < argc; i++) {
-				if ((y = (SByte)argv[i].unboxed.i8) > x) x = y;
+				if ((y = (Byte)argv[i].unboxed.i8) < x) x = y;
 			}
 			return SmileUnboxedByte_From(x);
 	}
 }
 
-SMILE_EXTERNAL_FUNCTION(UMax)
+SMILE_EXTERNAL_FUNCTION(Max)
 {
 	Byte x, y;
 	Int i;
@@ -818,11 +830,47 @@ SMILE_EXTERNAL_FUNCTION(UMax)
 	}
 }
 
-Inline SByte IntPower(SByte value, SByte exponent)
+SMILE_EXTERNAL_FUNCTION(UMax)
+{
+	Byte x, y;
+	Int i;
+
+	switch (argc) {
+		case 1:
+			return argv[0];
+
+		case 2:
+			x = (Byte)argv[0].unboxed.i8;
+			if ((y = (Byte)argv[1].unboxed.i8) > x) x = y;
+			return SmileUnboxedByte_From(x);
+
+		case 3:
+			x = (Byte)argv[0].unboxed.i8;
+			if ((y = (Byte)argv[1].unboxed.i8) > x) x = y;
+			if ((y = (Byte)argv[2].unboxed.i8) > x) x = y;
+			return SmileUnboxedByte_From(x);
+
+		case 4:
+			x = (Byte)argv[0].unboxed.i8;
+			if ((y = (Byte)argv[1].unboxed.i8) > x) x = y;
+			if ((y = (Byte)argv[2].unboxed.i8) > x) x = y;
+			if ((y = (Byte)argv[3].unboxed.i8) > x) x = y;
+			return SmileUnboxedByte_From(x);
+
+		default:
+			x = (Byte)argv[0].unboxed.i8;
+			for (i = 1; i < argc; i++) {
+				if ((y = (Byte)argv[i].unboxed.i8) > x) x = y;
+			}
+			return SmileUnboxedByte_From(x);
+	}
+}
+
+Inline Byte IntPower(Byte value, Byte exponent)
 {
 	if (exponent < 0) return 0;
 
-	SByte result = 1;
+	Byte result = 1;
 
 	while (exponent > 0) {
 		if ((exponent & 1) != 0) {
@@ -837,7 +885,7 @@ Inline SByte IntPower(SByte value, SByte exponent)
 
 SMILE_EXTERNAL_FUNCTION(Power)
 {
-	SByte x;
+	Byte x;
 	Int i;
 
 	switch (argc) {
@@ -873,7 +921,19 @@ Inline Byte IntSqrt(Byte value)
 	Byte root, bit, trial;
 
 	root = 0;
+
+#if 8 == 64
+	bit =
+		(value >= 0x100000000UL) ? (1ULL << 62)
+		: (value >= 0x10000UL) ? (1ULL << 30)
+		: (1ULL << 14);
+#elif 8 == 32
+	bit = (value >= 0x10000U) ? (1U << 30) : (1U << 14);
+#elif 8 == 16
+	bit = (1U << 14);
+#elif 8 == 8
 	bit = (1U << 7);
+#endif
 
 	do {
 		trial = root + bit;
@@ -890,7 +950,7 @@ Inline Byte IntSqrt(Byte value)
 
 SMILE_EXTERNAL_FUNCTION(Sqrt)
 {
-	SByte value = argv[0].unboxed.i8;
+	Byte value = argv[0].unboxed.i8;
 
 	if (value < 0) {
 		MathInfo mathInfo = (MathInfo)param;
@@ -911,7 +971,7 @@ SMILE_EXTERNAL_FUNCTION(Pow2Q)
 
 SMILE_EXTERNAL_FUNCTION(NextPow2)
 {
-	SByte value = (SByte)argv[0].unboxed.i8;
+	Byte value = (Byte)argv[0].unboxed.i8;
 	Byte uvalue = (Byte)value;
 
 	if (value < 0) return SmileUnboxedByte_From(0);
@@ -921,6 +981,15 @@ SMILE_EXTERNAL_FUNCTION(NextPow2)
 	uvalue |= uvalue >> 1;
 	uvalue |= uvalue >> 2;
 	uvalue |= uvalue >> 4;
+#if 8 >= 16
+	uvalue |= uvalue >> 8;
+#endif
+#if 8 >= 32
+	uvalue |= uvalue >> 16;
+#endif
+#if 8 >= 64
+	uvalue |= uvalue >> 32;
+#endif
 	uvalue++;
 
 	return SmileUnboxedByte_From(uvalue);
@@ -928,7 +997,7 @@ SMILE_EXTERNAL_FUNCTION(NextPow2)
 
 SMILE_EXTERNAL_FUNCTION(IntLg)
 {
-	SByte value = (SByte)argv[0].unboxed.i8;
+	Byte value = (Byte)argv[0].unboxed.i8;
 	Byte uvalue = (Byte)value;
 	Byte log;
 
@@ -940,9 +1009,18 @@ SMILE_EXTERNAL_FUNCTION(IntLg)
 	}
 
 	log = 0;
-	if ((uvalue & 0x000000F0) != 0) uvalue >>= 4, log += 4;
-	if ((uvalue & 0x0000000C) != 0) uvalue >>= 2, log += 2;
-	if ((uvalue & 0x00000002) != 0) uvalue >>= 1, log += 1;
+#if 8 >= 64
+	if ((uvalue & 0xFFFFFFFF00000000) != 0) uvalue >>= 32, log += 32;
+#endif
+#if 8 >= 32
+	if ((uvalue & 0x00000000FFFF0000) != 0) uvalue >>= 16, log += 16;
+#endif
+#if 8 >= 16
+	if ((uvalue & 0x000000000000FF00) != 0) uvalue >>= 8, log += 8;
+#endif
+	if ((uvalue & 0x00000000000000F0) != 0) uvalue >>= 4, log += 4;
+	if ((uvalue & 0x000000000000000C) != 0) uvalue >>= 2, log += 2;
+	if ((uvalue & 0x0000000000000002) != 0) uvalue >>= 1, log += 1;
 
 	return SmileUnboxedByte_From((Byte)log);
 }
@@ -958,29 +1036,29 @@ SMILE_EXTERNAL_FUNCTION(BitAnd)
 	switch (argc) {
 		case 1:
 			return argv[0];
-		
+
 		case 2:
-			x = argv[0].unboxed.i8;
-			x &= argv[1].unboxed.i8;
+			x = (Byte)argv[0].unboxed.i8;
+			x &= (Byte)argv[1].unboxed.i8;
 			return SmileUnboxedByte_From(x);
-		
+
 		case 3:
-			x = argv[0].unboxed.i8;
-			x &= argv[1].unboxed.i8;
-			x &= argv[2].unboxed.i8;
+			x = (Byte)argv[0].unboxed.i8;
+			x &= (Byte)argv[1].unboxed.i8;
+			x &= (Byte)argv[2].unboxed.i8;
 			return SmileUnboxedByte_From(x);
 
 		case 4:
-			x = argv[0].unboxed.i8;
-			x &= argv[1].unboxed.i8;
-			x &= argv[2].unboxed.i8;
-			x &= argv[3].unboxed.i8;
+			x = (Byte)argv[0].unboxed.i8;
+			x &= (Byte)argv[1].unboxed.i8;
+			x &= (Byte)argv[2].unboxed.i8;
+			x &= (Byte)argv[3].unboxed.i8;
 			return SmileUnboxedByte_From(x);
 
 		default:
-			x = argv[0].unboxed.i8;
+			x = (Byte)argv[0].unboxed.i8;
 			for (i = 1; i < argc; i++) {
-				x &= argv[i].unboxed.i8;
+				x &= (Byte)argv[i].unboxed.i8;
 			}
 			return SmileUnboxedByte_From(x);
 	}
@@ -994,29 +1072,29 @@ SMILE_EXTERNAL_FUNCTION(BitOr)
 	switch (argc) {
 		case 1:
 			return argv[0];
-		
+
 		case 2:
-			x = argv[0].unboxed.i8;
-			x |= argv[1].unboxed.i8;
+			x = (Byte)argv[0].unboxed.i8;
+			x |= (Byte)argv[1].unboxed.i8;
 			return SmileUnboxedByte_From(x);
-		
+
 		case 3:
-			x = argv[0].unboxed.i8;
-			x |= argv[1].unboxed.i8;
-			x |= argv[2].unboxed.i8;
+			x = (Byte)argv[0].unboxed.i8;
+			x |= (Byte)argv[1].unboxed.i8;
+			x |= (Byte)argv[2].unboxed.i8;
 			return SmileUnboxedByte_From(x);
 
 		case 4:
-			x = argv[0].unboxed.i8;
-			x |= argv[1].unboxed.i8;
-			x |= argv[2].unboxed.i8;
-			x |= argv[3].unboxed.i8;
+			x = (Byte)argv[0].unboxed.i8;
+			x |= (Byte)argv[1].unboxed.i8;
+			x |= (Byte)argv[2].unboxed.i8;
+			x |= (Byte)argv[3].unboxed.i8;
 			return SmileUnboxedByte_From(x);
 
 		default:
-			x = argv[0].unboxed.i8;
+			x = (Byte)argv[0].unboxed.i8;
 			for (i = 1; i < argc; i++) {
-				x |= argv[i].unboxed.i8;
+				x |= (Byte)argv[i].unboxed.i8;
 			}
 			return SmileUnboxedByte_From(x);
 	}
@@ -1030,29 +1108,29 @@ SMILE_EXTERNAL_FUNCTION(BitXor)
 	switch (argc) {
 		case 1:
 			return argv[0];
-		
+
 		case 2:
-			x = argv[0].unboxed.i8;
-			x ^= argv[1].unboxed.i8;
+			x = (Byte)argv[0].unboxed.i8;
+			x ^= (Byte)argv[1].unboxed.i8;
 			return SmileUnboxedByte_From(x);
-		
+
 		case 3:
-			x = argv[0].unboxed.i8;
-			x ^= argv[1].unboxed.i8;
-			x ^= argv[2].unboxed.i8;
+			x = (Byte)argv[0].unboxed.i8;
+			x ^= (Byte)argv[1].unboxed.i8;
+			x ^= (Byte)argv[2].unboxed.i8;
 			return SmileUnboxedByte_From(x);
 
 		case 4:
-			x = argv[0].unboxed.i8;
-			x ^= argv[1].unboxed.i8;
-			x ^= argv[2].unboxed.i8;
-			x ^= argv[3].unboxed.i8;
+			x = (Byte)argv[0].unboxed.i8;
+			x ^= (Byte)argv[1].unboxed.i8;
+			x ^= (Byte)argv[2].unboxed.i8;
+			x ^= (Byte)argv[3].unboxed.i8;
 			return SmileUnboxedByte_From(x);
 
 		default:
-			x = argv[0].unboxed.i8;
+			x = (Byte)argv[0].unboxed.i8;
 			for (i = 1; i < argc; i++) {
-				x ^= argv[i].unboxed.i8;
+				x ^= (Byte)argv[i].unboxed.i8;
 			}
 			return SmileUnboxedByte_From(x);
 	}
@@ -1060,7 +1138,7 @@ SMILE_EXTERNAL_FUNCTION(BitXor)
 
 SMILE_EXTERNAL_FUNCTION(BitNot)
 {
-	Byte value = argv[0].unboxed.i8;
+	Byte value = (Byte)argv[0].unboxed.i8;
 
 	return SmileUnboxedByte_From(~value);
 }
@@ -1070,18 +1148,18 @@ SMILE_EXTERNAL_FUNCTION(BitNot)
 
 SMILE_EXTERNAL_FUNCTION(LogicalShiftLeft)
 {
-	Byte x = argv[0].unboxed.i8;
-	Byte y = argv[1].unboxed.i8;
+	Byte x = (Byte)argv[0].unboxed.i8;
+	Byte y = (Byte)argv[1].unboxed.i8;
 
-	return SmileUnboxedByte_From(x << y);
+	return SmileUnboxedByte_From((Byte)(x << y));
 }
 
 SMILE_EXTERNAL_FUNCTION(LogicalShiftRight)
 {
-	Byte x = argv[0].unboxed.i8;
-	Byte y = argv[1].unboxed.i8;
+	Byte x = (Byte)argv[0].unboxed.i8;
+	Byte y = (Byte)argv[1].unboxed.i8;
 
-	return SmileUnboxedByte_From(x >> y);
+	return SmileUnboxedByte_From((Byte)(x >> y));
 }
 
 SMILE_EXTERNAL_FUNCTION(ArithmeticShiftLeft)
@@ -1094,43 +1172,84 @@ SMILE_EXTERNAL_FUNCTION(ArithmeticShiftLeft)
 
 SMILE_EXTERNAL_FUNCTION(ArithmeticShiftRight)
 {
-	SByte x = (SByte)argv[0].unboxed.i8;
-	SByte y = (SByte)argv[1].unboxed.i8;
+	Byte x = argv[0].unboxed.i8;
+	Byte y = argv[1].unboxed.i8;
 
-	return SmileUnboxedByte_From((Byte)(x >> y));
+	return SmileUnboxedByte_From(x >> y);
 }
 
 SMILE_EXTERNAL_FUNCTION(RotateLeft)
 {
-	Byte x = argv[0].unboxed.i8;
-	Byte y = argv[1].unboxed.i8;
+	Byte x = (Byte)argv[0].unboxed.i8;
+	Byte y = (Byte)argv[1].unboxed.i8;
 
-	return SmileUnboxedByte_From(Smile_RotateLeft8(x, y));
+	return SmileUnboxedByte_From(Smile_RotateLeft64(x, y));
 }
 
 SMILE_EXTERNAL_FUNCTION(RotateRight)
 {
-	Byte x = argv[0].unboxed.i8;
-	Byte y = argv[1].unboxed.i8;
+	Byte x = (Byte)argv[0].unboxed.i8;
+	Byte y = (Byte)argv[1].unboxed.i8;
 
-	return SmileUnboxedByte_From(Smile_RotateRight8(x, y));
+	return SmileUnboxedByte_From(Smile_RotateRight64(x, y));
 }
 
 //-------------------------------------------------------------------------------------------------
 // Bit twiddling
 
-Inline UInt32 CountBitsSet(UInt32 value)
+Inline Byte CountBitsSet(Byte value)
 {
-	value = value - ((value >> 1) & 0x55555555);
-	value = (value & 0x33333333) + ((value >> 2) & 0x33333333);
-	return ((value + (value >> 4) & 0xF0F0F0F) * 0x1010101) >> 24;
+#if 8 == 64
+	value = ((value >>  1) & 0x5555555555555555ULL) + (value & 0x5555555555555555ULL);
+	value = ((value >>  2) & 0x3333333333333333ULL) + (value & 0x3333333333333333ULL);
+	value = ((value >>  4) & 0x0F0F0F0F0F0F0F0FULL) + (value & 0x0F0F0F0F0F0F0F0FULL);
+	value = ((value >>  8) & 0x00FF00FF00FF00FFULL) + (value & 0x00FF00FF00FF00FFULL);
+	value = ((value >> 16) & 0x0000FFFF0000FFFFULL) + (value & 0x0000FFFF0000FFFFULL);
+	value = ((value >> 32) & 0x00000000FFFFFFFFULL) + (value & 0x00000000FFFFFFFFULL);
+#elif 8 == 32
+	value = ((value >>  1) & 0x55555555U) + (value & 0x55555555U);
+	value = ((value >>  2) & 0x33333333U) + (value & 0x33333333U);
+	value = ((value >>  4) & 0x0F0F0F0FU) + (value & 0x0F0F0F0FU);
+	value = ((value >>  8) & 0x00FF00FFU) + (value & 0x00FF00FFU);
+	value = ((value >> 16) & 0x0000FFFFU) + (value & 0x0000FFFFU);
+#elif 8 == 16
+	value = ((value >>  1) & 0x5555U) + (value & 0x5555U);
+	value = ((value >>  2) & 0x3333U) + (value & 0x3333U);
+	value = ((value >>  4) & 0x0F0FU) + (value & 0x0F0FU);
+	value = ((value >>  8) & 0x00FFU) + (value & 0x00FFU);
+#elif 8 == 8
+	value = ((value >>  1) & 0x55U) + (value & 0x55U);
+	value = ((value >>  2) & 0x33U) + (value & 0x33U);
+	value = ((value >>  4) & 0x0FU) + (value & 0x0FU);
+#endif
+	return value;
 }
 
 Inline Byte ComputeReverseBits(Byte value)
 {
-	value = ((value >> 1) & 0x55) | ((value & 0x55) << 1);
-	value = ((value >> 2) & 0x33) | ((value & 0x33) << 2);
-	value = (value >> 4) | (value << 4);
+#if 8 == 64
+	value = ((value >>  1) & 0x5555555555555555ULL) | ((value & 0x5555555555555555ULL) <<  1);
+	value = ((value >>  2) & 0x3333333333333333ULL) | ((value & 0x3333333333333333ULL) <<  2);
+	value = ((value >>  4) & 0x0F0F0F0F0F0F0F0FULL) | ((value & 0x0F0F0F0F0F0F0F0FULL) <<  4);
+	value = ((value >>  8) & 0x00FF00FF00FF00FFULL) | ((value & 0x00FF00FF00FF00FFULL) <<  8);
+	value = ((value >> 16) & 0x0000FFFF0000FFFFULL) | ((value & 0x0000FFFF0000FFFFULL) << 16);
+	value = ( value >> 32                         ) | ( value                          << 32);
+#elif 8 == 32
+	value = ((value >>  1) & 0x55555555) | ((value & 0x55555555) <<  1);
+	value = ((value >>  2) & 0x33333333) | ((value & 0x33333333) <<  2);
+	value = ((value >>  4) & 0x0F0F0F0F) | ((value & 0x0F0F0F0F) <<  4);
+	value = ((value >>  8) & 0x00FF00FF) | ((value & 0x00FF00FF) <<  8);
+	value = ( value >> 16              ) | ( value               << 16);
+#elif 8 == 16
+	value = ((value >>  1) & 0x5555) | ((value & 0x5555) <<  1);
+	value = ((value >>  2) & 0x3333) | ((value & 0x3333) <<  2);
+	value = ((value >>  4) & 0x0F0F) | ((value & 0x0F0F) <<  4);
+	value = ( value >>  8          ) | ( value           <<  8);
+#elif 8 == 8
+	value = ((value >>  1) & 0x55) | ((value & 0x55) <<  1);
+	value = ((value >>  2) & 0x33) | ((value & 0x33) <<  2);
+	value = ( value >>  4        ) | ( value         <<  4);
+#endif
 	return value;
 }
 
@@ -1139,75 +1258,129 @@ Inline Byte ComputeCountOfRightZeros(Byte value)
 	Byte c = 8;
 	value &= ~value + 1;
 	if (value != 0) c--;
+
+#if 8 == 64
+	if ((value & 0x00000000FFFFFFFF) != 0) c -= 32;
+	if ((value & 0x0000FFFF0000FFFF) != 0) c -= 16;
+	if ((value & 0x00FF00FF00FF00FF) != 0) c -= 8;
+	if ((value & 0x0F0F0F0F0F0F0F0F) != 0) c -= 4;
+	if ((value & 0x3333333333333333) != 0) c -= 2;
+	if ((value & 0x5555555555555555) != 0) c -= 1;
+#elif 8 == 32
+	if ((value & 0x0000FFFF) != 0) c -= 16;
+	if ((value & 0x00FF00FF) != 0) c -= 8;
+	if ((value & 0x0F0F0F0F) != 0) c -= 4;
+	if ((value & 0x33333333) != 0) c -= 2;
+	if ((value & 0x55555555) != 0) c -= 1;
+#elif 8 == 16
+	if ((value & 0x00FF) != 0) c -= 8;
+	if ((value & 0x0F0F) != 0) c -= 4;
+	if ((value & 0x3333) != 0) c -= 2;
+	if ((value & 0x5555) != 0) c -= 1;
+#elif 8 == 8
 	if ((value & 0x0F) != 0) c -= 4;
 	if ((value & 0x33) != 0) c -= 2;
 	if ((value & 0x55) != 0) c -= 1;
+#endif
+
 	return c;
 }
 
 SMILE_EXTERNAL_FUNCTION(CountOnes)
 {
-	Byte value = argv[0].unboxed.i8;
+	Byte value = (Byte)argv[0].unboxed.i8;
 
 	return SmileUnboxedByte_From((Byte)CountBitsSet(value));
 }
 
 SMILE_EXTERNAL_FUNCTION(CountZeros)
 {
-	Byte value = argv[0].unboxed.i8;
+	Byte value = (Byte)argv[0].unboxed.i8;
 
 	return SmileUnboxedByte_From((Byte)CountBitsSet(~value));
 }
 
 SMILE_EXTERNAL_FUNCTION(Parity)
 {
-	Byte value = argv[0].unboxed.i8;
+	Byte value = (Byte)argv[0].unboxed.i8;
 
+#if 8 >= 64
+	value ^= value >> 32;
+#endif
+#if 8 >= 32
+	value ^= value >> 16;
+#endif
+#if 8 >= 16
+	value ^= value >> 8;
+#endif
+#if 8 >= 8
 	value ^= value >> 4;
+#endif
 	value &= 0xF;
 	value = (0x6996 >> value) & 1;
 
-	return SmileUnboxedByte_From(value);
+	return SmileUnboxedByte_From((Byte)value);
 }
 
 SMILE_EXTERNAL_FUNCTION(ReverseBits)
 {
-	Byte value = argv[0].unboxed.i8;
+	Byte value = (Byte)argv[0].unboxed.i8;
 
-	return SmileUnboxedByte_From(ComputeReverseBits(value));
+	return SmileUnboxedByte_From((Byte)ComputeReverseBits(value));
 }
 
 SMILE_EXTERNAL_FUNCTION(ReverseBytes)
 {
-	return argv[0];
+	Byte value = (Byte)argv[0].unboxed.i8;
+
+#if 8 == 64
+	value = (Byte)( ((value >> 56) & 0x00000000000000FFULL)
+						| ((value >> 40) & 0x000000000000FF00ULL)
+						| ((value >> 24) & 0x0000000000FF0000ULL)
+						| ((value >>  8) & 0x00000000FF000000ULL)
+						| ((value <<  8) & 0x000000FF00000000ULL)
+						| ((value << 24) & 0x0000FF0000000000ULL)
+						| ((value << 40) & 0x00FF000000000000ULL)
+						| ((value << 56) & 0xFF00000000000000ULL) );
+#elif 8 == 32
+	value = (Byte)( ((value >> 24) & 0x000000FFU)
+						| ((value >>  8) & 0x0000FF00U)
+						| ((value <<  8) & 0x00FF0000U)
+						| ((value << 24) & 0xFF000000U) );
+#elif 8 == 16
+	value = (Byte)( ((value >>  8) & 0x00FFU)
+						| ((value <<  8) & 0xFF00U) );
+#endif
+
+	return SmileUnboxedByte_From((Byte)value);
 }
 
 SMILE_EXTERNAL_FUNCTION(CountRightZeros)
 {
-	Byte value = argv[0].unboxed.i8;
+	Byte value = (Byte)argv[0].unboxed.i8;
 
-	return SmileUnboxedByte_From(ComputeCountOfRightZeros(value));
+	return SmileUnboxedByte_From((Byte)ComputeCountOfRightZeros(value));
 }
 
 SMILE_EXTERNAL_FUNCTION(CountRightOnes)
 {
-	Byte value = argv[0].unboxed.i8;
+	Byte value = (Byte)argv[0].unboxed.i8;
 
-	return SmileUnboxedByte_From(ComputeCountOfRightZeros(~value));
+	return SmileUnboxedByte_From((Byte)ComputeCountOfRightZeros(~value));
 }
 
 SMILE_EXTERNAL_FUNCTION(CountLeftZeros)
 {
-	Byte value = argv[0].unboxed.i8;
+	Byte value = (Byte)argv[0].unboxed.i8;
 
-	return SmileUnboxedByte_From(ComputeCountOfRightZeros(ComputeReverseBits(value)));
+	return SmileUnboxedByte_From((Byte)ComputeCountOfRightZeros(ComputeReverseBits(value)));
 }
 
 SMILE_EXTERNAL_FUNCTION(CountLeftOnes)
 {
-	Byte value = argv[0].unboxed.i8;
+	Byte value = (Byte)argv[0].unboxed.i8;
 
-	return SmileUnboxedByte_From(ComputeCountOfRightZeros(~ComputeReverseBits(value)));
+	return SmileUnboxedByte_From((Byte)ComputeCountOfRightZeros(~ComputeReverseBits(value)));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1216,7 +1389,7 @@ SMILE_EXTERNAL_FUNCTION(CountLeftOnes)
 /// <summary>
 /// Calculate the greatest common divisor of two numbers.  This implementation is very similar to
 /// the binary GCD described on Wikipedia (https://en.wikipedia.org/wiki/Binary_GCD_algorithm), and
-/// runs in O(max(lg a + lg b)^2) time, or at most 63 iterations for unsigned 8-bit integers.
+/// runs in O(max(lg a + lg b)^2) time, or at most 4095 iterations for unsigned 64-bit integers.
 /// </summary>
 static Byte CalculateBinaryGcd(Byte a, Byte b)
 {
@@ -1244,25 +1417,29 @@ static Byte CalculateBinaryGcd(Byte a, Byte b)
 
 SMILE_EXTERNAL_FUNCTION(Gcd)
 {
-	Byte a = argv[0].unboxed.i8;
-	Byte b = argv[1].unboxed.i8;
+	Byte value1 = argv[0].unboxed.i8;
+	Byte value2 = argv[1].unboxed.i8;
 	Byte gcd;
+	Byte a, b;
 
-	if (!a || !b) return SmileUnboxedByte_From(0);
-
+	if (value1 <= 0 || value2 <= 0) return SmileUnboxedByte_From(0);
+	
+	a = (Byte)value1, b = (Byte)value2;
 	gcd = CalculateBinaryGcd(a, b);
 
-	return SmileUnboxedByte_From(gcd);
+	return SmileUnboxedByte_From((Byte)gcd);
 }
 
 SMILE_EXTERNAL_FUNCTION(IsCoprime)
 {
-	Byte a = argv[0].unboxed.i8;
-	Byte b = argv[1].unboxed.i8;
+	Byte value1 = argv[0].unboxed.i8;
+	Byte value2 = argv[1].unboxed.i8;
 	Byte gcd;
+	Byte a, b;
 
-	if (!a || !b) return SmileUnboxedBool_From(False);
+	if (value1 <= 0 || value2 <= 0) return SmileUnboxedBool_From(False);
 
+	a = (Byte)value1, b = (Byte)value2;
 	gcd = CalculateBinaryGcd(a, b);
 
 	return SmileUnboxedBool_From(gcd == 1);
@@ -1270,12 +1447,14 @@ SMILE_EXTERNAL_FUNCTION(IsCoprime)
 
 SMILE_EXTERNAL_FUNCTION(Lcm)
 {
-	Byte a = argv[0].unboxed.i8;
-	Byte b = argv[1].unboxed.i8;
+	Byte value1 = argv[0].unboxed.i8;
+	Byte value2 = argv[1].unboxed.i8;
 	Byte gcd;
+	Byte a, b;
 
-	if (!a || !b) return SmileUnboxedByte_From(0);
+	if (value1 <= 0 || value2 <= 0) return SmileUnboxedByte_From(0);
 
+	a = (Byte)value1, b = (Byte)value2;
 	gcd = CalculateBinaryGcd(a, b);
 
 	return SmileUnboxedByte_From((Byte)((a / gcd) * b));
@@ -1298,68 +1477,122 @@ SMILE_EXTERNAL_FUNCTION(Ne)
 
 SMILE_EXTERNAL_FUNCTION(Lt)
 {
-	return SmileUnboxedBool_From((SByte)argv[0].unboxed.i8 < (SByte)argv[1].unboxed.i8);
+	return SmileUnboxedBool_From(argv[0].unboxed.i8 < argv[1].unboxed.i8);
 }
 
 SMILE_EXTERNAL_FUNCTION(Gt)
 {
-	return SmileUnboxedBool_From((SByte)argv[0].unboxed.i8 >(SByte)argv[1].unboxed.i8);
+	return SmileUnboxedBool_From(argv[0].unboxed.i8 > argv[1].unboxed.i8);
 }
 
 SMILE_EXTERNAL_FUNCTION(Le)
 {
-	return SmileUnboxedBool_From((SByte)argv[0].unboxed.i8 <= (SByte)argv[1].unboxed.i8);
+	return SmileUnboxedBool_From(argv[0].unboxed.i8 <= argv[1].unboxed.i8);
 }
 
 SMILE_EXTERNAL_FUNCTION(Ge)
 {
-	return SmileUnboxedBool_From((SByte)argv[0].unboxed.i8 >= (SByte)argv[1].unboxed.i8);
+	return SmileUnboxedBool_From(argv[0].unboxed.i8 >= argv[1].unboxed.i8);
 }
 
 SMILE_EXTERNAL_FUNCTION(ULt)
 {
-	return SmileUnboxedBool_From(argv[0].unboxed.i8 < argv[1].unboxed.i8);
+	return SmileUnboxedBool_From((Byte)argv[0].unboxed.i8 < (Byte)argv[1].unboxed.i8);
 }
 
 SMILE_EXTERNAL_FUNCTION(UGt)
 {
-	return SmileUnboxedBool_From(argv[0].unboxed.i8 > argv[1].unboxed.i8);
+	return SmileUnboxedBool_From((Byte)argv[0].unboxed.i8 >(Byte)argv[1].unboxed.i8);
 }
 
 SMILE_EXTERNAL_FUNCTION(ULe)
 {
-	return SmileUnboxedBool_From(argv[0].unboxed.i8 <= argv[1].unboxed.i8);
+	return SmileUnboxedBool_From((Byte)argv[0].unboxed.i8 <= (Byte)argv[1].unboxed.i8);
 }
 
 SMILE_EXTERNAL_FUNCTION(UGe)
 {
-	return SmileUnboxedBool_From(argv[0].unboxed.i8 >= argv[1].unboxed.i8);
+	return SmileUnboxedBool_From((Byte)argv[0].unboxed.i8 >= (Byte)argv[1].unboxed.i8);
 }
 
 SMILE_EXTERNAL_FUNCTION(Compare)
-{
-	SByte x = (SByte)argv[0].unboxed.i8;
-	SByte y = (SByte)argv[1].unboxed.i8;
-
-	if (x == y)
-		return SmileUnboxedByte_From(0);
-	else if (x < y)
-		return SmileUnboxedByte_From((Byte)(SByte)-1);
-	else
-		return SmileUnboxedByte_From(+1);
-}
-
-SMILE_EXTERNAL_FUNCTION(UCompare)
 {
 	Byte x = argv[0].unboxed.i8;
 	Byte y = argv[1].unboxed.i8;
 
 	if (x == y)
-		return SmileUnboxedByte_From(0);
+		return SmileUnboxedInteger64_From(0);
 	else if (x < y)
-		return SmileUnboxedByte_From((Byte)(SByte)-1);
+		return SmileUnboxedInteger64_From(-1);
 	else
-		return SmileUnboxedByte_From(+1);
+		return SmileUnboxedInteger64_From(+1);
+}
+
+SMILE_EXTERNAL_FUNCTION(UCompare)
+{
+	Byte x = (Byte)argv[0].unboxed.i8;
+	Byte y = (Byte)argv[1].unboxed.i8;
+
+	if (x == y)
+		return SmileUnboxedInteger64_From(0);
+	else if (x < y)
+		return SmileUnboxedInteger64_From(-1);
+	else
+		return SmileUnboxedInteger64_From(+1);
+}
+
+//-------------------------------------------------------------------------------------------------
+
+enum {
+	ZERO_TEST,
+	ONE_TEST,
+	NONZERO_TEST,
+	POS_TEST,
+	NONPOS_TEST,
+	NEG_TEST,
+	NONNEG_TEST,
+	ODD_TEST,
+	EVEN_TEST,
+	MAX_TEST,
+	MIN_TEST,
+	UMAX_TEST,
+	UMIN_TEST,
+};
+
+SMILE_EXTERNAL_FUNCTION(ValueTest)
+{
+	Byte value = (Byte)argv[0].unboxed.i8;
+
+	switch ((PtrInt)param) {
+		case ZERO_TEST:
+			return SmileUnboxedBool_From(value == 0);
+		case ONE_TEST:
+			return SmileUnboxedBool_From(value == 1);
+		case NONZERO_TEST:
+			return SmileUnboxedBool_From(value != 0);
+		case POS_TEST:
+			return SmileUnboxedBool_From(value > 0);
+		case NONPOS_TEST:
+			return SmileUnboxedBool_From(value <= 0);
+		case NEG_TEST:
+			return SmileUnboxedBool_From(value < 0);
+		case NONNEG_TEST:
+			return SmileUnboxedBool_From(value >= 0);
+		case ODD_TEST:
+			return SmileUnboxedBool_From((value & 1) != 0);
+		case EVEN_TEST:
+			return SmileUnboxedBool_From((value & 1) == 0);
+		case MAX_TEST:
+			return SmileUnboxedBool_From(value == ByteMax);
+		case MIN_TEST:
+			return SmileUnboxedBool_From(value == ByteMin);
+		case UMAX_TEST:
+			return SmileUnboxedBool_From((Byte)value == ByteMax);
+		case UMIN_TEST:
+			return SmileUnboxedBool_From(value == 0);
+		default:
+			return SmileArg_From(NullObject);
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1370,15 +1603,25 @@ void SmileByte_Setup(SmileUserObject base)
 
 	SetupFunction("bool", ToBool, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 	SetupFunction("int", ToInt, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
-	SetupFunction("string", ToString, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX, 1, 2, 0, NULL);
+	SetupFunction("string", ToString, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 	SetupFunction("hash", Hash, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 
 	SetupFunction("int64", ToInt64, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
-	SetupFunction("int32", ToByte, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("int32", ToInt32, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
 	SetupFunction("int16", ToInt16, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
 	SetupFunction("byte", ToByte, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
 
-	SetupFunction("parse", Parse, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 1, 1, _parseChecks);
+	SetupFunction("sign-extend-64", SignExtend64, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("sign-extend-32", SignExtend32, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("sign-extend-16", SignExtend16, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("sign-extend-8", SignExtend8, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+
+	SetupFunction("zero-extend-64", ZeroExtend64, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("zero-extend-32", ZeroExtend32, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("zero-extend-16", ZeroExtend16, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("zero-extend-8", ZeroExtend8, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+
+	SetupFunction("parse", Parse, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX, 1, 3, 0, NULL);
 
 	SetupFunction("+", Plus, NULL, "augend addend", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _byteChecks);
 	SetupSynonym("+", "+~");
@@ -1439,12 +1682,30 @@ void SmileByte_Setup(SmileUserObject base)
 	SetupFunction("reverse-bytes", ReverseBytes, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
 	SetupFunction("count-right-zeros", CountRightZeros, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
 	SetupFunction("count-right-ones", CountRightOnes, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
-	SetupFunction("count-left-zeros", CountLeftZeros , NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("count-left-zeros", CountLeftZeros, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
 	SetupFunction("count-left-ones", CountLeftOnes, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
 
 	SetupFunction("gcd", Gcd, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _byteChecks);
 	SetupFunction("lcm", Lcm, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _byteChecks);
 	SetupFunction("coprime?", IsCoprime, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _byteChecks);
+
+	SetupFunction("odd?", ValueTest, (void *)ODD_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("even?", ValueTest, (void *)EVEN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("zero?", ValueTest, (void *)ZERO_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("one?", ValueTest, (void *)ONE_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("nonzero?", ValueTest, (void *)NONZERO_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("positive?", ValueTest, (void *)POS_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupSynonym("positive?", "pos?");
+	SetupFunction("nonpositive?", ValueTest, (void *)NONPOS_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupSynonym("nonpositive?", "nonpos?");
+	SetupFunction("negative?", ValueTest, (void *)NEG_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupSynonym("negative?", "neg?");
+	SetupFunction("nonnegative?", ValueTest, (void *)NONNEG_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupSynonym("nonnegative?", "nonneg?");
+	SetupFunction("max?", ValueTest, (void *)MAX_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("min?", ValueTest, (void *)MIN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("max~?", ValueTest, (void *)UMAX_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("min~?", ValueTest, (void *)UMIN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
 
 	SetupFunction("==", Eq, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _byteComparisonChecks);
 	SetupFunction("!=", Ne, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _byteComparisonChecks);
@@ -1463,4 +1724,9 @@ void SmileByte_Setup(SmileUserObject base)
 	SetupSynonym("compare~", "cmp~");
 
 	SetupFunction("range-to", RangeTo, NULL, "start end", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _byteChecks);
+
+	SetupData("max", SmileByte_CreateInternal(ByteMax));
+	SetupData("min", SmileByte_CreateInternal(ByteMin));
+	SetupData("max~", SmileByte_CreateInternal(ByteMax));
+	SetupData("min~", Smile_KnownObjects.ZeroByte);
 }

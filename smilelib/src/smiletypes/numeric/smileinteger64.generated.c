@@ -1,3 +1,7 @@
+// ===================================================
+//   WARNING: THIS IS A GENERATED FILE. DO NOT EDIT!
+// ===================================================
+
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
 //  Copyright 2004-2017 Sean Werkema
@@ -15,7 +19,6 @@
 //  limitations under the License.
 //---------------------------------------------------------------------------------------
 
-#include <smile/numeric/real64.h>
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/easyobject.h>
@@ -36,10 +39,9 @@ SmileInteger64 SmileInteger64_CreateInternal(Int64 value)
 	return smileInt;
 }
 
-static UInt32 SmileInteger64_Hash(SmileInteger64 self)
+static UInt32 SmileInteger64_Hash(SmileInteger64 obj)
 {
-	UInt64 value = (UInt64)self->value;
-	return (UInt32)(value ^ (value >> 32));
+	return (UInt32)((UInt64)obj->value ^ ((UInt64)obj->value >> 32));
 }
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileInteger64)
@@ -95,7 +97,7 @@ SMILE_EASY_OBJECT_NO_PROPERTIES(SmileUnboxedInteger64)
 
 SMILE_EASY_OBJECT_HASH(SmileUnboxedInteger64, 0)
 SMILE_EASY_OBJECT_TOBOOL(SmileUnboxedInteger64, (Bool)!!unboxedData.i64)
-SMILE_EASY_OBJECT_TOSTRING(SmileUnboxedInteger64, String_Format("%ld", unboxedData.i64))
+SMILE_EASY_OBJECT_TOSTRING(SmileUnboxedInteger64, String_CreateFromInteger(unboxedData.i64, 10, False))
 
 static Bool SmileUnboxedInteger64_CompareEqual(SmileUnboxedInteger64 a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
 {

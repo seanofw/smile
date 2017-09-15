@@ -1,3 +1,7 @@
+// ===================================================
+//   WARNING: THIS IS A GENERATED FILE. DO NOT EDIT!
+// ===================================================
+
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
 //  Copyright 2004-2017 Sean Werkema
@@ -15,7 +19,6 @@
 //  limitations under the License.
 //---------------------------------------------------------------------------------------
 
-#include <smile/numeric/real64.h>
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/numeric/smilebyte.h>
 #include <smile/smiletypes/easyobject.h>
@@ -27,23 +30,27 @@ SMILE_EASY_OBJECT_VTABLE(SmileByte);
 SmileByte SmileByte_CreateInternal(Byte value)
 {
 	// We MALLOC_ATOMIC here because the base is a known pointer that will never be collected.
-	SmileByte smileByte = (SmileByte)GC_MALLOC_ATOMIC(sizeof(struct SmileByteInt));
-	if (smileByte == NULL) Smile_Abort_OutOfMemory();
-	smileByte->base = (SmileObject)Smile_KnownBases.Byte;
-	smileByte->kind = SMILE_KIND_BYTE;
-	smileByte->vtable = SmileByte_VTable;
-	smileByte->value = value;
-	return smileByte;
+	SmileByte smileInt = (SmileByte)GC_MALLOC_ATOMIC(sizeof(struct SmileByteInt));
+	if (smileInt == NULL) Smile_Abort_OutOfMemory();
+	smileInt->base = (SmileObject)Smile_KnownBases.Byte;
+	smileInt->kind = SMILE_KIND_BYTE;
+	smileInt->vtable = SmileByte_VTable;
+	smileInt->value = value;
+	return smileInt;
+}
+
+static UInt32 SmileByte_Hash(SmileByte obj)
+{
+	return (UInt32)obj->value;
 }
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileByte)
-SMILE_EASY_OBJECT_NO_CALL(SmileByte, "A Byte object")
+SMILE_EASY_OBJECT_NO_CALL(SmileByte, "An Byte object")
 SMILE_EASY_OBJECT_NO_SOURCE(SmileByte)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileByte)
 
-SMILE_EASY_OBJECT_HASH(SmileByte, obj->value)
 SMILE_EASY_OBJECT_TOBOOL(SmileByte, obj->value != 0)
-SMILE_EASY_OBJECT_TOSTRING(SmileByte, String_Format("%ux", (UInt32)obj->value))
+SMILE_EASY_OBJECT_TOSTRING(SmileByte, String_Format("%ld", obj->value))
 
 static Bool SmileByte_CompareEqual(SmileByte a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
 {
@@ -74,9 +81,9 @@ SmileObject SmileByte_Box(SmileArg src)
 	return src.obj;
 }
 
-SmileArg SmileByte_Unbox(SmileByte smileByte)
+SmileArg SmileByte_Unbox(SmileByte smileInt)
 {
-	return SmileUnboxedByte_From(smileByte->value);
+	return SmileUnboxedByte_From(smileInt->value);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -84,13 +91,13 @@ SmileArg SmileByte_Unbox(SmileByte smileByte)
 SMILE_EASY_OBJECT_VTABLE(SmileUnboxedByte);
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileUnboxedByte)
-SMILE_EASY_OBJECT_NO_CALL(SmileUnboxedByte, "A Byte")
+SMILE_EASY_OBJECT_NO_CALL(SmileUnboxedByte, "An Byte")
 SMILE_EASY_OBJECT_NO_SOURCE(SmileUnboxedByte)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileUnboxedByte)
 
 SMILE_EASY_OBJECT_HASH(SmileUnboxedByte, 0)
 SMILE_EASY_OBJECT_TOBOOL(SmileUnboxedByte, (Bool)!!unboxedData.i8)
-SMILE_EASY_OBJECT_TOSTRING(SmileUnboxedByte, String_Format("%u", (UInt)unboxedData.i8))
+SMILE_EASY_OBJECT_TOSTRING(SmileUnboxedByte, String_CreateFromInteger(unboxedData.i8, 10, False))
 
 static Bool SmileUnboxedByte_CompareEqual(SmileUnboxedByte a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
 {
@@ -118,10 +125,10 @@ static Bool SmileUnboxedByte_DeepEqual(SmileUnboxedByte a, SmileUnboxedData aDat
 
 static SmileObject SmileUnboxedByte_Box(SmileArg src)
 {
-	return (SmileObject)SmileByte_Create(src.unboxed.b);
+	return (SmileObject)SmileByte_Create(src.unboxed.i8);
 }
 
-static SmileArg SmileUnboxedByte_Unbox(SmileUnboxedByte smileUnboxedByte)
+static SmileArg SmileUnboxedByte_Unbox(SmileUnboxedByte smileUnboxedInt)
 {
 	Smile_Abort_FatalError("Cannot re-unbox a unboxed object.");
 	return (SmileArg){ 0 };

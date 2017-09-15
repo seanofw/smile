@@ -72,18 +72,20 @@ typedef unsigned char Bool;
 //------------------------------------------------------------------------------------------------
 
 // Minima for the signed integer types.
-#define Int8Min ((Int8)(((UInt8)1) << 7))
-#define Int16Min ((Int16)(((UInt16)1) << 15))
-#define Int32Min ((Int32)(((UInt32)1) << 31))
-#define Int64Min ((Int64)(((UInt64)1) << 63))
+#define Int8Min  ((Int8)(UInt8)0x80)
+#define Int16Min ((Int16)(UInt16)0x8000)
+#define Int32Min ((Int32)(UInt32)0x80000000U)
+#define Int64Min ((Int64)(UInt64)0x8000000000000000ULL)
 #define IntMin ((Int)(((UInt)1) << (sizeof(UInt) * 8 - 1)))
+#define ByteMin ((UInt8)0)
 
 // Maxima for the signed integer types.
-#define Int8Max ((Int8)((((UInt8)1) << 7) - 1))
-#define Int16Max ((Int16)((((UInt16)1) << 15) - 1))
-#define Int32Max ((Int32)((((UInt32)1) << 31) - 1))
-#define Int64Max ((Int64)((((UInt64)1) << 63) - 1))
+#define Int8Max  ((Int8)(UInt8)0x7F)
+#define Int16Max ((Int16)(UInt16)0x7FFF)
+#define Int32Max ((Int32)(UInt32)0x7FFFFFFFU)
+#define Int64Max ((Int64)(UInt64)0x7FFFFFFFFFFFFFFFULL)
 #define IntMax ((Int)((((UInt)1) << (sizeof(UInt) * 8 - 1)) - 1))
+#define ByteMax ((UInt8)0xFF)
 
 // Maxima for the unsigned integer types.
 #define UInt8Max (~(UInt8)0)

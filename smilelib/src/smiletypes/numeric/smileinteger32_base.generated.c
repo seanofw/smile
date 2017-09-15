@@ -1,3 +1,7 @@
+// ===================================================
+//   WARNING: THIS IS A GENERATED FILE. DO NOT EDIT!
+// ===================================================
+
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
 //  Copyright 2004-2017 Sean Werkema
@@ -45,11 +49,6 @@ static Byte _integer32ComparisonChecks[] = {
 	0, 0,
 };
 
-static Byte _parseChecks[] = {
-	SMILE_KIND_MASK, SMILE_KIND_STRING,
-	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER64,
-};
-
 typedef struct MathInfoStruct {
 	Bool isLoud;
 } *MathInfo;
@@ -61,9 +60,9 @@ STATIC_STRING(_divideByZero, "Divide by zero error");
 STATIC_STRING(_negativeLog, "Logarithm of negative or zero value");
 STATIC_STRING(_negativeSqrt, "Square root of negative number");
 
-STATIC_STRING(_invalidTypeError, "All arguments to 'Integer32.%s' must be of type 'Integer32'");
+STATIC_STRING(_invalidTypeError, "All arguments to 'Integer32.%s' must be of type 'Integer32'.");
 
-STATIC_STRING(_stringTypeError, "Second argument to 'string' must be of type 'Integer64'");
+STATIC_STRING(_stringTypeError, "Second argument to 'string' must be of type 'Integer32'");
 STATIC_STRING(_numericBaseError, "Valid numeric base must be in the range of 2..36");
 STATIC_STRING(_parseArguments, "Illegal arguments to 'parse' function");
 
@@ -81,27 +80,27 @@ SMILE_EXTERNAL_FUNCTION(ToBool)
 SMILE_EXTERNAL_FUNCTION(ToInt)
 {
 	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_UNBOXED_INTEGER32)
-		return SmileUnboxedInteger64_From(argv[0].unboxed.i32);
+		return SmileUnboxedInteger64_From((Int64)argv[0].unboxed.i32);
 
-	return SmileUnboxedInteger64_From(0);
+	return SmileUnboxedInteger32_From(0);
 }
 
 SMILE_EXTERNAL_FUNCTION(ToString)
 {
-	Int64 numericBase;
+	Int32 numericBase;
 	STATIC_STRING(integer32, "Integer32");
 
 	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_UNBOXED_INTEGER32) {
 		if (argc == 2) {
-			if (SMILE_KIND(argv[1].obj) != SMILE_KIND_UNBOXED_INTEGER64)
+			if (SMILE_KIND(argv[1].obj) != SMILE_KIND_UNBOXED_INTEGER32)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _stringTypeError);
-			numericBase = (Int)argv[1].unboxed.i64;
+			numericBase = (Int)argv[1].unboxed.i32;
 			if (numericBase < 2 || numericBase > 36)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _numericBaseError);
 		}
 		else numericBase = 10;
 
-		return SmileArg_From((SmileObject)String_CreateFromInteger((Int64)argv[0].unboxed.i32, (Int)numericBase, False));
+		return SmileArg_From((SmileObject)String_CreateFromInteger(argv[0].unboxed.i32, (Int)numericBase, False));
 	}
 
 	return SmileArg_From((SmileObject)integer32);
@@ -109,10 +108,12 @@ SMILE_EXTERNAL_FUNCTION(ToString)
 
 SMILE_EXTERNAL_FUNCTION(Hash)
 {
-	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_UNBOXED_INTEGER32)
-		return SmileUnboxedInteger64_From(argv[0].unboxed.i32);
+	SmileInteger32 obj = (SmileInteger32)argv[0].obj;
 
-	return SmileUnboxedInteger64_From((PtrInt)argv[0].obj ^ Smile_HashOracle);
+	if (SMILE_KIND(obj) == SMILE_KIND_UNBOXED_INTEGER32)
+		return SmileUnboxedInteger32_From((UInt32)obj->value);
+
+	return SmileUnboxedInteger32_From((UInt32)((PtrInt)obj ^ Smile_HashOracle));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -120,10 +121,30 @@ SMILE_EXTERNAL_FUNCTION(Hash)
 
 SMILE_EXTERNAL_FUNCTION(ToInt64)
 {
-	return SmileUnboxedInteger64_From(argv[0].unboxed.i32);
+	return SmileUnboxedInteger64_From((Int64)argv[0].unboxed.i32);
+}
+
+SMILE_EXTERNAL_FUNCTION(SignExtend64)
+{
+	return SmileUnboxedInteger64_From((Int64)argv[0].unboxed.i32);
+}
+
+SMILE_EXTERNAL_FUNCTION(ZeroExtend64)
+{
+	return SmileUnboxedInteger64_From((Int64)(UInt64)(UInt32)argv[0].unboxed.i32);
 }
 
 SMILE_EXTERNAL_FUNCTION(ToInt32)
+{
+	return argv[0];
+}
+
+SMILE_EXTERNAL_FUNCTION(SignExtend32)
+{
+	return argv[0];
+}
+
+SMILE_EXTERNAL_FUNCTION(ZeroExtend32)
 {
 	return argv[0];
 }
@@ -133,7 +154,27 @@ SMILE_EXTERNAL_FUNCTION(ToInt16)
 	return SmileUnboxedInteger16_From((Int16)argv[0].unboxed.i32);
 }
 
+SMILE_EXTERNAL_FUNCTION(SignExtend16)
+{
+	return SmileUnboxedInteger16_From((Int16)argv[0].unboxed.i32);
+}
+
+SMILE_EXTERNAL_FUNCTION(ZeroExtend16)
+{
+	return SmileUnboxedInteger16_From((Int16)argv[0].unboxed.i32);
+}
+
 SMILE_EXTERNAL_FUNCTION(ToByte)
+{
+	return SmileUnboxedByte_From((Byte)argv[0].unboxed.i32);
+}
+
+SMILE_EXTERNAL_FUNCTION(SignExtend8)
+{
+	return SmileUnboxedByte_From((Byte)argv[0].unboxed.i32);
+}
+
+SMILE_EXTERNAL_FUNCTION(ZeroExtend8)
 {
 	return SmileUnboxedByte_From((Byte)argv[0].unboxed.i32);
 }
@@ -169,7 +210,7 @@ SMILE_EXTERNAL_FUNCTION(Parse)
 
 		case 2:
 			// Either the form [parse string base] or [obj.parse string].
-			if (SMILE_KIND(argv[0].obj) == SMILE_KIND_STRING && SMILE_KIND(argv[1].obj) == SMILE_KIND_UNBOXED_INTEGER64) {
+			if (SMILE_KIND(argv[0].obj) == SMILE_KIND_STRING && SMILE_KIND(argv[1].obj) == SMILE_KIND_UNBOXED_INTEGER32) {
 				// The form [parse string base].
 				numericBase = (Int)argv[1].unboxed.i64;
 				if (numericBase < 2 || numericBase > 36)
@@ -190,7 +231,7 @@ SMILE_EXTERNAL_FUNCTION(Parse)
 
 		case 3:
 			// The form [obj.parse string base].
-			if (SMILE_KIND(argv[1].obj) != SMILE_KIND_STRING || SMILE_KIND(argv[2].obj) != SMILE_KIND_UNBOXED_INTEGER64)
+			if (SMILE_KIND(argv[1].obj) != SMILE_KIND_STRING || SMILE_KIND(argv[2].obj) != SMILE_KIND_UNBOXED_INTEGER32)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _parseArguments);
 			numericBase = (Int)argv[2].unboxed.i64;
 			if (numericBase < 2 || numericBase > 36)
@@ -635,16 +676,18 @@ SMILE_EXTERNAL_FUNCTION(Sign)
 {
 	Int32 value = argv[0].unboxed.i32;
 
-	return value == 0 ? SmileUnboxedInteger32_From(0)
-		: value > 0 ? SmileUnboxedInteger32_From(1)
-		: SmileUnboxedInteger32_From(-1);
+	return value == 0 ? SmileUnboxedInteger32_From(0) : value > 0 ? SmileUnboxedInteger32_From(1) : SmileUnboxedInteger32_From(-1);
 }
 
 SMILE_EXTERNAL_FUNCTION(Abs)
 {
+#if 32 > 8
 	Int32 value = argv[0].unboxed.i32;
 
 	return value < 0 ? SmileUnboxedInteger32_From(-value) : argv[0];
+#else
+	return argv[0];
+#endif
 }
 
 SMILE_EXTERNAL_FUNCTION(Clip)
@@ -878,7 +921,19 @@ Inline UInt32 IntSqrt(UInt32 value)
 	UInt32 root, bit, trial;
 
 	root = 0;
+
+#if 32 == 64
+	bit =
+		(value >= 0x100000000UL) ? (1ULL << 62)
+		: (value >= 0x10000UL) ? (1ULL << 30)
+		: (1ULL << 14);
+#elif 32 == 32
 	bit = (value >= 0x10000U) ? (1U << 30) : (1U << 14);
+#elif 32 == 16
+	bit = (1U << 14);
+#elif 32 == 8
+	bit = (1U << 7);
+#endif
 
 	do {
 		trial = root + bit;
@@ -926,8 +981,15 @@ SMILE_EXTERNAL_FUNCTION(NextPow2)
 	uvalue |= uvalue >> 1;
 	uvalue |= uvalue >> 2;
 	uvalue |= uvalue >> 4;
+#if 32 >= 16
 	uvalue |= uvalue >> 8;
+#endif
+#if 32 >= 32
 	uvalue |= uvalue >> 16;
+#endif
+#if 32 >= 64
+	uvalue |= uvalue >> 32;
+#endif
 	uvalue++;
 
 	return SmileUnboxedInteger32_From(uvalue);
@@ -939,7 +1001,7 @@ SMILE_EXTERNAL_FUNCTION(IntLg)
 	UInt32 uvalue = (UInt32)value;
 	UInt32 log;
 
-	if (value < 0) {
+	if (value <= 0) {
 		MathInfo mathInfo = (MathInfo)param;
 		if (mathInfo->isLoud)
 			Smile_ThrowException(Smile_KnownSymbols.native_method_error, _negativeLog);
@@ -947,11 +1009,18 @@ SMILE_EXTERNAL_FUNCTION(IntLg)
 	}
 
 	log = 0;
-	if ((uvalue & 0xFFFF0000) != 0) uvalue >>= 16, log += 16;
-	if ((uvalue & 0x0000FF00) != 0) uvalue >>= 8, log += 8;
-	if ((uvalue & 0x000000F0) != 0) uvalue >>= 4, log += 4;
-	if ((uvalue & 0x0000000C) != 0) uvalue >>= 2, log += 2;
-	if ((uvalue & 0x00000002) != 0) uvalue >>= 1, log += 1;
+#if 32 >= 64
+	if ((uvalue & 0xFFFFFFFF00000000) != 0) uvalue >>= 32, log += 32;
+#endif
+#if 32 >= 32
+	if ((uvalue & 0x00000000FFFF0000) != 0) uvalue >>= 16, log += 16;
+#endif
+#if 32 >= 16
+	if ((uvalue & 0x000000000000FF00) != 0) uvalue >>= 8, log += 8;
+#endif
+	if ((uvalue & 0x00000000000000F0) != 0) uvalue >>= 4, log += 4;
+	if ((uvalue & 0x000000000000000C) != 0) uvalue >>= 2, log += 2;
+	if ((uvalue & 0x0000000000000002) != 0) uvalue >>= 1, log += 1;
 
 	return SmileUnboxedInteger32_From((Int32)log);
 }
@@ -1114,7 +1183,7 @@ SMILE_EXTERNAL_FUNCTION(RotateLeft)
 	UInt32 x = (UInt32)argv[0].unboxed.i32;
 	UInt32 y = (UInt32)argv[1].unboxed.i32;
 
-	return SmileUnboxedInteger32_From(Smile_RotateLeft32(x, y));
+	return SmileUnboxedInteger32_From(Smile_RotateLeft64(x, y));
 }
 
 SMILE_EXTERNAL_FUNCTION(RotateRight)
@@ -1122,7 +1191,7 @@ SMILE_EXTERNAL_FUNCTION(RotateRight)
 	UInt32 x = (UInt32)argv[0].unboxed.i32;
 	UInt32 y = (UInt32)argv[1].unboxed.i32;
 
-	return SmileUnboxedInteger32_From(Smile_RotateRight32(x, y));
+	return SmileUnboxedInteger32_From(Smile_RotateRight64(x, y));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1130,18 +1199,57 @@ SMILE_EXTERNAL_FUNCTION(RotateRight)
 
 Inline UInt32 CountBitsSet(UInt32 value)
 {
-	value = value - ((value >> 1) & 0x55555555);
-	value = (value & 0x33333333) + ((value >> 2) & 0x33333333);
-	return ((value + (value >> 4) & 0xF0F0F0F) * 0x1010101) >> 24;
+#if 32 == 64
+	value = ((value >>  1) & 0x5555555555555555ULL) + (value & 0x5555555555555555ULL);
+	value = ((value >>  2) & 0x3333333333333333ULL) + (value & 0x3333333333333333ULL);
+	value = ((value >>  4) & 0x0F0F0F0F0F0F0F0FULL) + (value & 0x0F0F0F0F0F0F0F0FULL);
+	value = ((value >>  8) & 0x00FF00FF00FF00FFULL) + (value & 0x00FF00FF00FF00FFULL);
+	value = ((value >> 16) & 0x0000FFFF0000FFFFULL) + (value & 0x0000FFFF0000FFFFULL);
+	value = ((value >> 32) & 0x00000000FFFFFFFFULL) + (value & 0x00000000FFFFFFFFULL);
+#elif 32 == 32
+	value = ((value >>  1) & 0x55555555U) + (value & 0x55555555U);
+	value = ((value >>  2) & 0x33333333U) + (value & 0x33333333U);
+	value = ((value >>  4) & 0x0F0F0F0FU) + (value & 0x0F0F0F0FU);
+	value = ((value >>  8) & 0x00FF00FFU) + (value & 0x00FF00FFU);
+	value = ((value >> 16) & 0x0000FFFFU) + (value & 0x0000FFFFU);
+#elif 32 == 16
+	value = ((value >>  1) & 0x5555U) + (value & 0x5555U);
+	value = ((value >>  2) & 0x3333U) + (value & 0x3333U);
+	value = ((value >>  4) & 0x0F0FU) + (value & 0x0F0FU);
+	value = ((value >>  8) & 0x00FFU) + (value & 0x00FFU);
+#elif 32 == 8
+	value = ((value >>  1) & 0x55U) + (value & 0x55U);
+	value = ((value >>  2) & 0x33U) + (value & 0x33U);
+	value = ((value >>  4) & 0x0FU) + (value & 0x0FU);
+#endif
+	return value;
 }
 
 Inline UInt32 ComputeReverseBits(UInt32 value)
 {
-	value = ((value >> 1) & 0x55555555) | ((value & 0x55555555) << 1);
-	value = ((value >> 2) & 0x33333333) | ((value & 0x33333333) << 2);
-	value = ((value >> 4) & 0x0F0F0F0F) | ((value & 0x0F0F0F0F) << 4);
-	value = ((value >> 8) & 0x00FF00FF) | ((value & 0x00FF00FF) << 8);
-	value = (value >> 16) | (value << 16);
+#if 32 == 64
+	value = ((value >>  1) & 0x5555555555555555ULL) | ((value & 0x5555555555555555ULL) <<  1);
+	value = ((value >>  2) & 0x3333333333333333ULL) | ((value & 0x3333333333333333ULL) <<  2);
+	value = ((value >>  4) & 0x0F0F0F0F0F0F0F0FULL) | ((value & 0x0F0F0F0F0F0F0F0FULL) <<  4);
+	value = ((value >>  8) & 0x00FF00FF00FF00FFULL) | ((value & 0x00FF00FF00FF00FFULL) <<  8);
+	value = ((value >> 16) & 0x0000FFFF0000FFFFULL) | ((value & 0x0000FFFF0000FFFFULL) << 16);
+	value = ( value >> 32                         ) | ( value                          << 32);
+#elif 32 == 32
+	value = ((value >>  1) & 0x55555555) | ((value & 0x55555555) <<  1);
+	value = ((value >>  2) & 0x33333333) | ((value & 0x33333333) <<  2);
+	value = ((value >>  4) & 0x0F0F0F0F) | ((value & 0x0F0F0F0F) <<  4);
+	value = ((value >>  8) & 0x00FF00FF) | ((value & 0x00FF00FF) <<  8);
+	value = ( value >> 16              ) | ( value               << 16);
+#elif 32 == 16
+	value = ((value >>  1) & 0x5555) | ((value & 0x5555) <<  1);
+	value = ((value >>  2) & 0x3333) | ((value & 0x3333) <<  2);
+	value = ((value >>  4) & 0x0F0F) | ((value & 0x0F0F) <<  4);
+	value = ( value >>  8          ) | ( value           <<  8);
+#elif 32 == 8
+	value = ((value >>  1) & 0x55) | ((value & 0x55) <<  1);
+	value = ((value >>  2) & 0x33) | ((value & 0x33) <<  2);
+	value = ( value >>  4        ) | ( value         <<  4);
+#endif
 	return value;
 }
 
@@ -1150,11 +1258,31 @@ Inline UInt32 ComputeCountOfRightZeros(UInt32 value)
 	UInt32 c = 32;
 	value &= ~value + 1;
 	if (value != 0) c--;
+
+#if 32 == 64
+	if ((value & 0x00000000FFFFFFFF) != 0) c -= 32;
+	if ((value & 0x0000FFFF0000FFFF) != 0) c -= 16;
+	if ((value & 0x00FF00FF00FF00FF) != 0) c -= 8;
+	if ((value & 0x0F0F0F0F0F0F0F0F) != 0) c -= 4;
+	if ((value & 0x3333333333333333) != 0) c -= 2;
+	if ((value & 0x5555555555555555) != 0) c -= 1;
+#elif 32 == 32
 	if ((value & 0x0000FFFF) != 0) c -= 16;
 	if ((value & 0x00FF00FF) != 0) c -= 8;
 	if ((value & 0x0F0F0F0F) != 0) c -= 4;
 	if ((value & 0x33333333) != 0) c -= 2;
 	if ((value & 0x55555555) != 0) c -= 1;
+#elif 32 == 16
+	if ((value & 0x00FF) != 0) c -= 8;
+	if ((value & 0x0F0F) != 0) c -= 4;
+	if ((value & 0x3333) != 0) c -= 2;
+	if ((value & 0x5555) != 0) c -= 1;
+#elif 32 == 8
+	if ((value & 0x0F) != 0) c -= 4;
+	if ((value & 0x33) != 0) c -= 2;
+	if ((value & 0x55) != 0) c -= 1;
+#endif
+
 	return c;
 }
 
@@ -1176,9 +1304,18 @@ SMILE_EXTERNAL_FUNCTION(Parity)
 {
 	UInt32 value = (UInt32)argv[0].unboxed.i32;
 
+#if 32 >= 64
+	value ^= value >> 32;
+#endif
+#if 32 >= 32
 	value ^= value >> 16;
+#endif
+#if 32 >= 16
 	value ^= value >> 8;
+#endif
+#if 32 >= 8
 	value ^= value >> 4;
+#endif
 	value &= 0xF;
 	value = (0x6996 >> value) & 1;
 
@@ -1196,10 +1333,24 @@ SMILE_EXTERNAL_FUNCTION(ReverseBytes)
 {
 	UInt32 value = (UInt32)argv[0].unboxed.i32;
 
-	value = (UInt32)(((value >> 24) & 0x000000FFU)
-		| ((value >> 8) & 0x0000FF00U)
-		| ((value << 8) & 0x00FF0000U)
-		| ((value << 24) & 0xFF000000U));
+#if 32 == 64
+	value = (UInt32)( ((value >> 56) & 0x00000000000000FFULL)
+						| ((value >> 40) & 0x000000000000FF00ULL)
+						| ((value >> 24) & 0x0000000000FF0000ULL)
+						| ((value >>  8) & 0x00000000FF000000ULL)
+						| ((value <<  8) & 0x000000FF00000000ULL)
+						| ((value << 24) & 0x0000FF0000000000ULL)
+						| ((value << 40) & 0x00FF000000000000ULL)
+						| ((value << 56) & 0xFF00000000000000ULL) );
+#elif 32 == 32
+	value = (UInt32)( ((value >> 24) & 0x000000FFU)
+						| ((value >>  8) & 0x0000FF00U)
+						| ((value <<  8) & 0x00FF0000U)
+						| ((value << 24) & 0xFF000000U) );
+#elif 32 == 16
+	value = (UInt32)( ((value >>  8) & 0x00FFU)
+						| ((value <<  8) & 0xFF00U) );
+#endif
 
 	return SmileUnboxedInteger32_From((Int32)value);
 }
@@ -1238,7 +1389,7 @@ SMILE_EXTERNAL_FUNCTION(CountLeftOnes)
 /// <summary>
 /// Calculate the greatest common divisor of two numbers.  This implementation is very similar to
 /// the binary GCD described on Wikipedia (https://en.wikipedia.org/wiki/Binary_GCD_algorithm), and
-/// runs in O(max(lg a + lg b)^2) time, or at most 1023 iterations for unsigned 32-bit integers.
+/// runs in O(max(lg a + lg b)^2) time, or at most 4095 iterations for unsigned 64-bit integers.
 /// </summary>
 static UInt32 CalculateBinaryGcd(UInt32 a, UInt32 b)
 {
@@ -1272,7 +1423,7 @@ SMILE_EXTERNAL_FUNCTION(Gcd)
 	UInt32 a, b;
 
 	if (value1 <= 0 || value2 <= 0) return SmileUnboxedInteger32_From(0);
-
+	
 	a = (UInt32)value1, b = (UInt32)value2;
 	gcd = CalculateBinaryGcd(a, b);
 
@@ -1370,11 +1521,11 @@ SMILE_EXTERNAL_FUNCTION(Compare)
 	Int32 y = argv[1].unboxed.i32;
 
 	if (x == y)
-		return SmileUnboxedInteger32_From(0);
+		return SmileUnboxedInteger64_From(0);
 	else if (x < y)
-		return SmileUnboxedInteger32_From(-1);
+		return SmileUnboxedInteger64_From(-1);
 	else
-		return SmileUnboxedInteger32_From(+1);
+		return SmileUnboxedInteger64_From(+1);
 }
 
 SMILE_EXTERNAL_FUNCTION(UCompare)
@@ -1383,11 +1534,65 @@ SMILE_EXTERNAL_FUNCTION(UCompare)
 	UInt32 y = (UInt32)argv[1].unboxed.i32;
 
 	if (x == y)
-		return SmileUnboxedInteger32_From(0);
+		return SmileUnboxedInteger64_From(0);
 	else if (x < y)
-		return SmileUnboxedInteger32_From(-1);
+		return SmileUnboxedInteger64_From(-1);
 	else
-		return SmileUnboxedInteger32_From(+1);
+		return SmileUnboxedInteger64_From(+1);
+}
+
+//-------------------------------------------------------------------------------------------------
+
+enum {
+	ZERO_TEST,
+	ONE_TEST,
+	NONZERO_TEST,
+	POS_TEST,
+	NONPOS_TEST,
+	NEG_TEST,
+	NONNEG_TEST,
+	ODD_TEST,
+	EVEN_TEST,
+	MAX_TEST,
+	MIN_TEST,
+	UMAX_TEST,
+	UMIN_TEST,
+};
+
+SMILE_EXTERNAL_FUNCTION(ValueTest)
+{
+	Int32 value = (UInt32)argv[0].unboxed.i32;
+
+	switch ((PtrInt)param) {
+		case ZERO_TEST:
+			return SmileUnboxedBool_From(value == 0);
+		case ONE_TEST:
+			return SmileUnboxedBool_From(value == 1);
+		case NONZERO_TEST:
+			return SmileUnboxedBool_From(value != 0);
+		case POS_TEST:
+			return SmileUnboxedBool_From(value > 0);
+		case NONPOS_TEST:
+			return SmileUnboxedBool_From(value <= 0);
+		case NEG_TEST:
+			return SmileUnboxedBool_From(value < 0);
+		case NONNEG_TEST:
+			return SmileUnboxedBool_From(value >= 0);
+		case ODD_TEST:
+			return SmileUnboxedBool_From((value & 1) != 0);
+		case EVEN_TEST:
+			return SmileUnboxedBool_From((value & 1) == 0);
+		case MAX_TEST:
+			return SmileUnboxedBool_From(value == Int32Max);
+		case MIN_TEST:
+			return SmileUnboxedBool_From(value == Int32Min);
+		case UMAX_TEST:
+			return SmileUnboxedBool_From((UInt32)value == UInt32Max);
+		case UMIN_TEST:
+			return SmileUnboxedBool_From(value == 0);
+		default:
+			return SmileArg_From(NullObject);
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1398,7 +1603,7 @@ void SmileInteger32_Setup(SmileUserObject base)
 
 	SetupFunction("bool", ToBool, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 	SetupFunction("int", ToInt, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
-	SetupFunction("string", ToString, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX, 1, 2, 0, NULL);
+	SetupFunction("string", ToString, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 	SetupFunction("hash", Hash, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 
 	SetupFunction("int64", ToInt64, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
@@ -1406,7 +1611,17 @@ void SmileInteger32_Setup(SmileUserObject base)
 	SetupFunction("int16", ToInt16, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
 	SetupFunction("byte", ToByte, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
 
-	SetupFunction("parse", Parse, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 1, 1, _parseChecks);
+	SetupFunction("sign-extend-64", SignExtend64, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+	SetupFunction("sign-extend-32", SignExtend32, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+	SetupFunction("sign-extend-16", SignExtend16, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+	SetupFunction("sign-extend-8", SignExtend8, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+
+	SetupFunction("zero-extend-64", ZeroExtend64, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+	SetupFunction("zero-extend-32", ZeroExtend32, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+	SetupFunction("zero-extend-16", ZeroExtend16, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+	SetupFunction("zero-extend-8", ZeroExtend8, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+
+	SetupFunction("parse", Parse, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX, 1, 3, 0, NULL);
 
 	SetupFunction("+", Plus, NULL, "augend addend", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _integer32Checks);
 	SetupSynonym("+", "+~");
@@ -1467,12 +1682,30 @@ void SmileInteger32_Setup(SmileUserObject base)
 	SetupFunction("reverse-bytes", ReverseBytes, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
 	SetupFunction("count-right-zeros", CountRightZeros, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
 	SetupFunction("count-right-ones", CountRightOnes, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
-	SetupFunction("count-left-zeros", CountLeftZeros , NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+	SetupFunction("count-left-zeros", CountLeftZeros, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
 	SetupFunction("count-left-ones", CountLeftOnes, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
 
 	SetupFunction("gcd", Gcd, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer32Checks);
 	SetupFunction("lcm", Lcm, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer32Checks);
 	SetupFunction("coprime?", IsCoprime, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer32Checks);
+
+	SetupFunction("odd?", ValueTest, (void *)ODD_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+	SetupFunction("even?", ValueTest, (void *)EVEN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+	SetupFunction("zero?", ValueTest, (void *)ZERO_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+	SetupFunction("one?", ValueTest, (void *)ONE_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+	SetupFunction("nonzero?", ValueTest, (void *)NONZERO_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+	SetupFunction("positive?", ValueTest, (void *)POS_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+	SetupSynonym("positive?", "pos?");
+	SetupFunction("nonpositive?", ValueTest, (void *)NONPOS_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+	SetupSynonym("nonpositive?", "nonpos?");
+	SetupFunction("negative?", ValueTest, (void *)NEG_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+	SetupSynonym("negative?", "neg?");
+	SetupFunction("nonnegative?", ValueTest, (void *)NONNEG_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+	SetupSynonym("nonnegative?", "nonneg?");
+	SetupFunction("max?", ValueTest, (void *)MAX_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+	SetupFunction("min?", ValueTest, (void *)MIN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+	SetupFunction("max~?", ValueTest, (void *)UMAX_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+	SetupFunction("min~?", ValueTest, (void *)UMIN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
 
 	SetupFunction("==", Eq, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer32ComparisonChecks);
 	SetupFunction("!=", Ne, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer32ComparisonChecks);
@@ -1491,4 +1724,9 @@ void SmileInteger32_Setup(SmileUserObject base)
 	SetupSynonym("compare~", "cmp~");
 
 	SetupFunction("range-to", RangeTo, NULL, "start end", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer32Checks);
+
+	SetupData("max", SmileInteger32_CreateInternal(Int32Max));
+	SetupData("min", SmileInteger32_CreateInternal(Int32Min));
+	SetupData("max~", SmileInteger32_CreateInternal(UInt32Max));
+	SetupData("min~", Smile_KnownObjects.ZeroInt32);
 }

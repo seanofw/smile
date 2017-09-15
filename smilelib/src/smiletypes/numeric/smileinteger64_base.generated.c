@@ -1,3 +1,7 @@
+// ===================================================
+//   WARNING: THIS IS A GENERATED FILE. DO NOT EDIT!
+// ===================================================
+
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
 //  Copyright 2004-2017 Sean Werkema
@@ -75,7 +79,7 @@ SMILE_EXTERNAL_FUNCTION(ToBool)
 
 SMILE_EXTERNAL_FUNCTION(ToInt)
 {
-	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_UNBOXED_INTEGER32)
+	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_UNBOXED_INTEGER64)
 		return argv[0];
 
 	return SmileUnboxedInteger64_From(0);
@@ -104,10 +108,12 @@ SMILE_EXTERNAL_FUNCTION(ToString)
 
 SMILE_EXTERNAL_FUNCTION(Hash)
 {
-	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_UNBOXED_INTEGER64)
-		return argv[0];
+	SmileInteger64 obj = (SmileInteger64)argv[0].obj;
 
-	return SmileUnboxedInteger64_From((PtrInt)argv[0].obj ^ Smile_HashOracle);
+	if (SMILE_KIND(obj) == SMILE_KIND_UNBOXED_INTEGER64)
+		return SmileUnboxedInteger32_From((UInt32)((UInt64)obj->value ^ ((UInt64)obj->value >> 32)));
+
+	return SmileUnboxedInteger32_From((UInt32)((PtrInt)obj ^ Smile_HashOracle));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -118,7 +124,27 @@ SMILE_EXTERNAL_FUNCTION(ToInt64)
 	return argv[0];
 }
 
+SMILE_EXTERNAL_FUNCTION(SignExtend64)
+{
+	return argv[0];
+}
+
+SMILE_EXTERNAL_FUNCTION(ZeroExtend64)
+{
+	return argv[0];
+}
+
 SMILE_EXTERNAL_FUNCTION(ToInt32)
+{
+	return SmileUnboxedInteger32_From((Int32)argv[0].unboxed.i64);
+}
+
+SMILE_EXTERNAL_FUNCTION(SignExtend32)
+{
+	return SmileUnboxedInteger32_From((Int32)argv[0].unboxed.i64);
+}
+
+SMILE_EXTERNAL_FUNCTION(ZeroExtend32)
 {
 	return SmileUnboxedInteger32_From((Int32)argv[0].unboxed.i64);
 }
@@ -128,7 +154,27 @@ SMILE_EXTERNAL_FUNCTION(ToInt16)
 	return SmileUnboxedInteger16_From((Int16)argv[0].unboxed.i64);
 }
 
+SMILE_EXTERNAL_FUNCTION(SignExtend16)
+{
+	return SmileUnboxedInteger16_From((Int16)argv[0].unboxed.i64);
+}
+
+SMILE_EXTERNAL_FUNCTION(ZeroExtend16)
+{
+	return SmileUnboxedInteger16_From((Int16)argv[0].unboxed.i64);
+}
+
 SMILE_EXTERNAL_FUNCTION(ToByte)
+{
+	return SmileUnboxedByte_From((Byte)argv[0].unboxed.i64);
+}
+
+SMILE_EXTERNAL_FUNCTION(SignExtend8)
+{
+	return SmileUnboxedByte_From((Byte)argv[0].unboxed.i64);
+}
+
+SMILE_EXTERNAL_FUNCTION(ZeroExtend8)
 {
 	return SmileUnboxedByte_From((Byte)argv[0].unboxed.i64);
 }
@@ -630,16 +676,18 @@ SMILE_EXTERNAL_FUNCTION(Sign)
 {
 	Int64 value = argv[0].unboxed.i64;
 
-	return value == 0 ? SmileUnboxedInteger64_From(0)
-		: value > 0 ? SmileUnboxedInteger64_From(1)
-		: SmileUnboxedInteger64_From(-1);
+	return value == 0 ? SmileUnboxedInteger64_From(0) : value > 0 ? SmileUnboxedInteger64_From(1) : SmileUnboxedInteger64_From(-1);
 }
 
 SMILE_EXTERNAL_FUNCTION(Abs)
 {
+#if 64 > 8
 	Int64 value = argv[0].unboxed.i64;
 
 	return value < 0 ? SmileUnboxedInteger64_From(-value) : argv[0];
+#else
+	return argv[0];
+#endif
 }
 
 SMILE_EXTERNAL_FUNCTION(Clip)
@@ -874,10 +922,18 @@ Inline UInt64 IntSqrt(UInt64 value)
 
 	root = 0;
 
+#if 64 == 64
 	bit =
 		(value >= 0x100000000UL) ? (1ULL << 62)
 		: (value >= 0x10000UL) ? (1ULL << 30)
 		: (1ULL << 14);
+#elif 64 == 32
+	bit = (value >= 0x10000U) ? (1U << 30) : (1U << 14);
+#elif 64 == 16
+	bit = (1U << 14);
+#elif 64 == 8
+	bit = (1U << 7);
+#endif
 
 	do {
 		trial = root + bit;
@@ -925,9 +981,15 @@ SMILE_EXTERNAL_FUNCTION(NextPow2)
 	uvalue |= uvalue >> 1;
 	uvalue |= uvalue >> 2;
 	uvalue |= uvalue >> 4;
+#if 64 >= 16
 	uvalue |= uvalue >> 8;
+#endif
+#if 64 >= 32
 	uvalue |= uvalue >> 16;
+#endif
+#if 64 >= 64
 	uvalue |= uvalue >> 32;
+#endif
 	uvalue++;
 
 	return SmileUnboxedInteger64_From(uvalue);
@@ -947,9 +1009,15 @@ SMILE_EXTERNAL_FUNCTION(IntLg)
 	}
 
 	log = 0;
+#if 64 >= 64
 	if ((uvalue & 0xFFFFFFFF00000000) != 0) uvalue >>= 32, log += 32;
+#endif
+#if 64 >= 32
 	if ((uvalue & 0x00000000FFFF0000) != 0) uvalue >>= 16, log += 16;
+#endif
+#if 64 >= 16
 	if ((uvalue & 0x000000000000FF00) != 0) uvalue >>= 8, log += 8;
+#endif
 	if ((uvalue & 0x00000000000000F0) != 0) uvalue >>= 4, log += 4;
 	if ((uvalue & 0x000000000000000C) != 0) uvalue >>= 2, log += 2;
 	if ((uvalue & 0x0000000000000002) != 0) uvalue >>= 1, log += 1;
@@ -1129,26 +1197,59 @@ SMILE_EXTERNAL_FUNCTION(RotateRight)
 //-------------------------------------------------------------------------------------------------
 // Bit twiddling
 
-Inline UInt32 CountBitsSet32(UInt32 value)
-{
-	value = value - ((value >> 1) & 0x55555555);
-	value = (value & 0x33333333) + ((value >> 2) & 0x33333333);
-	return ((value + (value >> 4) & 0xF0F0F0F) * 0x1010101) >> 24;
-}
-
 Inline UInt64 CountBitsSet(UInt64 value)
 {
-	return CountBitsSet32((UInt32)value) + CountBitsSet32((UInt32)(value >> 32));
+#if 64 == 64
+	value = ((value >>  1) & 0x5555555555555555ULL) + (value & 0x5555555555555555ULL);
+	value = ((value >>  2) & 0x3333333333333333ULL) + (value & 0x3333333333333333ULL);
+	value = ((value >>  4) & 0x0F0F0F0F0F0F0F0FULL) + (value & 0x0F0F0F0F0F0F0F0FULL);
+	value = ((value >>  8) & 0x00FF00FF00FF00FFULL) + (value & 0x00FF00FF00FF00FFULL);
+	value = ((value >> 16) & 0x0000FFFF0000FFFFULL) + (value & 0x0000FFFF0000FFFFULL);
+	value = ((value >> 32) & 0x00000000FFFFFFFFULL) + (value & 0x00000000FFFFFFFFULL);
+#elif 64 == 32
+	value = ((value >>  1) & 0x55555555U) + (value & 0x55555555U);
+	value = ((value >>  2) & 0x33333333U) + (value & 0x33333333U);
+	value = ((value >>  4) & 0x0F0F0F0FU) + (value & 0x0F0F0F0FU);
+	value = ((value >>  8) & 0x00FF00FFU) + (value & 0x00FF00FFU);
+	value = ((value >> 16) & 0x0000FFFFU) + (value & 0x0000FFFFU);
+#elif 64 == 16
+	value = ((value >>  1) & 0x5555U) + (value & 0x5555U);
+	value = ((value >>  2) & 0x3333U) + (value & 0x3333U);
+	value = ((value >>  4) & 0x0F0FU) + (value & 0x0F0FU);
+	value = ((value >>  8) & 0x00FFU) + (value & 0x00FFU);
+#elif 64 == 8
+	value = ((value >>  1) & 0x55U) + (value & 0x55U);
+	value = ((value >>  2) & 0x33U) + (value & 0x33U);
+	value = ((value >>  4) & 0x0FU) + (value & 0x0FU);
+#endif
+	return value;
 }
 
 Inline UInt64 ComputeReverseBits(UInt64 value)
 {
+#if 64 == 64
 	value = ((value >>  1) & 0x5555555555555555ULL) | ((value & 0x5555555555555555ULL) <<  1);
 	value = ((value >>  2) & 0x3333333333333333ULL) | ((value & 0x3333333333333333ULL) <<  2);
 	value = ((value >>  4) & 0x0F0F0F0F0F0F0F0FULL) | ((value & 0x0F0F0F0F0F0F0F0FULL) <<  4);
 	value = ((value >>  8) & 0x00FF00FF00FF00FFULL) | ((value & 0x00FF00FF00FF00FFULL) <<  8);
 	value = ((value >> 16) & 0x0000FFFF0000FFFFULL) | ((value & 0x0000FFFF0000FFFFULL) << 16);
 	value = ( value >> 32                         ) | ( value                          << 32);
+#elif 64 == 32
+	value = ((value >>  1) & 0x55555555) | ((value & 0x55555555) <<  1);
+	value = ((value >>  2) & 0x33333333) | ((value & 0x33333333) <<  2);
+	value = ((value >>  4) & 0x0F0F0F0F) | ((value & 0x0F0F0F0F) <<  4);
+	value = ((value >>  8) & 0x00FF00FF) | ((value & 0x00FF00FF) <<  8);
+	value = ( value >> 16              ) | ( value               << 16);
+#elif 64 == 16
+	value = ((value >>  1) & 0x5555) | ((value & 0x5555) <<  1);
+	value = ((value >>  2) & 0x3333) | ((value & 0x3333) <<  2);
+	value = ((value >>  4) & 0x0F0F) | ((value & 0x0F0F) <<  4);
+	value = ( value >>  8          ) | ( value           <<  8);
+#elif 64 == 8
+	value = ((value >>  1) & 0x55) | ((value & 0x55) <<  1);
+	value = ((value >>  2) & 0x33) | ((value & 0x33) <<  2);
+	value = ( value >>  4        ) | ( value         <<  4);
+#endif
 	return value;
 }
 
@@ -1157,12 +1258,31 @@ Inline UInt64 ComputeCountOfRightZeros(UInt64 value)
 	UInt64 c = 64;
 	value &= ~value + 1;
 	if (value != 0) c--;
+
+#if 64 == 64
 	if ((value & 0x00000000FFFFFFFF) != 0) c -= 32;
 	if ((value & 0x0000FFFF0000FFFF) != 0) c -= 16;
 	if ((value & 0x00FF00FF00FF00FF) != 0) c -= 8;
 	if ((value & 0x0F0F0F0F0F0F0F0F) != 0) c -= 4;
 	if ((value & 0x3333333333333333) != 0) c -= 2;
 	if ((value & 0x5555555555555555) != 0) c -= 1;
+#elif 64 == 32
+	if ((value & 0x0000FFFF) != 0) c -= 16;
+	if ((value & 0x00FF00FF) != 0) c -= 8;
+	if ((value & 0x0F0F0F0F) != 0) c -= 4;
+	if ((value & 0x33333333) != 0) c -= 2;
+	if ((value & 0x55555555) != 0) c -= 1;
+#elif 64 == 16
+	if ((value & 0x00FF) != 0) c -= 8;
+	if ((value & 0x0F0F) != 0) c -= 4;
+	if ((value & 0x3333) != 0) c -= 2;
+	if ((value & 0x5555) != 0) c -= 1;
+#elif 64 == 8
+	if ((value & 0x0F) != 0) c -= 4;
+	if ((value & 0x33) != 0) c -= 2;
+	if ((value & 0x55) != 0) c -= 1;
+#endif
+
 	return c;
 }
 
@@ -1184,10 +1304,18 @@ SMILE_EXTERNAL_FUNCTION(Parity)
 {
 	UInt64 value = (UInt64)argv[0].unboxed.i64;
 
+#if 64 >= 64
 	value ^= value >> 32;
+#endif
+#if 64 >= 32
 	value ^= value >> 16;
+#endif
+#if 64 >= 16
 	value ^= value >> 8;
+#endif
+#if 64 >= 8
 	value ^= value >> 4;
+#endif
 	value &= 0xF;
 	value = (0x6996 >> value) & 1;
 
@@ -1205,6 +1333,7 @@ SMILE_EXTERNAL_FUNCTION(ReverseBytes)
 {
 	UInt64 value = (UInt64)argv[0].unboxed.i64;
 
+#if 64 == 64
 	value = (UInt64)( ((value >> 56) & 0x00000000000000FFULL)
 						| ((value >> 40) & 0x000000000000FF00ULL)
 						| ((value >> 24) & 0x0000000000FF0000ULL)
@@ -1213,6 +1342,15 @@ SMILE_EXTERNAL_FUNCTION(ReverseBytes)
 						| ((value << 24) & 0x0000FF0000000000ULL)
 						| ((value << 40) & 0x00FF000000000000ULL)
 						| ((value << 56) & 0xFF00000000000000ULL) );
+#elif 64 == 32
+	value = (UInt64)( ((value >> 24) & 0x000000FFU)
+						| ((value >>  8) & 0x0000FF00U)
+						| ((value <<  8) & 0x00FF0000U)
+						| ((value << 24) & 0xFF000000U) );
+#elif 64 == 16
+	value = (UInt64)( ((value >>  8) & 0x00FFU)
+						| ((value <<  8) & 0xFF00U) );
+#endif
 
 	return SmileUnboxedInteger64_From((Int64)value);
 }
@@ -1472,6 +1610,16 @@ void SmileInteger64_Setup(SmileUserObject base)
 	SetupFunction("int32", ToInt32, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
 	SetupFunction("int16", ToInt16, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
 	SetupFunction("byte", ToByte, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+
+	SetupFunction("sign-extend-64", SignExtend64, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupFunction("sign-extend-32", SignExtend32, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupFunction("sign-extend-16", SignExtend16, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupFunction("sign-extend-8", SignExtend8, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+
+	SetupFunction("zero-extend-64", ZeroExtend64, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupFunction("zero-extend-32", ZeroExtend32, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupFunction("zero-extend-16", ZeroExtend16, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupFunction("zero-extend-8", ZeroExtend8, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
 
 	SetupFunction("parse", Parse, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX, 1, 3, 0, NULL);
 

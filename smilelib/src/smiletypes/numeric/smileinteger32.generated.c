@@ -1,3 +1,7 @@
+// ===================================================
+//   WARNING: THIS IS A GENERATED FILE. DO NOT EDIT!
+// ===================================================
+
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
 //  Copyright 2004-2017 Sean Werkema
@@ -15,7 +19,6 @@
 //  limitations under the License.
 //---------------------------------------------------------------------------------------
 
-#include <smile/numeric/real64.h>
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/easyobject.h>
@@ -36,14 +39,18 @@ SmileInteger32 SmileInteger32_CreateInternal(Int32 value)
 	return smileInt;
 }
 
+static UInt32 SmileInteger32_Hash(SmileInteger32 obj)
+{
+	return (UInt32)obj->value;
+}
+
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileInteger32)
-SMILE_EASY_OBJECT_NO_CALL(SmileInteger32, "An Integer32 Object")
+SMILE_EASY_OBJECT_NO_CALL(SmileInteger32, "An Integer32 object")
 SMILE_EASY_OBJECT_NO_SOURCE(SmileInteger32)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileInteger32)
 
-SMILE_EASY_OBJECT_HASH(SmileInteger32, obj->value)
 SMILE_EASY_OBJECT_TOBOOL(SmileInteger32, obj->value != 0)
-SMILE_EASY_OBJECT_TOSTRING(SmileInteger32, String_Format("%dt", (Int32)obj->value))
+SMILE_EASY_OBJECT_TOSTRING(SmileInteger32, String_Format("%ld", obj->value))
 
 static Bool SmileInteger32_CompareEqual(SmileInteger32 a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
 {
@@ -90,7 +97,7 @@ SMILE_EASY_OBJECT_NO_PROPERTIES(SmileUnboxedInteger32)
 
 SMILE_EASY_OBJECT_HASH(SmileUnboxedInteger32, 0)
 SMILE_EASY_OBJECT_TOBOOL(SmileUnboxedInteger32, (Bool)!!unboxedData.i32)
-SMILE_EASY_OBJECT_TOSTRING(SmileUnboxedInteger32, String_Format("%d", (Int)unboxedData.i32))
+SMILE_EASY_OBJECT_TOSTRING(SmileUnboxedInteger32, String_CreateFromInteger(unboxedData.i32, 10, False))
 
 static Bool SmileUnboxedInteger32_CompareEqual(SmileUnboxedInteger32 a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
 {
@@ -123,9 +130,8 @@ static SmileObject SmileUnboxedInteger32_Box(SmileArg src)
 
 static SmileArg SmileUnboxedInteger32_Unbox(SmileUnboxedInteger32 smileUnboxedInt)
 {
-	static SmileArg arg = { 0 };
 	Smile_Abort_FatalError("Cannot re-unbox a unboxed object.");
-	return arg;
+	return (SmileArg){ 0 };
 }
 
 static struct SmileUnboxedInteger32Int SmileUnboxedInteger32_Instance_Struct = {

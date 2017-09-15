@@ -1,0 +1,1728 @@
+//---------------------------------------------------------------------------------------
+//  Smile Programming Language Interpreter
+//  Copyright 2004-2017 Sean Werkema
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//---------------------------------------------------------------------------------------
+
+#include <smile/smiletypes/smileobject.h>
+#include <smile/smiletypes/smileuserobject.h>
+#include <smile/smiletypes/smilebool.h>
+#include <smile/smiletypes/numeric/smilebyte.h>
+#include <smile/smiletypes/numeric/smileinteger16.h>
+#include <smile/smiletypes/numeric/smileinteger32.h>
+#include <smile/smiletypes/numeric/smileinteger64.h>
+#include <smile/smiletypes/range/smile%type%range.h>
+#include <smile/smiletypes/smilefunction.h>
+#include <smile/smiletypes/base.h>
+#include <smile/internal/staticstring.h>
+
+SMILE_IGNORE_UNUSED_VARIABLES
+
+static Byte _%type%Checks[] = {
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_%TYPE%,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_%TYPE%,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_%TYPE%,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_%TYPE%,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_%TYPE%,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_%TYPE%,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_%TYPE%,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_%TYPE%,
+};
+
+static Byte _%type%ComparisonChecks[] = {
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_%TYPE%,
+	0, 0,
+};
+
+typedef struct MathInfoStruct {
+	Bool isLoud;
+} *MathInfo;
+
+static struct MathInfoStruct _loudMath[] = { True };
+static struct MathInfoStruct _quietMath[] = { False };
+
+STATIC_STRING(_divideByZero, "Divide by zero error");
+STATIC_STRING(_negativeLog, "Logarithm of negative or zero value");
+STATIC_STRING(_negativeSqrt, "Square root of negative number");
+
+STATIC_STRING(_invalidTypeError, "All arguments to '%Type%.%s' must be of type '%Type%'.");
+
+STATIC_STRING(_stringTypeError, "Second argument to 'string' must be of type '%Type%'");
+STATIC_STRING(_numericBaseError, "Valid numeric base must be in the range of 2..36");
+STATIC_STRING(_parseArguments, "Illegal arguments to 'parse' function");
+
+//-------------------------------------------------------------------------------------------------
+// Generic type conversion
+
+SMILE_EXTERNAL_FUNCTION(ToBool)
+{
+	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_UNBOXED_%TYPE%)
+		return SmileUnboxedBool_From(!!argv[0].unboxed.%unboxed%);
+
+	return SmileUnboxedBool_From(True);
+}
+
+SMILE_EXTERNAL_FUNCTION(ToInt)
+{
+	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_UNBOXED_%TYPE%)
+		return %ToInt%;
+
+	return SmileUnboxed%Type%_From(0);
+}
+
+SMILE_EXTERNAL_FUNCTION(ToString)
+{
+	%RawType% numericBase;
+	STATIC_STRING(%type%, "%Type%");
+
+	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_UNBOXED_%TYPE%) {
+		if (argc == 2) {
+			if (SMILE_KIND(argv[1].obj) != SMILE_KIND_UNBOXED_%TYPE%)
+				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _stringTypeError);
+			numericBase = (Int)argv[1].unboxed.%unboxed%;
+			if (numericBase < 2 || numericBase > 36)
+				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _numericBaseError);
+		}
+		else numericBase = 10;
+
+		return SmileArg_From((SmileObject)String_CreateFromInteger(argv[0].unboxed.%unboxed%, (Int)numericBase, False));
+	}
+
+	return SmileArg_From((SmileObject)%type%);
+}
+
+SMILE_EXTERNAL_FUNCTION(Hash)
+{
+	Smile%Type% obj = (Smile%Type%)argv[0].obj;
+
+	if (SMILE_KIND(obj) == SMILE_KIND_UNBOXED_%TYPE%)
+		return SmileUnboxedInteger32_From(%HashAlgorithm%);
+
+	return SmileUnboxedInteger32_From((UInt32)((PtrInt)obj ^ Smile_HashOracle));
+}
+
+//-------------------------------------------------------------------------------------------------
+// Specialized type conversion
+
+SMILE_EXTERNAL_FUNCTION(ToInt64)
+{
+	return %ToInt64%;
+}
+
+SMILE_EXTERNAL_FUNCTION(SignExtend64)
+{
+	return %SignExtend64%;
+}
+
+SMILE_EXTERNAL_FUNCTION(ZeroExtend64)
+{
+	return %ZeroExtend64%;
+}
+
+SMILE_EXTERNAL_FUNCTION(ToInt32)
+{
+	return %ToInt32%;
+}
+
+SMILE_EXTERNAL_FUNCTION(SignExtend32)
+{
+	return %SignExtend32%;
+}
+
+SMILE_EXTERNAL_FUNCTION(ZeroExtend32)
+{
+	return %ZeroExtend32%;
+}
+
+SMILE_EXTERNAL_FUNCTION(ToInt16)
+{
+	return %ToInt16%;
+}
+
+SMILE_EXTERNAL_FUNCTION(SignExtend16)
+{
+	return %SignExtend16%;
+}
+
+SMILE_EXTERNAL_FUNCTION(ZeroExtend16)
+{
+	return %ZeroExtend16%;
+}
+
+SMILE_EXTERNAL_FUNCTION(ToByte)
+{
+	return %ToByte%;
+}
+
+SMILE_EXTERNAL_FUNCTION(SignExtend8)
+{
+	return %SignExtend8%;
+}
+
+SMILE_EXTERNAL_FUNCTION(ZeroExtend8)
+{
+	return %ZeroExtend8%;
+}
+
+SMILE_EXTERNAL_FUNCTION(RangeTo)
+{
+	%RawType% start, end, step;
+
+	start = argv[0].unboxed.%unboxed%;
+	end = argv[1].unboxed.%unboxed%;
+	step = end >= start ? +1 : -1;
+
+	return SmileArg_From((SmileObject)Smile%Type%Range_Create(start, end, step));
+}
+
+//-------------------------------------------------------------------------------------------------
+// Parsing
+
+SMILE_EXTERNAL_FUNCTION(Parse)
+{
+	Int64 numericBase;
+	Int64 value;
+
+	switch (argc) {
+
+		case 1:
+			// The form [parse string].
+			if (SMILE_KIND(argv[0].obj) != SMILE_KIND_STRING)
+				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _parseArguments);
+			if (!String_ParseInteger((String)argv[0].obj, 10, &value))
+				return SmileArg_From(NullObject);
+			return SmileUnboxed%Type%_From((%RawType%)value);
+
+		case 2:
+			// Either the form [parse string base] or [obj.parse string].
+			if (SMILE_KIND(argv[0].obj) == SMILE_KIND_STRING && SMILE_KIND(argv[1].obj) == SMILE_KIND_UNBOXED_%TYPE%) {
+				// The form [parse string base].
+				numericBase = (Int)argv[1].unboxed.i64;
+				if (numericBase < 2 || numericBase > 36)
+					Smile_ThrowException(Smile_KnownSymbols.native_method_error, _numericBaseError);
+				if (!String_ParseInteger((String)argv[0].obj, (Int)numericBase, &value))
+					return SmileArg_From(NullObject);
+				return SmileUnboxed%Type%_From((%RawType%)value);
+			}
+			else if (SMILE_KIND(argv[1].obj) == SMILE_KIND_STRING) {
+				// The form [obj.parse string].
+				if (!String_ParseInteger((String)argv[1].obj, 10, &value))
+					return SmileArg_From(NullObject);
+				return SmileUnboxed%Type%_From((%RawType%)value);
+			}
+			else {
+				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _parseArguments);
+			}
+
+		case 3:
+			// The form [obj.parse string base].
+			if (SMILE_KIND(argv[1].obj) != SMILE_KIND_STRING || SMILE_KIND(argv[2].obj) != SMILE_KIND_UNBOXED_%TYPE%)
+				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _parseArguments);
+			numericBase = (Int)argv[2].unboxed.i64;
+			if (numericBase < 2 || numericBase > 36)
+				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _numericBaseError);
+			if (!String_ParseInteger((String)argv[1].obj, (Int)numericBase, &value))
+				return SmileArg_From(NullObject);
+			return SmileUnboxed%Type%_From((%RawType%)value);
+	}
+
+	return SmileArg_From(NullObject);	// Can't get here, but the compiler doesn't know that.
+}
+
+//-------------------------------------------------------------------------------------------------
+// Arithmetic operators
+
+SMILE_EXTERNAL_FUNCTION(Plus)
+{
+	%RawType% x;
+	Int i;
+
+	switch (argc) {
+		case 1:
+			return argv[0];
+
+		case 2:
+			x = argv[0].unboxed.%unboxed%;
+			x += argv[1].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		case 3:
+			x = argv[0].unboxed.%unboxed%;
+			x += argv[1].unboxed.%unboxed%;
+			x += argv[2].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		case 4:
+			x = argv[0].unboxed.%unboxed%;
+			x += argv[1].unboxed.%unboxed%;
+			x += argv[2].unboxed.%unboxed%;
+			x += argv[3].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		default:
+			x = argv[0].unboxed.%unboxed%;
+			for (i = 1; i < argc; i++) {
+				x += argv[i].unboxed.%unboxed%;
+			}
+			return SmileUnboxed%Type%_From(x);
+	}
+}
+
+SMILE_EXTERNAL_FUNCTION(Minus)
+{
+	%RawType% x;
+	Int i;
+
+	switch (argc) {
+		case 1:
+			x = -argv[0].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		case 2:
+			x = argv[0].unboxed.%unboxed%;
+			x -= argv[1].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		case 3:
+			x = argv[0].unboxed.%unboxed%;
+			x -= argv[1].unboxed.%unboxed%;
+			x -= argv[2].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		case 4:
+			x = argv[0].unboxed.%unboxed%;
+			x -= argv[1].unboxed.%unboxed%;
+			x -= argv[2].unboxed.%unboxed%;
+			x -= argv[3].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		default:
+			x = argv[0].unboxed.%unboxed%;
+			for (i = 1; i < argc; i++) {
+				x -= argv[i].unboxed.%unboxed%;
+			}
+			return SmileUnboxed%Type%_From(x);
+	}
+}
+
+SMILE_EXTERNAL_FUNCTION(Star)
+{
+	%RawType% x;
+	Int i;
+
+	switch (argc) {
+		case 1:
+			return argv[0];
+
+		case 2:
+			x = argv[0].unboxed.%unboxed%;
+			x *= argv[1].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		case 3:
+			x = argv[0].unboxed.%unboxed%;
+			x *= argv[1].unboxed.%unboxed%;
+			x *= argv[2].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		case 4:
+			x = argv[0].unboxed.%unboxed%;
+			x *= argv[1].unboxed.%unboxed%;
+			x *= argv[2].unboxed.%unboxed%;
+			x *= argv[3].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		default:
+			x = argv[0].unboxed.%unboxed%;
+			for (i = 1; i < argc; i++) {
+				x *= argv[i].unboxed.%unboxed%;
+			}
+			return SmileUnboxed%Type%_From(x);
+	}
+}
+
+SMILE_EXTERNAL_FUNCTION(UStar)
+{
+	%URawType% x;
+	Int i;
+
+	switch (argc) {
+		case 1:
+			return argv[0];
+
+		case 2:
+			x = (%URawType%)argv[0].unboxed.%unboxed%;
+			x *= (%URawType%)argv[1].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		case 3:
+			x = (%URawType%)argv[0].unboxed.%unboxed%;
+			x *= (%URawType%)argv[1].unboxed.%unboxed%;
+			x *= (%URawType%)argv[2].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		case 4:
+			x = (%URawType%)argv[0].unboxed.%unboxed%;
+			x *= (%URawType%)argv[1].unboxed.%unboxed%;
+			x *= (%URawType%)argv[2].unboxed.%unboxed%;
+			x *= (%URawType%)argv[3].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		default:
+			x = (%URawType%)argv[0].unboxed.%unboxed%;
+			for (i = 1; i < argc; i++) {
+				x *= (%URawType%)argv[i].unboxed.%unboxed%;
+			}
+			return SmileUnboxed%Type%_From(x);
+	}
+}
+
+/// <summary>
+/// Deal with division-by-zero.
+/// </summary>
+/// <param name="param">A pointer to a MathInfo struct that describes how to handle divide-by-zero.</param>
+/// <returns>0 if this is a quiet divide-by-zero, or a thrown exception if this is supposed to be an error.</returns>
+Inline SmileArg DivideByZero(void *param)
+{
+	MathInfo mathInfo = (MathInfo)param;
+
+	if (mathInfo->isLoud)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
+
+	return SmileUnboxed%Type%_From(0);
+}
+
+/// <summary>
+/// Perform division classic-C-style, which rounds towards zero no matter what the sign is.
+/// </summary>
+Inline %RawType% CDiv(%RawType% dividend, %RawType% divisor)
+{
+	if (dividend < 0) {
+		if (divisor < 0)
+			return (%RawType%)((%URawType%)-dividend / (%URawType%)-divisor);
+		else
+			return -(%RawType%)((%URawType%)-dividend / (%URawType%)divisor);
+	}
+	else if (divisor < 0)
+		return -(%RawType%)((%URawType%)dividend / (%URawType%)-divisor);
+	else
+		return (%RawType%)((%URawType%)dividend / (%URawType%)divisor);
+}
+
+/// <summary>
+/// Perform division like mathematicians expect, which rounds toward negative infinity (always).
+/// </summary>
+Inline %RawType% MathematiciansDiv(%RawType% dividend, %RawType% divisor)
+{
+	if (dividend < 0) {
+		if (divisor < 0) {
+			return (%RawType%)((%URawType%)-dividend / (%URawType%)-divisor);
+		}
+		else {
+			%URawType% positiveQuotient = (%URawType%)-dividend / (%URawType%)divisor;
+			%URawType% positiveRemainder = (%URawType%)-dividend % (%URawType%)divisor;
+			return positiveRemainder == 0 ? -(%RawType%)positiveQuotient : -(%RawType%)positiveQuotient - 1;
+		}
+	}
+	else if (divisor < 0) {
+		%URawType% positiveQuotient = (%URawType%)dividend / (%URawType%)-divisor;
+		%URawType% positiveRemainder = (%URawType%)dividend % (%URawType%)-divisor;
+		return positiveRemainder == 0 ? -(%RawType%)positiveQuotient : -(%RawType%)positiveQuotient - 1;
+	}
+	else {
+		return dividend / divisor;
+	}
+}
+
+SMILE_EXTERNAL_FUNCTION(Slash)
+{
+	%RawType% x, y;
+	Int i;
+
+	switch (argc) {
+		case 2:
+			x = argv[0].unboxed.%unboxed%;
+			if ((y = argv[1].unboxed.%unboxed%) == 0)
+				return DivideByZero(param);
+			x = MathematiciansDiv(x, y);
+			return SmileUnboxed%Type%_From(x);
+
+		case 3:
+			x = argv[0].unboxed.%unboxed%;
+			if ((y = argv[1].unboxed.%unboxed%) == 0)
+				return DivideByZero(param);
+			x = MathematiciansDiv(x, y);
+			if ((y = argv[2].unboxed.%unboxed%) == 0)
+				return DivideByZero(param);
+			x = MathematiciansDiv(x, y);
+			return SmileUnboxed%Type%_From(x);
+
+		case 4:
+			x = argv[0].unboxed.%unboxed%;
+			if ((y = argv[1].unboxed.%unboxed%) == 0)
+				return DivideByZero(param);
+			x = MathematiciansDiv(x, y);
+			if ((y = argv[2].unboxed.%unboxed%) == 0)
+				return DivideByZero(param);
+			x = MathematiciansDiv(x, y);
+			if ((y = argv[3].unboxed.%unboxed%) == 0)
+				return DivideByZero(param);
+			x = MathematiciansDiv(x, y);
+			return SmileUnboxed%Type%_From(x);
+
+		default:
+			x = argv[0].unboxed.%unboxed%;
+			for (i = 1; i < argc; i++) {
+				if ((y = argv[i].unboxed.%unboxed%) == 0)
+					return DivideByZero(param);
+				x = MathematiciansDiv(x, y);
+			}
+			return SmileUnboxed%Type%_From(x);
+	}
+}
+
+SMILE_EXTERNAL_FUNCTION(USlash)
+{
+	%URawType% x, y;
+	Int i;
+
+	switch (argc) {
+		case 2:
+			x = (%URawType%)argv[0].unboxed.%unboxed%;
+			if ((y = (%URawType%)argv[1].unboxed.%unboxed%) == 0)
+				return DivideByZero(param);
+			x /= y;
+			return SmileUnboxed%Type%_From(x);
+
+		case 3:
+			x = (%URawType%)argv[0].unboxed.%unboxed%;
+			if ((y = (%URawType%)argv[1].unboxed.%unboxed%) == 0)
+				return DivideByZero(param);
+			x /= y;
+			if ((y = (%URawType%)argv[2].unboxed.%unboxed%) == 0)
+				return DivideByZero(param);
+			x /= y;
+			return SmileUnboxed%Type%_From(x);
+
+		case 4:
+			x = (%URawType%)argv[0].unboxed.%unboxed%;
+			if ((y = (%URawType%)argv[1].unboxed.%unboxed%) == 0)
+				return DivideByZero(param);
+			x /= y;
+			if ((y = (%URawType%)argv[2].unboxed.%unboxed%) == 0)
+				return DivideByZero(param);
+			x /= y;
+			if ((y = (%URawType%)argv[3].unboxed.%unboxed%) == 0)
+				return DivideByZero(param);
+			x /= y;
+			return SmileUnboxed%Type%_From(x);
+
+		default:
+			x = (%URawType%)argv[0].unboxed.%unboxed%;
+			for (i = 1; i < argc; i++) {
+				if ((y = (%URawType%)argv[i].unboxed.%unboxed%) == 0)
+					return DivideByZero(param);
+				x /= y;
+			}
+			return SmileUnboxed%Type%_From(x);
+	}
+}
+
+SMILE_EXTERNAL_FUNCTION(Div)
+{
+	%RawType% x, y;
+	Int i;
+
+	switch (argc) {
+		case 2:
+			x = argv[0].unboxed.%unboxed%;
+			if ((y = argv[1].unboxed.%unboxed%) == 0)
+				return DivideByZero(param);
+			x = CDiv(x, y);
+			return SmileUnboxed%Type%_From(x);
+
+		case 3:
+			x = argv[0].unboxed.%unboxed%;
+			if ((y = argv[1].unboxed.%unboxed%) == 0)
+				return DivideByZero(param);
+			x = CDiv(x, y);
+			if ((y = argv[2].unboxed.%unboxed%) == 0)
+				return DivideByZero(param);
+			x = CDiv(x, y);
+			return SmileUnboxed%Type%_From(x);
+
+		case 4:
+			x = argv[0].unboxed.%unboxed%;
+			if ((y = argv[1].unboxed.%unboxed%) == 0)
+				return DivideByZero(param);
+			x = CDiv(x, y);
+			if ((y = argv[2].unboxed.%unboxed%) == 0)
+				return DivideByZero(param);
+			x = CDiv(x, y);
+			if ((y = argv[3].unboxed.%unboxed%) == 0)
+				return DivideByZero(param);
+			x = CDiv(x, y);
+			return SmileUnboxed%Type%_From(x);
+
+		default:
+			x = argv[0].unboxed.%unboxed%;
+			for (i = 1; i < argc; i++) {
+				if ((y = argv[i].unboxed.%unboxed%) == 0)
+					return DivideByZero(param);
+				x = CDiv(x, y);
+			}
+			return SmileUnboxed%Type%_From(x);
+	}
+}
+
+/// <summary>
+/// Perform modulus like mathematicians expect, in which the modulus has the same sign as the divisor (y).
+/// </summary>
+Inline %RawType% MathematiciansModulus(%RawType% x, %RawType% y)
+{
+	%RawType% rem;
+
+	if (x < 0) {
+		if (y < 0)
+			return -(-x % -y);
+		else {
+			rem = -x % y;
+			return rem != 0 ? y - rem : 0;
+		}
+	}
+	else if (y < 0) {
+		rem = x % -y;
+		return rem != 0 ? y + rem : 0;
+	}
+	else
+		return x % y;
+}
+
+/// <summary>
+/// Perform remainder, in which the result has the same sign as the dividend (x).
+/// </summary>
+Inline %RawType% MathematiciansRemainder(%RawType% x, %RawType% y)
+{
+	%RawType% rem;
+
+	if (x < 0) {
+		if (y < 0) {
+			rem = -x % -y;
+			return rem != 0 ? rem + y : 0;
+		}
+		else
+			return -(-x % y);
+	}
+	else if (y < 0)
+		return x % -y;
+	else {
+		rem = x % y;
+		return rem != 0 ? rem - y : 0;
+	}
+}
+
+SMILE_EXTERNAL_FUNCTION(Mod)
+{
+	%RawType% x = argv[0].unboxed.%unboxed%;
+	%RawType% y = argv[1].unboxed.%unboxed%;
+
+	if (y == 0)
+		return DivideByZero(param);
+
+	return SmileUnboxed%Type%_From(MathematiciansModulus(x, y));
+}
+
+SMILE_EXTERNAL_FUNCTION(UMod)
+{
+	%URawType% x = (%URawType%)argv[0].unboxed.%unboxed%;
+	%URawType% y = (%URawType%)argv[1].unboxed.%unboxed%;
+
+	if (y == 0)
+		return DivideByZero(param);
+
+	return SmileUnboxed%Type%_From(x % y);
+}
+
+SMILE_EXTERNAL_FUNCTION(Rem)
+{
+	%RawType% x = argv[0].unboxed.%unboxed%;
+	%RawType% y = argv[1].unboxed.%unboxed%;
+
+	if (y == 0)
+		return DivideByZero(param);
+
+	return SmileUnboxed%Type%_From(MathematiciansRemainder(x, y));
+}
+
+//-------------------------------------------------------------------------------------------------
+// Arithmetic extensions
+
+SMILE_EXTERNAL_FUNCTION(Sign)
+{
+	%RawType% value = argv[0].unboxed.%unboxed%;
+
+	return %Sign%;
+}
+
+SMILE_EXTERNAL_FUNCTION(Abs)
+{
+#if %numbits% > 8
+	%RawType% value = argv[0].unboxed.%unboxed%;
+
+	return value < 0 ? SmileUnboxed%Type%_From(-value) : argv[0];
+#else
+	return argv[0];
+#endif
+}
+
+SMILE_EXTERNAL_FUNCTION(Clip)
+{
+	%RawType% value = argv[0].unboxed.%unboxed%;
+	%RawType% min = argv[1].unboxed.%unboxed%;
+	%RawType% max = argv[2].unboxed.%unboxed%;
+
+	if (value > max) {
+		value = max;
+		return value < min ? argv[1] : argv[2];
+	}
+	else if (value < min) {
+		return argv[1];
+	}
+	else return argv[0];
+}
+
+SMILE_EXTERNAL_FUNCTION(UClip)
+{
+	%URawType% value = (%URawType%)argv[0].unboxed.%unboxed%;
+	%URawType% min = (%URawType%)argv[1].unboxed.%unboxed%;
+	%URawType% max = (%URawType%)argv[2].unboxed.%unboxed%;
+
+	if (value > max) {
+		value = max;
+		return value < min ? argv[1] : argv[2];
+	}
+	else if (value < min) {
+		return argv[1];
+	}
+	else return argv[0];
+}
+
+SMILE_EXTERNAL_FUNCTION(Min)
+{
+	%RawType% x, y;
+	Int i;
+
+	switch (argc) {
+		case 1:
+			return argv[0];
+
+		case 2:
+			x = argv[0].unboxed.%unboxed%;
+			if ((y = argv[1].unboxed.%unboxed%) < x) x = y;
+			return SmileUnboxed%Type%_From(x);
+
+		case 3:
+			x = argv[0].unboxed.%unboxed%;
+			if ((y = argv[1].unboxed.%unboxed%) < x) x = y;
+			if ((y = argv[2].unboxed.%unboxed%) < x) x = y;
+			return SmileUnboxed%Type%_From(x);
+
+		case 4:
+			x = argv[0].unboxed.%unboxed%;
+			if ((y = argv[1].unboxed.%unboxed%) < x) x = y;
+			if ((y = argv[2].unboxed.%unboxed%) < x) x = y;
+			if ((y = argv[3].unboxed.%unboxed%) < x) x = y;
+			return SmileUnboxed%Type%_From(x);
+
+		default:
+			x = argv[0].unboxed.%unboxed%;
+			for (i = 1; i < argc; i++) {
+				if ((y = argv[i].unboxed.%unboxed%) < x) x = y;
+			}
+			return SmileUnboxed%Type%_From(x);
+	}
+}
+
+SMILE_EXTERNAL_FUNCTION(UMin)
+{
+	%URawType% x, y;
+	Int i;
+
+	switch (argc) {
+		case 1:
+			return argv[0];
+
+		case 2:
+			x = (%URawType%)argv[0].unboxed.%unboxed%;
+			if ((y = (%URawType%)argv[1].unboxed.%unboxed%) < x) x = y;
+			return SmileUnboxed%Type%_From(x);
+
+		case 3:
+			x = (%URawType%)argv[0].unboxed.%unboxed%;
+			if ((y = (%URawType%)argv[1].unboxed.%unboxed%) < x) x = y;
+			if ((y = (%URawType%)argv[2].unboxed.%unboxed%) < x) x = y;
+			return SmileUnboxed%Type%_From(x);
+
+		case 4:
+			x = (%URawType%)argv[0].unboxed.%unboxed%;
+			if ((y = (%URawType%)argv[1].unboxed.%unboxed%) < x) x = y;
+			if ((y = (%URawType%)argv[2].unboxed.%unboxed%) < x) x = y;
+			if ((y = (%URawType%)argv[3].unboxed.%unboxed%) < x) x = y;
+			return SmileUnboxed%Type%_From(x);
+
+		default:
+			x = (%URawType%)argv[0].unboxed.%unboxed%;
+			for (i = 1; i < argc; i++) {
+				if ((y = (%URawType%)argv[i].unboxed.%unboxed%) < x) x = y;
+			}
+			return SmileUnboxed%Type%_From(x);
+	}
+}
+
+SMILE_EXTERNAL_FUNCTION(Max)
+{
+	%RawType% x, y;
+	Int i;
+
+	switch (argc) {
+		case 1:
+			return argv[0];
+
+		case 2:
+			x = argv[0].unboxed.%unboxed%;
+			if ((y = argv[1].unboxed.%unboxed%) > x) x = y;
+			return SmileUnboxed%Type%_From(x);
+
+		case 3:
+			x = argv[0].unboxed.%unboxed%;
+			if ((y = argv[1].unboxed.%unboxed%) > x) x = y;
+			if ((y = argv[2].unboxed.%unboxed%) > x) x = y;
+			return SmileUnboxed%Type%_From(x);
+
+		case 4:
+			x = argv[0].unboxed.%unboxed%;
+			if ((y = argv[1].unboxed.%unboxed%) > x) x = y;
+			if ((y = argv[2].unboxed.%unboxed%) > x) x = y;
+			if ((y = argv[3].unboxed.%unboxed%) > x) x = y;
+			return SmileUnboxed%Type%_From(x);
+
+		default:
+			x = argv[0].unboxed.%unboxed%;
+			for (i = 1; i < argc; i++) {
+				if ((y = argv[i].unboxed.%unboxed%) > x) x = y;
+			}
+			return SmileUnboxed%Type%_From(x);
+	}
+}
+
+SMILE_EXTERNAL_FUNCTION(UMax)
+{
+	%URawType% x, y;
+	Int i;
+
+	switch (argc) {
+		case 1:
+			return argv[0];
+
+		case 2:
+			x = (%URawType%)argv[0].unboxed.%unboxed%;
+			if ((y = (%URawType%)argv[1].unboxed.%unboxed%) > x) x = y;
+			return SmileUnboxed%Type%_From(x);
+
+		case 3:
+			x = (%URawType%)argv[0].unboxed.%unboxed%;
+			if ((y = (%URawType%)argv[1].unboxed.%unboxed%) > x) x = y;
+			if ((y = (%URawType%)argv[2].unboxed.%unboxed%) > x) x = y;
+			return SmileUnboxed%Type%_From(x);
+
+		case 4:
+			x = (%URawType%)argv[0].unboxed.%unboxed%;
+			if ((y = (%URawType%)argv[1].unboxed.%unboxed%) > x) x = y;
+			if ((y = (%URawType%)argv[2].unboxed.%unboxed%) > x) x = y;
+			if ((y = (%URawType%)argv[3].unboxed.%unboxed%) > x) x = y;
+			return SmileUnboxed%Type%_From(x);
+
+		default:
+			x = (%URawType%)argv[0].unboxed.%unboxed%;
+			for (i = 1; i < argc; i++) {
+				if ((y = (%URawType%)argv[i].unboxed.%unboxed%) > x) x = y;
+			}
+			return SmileUnboxed%Type%_From(x);
+	}
+}
+
+Inline %RawType% IntPower(%RawType% value, %RawType% exponent)
+{
+	if (exponent < 0) return 0;
+
+	%RawType% result = 1;
+
+	while (exponent > 0) {
+		if ((exponent & 1) != 0) {
+			result *= value;
+		}
+		exponent >>= 1;
+		value *= value;
+	}
+
+	return result;
+}
+
+SMILE_EXTERNAL_FUNCTION(Power)
+{
+	%RawType% x;
+	Int i;
+
+	switch (argc) {
+		case 2:
+			x = argv[0].unboxed.%unboxed%;
+			x = IntPower(x, argv[1].unboxed.%unboxed%);
+			return SmileUnboxed%Type%_From(x);
+
+		case 3:
+			x = argv[0].unboxed.%unboxed%;
+			x = IntPower(x, argv[1].unboxed.%unboxed%);
+			x = IntPower(x, argv[2].unboxed.%unboxed%);
+			return SmileUnboxed%Type%_From(x);
+
+		case 4:
+			x = argv[0].unboxed.%unboxed%;
+			x = IntPower(x, argv[1].unboxed.%unboxed%);
+			x = IntPower(x, argv[2].unboxed.%unboxed%);
+			x = IntPower(x, argv[3].unboxed.%unboxed%);
+			return SmileUnboxed%Type%_From(x);
+
+		default:
+			x = argv[0].unboxed.%unboxed%;
+			for (i = 1; i < argc; i++) {
+				x = IntPower(x, argv[i].unboxed.%unboxed%);
+			}
+			return SmileUnboxed%Type%_From(x);
+	}
+}
+
+Inline %URawType% IntSqrt(%URawType% value)
+{
+	%URawType% root, bit, trial;
+
+	root = 0;
+
+#if %numbits% == 64
+	bit =
+		(value >= 0x100000000UL) ? (1ULL << 62)
+		: (value >= 0x10000UL) ? (1ULL << 30)
+		: (1ULL << 14);
+#elif %numbits% == 32
+	bit = (value >= 0x10000U) ? (1U << 30) : (1U << 14);
+#elif %numbits% == 16
+	bit = (1U << 14);
+#elif %numbits% == 8
+	bit = (1U << 7);
+#endif
+
+	do {
+		trial = root + bit;
+		if (value >= trial) {
+			value -= trial;
+			root = trial + bit;
+		}
+		root >>= 1;
+		bit >>= 2;
+	} while (bit != 0);
+
+	return root;
+}
+
+SMILE_EXTERNAL_FUNCTION(Sqrt)
+{
+	%RawType% value = argv[0].unboxed.%unboxed%;
+
+	if (value < 0) {
+		MathInfo mathInfo = (MathInfo)param;
+		if (mathInfo->isLoud)
+			Smile_ThrowException(Smile_KnownSymbols.native_method_error, _negativeSqrt);
+		return SmileUnboxed%Type%_From(0);
+	}
+
+	return SmileUnboxed%Type%_From(IntSqrt(value));
+}
+
+SMILE_EXTERNAL_FUNCTION(Pow2Q)
+{
+	%RawType% value = argv[0].unboxed.%unboxed%;
+
+	return SmileUnboxedBool_From(value > 0 && (value & (value - 1)) == 0);
+}
+
+SMILE_EXTERNAL_FUNCTION(NextPow2)
+{
+	%RawType% value = (%RawType%)argv[0].unboxed.%unboxed%;
+	%URawType% uvalue = (%URawType%)value;
+
+	if (value < 0) return SmileUnboxed%Type%_From(0);
+	if (value == 0) return SmileUnboxed%Type%_From(1);
+
+	uvalue--;
+	uvalue |= uvalue >> 1;
+	uvalue |= uvalue >> 2;
+	uvalue |= uvalue >> 4;
+#if %numbits% >= 16
+	uvalue |= uvalue >> 8;
+#endif
+#if %numbits% >= 32
+	uvalue |= uvalue >> 16;
+#endif
+#if %numbits% >= 64
+	uvalue |= uvalue >> 32;
+#endif
+	uvalue++;
+
+	return SmileUnboxed%Type%_From(uvalue);
+}
+
+SMILE_EXTERNAL_FUNCTION(IntLg)
+{
+	%RawType% value = (%RawType%)argv[0].unboxed.%unboxed%;
+	%URawType% uvalue = (%URawType%)value;
+	%URawType% log;
+
+	if (value <= 0) {
+		MathInfo mathInfo = (MathInfo)param;
+		if (mathInfo->isLoud)
+			Smile_ThrowException(Smile_KnownSymbols.native_method_error, _negativeLog);
+		return SmileUnboxed%Type%_From(0);
+	}
+
+	log = 0;
+#if %numbits% >= 64
+	if ((uvalue & 0xFFFFFFFF00000000) != 0) uvalue >>= 32, log += 32;
+#endif
+#if %numbits% >= 32
+	if ((uvalue & 0x00000000FFFF0000) != 0) uvalue >>= 16, log += 16;
+#endif
+#if %numbits% >= 16
+	if ((uvalue & 0x000000000000FF00) != 0) uvalue >>= 8, log += 8;
+#endif
+	if ((uvalue & 0x00000000000000F0) != 0) uvalue >>= 4, log += 4;
+	if ((uvalue & 0x000000000000000C) != 0) uvalue >>= 2, log += 2;
+	if ((uvalue & 0x0000000000000002) != 0) uvalue >>= 1, log += 1;
+
+	return SmileUnboxed%Type%_From((%RawType%)log);
+}
+
+//-------------------------------------------------------------------------------------------------
+// Bitwise operators
+
+SMILE_EXTERNAL_FUNCTION(BitAnd)
+{
+	%URawType% x;
+	Int i;
+
+	switch (argc) {
+		case 1:
+			return argv[0];
+
+		case 2:
+			x = (%URawType%)argv[0].unboxed.%unboxed%;
+			x &= (%URawType%)argv[1].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		case 3:
+			x = (%URawType%)argv[0].unboxed.%unboxed%;
+			x &= (%URawType%)argv[1].unboxed.%unboxed%;
+			x &= (%URawType%)argv[2].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		case 4:
+			x = (%URawType%)argv[0].unboxed.%unboxed%;
+			x &= (%URawType%)argv[1].unboxed.%unboxed%;
+			x &= (%URawType%)argv[2].unboxed.%unboxed%;
+			x &= (%URawType%)argv[3].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		default:
+			x = (%URawType%)argv[0].unboxed.%unboxed%;
+			for (i = 1; i < argc; i++) {
+				x &= (%URawType%)argv[i].unboxed.%unboxed%;
+			}
+			return SmileUnboxed%Type%_From(x);
+	}
+}
+
+SMILE_EXTERNAL_FUNCTION(BitOr)
+{
+	%URawType% x;
+	Int i;
+
+	switch (argc) {
+		case 1:
+			return argv[0];
+
+		case 2:
+			x = (%URawType%)argv[0].unboxed.%unboxed%;
+			x |= (%URawType%)argv[1].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		case 3:
+			x = (%URawType%)argv[0].unboxed.%unboxed%;
+			x |= (%URawType%)argv[1].unboxed.%unboxed%;
+			x |= (%URawType%)argv[2].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		case 4:
+			x = (%URawType%)argv[0].unboxed.%unboxed%;
+			x |= (%URawType%)argv[1].unboxed.%unboxed%;
+			x |= (%URawType%)argv[2].unboxed.%unboxed%;
+			x |= (%URawType%)argv[3].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		default:
+			x = (%URawType%)argv[0].unboxed.%unboxed%;
+			for (i = 1; i < argc; i++) {
+				x |= (%URawType%)argv[i].unboxed.%unboxed%;
+			}
+			return SmileUnboxed%Type%_From(x);
+	}
+}
+
+SMILE_EXTERNAL_FUNCTION(BitXor)
+{
+	%URawType% x;
+	Int i;
+
+	switch (argc) {
+		case 1:
+			return argv[0];
+
+		case 2:
+			x = (%URawType%)argv[0].unboxed.%unboxed%;
+			x ^= (%URawType%)argv[1].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		case 3:
+			x = (%URawType%)argv[0].unboxed.%unboxed%;
+			x ^= (%URawType%)argv[1].unboxed.%unboxed%;
+			x ^= (%URawType%)argv[2].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		case 4:
+			x = (%URawType%)argv[0].unboxed.%unboxed%;
+			x ^= (%URawType%)argv[1].unboxed.%unboxed%;
+			x ^= (%URawType%)argv[2].unboxed.%unboxed%;
+			x ^= (%URawType%)argv[3].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		default:
+			x = (%URawType%)argv[0].unboxed.%unboxed%;
+			for (i = 1; i < argc; i++) {
+				x ^= (%URawType%)argv[i].unboxed.%unboxed%;
+			}
+			return SmileUnboxed%Type%_From(x);
+	}
+}
+
+SMILE_EXTERNAL_FUNCTION(BitNot)
+{
+	%URawType% value = (%URawType%)argv[0].unboxed.%unboxed%;
+
+	return SmileUnboxed%Type%_From(~value);
+}
+
+//-------------------------------------------------------------------------------------------------
+// Shift/rotate operators
+
+SMILE_EXTERNAL_FUNCTION(LogicalShiftLeft)
+{
+	%URawType% x = (%URawType%)argv[0].unboxed.%unboxed%;
+	%URawType% y = (%URawType%)argv[1].unboxed.%unboxed%;
+
+	return SmileUnboxed%Type%_From((%RawType%)(x << y));
+}
+
+SMILE_EXTERNAL_FUNCTION(LogicalShiftRight)
+{
+	%URawType% x = (%URawType%)argv[0].unboxed.%unboxed%;
+	%URawType% y = (%URawType%)argv[1].unboxed.%unboxed%;
+
+	return SmileUnboxed%Type%_From((%RawType%)(x >> y));
+}
+
+SMILE_EXTERNAL_FUNCTION(ArithmeticShiftLeft)
+{
+	%RawType% x = argv[0].unboxed.%unboxed%;
+	%RawType% y = argv[1].unboxed.%unboxed%;
+
+	return SmileUnboxed%Type%_From(x << y);
+}
+
+SMILE_EXTERNAL_FUNCTION(ArithmeticShiftRight)
+{
+	%RawType% x = argv[0].unboxed.%unboxed%;
+	%RawType% y = argv[1].unboxed.%unboxed%;
+
+	return SmileUnboxed%Type%_From(x >> y);
+}
+
+SMILE_EXTERNAL_FUNCTION(RotateLeft)
+{
+	%URawType% x = (%URawType%)argv[0].unboxed.%unboxed%;
+	%URawType% y = (%URawType%)argv[1].unboxed.%unboxed%;
+
+	return SmileUnboxed%Type%_From(Smile_RotateLeft64(x, y));
+}
+
+SMILE_EXTERNAL_FUNCTION(RotateRight)
+{
+	%URawType% x = (%URawType%)argv[0].unboxed.%unboxed%;
+	%URawType% y = (%URawType%)argv[1].unboxed.%unboxed%;
+
+	return SmileUnboxed%Type%_From(Smile_RotateRight64(x, y));
+}
+
+//-------------------------------------------------------------------------------------------------
+// Bit twiddling
+
+Inline %URawType% CountBitsSet(%URawType% value)
+{
+#if %numbits% == 64
+	value = ((value >>  1) & 0x5555555555555555ULL) + (value & 0x5555555555555555ULL);
+	value = ((value >>  2) & 0x3333333333333333ULL) + (value & 0x3333333333333333ULL);
+	value = ((value >>  4) & 0x0F0F0F0F0F0F0F0FULL) + (value & 0x0F0F0F0F0F0F0F0FULL);
+	value = ((value >>  8) & 0x00FF00FF00FF00FFULL) + (value & 0x00FF00FF00FF00FFULL);
+	value = ((value >> 16) & 0x0000FFFF0000FFFFULL) + (value & 0x0000FFFF0000FFFFULL);
+	value = ((value >> 32) & 0x00000000FFFFFFFFULL) + (value & 0x00000000FFFFFFFFULL);
+#elif %numbits% == 32
+	value = ((value >>  1) & 0x55555555U) + (value & 0x55555555U);
+	value = ((value >>  2) & 0x33333333U) + (value & 0x33333333U);
+	value = ((value >>  4) & 0x0F0F0F0FU) + (value & 0x0F0F0F0FU);
+	value = ((value >>  8) & 0x00FF00FFU) + (value & 0x00FF00FFU);
+	value = ((value >> 16) & 0x0000FFFFU) + (value & 0x0000FFFFU);
+#elif %numbits% == 16
+	value = ((value >>  1) & 0x5555U) + (value & 0x5555U);
+	value = ((value >>  2) & 0x3333U) + (value & 0x3333U);
+	value = ((value >>  4) & 0x0F0FU) + (value & 0x0F0FU);
+	value = ((value >>  8) & 0x00FFU) + (value & 0x00FFU);
+#elif %numbits% == 8
+	value = ((value >>  1) & 0x55U) + (value & 0x55U);
+	value = ((value >>  2) & 0x33U) + (value & 0x33U);
+	value = ((value >>  4) & 0x0FU) + (value & 0x0FU);
+#endif
+	return value;
+}
+
+Inline %URawType% ComputeReverseBits(%URawType% value)
+{
+#if %numbits% == 64
+	value = ((value >>  1) & 0x5555555555555555ULL) | ((value & 0x5555555555555555ULL) <<  1);
+	value = ((value >>  2) & 0x3333333333333333ULL) | ((value & 0x3333333333333333ULL) <<  2);
+	value = ((value >>  4) & 0x0F0F0F0F0F0F0F0FULL) | ((value & 0x0F0F0F0F0F0F0F0FULL) <<  4);
+	value = ((value >>  8) & 0x00FF00FF00FF00FFULL) | ((value & 0x00FF00FF00FF00FFULL) <<  8);
+	value = ((value >> 16) & 0x0000FFFF0000FFFFULL) | ((value & 0x0000FFFF0000FFFFULL) << 16);
+	value = ( value >> 32                         ) | ( value                          << 32);
+#elif %numbits% == 32
+	value = ((value >>  1) & 0x55555555) | ((value & 0x55555555) <<  1);
+	value = ((value >>  2) & 0x33333333) | ((value & 0x33333333) <<  2);
+	value = ((value >>  4) & 0x0F0F0F0F) | ((value & 0x0F0F0F0F) <<  4);
+	value = ((value >>  8) & 0x00FF00FF) | ((value & 0x00FF00FF) <<  8);
+	value = ( value >> 16              ) | ( value               << 16);
+#elif %numbits% == 16
+	value = ((value >>  1) & 0x5555) | ((value & 0x5555) <<  1);
+	value = ((value >>  2) & 0x3333) | ((value & 0x3333) <<  2);
+	value = ((value >>  4) & 0x0F0F) | ((value & 0x0F0F) <<  4);
+	value = ( value >>  8          ) | ( value           <<  8);
+#elif %numbits% == 8
+	value = ((value >>  1) & 0x55) | ((value & 0x55) <<  1);
+	value = ((value >>  2) & 0x33) | ((value & 0x33) <<  2);
+	value = ( value >>  4        ) | ( value         <<  4);
+#endif
+	return value;
+}
+
+Inline %URawType% ComputeCountOfRightZeros(%URawType% value)
+{
+	%URawType% c = %numbits%;
+	value &= ~value + 1;
+	if (value != 0) c--;
+
+#if %numbits% == 64
+	if ((value & 0x00000000FFFFFFFF) != 0) c -= 32;
+	if ((value & 0x0000FFFF0000FFFF) != 0) c -= 16;
+	if ((value & 0x00FF00FF00FF00FF) != 0) c -= 8;
+	if ((value & 0x0F0F0F0F0F0F0F0F) != 0) c -= 4;
+	if ((value & 0x3333333333333333) != 0) c -= 2;
+	if ((value & 0x5555555555555555) != 0) c -= 1;
+#elif %numbits% == 32
+	if ((value & 0x0000FFFF) != 0) c -= 16;
+	if ((value & 0x00FF00FF) != 0) c -= 8;
+	if ((value & 0x0F0F0F0F) != 0) c -= 4;
+	if ((value & 0x33333333) != 0) c -= 2;
+	if ((value & 0x55555555) != 0) c -= 1;
+#elif %numbits% == 16
+	if ((value & 0x00FF) != 0) c -= 8;
+	if ((value & 0x0F0F) != 0) c -= 4;
+	if ((value & 0x3333) != 0) c -= 2;
+	if ((value & 0x5555) != 0) c -= 1;
+#elif %numbits% == 8
+	if ((value & 0x0F) != 0) c -= 4;
+	if ((value & 0x33) != 0) c -= 2;
+	if ((value & 0x55) != 0) c -= 1;
+#endif
+
+	return c;
+}
+
+SMILE_EXTERNAL_FUNCTION(CountOnes)
+{
+	%URawType% value = (%URawType%)argv[0].unboxed.%unboxed%;
+
+	return SmileUnboxed%Type%_From((%RawType%)CountBitsSet(value));
+}
+
+SMILE_EXTERNAL_FUNCTION(CountZeros)
+{
+	%URawType% value = (%URawType%)argv[0].unboxed.%unboxed%;
+
+	return SmileUnboxed%Type%_From((%RawType%)CountBitsSet(~value));
+}
+
+SMILE_EXTERNAL_FUNCTION(Parity)
+{
+	%URawType% value = (%URawType%)argv[0].unboxed.%unboxed%;
+
+#if %numbits% >= 64
+	value ^= value >> 32;
+#endif
+#if %numbits% >= 32
+	value ^= value >> 16;
+#endif
+#if %numbits% >= 16
+	value ^= value >> 8;
+#endif
+#if %numbits% >= 8
+	value ^= value >> 4;
+#endif
+	value &= 0xF;
+	value = (0x6996 >> value) & 1;
+
+	return SmileUnboxed%Type%_From((%RawType%)value);
+}
+
+SMILE_EXTERNAL_FUNCTION(ReverseBits)
+{
+	%URawType% value = (%URawType%)argv[0].unboxed.%unboxed%;
+
+	return SmileUnboxed%Type%_From((%RawType%)ComputeReverseBits(value));
+}
+
+SMILE_EXTERNAL_FUNCTION(ReverseBytes)
+{
+	%URawType% value = (%URawType%)argv[0].unboxed.%unboxed%;
+
+#if %numbits% == 64
+	value = (%URawType%)( ((value >> 56) & 0x00000000000000FFULL)
+						| ((value >> 40) & 0x000000000000FF00ULL)
+						| ((value >> 24) & 0x0000000000FF0000ULL)
+						| ((value >>  8) & 0x00000000FF000000ULL)
+						| ((value <<  8) & 0x000000FF00000000ULL)
+						| ((value << 24) & 0x0000FF0000000000ULL)
+						| ((value << 40) & 0x00FF000000000000ULL)
+						| ((value << 56) & 0xFF00000000000000ULL) );
+#elif %numbits% == 32
+	value = (%URawType%)( ((value >> 24) & 0x000000FFU)
+						| ((value >>  8) & 0x0000FF00U)
+						| ((value <<  8) & 0x00FF0000U)
+						| ((value << 24) & 0xFF000000U) );
+#elif %numbits% == 16
+	value = (%URawType%)( ((value >>  8) & 0x00FFU)
+						| ((value <<  8) & 0xFF00U) );
+#endif
+
+	return SmileUnboxed%Type%_From((%RawType%)value);
+}
+
+SMILE_EXTERNAL_FUNCTION(CountRightZeros)
+{
+	%URawType% value = (%URawType%)argv[0].unboxed.%unboxed%;
+
+	return SmileUnboxed%Type%_From((%RawType%)ComputeCountOfRightZeros(value));
+}
+
+SMILE_EXTERNAL_FUNCTION(CountRightOnes)
+{
+	%URawType% value = (%URawType%)argv[0].unboxed.%unboxed%;
+
+	return SmileUnboxed%Type%_From((%RawType%)ComputeCountOfRightZeros(~value));
+}
+
+SMILE_EXTERNAL_FUNCTION(CountLeftZeros)
+{
+	%URawType% value = (%URawType%)argv[0].unboxed.%unboxed%;
+
+	return SmileUnboxed%Type%_From((%RawType%)ComputeCountOfRightZeros(ComputeReverseBits(value)));
+}
+
+SMILE_EXTERNAL_FUNCTION(CountLeftOnes)
+{
+	%URawType% value = (%URawType%)argv[0].unboxed.%unboxed%;
+
+	return SmileUnboxed%Type%_From((%RawType%)ComputeCountOfRightZeros(~ComputeReverseBits(value)));
+}
+
+//-------------------------------------------------------------------------------------------------
+// Number Theoretics
+
+/// <summary>
+/// Calculate the greatest common divisor of two numbers.  This implementation is very similar to
+/// the binary GCD described on Wikipedia (https://en.wikipedia.org/wiki/Binary_GCD_algorithm), and
+/// runs in O(max(lg a + lg b)^2) time, or at most 4095 iterations for unsigned 64-bit integers.
+/// </summary>
+static %URawType% CalculateBinaryGcd(%URawType% a, %URawType% b)
+{
+	UInt shift = 0;
+
+	while (((a | b) & 1) == 0)
+		a >>= 1, b >>= 1, shift++;
+
+	while ((a & 1) == 0)
+		a >>= 1;
+
+	do {
+		while ((b & 1) == 0)
+			b >>= 1;
+
+		if (a > b) {
+			%URawType% temp = a;
+			a = b;
+			b = temp;
+		}
+	} while ((b -= a) != 0);
+
+	return a << shift;
+}
+
+SMILE_EXTERNAL_FUNCTION(Gcd)
+{
+	%RawType% value1 = argv[0].unboxed.%unboxed%;
+	%RawType% value2 = argv[1].unboxed.%unboxed%;
+	%URawType% gcd;
+	%URawType% a, b;
+
+	if (value1 <= 0 || value2 <= 0) return SmileUnboxed%Type%_From(0);
+	
+	a = (%URawType%)value1, b = (%URawType%)value2;
+	gcd = CalculateBinaryGcd(a, b);
+
+	return SmileUnboxed%Type%_From((%RawType%)gcd);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsCoprime)
+{
+	%RawType% value1 = argv[0].unboxed.%unboxed%;
+	%RawType% value2 = argv[1].unboxed.%unboxed%;
+	%URawType% gcd;
+	%URawType% a, b;
+
+	if (value1 <= 0 || value2 <= 0) return SmileUnboxedBool_From(False);
+
+	a = (%URawType%)value1, b = (%URawType%)value2;
+	gcd = CalculateBinaryGcd(a, b);
+
+	return SmileUnboxedBool_From(gcd == 1);
+}
+
+SMILE_EXTERNAL_FUNCTION(Lcm)
+{
+	%RawType% value1 = argv[0].unboxed.%unboxed%;
+	%RawType% value2 = argv[1].unboxed.%unboxed%;
+	%URawType% gcd;
+	%URawType% a, b;
+
+	if (value1 <= 0 || value2 <= 0) return SmileUnboxed%Type%_From(0);
+
+	a = (%URawType%)value1, b = (%URawType%)value2;
+	gcd = CalculateBinaryGcd(a, b);
+
+	return SmileUnboxed%Type%_From((%RawType%)((a / gcd) * b));
+}
+
+//-------------------------------------------------------------------------------------------------
+// Comparisons
+
+SMILE_EXTERNAL_FUNCTION(Eq)
+{
+	return SmileUnboxedBool_From(SMILE_KIND(argv[1].obj) == SMILE_KIND_UNBOXED_%TYPE%
+		&& argv[0].unboxed.%unboxed% == argv[1].unboxed.%unboxed%);
+}
+
+SMILE_EXTERNAL_FUNCTION(Ne)
+{
+	return SmileUnboxedBool_From(SMILE_KIND(argv[1].obj) != SMILE_KIND_UNBOXED_%TYPE%
+		|| argv[0].unboxed.%unboxed% != argv[1].unboxed.%unboxed%);
+}
+
+SMILE_EXTERNAL_FUNCTION(Lt)
+{
+	return SmileUnboxedBool_From(argv[0].unboxed.%unboxed% < argv[1].unboxed.%unboxed%);
+}
+
+SMILE_EXTERNAL_FUNCTION(Gt)
+{
+	return SmileUnboxedBool_From(argv[0].unboxed.%unboxed% > argv[1].unboxed.%unboxed%);
+}
+
+SMILE_EXTERNAL_FUNCTION(Le)
+{
+	return SmileUnboxedBool_From(argv[0].unboxed.%unboxed% <= argv[1].unboxed.%unboxed%);
+}
+
+SMILE_EXTERNAL_FUNCTION(Ge)
+{
+	return SmileUnboxedBool_From(argv[0].unboxed.%unboxed% >= argv[1].unboxed.%unboxed%);
+}
+
+SMILE_EXTERNAL_FUNCTION(ULt)
+{
+	return SmileUnboxedBool_From((%URawType%)argv[0].unboxed.%unboxed% < (%URawType%)argv[1].unboxed.%unboxed%);
+}
+
+SMILE_EXTERNAL_FUNCTION(UGt)
+{
+	return SmileUnboxedBool_From((%URawType%)argv[0].unboxed.%unboxed% >(%URawType%)argv[1].unboxed.%unboxed%);
+}
+
+SMILE_EXTERNAL_FUNCTION(ULe)
+{
+	return SmileUnboxedBool_From((%URawType%)argv[0].unboxed.%unboxed% <= (%URawType%)argv[1].unboxed.%unboxed%);
+}
+
+SMILE_EXTERNAL_FUNCTION(UGe)
+{
+	return SmileUnboxedBool_From((%URawType%)argv[0].unboxed.%unboxed% >= (%URawType%)argv[1].unboxed.%unboxed%);
+}
+
+SMILE_EXTERNAL_FUNCTION(Compare)
+{
+	%RawType% x = argv[0].unboxed.%unboxed%;
+	%RawType% y = argv[1].unboxed.%unboxed%;
+
+	if (x == y)
+		return SmileUnboxedInteger64_From(0);
+	else if (x < y)
+		return SmileUnboxedInteger64_From(-1);
+	else
+		return SmileUnboxedInteger64_From(+1);
+}
+
+SMILE_EXTERNAL_FUNCTION(UCompare)
+{
+	%URawType% x = (%URawType%)argv[0].unboxed.%unboxed%;
+	%URawType% y = (%URawType%)argv[1].unboxed.%unboxed%;
+
+	if (x == y)
+		return SmileUnboxedInteger64_From(0);
+	else if (x < y)
+		return SmileUnboxedInteger64_From(-1);
+	else
+		return SmileUnboxedInteger64_From(+1);
+}
+
+//-------------------------------------------------------------------------------------------------
+
+enum {
+	ZERO_TEST,
+	ONE_TEST,
+	NONZERO_TEST,
+	POS_TEST,
+	NONPOS_TEST,
+	NEG_TEST,
+	NONNEG_TEST,
+	ODD_TEST,
+	EVEN_TEST,
+	MAX_TEST,
+	MIN_TEST,
+	UMAX_TEST,
+	UMIN_TEST,
+};
+
+SMILE_EXTERNAL_FUNCTION(ValueTest)
+{
+	%RawType% value = (%URawType%)argv[0].unboxed.%unboxed%;
+
+	switch ((PtrInt)param) {
+		case ZERO_TEST:
+			return SmileUnboxedBool_From(value == 0);
+		case ONE_TEST:
+			return SmileUnboxedBool_From(value == 1);
+		case NONZERO_TEST:
+			return SmileUnboxedBool_From(value != 0);
+		case POS_TEST:
+			return SmileUnboxedBool_From(value > 0);
+		case NONPOS_TEST:
+			return SmileUnboxedBool_From(value <= 0);
+		case NEG_TEST:
+			return SmileUnboxedBool_From(value < 0);
+		case NONNEG_TEST:
+			return SmileUnboxedBool_From(value >= 0);
+		case ODD_TEST:
+			return SmileUnboxedBool_From((value & 1) != 0);
+		case EVEN_TEST:
+			return SmileUnboxedBool_From((value & 1) == 0);
+		case MAX_TEST:
+			return SmileUnboxedBool_From(value == %RawType%Max);
+		case MIN_TEST:
+			return SmileUnboxedBool_From(value == %RawType%Min);
+		case UMAX_TEST:
+			return SmileUnboxedBool_From((%URawType%)value == %URawType%Max);
+		case UMIN_TEST:
+			return SmileUnboxedBool_From(value == 0);
+		default:
+			return SmileArg_From(NullObject);
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+
+void Smile%Type%_Setup(SmileUserObject base)
+{
+	SmileUnboxed%Type%_Instance->base = (SmileObject)base;
+
+	SetupFunction("bool", ToBool, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("int", ToInt, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("string", ToString, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("hash", Hash, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+
+	SetupFunction("int64", ToInt64, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("int32", ToInt32, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("int16", ToInt16, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("byte", ToByte, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+
+	SetupFunction("sign-extend-64", SignExtend64, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("sign-extend-32", SignExtend32, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("sign-extend-16", SignExtend16, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("sign-extend-8", SignExtend8, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+
+	SetupFunction("zero-extend-64", ZeroExtend64, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("zero-extend-32", ZeroExtend32, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("zero-extend-16", ZeroExtend16, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("zero-extend-8", ZeroExtend8, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+
+	SetupFunction("parse", Parse, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX, 1, 3, 0, NULL);
+
+	SetupFunction("+", Plus, NULL, "augend addend", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _%type%Checks);
+	SetupSynonym("+", "+~");
+	SetupFunction("-", Minus, NULL, "minuend subtrahend", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _%type%Checks);
+	SetupSynonym("-", "-~");
+	SetupFunction("*", Star, NULL, "multiplier multiplicand", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _%type%Checks);
+	SetupFunction("*~", UStar, NULL, "multiplier multiplicand", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _%type%Checks);
+
+	SetupFunction("/", Slash, &_quietMath, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _%type%Checks);
+	SetupFunction("/!", Slash, &_loudMath, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _%type%Checks);
+	SetupFunction("/~", USlash, &_quietMath, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _%type%Checks);
+	SetupFunction("/!~", USlash, &_loudMath, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _%type%Checks);
+	SetupFunction("div", Div, &_quietMath, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _%type%Checks);
+	SetupFunction("div!", Div, &_loudMath, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _%type%Checks);
+	SetupFunction("div~", USlash, &_quietMath, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _%type%Checks);
+	SetupFunction("div!~", USlash, &_loudMath, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _%type%Checks);
+	SetupFunction("mod", Mod, &_quietMath, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction("mod!", Mod, &_loudMath, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction("mod~", UMod, &_quietMath, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction("mod!~", UMod, &_loudMath, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction("rem", Rem, &_quietMath, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction("rem!", Rem, &_loudMath, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction("rem~", UMod, &_quietMath, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction("rem!~", UMod, &_loudMath, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+
+	SetupFunction("sign", Sign, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("abs", Abs, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("clip", Clip, NULL, "value min max", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _%type%Checks);
+	SetupFunction("clip~", UClip, NULL, "value min max", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _%type%Checks);
+	SetupFunction("min", Min, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _%type%Checks);
+	SetupFunction("min~", UMin, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _%type%Checks);
+	SetupFunction("max", Max, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _%type%Checks);
+	SetupFunction("max~", UMax, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _%type%Checks);
+	SetupFunction("^", Power, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _%type%Checks);
+	SetupFunction("sqrt", Sqrt, &_quietMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("sqrt!", Sqrt, &_loudMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("pow2?", Pow2Q, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("next-pow2", NextPow2, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("int-lg", IntLg, &_quietMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("int-lg!", IntLg, &_loudMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+
+	SetupFunction("band", BitAnd, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _%type%Checks);
+	SetupFunction("bor", BitOr, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _%type%Checks);
+	SetupFunction("bxor", BitXor, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _%type%Checks);
+	SetupFunction("~", BitNot, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+
+	SetupFunction("<<<", LogicalShiftLeft, NULL, "value count", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction(">>>", LogicalShiftRight, NULL, "value count", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction("<<", ArithmeticShiftLeft, NULL, "value count", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction(">>", ArithmeticShiftRight, NULL, "value count", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction("<<+", RotateLeft, NULL, "value count", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction("+>>", RotateRight, NULL, "value count", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+
+	SetupFunction("count-ones", CountOnes, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("count-zeros", CountZeros, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("parity", Parity, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("reverse-bits", ReverseBits, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("reverse-bytes", ReverseBytes, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("count-right-zeros", CountRightZeros, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("count-right-ones", CountRightOnes, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("count-left-zeros", CountLeftZeros, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("count-left-ones", CountLeftOnes, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+
+	SetupFunction("gcd", Gcd, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction("lcm", Lcm, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction("coprime?", IsCoprime, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+
+	SetupFunction("odd?", ValueTest, (void *)ODD_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("even?", ValueTest, (void *)EVEN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("zero?", ValueTest, (void *)ZERO_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("one?", ValueTest, (void *)ONE_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("nonzero?", ValueTest, (void *)NONZERO_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("positive?", ValueTest, (void *)POS_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupSynonym("positive?", "pos?");
+	SetupFunction("nonpositive?", ValueTest, (void *)NONPOS_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupSynonym("nonpositive?", "nonpos?");
+	SetupFunction("negative?", ValueTest, (void *)NEG_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupSynonym("negative?", "neg?");
+	SetupFunction("nonnegative?", ValueTest, (void *)NONNEG_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupSynonym("nonnegative?", "nonneg?");
+	SetupFunction("max?", ValueTest, (void *)MAX_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("min?", ValueTest, (void *)MIN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("max~?", ValueTest, (void *)UMAX_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("min~?", ValueTest, (void *)UMIN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+
+	SetupFunction("==", Eq, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%ComparisonChecks);
+	SetupFunction("!=", Ne, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%ComparisonChecks);
+	SetupFunction("<", Lt, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction("<~", ULt, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction(">", Gt, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction(">~", UGt, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction("<=", Le, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction("<=~", ULe, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction(">=", Ge, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction(">=~", UGe, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+
+	SetupFunction("compare", Compare, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupSynonym("compare", "cmp");
+	SetupFunction("compare~", UCompare, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupSynonym("compare~", "cmp~");
+
+	SetupFunction("range-to", RangeTo, NULL, "start end", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+
+	SetupData("max", Smile%Type%_CreateInternal(%RawType%Max));
+	SetupData("min", Smile%Type%_CreateInternal(%RawType%Min));
+	SetupData("max~", Smile%Type%_CreateInternal(%URawType%Max));
+	SetupData("min~", Smile_KnownObjects.Zero%RawType%);
+}

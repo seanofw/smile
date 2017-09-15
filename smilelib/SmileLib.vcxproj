@@ -860,15 +860,15 @@
     </ClCompile>
     <ClCompile Include="src\siphash.c" />
     <ClCompile Include="src\smiletypes\kind.c" />
-    <ClCompile Include="src\smiletypes\numeric\smilebyte.c" />
-    <ClCompile Include="src\smiletypes\numeric\smilebyte_base.c" />
+    <ClCompile Include="src\smiletypes\numeric\smilebyte.generated.c" />
+    <ClCompile Include="src\smiletypes\numeric\smilebyte_base.generated.c" />
     <ClCompile Include="src\smiletypes\numeric\smileinteger128.c" />
-    <ClCompile Include="src\smiletypes\numeric\smileinteger16.c" />
-    <ClCompile Include="src\smiletypes\numeric\smileinteger16_base.c" />
-    <ClCompile Include="src\smiletypes\numeric\smileinteger32.c" />
-    <ClCompile Include="src\smiletypes\numeric\smileinteger32_base.c" />
-    <ClCompile Include="src\smiletypes\numeric\smileinteger64.c" />
-    <ClCompile Include="src\smiletypes\numeric\smileinteger64_base.c" />
+    <ClCompile Include="src\smiletypes\numeric\smileinteger16.generated.c" />
+    <ClCompile Include="src\smiletypes\numeric\smileinteger16_base.generated.c" />
+    <ClCompile Include="src\smiletypes\numeric\smileinteger32.generated.c" />
+    <ClCompile Include="src\smiletypes\numeric\smileinteger32_base.generated.c" />
+    <ClCompile Include="src\smiletypes\numeric\smileinteger64.generated.c" />
+    <ClCompile Include="src\smiletypes\numeric\smileinteger64_base.generated.c" />
     <ClCompile Include="src\smiletypes\range\smilebyterange.generated.c" />
     <ClCompile Include="src\smiletypes\range\smilebyterange_base.generated.c" />
     <ClCompile Include="src\smiletypes\range\smileinteger16range.generated.c" />
