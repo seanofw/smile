@@ -294,9 +294,11 @@ static Int EachStateMachine(ClosureStateMachine closure)
 	// Set up to call the user's function with the next value.
 	Closure_Pop(closure);
 	Closure_PushBoxed(closure, eachInfo->function);
-	Closure_PushUnboxedInt64(closure, eachInfo->current);
-	if (eachInfo->numArgs > 1)
-		Closure_PushUnboxedInt64(closure, eachInfo->index);
+	if (eachInfo->numArgs > 0) {
+		Closure_PushUnboxedInt64(closure, eachInfo->current);
+		if (eachInfo->numArgs > 1)
+			Closure_PushUnboxedInt64(closure, eachInfo->index);
+	}
 
 	// Move to the next spot.
 	if (eachInfo->up) {
