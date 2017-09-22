@@ -652,7 +652,7 @@
 #define bid64_to_uint32_xrninta __bid64_to_uint32_xrninta
 #define bid64_to_int64_ceil __bid64_to_int64_ceil
 #define bid64_to_int64_floor __bid64_to_int64_floor
-#define bid64_to_int64_int __bid64_to_int64_int
+#define bid64_to_int64_int Real64_ToInt64
 #define bid64_to_int64_rnint __bid64_to_int64_rnint
 #define bid64_to_int64_rninta __bid64_to_int64_rninta
 #define bid64_to_int64_xceil __bid64_to_int64_xceil

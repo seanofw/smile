@@ -27,6 +27,7 @@
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/numeric/smileinteger128.h>
+#include <smile/smiletypes/numeric/smilereal64.h>
 
 Closure _closure;
 CompiledTables _compiledTables;
@@ -269,9 +270,13 @@ next:
 		//-------------------------------------------------------
 		// 20-27: Real load instructions
 
+		case Op_LdR64:
+			Closure_PushUnboxedReal64(closure, byteCode->u.real64);
+			byteCode++;
+			goto next;
+
 		case Op_LdR16:
 		case Op_LdR32:
-		case Op_LdR64:
 		case Op_LdR128:
 			goto unsupportedOpcode;
 

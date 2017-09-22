@@ -21,6 +21,7 @@
 #include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
+#include <smile/smiletypes/numeric/smilereal64.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/parsing/parser.h>
 #include <smile/parsing/internal/parserinternal.h>
@@ -122,6 +123,10 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, T
 
 	case TOKEN_INTEGER64:
 		*result = (SmileObject)SmileInteger64_Create(token->data.int64);
+		return NULL;
+
+	case TOKEN_REAL64:
+		*result = (SmileObject)SmileReal64_Create(token->data.real64);
 		return NULL;
 
 	case TOKEN_UNKNOWNALPHANAME:

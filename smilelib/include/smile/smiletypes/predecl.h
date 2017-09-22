@@ -32,6 +32,20 @@ typedef struct SmileUnboxedInteger64Int *SmileUnboxedInteger64;
 typedef struct SmileUnboxedBoolInt *SmileUnboxedBool;
 typedef struct SmileUnboxedSymbolInt *SmileUnboxedSymbol;
 
+typedef struct SmileReal32Int *SmileReal32;
+typedef struct SmileReal64Int *SmileReal64;
+typedef struct SmileReal128Int *SmileReal128;
+typedef struct SmileFloat32Int *SmileFloat32;
+typedef struct SmileFloat64Int *SmileFloat64;
+typedef struct SmileFloat128Int *SmileFloat128;
+
+typedef struct SmileUnboxedReal32Int *SmileUnboxedReal32;
+typedef struct SmileUnboxedReal64Int *SmileUnboxedReal64;
+typedef struct SmileUnboxedReal128Int *SmileUnboxedReal128;
+typedef struct SmileUnboxedFloat32Int *SmileUnboxedFloat32;
+typedef struct SmileUnboxedFloat64Int *SmileUnboxedFloat64;
+typedef struct SmileUnboxedFloat128Int *SmileUnboxedFloat128;
+
 typedef struct SmileByteRangeInt *SmileByteRange;
 typedef struct SmileInteger16RangeInt *SmileInteger16Range;
 typedef struct SmileInteger32RangeInt *SmileInteger32Range;

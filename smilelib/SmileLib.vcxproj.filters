@@ -819,9 +819,6 @@
     <ClCompile Include="src\string\string_createfromint.c">
       <Filter>src\string</Filter>
     </ClCompile>
-    <ClCompile Include="src\smiletypes\numeric\smilebyte_base.c">
-      <Filter>src\smiletypes\numeric</Filter>
-    </ClCompile>
     <ClCompile Include="src\smiletypes\numeric\smileinteger16_base.generated.c">
       <Filter>src\smiletypes\numeric</Filter>
     </ClCompile>
@@ -985,6 +982,9 @@
       <Filter>src\smiletypes</Filter>
     </ClCompile>
     <ClCompile Include="src\smiletypes\smilefunction_base.c" />
+    <ClCompile Include="src\smiletypes\numeric\smilebyte_base.generated.c" />
+    <ClCompile Include="src\smiletypes\numeric\smilereal64.generated.c" />
+    <ClCompile Include="src\smiletypes\numeric\smilereal64_base.generated.c" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">
@@ -1352,6 +1352,7 @@
     <ClInclude Include="lib\stdio\stdio_internal.h">
       <Filter>lib\stdio</Filter>
     </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\numeric\smilereal64.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\smile\array.h">

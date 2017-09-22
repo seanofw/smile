@@ -107,9 +107,9 @@ SMILE_EXTERNAL_FUNCTION(Hash)
 	Smile%Type% obj = (Smile%Type%)argv[0].obj;
 
 	if (SMILE_KIND(obj) == SMILE_KIND_UNBOXED_%TYPE%)
-		return SmileUnboxedInteger32_From(%HashAlgorithm%);
+		return SmileUnboxedInteger64_From(%HashAlgorithm%);
 
-	return SmileUnboxedInteger32_From((UInt32)((PtrInt)obj ^ Smile_HashOracle));
+	return SmileUnboxedInteger64_From((UInt32)((PtrInt)obj ^ Smile_HashOracle));
 }
 
 //-------------------------------------------------------------------------------------------------

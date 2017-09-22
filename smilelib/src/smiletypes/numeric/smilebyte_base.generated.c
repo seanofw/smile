@@ -111,9 +111,9 @@ SMILE_EXTERNAL_FUNCTION(Hash)
 	SmileByte obj = (SmileByte)argv[0].obj;
 
 	if (SMILE_KIND(obj) == SMILE_KIND_UNBOXED_BYTE)
-		return SmileUnboxedInteger32_From((UInt32)obj->value);
+		return SmileUnboxedInteger64_From((UInt32)obj->value);
 
-	return SmileUnboxedInteger32_From((UInt32)((PtrInt)obj ^ Smile_HashOracle));
+	return SmileUnboxedInteger64_From((UInt32)((PtrInt)obj ^ Smile_HashOracle));
 }
 
 //-------------------------------------------------------------------------------------------------

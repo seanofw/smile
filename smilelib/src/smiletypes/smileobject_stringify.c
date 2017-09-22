@@ -31,6 +31,7 @@
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/numeric/smileinteger128.h>
+#include <smile/smiletypes/numeric/smilereal64.h>
 #include <smile/smiletypes/range/smileinteger64range.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/raw/smilebytearray.h>
@@ -257,6 +258,10 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 
 	case SMILE_KIND_INTEGER64:
 		StringBuilder_AppendFormat(stringBuilder, "%ld", ((SmileInteger64)obj)->value);
+		return;
+
+	case SMILE_KIND_REAL64:
+		StringBuilder_AppendFormat(stringBuilder, "%S", Real64_ToStringEx(((SmileReal64)obj)->value, 0, 0, False));
 		return;
 
 	case SMILE_KIND_STRING:
