@@ -1725,8 +1725,8 @@ void SmileInteger16_Setup(SmileUserObject base)
 
 	SetupFunction("range-to", RangeTo, NULL, "start end", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer16Checks);
 
-	SetupData("max", SmileInteger16_CreateInternal(Int16Max));
-	SetupData("min", SmileInteger16_CreateInternal(Int16Min));
-	SetupData("max~", SmileInteger16_CreateInternal(UInt16Max));
-	SetupData("min~", Smile_KnownObjects.ZeroInt16);
+	SetupData("max-value", SmileInteger16_CreateInternal(Int16Max));
+	SetupData("min-value", SmileInteger16_CreateInternal(Int16Min));
+	SetupData("max-value~", SmileInteger16_CreateInternal(UInt16Max));
+	SetupData("min-value~", Smile_KnownObjects.ZeroInt16);
 }

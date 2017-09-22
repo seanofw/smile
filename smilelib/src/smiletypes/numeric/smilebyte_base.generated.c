@@ -1725,8 +1725,8 @@ void SmileByte_Setup(SmileUserObject base)
 
 	SetupFunction("range-to", RangeTo, NULL, "start end", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _byteChecks);
 
-	SetupData("max", SmileByte_CreateInternal(ByteMax));
-	SetupData("min", SmileByte_CreateInternal(ByteMin));
-	SetupData("max~", SmileByte_CreateInternal(ByteMax));
-	SetupData("min~", Smile_KnownObjects.ZeroByte);
+	SetupData("max-value", SmileByte_CreateInternal(ByteMax));
+	SetupData("min-value", SmileByte_CreateInternal(ByteMin));
+	SetupData("max-value~", SmileByte_CreateInternal(ByteMax));
+	SetupData("min-value~", Smile_KnownObjects.ZeroByte);
 }

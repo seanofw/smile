@@ -1725,8 +1725,8 @@ void SmileInteger64_Setup(SmileUserObject base)
 
 	SetupFunction("range-to", RangeTo, NULL, "start end", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer64Checks);
 
-	SetupData("max", SmileInteger64_CreateInternal(Int64Max));
-	SetupData("min", SmileInteger64_CreateInternal(Int64Min));
-	SetupData("max~", SmileInteger64_CreateInternal(UInt64Max));
-	SetupData("min~", Smile_KnownObjects.ZeroInt64);
+	SetupData("max-value", SmileInteger64_CreateInternal(Int64Max));
+	SetupData("min-value", SmileInteger64_CreateInternal(Int64Min));
+	SetupData("max-value~", SmileInteger64_CreateInternal(UInt64Max));
+	SetupData("min-value~", Smile_KnownObjects.ZeroInt64);
 }

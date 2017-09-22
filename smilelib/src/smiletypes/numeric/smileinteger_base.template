@@ -1721,8 +1721,8 @@ void Smile%Type%_Setup(SmileUserObject base)
 
 	SetupFunction("range-to", RangeTo, NULL, "start end", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
 
-	SetupData("max", Smile%Type%_CreateInternal(%RawType%Max));
-	SetupData("min", Smile%Type%_CreateInternal(%RawType%Min));
-	SetupData("max~", Smile%Type%_CreateInternal(%URawType%Max));
-	SetupData("min~", Smile_KnownObjects.Zero%RawType%);
+	SetupData("max-value", Smile%Type%_CreateInternal(%RawType%Max));
+	SetupData("min-value", Smile%Type%_CreateInternal(%RawType%Min));
+	SetupData("max-value~", Smile%Type%_CreateInternal(%URawType%Max));
+	SetupData("min-value~", Smile_KnownObjects.Zero%RawType%);
 }

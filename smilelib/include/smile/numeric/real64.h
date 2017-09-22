@@ -91,15 +91,16 @@ SMILE_API_FUNC Bool Real64_Ge(Real64 a, Real64 b);
 
 Inline Real64 Real64_Sign(Real64 x)
 {
-	return Real64_IsZero(x) ? Real64_Zero
+	return Real64_IsNaN(x) ? x
 		: Real64_IsNeg(x) ? Real64_NegOne
+		: Real64_IsZero(x) ? Real64_Zero
 		: Real64_One;
 }
 
 Inline Int Real64_IntSign(Real64 x)
 {
-	return Real64_IsZero(x) ? 0
-		: Real64_IsNeg(x) ? -1
+	return Real64_IsNeg(x) ? -1
+		: Real64_IsZero(x) ? 0
 		: +1;
 }
 

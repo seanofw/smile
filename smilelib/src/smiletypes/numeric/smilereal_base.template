@@ -22,10 +22,37 @@
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/numeric/smile%type%.h>
 #include <smile/smiletypes/smilefunction.h>
+#include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/base.h>
 #include <smile/internal/staticstring.h>
 
 SMILE_IGNORE_UNUSED_VARIABLES
+
+static Byte _%type%Checks[] = {
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_%TYPE%,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_%TYPE%,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_%TYPE%,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_%TYPE%,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_%TYPE%,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_%TYPE%,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_%TYPE%,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_%TYPE%,
+};
+
+static Byte _%type%ComparisonChecks[] = {
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_%TYPE%,
+	0, 0,
+};
+
+typedef struct MathInfoStruct {
+	Bool isLoud;
+} *MathInfo;
+
+static struct MathInfoStruct _loudMath[] = { True };
+static struct MathInfoStruct _quietMath[] = { False };
+
+STATIC_STRING(_divideByZero, "Divide by zero error");
+STATIC_STRING(_negativeSqrt, "Square root of negative number");
 
 //-------------------------------------------------------------------------------------------------
 // Generic type conversion
@@ -68,6 +95,517 @@ SMILE_EXTERNAL_FUNCTION(Hash)
 }
 
 //-------------------------------------------------------------------------------------------------
+// Basic arithmetic
+
+SMILE_EXTERNAL_FUNCTION(Plus)
+{
+	%RawType% x;
+	Int i;
+
+	switch (argc) {
+		case 1:
+			return argv[0];
+
+		case 2:
+			x = argv[0].unboxed.%unboxed%;
+			x = %Type%_Add(x, argv[1].unboxed.%unboxed%);
+			return SmileUnboxed%Type%_From(x);
+
+		case 3:
+			x = argv[0].unboxed.%unboxed%;
+			x = %Type%_Add(x, argv[1].unboxed.%unboxed%);
+			x = %Type%_Add(x, argv[2].unboxed.%unboxed%);
+			return SmileUnboxed%Type%_From(x);
+
+		case 4:
+			x = argv[0].unboxed.%unboxed%;
+			x = %Type%_Add(x, argv[1].unboxed.%unboxed%);
+			x = %Type%_Add(x, argv[2].unboxed.%unboxed%);
+			x = %Type%_Add(x, argv[3].unboxed.%unboxed%);
+			return SmileUnboxed%Type%_From(x);
+
+		default:
+			x = argv[0].unboxed.%unboxed%;
+			for (i = 1; i < argc; i++) {
+				x = %Type%_Add(x, argv[i].unboxed.%unboxed%);
+			}
+			return SmileUnboxed%Type%_From(x);
+	}
+}
+
+SMILE_EXTERNAL_FUNCTION(Minus)
+{
+	%RawType% x;
+	Int i;
+
+	switch (argc) {
+		case 1:
+			x = argv[0].unboxed.%unboxed%;
+			x = %Type%_Neg(x);
+			return SmileUnboxed%Type%_From(x);
+
+		case 2:
+			x = argv[0].unboxed.%unboxed%;
+			x = %Type%_Sub(x, argv[1].unboxed.%unboxed%);
+			return SmileUnboxed%Type%_From(x);
+
+		case 3:
+			x = argv[0].unboxed.%unboxed%;
+			x = %Type%_Sub(x, argv[1].unboxed.%unboxed%);
+			x = %Type%_Sub(x, argv[2].unboxed.%unboxed%);
+			return SmileUnboxed%Type%_From(x);
+
+		case 4:
+			x = argv[0].unboxed.%unboxed%;
+			x = %Type%_Sub(x, argv[1].unboxed.%unboxed%);
+			x = %Type%_Sub(x, argv[2].unboxed.%unboxed%);
+			x = %Type%_Sub(x, argv[3].unboxed.%unboxed%);
+			return SmileUnboxed%Type%_From(x);
+
+		default:
+			x = argv[0].unboxed.%unboxed%;
+			for (i = 1; i < argc; i++) {
+				x = %Type%_Sub(x, argv[i].unboxed.%unboxed%);
+			}
+			return SmileUnboxed%Type%_From(x);
+	}
+}
+
+SMILE_EXTERNAL_FUNCTION(Star)
+{
+	%RawType% x;
+	Int i;
+
+	switch (argc) {
+		case 1:
+			return argv[0];
+
+		case 2:
+			x = argv[0].unboxed.%unboxed%;
+			x = %Type%_Mul(x, argv[1].unboxed.%unboxed%);
+			return SmileUnboxed%Type%_From(x);
+
+		case 3:
+			x = argv[0].unboxed.%unboxed%;
+			x = %Type%_Mul(x, argv[1].unboxed.%unboxed%);
+			x = %Type%_Mul(x, argv[2].unboxed.%unboxed%);
+			return SmileUnboxed%Type%_From(x);
+
+		case 4:
+			x = argv[0].unboxed.%unboxed%;
+			x = %Type%_Mul(x, argv[1].unboxed.%unboxed%);
+			x = %Type%_Mul(x, argv[2].unboxed.%unboxed%);
+			x = %Type%_Mul(x, argv[3].unboxed.%unboxed%);
+			return SmileUnboxed%Type%_From(x);
+
+		default:
+			x = argv[0].unboxed.%unboxed%;
+			for (i = 1; i < argc; i++) {
+				x = %Type%_Mul(x, argv[i].unboxed.%unboxed%);
+			}
+			return SmileUnboxed%Type%_From(x);
+	}
+}
+
+/// <summary>
+/// Deal with division-by-zero.
+/// </summary>
+/// <param name="param">A pointer to a MathInfo struct that describes how to handle divide-by-zero.</param>
+/// <returns>0 if this is a quiet divide-by-zero, or a thrown exception if this is supposed to be an error.</returns>
+Inline SmileArg DivideByZero(void *param)
+{
+	MathInfo mathInfo = (MathInfo)param;
+
+	if (mathInfo->isLoud)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
+
+	return SmileUnboxed%Type%_From(%Type%_Zero);
+}
+
+SMILE_EXTERNAL_FUNCTION(Slash)
+{
+	%RawType% x, y;
+	Int i;
+
+	switch (argc) {
+		case 2:
+			x = argv[0].unboxed.%unboxed%;
+			if (%Type%_IsZero(y = argv[1].unboxed.%unboxed%))
+				return DivideByZero(param);
+			x = %Type%_Div(x, y);
+			return SmileUnboxed%Type%_From(x);
+
+		case 3:
+			x = argv[0].unboxed.%unboxed%;
+			if (%Type%_IsZero(y = argv[1].unboxed.%unboxed%))
+				return DivideByZero(param);
+			x = %Type%_Div(x, y);
+			if (%Type%_IsZero(y = argv[2].unboxed.%unboxed%))
+				return DivideByZero(param);
+			x = %Type%_Div(x, y);
+			return SmileUnboxed%Type%_From(x);
+
+		case 4:
+			x = argv[0].unboxed.%unboxed%;
+			if (%Type%_IsZero(y = argv[1].unboxed.%unboxed%))
+				return DivideByZero(param);
+			x = %Type%_Div(x, y);
+			if (%Type%_IsZero(y = argv[2].unboxed.%unboxed%))
+				return DivideByZero(param);
+			x = %Type%_Div(x, y);
+			if (%Type%_IsZero(y = argv[3].unboxed.%unboxed%))
+				return DivideByZero(param);
+			x = %Type%_Div(x, y);
+			return SmileUnboxed%Type%_From(x);
+
+		default:
+			x = argv[0].unboxed.%unboxed%;
+			for (i = 1; i < argc; i++) {
+				if (%Type%_IsZero(y = argv[i].unboxed.%unboxed%))
+					return DivideByZero(param);
+				x = %Type%_Div(x, y);
+			}
+			return SmileUnboxed%Type%_From(x);
+	}
+}
+
+/// <summary>
+/// Perform modulus like mathematicians expect, in which the modulus has the same sign as the divisor (y).
+/// </summary>
+Inline %Type% MathematiciansModulus(%Type% x, %Type% y)
+{
+	%Type% rem;
+
+	if (%Type%_IsNeg(x)) {
+		if (%Type%_IsNeg(y))
+			return %Type%_Neg(%Type%_Mod(%Type%_Neg(x), %Type%_Neg(y)));
+		else {
+			rem = %Type%_Mod(%Type%_Neg(x), y);
+			return !%Type%_IsZero(rem) ? %Type%_Sub(y, rem) : %Type%_Zero;
+		}
+	}
+	else if (%Type%_IsNeg(y)) {
+		rem = %Type%_Mod(x, %Type%_Neg(y));
+		return !%Type%_IsZero(rem) ? %Type%_Add(y, rem) : %Type%_Zero;
+	}
+	else
+		return %Type%_Mod(x, y);
+}
+
+/// <summary>
+/// Perform remainder, in which the result has the same sign as the dividend (x).
+/// </summary>
+Inline %Type% MathematiciansRemainder(%Type% x, %Type% y)
+{
+	%Type% rem;
+
+	if (%Type%_IsNeg(x)) {
+		if (%Type%_IsNeg(y)) {
+			rem = %Type%_Mod(%Type%_Neg(x), %Type%_Neg(y));
+			return !%Type%_IsZero(rem) ? %Type%_Add(rem, y) : %Type%_Zero;
+		}
+		else
+			return %Type%_Neg(%Type%_Mod(%Type%_Neg(x), y));
+	}
+	else if (%Type%_IsNeg(y))
+		return %Type%_Mod(x, %Type%_Neg(y));
+	else {
+		rem = %Type%_Mod(x, y);
+		return !%Type%_IsZero(rem) ? %Type%_Sub(rem, y) : %Type%_Zero;
+	}
+}
+
+SMILE_EXTERNAL_FUNCTION(Mod)
+{
+	%Type% x = argv[0].unboxed.%unboxed%;
+	%Type% y = argv[1].unboxed.%unboxed%;
+
+	if (%Type%_IsZero(y))
+		return DivideByZero(param);
+
+	return SmileUnboxed%Type%_From(MathematiciansModulus(x, y));
+}
+
+SMILE_EXTERNAL_FUNCTION(Rem)
+{
+	%Type% x = argv[0].unboxed.%unboxed%;
+	%Type% y = argv[1].unboxed.%unboxed%;
+
+	if (%Type%_IsZero(y))
+		return DivideByZero(param);
+
+	return SmileUnboxed%Type%_From(MathematiciansRemainder(x, y));
+}
+
+//-------------------------------------------------------------------------------------------------
+// Arithmetic extensions
+
+SMILE_EXTERNAL_FUNCTION(Sign)
+{
+	return SmileUnboxed%Type%_From(%Type%_Sign(argv[0].unboxed.%unboxed%));
+}
+
+SMILE_EXTERNAL_FUNCTION(Abs)
+{
+	return SmileUnboxed%Type%_From(%Type%_Abs(argv[0].unboxed.%unboxed%));
+}
+
+SMILE_EXTERNAL_FUNCTION(Clip)
+{
+	%Type% value = argv[0].unboxed.%unboxed%;
+	%Type% min = argv[1].unboxed.%unboxed%;
+	%Type% max = argv[2].unboxed.%unboxed%;
+
+	if (%Type%_Gt(value, max)) {
+		value = max;
+		return %Type%_Lt(value, min) ? argv[1] : argv[2];
+	}
+	else if (%Type%_Lt(value, min)) {
+		return argv[1];
+	}
+	else return argv[0];
+}
+
+SMILE_EXTERNAL_FUNCTION(Min)
+{
+	%Type% x, y;
+	Int i;
+
+	switch (argc) {
+		case 1:
+			return argv[0];
+
+		case 2:
+			x = argv[0].unboxed.%unboxed%;
+			if (%Type%_Lt((y = argv[1].unboxed.%unboxed%), x)) x = y;
+			return SmileUnboxed%Type%_From(x);
+
+		case 3:
+			x = argv[0].unboxed.%unboxed%;
+			if (%Type%_Lt((y = argv[1].unboxed.%unboxed%), x)) x = y;
+			if (%Type%_Lt((y = argv[2].unboxed.%unboxed%), x)) x = y;
+			return SmileUnboxed%Type%_From(x);
+
+		case 4:
+			x = argv[0].unboxed.%unboxed%;
+			if (%Type%_Lt((y = argv[1].unboxed.%unboxed%), x)) x = y;
+			if (%Type%_Lt((y = argv[2].unboxed.%unboxed%), x)) x = y;
+			if (%Type%_Lt((y = argv[3].unboxed.%unboxed%), x)) x = y;
+			return SmileUnboxed%Type%_From(x);
+
+		default:
+			x = argv[0].unboxed.%unboxed%;
+			for (i = 1; i < argc; i++) {
+				if (%Type%_Lt((y = argv[i].unboxed.%unboxed%), x)) x = y;
+			}
+			return SmileUnboxed%Type%_From(x);
+	}
+}
+
+SMILE_EXTERNAL_FUNCTION(Max)
+{
+	%Type% x, y;
+	Int i;
+
+	switch (argc) {
+		case 1:
+			return argv[0];
+
+		case 2:
+			x = argv[0].unboxed.%unboxed%;
+			if (%Type%_Gt((y = argv[1].unboxed.%unboxed%), x)) x = y;
+			return SmileUnboxed%Type%_From(x);
+
+		case 3:
+			x = argv[0].unboxed.%unboxed%;
+			if (%Type%_Gt((y = argv[1].unboxed.%unboxed%), x)) x = y;
+			if (%Type%_Gt((y = argv[2].unboxed.%unboxed%), x)) x = y;
+			return SmileUnboxed%Type%_From(x);
+
+		case 4:
+			x = argv[0].unboxed.%unboxed%;
+			if (%Type%_Gt((y = argv[1].unboxed.%unboxed%), x)) x = y;
+			if (%Type%_Gt((y = argv[2].unboxed.%unboxed%), x)) x = y;
+			if (%Type%_Gt((y = argv[3].unboxed.%unboxed%), x)) x = y;
+			return SmileUnboxed%Type%_From(x);
+
+		default:
+			x = argv[0].unboxed.%unboxed%;
+			for (i = 1; i < argc; i++) {
+				if (%Type%_Gt((y = argv[i].unboxed.%unboxed%), x)) x = y;
+			}
+			return SmileUnboxed%Type%_From(x);
+	}
+}
+
+SMILE_EXTERNAL_FUNCTION(Sqrt)
+{
+	%Type% value = argv[0].unboxed.%unboxed%;
+
+	if (%Type%_IsNeg(value)) {
+		MathInfo mathInfo = (MathInfo)param;
+		if (mathInfo->isLoud)
+			Smile_ThrowException(Smile_KnownSymbols.native_method_error, _negativeSqrt);
+		return SmileUnboxed%Type%_From(%Type%_Zero);
+	}
+
+	return SmileUnboxed%Type%_From(%Type%_Sqrt(value));
+}
+
+//-------------------------------------------------------------------------------------------------
+// Rounding/truncation operations
+
+SMILE_EXTERNAL_FUNCTION(Ceil)
+{
+	return SmileUnboxed%Type%_From(%Type%_Ceil(argv[0].unboxed.%unboxed%));
+}
+
+SMILE_EXTERNAL_FUNCTION(Floor)
+{
+	return SmileUnboxed%Type%_From(%Type%_Floor(argv[0].unboxed.%unboxed%));
+}
+
+SMILE_EXTERNAL_FUNCTION(Trunc)
+{
+	return SmileUnboxed%Type%_From(%Type%_Trunc(argv[0].unboxed.%unboxed%));
+}
+
+SMILE_EXTERNAL_FUNCTION(Round)
+{
+	return SmileUnboxed%Type%_From(%Type%_Round(argv[0].unboxed.%unboxed%));
+}
+
+SMILE_EXTERNAL_FUNCTION(BankRound)
+{
+	return SmileUnboxed%Type%_From(%Type%_BankRound(argv[0].unboxed.%unboxed%));
+}
+
+SMILE_EXTERNAL_FUNCTION(Modf)
+{
+	%Type% intPart, fracPart;
+	SmileList list;
+
+	fracPart = %Type%_Modf(argv[0].unboxed.%unboxed%, &intPart);
+
+	list = SmileList_Cons((SmileObject)Smile%Type%_Create(intPart),
+		(SmileObject)SmileList_Cons((SmileObject)Smile%Type%_Create(fracPart),
+		NullObject));
+
+	return SmileArg_From((SmileObject)list);
+}
+
+//-------------------------------------------------------------------------------------------------
+// Comparisons
+
+SMILE_EXTERNAL_FUNCTION(Eq)
+{
+	return SmileUnboxedBool_From(SMILE_KIND(argv[1].obj) == SMILE_KIND_UNBOXED_%TYPE%
+		&& %Type%_Eq(argv[0].unboxed.%unboxed%, argv[1].unboxed.%unboxed%));
+}
+
+SMILE_EXTERNAL_FUNCTION(Ne)
+{
+	return SmileUnboxedBool_From(SMILE_KIND(argv[1].obj) != SMILE_KIND_UNBOXED_%TYPE%
+		|| %Type%_Ne(argv[0].unboxed.%unboxed%, argv[1].unboxed.%unboxed%));
+}
+
+SMILE_EXTERNAL_FUNCTION(Lt)
+{
+	return SmileUnboxedBool_From(%Type%_Lt(argv[0].unboxed.%unboxed%, argv[1].unboxed.%unboxed%));
+}
+
+SMILE_EXTERNAL_FUNCTION(Gt)
+{
+	return SmileUnboxedBool_From(%Type%_Gt(argv[0].unboxed.%unboxed%, argv[1].unboxed.%unboxed%));
+}
+
+SMILE_EXTERNAL_FUNCTION(Le)
+{
+	return SmileUnboxedBool_From(%Type%_Le(argv[0].unboxed.%unboxed%, argv[1].unboxed.%unboxed%));
+}
+
+SMILE_EXTERNAL_FUNCTION(Ge)
+{
+	return SmileUnboxedBool_From(%Type%_Ge(argv[0].unboxed.%unboxed%, argv[1].unboxed.%unboxed%));
+}
+
+SMILE_EXTERNAL_FUNCTION(Compare)
+{
+	%RawType% x = argv[0].unboxed.%unboxed%;
+	%RawType% y = argv[1].unboxed.%unboxed%;
+
+	if (%Type%_Lt(x, y))
+		return SmileUnboxedInteger64_From(-1);
+	else if (%Type%_Gt(x, y))
+		return SmileUnboxedInteger64_From(+1);
+	else
+		return SmileUnboxedInteger64_From(0);
+}
+
+//-------------------------------------------------------------------------------------------------
+
+enum {
+	ZERO_TEST,
+	ONE_TEST,
+	NONZERO_TEST,
+	POS_TEST,
+	NONPOS_TEST,
+	NEG_TEST,
+	NONNEG_TEST,
+	ODD_TEST,
+	EVEN_TEST,
+	INF_TEST,
+	NAN_TEST,
+	FINITE_TEST,
+};
+
+Inline Bool IsPositive(%Type% value)
+{
+	return (%Type%_IsInf(value) && !%Type%_IsNeg(value))
+		|| (%Type%_IsFinite(value) && !%Type%_IsNeg(value) && !%Type%_IsZero(value));
+}
+
+Inline Bool IsNegative(%Type% value)
+{
+	return (%Type%_IsInf(value) && %Type%_IsNeg(value))
+		|| (%Type%_IsFinite(value) && %Type%_IsNeg(value));
+}
+
+SMILE_EXTERNAL_FUNCTION(ValueTest)
+{
+	%RawType% value = argv[0].unboxed.%unboxed%;
+
+	switch ((PtrInt)param) {
+		case ZERO_TEST:
+			return SmileUnboxedBool_From(%Type%_IsZero(value));
+		case ONE_TEST:
+			return SmileUnboxedBool_From(%Type%_Eq(value, %Type%_One));
+		case NONZERO_TEST:
+			return SmileUnboxedBool_From(!%Type%_IsZero(value));
+		case POS_TEST:
+			return SmileUnboxedBool_From(IsPositive(value));
+		case NONPOS_TEST:
+			return SmileUnboxedBool_From(!IsPositive(value));
+		case NEG_TEST:
+			return SmileUnboxedBool_From(IsNegative(value));
+		case NONNEG_TEST:
+			return SmileUnboxedBool_From(!IsNegative(value));
+		case ODD_TEST:
+			return SmileUnboxedBool_From(%Type%_Eq(%Type%_Mod(value, %Type%_Two), %Type%_One));
+		case EVEN_TEST:
+			return SmileUnboxedBool_From(%Type%_IsZero(%Type%_Mod(value, %Type%_Two)));
+		case INF_TEST:
+			return SmileUnboxedBool_From(%Type%_IsInf(value));
+		case NAN_TEST:
+			return SmileUnboxedBool_From(%Type%_IsNaN(value));
+		case FINITE_TEST:
+			return SmileUnboxedBool_From(%Type%_IsFinite(value));
+		default:
+			return SmileArg_From(NullObject);
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
 
 void Smile%Type%_Setup(SmileUserObject base)
 {
@@ -77,4 +615,61 @@ void Smile%Type%_Setup(SmileUserObject base)
 	SetupFunction("int", ToInt, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 	SetupFunction("string", ToString, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 	SetupFunction("hash", Hash, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+
+	SetupFunction("+", Plus, NULL, "augend addend", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _%type%Checks);
+	SetupFunction("-", Minus, NULL, "minuend subtrahend", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _%type%Checks);
+	SetupFunction("*", Star, NULL, "multiplier multiplicand", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _%type%Checks);
+	SetupFunction("/", Slash, &_quietMath, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _%type%Checks);
+	SetupFunction("/!", Slash, &_loudMath, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _%type%Checks);
+	SetupSynonym("/", "div");
+	SetupSynonym("/!", "div!");
+	SetupFunction("mod", Mod, &_quietMath, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction("mod!", Mod, &_loudMath, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction("rem", Rem, &_quietMath, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction("rem!", Rem, &_loudMath, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction("sqrt", Sqrt, &_quietMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("sqrt!", Sqrt, &_loudMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+
+	SetupFunction("sign", Sign, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("abs", Abs, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("clip", Clip, NULL, "value min max", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _%type%Checks);
+	SetupFunction("min", Min, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _%type%Checks);
+	SetupFunction("max", Max, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _%type%Checks);
+
+	SetupFunction("ceil", Ceil, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("floor", Floor, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("trunc", Trunc, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("round", Round, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("bank-round", BankRound, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("modf", Modf, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+
+	SetupFunction("odd?", ValueTest, (void *)ODD_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("even?", ValueTest, (void *)EVEN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("zero?", ValueTest, (void *)ZERO_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("one?", ValueTest, (void *)ONE_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("nonzero?", ValueTest, (void *)NONZERO_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("positive?", ValueTest, (void *)POS_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupSynonym("positive?", "pos?");
+	SetupFunction("finite?", ValueTest, (void *)FINITE_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("infinite?", ValueTest, (void *)INF_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupSynonym("infinite?", "inf?");
+	SetupFunction("nan?", ValueTest, (void *)NAN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("nonpositive?", ValueTest, (void *)NONPOS_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupSynonym("nonpositive?", "nonpos?");
+	SetupFunction("negative?", ValueTest, (void *)NEG_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupSynonym("negative?", "neg?");
+	SetupFunction("nonnegative?", ValueTest, (void *)NONNEG_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupSynonym("nonnegative?", "nonneg?");
+
+	SetupFunction("==", Eq, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%ComparisonChecks);
+	SetupFunction("!=", Ne, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%ComparisonChecks);
+	SetupFunction("<", Lt, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction(">", Gt, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction("<=", Le, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction(">=", Ge, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+
+	SetupFunction("compare", Compare, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupSynonym("compare", "cmp");
+
+	SetupData("inf", Smile%Type%_Create(%Type%_Inf));
 }
