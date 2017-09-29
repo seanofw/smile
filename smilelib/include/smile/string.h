@@ -211,6 +211,12 @@ SMILE_API_FUNC String String_UrlQueryEncode(const String str);
 SMILE_API_FUNC String String_UrlDecode(const String str);
 
 //-------------------------------------------------------------------------------------------------
+//  External parts of the implementation (identifier conversion)
+
+SMILE_API_FUNC String String_CamelCase(String string, Bool uppercaseInitialLetter, Bool lowercaseAcronyms);
+SMILE_API_FUNC String String_Hyphenize(String string, Byte separator);
+
+//-------------------------------------------------------------------------------------------------
 //  External parts of the implementation (Parsing of other types)
 
 SMILE_API_FUNC Bool String_ParseBool(const String str, Bool *result);
@@ -574,7 +580,7 @@ Inline String String_TrimEnd(const String str)
 }
 
 /// <summary>
-/// Determine if this string contains a '\0' (nul) character — in other words, determine
+/// Determine if this string contains a '\0' (nul) character â€” in other words, determine
 /// if it can be safely passed to a standard C string function, or if it would break.
 /// </summary>
 Inline Bool String_ContainsNul(const String str)

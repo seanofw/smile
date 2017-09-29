@@ -985,6 +985,7 @@
     <ClCompile Include="src\smiletypes\numeric\smilebyte_base.generated.c" />
     <ClCompile Include="src\smiletypes\numeric\smilereal64.generated.c" />
     <ClCompile Include="src\smiletypes\numeric\smilereal64_base.generated.c" />
+    <ClCompile Include="src\string\string_ident.c" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">

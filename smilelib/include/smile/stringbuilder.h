@@ -125,6 +125,11 @@ Inline Byte StringBuilder_At(const StringBuilder stringBuilder, Int index)
 	return ((const struct StringBuilderInt *)stringBuilder)->text[index];
 }
 
+Inline void StringBuilder_SetAt(const StringBuilder stringBuilder, Int index, Byte value)
+{
+	((const struct StringBuilderInt *)stringBuilder)->text[index] = value;
+}
+
 Inline const Byte *StringBuilder_GetBytes(const StringBuilder stringBuilder)
 {
 	return ((const struct StringBuilderInt *)stringBuilder)->text;
@@ -151,6 +156,21 @@ Inline void StringBuilder_AppendString(StringBuilder stringBuilder, const String
 Inline void StringBuilder_AppendSubstring(StringBuilder stringBuilder, const String str, Int start, Int length)
 {
 	StringBuilder_Append(stringBuilder, String_GetBytes(str), start, length);
+}
+
+Inline void StringBuilder_AppendStringBuilder(StringBuilder dest, StringBuilder src)
+{
+	const Byte *bytes = StringBuilder_GetBytes(src);
+	Int length = StringBuilder_GetLength(src);
+
+	StringBuilder_Append(dest, bytes, 0, length);
+}
+
+Inline void StringBuilder_AppendStringBuilderSubstring(StringBuilder dest, StringBuilder src, Int start, Int length)
+{
+	const Byte *bytes = StringBuilder_GetBytes(src);
+
+	StringBuilder_Append(dest, bytes, start, length);
 }
 
 #endif

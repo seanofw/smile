@@ -909,6 +909,7 @@
     <ClCompile Include="src\string\string_extra.c" />
     <ClCompile Include="src\string\string_createfromint.c" />
     <ClCompile Include="src\string\string_html.c" />
+    <ClCompile Include="src\string\string_ident.c" />
     <ClCompile Include="src\string\string_parse.c">
       <FloatingPointModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Strict</FloatingPointModel>
     </ClCompile>

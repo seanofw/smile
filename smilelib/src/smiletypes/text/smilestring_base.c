@@ -72,6 +72,11 @@ static Byte _eachChecks[] = {
 	SMILE_KIND_MASK, SMILE_KIND_FUNCTION,
 };
 
+static Byte _hyphenizeChecks[] = {
+	SMILE_KIND_MASK, SMILE_KIND_STRING,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_BYTE,
+};
+
 STATIC_STRING(_invalidTypeError, "All arguments to 'String.%s' must be of type 'String'");
 
 //-------------------------------------------------------------------------------------------------
@@ -709,6 +714,22 @@ UnaryProxyFunction(ByteArray, String_ToByteArray)
 
 //-------------------------------------------------------------------------------------------------
 
+SMILE_EXTERNAL_FUNCTION(CamelCase)
+{
+	String str = (String)argv[0].obj;
+	PtrInt paramValue = (PtrInt)param;
+	return SmileArg_From((SmileObject)String_CamelCase(str, paramValue & 1, (paramValue >> 1) & 1));
+}
+
+SMILE_EXTERNAL_FUNCTION(Hyphenize)
+{
+	String str = (String)argv[0].obj;
+	Byte separator = (argc > 1 ? argv[1].unboxed.i8 : (Byte)(PtrInt)param);
+	return SmileArg_From((SmileObject)String_Hyphenize(str, separator));
+}
+
+//-------------------------------------------------------------------------------------------------
+
 typedef struct EachInfoStruct {
 	String initialString;
 	const Byte *ptr, *end;
@@ -1269,6 +1290,13 @@ void String_Setup(SmileUserObject base)
 	SetupFunction("decompose", Decompose, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupFunction("compose", Compose, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupFunction("normalize-diacritics", NormalizeDiacritics, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+
+	SetupFunction("camelCase", CamelCase, (void *)0, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupFunction("CamelCase", CamelCase, (void *)1, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupFunction("camelCase-acronyms", CamelCase, (void *)2, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupFunction("CamelCase-acronyms", CamelCase, (void *)3, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupFunction("hyphenize", Hyphenize, (void *)'-', "string", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hyphenizeChecks);
+	SetupFunction("underscorize", Hyphenize, (void *)'_', "string", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hyphenizeChecks);
 
 	SetupFunction("starts-with?", StartsWith, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringChecks);
 	SetupFunction("starts-with~?", StartsWithI, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringChecks);
