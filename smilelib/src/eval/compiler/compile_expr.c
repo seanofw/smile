@@ -26,8 +26,10 @@
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/numeric/smileinteger128.h>
-#include <smile/smiletypes/numeric/smilereal64.h>
+#include <smile/smiletypes/numeric/smilefloat32.h>
+#include <smile/smiletypes/numeric/smilefloat64.h>
 #include <smile/smiletypes/numeric/smilereal32.h>
+#include <smile/smiletypes/numeric/smilereal64.h>
 #include <smile/parsing/parsemessage.h>
 #include <smile/parsing/internal/parsedecl.h>
 #include <smile/parsing/internal/parsescope.h>
@@ -100,20 +102,22 @@ CompiledBlock Compiler_CompileExpr(Compiler compiler, SmileObject expr, CompileF
 			Smile_Abort_FatalError("BigInt is not yet supported.");
 
 		// Real constants evaluate to themselves.
-		case SMILE_KIND_REAL64:
-			COMPILE_PRIMITIVE_EXPR(Op_LdR64, real64 = ((SmileReal64)expr)->value);
 		case SMILE_KIND_REAL32:
 			COMPILE_PRIMITIVE_EXPR(Op_LdR32, real32 = ((SmileReal32)expr)->value);
+		case SMILE_KIND_REAL64:
+			COMPILE_PRIMITIVE_EXPR(Op_LdR64, real64 = ((SmileReal64)expr)->value);
 		case SMILE_KIND_REAL128:
 		case SMILE_KIND_BIGREAL:
-			Smile_Abort_FatalError("Real128, and BigReal are not yet supported.");
+			Smile_Abort_FatalError("Real128 and BigReal are not yet supported.");
 
 		// Float constants evaluate to themselves.
 		case SMILE_KIND_FLOAT32:
+			COMPILE_PRIMITIVE_EXPR(Op_LdF32, float32 = ((SmileFloat32)expr)->value);
 		case SMILE_KIND_FLOAT64:
+			COMPILE_PRIMITIVE_EXPR(Op_LdF64, float64 = ((SmileFloat64)expr)->value);
 		case SMILE_KIND_FLOAT128:
 		case SMILE_KIND_BIGFLOAT:
-			Smile_Abort_FatalError("Floats are not yet supported.");
+			Smile_Abort_FatalError("Float128 and BigFloat are not yet supported.");
 
 		// User data evaluates to iteself.
 		case SMILE_KIND_FUNCTION:

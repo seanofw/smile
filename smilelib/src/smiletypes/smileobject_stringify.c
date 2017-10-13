@@ -33,11 +33,14 @@
 #include <smile/smiletypes/numeric/smileinteger128.h>
 #include <smile/smiletypes/numeric/smilereal32.h>
 #include <smile/smiletypes/numeric/smilereal64.h>
+#include <smile/smiletypes/numeric/smilefloat32.h>
+#include <smile/smiletypes/numeric/smilefloat64.h>
 #include <smile/smiletypes/range/smileinteger64range.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/raw/smilebytearray.h>
 #include <smile/smiletypes/smilehandle.h>
 #include <smile/internal/staticstring.h>
+#include <smile/numeric/float64.h>
 
 static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int indent);
 
@@ -267,6 +270,14 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 
 	case SMILE_KIND_REAL64:
 		StringBuilder_AppendFormat(stringBuilder, "%S", Real64_ToStringEx(((SmileReal64)obj)->value, 0, 0, False));
+		return;
+
+	case SMILE_KIND_FLOAT32:
+		StringBuilder_AppendFormat(stringBuilder, "%S", Float64_ToStringEx((double)((SmileFloat32)obj)->value, 0, 0, False));
+		return;
+
+	case SMILE_KIND_FLOAT64:
+		StringBuilder_AppendFormat(stringBuilder, "%S", Float64_ToStringEx(((SmileFloat64)obj)->value, 0, 0, False));
 		return;
 
 	case SMILE_KIND_STRING:

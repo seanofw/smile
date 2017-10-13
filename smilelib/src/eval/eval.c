@@ -27,8 +27,10 @@
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/numeric/smileinteger128.h>
-#include <smile/smiletypes/numeric/smilereal64.h>
 #include <smile/smiletypes/numeric/smilereal32.h>
+#include <smile/smiletypes/numeric/smilereal64.h>
+#include <smile/smiletypes/numeric/smilefloat32.h>
+#include <smile/smiletypes/numeric/smilefloat64.h>
 
 Closure _closure;
 CompiledTables _compiledTables;
@@ -288,9 +290,16 @@ next:
 		//-------------------------------------------------------
 		// 28-2F: Float load instructions
 
-		case Op_LdF16:
 		case Op_LdF32:
+			Closure_PushUnboxedFloat32(closure, byteCode->u.float32);
+			byteCode++;
+			goto next;
 		case Op_LdF64:
+			Closure_PushUnboxedFloat64(closure, byteCode->u.float64);
+			byteCode++;
+			goto next;
+
+		case Op_LdF16:
 		case Op_LdF128:
 			goto unsupportedOpcode;
 

@@ -149,6 +149,7 @@
     <ClInclude Include="include\smile\gc.h" />
     <ClInclude Include="include\smile\internal\staticstring.h" />
     <ClInclude Include="include\smile\mem.h" />
+    <ClInclude Include="include\smile\numeric\float64.h" />
     <ClInclude Include="include\smile\numeric\real.h" />
     <ClInclude Include="include\smile\numeric\real128.h" />
     <ClInclude Include="include\smile\numeric\real32.h" />
@@ -178,6 +179,8 @@
     <ClInclude Include="include\smile\simplestats.h" />
     <ClInclude Include="include\smile\smiletypes\base.h" />
     <ClInclude Include="include\smile\smiletypes\easyobject.h" />
+    <ClInclude Include="include\smile\smiletypes\numeric\smilefloat32.h" />
+    <ClInclude Include="include\smile\smiletypes\numeric\smilefloat64.h" />
     <ClInclude Include="include\smile\smiletypes\numeric\smilereal32.h" />
     <ClInclude Include="include\smile\smiletypes\numeric\smilereal64.h" />
     <ClInclude Include="include\smile\smiletypes\range\smilebyterange.h" />
@@ -823,6 +826,7 @@
     <ClCompile Include="src\dict\int32dict.c" />
     <ClCompile Include="src\dict\stringdict.c" />
     <ClCompile Include="src\dict\stringintdict.c" />
+    <ClCompile Include="src\numeric\float64.c" />
     <ClCompile Include="src\numeric\real128.c" />
     <ClCompile Include="src\numeric\real32.c" />
     <ClCompile Include="src\numeric\real64.c" />
@@ -864,6 +868,10 @@
     <ClCompile Include="src\smiletypes\kind.c" />
     <ClCompile Include="src\smiletypes\numeric\smilebyte.generated.c" />
     <ClCompile Include="src\smiletypes\numeric\smilebyte_base.generated.c" />
+    <ClCompile Include="src\smiletypes\numeric\smilefloat32.generated.c" />
+    <ClCompile Include="src\smiletypes\numeric\smilefloat32_base.generated.c" />
+    <ClCompile Include="src\smiletypes\numeric\smilefloat64.generated.c" />
+    <ClCompile Include="src\smiletypes\numeric\smilefloat64_base.generated.c" />
     <ClCompile Include="src\smiletypes\numeric\smileinteger128.c" />
     <ClCompile Include="src\smiletypes\numeric\smileinteger16.generated.c" />
     <ClCompile Include="src\smiletypes\numeric\smileinteger16_base.generated.c" />

@@ -988,6 +988,11 @@
     <ClCompile Include="src\string\string_ident.c" />
     <ClCompile Include="src\smiletypes\numeric\smilereal32_base.generated.c" />
     <ClCompile Include="src\smiletypes\numeric\smilereal32.generated.c" />
+    <ClCompile Include="src\smiletypes\numeric\smilefloat64_base.generated.c" />
+    <ClCompile Include="src\smiletypes\numeric\smilefloat32.generated.c" />
+    <ClCompile Include="src\smiletypes\numeric\smilefloat32_base.generated.c" />
+    <ClCompile Include="src\smiletypes\numeric\smilefloat64.generated.c" />
+    <ClCompile Include="src\numeric\float64.c" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">
@@ -1357,6 +1362,9 @@
     </ClInclude>
     <ClInclude Include="include\smile\smiletypes\numeric\smilereal64.h" />
     <ClInclude Include="include\smile\smiletypes\numeric\smilereal32.h" />
+    <ClInclude Include="include\smile\smiletypes\numeric\smilefloat64.h" />
+    <ClInclude Include="include\smile\smiletypes\numeric\smilefloat32.h" />
+    <ClInclude Include="include\smile\numeric\float64.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\smile\array.h">

@@ -80,7 +80,7 @@ OutputTemplate(\@realBaseTemplate, \%real64Substitutions, "smilereal64_base.gene
 	"TypeName" => "A Real32",
 	"ToBool" => "!Real32_IsZero(unboxedData.r32)",
 	"ToBoolArg" => "!Real32_IsZero(argv[0].unboxed.r32)",
-	"ToInt" => "SmileUnboxedInteger32_From(Real32_ToInt32(argv[0].unboxed.r32))",
+	"ToInt" => "SmileUnboxedInteger64_From(Real32_ToInt64(argv[0].unboxed.r32))",
 	"ToStringBase10" => "Real32_ToStringEx(unboxedData.r32, 0, 0, False)",
 	"ToStringArg" => "Real32_ToStringEx(argv[0].unboxed.r32, 0, 0, False)",
 	"HashAlgorithm" => "(UInt32)(*(UInt32 *)&obj->value)"

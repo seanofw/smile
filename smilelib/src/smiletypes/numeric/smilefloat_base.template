@@ -1,0 +1,499 @@
+//---------------------------------------------------------------------------------------
+//  Smile Programming Language Interpreter
+//  Copyright 2004-2017 Sean Werkema
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//---------------------------------------------------------------------------------------
+
+#include <smile/numeric/float64.h>
+#include <smile/smiletypes/smileobject.h>
+#include <smile/smiletypes/smileuserobject.h>
+#include <smile/smiletypes/smilebool.h>
+#include <smile/smiletypes/numeric/smileinteger32.h>
+#include <smile/smiletypes/numeric/smileinteger64.h>
+#include <smile/smiletypes/numeric/smile%type%.h>
+#include <smile/smiletypes/smilefunction.h>
+#include <smile/smiletypes/smilelist.h>
+#include <smile/smiletypes/base.h>
+#include <smile/internal/staticstring.h>
+
+#include <math.h>
+
+SMILE_IGNORE_UNUSED_VARIABLES
+
+static Byte _%type%Checks[] = {
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_%TYPE%,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_%TYPE%,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_%TYPE%,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_%TYPE%,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_%TYPE%,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_%TYPE%,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_%TYPE%,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_%TYPE%,
+};
+
+static Byte _%type%ComparisonChecks[] = {
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_%TYPE%,
+	0, 0,
+};
+
+typedef struct MathInfoStruct {
+	Bool isLoud;
+} *MathInfo;
+
+static struct MathInfoStruct _loudMath[] = { True };
+static struct MathInfoStruct _quietMath[] = { False };
+
+STATIC_STRING(_divideByZero, "Divide by zero error");
+STATIC_STRING(_negativeSqrt, "Square root of negative number");
+
+//-------------------------------------------------------------------------------------------------
+// Generic type conversion
+
+SMILE_EXTERNAL_FUNCTION(ToBool)
+{
+	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_UNBOXED_%TYPE%)
+		return SmileUnboxedBool_From(%ToBoolArg%);
+
+	return SmileUnboxedBool_From(True);
+}
+
+SMILE_EXTERNAL_FUNCTION(ToInt)
+{
+	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_UNBOXED_%TYPE%)
+		return %ToInt%;
+
+	return SmileUnboxed%Type%_From(%Zero%);
+}
+
+SMILE_EXTERNAL_FUNCTION(ToString)
+{
+	STATIC_STRING(%type%, "%Type%");
+
+	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_UNBOXED_%TYPE%) {
+		return SmileArg_From((SmileObject)(%ToStringArg%));
+	}
+
+	return SmileArg_From((SmileObject)%type%);
+}
+
+SMILE_EXTERNAL_FUNCTION(Hash)
+{
+	Smile%Type% obj = (Smile%Type%)argv[0].obj;
+
+	if (SMILE_KIND(obj) == SMILE_KIND_UNBOXED_%TYPE%)
+		return SmileUnboxedInteger64_From(%HashAlgorithm%);
+
+	return SmileUnboxedInteger64_From((UInt32)((PtrInt)obj ^ Smile_HashOracle));
+}
+
+//-------------------------------------------------------------------------------------------------
+// Basic arithmetic
+
+SMILE_EXTERNAL_FUNCTION(Plus)
+{
+	%RawType% x;
+	Int i;
+
+	switch (argc) {
+		case 1:
+			return argv[0];
+
+		case 2:
+			x = argv[0].unboxed.%unboxed%;
+			x += argv[1].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		case 3:
+			x = argv[0].unboxed.%unboxed%;
+			x += argv[1].unboxed.%unboxed%;
+			x += argv[2].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		case 4:
+			x = argv[0].unboxed.%unboxed%;
+			x += argv[1].unboxed.%unboxed%;
+			x += argv[2].unboxed.%unboxed%;
+			x += argv[3].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		default:
+			x = argv[0].unboxed.%unboxed%;
+			for (i = 1; i < argc; i++) {
+				x += argv[i].unboxed.%unboxed%;
+			}
+			return SmileUnboxed%Type%_From(x);
+	}
+}
+
+SMILE_EXTERNAL_FUNCTION(Minus)
+{
+	%RawType% x;
+	Int i;
+
+	switch (argc) {
+		case 1:
+			x = argv[0].unboxed.%unboxed%;
+			x = -x;
+			return SmileUnboxed%Type%_From(x);
+
+		case 2:
+			x = argv[0].unboxed.%unboxed%;
+			x -= argv[1].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		case 3:
+			x = argv[0].unboxed.%unboxed%;
+			x -= argv[1].unboxed.%unboxed%;
+			x -= argv[2].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		case 4:
+			x = argv[0].unboxed.%unboxed%;
+			x -= argv[1].unboxed.%unboxed%;
+			x -= argv[2].unboxed.%unboxed%;
+			x -= argv[3].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		default:
+			x = argv[0].unboxed.%unboxed%;
+			for (i = 1; i < argc; i++) {
+				x -= argv[i].unboxed.%unboxed%;
+			}
+			return SmileUnboxed%Type%_From(x);
+	}
+}
+
+SMILE_EXTERNAL_FUNCTION(Star)
+{
+	%RawType% x;
+	Int i;
+
+	switch (argc) {
+		case 1:
+			return argv[0];
+
+		case 2:
+			x = argv[0].unboxed.%unboxed%;
+			x *= argv[1].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		case 3:
+			x = argv[0].unboxed.%unboxed%;
+			x *= argv[1].unboxed.%unboxed%;
+			x *= argv[2].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		case 4:
+			x = argv[0].unboxed.%unboxed%;
+			x *= argv[1].unboxed.%unboxed%;
+			x *= argv[2].unboxed.%unboxed%;
+			x *= argv[3].unboxed.%unboxed%;
+			return SmileUnboxed%Type%_From(x);
+
+		default:
+			x = argv[0].unboxed.%unboxed%;
+			for (i = 1; i < argc; i++) {
+				x *= argv[i].unboxed.%unboxed%;
+			}
+			return SmileUnboxed%Type%_From(x);
+	}
+}
+
+/// <summary>
+/// Deal with division-by-zero.
+/// </summary>
+/// <param name="param">A pointer to a MathInfo struct that describes how to handle divide-by-zero.</param>
+/// <returns>0 if this is a quiet divide-by-zero, or a thrown exception if this is supposed to be an error.</returns>
+Inline SmileArg DivideByZero(void *param)
+{
+	MathInfo mathInfo = (MathInfo)param;
+
+	if (mathInfo->isLoud)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _divideByZero);
+
+	return SmileUnboxed%Type%_From(%Zero%);
+}
+
+SMILE_EXTERNAL_FUNCTION(Slash)
+{
+	%RawType% x, y;
+	Int i;
+
+	switch (argc) {
+		case 2:
+			x = argv[0].unboxed.%unboxed%;
+			if ((y = argv[1].unboxed.%unboxed%) == %Zero%)
+				return DivideByZero(param);
+			x /= y;
+			return SmileUnboxed%Type%_From(x);
+
+		case 3:
+			x = argv[0].unboxed.%unboxed%;
+			if ((y = argv[1].unboxed.%unboxed%) == %Zero%)
+				return DivideByZero(param);
+			x /= y;
+			if ((y = argv[2].unboxed.%unboxed%) == %Zero%)
+				return DivideByZero(param);
+			x /= y;
+			return SmileUnboxed%Type%_From(x);
+
+		case 4:
+			x = argv[0].unboxed.%unboxed%;
+			if ((y = argv[1].unboxed.%unboxed%) == %Zero%)
+				return DivideByZero(param);
+			x /= y;
+			if ((y = argv[2].unboxed.%unboxed%) == %Zero%)
+				return DivideByZero(param);
+			x /= y;
+			if ((y = argv[3].unboxed.%unboxed%) == %Zero%)
+				return DivideByZero(param);
+			x /= y;
+			return SmileUnboxed%Type%_From(x);
+
+		default:
+			x = argv[0].unboxed.%unboxed%;
+			for (i = 1; i < argc; i++) {
+				if ((y = argv[i].unboxed.%unboxed%) == %Zero%)
+					return DivideByZero(param);
+				x /= y;
+			}
+			return SmileUnboxed%Type%_From(x);
+	}
+}
+
+/// <summary>
+/// Perform modulus like mathematicians expect, in which the modulus has the same sign as the divisor (y).
+/// </summary>
+Inline %Type% MathematiciansModulus(%Type% x, %Type% y)
+{
+	%Type% rem;
+
+	if (x < %Zero%) {
+		if (y < %Zero%)
+			return (%Type%)-fmod(-x, -y);
+		else {
+			rem = (%Type%)fmod(-x, y);
+			return rem != %Zero% ? y - rem : %Zero%;
+		}
+	}
+	else if (y < %Zero%) {
+		rem = (%Type%)fmod(x, -y);
+		return rem != %Zero% ? y + rem : %Zero%;
+	}
+	else
+		return (%Type%)fmod(x, y);
+}
+
+/// <summary>
+/// Perform remainder, in which the result has the same sign as the dividend (x).
+/// </summary>
+Inline %Type% MathematiciansRemainder(%Type% x, %Type% y)
+{
+	%Type% rem;
+
+	if (x < %Zero%) {
+		if (y < %Zero%) {
+			rem = (%Type%)fmod(-x, -y);
+			return rem != 0 ? rem + y : %Zero%;
+		}
+		else
+			return -((%Type%)fmod(-x, y));
+	}
+	else if (y < %Zero%)
+		return (%Type%)fmod(x, -y);
+	else {
+		rem = (%Type%)fmod(x, y);
+		return rem != %Zero% ? rem - y : %Zero%;
+	}
+}
+
+SMILE_EXTERNAL_FUNCTION(Mod)
+{
+	%Type% x = argv[0].unboxed.%unboxed%;
+	%Type% y = argv[1].unboxed.%unboxed%;
+
+	if (y == %Zero%)
+		return DivideByZero(param);
+
+	return SmileUnboxed%Type%_From(MathematiciansModulus(x, y));
+}
+
+SMILE_EXTERNAL_FUNCTION(Rem)
+{
+	%Type% x = argv[0].unboxed.%unboxed%;
+	%Type% y = argv[1].unboxed.%unboxed%;
+
+	if (y == %Zero%)
+		return DivideByZero(param);
+
+	return SmileUnboxed%Type%_From(MathematiciansRemainder(x, y));
+}
+
+//-------------------------------------------------------------------------------------------------
+// Arithmetic extensions
+
+SMILE_EXTERNAL_FUNCTION(Sign)
+{
+	%Type% value;
+
+	value = argv[0].unboxed.%unboxed%;
+
+	if (value < %Zero%)
+		return SmileUnboxed%Type%_From((%Type%)-1.0);
+	else if (value > %Zero%)
+		return SmileUnboxed%Type%_From((%Type%)+1.0);
+	else if (value == %Zero%)
+		return SmileUnboxed%Type%_From((%Type%)+0.0);
+	else // NaN
+		return SmileUnboxed%Type%_From(value);
+}
+
+SMILE_EXTERNAL_FUNCTION(Abs)
+{
+	return SmileUnboxed%Type%_From((%Type%)fabs(argv[0].unboxed.%unboxed%));
+}
+
+SMILE_EXTERNAL_FUNCTION(Clip)
+{
+	%Type% value = argv[0].unboxed.%unboxed%;
+	%Type% min = argv[1].unboxed.%unboxed%;
+	%Type% max = argv[2].unboxed.%unboxed%;
+
+	if (value > max) {
+		value = max;
+		return value < min ? argv[1] : argv[2];
+	}
+	else if (value < min) {
+		return argv[1];
+	}
+	else return argv[0];
+}
+
+SMILE_EXTERNAL_FUNCTION(Min)
+{
+	%Type% x, y;
+	Int i;
+
+	switch (argc) {
+		case 1:
+			return argv[0];
+
+		case 2:
+			x = argv[0].unboxed.%unboxed%;
+			if ((y = argv[1].unboxed.%unboxed%) < x) x = y;
+			return SmileUnboxed%Type%_From(x);
+
+		case 3:
+			x = argv[0].unboxed.%unboxed%;
+			if ((y = argv[1].unboxed.%unboxed%) < x) x = y;
+			if ((y = argv[2].unboxed.%unboxed%) < x) x = y;
+			return SmileUnboxed%Type%_From(x);
+
+		case 4:
+			x = argv[0].unboxed.%unboxed%;
+			if ((y = argv[1].unboxed.%unboxed%) < x) x = y;
+			if ((y = argv[2].unboxed.%unboxed%) < x) x = y;
+			if ((y = argv[3].unboxed.%unboxed%) < x) x = y;
+			return SmileUnboxed%Type%_From(x);
+
+		default:
+			x = argv[0].unboxed.%unboxed%;
+			for (i = 1; i < argc; i++) {
+				if ((y = argv[i].unboxed.%unboxed%) < x) x = y;
+			}
+			return SmileUnboxed%Type%_From(x);
+	}
+}
+
+SMILE_EXTERNAL_FUNCTION(Max)
+{
+	%Type% x, y;
+	Int i;
+
+	switch (argc) {
+		case 1:
+			return argv[0];
+
+		case 2:
+			x = argv[0].unboxed.%unboxed%;
+			if ((y = argv[1].unboxed.%unboxed%) > x) x = y;
+			return SmileUnboxed%Type%_From(x);
+
+		case 3:
+			x = argv[0].unboxed.%unboxed%;
+			if ((y = argv[1].unboxed.%unboxed%) > x) x = y;
+			if ((y = argv[2].unboxed.%unboxed%) > x) x = y;
+			return SmileUnboxed%Type%_From(x);
+
+		case 4:
+			x = argv[0].unboxed.%unboxed%;
+			if ((y = argv[1].unboxed.%unboxed%) > x) x = y;
+			if ((y = argv[2].unboxed.%unboxed%) > x) x = y;
+			if ((y = argv[3].unboxed.%unboxed%) > x) x = y;
+			return SmileUnboxed%Type%_From(x);
+
+		default:
+			x = argv[0].unboxed.%unboxed%;
+			for (i = 1; i < argc; i++) {
+				if ((y = argv[i].unboxed.%unboxed%) > x) x = y;
+			}
+			return SmileUnboxed%Type%_From(x);
+	}
+}
+
+SMILE_EXTERNAL_FUNCTION(Sqrt)
+{
+	%Type% value = argv[0].unboxed.%unboxed%;
+
+	if (value < %Zero%) {
+		MathInfo mathInfo = (MathInfo)param;
+		if (mathInfo->isLoud)
+			Smile_ThrowException(Smile_KnownSymbols.native_method_error, _negativeSqrt);
+		return SmileUnboxed%Type%_From(%Zero%);
+	}
+
+	return SmileUnboxed%Type%_From((%Type%)sqrt(value));
+}
+
+//-------------------------------------------------------------------------------------------------
+
+void Smile%Type%_Setup(SmileUserObject base)
+{
+	SmileUnboxed%Type%_Instance->base = (SmileObject)base;
+
+	SetupFunction("bool", ToBool, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("int", ToInt, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("string", ToString, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("hash", Hash, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+
+	SetupFunction("+", Plus, NULL, "augend addend", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _%type%Checks);
+	SetupFunction("-", Minus, NULL, "minuend subtrahend", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _%type%Checks);
+	SetupFunction("*", Star, NULL, "multiplier multiplicand", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _%type%Checks);
+	SetupFunction("/", Slash, &_quietMath, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _%type%Checks);
+	SetupFunction("/!", Slash, &_loudMath, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _%type%Checks);
+	SetupSynonym("/", "div");
+	SetupSynonym("/!", "div!");
+	SetupFunction("mod", Mod, &_quietMath, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction("mod!", Mod, &_loudMath, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction("rem", Rem, &_quietMath, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction("rem!", Rem, &_loudMath, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
+	SetupFunction("sqrt", Sqrt, &_quietMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("sqrt!", Sqrt, &_loudMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+
+	SetupFunction("sign", Sign, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("abs", Abs, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("clip", Clip, NULL, "value min max", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _%type%Checks);
+	SetupFunction("min", Min, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _%type%Checks);
+	SetupFunction("max", Max, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _%type%Checks);
+}

@@ -15,6 +15,7 @@
 //  limitations under the License.
 //---------------------------------------------------------------------------------------
 
+#include <smile/numeric/float64.h>
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/numeric/smile%type%.h>
 #include <smile/smiletypes/easyobject.h>
@@ -26,13 +27,13 @@ SMILE_EASY_OBJECT_VTABLE(Smile%Type%);
 Smile%Type% Smile%Type%_Create(%RawType% value)
 {
 	// We MALLOC_ATOMIC here because the base is a known pointer that will never be collected.
-	Smile%Type% smileReal = (Smile%Type%)GC_MALLOC_ATOMIC(sizeof(struct Smile%Type%Int));
-	if (smileReal == NULL) Smile_Abort_OutOfMemory();
-	smileReal->base = (SmileObject)Smile_KnownBases.%Type%;
-	smileReal->kind = SMILE_KIND_%TYPE%;
-	smileReal->vtable = Smile%Type%_VTable;
-	smileReal->value = value;
-	return smileReal;
+	Smile%Type% smileFloat = (Smile%Type%)GC_MALLOC_ATOMIC(sizeof(struct Smile%Type%Int));
+	if (smileFloat == NULL) Smile_Abort_OutOfMemory();
+	smileFloat->base = (SmileObject)Smile_KnownBases.%Type%;
+	smileFloat->kind = SMILE_KIND_%TYPE%;
+	smileFloat->vtable = Smile%Type%_VTable;
+	smileFloat->value = value;
+	return smileFloat;
 }
 
 static UInt32 Smile%Type%_Hash(Smile%Type% obj)
@@ -51,10 +52,10 @@ SMILE_EASY_OBJECT_TOSTRING(Smile%Type%, %ToStringBase10%)
 static Bool Smile%Type%_CompareEqual(Smile%Type% a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
 {
 	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_%TYPE%) {
-		return a->value.value == bData.%unboxed%.value;
+		return a->value == bData.%unboxed%;
 	}
 	else if (SMILE_KIND(b) == SMILE_KIND_%TYPE%) {
-		return a->value.value == ((Smile%Type%)b)->value.value;
+		return a->value == ((Smile%Type%)b)->value;
 	}
 	else return False;
 }
@@ -64,10 +65,10 @@ static Bool Smile%Type%_DeepEqual(Smile%Type% a, SmileUnboxedData aData, SmileOb
 	UNUSED(visitedPointers);
 
 	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_%TYPE%) {
-		return a->value.value == bData.%unboxed%.value;
+		return a->value == bData.%unboxed%;
 	}
 	else if (SMILE_KIND(b) == SMILE_KIND_%TYPE%) {
-		return a->value.value == ((Smile%Type%)b)->value.value;
+		return a->value == ((Smile%Type%)b)->value;
 	}
 	else return False;
 }
@@ -77,9 +78,9 @@ SmileObject Smile%Type%_Box(SmileArg src)
 	return src.obj;
 }
 
-SmileArg Smile%Type%_Unbox(Smile%Type% smileReal)
+SmileArg Smile%Type%_Unbox(Smile%Type% smileFloat)
 {
-	return SmileUnboxed%Type%_From(smileReal->value);
+	return SmileUnboxed%Type%_From(smileFloat->value);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -98,10 +99,10 @@ SMILE_EASY_OBJECT_TOSTRING(SmileUnboxed%Type%, %ToStringBase10%)
 static Bool SmileUnboxed%Type%_CompareEqual(SmileUnboxed%Type% a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
 {
 	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_%TYPE%) {
-		return aData.%unboxed%.value == bData.%unboxed%.value;
+		return aData.%unboxed% == bData.%unboxed%;
 	}
 	else if (SMILE_KIND(b) == SMILE_KIND_%TYPE%) {
-		return aData.%unboxed%.value == ((Smile%Type%)b)->value.value;
+		return aData.%unboxed% == ((Smile%Type%)b)->value;
 	}
 	else return False;
 }
@@ -111,10 +112,10 @@ static Bool SmileUnboxed%Type%_DeepEqual(SmileUnboxed%Type% a, SmileUnboxedData 
 	UNUSED(visitedPointers);
 
 	if (SMILE_KIND(b) == SMILE_KIND_UNBOXED_%TYPE%) {
-		return aData.%unboxed%.value == bData.%unboxed%.value;
+		return aData.%unboxed% == bData.%unboxed%;
 	}
 	else if (SMILE_KIND(b) == SMILE_KIND_%TYPE%) {
-		return aData.%unboxed%.value == ((Smile%Type%)b)->value.value;
+		return aData.%unboxed% == ((Smile%Type%)b)->value;
 	}
 	else return False;
 }
@@ -124,7 +125,7 @@ static SmileObject SmileUnboxed%Type%_Box(SmileArg src)
 	return (SmileObject)Smile%Type%_Create(src.unboxed.%unboxed%);
 }
 
-static SmileArg SmileUnboxed%Type%_Unbox(SmileUnboxed%Type% smileUnboxedReal)
+static SmileArg SmileUnboxed%Type%_Unbox(SmileUnboxed%Type% smileUnboxedFloat)
 {
 	Smile_Abort_FatalError("Cannot re-unbox a unboxed object.");
 	return (SmileArg){ 0 };

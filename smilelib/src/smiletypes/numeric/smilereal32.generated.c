@@ -30,13 +30,13 @@ SMILE_EASY_OBJECT_VTABLE(SmileReal32);
 SmileReal32 SmileReal32_Create(Real32 value)
 {
 	// We MALLOC_ATOMIC here because the base is a known pointer that will never be collected.
-	SmileReal32 smileInt = (SmileReal32)GC_MALLOC_ATOMIC(sizeof(struct SmileReal32Int));
-	if (smileInt == NULL) Smile_Abort_OutOfMemory();
-	smileInt->base = (SmileObject)Smile_KnownBases.Real32;
-	smileInt->kind = SMILE_KIND_REAL32;
-	smileInt->vtable = SmileReal32_VTable;
-	smileInt->value = value;
-	return smileInt;
+	SmileReal32 smileReal = (SmileReal32)GC_MALLOC_ATOMIC(sizeof(struct SmileReal32Int));
+	if (smileReal == NULL) Smile_Abort_OutOfMemory();
+	smileReal->base = (SmileObject)Smile_KnownBases.Real32;
+	smileReal->kind = SMILE_KIND_REAL32;
+	smileReal->vtable = SmileReal32_VTable;
+	smileReal->value = value;
+	return smileReal;
 }
 
 static UInt32 SmileReal32_Hash(SmileReal32 obj)
@@ -81,9 +81,9 @@ SmileObject SmileReal32_Box(SmileArg src)
 	return src.obj;
 }
 
-SmileArg SmileReal32_Unbox(SmileReal32 smileInt)
+SmileArg SmileReal32_Unbox(SmileReal32 smileReal)
 {
-	return SmileUnboxedReal32_From(smileInt->value);
+	return SmileUnboxedReal32_From(smileReal->value);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -128,7 +128,7 @@ static SmileObject SmileUnboxedReal32_Box(SmileArg src)
 	return (SmileObject)SmileReal32_Create(src.unboxed.r32);
 }
 
-static SmileArg SmileUnboxedReal32_Unbox(SmileUnboxedReal32 smileUnboxedInt)
+static SmileArg SmileUnboxedReal32_Unbox(SmileUnboxedReal32 smileUnboxedReal)
 {
 	Smile_Abort_FatalError("Cannot re-unbox a unboxed object.");
 	return (SmileArg){ 0 };
