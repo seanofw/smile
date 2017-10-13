@@ -1,3 +1,4 @@
+#!/usr/bin/perl
 
 sub LoadTemplate {
 	my $templateFileName = $_[0];

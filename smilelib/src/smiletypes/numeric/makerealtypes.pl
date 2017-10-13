@@ -1,3 +1,4 @@
+#!/usr/bin/perl
 
 sub LoadTemplate {
 	my $templateFileName = $_[0];
@@ -66,3 +67,25 @@ sub OutputTemplate {
 
 OutputTemplate(\@realTemplate, \%real64Substitutions, "smilereal64.generated.c");
 OutputTemplate(\@realBaseTemplate, \%real64Substitutions, "smilereal64_base.generated.c");
+
+#--------------------------------------------------------------------------------------------
+
+%real32Substitutions = (
+	"type" => "real32",
+	"Type" => "Real32",
+	"TYPE" => "REAL32",
+	"RawType" => "Real32",
+	"unboxed" => "r32",
+	"numbits" => "32",
+	"TypeName" => "A Real32",
+	"ToBool" => "!Real32_IsZero(unboxedData.r32)",
+	"ToBoolArg" => "!Real32_IsZero(argv[0].unboxed.r32)",
+	"ToInt" => "SmileUnboxedInteger32_From(Real32_ToInt32(argv[0].unboxed.r32))",
+	"ToStringBase10" => "Real32_ToStringEx(unboxedData.r32, 0, 0, False)",
+	"ToStringArg" => "Real32_ToStringEx(argv[0].unboxed.r32, 0, 0, False)",
+	"HashAlgorithm" => "(UInt32)(*(UInt32 *)&obj->value)"
+);
+
+OutputTemplate(\@realTemplate, \%real32Substitutions, "smilereal32.generated.c");
+OutputTemplate(\@realBaseTemplate, \%real32Substitutions, "smilereal32_base.generated.c");
+

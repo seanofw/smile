@@ -167,6 +167,10 @@ SMILE_API_FUNC void Closure_SetArgumentInScope(Closure closure, Int scope, Int i
 	( ((__closure__)->stackTop->obj = (SmileObject)SmileUnboxedInteger64_Instance), \
 	  ((__closure__)->stackTop->unboxed.i64 = (__value__)), \
 	  ((__closure__)->stackTop++) )
+#define Closure_PushUnboxedReal32(__closure__, __value__) \
+	( ((__closure__)->stackTop->obj = (SmileObject)SmileUnboxedReal32_Instance), \
+	  ((__closure__)->stackTop->unboxed.r32 = (__value__)), \
+	  ((__closure__)->stackTop++) )
 #define Closure_PushUnboxedReal64(__closure__, __value__) \
 	( ((__closure__)->stackTop->obj = (SmileObject)SmileUnboxedReal64_Instance), \
 	  ((__closure__)->stackTop->unboxed.r64 = (__value__)), \
