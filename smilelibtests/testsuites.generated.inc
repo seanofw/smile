@@ -34,6 +34,7 @@ EXTERN_TEST_SUITE(StringDictTests);
 EXTERN_TEST_SUITE(StringExtraTests);
 EXTERN_TEST_SUITE(StringFormatTests);
 EXTERN_TEST_SUITE(StringHtmlTests);
+EXTERN_TEST_SUITE(StringIdentTests);
 EXTERN_TEST_SUITE(StringIntDictTests);
 EXTERN_TEST_SUITE(StringParseTests);
 EXTERN_TEST_SUITE(StringUnicodeTests);
@@ -77,6 +78,7 @@ void RunAllTests()
 	RUN_TEST_SUITE(results, StringExtraTests);
 	RUN_TEST_SUITE(results, StringFormatTests);
 	RUN_TEST_SUITE(results, StringHtmlTests);
+	RUN_TEST_SUITE(results, StringIdentTests);
 	RUN_TEST_SUITE(results, StringIntDictTests);
 	RUN_TEST_SUITE(results, StringParseTests);
 	RUN_TEST_SUITE(results, StringUnicodeTests);
@@ -121,6 +123,7 @@ const char *TestSuiteNames[] = {
 	"StringExtraTests",
 	"StringFormatTests",
 	"StringHtmlTests",
+	"StringIdentTests",
 	"StringIntDictTests",
 	"StringParseTests",
 	"StringUnicodeTests",
@@ -128,5 +131,5 @@ const char *TestSuiteNames[] = {
 };
 
 
-int NumTestSuites = 38;
+int NumTestSuites = 39;
 

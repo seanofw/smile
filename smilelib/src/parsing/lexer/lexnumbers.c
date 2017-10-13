@@ -67,13 +67,15 @@ static Bool EnsureEndOfNumber(Lexer lexer)
 		}
 
 		// Disallow anything that smells like a letterform.
-		identifierCharacterKind = SmileIdentifierKind(code);
-		if (identifierCharacterKind & (IDENTKIND_STARTLETTER | IDENTKIND_MIDDLELETTER)) {
-			stringBuilder = StringBuilder_Create();
-			StringBuilder_AppendUnicode(stringBuilder, code);
-			lexer->src = src;
-			lexer->token->text = String_FormatString(TrailingGarbageAfterNumberMessage, StringBuilder_ToString(stringBuilder));
-			return False;
+		if (code != '-') {
+			identifierCharacterKind = SmileIdentifierKind(code);
+			if (identifierCharacterKind & (IDENTKIND_STARTLETTER | IDENTKIND_MIDDLELETTER)) {
+				stringBuilder = StringBuilder_Create();
+				StringBuilder_AppendUnicode(stringBuilder, code);
+				lexer->src = src;
+				lexer->token->text = String_FormatString(TrailingGarbageAfterNumberMessage, StringBuilder_ToString(stringBuilder));
+				return False;
+			}
 		}
 	}
 

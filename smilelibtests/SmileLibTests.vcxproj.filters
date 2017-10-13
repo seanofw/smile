@@ -121,6 +121,7 @@
     <ClCompile Include="parsing\lexer\lexerloanword_tests.c">
       <Filter>parsing\lexer</Filter>
     </ClCompile>
+    <ClCompile Include="string\stringident_tests.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
