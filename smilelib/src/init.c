@@ -25,8 +25,11 @@
 #include <smile/env/knownsymbols.h>
 #include <smile/env/knownobjects.h>
 #include <smile/env/knownbases.h>
+#include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/smileuserobject.h>
 #include <smile/smiletypes/text/smilesymbol.h>
+#include <smile/smiletypes/numeric/smileinteger64.h>
+#include <smile/stringbuilder.h>
 
 extern void Smile_InitTicks(void);
 
@@ -248,3 +251,43 @@ SmileUserObject Smile_CreateExceptionCV(const char *exceptionKind, const char *f
 	}
 
 #endif
+
+//-------------------------------------------------------------------------------------------------
+
+String Smile_FormatStackTrace(SmileList stackTrace)
+{
+	SmileObject node;
+	DECLARE_INLINE_STRINGBUILDER(stringBuilder, 256);
+
+	if (SMILE_KIND(stackTrace) != SMILE_KIND_LIST)
+		return String_FromC("<no stack trace>");
+
+	INIT_INLINE_STRINGBUILDER(stringBuilder);
+
+	for (; SMILE_KIND(stackTrace) == SMILE_KIND_LIST; stackTrace = LIST_REST(stackTrace)) {
+		node = LIST_FIRST(stackTrace);
+		SmileObject filename = SMILE_VCALL1(node, getProperty, Smile_KnownSymbols.filename);
+		SmileObject line = SMILE_VCALL1(node, getProperty, Smile_KnownSymbols.line);
+		SmileObject offset = SMILE_VCALL1(node, getProperty, Smile_KnownSymbols.offset);
+
+		if (SMILE_KIND(filename) == SMILE_KIND_STRING) {
+			if (SMILE_KIND(line) == SMILE_KIND_INTEGER64) {
+				StringBuilder_AppendFormat(stringBuilder, "  at \"%S\" line %d\n",
+					(String)filename, ((SmileInteger64)line)->value);
+			}
+			else {
+				StringBuilder_AppendFormat(stringBuilder, "  at \"%S\" <unknown line>\n",
+					(String)filename);
+			}
+		}
+		else if (SMILE_KIND(offset) == SMILE_KIND_INTEGER64) {
+			StringBuilder_AppendFormat(stringBuilder, "  at <unknown file> at offset %d\n",
+				((SmileInteger64)offset)->value);
+		}
+		else {
+			StringBuilder_AppendFormat(stringBuilder, "  at <unknown file>\n");
+		}
+	}
+
+	return StringBuilder_ToString(stringBuilder);
+}

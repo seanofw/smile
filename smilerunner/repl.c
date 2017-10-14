@@ -165,8 +165,9 @@ static Int ParseAndEval(String string, ParseScope globalScope, ClosureInfo globa
 			{
 				String exceptionMessage = (String)SMILE_VCALL1(evalResult->exception, getProperty, Smile_KnownSymbols.message);
 				SmileSymbol exceptionKindWrapped = (SmileSymbol)SMILE_VCALL1(evalResult->exception, getProperty, Smile_KnownSymbols.kind);
-				String displayMessage;
+				String displayMessage, stackTraceMessage;
 				Symbol exceptionKind;
+				SmileObject stackTrace;
 
 				if (SMILE_KIND(exceptionMessage) != SMILE_KIND_STRING)
 					exceptionMessage = String_Empty;
@@ -180,6 +181,12 @@ static Int ParseAndEval(String string, ParseScope globalScope, ClosureInfo globa
 					exceptionMessage);
 				fwrite_styled(String_GetBytes(displayMessage), 1, String_Length(displayMessage), stderr);
 				fflush(stderr);
+
+				stackTrace = SMILE_VCALL1(evalResult->exception, getProperty, Smile_KnownSymbols.stack_trace);
+				stackTraceMessage = Smile_FormatStackTrace((SmileList)stackTrace);
+				fwrite_styled(String_GetBytes(stackTraceMessage), 1, String_Length(stackTraceMessage), stderr);
+				fflush(stderr);
+
 				*result = NullObject;
 			}
 			return 1;

@@ -141,4 +141,6 @@ SMILE_API_FUNC void SMILE_NO_RETURN Smile_ThrowExceptionCV(const char *exception
 SMILE_API_FUNC String Smile_Win32_GetErrorString(UInt32 errorCode);
 SMILE_API_FUNC String Smile_Unix_GetErrorString(Int32 errorCode);
 
+SMILE_API_FUNC String Smile_FormatStackTrace(SmileList stackTrace);
+
 #endif

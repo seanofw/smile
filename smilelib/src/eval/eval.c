@@ -1262,6 +1262,41 @@ next:
 
 //-------------------------------------------------------------------------------------------------
 
+static SmileList MakeStackTrace(Closure closure, ByteCode byteCode, ByteCodeSegment segment)
+{
+	Int offset = byteCode - segment->byteCodes;
+	Int sourceLocation = byteCode->sourceLocation;
+	CompiledSourceLocation compiledSourceLocation;
+	SmileUserObject stackFrame;
+	SmileList result;
+	
+	stackFrame = SmileUserObject_Create((SmileObject)Smile_KnownBases.Object, Smile_KnownSymbols.stack_trace);
+
+	if (sourceLocation > 0) {
+		compiledSourceLocation = &segment->compiledTables->sourcelocations[sourceLocation];
+		SmileUserObject_Set(stackFrame, Smile_KnownSymbols.filename,
+			compiledSourceLocation->filename);
+		SmileUserObject_Set(stackFrame, Smile_KnownSymbols.line,
+			SmileInteger64_Create(compiledSourceLocation->line));
+		SmileUserObject_Set(stackFrame, Smile_KnownSymbols.column,
+			SmileInteger64_Create(compiledSourceLocation->column));
+	}
+
+	SmileUserObject_Set(stackFrame, Smile_KnownSymbols.offset,
+		SmileInteger64_Create(offset));
+
+	if (closure->returnClosure == NULL) {
+		result = SmileList_Cons((SmileObject)stackFrame, NullObject);
+	}
+	else {
+		result = SmileList_Cons((SmileObject)stackFrame,
+			(SmileObject)MakeStackTrace(closure->returnClosure,
+				closure->returnSegment->byteCodes + closure->returnPc - 1, closure->returnSegment));
+	}
+
+	return result;
+}
+
 void Smile_Throw(SmileObject thrownObject)
 {
 	SmileObject kindObject, messageObject;
@@ -1271,7 +1306,8 @@ void Smile_Throw(SmileObject thrownObject)
 		_exceptionContinuation->result = thrownObject;
 
 		if (SMILE_KIND(thrownObject) == SMILE_KIND_USEROBJECT) {
-			// Do stuff to fill in the "stack-trace" property on this object, if that's possible.
+			SmileList stackTrace = MakeStackTrace(_closure, _byteCode - 1, _segment);
+			SmileUserObject_Set(thrownObject, Smile_KnownSymbols.stack_trace, stackTrace);
 		}
 
 		longjmp(_exceptionContinuation->jump, 1);
