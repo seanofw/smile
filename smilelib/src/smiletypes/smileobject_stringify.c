@@ -273,11 +273,11 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 		return;
 
 	case SMILE_KIND_FLOAT32:
-		StringBuilder_AppendFormat(stringBuilder, "%S", Float64_ToStringEx((double)((SmileFloat32)obj)->value, 0, 0, False));
+		StringBuilder_AppendFormat(stringBuilder, "%S", Float64_ToStringEx((double)((SmileFloat32)obj)->value, 0, 6, False));
 		return;
 
 	case SMILE_KIND_FLOAT64:
-		StringBuilder_AppendFormat(stringBuilder, "%S", Float64_ToStringEx(((SmileFloat64)obj)->value, 0, 0, False));
+		StringBuilder_AppendFormat(stringBuilder, "%S", Float64_ToStringEx(((SmileFloat64)obj)->value, 0, 15, False));
 		return;
 
 	case SMILE_KIND_STRING:

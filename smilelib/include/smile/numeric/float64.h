@@ -20,9 +20,9 @@
 #define FLOAT_KIND_POS_SNAN		4
 #define FLOAT_KIND_NEG_SNAN		(0x80 | FLOAT_KIND_POS_SNAN)
 
-SMILE_API_FUNC String Float64_ToFixedString(Float64 float64, Int minIntDigits, Int minFracDigits, Bool forceSign);
+SMILE_API_FUNC String Float64_ToFixedString(Float64 float64, Int minIntDigits, Int maxFracDigits, Bool forceSign);
 SMILE_API_FUNC String Float64_ToExpString(Float64 float64, Int minFracDigits, Bool forceSign);
-SMILE_API_FUNC String Float64_ToStringEx(Float64 float64, Int minIntDigits, Int minFracDigits, Bool forceSign);
-SMILE_API_FUNC Int32 Float64_Decompose(Byte *str, Int32 *exp, Int32 *kind, Float64 float64);
+SMILE_API_FUNC String Float64_ToStringEx(Float64 float64, Int minIntDigits, Int maxFracDigits, Bool forceSign);
+SMILE_API_FUNC Int Float64_GetKind(Float64 float64);
 
 #endif
