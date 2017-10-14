@@ -180,6 +180,11 @@ SMILE_API_FUNC String String_FormatStringV(const String format, va_list v);
 
 SMILE_API_FUNC Int String_SplitWithOptions(const String str, const String pattern, Int limit, Int options, String **pieces);
 
+SMILE_API_FUNC String String_Before(const String str, const String pattern, Int start);
+SMILE_API_FUNC String String_BeforeLast(const String str, const String pattern, Int start);
+SMILE_API_FUNC String String_After(const String str, const String pattern, Int start);
+SMILE_API_FUNC String String_AfterLast(const String str, const String pattern, Int start);
+
 SMILE_API_FUNC String String_RawReverse(const String str);
 SMILE_API_FUNC String String_Reverse(const String str);
 SMILE_API_FUNC String String_Repeat(const String str, Int count);

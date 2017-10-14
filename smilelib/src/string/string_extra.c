@@ -87,6 +87,96 @@ Int String_SplitWithOptions(const String str, const String pattern, Int limit, I
 }
 
 /// <summary>
+/// Find the first pattern in str, and return all of the str after it.
+/// If the pattern is not found, this returns the empty string.
+/// </summary>
+/// <param name="pattern">The pattern to search for in the string.  If this
+/// is null or the empty string, the original string will be returned unchanged.</param>
+/// <param name="str">The string to search in.</param>
+/// <param name="start">An index within the string to start the search at.</param>
+/// <returns>The substring found after the given pattern, or the empty string
+/// if the pattern does not exist.</returns>
+String String_After(const String str, const String pattern, Int start)
+{
+	Int index;
+
+	if (String_IsNullOrEmpty(pattern)) return str;
+
+	index = String_IndexOf(str, pattern, start);
+	if (index < 0) return String_Empty;
+
+	return String_SubstringAt(str, index + String_Length(pattern));
+}
+
+/// <summary>
+/// Find the first pattern in str, and return all of the str before it.
+/// If the pattern is not found, this returns the entire string.
+/// </summary>
+/// <param name="pattern">The pattern to search for in the string.  If this
+/// is null or the empty string, the original string will be returned unchanged.</param>
+/// <param name="str">The string to search in.</param>
+/// <param name="start">An index within the string to start the search at.</param>
+/// <returns>The substring found before the given pattern, or the entire string
+/// if the pattern does not exist.</returns>
+String String_Before(const String str, const String pattern, Int start)
+{
+	Int index;
+
+	if (String_IsNullOrEmpty(pattern)) return str;
+
+	index = String_IndexOf(str, pattern, start);
+	if (index < 0) return String_Empty;
+
+	return String_Substring(str, 0, index);
+}
+
+/// <summary>
+/// Find the last pattern in str, and return all of the str after it.
+/// If the pattern is not found, this returns the empty string.
+/// </summary>
+/// <param name="pattern">The pattern to search for in the string.  If this
+/// is null or the empty string, the original string will be returned unchanged.</param>
+/// <param name="str">The string to search in.</param>
+/// <param name="start">The start character index within the string where the search should begin (usually the length of the string).
+/// If passed 'n', the first substring comparison will be against the characters at (n - pattern.length) through (n - 1), inclusive.</param>
+/// <returns>The substring found after the given pattern, or the empty string
+/// if the pattern does not exist.</returns>
+String String_AfterLast(const String str, const String pattern, Int start)
+{
+	Int index;
+
+	if (String_IsNullOrEmpty(pattern)) return str;
+
+	index = String_LastIndexOf(str, pattern, start);
+	if (index < 0) return String_Empty;
+
+	return String_SubstringAt(str, index + String_Length(pattern));
+}
+
+/// <summary>
+/// Find the last pattern in str, and return all of the str before it.
+/// If the pattern is not found, this returns the entire string.
+/// </summary>
+/// <param name="pattern">The pattern to search for in the string.  If this
+/// is null or the empty string, the original string will be returned unchanged.</param>
+/// <param name="str">The string to search in.</param>
+/// <param name="start">The start character index within the string where the search should begin (usually the length of the string).
+/// If passed 'n', the first substring comparison will be against the characters at (n - pattern.length) through (n - 1), inclusive.</param>
+/// <returns>The substring found before the given pattern, or the entire string
+/// if the pattern does not exist.</returns>
+String String_BeforeLast(const String str, const String pattern, Int start)
+{
+	Int index;
+
+	if (String_IsNullOrEmpty(pattern)) return str;
+
+	index = String_LastIndexOf(str, pattern, start);
+	if (index < 0) return String_Empty;
+
+	return String_Substring(str, 0, index);
+}
+
+/// <summary>
 /// Reverse the raw bytes of the given string, ignoring whether they may be compound UTF-8 values forming a single Unicode code point.
 /// </summary>
 /// <param name="str">The string to reverse.</param>
