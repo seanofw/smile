@@ -471,6 +471,77 @@ SMILE_EXTERNAL_FUNCTION(Sqrt)
 }
 
 //-------------------------------------------------------------------------------------------------
+// Rounding/truncation operations
+
+SMILE_EXTERNAL_FUNCTION(Ceil)
+{
+	return SmileUnboxedFloat64_From((Float64)ceil(argv[0].unboxed.f64));
+}
+
+SMILE_EXTERNAL_FUNCTION(Floor)
+{
+	return SmileUnboxedFloat64_From((Float64)floor(argv[0].unboxed.f64));
+}
+
+SMILE_EXTERNAL_FUNCTION(Trunc)
+{
+	return SmileUnboxedFloat64_From((Float64)trunc(argv[0].unboxed.f64));
+}
+
+SMILE_EXTERNAL_FUNCTION(Round)
+{
+	return SmileUnboxedFloat64_From((Float64)floor(argv[0].unboxed.f64 + 0.5));
+}
+
+static Float64 BankRoundInternal(Float64 value)
+{
+	Float64 intPart, fracPart;
+	Float64 intTail;
+
+	// Negative numbers do the same algorithm upside-down.
+	if (value < 0.0) return -BankRoundInternal(-value);
+
+	// Split into integer and fractional parts.
+	fracPart = modf(value, &intPart);
+
+	// Easy rounding cases.
+	if (fracPart < 0.5)
+		return intPart;
+	else if (fracPart > 0.5)
+		return intPart + 1;
+
+	// Exactly 0.5, so we need to use the integer part to decide which way to go.
+	intTail = fmod(intPart, 2.0);
+	if (intTail < 0.5 || intTail > 1.5) {
+		// The integer part is even, so round down.
+		return intPart;
+	}
+	else {
+		// The integer part is odd, so round up.
+		return intPart + 1;
+	}	
+}
+
+SMILE_EXTERNAL_FUNCTION(BankRound)
+{
+	return SmileUnboxedFloat64_From((Float64)BankRoundInternal(argv[0].unboxed.f64));
+}
+
+SMILE_EXTERNAL_FUNCTION(Modf)
+{
+	Float64 intPart, fracPart;
+	SmileList list;
+
+	fracPart = modf((Float64)argv[0].unboxed.f64, &intPart);
+
+	list = SmileList_Cons((SmileObject)SmileFloat64_Create((Float64)intPart),
+		(SmileObject)SmileList_Cons((SmileObject)SmileFloat64_Create((Float64)fracPart),
+		NullObject));
+
+	return SmileArg_From((SmileObject)list);
+}
+
+//-------------------------------------------------------------------------------------------------
 
 void SmileFloat64_Setup(SmileUserObject base)
 {
@@ -500,4 +571,11 @@ void SmileFloat64_Setup(SmileUserObject base)
 	SetupFunction("clip", Clip, NULL, "value min max", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _float64Checks);
 	SetupFunction("min", Min, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _float64Checks);
 	SetupFunction("max", Max, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _float64Checks);
+
+	SetupFunction("ceil", Ceil, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
+	SetupFunction("floor", Floor, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
+	SetupFunction("trunc", Trunc, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
+	SetupFunction("round", Round, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
+	SetupFunction("bank-round", BankRound, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
+	SetupFunction("modf", Modf, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
 }
