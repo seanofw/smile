@@ -993,6 +993,7 @@
     <ClCompile Include="src\smiletypes\numeric\smilefloat32_base.generated.c" />
     <ClCompile Include="src\smiletypes\numeric\smilefloat64.generated.c" />
     <ClCompile Include="src\numeric\float64.c" />
+    <ClCompile Include="src\string\string_path.c" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">

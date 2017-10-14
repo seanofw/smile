@@ -257,6 +257,14 @@ SMILE_API_FUNC String String_ConvertUtf8ToCodePageRange(const String str, Int st
 SMILE_API_FUNC String String_ConvertCodePageToUtf8Range(const String str, Int start, Int length, const UInt16 *codePageToUtf8Table);
 
 //-------------------------------------------------------------------------------------------------
+//  External parts of the implementation (path-specific functions).
+
+SMILE_API_FUNC String Path_GetExt(String path);
+SMILE_API_FUNC String Path_GetFilename(String path);
+SMILE_API_FUNC String Path_GetFilenameWithoutExt(String path);
+SMILE_API_FUNC String Path_GetDirname(String path);
+
+//-------------------------------------------------------------------------------------------------
 //  Known (supported) legacy code pages.
 
 enum {
