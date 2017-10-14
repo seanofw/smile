@@ -84,6 +84,7 @@ size_t fwrite_styled(const char *string, size_t size, size_t count, FILE *fp)
 				&& !(((ch = *ptr) >= 'a' && ch <= 'z')
 					|| (ch >= 'A' && ch <= 'Z')))
 				ptr++;
+			if (ptr < end) ptr++;
 		}
 		else {
 			// Find the extent of this sequence of characters that *isn't* escape codes.
