@@ -84,15 +84,15 @@ EXTERN_STATIC_STRING(String_Eight, "8");
 EXTERN_STATIC_STRING(String_Nine, "9");
 
 // An array of the ASCII numbers, as strings.
-String String_Number[10] = {
-	&String_ZeroStruct,
-	&String_OneStruct,
-	&String_TwoStruct,
-	&String_ThreeStruct,
-	&String_FourStruct,
-	&String_FiveStruct,
-	&String_SixStruct,
-	&String_SevenStruct,
-	&String_EightStruct,
-	&String_NineStruct,
+const String String_Number[10] = {
+	(const String)&String_ZeroStruct,
+	(const String)&String_OneStruct,
+	(const String)&String_TwoStruct,
+	(const String)&String_ThreeStruct,
+	(const String)&String_FourStruct,
+	(const String)&String_FiveStruct,
+	(const String)&String_SixStruct,
+	(const String)&String_SevenStruct,
+	(const String)&String_EightStruct,
+	(const String)&String_NineStruct,
 };

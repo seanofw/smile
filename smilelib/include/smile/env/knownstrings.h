@@ -10,11 +10,11 @@
 #include <smile/smiletypes/predecl.h>
 #endif
 
-SMILE_API_DATA String String_Object;	// "Object"
-SMILE_API_DATA String String_True;	// "true"
-SMILE_API_DATA String String_False;	// "false"
+SMILE_API_DATA const String String_Object;	// "Object"
+SMILE_API_DATA const String String_True;	// "true"
+SMILE_API_DATA const String String_False;	// "false"
 
-SMILE_API_DATA String String_InvalidSecurityKey;	// "Invalid security key."
-SMILE_API_DATA String String_InvalidFunctionError;	// "Object is not a callable function."
+SMILE_API_DATA const String String_InvalidSecurityKey;	// "Invalid security key."
+SMILE_API_DATA const String String_InvalidFunctionError;	// "Object is not a callable function."
 
 #endif

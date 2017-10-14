@@ -40,7 +40,7 @@ typedef struct StringStruct {
 
 	struct {
 		Int length;	// The length of the text array (in bytes, not Unicode code points).
-		Byte text[1024];	// The actual bytes of the string (nul-terminated).  Not actually an array of 1024 bytes, either.
+		Byte text[65536];	// The actual bytes of the string (nul-terminated).  Not actually an array of 65536 bytes, either.
 	} _opaque;
 } *String;
 
@@ -72,68 +72,68 @@ enum StringWildcardOptions {
 //  Special common preallocated strings (static, not on the heap).
 
 // The special one-and-only empty string.
-SMILE_API_DATA String String_Empty;
+SMILE_API_DATA const String String_Empty;
 
 // Common ASCII formatting/control codes, as single-character strings.
-SMILE_API_DATA String String_Nul;	// 0x00
-SMILE_API_DATA String String_Bell;	// 0x07
-SMILE_API_DATA String String_Backspace;	// 0x08
-SMILE_API_DATA String String_Tab;	// 0x09
-SMILE_API_DATA String String_Newline;	// 0x0A
-SMILE_API_DATA String String_VerticalTab;	// 0x0B
-SMILE_API_DATA String String_FormFeed;	// 0x0C
-SMILE_API_DATA String String_CarriageReturn;	// 0x0D
-SMILE_API_DATA String String_Escape;	// 0x1B
-SMILE_API_DATA String String_Space;	// 0x20
+SMILE_API_DATA const String String_Nul;	// 0x00
+SMILE_API_DATA const String String_Bell;	// 0x07
+SMILE_API_DATA const String String_Backspace;	// 0x08
+SMILE_API_DATA const String String_Tab;	// 0x09
+SMILE_API_DATA const String String_Newline;	// 0x0A
+SMILE_API_DATA const String String_VerticalTab;	// 0x0B
+SMILE_API_DATA const String String_FormFeed;	// 0x0C
+SMILE_API_DATA const String String_CarriageReturn;	// 0x0D
+SMILE_API_DATA const String String_Escape;	// 0x1B
+SMILE_API_DATA const String String_Space;	// 0x20
 
 // ASCII punctuation, as single-character strings.
-SMILE_API_DATA String String_ExclamationPoint;
-SMILE_API_DATA String String_QuotationMark;
-SMILE_API_DATA String String_PoundSign;
-SMILE_API_DATA String String_Dollar;
-SMILE_API_DATA String String_Percent;
-SMILE_API_DATA String String_Ampersand;
-SMILE_API_DATA String String_Apostrophe;
-SMILE_API_DATA String String_LeftParenthesis;
-SMILE_API_DATA String String_RightParenthesis;
-SMILE_API_DATA String String_Star;
-SMILE_API_DATA String String_Plus;
-SMILE_API_DATA String String_Comma;
-SMILE_API_DATA String String_Hyphen;
-SMILE_API_DATA String String_Period;
-SMILE_API_DATA String String_Slash;
-SMILE_API_DATA String String_Colon;
-SMILE_API_DATA String String_Semicolon;
-SMILE_API_DATA String String_LessThan;
-SMILE_API_DATA String String_Equal;
-SMILE_API_DATA String String_GreaterThan;
-SMILE_API_DATA String String_QuestionMark;
-SMILE_API_DATA String String_AtSign;
-SMILE_API_DATA String String_LeftBracket;
-SMILE_API_DATA String String_Backslash;
-SMILE_API_DATA String String_RightBracket;
-SMILE_API_DATA String String_Caret;
-SMILE_API_DATA String String_Underscore;
-SMILE_API_DATA String String_Backtick;
-SMILE_API_DATA String String_LeftBrace;
-SMILE_API_DATA String String_VerticalBar;
-SMILE_API_DATA String String_RightBrace;
-SMILE_API_DATA String String_Tilde;
+SMILE_API_DATA const String String_ExclamationPoint;
+SMILE_API_DATA const String String_QuotationMark;
+SMILE_API_DATA const String String_PoundSign;
+SMILE_API_DATA const String String_Dollar;
+SMILE_API_DATA const String String_Percent;
+SMILE_API_DATA const String String_Ampersand;
+SMILE_API_DATA const String String_Apostrophe;
+SMILE_API_DATA const String String_LeftParenthesis;
+SMILE_API_DATA const String String_RightParenthesis;
+SMILE_API_DATA const String String_Star;
+SMILE_API_DATA const String String_Plus;
+SMILE_API_DATA const String String_Comma;
+SMILE_API_DATA const String String_Hyphen;
+SMILE_API_DATA const String String_Period;
+SMILE_API_DATA const String String_Slash;
+SMILE_API_DATA const String String_Colon;
+SMILE_API_DATA const String String_Semicolon;
+SMILE_API_DATA const String String_LessThan;
+SMILE_API_DATA const String String_Equal;
+SMILE_API_DATA const String String_GreaterThan;
+SMILE_API_DATA const String String_QuestionMark;
+SMILE_API_DATA const String String_AtSign;
+SMILE_API_DATA const String String_LeftBracket;
+SMILE_API_DATA const String String_Backslash;
+SMILE_API_DATA const String String_RightBracket;
+SMILE_API_DATA const String String_Caret;
+SMILE_API_DATA const String String_Underscore;
+SMILE_API_DATA const String String_Backtick;
+SMILE_API_DATA const String String_LeftBrace;
+SMILE_API_DATA const String String_VerticalBar;
+SMILE_API_DATA const String String_RightBrace;
+SMILE_API_DATA const String String_Tilde;
 
 // ASCII numbers, as single-character strings.
-SMILE_API_DATA String String_Zero;
-SMILE_API_DATA String String_One;
-SMILE_API_DATA String String_Two;
-SMILE_API_DATA String String_Three;
-SMILE_API_DATA String String_Four;
-SMILE_API_DATA String String_Five;
-SMILE_API_DATA String String_Six;
-SMILE_API_DATA String String_Seven;
-SMILE_API_DATA String String_Eight;
-SMILE_API_DATA String String_Nine;
+SMILE_API_DATA const String String_Zero;
+SMILE_API_DATA const String String_One;
+SMILE_API_DATA const String String_Two;
+SMILE_API_DATA const String String_Three;
+SMILE_API_DATA const String String_Four;
+SMILE_API_DATA const String String_Five;
+SMILE_API_DATA const String String_Six;
+SMILE_API_DATA const String String_Seven;
+SMILE_API_DATA const String String_Eight;
+SMILE_API_DATA const String String_Nine;
 
 // An array of the ASCII numbers, as strings.
-SMILE_API_DATA String String_Number[10];
+SMILE_API_DATA const String String_Number[10];
 
 //-------------------------------------------------------------------------------------------------
 //  External parts of the implementation (core)

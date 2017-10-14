@@ -21,6 +21,9 @@
 #include <smile/stringbuilder.h>
 #include <smile/internal/types.h>
 
+// How big the text[] array is in the String's _opaque struct.
+#define STRING_TEXT_PADDING 65536
+
 /// <summary>
 /// Construct a new String instance containing the given substring of text,
 /// starting at the given start index, going for the given length.
@@ -46,7 +49,7 @@ String String_Create(const Byte *text, Int length)
 	//   the GC to completely ignore all of the String's data and treat it as just a meaningless,
 	//   featureless blob.
 
-	str = (String)GC_MALLOC_ATOMIC(sizeof(struct StringStruct) - 1024 + length + 1);
+	str = (String)GC_MALLOC_ATOMIC(sizeof(struct StringStruct) - STRING_TEXT_PADDING + length + 1);
 	if (str == NULL) Smile_Abort_OutOfMemory();
 
 	str->kind = SMILE_KIND_STRING;
@@ -74,7 +77,7 @@ String String_CreateInternal(Int length)
 
 	// See above note about GC_MALLOC_ATOMIC() before changing this code!
 
-	str = (String)GC_MALLOC_ATOMIC(sizeof(struct StringStruct) - 1024 + length + 1);
+	str = (String)GC_MALLOC_ATOMIC(sizeof(struct StringStruct) - STRING_TEXT_PADDING + length + 1);
 	if (str == NULL) Smile_Abort_OutOfMemory();
 
 	str->kind = SMILE_KIND_STRING;
