@@ -258,7 +258,7 @@
 #define bid32_round_integral_zero Real32_Trunc
 #define bid32_to_int16_ceil __bid32_to_int16_ceil
 #define bid32_to_int16_floor __bid32_to_int16_floor
-#define bid32_to_int16_int __bid32_to_int16_int
+#define bid32_to_int16_int Real32_ToInt16
 #define bid32_to_int16_rnint __bid32_to_int16_rnint
 #define bid32_to_int16_rninta __bid32_to_int16_rninta
 #define bid32_to_int16_xceil __bid32_to_int16_xceil
@@ -268,7 +268,7 @@
 #define bid32_to_int16_xrninta __bid32_to_int16_xrninta
 #define bid32_to_int32_ceil __bid32_to_int32_ceil
 #define bid32_to_int32_floor __bid32_to_int32_floor
-#define bid32_to_int32_int __bid32_to_int32_int
+#define bid32_to_int32_int Real32_ToInt32
 #define bid32_to_int32_rnint __bid32_to_int32_rnint
 #define bid32_to_int32_rninta __bid32_to_int32_rninta
 #define bid32_to_int32_xceil __bid32_to_int32_xceil
@@ -328,7 +328,7 @@
 #define bid32_to_uint64_xrninta __bid32_to_uint64_xrninta
 #define bid32_to_uint8_ceil __bid32_to_uint8_ceil
 #define bid32_to_uint8_floor __bid32_to_uint8_floor
-#define bid32_to_uint8_int __bid32_to_uint8_int
+#define bid32_to_uint8_int Real32_ToByte
 #define bid32_to_uint8_rnint __bid32_to_uint8_rnint
 #define bid32_to_uint8_rninta __bid32_to_uint8_rninta
 #define bid32_to_uint8_xceil __bid32_to_uint8_xceil
@@ -632,7 +632,7 @@
 #define bid128_signaling_not_less __bid128_signaling_not_less
 #define bid64_to_int32_ceil __bid64_to_int32_ceil
 #define bid64_to_int32_floor __bid64_to_int32_floor
-#define bid64_to_int32_int __bid64_to_int32_int
+#define bid64_to_int32_int Real64_ToInt32
 #define bid64_to_int32_rnint __bid64_to_int32_rnint
 #define bid64_to_int32_rninta __bid64_to_int32_rninta
 #define bid64_to_int32_xceil __bid64_to_int32_xceil
@@ -746,7 +746,7 @@
 #define bid64_to_uint16_xrninta __bid64_to_uint16_xrninta
 #define bid64_to_int16_ceil __bid64_to_int16_ceil
 #define bid64_to_int16_floor __bid64_to_int16_floor
-#define bid64_to_int16_int __bid64_to_int16_int
+#define bid64_to_int16_int Real64_ToInt16
 #define bid64_to_int16_rnint __bid64_to_int16_rnint
 #define bid64_to_int16_rninta __bid64_to_int16_rninta
 #define bid64_to_int16_xceil __bid64_to_int16_xceil
@@ -776,7 +776,7 @@
 #define bid128_to_int16_xrninta __bid128_to_int16_xrninta
 #define bid64_to_uint8_ceil __bid64_to_uint8_ceil
 #define bid64_to_uint8_floor __bid64_to_uint8_floor
-#define bid64_to_uint8_int __bid64_to_uint8_int
+#define bid64_to_uint8_int Real64_ToByte
 #define bid64_to_uint8_rnint __bid64_to_uint8_rnint
 #define bid64_to_uint8_rninta __bid64_to_uint8_rninta
 #define bid64_to_uint8_xceil __bid64_to_uint8_xceil

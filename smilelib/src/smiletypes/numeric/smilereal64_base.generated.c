@@ -22,9 +22,14 @@
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/smileuserobject.h>
 #include <smile/smiletypes/smilebool.h>
+#include <smile/smiletypes/numeric/smilebyte.h>
+#include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
+#include <smile/smiletypes/numeric/smilereal32.h>
 #include <smile/smiletypes/numeric/smilereal64.h>
+#include <smile/smiletypes/numeric/smilefloat32.h>
+#include <smile/smiletypes/numeric/smilefloat64.h>
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/base.h>
@@ -96,6 +101,57 @@ SMILE_EXTERNAL_FUNCTION(Hash)
 		return SmileUnboxedInteger64_From((UInt32)(*(UInt64 *)&obj->value ^ (*(UInt64 *)&obj->value >> 32)));
 
 	return SmileUnboxedInteger64_From((UInt32)((PtrInt)obj ^ Smile_HashOracle));
+}
+
+//-------------------------------------------------------------------------------------------------
+// Specialized type conversion.
+
+SMILE_EXTERNAL_FUNCTION(ToByte)
+{
+	return SmileUnboxedByte_From(Real64_ToByte(argv[0].unboxed.r64));
+}
+
+SMILE_EXTERNAL_FUNCTION(ToInt16)
+{
+	return SmileUnboxedInteger16_From(Real64_ToInt16(argv[0].unboxed.r64));
+}
+
+SMILE_EXTERNAL_FUNCTION(ToInt32)
+{
+	return SmileUnboxedInteger32_From(Real64_ToInt32(argv[0].unboxed.r64));
+}
+
+SMILE_EXTERNAL_FUNCTION(ToInt64)
+{
+	return SmileUnboxedInteger64_From(Real64_ToInt64(argv[0].unboxed.r64));
+}
+
+SMILE_EXTERNAL_FUNCTION(ToReal64)
+{
+#if 64 == 64
+	return argv[0];
+#else
+	return SmileUnboxedReal64_From(Real64_ToReal64(argv[0].unboxed.r64));
+#endif
+}
+
+SMILE_EXTERNAL_FUNCTION(ToReal32)
+{
+#if 64 == 64
+	return SmileUnboxedReal32_From(Real64_ToReal32(argv[0].unboxed.r64));
+#else
+	return argv[0];
+#endif
+}
+
+SMILE_EXTERNAL_FUNCTION(ToFloat64)
+{
+	return SmileUnboxedFloat64_From(Real64_ToFloat64(argv[0].unboxed.r64));
+}
+
+SMILE_EXTERNAL_FUNCTION(ToFloat32)
+{
+	return SmileUnboxedFloat32_From(Real64_ToFloat32(argv[0].unboxed.r64));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -619,6 +675,17 @@ void SmileReal64_Setup(SmileUserObject base)
 	SetupFunction("int", ToInt, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 	SetupFunction("string", ToString, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 	SetupFunction("hash", Hash, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+
+	SetupFunction("float32", ToFloat32, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("float64", ToFloat64, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("float", ToFloat64, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("real32", ToReal32, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("real64", ToReal64, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("real", ToReal64, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("byte", ToByte, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("int16", ToInt16, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("int32", ToInt32, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("int64", ToInt64, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 
 	SetupFunction("+", Plus, NULL, "augend addend", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _real64Checks);
 	SetupFunction("-", Minus, NULL, "minuend subtrahend", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _real64Checks);

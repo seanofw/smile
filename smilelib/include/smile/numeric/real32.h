@@ -43,6 +43,9 @@ SMILE_API_FUNC Real128 Real32_ToReal128(Real32 real32);
 SMILE_API_FUNC Float32 Real32_ToFloat32(Real32 real32);
 SMILE_API_FUNC Float64 Real32_ToFloat64(Real32 real32);
 SMILE_API_FUNC Int64 Real32_ToInt64(Real32 real32);
+SMILE_API_FUNC Int32 Real32_ToInt32(Real32 real32);
+SMILE_API_FUNC Int16 Real32_ToInt16(Real32 real32);
+SMILE_API_FUNC Byte Real32_ToByte(Real32 real32);
 
 SMILE_API_FUNC Bool Real32_TryParseInternal(const Byte *text, Int length, Real32 *result);
 SMILE_API_FUNC String Real32_ToFixedString(Real32 real32, Int minIntDigits, Int minFracDigits, Bool forceSign);

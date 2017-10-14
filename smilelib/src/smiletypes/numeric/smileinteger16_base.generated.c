@@ -26,6 +26,10 @@
 #include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
+#include <smile/smiletypes/numeric/smilereal32.h>
+#include <smile/smiletypes/numeric/smilereal64.h>
+#include <smile/smiletypes/numeric/smilefloat32.h>
+#include <smile/smiletypes/numeric/smilefloat64.h>
 #include <smile/smiletypes/range/smileinteger16range.h>
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/base.h>
@@ -177,6 +181,26 @@ SMILE_EXTERNAL_FUNCTION(SignExtend8)
 SMILE_EXTERNAL_FUNCTION(ZeroExtend8)
 {
 	return SmileUnboxedByte_From((Byte)argv[0].unboxed.i16);
+}
+
+SMILE_EXTERNAL_FUNCTION(ToReal32)
+{
+	return SmileUnboxedReal32_From(Real32_FromInt64((Int64)argv[0].unboxed.i16));
+}
+
+SMILE_EXTERNAL_FUNCTION(ToReal64)
+{
+	return SmileUnboxedReal64_From(Real64_FromInt64((Int64)argv[0].unboxed.i16));
+}
+
+SMILE_EXTERNAL_FUNCTION(ToFloat32)
+{
+	return SmileUnboxedFloat32_From((Float32)argv[0].unboxed.i16);
+}
+
+SMILE_EXTERNAL_FUNCTION(ToFloat64)
+{
+	return SmileUnboxedFloat64_From((Float64)argv[0].unboxed.i16);
 }
 
 SMILE_EXTERNAL_FUNCTION(RangeTo)
@@ -1620,6 +1644,13 @@ void SmileInteger16_Setup(SmileUserObject base)
 	SetupFunction("zero-extend-32", ZeroExtend32, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer16Checks);
 	SetupFunction("zero-extend-16", ZeroExtend16, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer16Checks);
 	SetupFunction("zero-extend-8", ZeroExtend8, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer16Checks);
+
+	SetupFunction("float32", ToFloat32, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("float64", ToFloat64, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("float", ToFloat64, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("real32", ToReal32, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("real64", ToReal64, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("real", ToReal64, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 
 	SetupFunction("parse", Parse, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX, 1, 3, 0, NULL);
 
