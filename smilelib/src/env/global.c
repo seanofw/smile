@@ -55,8 +55,14 @@ void Smile_InitCommonGlobals(ClosureInfo globalClosureInfo)
 	DeclareCommonGlobal(Smile_KnownSymbols.Integer_,	      Smile_KnownBases.Integer64);
 
 	DeclareCommonGlobal(Smile_KnownSymbols.RealBase_,         Smile_KnownBases.RealBase);
+	DeclareCommonGlobal(Smile_KnownSymbols.Real32_,           Smile_KnownBases.Real32);
 	DeclareCommonGlobal(Smile_KnownSymbols.Real64_,           Smile_KnownBases.Real64);
 	DeclareCommonGlobal(Smile_KnownSymbols.Real_,             Smile_KnownBases.Real64);
+
+	DeclareCommonGlobal(Smile_KnownSymbols.FloatBase_,         Smile_KnownBases.FloatBase);
+	DeclareCommonGlobal(Smile_KnownSymbols.Float32_,           Smile_KnownBases.Float32);
+	DeclareCommonGlobal(Smile_KnownSymbols.Float64_,           Smile_KnownBases.Float64);
+	DeclareCommonGlobal(Smile_KnownSymbols.Float_,             Smile_KnownBases.Float64);
 
 	DeclareCommonGlobal(Smile_KnownSymbols.Enumerable_,	  Smile_KnownBases.Enumerable);
 	DeclareCommonGlobal(Smile_KnownSymbols.List_,    Smile_KnownBases.List);

@@ -542,9 +542,194 @@ SMILE_EXTERNAL_FUNCTION(Modf)
 }
 
 //-------------------------------------------------------------------------------------------------
+// Comparisons
+
+SMILE_EXTERNAL_FUNCTION(Eq)
+{
+	return SmileUnboxedBool_From(SMILE_KIND(argv[1].obj) == SMILE_KIND_UNBOXED_FLOAT32
+		&& argv[0].unboxed.f32 == argv[1].unboxed.f32);
+}
+
+SMILE_EXTERNAL_FUNCTION(Ne)
+{
+	return SmileUnboxedBool_From(SMILE_KIND(argv[1].obj) != SMILE_KIND_UNBOXED_FLOAT32
+		|| argv[0].unboxed.f32 != argv[1].unboxed.f32);
+}
+
+SMILE_EXTERNAL_FUNCTION(Lt)
+{
+	return SmileUnboxedBool_From(argv[0].unboxed.f32 < argv[1].unboxed.f32);
+}
+
+SMILE_EXTERNAL_FUNCTION(Gt)
+{
+	return SmileUnboxedBool_From(argv[0].unboxed.f32 > argv[1].unboxed.f32);
+}
+
+SMILE_EXTERNAL_FUNCTION(Le)
+{
+	return SmileUnboxedBool_From(argv[0].unboxed.f32 <= argv[1].unboxed.f32);
+}
+
+SMILE_EXTERNAL_FUNCTION(Ge)
+{
+	return SmileUnboxedBool_From(argv[0].unboxed.f32 >= argv[1].unboxed.f32);
+}
+
+SMILE_EXTERNAL_FUNCTION(Compare)
+{
+	Float32 x = argv[0].unboxed.f32;
+	Float32 y = argv[1].unboxed.f32;
+
+	if (x < y)
+		return SmileUnboxedInteger64_From(-1);
+	else if (x > y)
+		return SmileUnboxedInteger64_From(+1);
+	else
+		return SmileUnboxedInteger64_From(0);
+}
+
+//-------------------------------------------------------------------------------------------------
+
+enum {
+	ZERO_TEST,
+	ONE_TEST,
+	NONZERO_TEST,
+	POS_TEST,
+	NONPOS_TEST,
+	NEG_TEST,
+	NONNEG_TEST,
+	ODD_TEST,
+	EVEN_TEST,
+	INF_TEST,
+	NAN_TEST,
+	FINITE_TEST,
+};
+
+Inline Bool IsPositive(Float32 value)
+{
+	switch (Float32_GetKind(value)) {
+		case FLOAT_KIND_POS_ZERO: return False;
+		case FLOAT_KIND_NEG_ZERO: return False;
+		case FLOAT_KIND_POS_NUM: return True;
+		case FLOAT_KIND_NEG_NUM: return False;
+		case FLOAT_KIND_POS_INF: return True;
+		case FLOAT_KIND_NEG_INF: return False;
+		case FLOAT_KIND_POS_QNAN: return False;
+		case FLOAT_KIND_NEG_QNAN: return False;
+		case FLOAT_KIND_POS_SNAN: return False;
+		case FLOAT_KIND_NEG_SNAN: return False;
+		default: return False;
+	}
+}
+
+Inline Bool IsNegative(Float32 value)
+{
+	switch (Float32_GetKind(value)) {
+		case FLOAT_KIND_POS_ZERO: return False;
+		case FLOAT_KIND_NEG_ZERO: return False;
+		case FLOAT_KIND_POS_NUM: return False;
+		case FLOAT_KIND_NEG_NUM: return True;
+		case FLOAT_KIND_POS_INF: return False;
+		case FLOAT_KIND_NEG_INF: return True;
+		case FLOAT_KIND_POS_QNAN: return False;
+		case FLOAT_KIND_NEG_QNAN: return False;
+		case FLOAT_KIND_POS_SNAN: return False;
+		case FLOAT_KIND_NEG_SNAN: return False;
+		default: return False;
+	}
+}
+
+Inline Bool IsInfinity(Float32 value)
+{
+	switch (Float32_GetKind(value)) {
+		case FLOAT_KIND_POS_ZERO: return False;
+		case FLOAT_KIND_NEG_ZERO: return False;
+		case FLOAT_KIND_POS_NUM: return False;
+		case FLOAT_KIND_NEG_NUM: return False;
+		case FLOAT_KIND_POS_INF: return True;
+		case FLOAT_KIND_NEG_INF: return True;
+		case FLOAT_KIND_POS_QNAN: return False;
+		case FLOAT_KIND_NEG_QNAN: return False;
+		case FLOAT_KIND_POS_SNAN: return False;
+		case FLOAT_KIND_NEG_SNAN: return False;
+		default: return False;
+	}
+}
+
+Inline Bool IsNaN(Float32 value)
+{
+	switch (Float32_GetKind(value)) {
+		case FLOAT_KIND_POS_ZERO: return False;
+		case FLOAT_KIND_NEG_ZERO: return False;
+		case FLOAT_KIND_POS_NUM: return False;
+		case FLOAT_KIND_NEG_NUM: return False;
+		case FLOAT_KIND_POS_INF: return False;
+		case FLOAT_KIND_NEG_INF: return False;
+		case FLOAT_KIND_POS_QNAN: return True;
+		case FLOAT_KIND_NEG_QNAN: return True;
+		case FLOAT_KIND_POS_SNAN: return True;
+		case FLOAT_KIND_NEG_SNAN: return True;
+		default: return False;
+	}
+}
+
+Inline Bool IsFinite(Float32 value)
+{
+	switch (Float32_GetKind(value)) {
+		case FLOAT_KIND_POS_ZERO: return True;
+		case FLOAT_KIND_NEG_ZERO: return True;
+		case FLOAT_KIND_POS_NUM: return True;
+		case FLOAT_KIND_NEG_NUM: return True;
+		case FLOAT_KIND_POS_INF: return False;
+		case FLOAT_KIND_NEG_INF: return False;
+		case FLOAT_KIND_POS_QNAN: return False;
+		case FLOAT_KIND_NEG_QNAN: return False;
+		case FLOAT_KIND_POS_SNAN: return False;
+		case FLOAT_KIND_NEG_SNAN: return False;
+		default: return False;
+	}
+}
+
+SMILE_EXTERNAL_FUNCTION(ValueTest)
+{
+	Float32 value = argv[0].unboxed.f32;
+
+	switch ((PtrInt)param) {
+		case ZERO_TEST:
+			return SmileUnboxedBool_From(value == 0.0f);
+		case ONE_TEST:
+			return SmileUnboxedBool_From(value == 1.0f);
+		case NONZERO_TEST:
+			return SmileUnboxedBool_From(value != 0.0f);
+		case POS_TEST:
+			return SmileUnboxedBool_From(IsPositive(value));
+		case NONPOS_TEST:
+			return SmileUnboxedBool_From(!IsPositive(value));
+		case NEG_TEST:
+			return SmileUnboxedBool_From(IsNegative(value));
+		case NONNEG_TEST:
+			return SmileUnboxedBool_From(!IsNegative(value));
+		case ODD_TEST:
+			return SmileUnboxedBool_From(fabs(fmod(value, 2.0f)) == 1.0f);
+		case EVEN_TEST:
+			return SmileUnboxedBool_From(fabs(fmod(value, 2.0f)) == 0.0f);
+		case INF_TEST:
+			return SmileUnboxedBool_From(IsInfinity(value));
+		case NAN_TEST:
+			return SmileUnboxedBool_From(IsNaN(value));
+		case FINITE_TEST:
+			return SmileUnboxedBool_From(IsFinite(value));
+		default:
+			return SmileArg_From(NullObject);
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
 
 void SmileFloat32_Setup(SmileUserObject base)
 {
+	const UInt32 infValue = 0x7F800000U; Float32 inf = *(Float32 *)&infValue;
 	SmileUnboxedFloat32_Instance->base = (SmileObject)base;
 
 	SetupFunction("bool", ToBool, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
@@ -578,4 +763,34 @@ void SmileFloat32_Setup(SmileUserObject base)
 	SetupFunction("round", Round, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
 	SetupFunction("bank-round", BankRound, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
 	SetupFunction("modf", Modf, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
+
+	SetupFunction("odd?", ValueTest, (void *)ODD_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
+	SetupFunction("even?", ValueTest, (void *)EVEN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
+	SetupFunction("zero?", ValueTest, (void *)ZERO_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
+	SetupFunction("one?", ValueTest, (void *)ONE_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
+	SetupFunction("nonzero?", ValueTest, (void *)NONZERO_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
+	SetupFunction("positive?", ValueTest, (void *)POS_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
+	SetupSynonym("positive?", "pos?");
+	SetupFunction("finite?", ValueTest, (void *)FINITE_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
+	SetupFunction("infinite?", ValueTest, (void *)INF_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
+	SetupSynonym("infinite?", "inf?");
+	SetupFunction("nan?", ValueTest, (void *)NAN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
+	SetupFunction("nonpositive?", ValueTest, (void *)NONPOS_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
+	SetupSynonym("nonpositive?", "nonpos?");
+	SetupFunction("negative?", ValueTest, (void *)NEG_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
+	SetupSynonym("negative?", "neg?");
+	SetupFunction("nonnegative?", ValueTest, (void *)NONNEG_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
+	SetupSynonym("nonnegative?", "nonneg?");
+
+	SetupFunction("==", Eq, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _float32ComparisonChecks);
+	SetupFunction("!=", Ne, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _float32ComparisonChecks);
+	SetupFunction("<", Lt, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _float32Checks);
+	SetupFunction(">", Gt, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _float32Checks);
+	SetupFunction("<=", Le, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _float32Checks);
+	SetupFunction(">=", Ge, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _float32Checks);
+
+	SetupFunction("compare", Compare, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _float32Checks);
+	SetupSynonym("compare", "cmp");
+
+	SetupData("inf", SmileFloat32_Create(inf));
 }

@@ -38,6 +38,54 @@ STATIC_STRING(Float_String_SNaN, "SNaN");
 STATIC_STRING(Float_String_PosSNaN, "+SNaN");
 STATIC_STRING(Float_String_NegSNaN, "-SNaN");
 
+Int Float32_GetKind(Float32 float32)
+{
+	UInt32 floatBits;
+	UInt32 exponent;
+	UInt32 mantissa;
+	Bool sign;
+
+	floatBits = *(UInt32 *)(Float32 *)&float32;
+
+	sign = (Bool)((floatBits >> 31) & 1);
+	exponent = (floatBits >> 23) & 0xFF;
+
+	if (exponent == 0) {
+		// One of the signed zero forms, or possibly a subnormal value.
+		mantissa = floatBits & ((1U << 23) - 1);
+		if (mantissa == 0) {
+			// Zero.
+			return sign ? FLOAT_KIND_NEG_ZERO : FLOAT_KIND_POS_ZERO;
+		}
+		else {
+			// Subnormal values.
+			return sign ? FLOAT_KIND_NEG_NUM : FLOAT_KIND_POS_NUM;
+		}
+	}
+	else if (exponent == 0xFF) {
+		// NaN or infinity.
+		mantissa = floatBits & ((1U << 23) - 1);
+		if (mantissa == 0) {
+			// Infinity.
+			return sign ? FLOAT_KIND_NEG_INF : FLOAT_KIND_POS_INF;
+		}
+		else {
+			// NaN (quiet or signalling).
+			if (mantissa & (1U << 22)) {
+				// QNaN.
+				return sign ? FLOAT_KIND_NEG_QNAN : FLOAT_KIND_POS_QNAN;
+			}
+			else {
+				// SNaN.
+				return sign ? FLOAT_KIND_NEG_SNAN : FLOAT_KIND_POS_SNAN;
+			}
+		}
+	}
+
+	// Normal values.
+	return sign ? FLOAT_KIND_NEG_NUM : FLOAT_KIND_POS_NUM;
+}
+
 Int Float64_GetKind(Float64 float64)
 {
 	UInt64 floatBits;

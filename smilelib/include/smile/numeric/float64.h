@@ -24,5 +24,6 @@ SMILE_API_FUNC String Float64_ToFixedString(Float64 float64, Int minIntDigits, I
 SMILE_API_FUNC String Float64_ToExpString(Float64 float64, Int minFracDigits, Bool forceSign);
 SMILE_API_FUNC String Float64_ToStringEx(Float64 float64, Int minIntDigits, Int maxFracDigits, Bool forceSign);
 SMILE_API_FUNC Int Float64_GetKind(Float64 float64);
+SMILE_API_FUNC Int Float32_GetKind(Float32 float32);
 
 #endif

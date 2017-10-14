@@ -63,7 +63,10 @@ sub OutputTemplate {
 	"ToStringBase10" => "Float64_ToStringEx(unboxedData.f64, 0, 0, False)",
 	"ToStringArg" => "Float64_ToStringEx(argv[0].unboxed.f64, 0, 0, False)",
 	"HashAlgorithm" => "(UInt32)(*(UInt64 *)&obj->value ^ (*(UInt64 *)&obj->value >> 32))",
-	"Zero" => "0.0"
+	"Zero" => "0.0",
+	"One" => "1.0",
+	"Two" => "2.0",
+	"inf" => "const UInt64 infValue = 0x7FF0000000000000ULL; Float64 inf = *(Float64 *)&infValue;"
 );
 
 OutputTemplate(\@floatTemplate, \%float64Substitutions, "smilefloat64.generated.c");
@@ -85,7 +88,10 @@ OutputTemplate(\@floatBaseTemplate, \%float64Substitutions, "smilefloat64_base.g
 	"ToStringBase10" => "Float64_ToStringEx((Float64)unboxedData.f32, 0, 0, False)",
 	"ToStringArg" => "Float64_ToStringEx((Float64)argv[0].unboxed.f32, 0, 0, False)",
 	"HashAlgorithm" => "(UInt32)(*(UInt32 *)&obj->value)",
-	"Zero" => "0.0f"
+	"Zero" => "0.0f",
+	"One" => "1.0f",
+	"Two" => "2.0f",
+	"inf" => "const UInt32 infValue = 0x7F800000U; Float32 inf = *(Float32 *)&infValue;"
 );
 
 OutputTemplate(\@floatTemplate, \%float32Substitutions, "smilefloat32.generated.c");
