@@ -123,6 +123,8 @@ typedef struct ClosureStateMachineStruct {
 
 SMILE_API_FUNC ClosureInfo ClosureInfo_Create(ClosureInfo parent, Int kind);
 
+SMILE_API_FUNC String ClosureInfo_StringifyVariableNames(ClosureInfo closureInfo);
+
 SMILE_API_FUNC Closure Closure_CreateGlobal(ClosureInfo info, Closure parent);
 SMILE_API_FUNC Closure Closure_CreateLocal(ClosureInfo info, Closure parent,
 	Closure returnClosure, ByteCodeSegment returnSegment, Int returnPc);

@@ -350,6 +350,8 @@ SMILE_API_FUNC SmileObject SmileObject_Create(void);
 
 SMILE_API_FUNC String SmileObject_Stringify(SmileObject obj);
 SMILE_API_FUNC const char *SmileObject_StringifyToC(SmileObject obj);
+SMILE_API_FUNC String SmileObject_StringifyWithSource(SmileObject obj);
+SMILE_API_FUNC const char *SmileObject_StringifyWithSourceToC(SmileObject obj);
 
 SMILE_API_FUNC Bool SmileObject_IsRegularList(SmileObject list);
 SMILE_API_FUNC Bool SmileObject_ContainsNestedList(SmileObject obj);
@@ -358,6 +360,8 @@ SMILE_API_FUNC Bool SmileObject_DeepCompare(SmileObject self, SmileObject other)
 SMILE_API_FUNC Bool SmileArg_DeepCompare(SmileArg self, SmileArg other);
 
 SMILE_API_FUNC String SmileKind_GetName(Int kind);
+
+SMILE_API_FUNC SmileObject SmileArg_BoxByPointer(SmileArg *arg);
 
 //-------------------------------------------------------------------------------------------------
 //  Inline operations on SmileObject.

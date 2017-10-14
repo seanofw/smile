@@ -16,6 +16,7 @@
 //---------------------------------------------------------------------------------------
 
 #include <smile/eval/closure.h>
+#include <smile/stringbuilder.h>
 
 /// <summary>
 /// Create a new ClosureInfo struct, which contains metadata about a closure.
@@ -43,6 +44,24 @@ ClosureInfo ClosureInfo_Create(ClosureInfo parent, Int kind)
 	closureInfo->variableNames = NULL;
 
 	return closureInfo;
+}
+
+String ClosureInfo_StringifyVariableNames(ClosureInfo closureInfo)
+{
+	DECLARE_INLINE_STRINGBUILDER(stringBuilder, 256);
+	Int i;
+	
+	INIT_INLINE_STRINGBUILDER(stringBuilder);
+
+	for (i = 0; i < closureInfo->numVariables; i++) {
+		if (i > 0)
+			StringBuilder_Append(stringBuilder, (const Byte *)", ", 0, 2);
+
+		StringBuilder_AppendFormat(stringBuilder, "%d=%S", i,
+			SymbolTable_GetName(Smile_SymbolTable, closureInfo->variableNames[i]));
+	}
+
+	return StringBuilder_ToString(stringBuilder);
 }
 
 Closure Closure_CreateGlobal(ClosureInfo closureInfo, Closure parent)

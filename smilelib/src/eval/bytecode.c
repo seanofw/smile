@@ -23,6 +23,7 @@
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/internal/staticstring.h>
+#include <smile/numeric/real.h>
 
 static String ByteCode_OperandsToString(ByteCodeSegment segment, ByteCode byteCode, Int address, UserFunctionInfo userFunctionInfo);
 
@@ -106,6 +107,17 @@ void ByteCodeSegment_Grow(ByteCodeSegment segment, Int count)
 /// but because it only requires a ByteCodeSegment as input, it can be very useful for
 /// debugging.
 /// </summary>
+const char *ByteCodeSegment_StringifyToC(ByteCodeSegment segment)
+{
+	return String_ToC(ByteCodeSegment_ToString(segment, NULL));
+}
+
+/// <summary>
+/// Convert the given byte-code segment to a string that lists all its instructions,
+/// in order.  This doesn't add any important external information like string contents,
+/// but because it only requires a ByteCodeSegment as input, it can be very useful for
+/// debugging.
+/// </summary>
 String ByteCodeSegment_Stringify(ByteCodeSegment segment)
 {
 	return ByteCodeSegment_ToString(segment, NULL);
@@ -145,6 +157,7 @@ String ByteCodeSegment_ToString(ByteCodeSegment segment, UserFunctionInfo userFu
 
 	for (i = 0, end = segment->numByteCodes; i < end; i++) {
 		byteCode = segment->byteCodes + i;
+		StringBuilder_AppendFormat(stringBuilder, "%d: ", i);
 		string = ByteCode_ToString(segment, byteCode, i, userFunctionInfo);
 		if (byteCode->opcode < Op_Pseudo) {
 			AssemblyIndent(stringBuilder, depth);
@@ -187,13 +200,34 @@ String ByteCode_ToString(ByteCodeSegment segment, ByteCode byteCode, Int address
 	if (opcode == NULL) opcode = String_Format("Op%02X", byteCode->opcode);
 
 	operands = ByteCode_OperandsToString(segment, byteCode, address, userFunctionInfo);
-	if (operands == NULL)
+	if (operands == NULL && !byteCode->sourceLocation)
 		return opcode;
 
 	INIT_INLINE_STRINGBUILDER(stringBuilder);
+
 	StringBuilder_AppendString(stringBuilder, opcode);
-	StringBuilder_AppendByte(stringBuilder, ' ');
-	StringBuilder_AppendString(stringBuilder, operands);
+
+	if (operands != NULL) {
+		StringBuilder_AppendByte(stringBuilder, ' ');
+		StringBuilder_AppendString(stringBuilder, operands);
+	}
+
+	if (byteCode->sourceLocation) {
+		CompiledSourceLocation sourceLocation = &segment->compiledTables->sourcelocations[byteCode->sourceLocation];
+		if (sourceLocation->filename != NULL && sourceLocation->line != 0) {
+			StringBuilder_AppendFormat(stringBuilder, "\t; %S:%d", Path_GetFilename(sourceLocation->filename), sourceLocation->line);
+		}
+		else if (sourceLocation->filename != NULL) {
+			StringBuilder_AppendFormat(stringBuilder, "\t; %S", Path_GetFilename(sourceLocation->filename));
+		}
+		else if (sourceLocation->line != 0) {
+			StringBuilder_AppendFormat(stringBuilder, "\t; line %d", sourceLocation->line);
+		}
+		else {
+			StringBuilder_AppendFormat(stringBuilder, "\t; <unknown location>");
+		}
+	}
+
 	return StringBuilder_ToString(stringBuilder);
 }
 
@@ -269,11 +303,11 @@ static String ByteCode_OperandsToString(ByteCodeSegment segment, ByteCode byteCo
 		
 		// 20-27
 		case Op_LdR16:
-			return String_Format("%g", byteCode->u.real32);
+			return String_Format("%g", Real32_ToFloat64(byteCode->u.real32));
 		case Op_LdR32:
-			return String_Format("%g", byteCode->u.real32);
+			return String_Format("%g", Real32_ToFloat64(byteCode->u.real32));
 		case Op_LdR64:
-			return String_Format("%g", byteCode->u.real64);
+			return String_Format("%g", Real64_ToFloat64(byteCode->u.real64));
 		case Op_LdR128:
 			return String_Format("@%llu", (Int64)byteCode->u.index);
 

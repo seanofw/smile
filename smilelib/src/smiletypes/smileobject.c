@@ -100,6 +100,11 @@ SmileList SmileObject_GetPropertyNames(SmileObject self)
 	return NullList;
 }
 
+SmileObject SmileArg_BoxByPointer(SmileArg *arg)
+{
+	return SmileArg_Box(*arg);
+}
+
 STATIC_STRING(PrimitiveString, "Primitive");
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileObject)

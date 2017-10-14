@@ -249,7 +249,7 @@
 			<Item Name="[flags]">kind &amp; ~0xFF</Item>
 			<Item Name="[vtable]">vtable</Item>
 			<Item Name="[base]">base</Item>
-			<Item Name="[stringified]">SmileObject_Stringify(this)->_opaque.text</Item>
+			<Item Name="[stringified]">SmileObject_StringifyWithSourceToC(this)</Item>
 		</Expand>
 	</Type>
 
@@ -305,7 +305,7 @@
 			<Item Name="[flags]">obj->kind &amp; ~0xFF</Item>
 			<Item Name="[vtable]">obj->vtable</Item>
 			<Item Name="[base]">obj->base</Item>
-			<Item Name="[stringified]">SmileObject_Stringify(SmileArg_Box(*this))->_opaque.text</Item>
+			<Item Name="[stringified]">SmileObject_StringifyWithSourceToC(SmileArg_BoxByPointer(this))</Item>
 		</Expand>
 	</Type>
 
@@ -369,7 +369,7 @@
 			<Item Name="[flags]">kind &amp; ~0xFF</Item>
 			<Item Name="[vtable]">vtable</Item>
 			<Item Name="[base]">base</Item>
-			<Item Name="[stringified]">SmileObject_Stringify((SmileObject)this)->_opaque.text</Item>
+			<Item Name="[stringified]">SmileObject_StringifyWithSourceToC((SmileObject)this)</Item>
 
 			<LinkedListItems>
 				<HeadPointer>this</HeadPointer>
@@ -393,7 +393,7 @@
 			<Item Name="[flags]">kind &amp; ~0xFF</Item>
 			<Item Name="[vtable]">vtable</Item>
 			<Item Name="[base]">base</Item>
-			<Item Name="[stringified]">SmileObject_Stringify((SmileObject)this)->_opaque.text</Item>
+			<Item Name="[stringified]">SmileObject_StringifyWithSourceToC((SmileObject)this)</Item>
 		</Expand>
 	</Type>
 
@@ -412,7 +412,7 @@
     <DisplayString>ByteCodeSegment ({numByteCodes} instrs)</DisplayString>
     <Expand>
       <Item Name="numByteCodes">numByteCodes</Item>
-      <Item Name="[stringified]">ByteCodeSegment_ToString(this, 0)->_opaque.text</Item>
+      <Item Name="[stringified]">ByteCodeSegment_StringifyToC(this)</Item>
       <ArrayItems>
         <Size>numByteCodes</Size>
         <ValuePointer>byteCodes</ValuePointer>
@@ -427,6 +427,7 @@
       <Item Name="closureInfo">closureInfo</Item>
       <Item Name="[stackMax]">closureInfo->numVariables + closureInfo->tempSize</Item>
       <Item Name="[stackTop]">stackTop > variables ? stackTop - variables : 0</Item>
+      <Item Name="[variables]">ClosureInfo_StringifyVariableNames(closureInfo)</Item>
       <ArrayItems>
         <Size>stackTop > variables ? stackTop - variables : 0</Size>
         <ValuePointer>variables</ValuePointer>
