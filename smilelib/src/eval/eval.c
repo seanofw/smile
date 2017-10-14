@@ -987,6 +987,7 @@ next:
 			
 				// Reset which closure we're running against.
 				_segment = closure->returnSegment;
+				_compiledTables = _segment->compiledTables;
 				_byteCode = byteCode = _segment->byteCodes + closure->returnPc;
 				_closure = closure = closure->returnClosure;
 			
