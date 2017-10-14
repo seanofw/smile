@@ -22,9 +22,9 @@
 #include <stdio.h>
 #include <math.h>
 
-STATIC_STRING(Float_String_Zero, "0");
-STATIC_STRING(Float_String_PosZero, "+0");
-STATIC_STRING(Float_String_NegZero, "-0");
+STATIC_STRING(Float_String_Zero, "0.0");
+STATIC_STRING(Float_String_PosZero, "+0.0");
+STATIC_STRING(Float_String_NegZero, "-0.0");
 
 STATIC_STRING(Float_String_Inf, "inf");
 STATIC_STRING(Float_String_PosInf, "+inf");
@@ -202,7 +202,19 @@ String Float64_ToExpString(Float64 value, Int maxFracDigits, Bool forceSign)
 
 String Float64_ToStringEx(Float64 float64, Int minIntDigits, Int maxFracDigits, Bool forceSign)
 {
+	Int kind;
 	Float64 absValue = fabs(float64);
+
+	if (absValue == 0.0) {
+		if (forceSign) {
+			kind = Float64_GetKind(float64);
+			if (kind == FLOAT_KIND_POS_ZERO)
+				return Float_String_PosZero;
+			if (kind == FLOAT_KIND_NEG_ZERO)
+				return Float_String_NegZero;
+		}
+		return Float_String_Zero;
+	}
 
 	if (absValue > 1000000000.0 || absValue < 0.00001) {
 		// Very large (1'000'000'000 or larger), or very small (smaller than 0.00001), so
