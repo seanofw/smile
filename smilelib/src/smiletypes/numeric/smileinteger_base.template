@@ -1087,6 +1087,24 @@ SMILE_EXTERNAL_FUNCTION(IntLg)
 	return SmileUnboxed%Type%_From((%RawType%)log);
 }
 
+SMILE_EXTERNAL_FUNCTION(Half)
+{
+	%RawType% value = (%RawType%)argv[0].unboxed.%unboxed%;
+	return SmileUnboxed%Type%_From(value >> 1);
+}
+
+SMILE_EXTERNAL_FUNCTION(UHalf)
+{
+	%URawType% value = (%URawType%)argv[0].unboxed.%unboxed%;
+	return SmileUnboxed%Type%_From((%RawType%)(value >> 1));
+}
+
+SMILE_EXTERNAL_FUNCTION(Double)
+{
+	%RawType% value = (%RawType%)argv[0].unboxed.%unboxed%;
+	return SmileUnboxed%Type%_From(value << 1);
+}
+
 //-------------------------------------------------------------------------------------------------
 // Bitwise operators
 
@@ -1738,6 +1756,10 @@ void Smile%Type%_Setup(SmileUserObject base)
 	SetupFunction("next-pow2", NextPow2, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
 	SetupFunction("int-lg", IntLg, &_quietMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
 	SetupFunction("int-lg!", IntLg, &_loudMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("half", Half, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("half~", UHalf, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("double", Double, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupSynonym("double", "dbl");
 
 	SetupFunction("band", BitAnd, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _%type%Checks);
 	SetupFunction("bor", BitOr, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _%type%Checks);
