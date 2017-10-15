@@ -614,11 +614,19 @@ SMILE_EXTERNAL_FUNCTION(Modf)
 //   a first pass, but somebody with the proper math chops should definitely
 //   contribute better versions.
 
-SMILE_EXTERNAL_FUNCTION(Log10)
+SMILE_EXTERNAL_FUNCTION(Log)
 {
-	Float64 value = Real64_ToFloat64(argv[0].unboxed.r64);
-	Float64 result = log10(value);
-	return SmileUnboxedReal64_From(Real64_FromFloat64(result));
+	if (argc < 2) {
+		Float64 value = Real64_ToFloat64(argv[0].unboxed.r64);
+		Float64 result = log10(value);
+		return SmileUnboxedReal64_From(Real64_FromFloat64(result));
+	}
+	else {
+		Float64 value = log(Real64_ToFloat64(argv[1].unboxed.r64));
+		Float64 base = log(Real64_ToFloat64(argv[0].unboxed.r64));
+		Float64 result = value / base;
+		return SmileUnboxedReal64_From(Real64_FromFloat64(result));
+	}
 }
 
 SMILE_EXTERNAL_FUNCTION(Log2)
@@ -980,7 +988,7 @@ void SmileReal64_Setup(SmileUserObject base)
 	SetupFunction("bank-round", BankRound, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
 	SetupFunction("modf", Modf, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
 
-	SetupFunction("log", Log10, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
+	SetupFunction("log", Log, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _real64Checks);
 	SetupFunction("log2", Log2, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
 	SetupFunction("ln", Ln, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
 	SetupFunction("ln1p", Ln1p, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);

@@ -652,9 +652,16 @@ SMILE_EXTERNAL_FUNCTION(Modf)
 //-------------------------------------------------------------------------------------------------
 // Powers, exponents, and logarithms
 
-SMILE_EXTERNAL_FUNCTION(Log10)
+SMILE_EXTERNAL_FUNCTION(Log)
 {
-	return SmileUnboxedFloat32_From(log10f(argv[0].unboxed.f32));
+	if (argc < 2)
+		return SmileUnboxedFloat32_From(log10f(argv[0].unboxed.f32));
+	else {
+		Float32 value = logf(argv[1].unboxed.f32);
+		Float32 base = logf(argv[0].unboxed.f32);
+		Float32 result = value / base;
+		return SmileUnboxedFloat32_From(result);
+	}
 }
 
 SMILE_EXTERNAL_FUNCTION(Log2)
@@ -1031,7 +1038,7 @@ void SmileFloat32_Setup(SmileUserObject base)
 	SetupFunction("bank-round", BankRound, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
 	SetupFunction("modf", Modf, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
 
-	SetupFunction("log", Log10, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
+	SetupFunction("log", Log, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _float32Checks);
 	SetupFunction("log2", Log2, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
 	SetupFunction("ln", Ln, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
 	SetupFunction("ln1p", Ln1p, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);

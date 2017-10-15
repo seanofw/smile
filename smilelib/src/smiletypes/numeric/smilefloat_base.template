@@ -648,9 +648,16 @@ SMILE_EXTERNAL_FUNCTION(Modf)
 //-------------------------------------------------------------------------------------------------
 // Powers, exponents, and logarithms
 
-SMILE_EXTERNAL_FUNCTION(Log10)
+SMILE_EXTERNAL_FUNCTION(Log)
 {
-	return SmileUnboxed%Type%_From(log10%f%(argv[0].unboxed.%unboxed%));
+	if (argc < 2)
+		return SmileUnboxed%Type%_From(log10%f%(argv[0].unboxed.%unboxed%));
+	else {
+		%Type% value = log%f%(argv[1].unboxed.%unboxed%);
+		%Type% base = log%f%(argv[0].unboxed.%unboxed%);
+		%Type% result = value / base;
+		return SmileUnboxed%Type%_From(result);
+	}
 }
 
 SMILE_EXTERNAL_FUNCTION(Log2)
@@ -1027,7 +1034,7 @@ void Smile%Type%_Setup(SmileUserObject base)
 	SetupFunction("bank-round", BankRound, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
 	SetupFunction("modf", Modf, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
 
-	SetupFunction("log", Log10, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("log", Log, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _%type%Checks);
 	SetupFunction("log2", Log2, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
 	SetupFunction("ln", Ln, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
 	SetupFunction("ln1p", Ln1p, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
