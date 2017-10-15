@@ -686,6 +686,19 @@ SMILE_EXTERNAL_FUNCTION(Pow)
 }
 
 //-------------------------------------------------------------------------------------------------
+// The Gamma function (like Factorial(N), but well-defined for all N).
+
+SMILE_EXTERNAL_FUNCTION(Gamma)
+{
+	return SmileUnboxedFloat64_From(tgamma(argv[0].unboxed.f64));
+}
+
+SMILE_EXTERNAL_FUNCTION(LnGamma)
+{
+	return SmileUnboxedFloat64_From(lgamma(argv[0].unboxed.f64));
+}
+
+//-------------------------------------------------------------------------------------------------
 // Comparisons
 
 SMILE_EXTERNAL_FUNCTION(Eq)
@@ -934,6 +947,11 @@ void SmileFloat64_Setup(SmileUserObject base)
 	SetupFunction("expm1", Expm1, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
 	SetupFunction("^", Pow, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _float64Checks);
 	SetupSynonym("log2", "lg");
+
+	SetupFunction("gamma", Gamma, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
+	SetupFunction("ln-gamma", LnGamma, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
+	SetupSynonym("gamma", "factorial");
+	SetupSynonym("ln-gamma", "ln-factorial");
 
 	SetupFunction("odd?", ValueTest, (void *)ODD_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
 	SetupFunction("even?", ValueTest, (void *)EVEN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);

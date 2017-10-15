@@ -667,6 +667,23 @@ SMILE_EXTERNAL_FUNCTION(Pow)
 }
 
 //-------------------------------------------------------------------------------------------------
+// The Gamma function (like Factorial(N), but well-defined for all N).
+
+SMILE_EXTERNAL_FUNCTION(Gamma)
+{
+	Float64 value = Real32_ToFloat64(argv[0].unboxed.r32);
+	Float64 result = tgamma(value);
+	return SmileUnboxedReal32_From(Real32_FromFloat64(result));
+}
+
+SMILE_EXTERNAL_FUNCTION(LnGamma)
+{
+	Float64 value = Real32_ToFloat64(argv[0].unboxed.r32);
+	Float64 result = lgamma(value);
+	return SmileUnboxedReal32_From(Real32_FromFloat64(result));
+}
+
+//-------------------------------------------------------------------------------------------------
 // Comparisons
 
 SMILE_EXTERNAL_FUNCTION(Eq)
@@ -840,6 +857,11 @@ void SmileReal32_Setup(SmileUserObject base)
 	SetupFunction("expm1", Expm1, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real32Checks);
 	SetupFunction("^", Pow, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _real32Checks);
 	SetupSynonym("log2", "lg");
+
+	SetupFunction("gamma", Gamma, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real32Checks);
+	SetupFunction("ln-gamma", LnGamma, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real32Checks);
+	SetupSynonym("gamma", "factorial");
+	SetupSynonym("ln-gamma", "ln-factorial");
 
 	SetupFunction("odd?", ValueTest, (void *)ODD_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real32Checks);
 	SetupFunction("even?", ValueTest, (void *)EVEN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real32Checks);

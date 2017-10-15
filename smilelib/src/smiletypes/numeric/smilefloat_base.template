@@ -682,6 +682,19 @@ SMILE_EXTERNAL_FUNCTION(Pow)
 }
 
 //-------------------------------------------------------------------------------------------------
+// The Gamma function (like Factorial(N), but well-defined for all N).
+
+SMILE_EXTERNAL_FUNCTION(Gamma)
+{
+	return SmileUnboxed%Type%_From(tgamma%f%(argv[0].unboxed.%unboxed%));
+}
+
+SMILE_EXTERNAL_FUNCTION(LnGamma)
+{
+	return SmileUnboxed%Type%_From(lgamma%f%(argv[0].unboxed.%unboxed%));
+}
+
+//-------------------------------------------------------------------------------------------------
 // Comparisons
 
 SMILE_EXTERNAL_FUNCTION(Eq)
@@ -930,6 +943,11 @@ void Smile%Type%_Setup(SmileUserObject base)
 	SetupFunction("expm1", Expm1, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
 	SetupFunction("^", Pow, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
 	SetupSynonym("log2", "lg");
+
+	SetupFunction("gamma", Gamma, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("ln-gamma", LnGamma, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupSynonym("gamma", "factorial");
+	SetupSynonym("ln-gamma", "ln-factorial");
 
 	SetupFunction("odd?", ValueTest, (void *)ODD_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
 	SetupFunction("even?", ValueTest, (void *)EVEN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
