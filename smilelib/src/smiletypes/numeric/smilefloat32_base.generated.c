@@ -717,6 +717,16 @@ SMILE_EXTERNAL_FUNCTION(LnGamma)
 	return SmileUnboxedFloat32_From(lgammaf(argv[0].unboxed.f32));
 }
 
+SMILE_EXTERNAL_FUNCTION(Factorial)
+{
+	return SmileUnboxedFloat32_From(tgammaf(argv[0].unboxed.f32 + 1.0f));
+}
+
+SMILE_EXTERNAL_FUNCTION(LnFactorial)
+{
+	return SmileUnboxedFloat32_From(lgammaf(argv[0].unboxed.f32 + 1.0f));
+}
+
 //-------------------------------------------------------------------------------------------------
 // Trigonometry
 
@@ -1051,8 +1061,8 @@ void SmileFloat32_Setup(SmileUserObject base)
 
 	SetupFunction("gamma", Gamma, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
 	SetupFunction("ln-gamma", LnGamma, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
-	SetupSynonym("gamma", "factorial");
-	SetupSynonym("ln-gamma", "ln-factorial");
+	SetupFunction("factorial", Factorial, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
+	SetupFunction("ln-factorial", LnFactorial, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
 
 	SetupFunction("sin", Sin, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
 	SetupFunction("cos", Cos, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);

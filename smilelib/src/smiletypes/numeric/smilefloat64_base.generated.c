@@ -717,6 +717,16 @@ SMILE_EXTERNAL_FUNCTION(LnGamma)
 	return SmileUnboxedFloat64_From(lgamma(argv[0].unboxed.f64));
 }
 
+SMILE_EXTERNAL_FUNCTION(Factorial)
+{
+	return SmileUnboxedFloat64_From(tgamma(argv[0].unboxed.f64 + 1.0));
+}
+
+SMILE_EXTERNAL_FUNCTION(LnFactorial)
+{
+	return SmileUnboxedFloat64_From(lgamma(argv[0].unboxed.f64 + 1.0));
+}
+
 //-------------------------------------------------------------------------------------------------
 // Trigonometry
 
@@ -1051,8 +1061,8 @@ void SmileFloat64_Setup(SmileUserObject base)
 
 	SetupFunction("gamma", Gamma, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
 	SetupFunction("ln-gamma", LnGamma, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
-	SetupSynonym("gamma", "factorial");
-	SetupSynonym("ln-gamma", "ln-factorial");
+	SetupFunction("factorial", Factorial, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
+	SetupFunction("ln-factorial", LnFactorial, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
 
 	SetupFunction("sin", Sin, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
 	SetupFunction("cos", Cos, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
