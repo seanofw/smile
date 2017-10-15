@@ -1037,5 +1037,19 @@ void SmileFloat32_Setup(SmileUserObject base)
 	SetupFunction("compare", Compare, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _float32Checks);
 	SetupSynonym("compare", "cmp");
 
-	SetupData("inf", SmileFloat32_Create(inf));
+	SetupData("inf",   SmileFloat32_Create(inf));
+
+	SetupData("pi",    SmileFloat32_Create((Float32)3.14159265358979323846264338327950288));
+	SetupData("e",     SmileFloat32_Create((Float32)2.71828182845904523536028747135266249));
+	SetupData("tau",   SmileFloat32_Create((Float32)6.28318530717958647692528676655900576));
+	SetupData("sqrt2", SmileFloat32_Create((Float32)1.41421356237309504880168872420969807));
+	SetupData("sqrt3", SmileFloat32_Create((Float32)1.73205080756887729352744634150587236));
+	SetupData("sqrt5", SmileFloat32_Create((Float32)2.23606797749978969640917366873127623));
+	SetupData("phi",   SmileFloat32_Create((Float32)1.61803398874989484820458683436563811));
+
+	SetupData("G",     SmileFloat32_Create((Float32)6.67408e-11));
+	SetupData("c",     SmileFloat32_Create((Float32)299792458.0));
+	SetupData("h",     SmileFloat32_Create((Float32)6.626070040e-34));
+
+	SetupData("g",     SmileFloat32_Create((Float32)9.80665));
 }
