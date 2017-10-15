@@ -765,6 +765,55 @@ SMILE_EXTERNAL_FUNCTION(RadToDeg)
 }
 
 //-------------------------------------------------------------------------------------------------
+// Hyperbolic functions
+//
+// TODO:  These implementations are really suboptimal.  They're good enough for
+//   a first pass, but somebody with the proper math chops should definitely
+//   contribute better versions.
+
+SMILE_EXTERNAL_FUNCTION(Sinh)
+{
+	Float64 value = Real32_ToFloat64(argv[0].unboxed.r32);
+	Float64 result = sinh(value);
+	return SmileUnboxedReal32_From(Real32_FromFloat64(result));
+}
+
+SMILE_EXTERNAL_FUNCTION(Cosh)
+{
+	Float64 value = Real32_ToFloat64(argv[0].unboxed.r32);
+	Float64 result = cosh(value);
+	return SmileUnboxedReal32_From(Real32_FromFloat64(result));
+}
+
+SMILE_EXTERNAL_FUNCTION(Tanh)
+{
+	Float64 value = Real32_ToFloat64(argv[0].unboxed.r32);
+	Float64 result = tanh(value);
+	return SmileUnboxedReal32_From(Real32_FromFloat64(result));
+}
+
+SMILE_EXTERNAL_FUNCTION(ATanh)
+{
+	Float64 value = Real32_ToFloat64(argv[0].unboxed.r32);
+	Float64 result = atanh(value);
+	return SmileUnboxedReal32_From(Real32_FromFloat64(result));
+}
+
+SMILE_EXTERNAL_FUNCTION(ASinh)
+{
+	Float64 value = Real32_ToFloat64(argv[0].unboxed.r32);
+	Float64 result = asinh(value);
+	return SmileUnboxedReal32_From(Real32_FromFloat64(result));
+}
+
+SMILE_EXTERNAL_FUNCTION(ACosh)
+{
+	Float64 value = Real32_ToFloat64(argv[0].unboxed.r32);
+	Float64 result = acosh(value);
+	return SmileUnboxedReal32_From(Real32_FromFloat64(result));
+}
+
+//-------------------------------------------------------------------------------------------------
 // Comparisons
 
 SMILE_EXTERNAL_FUNCTION(Eq)
@@ -956,6 +1005,13 @@ void SmileReal32_Setup(SmileUserObject base)
 	SetupFunction("acos", ACos, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real32Checks);
 	SetupFunction("deg-to-rad", DegToRad, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real32Checks);
 	SetupFunction("rad-to-deg", RadToDeg, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real32Checks);
+
+	SetupFunction("sinh", Sinh, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real32Checks);
+	SetupFunction("cosh", Cosh, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real32Checks);
+	SetupFunction("tanh", Tanh, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real32Checks);
+	SetupFunction("atanh", ATanh, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real32Checks);
+	SetupFunction("asinh", ASinh, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real32Checks);
+	SetupFunction("acosh", ACosh, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real32Checks);
 
 	SetupFunction("odd?", ValueTest, (void *)ODD_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real32Checks);
 	SetupFunction("even?", ValueTest, (void *)EVEN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real32Checks);

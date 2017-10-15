@@ -757,6 +757,39 @@ SMILE_EXTERNAL_FUNCTION(RadToDeg)
 }
 
 //-------------------------------------------------------------------------------------------------
+// Hyperbolic functions
+
+SMILE_EXTERNAL_FUNCTION(Sinh)
+{
+	return SmileUnboxedFloat64_From(sinh(argv[0].unboxed.f64));
+}
+
+SMILE_EXTERNAL_FUNCTION(Cosh)
+{
+	return SmileUnboxedFloat64_From(cosh(argv[0].unboxed.f64));
+}
+
+SMILE_EXTERNAL_FUNCTION(Tanh)
+{
+	return SmileUnboxedFloat64_From(tanh(argv[0].unboxed.f64));
+}
+
+SMILE_EXTERNAL_FUNCTION(ATanh)
+{
+	return SmileUnboxedFloat64_From(atanh(argv[0].unboxed.f64));
+}
+
+SMILE_EXTERNAL_FUNCTION(ASinh)
+{
+	return SmileUnboxedFloat64_From(asinh(argv[0].unboxed.f64));
+}
+
+SMILE_EXTERNAL_FUNCTION(ACosh)
+{
+	return SmileUnboxedFloat64_From(acosh(argv[0].unboxed.f64));
+}
+
+//-------------------------------------------------------------------------------------------------
 // Comparisons
 
 SMILE_EXTERNAL_FUNCTION(Eq)
@@ -1023,6 +1056,13 @@ void SmileFloat64_Setup(SmileUserObject base)
 	SetupFunction("acos", ACos, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
 	SetupFunction("deg-to-rad", DegToRad, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
 	SetupFunction("rad-to-deg", RadToDeg, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
+
+	SetupFunction("sinh", Sinh, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
+	SetupFunction("cosh", Cosh, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
+	SetupFunction("tanh", Tanh, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
+	SetupFunction("atanh", ATanh, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
+	SetupFunction("asinh", ASinh, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
+	SetupFunction("acosh", ACosh, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
 
 	SetupFunction("odd?", ValueTest, (void *)ODD_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
 	SetupFunction("even?", ValueTest, (void *)EVEN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);

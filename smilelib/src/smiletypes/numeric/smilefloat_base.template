@@ -753,6 +753,39 @@ SMILE_EXTERNAL_FUNCTION(RadToDeg)
 }
 
 //-------------------------------------------------------------------------------------------------
+// Hyperbolic functions
+
+SMILE_EXTERNAL_FUNCTION(Sinh)
+{
+	return SmileUnboxed%Type%_From(sinh%f%(argv[0].unboxed.%unboxed%));
+}
+
+SMILE_EXTERNAL_FUNCTION(Cosh)
+{
+	return SmileUnboxed%Type%_From(cosh%f%(argv[0].unboxed.%unboxed%));
+}
+
+SMILE_EXTERNAL_FUNCTION(Tanh)
+{
+	return SmileUnboxed%Type%_From(tanh%f%(argv[0].unboxed.%unboxed%));
+}
+
+SMILE_EXTERNAL_FUNCTION(ATanh)
+{
+	return SmileUnboxed%Type%_From(atanh%f%(argv[0].unboxed.%unboxed%));
+}
+
+SMILE_EXTERNAL_FUNCTION(ASinh)
+{
+	return SmileUnboxed%Type%_From(asinh%f%(argv[0].unboxed.%unboxed%));
+}
+
+SMILE_EXTERNAL_FUNCTION(ACosh)
+{
+	return SmileUnboxed%Type%_From(acosh%f%(argv[0].unboxed.%unboxed%));
+}
+
+//-------------------------------------------------------------------------------------------------
 // Comparisons
 
 SMILE_EXTERNAL_FUNCTION(Eq)
@@ -1019,6 +1052,13 @@ void Smile%Type%_Setup(SmileUserObject base)
 	SetupFunction("acos", ACos, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
 	SetupFunction("deg-to-rad", DegToRad, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
 	SetupFunction("rad-to-deg", RadToDeg, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+
+	SetupFunction("sinh", Sinh, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("cosh", Cosh, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("tanh", Tanh, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("atanh", ATanh, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("asinh", ASinh, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("acosh", ACosh, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
 
 	SetupFunction("odd?", ValueTest, (void *)ODD_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
 	SetupFunction("even?", ValueTest, (void *)EVEN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
