@@ -553,6 +553,19 @@ SMILE_EXTERNAL_FUNCTION(Cube)
 	return SmileUnboxedFloat64_From(value * value * value);
 }
 
+SMILE_EXTERNAL_FUNCTION(CubeRoot)
+{
+	Float64 value = argv[0].unboxed.f64;
+	return SmileUnboxedFloat64_From(cbrt(value));
+}
+
+SMILE_EXTERNAL_FUNCTION(Hypotenuse)
+{
+	Float64 a = argv[0].unboxed.f64;
+	Float64 b = argv[1].unboxed.f64;
+	return SmileUnboxedFloat64_From(hypot(a, b));
+}
+
 //-------------------------------------------------------------------------------------------------
 // Rounding/truncation operations
 
@@ -895,6 +908,8 @@ void SmileFloat64_Setup(SmileUserObject base)
 	SetupFunction("sqrt!", Sqrt, &_loudMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
 	SetupFunction("sqr", Sqr, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
 	SetupFunction("cube", Cube, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
+	SetupFunction("cube-root", CubeRoot, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
+	SetupFunction("hypotenuse", Hypotenuse, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _float64Checks);
 
 	SetupFunction("sign", Sign, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);
 	SetupFunction("abs", Abs, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float64Checks);

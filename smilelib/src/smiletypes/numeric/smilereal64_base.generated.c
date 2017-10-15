@@ -535,6 +535,24 @@ SMILE_EXTERNAL_FUNCTION(Cube)
 	return SmileUnboxedReal64_From(Real64_Mul(Real64_Mul(value, value), value));
 }
 
+// TODO: This should be reimplemented more efficiently and to avoid loss of ULPs.
+SMILE_EXTERNAL_FUNCTION(CubeRoot)
+{
+	Float64 value = Real64_ToFloat64(argv[0].unboxed.r64);
+	value = cbrt(value);
+	return SmileUnboxedReal64_From(Real64_FromFloat64(value));
+}
+
+// TODO: This should be reimplemented to avoid overflow/underflow of intermediate values.
+SMILE_EXTERNAL_FUNCTION(Hypotenuse)
+{
+	Real64 a = argv[0].unboxed.r64;
+	Real64 b = argv[1].unboxed.r64;
+	a = Real64_Mul(a, a);
+	b = Real64_Mul(b, b);
+	return SmileUnboxedReal64_From(Real64_Sqrt(Real64_Add(a, b)));
+}
+
 //-------------------------------------------------------------------------------------------------
 // Rounding/truncation operations
 
@@ -796,6 +814,8 @@ void SmileReal64_Setup(SmileUserObject base)
 	SetupFunction("sqrt!", Sqrt, &_loudMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
 	SetupFunction("sqr", Sqr, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
 	SetupFunction("cube", Cube, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
+	SetupFunction("cube-root", CubeRoot, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
+	SetupFunction("hypotenuse", Hypotenuse, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _real64Checks);
 
 	SetupFunction("sign", Sign, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
 	SetupFunction("abs", Abs, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);

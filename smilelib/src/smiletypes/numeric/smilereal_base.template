@@ -531,6 +531,24 @@ SMILE_EXTERNAL_FUNCTION(Cube)
 	return SmileUnboxed%Type%_From(%Type%_Mul(%Type%_Mul(value, value), value));
 }
 
+// TODO: This should be reimplemented more efficiently and to avoid loss of ULPs.
+SMILE_EXTERNAL_FUNCTION(CubeRoot)
+{
+	Float64 value = %Type%_ToFloat64(argv[0].unboxed.%unboxed%);
+	value = cbrt(value);
+	return SmileUnboxed%Type%_From(%Type%_FromFloat64(value));
+}
+
+// TODO: This should be reimplemented to avoid overflow/underflow of intermediate values.
+SMILE_EXTERNAL_FUNCTION(Hypotenuse)
+{
+	%Type% a = argv[0].unboxed.%unboxed%;
+	%Type% b = argv[1].unboxed.%unboxed%;
+	a = %Type%_Mul(a, a);
+	b = %Type%_Mul(b, b);
+	return SmileUnboxed%Type%_From(%Type%_Sqrt(%Type%_Add(a, b)));
+}
+
 //-------------------------------------------------------------------------------------------------
 // Rounding/truncation operations
 
@@ -792,6 +810,8 @@ void Smile%Type%_Setup(SmileUserObject base)
 	SetupFunction("sqrt!", Sqrt, &_loudMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
 	SetupFunction("sqr", Sqr, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
 	SetupFunction("cube", Cube, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("cube-root", CubeRoot, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("hypotenuse", Hypotenuse, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
 
 	SetupFunction("sign", Sign, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
 	SetupFunction("abs", Abs, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
