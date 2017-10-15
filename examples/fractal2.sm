@@ -10,19 +10,22 @@ max-y = 25
 max-x = 80
 
 1..max-y each |screen-y| {
+    y0 = float screen-y * (y1 - y2) / (float max-y - 1.0f) + y2
+
     Stdout print-line join (
         1..max-x map |screen-x| {
             x0 = float screen-x * (x1 - x2) / (float max-x - 1.0f) + x2
-            y0 = float screen-y * (y1 - y2) / (float max-y - 1.0f) + y2
+
             x = y = 0.0f
             iteration = 0
             max-iteration = 16
-            while x * x + y * y < 4.0f and iteration < max-iteration do {
-                x' = x * x - y * y + x0
+            while sqr x + sqr y < 4.0f and iteration < max-iteration do {
+                x' = sqr x - sqr y + x0
                 y = 2.0f * x * y + y0
                 x = x'
                 iteration += 1
             }
+
 		    graphics:iteration
         }
     )
