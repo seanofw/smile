@@ -696,6 +696,75 @@ SMILE_EXTERNAL_FUNCTION(LnGamma)
 }
 
 //-------------------------------------------------------------------------------------------------
+// Trigonometry
+//
+// TODO:  These implementations are really suboptimal.  They're good enough for
+//   a first pass, but somebody with the proper math chops should definitely
+//   contribute better versions.
+
+SMILE_EXTERNAL_FUNCTION(Sin)
+{
+	Float64 value = Real64_ToFloat64(argv[0].unboxed.r64);
+	Float64 result = sin(value);
+	return SmileUnboxedReal64_From(Real64_FromFloat64(result));
+}
+
+SMILE_EXTERNAL_FUNCTION(Cos)
+{
+	Float64 value = Real64_ToFloat64(argv[0].unboxed.r64);
+	Float64 result = cos(value);
+	return SmileUnboxedReal64_From(Real64_FromFloat64(result));
+}
+
+SMILE_EXTERNAL_FUNCTION(Tan)
+{
+	Float64 value = Real64_ToFloat64(argv[0].unboxed.r64);
+	Float64 result = tan(value);
+	return SmileUnboxedReal64_From(Real64_FromFloat64(result));
+}
+
+SMILE_EXTERNAL_FUNCTION(ATan)
+{
+	if (argc < 2) {
+		Float64 value = Real64_ToFloat64(argv[0].unboxed.r64);
+		Float64 result = atan(value);
+		return SmileUnboxedReal64_From(Real64_FromFloat64(result));
+	}
+	else {
+		Float64 x = Real64_ToFloat64(argv[0].unboxed.r64);
+		Float64 y = Real64_ToFloat64(argv[1].unboxed.r64);
+		Float64 result = atan2(x, y);
+		return SmileUnboxedReal64_From(Real64_FromFloat64(result));
+	}
+}
+
+SMILE_EXTERNAL_FUNCTION(ASin)
+{
+	Float64 value = Real64_ToFloat64(argv[0].unboxed.r64);
+	Float64 result = asin(value);
+	return SmileUnboxedReal64_From(Real64_FromFloat64(result));
+}
+
+SMILE_EXTERNAL_FUNCTION(ACos)
+{
+	Float64 value = Real64_ToFloat64(argv[0].unboxed.r64);
+	Float64 result = acos(value);
+	return SmileUnboxedReal64_From(Real64_FromFloat64(result));
+}
+
+static Real64 _degToRadConstant, _radToDegConstant;
+
+SMILE_EXTERNAL_FUNCTION(DegToRad)
+{
+	return SmileUnboxedReal64_From(Real64_Mul(argv[0].unboxed.r64, _degToRadConstant));
+}
+
+SMILE_EXTERNAL_FUNCTION(RadToDeg)
+{
+	return SmileUnboxedReal64_From(Real64_Mul(argv[0].unboxed.r64, _radToDegConstant));
+}
+
+//-------------------------------------------------------------------------------------------------
 // Comparisons
 
 SMILE_EXTERNAL_FUNCTION(Eq)
@@ -878,6 +947,16 @@ void SmileReal64_Setup(SmileUserObject base)
 	SetupSynonym("gamma", "factorial");
 	SetupSynonym("ln-gamma", "ln-factorial");
 
+	SetupFunction("sin", Sin, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
+	SetupFunction("cos", Cos, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
+	SetupFunction("tan", Tan, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
+	SetupFunction("atan", ATan, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _real64Checks);
+	SetupSynonym("atan", "atan2");
+	SetupFunction("asin", ASin, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
+	SetupFunction("acos", ACos, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
+	SetupFunction("deg-to-rad", DegToRad, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
+	SetupFunction("rad-to-deg", RadToDeg, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
+
 	SetupFunction("odd?", ValueTest, (void *)ODD_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
 	SetupFunction("even?", ValueTest, (void *)EVEN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
 	SetupFunction("zero?", ValueTest, (void *)ZERO_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
@@ -920,4 +999,7 @@ void SmileReal64_Setup(SmileUserObject base)
 	SetupData("h",     SmileReal64_Create(Real64_FromFloat64(6.626070040e-34)));
 
 	SetupData("g",     SmileReal64_Create(Real64_FromFloat64(9.80665)));
+
+	_degToRadConstant = Real64_FromFloat64(3.14159265358979323846264338327950288 / 180.0);
+	_radToDegConstant = Real64_FromFloat64(180.0 / 3.14159265358979323846264338327950288);
 }
