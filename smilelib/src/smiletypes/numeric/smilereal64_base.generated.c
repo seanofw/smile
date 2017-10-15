@@ -578,6 +578,77 @@ SMILE_EXTERNAL_FUNCTION(Modf)
 }
 
 //-------------------------------------------------------------------------------------------------
+// Powers, exponents, and logarithms.
+//
+// TODO:  These implementations are really suboptimal.  They're good enough for
+//   a first pass, but somebody with the proper math chops should definitely
+//   contribute better versions.
+
+SMILE_EXTERNAL_FUNCTION(Log10)
+{
+	Float64 value = Real64_ToFloat64(argv[0].unboxed.r64);
+	Float64 result = log10(value);
+	return SmileUnboxedReal64_From(Real64_FromFloat64(result));
+}
+
+SMILE_EXTERNAL_FUNCTION(Log2)
+{
+	Float64 value = Real64_ToFloat64(argv[0].unboxed.r64);
+	Float64 result = log2(value);
+	return SmileUnboxedReal64_From(Real64_FromFloat64(result));
+}
+
+SMILE_EXTERNAL_FUNCTION(Ln)
+{
+	Float64 value = Real64_ToFloat64(argv[0].unboxed.r64);
+	Float64 result = log(value);
+	return SmileUnboxedReal64_From(Real64_FromFloat64(result));
+}
+
+SMILE_EXTERNAL_FUNCTION(Ln1p)
+{
+	Float64 value = Real64_ToFloat64(argv[0].unboxed.r64);
+	Float64 result = log1p(value);
+	return SmileUnboxedReal64_From(Real64_FromFloat64(result));
+}
+
+SMILE_EXTERNAL_FUNCTION(Exp)
+{
+	Float64 value = Real64_ToFloat64(argv[0].unboxed.r64);
+	Float64 result = exp(value);
+	return SmileUnboxedReal64_From(Real64_FromFloat64(result));
+}
+
+SMILE_EXTERNAL_FUNCTION(Exp2)
+{
+	Float64 value = Real64_ToFloat64(argv[0].unboxed.r64);
+	Float64 result = exp2(value);
+	return SmileUnboxedReal64_From(Real64_FromFloat64(result));
+}
+
+SMILE_EXTERNAL_FUNCTION(Exp10)
+{
+	Float64 value = Real64_ToFloat64(argv[0].unboxed.r64);
+	Float64 result = pow(10, value);
+	return SmileUnboxedReal64_From(Real64_FromFloat64(result));
+}
+
+SMILE_EXTERNAL_FUNCTION(Expm1)
+{
+	Float64 value = Real64_ToFloat64(argv[0].unboxed.r64);
+	Float64 result = expm1(value);
+	return SmileUnboxedReal64_From(Real64_FromFloat64(result));
+}
+
+SMILE_EXTERNAL_FUNCTION(Pow)
+{
+	Float64 base = Real64_ToFloat64(argv[0].unboxed.r64);
+	Float64 power = Real64_ToFloat64(argv[1].unboxed.r64);
+	Float64 result = pow(base, power);
+	return SmileUnboxedReal64_From(Real64_FromFloat64(result));
+}
+
+//-------------------------------------------------------------------------------------------------
 // Comparisons
 
 SMILE_EXTERNAL_FUNCTION(Eq)
@@ -738,6 +809,17 @@ void SmileReal64_Setup(SmileUserObject base)
 	SetupFunction("round", Round, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
 	SetupFunction("bank-round", BankRound, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
 	SetupFunction("modf", Modf, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
+
+	SetupFunction("log", Log10, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
+	SetupFunction("log2", Log2, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
+	SetupFunction("ln", Ln, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
+	SetupFunction("ln1p", Ln1p, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
+	SetupFunction("exp", Exp, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
+	SetupFunction("exp2", Exp2, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
+	SetupFunction("exp10", Exp10, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
+	SetupFunction("expm1", Expm1, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
+	SetupFunction("^", Pow, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _real64Checks);
+	SetupSynonym("log2", "lg");
 
 	SetupFunction("odd?", ValueTest, (void *)ODD_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
 	SetupFunction("even?", ValueTest, (void *)EVEN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);

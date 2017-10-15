@@ -625,6 +625,54 @@ SMILE_EXTERNAL_FUNCTION(Modf)
 }
 
 //-------------------------------------------------------------------------------------------------
+// Powers, exponents, and logarithms
+
+SMILE_EXTERNAL_FUNCTION(Log10)
+{
+	return SmileUnboxedFloat32_From(log10f(argv[0].unboxed.f32));
+}
+
+SMILE_EXTERNAL_FUNCTION(Log2)
+{
+	return SmileUnboxedFloat32_From(log2f(argv[0].unboxed.f32));
+}
+
+SMILE_EXTERNAL_FUNCTION(Ln)
+{
+	return SmileUnboxedFloat32_From(logf(argv[0].unboxed.f32));
+}
+
+SMILE_EXTERNAL_FUNCTION(Ln1p)
+{
+	return SmileUnboxedFloat32_From(log1pf(argv[0].unboxed.f32));
+}
+
+SMILE_EXTERNAL_FUNCTION(Exp)
+{
+	return SmileUnboxedFloat32_From(expf(argv[0].unboxed.f32));
+}
+
+SMILE_EXTERNAL_FUNCTION(Exp2)
+{
+	return SmileUnboxedFloat32_From(exp2f(argv[0].unboxed.f32));
+}
+
+SMILE_EXTERNAL_FUNCTION(Exp10)
+{
+	return SmileUnboxedFloat32_From(powf(10, argv[0].unboxed.f32));
+}
+
+SMILE_EXTERNAL_FUNCTION(Expm1)
+{
+	return SmileUnboxedFloat32_From(expm1f(argv[0].unboxed.f32));
+}
+
+SMILE_EXTERNAL_FUNCTION(Pow)
+{
+	return SmileUnboxedFloat32_From(powf(argv[0].unboxed.f32, argv[1].unboxed.f32));
+}
+
+//-------------------------------------------------------------------------------------------------
 // Comparisons
 
 SMILE_EXTERNAL_FUNCTION(Eq)
@@ -860,6 +908,17 @@ void SmileFloat32_Setup(SmileUserObject base)
 	SetupFunction("round", Round, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
 	SetupFunction("bank-round", BankRound, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
 	SetupFunction("modf", Modf, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
+
+	SetupFunction("log", Log10, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
+	SetupFunction("log2", Log2, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
+	SetupFunction("ln", Ln, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
+	SetupFunction("ln1p", Ln1p, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
+	SetupFunction("exp", Exp, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
+	SetupFunction("exp2", Exp2, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
+	SetupFunction("exp10", Exp10, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
+	SetupFunction("expm1", Expm1, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
+	SetupFunction("^", Pow, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _float32Checks);
+	SetupSynonym("log2", "lg");
 
 	SetupFunction("odd?", ValueTest, (void *)ODD_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
 	SetupFunction("even?", ValueTest, (void *)EVEN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);

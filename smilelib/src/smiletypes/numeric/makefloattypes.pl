@@ -66,7 +66,8 @@ sub OutputTemplate {
 	"Zero" => "0.0",
 	"One" => "1.0",
 	"Two" => "2.0",
-	"inf" => "const UInt64 infValue = 0x7FF0000000000000ULL; Float64 inf = *(Float64 *)&infValue;"
+	"inf" => "const UInt64 infValue = 0x7FF0000000000000ULL; Float64 inf = *(Float64 *)&infValue;",
+	"f" => ""
 );
 
 OutputTemplate(\@floatTemplate, \%float64Substitutions, "smilefloat64.generated.c");
@@ -91,7 +92,8 @@ OutputTemplate(\@floatBaseTemplate, \%float64Substitutions, "smilefloat64_base.g
 	"Zero" => "0.0f",
 	"One" => "1.0f",
 	"Two" => "2.0f",
-	"inf" => "const UInt32 infValue = 0x7F800000U; Float32 inf = *(Float32 *)&infValue;"
+	"inf" => "const UInt32 infValue = 0x7F800000U; Float32 inf = *(Float32 *)&infValue;",
+	"f" => "f"
 );
 
 OutputTemplate(\@floatTemplate, \%float32Substitutions, "smilefloat32.generated.c");
