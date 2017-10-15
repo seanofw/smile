@@ -29,6 +29,7 @@ SMILE_API_DATA SmileVTable SmileInteger16_VTable;
 SMILE_API_DATA SmileVTable SmileUnboxedInteger16_VTable;
 
 SMILE_API_FUNC SmileInteger16 SmileInteger16_CreateInternal(Int16 value);
+SMILE_API_FUNC SmileInteger16 SmileInteger16_Init(SmileInteger16 smileInt, Int16 value);
 SMILE_API_DATA SmileUnboxedInteger16 SmileUnboxedInteger16_Instance;
 
 Inline SmileArg SmileUnboxedInteger16_From(Int16 value)

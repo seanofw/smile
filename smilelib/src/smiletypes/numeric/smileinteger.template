@@ -23,6 +23,15 @@ SMILE_IGNORE_UNUSED_VARIABLES
 
 SMILE_EASY_OBJECT_VTABLE(Smile%Type%);
 
+Smile%Type% Smile%Type%_Init(Smile%Type% smileInt, %RawType% value)
+{
+	smileInt->base = (SmileObject)Smile_KnownBases.%Type%;
+	smileInt->kind = SMILE_KIND_%TYPE%;
+	smileInt->vtable = Smile%Type%_VTable;
+	smileInt->value = value;
+	return smileInt;
+}
+
 Smile%Type% Smile%Type%_CreateInternal(%RawType% value)
 {
 	// We MALLOC_ATOMIC here because the base is a known pointer that will never be collected.

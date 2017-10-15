@@ -28,6 +28,15 @@ SMILE_IGNORE_UNUSED_VARIABLES
 
 SMILE_EASY_OBJECT_VTABLE(SmileFloat32);
 
+SmileFloat32 SmileFloat32_Init(SmileFloat32 smileFloat, Float32 value)
+{
+	smileFloat->base = (SmileObject)Smile_KnownBases.Float32;
+	smileFloat->kind = SMILE_KIND_FLOAT32;
+	smileFloat->vtable = SmileFloat32_VTable;
+	smileFloat->value = value;
+	return smileFloat;
+}
+
 SmileFloat32 SmileFloat32_Create(Float32 value)
 {
 	// We MALLOC_ATOMIC here because the base is a known pointer that will never be collected.

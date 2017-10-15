@@ -30,7 +30,7 @@ struct SmileUnboxedCharInt {
 //  Public interface
 
 SMILE_API_DATA SmileVTable SmileChar_VTable;
-SMILE_API_FUNC SmileChar SmileChar_InitInternal(SmileChar smileChar, Byte ch);
+SMILE_API_FUNC SmileChar SmileChar_Init(SmileChar smileChar, Byte ch);
 
 SMILE_API_DATA SmileVTable SmileUnboxedChar_VTable;
 SMILE_API_DATA SmileUnboxedChar SmileUnboxedChar_Instance;

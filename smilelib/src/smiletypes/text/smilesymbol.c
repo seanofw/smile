@@ -26,13 +26,22 @@ SMILE_EASY_OBJECT_VTABLE(SmileSymbol);
 
 SmileSymbol SmileSymbol_Create(Symbol symbol)
 {
-	SmileSymbol smileInt = GC_MALLOC_STRUCT(struct SmileSymbolInt);
-	if (smileInt == NULL) Smile_Abort_OutOfMemory();
-	smileInt->base = (SmileObject)Smile_KnownBases.Symbol;
-	smileInt->kind = SMILE_KIND_SYMBOL;
-	smileInt->vtable = SmileSymbol_VTable;
-	smileInt->symbol = symbol;
-	return smileInt;
+	SmileSymbol smileSymbol = GC_MALLOC_STRUCT(struct SmileSymbolInt);
+	if (smileSymbol == NULL) Smile_Abort_OutOfMemory();
+	smileSymbol->base = (SmileObject)Smile_KnownBases.Symbol;
+	smileSymbol->kind = SMILE_KIND_SYMBOL;
+	smileSymbol->vtable = SmileSymbol_VTable;
+	smileSymbol->symbol = symbol;
+	return smileSymbol;
+}
+
+SmileSymbol SmileSymbol_Init(SmileSymbol smileSymbol, Symbol symbol)
+{
+	smileSymbol->base = (SmileObject)Smile_KnownBases.Symbol;
+	smileSymbol->kind = SMILE_KIND_SYMBOL;
+	smileSymbol->vtable = SmileSymbol_VTable;
+	smileSymbol->symbol = symbol;
+	return smileSymbol;
 }
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileSymbol)

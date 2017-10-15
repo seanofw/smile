@@ -29,6 +29,7 @@ SMILE_API_DATA SmileVTable SmileInteger32_VTable;
 SMILE_API_DATA SmileVTable SmileUnboxedInteger32_VTable;
 
 SMILE_API_FUNC SmileInteger32 SmileInteger32_CreateInternal(Int32 value);
+SMILE_API_FUNC SmileInteger32 SmileInteger32_Init(SmileInteger32 smileInt, Int32 value);
 SMILE_API_DATA SmileUnboxedInteger32 SmileUnboxedInteger32_Instance;
 
 Inline SmileArg SmileUnboxedInteger32_From(Int32 value)

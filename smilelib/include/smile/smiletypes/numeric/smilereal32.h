@@ -33,6 +33,7 @@ SMILE_API_DATA SmileVTable SmileReal32_VTable;
 SMILE_API_DATA SmileVTable SmileUnboxedReal32_VTable;
 
 SMILE_API_FUNC SmileReal32 SmileReal32_Create(Real32 value);
+SMILE_API_FUNC SmileReal32 SmileReal32_Init(SmileReal32 smileReal, Real32 value);
 SMILE_API_DATA SmileUnboxedReal32 SmileUnboxedReal32_Instance;
 
 Inline SmileArg SmileUnboxedReal32_From(Real32 value)

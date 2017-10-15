@@ -27,6 +27,15 @@ SMILE_IGNORE_UNUSED_VARIABLES
 
 SMILE_EASY_OBJECT_VTABLE(SmileReal64);
 
+SmileReal64 SmileReal64_Init(SmileReal64 smileReal, Real64 value)
+{
+	smileReal->base = (SmileObject)Smile_KnownBases.Real64;
+	smileReal->kind = SMILE_KIND_REAL64;
+	smileReal->vtable = SmileReal64_VTable;
+	smileReal->value = value;
+	return smileReal;
+}
+
 SmileReal64 SmileReal64_Create(Real64 value)
 {
 	// We MALLOC_ATOMIC here because the base is a known pointer that will never be collected.

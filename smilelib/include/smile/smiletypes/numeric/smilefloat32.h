@@ -29,6 +29,7 @@ SMILE_API_DATA SmileVTable SmileFloat32_VTable;
 SMILE_API_DATA SmileVTable SmileUnboxedFloat32_VTable;
 
 SMILE_API_FUNC SmileFloat32 SmileFloat32_Create(Float32 value);
+SMILE_API_FUNC SmileFloat32 SmileFloat32_Init(SmileFloat32 smileFloat, Float32 value);
 SMILE_API_DATA SmileUnboxedFloat32 SmileUnboxedFloat32_Instance;
 
 Inline SmileArg SmileUnboxedFloat32_From(Float32 value)

@@ -31,6 +31,7 @@ struct SmileUnboxedSymbolInt {
 
 SMILE_API_DATA SmileVTable SmileSymbol_VTable;
 SMILE_API_FUNC SmileSymbol SmileSymbol_Create(Symbol symbol);
+SMILE_API_FUNC SmileSymbol SmileSymbol_Init(SmileSymbol smileSymbol, Symbol symbol);
 
 SMILE_API_DATA SmileVTable SmileUnboxedSymbol_VTable;
 SMILE_API_DATA SmileUnboxedSymbol SmileUnboxedSymbol_Instance;

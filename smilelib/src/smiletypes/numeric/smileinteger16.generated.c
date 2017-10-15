@@ -27,6 +27,15 @@ SMILE_IGNORE_UNUSED_VARIABLES
 
 SMILE_EASY_OBJECT_VTABLE(SmileInteger16);
 
+SmileInteger16 SmileInteger16_Init(SmileInteger16 smileInt, Int16 value)
+{
+	smileInt->base = (SmileObject)Smile_KnownBases.Integer16;
+	smileInt->kind = SMILE_KIND_INTEGER16;
+	smileInt->vtable = SmileInteger16_VTable;
+	smileInt->value = value;
+	return smileInt;
+}
+
 SmileInteger16 SmileInteger16_CreateInternal(Int16 value)
 {
 	// We MALLOC_ATOMIC here because the base is a known pointer that will never be collected.

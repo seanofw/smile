@@ -23,7 +23,7 @@ SMILE_IGNORE_UNUSED_VARIABLES
 
 SMILE_EASY_OBJECT_VTABLE(SmileChar);
 
-SmileChar SmileChar_InitInternal(SmileChar smileChar, Byte ch)
+SmileChar SmileChar_Init(SmileChar smileChar, Byte ch)
 {
 	smileChar->base = (SmileObject)Smile_KnownBases.Char;
 	smileChar->kind = SMILE_KIND_CHAR;

@@ -35,7 +35,7 @@ SmileUni SmileUni_CreateInternal(UInt32 code)
 	return smileUni;
 }
 
-SmileUni SmileUni_InitInternal(SmileUni smileUni, UInt32 code)
+SmileUni SmileUni_Init(SmileUni smileUni, UInt32 code)
 {
 	smileUni->base = (SmileObject)Smile_KnownBases.Uni;
 	smileUni->kind = SMILE_KIND_UNI;

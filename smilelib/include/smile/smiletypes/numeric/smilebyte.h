@@ -28,7 +28,7 @@ struct SmileUnboxedByteInt {
 SMILE_API_DATA SmileVTable SmileByte_VTable;
 SMILE_API_DATA SmileVTable SmileUnboxedByte_VTable;
 
-SMILE_API_FUNC SmileByte SmileByte_InitInternal(SmileByte smileByte, Byte value);
+SMILE_API_FUNC SmileByte SmileByte_Init(SmileByte smileByte, Byte value);
 SMILE_API_DATA SmileUnboxedByte SmileUnboxedByte_Instance;
 
 Inline SmileArg SmileUnboxedByte_From(Byte value)

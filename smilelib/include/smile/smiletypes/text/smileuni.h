@@ -34,7 +34,7 @@ struct SmileUnboxedUniInt {
 
 SMILE_API_DATA SmileVTable SmileUni_VTable;
 SMILE_API_FUNC SmileUni SmileUni_CreateInternal(UInt32 code);
-SMILE_API_FUNC SmileUni SmileUni_InitInternal(SmileUni uni, UInt32 code);
+SMILE_API_FUNC SmileUni SmileUni_Init(SmileUni uni, UInt32 code);
 
 SMILE_API_DATA SmileVTable SmileUnboxedUni_VTable;
 SMILE_API_DATA SmileUnboxedUni SmileUnboxedUni_Instance;

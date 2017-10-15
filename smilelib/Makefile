@@ -117,6 +117,16 @@ distclean: clean
 	$(RM) Makefile.dep Makefile.src
 
 #---------------------------------------------------------------------------
+#  Generated files (only run this if you know you need to).
+
+generated:
+	cd src/eval; $(PERL) makefn.pl; cd ../..
+	cd src/smiletypes/numeric; $(PERL) makeinttypes.pl; cd ../../..
+	cd src/smiletypes/numeric; $(PERL) makefloattypes.pl; cd ../../..
+	cd src/smiletypes/numeric; $(PERL) makerealtypes.pl; cd ../../..
+	cd src/smiletypes/range; $(PERL) makerangetypes.pl; cd ../../..
+
+#---------------------------------------------------------------------------
 #  Dependencies.
 
 -include $(MAKEFILE_DIR)Makefile.dep

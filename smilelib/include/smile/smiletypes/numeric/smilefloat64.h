@@ -33,6 +33,7 @@ SMILE_API_DATA SmileVTable SmileFloat64_VTable;
 SMILE_API_DATA SmileVTable SmileUnboxedFloat64_VTable;
 
 SMILE_API_FUNC SmileFloat64 SmileFloat64_Create(Float64 value);
+SMILE_API_FUNC SmileFloat64 SmileFloat64_Init(SmileFloat64 smileFloat, Float64 value);
 SMILE_API_DATA SmileUnboxedFloat64 SmileUnboxedFloat64_Instance;
 
 Inline SmileArg SmileUnboxedFloat64_From(Float64 value)

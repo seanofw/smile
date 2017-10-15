@@ -27,6 +27,15 @@ SMILE_IGNORE_UNUSED_VARIABLES
 
 SMILE_EASY_OBJECT_VTABLE(SmileReal32);
 
+SmileReal32 SmileReal32_Init(SmileReal32 smileReal, Real32 value)
+{
+	smileReal->base = (SmileObject)Smile_KnownBases.Real32;
+	smileReal->kind = SMILE_KIND_REAL32;
+	smileReal->vtable = SmileReal32_VTable;
+	smileReal->value = value;
+	return smileReal;
+}
+
 SmileReal32 SmileReal32_Create(Real32 value)
 {
 	// We MALLOC_ATOMIC here because the base is a known pointer that will never be collected.

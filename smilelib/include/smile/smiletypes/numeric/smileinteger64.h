@@ -29,6 +29,7 @@ SMILE_API_DATA SmileVTable SmileInteger64_VTable;
 SMILE_API_DATA SmileVTable SmileUnboxedInteger64_VTable;
 
 SMILE_API_FUNC SmileInteger64 SmileInteger64_CreateInternal(Int64 value);
+SMILE_API_FUNC SmileInteger64 SmileInteger64_Init(SmileInteger64 smileInt, Int64 value);
 SMILE_API_DATA SmileUnboxedInteger64 SmileUnboxedInteger64_Instance;
 
 Inline SmileArg SmileUnboxedInteger64_From(Int64 value)

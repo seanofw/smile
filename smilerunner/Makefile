@@ -68,6 +68,8 @@ dep2:
 	$(foreach SRC,$(SRCS), \
 		$(CC) $(ALL_CFLAGS) $(DEFS) $(INCLUDES) $(DEPFLAGS) $(SRC) -MT 'obj/$(PLATFORM_NAME)/$(basename $(SRC)).o' >> Makefile.dep;)
 
+generated:
+
 #---------------------------------------------------------------------------
 #  Installation.
 

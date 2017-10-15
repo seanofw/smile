@@ -109,6 +109,8 @@ foreach $filename (@testfiles) {
 	$updated++;
 }
 
+print "$updated files changed.\r\n";
+
 if ($updated > 0) {
 	print "Writing testsuites.generated.inc.\r\n";
 
