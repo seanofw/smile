@@ -695,6 +695,52 @@ SMILE_EXTERNAL_FUNCTION(LnGamma)
 }
 
 //-------------------------------------------------------------------------------------------------
+// Trigonometry
+
+SMILE_EXTERNAL_FUNCTION(Sin)
+{
+	return SmileUnboxed%Type%_From(sin%f%(argv[0].unboxed.%unboxed%));
+}
+
+SMILE_EXTERNAL_FUNCTION(Cos)
+{
+	return SmileUnboxed%Type%_From(cos%f%(argv[0].unboxed.%unboxed%));
+}
+
+SMILE_EXTERNAL_FUNCTION(Tan)
+{
+	return SmileUnboxed%Type%_From(tan%f%(argv[0].unboxed.%unboxed%));
+}
+
+SMILE_EXTERNAL_FUNCTION(ATan)
+{
+	if (argc < 2)
+		return SmileUnboxed%Type%_From(atan%f%(argv[0].unboxed.%unboxed%));
+	else
+		return SmileUnboxed%Type%_From(atan2%f%(argv[0].unboxed.%unboxed%, argv[1].unboxed.%unboxed%));
+}
+
+SMILE_EXTERNAL_FUNCTION(ASin)
+{
+	return SmileUnboxed%Type%_From(asin%f%(argv[0].unboxed.%unboxed%));
+}
+
+SMILE_EXTERNAL_FUNCTION(ACos)
+{
+	return SmileUnboxed%Type%_From(acos%f%(argv[0].unboxed.%unboxed%));
+}
+
+SMILE_EXTERNAL_FUNCTION(DegToRad)
+{
+	return SmileUnboxed%Type%_From(argv[0].unboxed.%unboxed% * (%Type%)(3.14159265358979323846264338327950288 / 180.0));
+}
+
+SMILE_EXTERNAL_FUNCTION(RadToDeg)
+{
+	return SmileUnboxed%Type%_From(argv[0].unboxed.%unboxed% * (%Type%)(180.0 / 3.14159265358979323846264338327950288));
+}
+
+//-------------------------------------------------------------------------------------------------
 // Comparisons
 
 SMILE_EXTERNAL_FUNCTION(Eq)
@@ -948,6 +994,16 @@ void Smile%Type%_Setup(SmileUserObject base)
 	SetupFunction("ln-gamma", LnGamma, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
 	SetupSynonym("gamma", "factorial");
 	SetupSynonym("ln-gamma", "ln-factorial");
+
+	SetupFunction("sin", Sin, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("cos", Cos, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("tan", Tan, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("atan", ATan, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _%type%Checks);
+	SetupSynonym("atan", "atan2");
+	SetupFunction("asin", ASin, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("acos", ACos, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("deg-to-rad", DegToRad, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("rad-to-deg", RadToDeg, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
 
 	SetupFunction("odd?", ValueTest, (void *)ODD_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
 	SetupFunction("even?", ValueTest, (void *)EVEN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
