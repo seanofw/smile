@@ -103,6 +103,21 @@ String String_CreateRepeat(Byte b, Int repeatCount)
 }
 
 /// <summary>
+/// Construct a new String instance containing the given Unicode code-point, converted to UTF-8.
+/// </summary>
+/// <param name="code">The source Unicode code-point to use to construct the new string.</param>
+/// <returns>The new String instance.</returns>
+String String_CreateFromUnicode(UInt32 code)
+{
+	DECLARE_INLINE_STRINGBUILDER(stringBuilder, 16);
+	INIT_INLINE_STRINGBUILDER(stringBuilder);
+
+	StringBuilder_AppendUnicode(stringBuilder, code);
+
+	return StringBuilder_ToString(stringBuilder);
+}
+
+/// <summary>
 /// Construct a new String instance by concatenating many other strings together.
 /// </summary>
 /// <param name="strs">The array of string instances to join to create the new string.</param>

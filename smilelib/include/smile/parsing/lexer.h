@@ -63,6 +63,8 @@ struct TokenStruct {
 		Real32 real32;	// A 32-bit real value for this token.
 		Real64 real64;	// A 64-bit real value for this token.
 		Real128 real128;	// A 128-bit real value for this token.
+		Byte ch;	// An 8-bit character value for this token.
+		UInt32 uni;	// A 32-bit Unicode code point for this token.
 	} data;
 
 };

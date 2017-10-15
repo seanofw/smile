@@ -141,6 +141,7 @@ SMILE_API_DATA const String String_Number[10];
 SMILE_API_FUNC String String_Create(const Byte *text, Int length);
 SMILE_API_FUNC String String_CreateInternal(Int length);
 SMILE_API_FUNC String String_CreateRepeat(Byte b, Int repeatCount);
+SMILE_API_FUNC String String_CreateFromUnicode(UInt32 code);
 
 SMILE_API_FUNC String String_ConcatMany(const String *strs, Int numStrs);
 SMILE_API_FUNC String String_Join(const String glue, const String *strs, Int numStrs);

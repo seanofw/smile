@@ -193,6 +193,14 @@ SMILE_API_FUNC void Closure_SetArgumentInScope(Closure closure, Int scope, Int i
 	( ((__closure__)->stackTop->obj = (SmileObject)SmileUnboxedSymbol_Instance), \
 	  ((__closure__)->stackTop->unboxed.symbol = (__value__)), \
 	  ((__closure__)->stackTop++) )
+#define Closure_PushUnboxedChar(__closure__, __value__) \
+	( ((__closure__)->stackTop->obj = (SmileObject)SmileUnboxedChar_Instance), \
+	  ((__closure__)->stackTop->unboxed.ch = (__value__)), \
+	  ((__closure__)->stackTop++) )
+#define Closure_PushUnboxedUni(__closure__, __value__) \
+	( ((__closure__)->stackTop->obj = (SmileObject)SmileUnboxedUni_Instance), \
+	  ((__closure__)->stackTop->unboxed.uni = (__value__)), \
+	  ((__closure__)->stackTop++) )
 
 #define Closure_Pop(__closure__) \
 	(*--(__closure__)->stackTop)

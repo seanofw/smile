@@ -28,6 +28,7 @@ STATIC_STRING(TokenString_AlphaName, "alpha name");
 STATIC_STRING(TokenString_PunctName, "punct name");
 
 STATIC_STRING(TokenString_Char, "char");
+STATIC_STRING(TokenString_Uni, "uni");
 STATIC_STRING(TokenString_Byte, "byte");
 STATIC_STRING(TokenString_Integer16, "int16");
 STATIC_STRING(TokenString_Integer32, "int32");
@@ -90,6 +91,7 @@ SMILE_API_FUNC String TokenKind_ToString(Int tokenKind)
 		case TOKEN_PUNCTNAME: return TokenString_PunctName;
 
 		case TOKEN_CHAR: return TokenString_Char;
+		case TOKEN_UNI: return TokenString_Uni;
 		case TOKEN_BYTE: return TokenString_Byte;
 		case TOKEN_INTEGER16: return TokenString_Integer16;
 		case TOKEN_INTEGER32: return TokenString_Integer32;

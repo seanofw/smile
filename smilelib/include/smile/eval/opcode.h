@@ -1,4 +1,4 @@
-﻿#ifndef __SMILE_EVAL_OPCODE_H__
+#ifndef __SMILE_EVAL_OPCODE_H__
 #define __SMILE_EVAL_OPCODE_H__
 
 enum Opcode {
@@ -39,8 +39,8 @@ enum Opcode {
 	Op_LdSym	= 0x13,	// +1 | int32	; Push the given symbol value onto the work stack.
 	Op_LdObj	= 0x14,	// +1 | int32	; Push the given literal object onto the work stack (by object table index).
 	Op_LdClos	= 0x15,	// +1	; Push the current-closure object onto the work stack.
-	Op_16	= 0x16,		
-	Op_17	= 0x17,		
+	Op_LdChar	= 0x16,	// +1 | char	; Push the given char value onto the work stack.
+	Op_LdUni	= 0x17,	// +1 | uni		; Push the given uni value onto the work stack.
 	Op_Ld8	= 0x18,	// +1 | byte	; Push the given byte value onto the work stack.
 	Op_Ld16	= 0x19,	// +1 | int16	; Push the given int16 value onto the work stack.
 	Op_Ld32	= 0x1A,	// +1 | int32	; Push the given int32 value onto the work stack.

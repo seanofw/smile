@@ -66,6 +66,8 @@ typedef union {
 	Float32 f32;
 	Float64 f64;
 	Symbol symbol;
+	Byte ch;
+	UInt32 uni;
 } SmileUnboxedData;
 
 /// <summary>

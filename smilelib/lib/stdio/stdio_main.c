@@ -50,7 +50,7 @@ STATIC_STRING(_stdioBootstrap,
 	"\n"
 	"File.print-list-line = |file list| {\n"
 		"file print-list list\n"
-		"file write-byte '\\n'\n"
+		"file write-char '\\n'\n"
 	"}\n"
 	"\n"
 	/*"\n"

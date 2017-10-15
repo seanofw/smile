@@ -27,16 +27,13 @@ SMILE_IGNORE_UNUSED_VARIABLES
 
 SMILE_EASY_OBJECT_VTABLE(SmileByte);
 
-SmileByte SmileByte_CreateInternal(Byte value)
+SmileByte SmileByte_InitInternal(SmileByte smileByte, Byte value)
 {
-	// We MALLOC_ATOMIC here because the base is a known pointer that will never be collected.
-	SmileByte smileInt = (SmileByte)GC_MALLOC_ATOMIC(sizeof(struct SmileByteInt));
-	if (smileInt == NULL) Smile_Abort_OutOfMemory();
-	smileInt->base = (SmileObject)Smile_KnownBases.Byte;
-	smileInt->kind = SMILE_KIND_BYTE;
-	smileInt->vtable = SmileByte_VTable;
-	smileInt->value = value;
-	return smileInt;
+	smileByte->base = (SmileObject)Smile_KnownBases.Byte;
+	smileByte->kind = SMILE_KIND_BYTE;
+	smileByte->vtable = SmileByte_VTable;
+	smileByte->value = value;
+	return smileByte;
 }
 
 static UInt32 SmileByte_Hash(SmileByte obj)

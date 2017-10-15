@@ -283,6 +283,7 @@ STATIC_STRING(StringMap_, "StringMap");
 STATIC_STRING(Symbol_, "Symbol");
 STATIC_STRING(SymbolArray_, "SymbolArray");
 STATIC_STRING(SymbolMap_, "SymbolMap");
+STATIC_STRING(Uni_, "Uni");
 STATIC_STRING(UserObject_, "UserObject");
 
 STATIC_STRING(Number_, "Number");
@@ -390,6 +391,7 @@ static void KnownSymbolsInt_PreloadTypenames(SymbolTable symbolTable, KnownSymbo
 	knownSymbols->Symbol_ = SymbolTableInt_AddFast(symbolTable, Symbol_);
 	knownSymbols->SymbolArray_ = SymbolTableInt_AddFast(symbolTable, SymbolArray_);
 	knownSymbols->SymbolMap_ = SymbolTableInt_AddFast(symbolTable, SymbolMap_);
+	knownSymbols->Uni_ = SymbolTableInt_AddFast(symbolTable, Uni_);
 	knownSymbols->UserObject_ = SymbolTableInt_AddFast(symbolTable, UserObject_);
 
 	knownSymbols->Number_ = SymbolTableInt_AddFast(symbolTable, Number_);

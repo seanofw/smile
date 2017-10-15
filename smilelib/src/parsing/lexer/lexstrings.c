@@ -144,7 +144,8 @@ retry:
 }
 
 /// <summary>
-/// Having seen a single apostrophe '\'', parse its contents into a single 8-bit character.
+/// Having seen a single apostrophe '\'', parse its contents into a single 8-bit Char
+/// or into a single 32-bit Uni.
 /// </summary>
 /// <param name="lexer">The lexical analyzer.</param>
 /// <param name="isFirstContentOnLine">Whether this identifier is the first non-whitespace non-comment content on its line.</param>
@@ -157,6 +158,7 @@ Int Lexer_ParseChar(Lexer lexer, Bool isFirstContentOnLine)
 	Byte ch;
 	Int value;
 	Int startLine;
+	Bool isUni = False;
 
 	START_TOKEN(src - 1);
 
@@ -171,6 +173,7 @@ Int Lexer_ParseChar(Lexer lexer, Bool isFirstContentOnLine)
 
 	ch = *src++;
 	if (ch == '\\') {
+		isUni = (src < end && ((ch = *src) == 'u' || ch == 'U'));
 		value = Lexer_DecodeEscapeCode(&src, end, False);
 	}
 	else if (ch <= '\x1F') {
@@ -191,8 +194,14 @@ Int Lexer_ParseChar(Lexer lexer, Bool isFirstContentOnLine)
 	}
 	src++;
 
-	lexer->token->data.byte = (Byte)(UInt32)value;
-	return END_TOKEN(TOKEN_CHAR);
+	if (isUni) {
+		lexer->token->data.uni = (value >= 0 && value < 0x110000 ? (UInt32)value : 0xFFFD);
+		return END_TOKEN(TOKEN_UNI);
+	}
+	else {
+		lexer->token->data.ch = (Byte)(UInt32)value;
+		return END_TOKEN(TOKEN_CHAR);
+	}
 }
 
 /// <summary>

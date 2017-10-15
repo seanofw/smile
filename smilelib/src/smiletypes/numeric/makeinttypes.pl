@@ -73,7 +73,9 @@ sub OutputTemplate {
 	"ZeroExtend8" => "SmileUnboxedByte_From((Byte)argv[0].unboxed.i64)",
 	"ToStringBase10" => "String_CreateFromInteger(unboxedData.i64, 10, False)",
 	"HashAlgorithm" => "(UInt32)((UInt64)obj->value ^ ((UInt64)obj->value >> 32))",
-	"Sign" => "value == 0 ? SmileUnboxedInteger64_From(0) : value > 0 ? SmileUnboxedInteger64_From(1) : SmileUnboxedInteger64_From(-1)"
+	"Sign" => "value == 0 ? SmileUnboxedInteger64_From(0) : value > 0 ? SmileUnboxedInteger64_From(1) : SmileUnboxedInteger64_From(-1)",
+	"ToChar" => "SmileUnboxedChar_From((Byte)argv[0].unboxed.i64)",
+	"ToUni" => "SmileUnboxedUni_FromSafeInt64(argv[0].unboxed.i64)"
 );
 
 OutputTemplate(\@integerTemplate, \%int64Substitutions, "smileinteger64.generated.c");
@@ -105,7 +107,9 @@ OutputTemplate(\@integerBaseTemplate, \%int64Substitutions, "smileinteger64_base
 	"ZeroExtend8" => "SmileUnboxedByte_From((Byte)argv[0].unboxed.i32)",
 	"ToStringBase10" => "String_CreateFromInteger(unboxedData.i32, 10, False)",
 	"HashAlgorithm" => "(UInt32)obj->value",
-	"Sign" => "value == 0 ? SmileUnboxedInteger32_From(0) : value > 0 ? SmileUnboxedInteger32_From(1) : SmileUnboxedInteger32_From(-1)"
+	"Sign" => "value == 0 ? SmileUnboxedInteger32_From(0) : value > 0 ? SmileUnboxedInteger32_From(1) : SmileUnboxedInteger32_From(-1)",
+	"ToChar" => "SmileUnboxedChar_From((Byte)argv[0].unboxed.i32)",
+	"ToUni" => "SmileUnboxedUni_FromSafeInt32(argv[0].unboxed.i32)"
 );
 
 OutputTemplate(\@integerTemplate, \%int32Substitutions, "smileinteger32.generated.c");
@@ -137,7 +141,9 @@ OutputTemplate(\@integerBaseTemplate, \%int32Substitutions, "smileinteger32_base
 	"ZeroExtend8" => "SmileUnboxedByte_From((Byte)argv[0].unboxed.i16)",
 	"ToStringBase10" => "String_CreateFromInteger(unboxedData.i16, 10, False)",
 	"HashAlgorithm" => "(UInt32)obj->value",
-	"Sign" => "value == 0 ? SmileUnboxedInteger16_From(0) : value > 0 ? SmileUnboxedInteger16_From(1) : SmileUnboxedInteger16_From(-1)"
+	"Sign" => "value == 0 ? SmileUnboxedInteger16_From(0) : value > 0 ? SmileUnboxedInteger16_From(1) : SmileUnboxedInteger16_From(-1)",
+	"ToChar" => "SmileUnboxedChar_From((Byte)argv[0].unboxed.i16)",
+	"ToUni" => "SmileUnboxedUni_From(argv[0].unboxed.i16)"
 );
 
 OutputTemplate(\@integerTemplate, \%int16Substitutions, "smileinteger16.generated.c");
@@ -169,7 +175,9 @@ OutputTemplate(\@integerBaseTemplate, \%int16Substitutions, "smileinteger16_base
 	"ZeroExtend8" =>  "argv[0]",
 	"ToStringBase10" => "String_CreateFromInteger(unboxedData.i8, 10, False)",
 	"HashAlgorithm" => "(UInt32)obj->value",
-	"Sign" => "value == 0 ? SmileUnboxedByte_From(0) : SmileUnboxedByte_From(1)"
+	"Sign" => "value == 0 ? SmileUnboxedByte_From(0) : SmileUnboxedByte_From(1)",
+	"ToChar" => "SmileUnboxedChar_From(argv[0].unboxed.i8)",
+	"ToUni" => "SmileUnboxedUni_From(argv[0].unboxed.i8)"
 );
 
 OutputTemplate(\@integerTemplate, \%byteSubstitutions, "smilebyte.generated.c");

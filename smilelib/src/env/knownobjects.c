@@ -23,11 +23,17 @@
 #include <smile/smiletypes/smilenull.h>
 #include <smile/smiletypes/smilebool.h>
 #include <smile/smiletypes/text/smilesymbol.h>
+#include <smile/smiletypes/text/smilechar.h>
+#include <smile/smiletypes/text/smileuni.h>
 #include <smile/smiletypes/numeric/smilebyte.h>
 #include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/numeric/smileinteger128.h>
+
+static struct SmileByteInt _bytes[256];
+static struct SmileCharInt _chars[256];
+static struct SmileUniInt _unis[1024];
 
 void KnownObjects_Setup(struct KnownObjectsStruct *knownObjects, struct KnownSymbolsStruct *knownSymbols)
 {
@@ -37,7 +43,15 @@ void KnownObjects_Setup(struct KnownObjectsStruct *knownObjects, struct KnownSym
 	knownObjects->NullInstance = SmileNull_Create();
 
 	for (i = 0; i <= 255; i++) {
-		knownObjects->Bytes[i] = SmileByte_CreateInternal((Byte)i);
+		knownObjects->Chars[i] = SmileChar_InitInternal(&_chars[i], (Byte)i);
+	}
+
+	for (i = 0; i <= 1023; i++) {
+		knownObjects->Unis[i] = SmileUni_InitInternal(&_unis[i], (UInt32)i);
+	}
+
+	for (i = 0; i <= 255; i++) {
+		knownObjects->Bytes[i] = SmileByte_InitInternal(&_bytes[i], (Byte)i);
 	}
 
 	knownObjects->ZeroByte = knownObjects->Bytes[0];

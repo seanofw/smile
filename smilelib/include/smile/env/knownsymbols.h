@@ -168,7 +168,7 @@ typedef struct KnownSymbolsStruct {
 	// Typename symbols.
 	Symbol Actor_, Array_, ArrayBase_, Bool_, BoolArray_, Char_, Closure, Enumerable_, Exception_, Facade_, FacadeProper_, Fn_, Handle_;
 	Symbol List_, Map_, MapBase_, MathException, Null_, Object_, Pair_, Program_, Random_, Range_;
-	Symbol Regex_, String_, StringArray_, StringMap_, Symbol_, SymbolArray_, SymbolMap_, UserObject_;
+	Symbol Regex_, String_, StringArray_, StringMap_, Symbol_, SymbolArray_, SymbolMap_, Uni_, UserObject_;
 
 	// Numeric typename symbols.
 	Symbol Number_, NumericArray_, NumericRange_, NumericMap_;

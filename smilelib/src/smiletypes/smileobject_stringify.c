@@ -37,6 +37,8 @@
 #include <smile/smiletypes/numeric/smilefloat64.h>
 #include <smile/smiletypes/range/smileinteger64range.h>
 #include <smile/smiletypes/text/smilesymbol.h>
+#include <smile/smiletypes/text/smilechar.h>
+#include <smile/smiletypes/text/smileuni.h>
 #include <smile/smiletypes/raw/smilebytearray.h>
 #include <smile/smiletypes/smilehandle.h>
 #include <smile/internal/staticstring.h>
@@ -301,6 +303,14 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 
 	case SMILE_KIND_FLOAT64:
 		StringBuilder_AppendFormat(stringBuilder, "%S", Float64_ToStringEx(((SmileFloat64)obj)->value, 0, 15, False));
+		return;
+
+	case SMILE_KIND_CHAR:
+		StringBuilder_AppendFormat(stringBuilder, "'%S'", String_AddCSlashes(String_CreateRepeat(((SmileChar)obj)->ch, 1)));
+		return;
+
+	case SMILE_KIND_UNI:
+		StringBuilder_AppendFormat(stringBuilder, "'\\u%X'", ((SmileUni)obj)->code);
 		return;
 
 	case SMILE_KIND_STRING:

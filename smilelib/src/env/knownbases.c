@@ -179,6 +179,8 @@ static void SetupMiscTypes(struct KnownBasesStruct *knownBases)
 	knownBases->Pair = SmileUserObject_Create((SmileObject)knownBases->Object, Smile_KnownSymbols.Pair_);
 	knownBases->Fn = SmileUserObject_Create((SmileObject)knownBases->Object, Smile_KnownSymbols.Fn_);
 	knownBases->Bool = SmileUserObject_Create((SmileObject)knownBases->Object, Smile_KnownSymbols.Bool_);
+	knownBases->Char = SmileUserObject_Create((SmileObject)knownBases->Object, Smile_KnownSymbols.Char_);
+	knownBases->Uni = SmileUserObject_Create((SmileObject)knownBases->Object, Smile_KnownSymbols.Uni_);
 	knownBases->Symbol = SmileUserObject_Create((SmileObject)knownBases->Object, Smile_KnownSymbols.Symbol_);
 	knownBases->Exception = SmileUserObject_Create((SmileObject)knownBases->Object, Smile_KnownSymbols.Exception_);
 	knownBases->Handle = SmileUserObject_Create((SmileObject)knownBases->Object, Smile_KnownSymbols.Handle_);
@@ -215,6 +217,8 @@ extern void SmileList_Setup(SmileUserObject base);
 extern void SmilePair_Setup(SmileUserObject base);
 extern void SmileObject_Setup(SmileUserObject base);
 extern void String_Setup(SmileUserObject base);
+extern void SmileChar_Setup(SmileUserObject base);
+extern void SmileUni_Setup(SmileUserObject base);
 
 void KnownBases_Setup(struct KnownBasesStruct *knownBases)
 {
@@ -236,6 +240,8 @@ void KnownBases_Setup(struct KnownBasesStruct *knownBases)
 	SmileInteger16Range_Setup(knownBases->Integer16Range);
 	SmileInteger32Range_Setup(knownBases->Integer32Range);
 	SmileInteger64Range_Setup(knownBases->Integer64Range);
+	SmileChar_Setup(knownBases->Char);
+	SmileUni_Setup(knownBases->Uni);
 
 	SmileUnboxedBool_Instance->base = (SmileObject)knownBases->Bool;
 	SmileUnboxedSymbol_Instance->base = (SmileObject)knownBases->Symbol;

@@ -59,8 +59,8 @@ typedef struct IntermediateInstructionStruct {
 		Symbol symbol;
 		Int index;
 		Int delta;
-		UInt ch;
-		UInt uch;
+		Byte ch;
+		UInt32 uni;
 		Bool boolean;
 		struct {
 			Int32 a, b;

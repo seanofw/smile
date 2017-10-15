@@ -68,6 +68,7 @@ CompiledBlock Compiler_CompileOr(Compiler compiler, SmileList args, CompileFlags
 	// We passed all the tests, so the result is false.
 	EMIT1(Op_LdBool, +1, boolean = False);
 	instr = EMIT0(Op_Jmp, 0);
+	instr->p.branchTarget = jmpLabel;
 
 	// Now handle the truthy case.
 	CompiledBlock_AttachInstruction(compiledBlock, compiledBlock->last, branchLabel);

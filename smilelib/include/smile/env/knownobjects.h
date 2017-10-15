@@ -14,6 +14,9 @@ struct KnownObjectsStruct {
 	SmileBool FalseObj;
 	SmileBool BooleanObjs[2];
 
+	SmileChar Chars[256];
+	SmileUni Unis[256];
+
 	SmileByte Bytes[256];
 	SmileByte ZeroByte;
 	SmileByte OneByte;

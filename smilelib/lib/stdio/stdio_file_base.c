@@ -25,6 +25,7 @@
 #include <smile/smiletypes/numeric/smilebyte.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/raw/smilebytearray.h>
+#include <smile/stringbuilder.h>
 
 #include "stdio_internal.h"
 
@@ -65,6 +66,16 @@ static Byte _seekChecks[] = {
 static Byte _writeByteChecks[] = {
 	SMILE_KIND_MASK, SMILE_KIND_HANDLE,
 	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_BYTE,
+};
+
+static Byte _writeCharChecks[] = {
+	SMILE_KIND_MASK, SMILE_KIND_HANDLE,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_CHAR,
+};
+
+static Byte _writeUniChecks[] = {
+	SMILE_KIND_MASK, SMILE_KIND_HANDLE,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_UNI,
 };
 
 static Byte _readWriteChecks[] = {
@@ -355,21 +366,20 @@ SMILE_EXTERNAL_FUNCTION(ReadByte)
 	}
 }
 
-SMILE_EXTERNAL_FUNCTION(WriteByte)
+static SmileArg WriteByteInternal(Stdio_File file, FileInfo fileInfo, Byte byte)
 {
-	Stdio_File file = GetFileFromHandle((SmileHandle)argv[0].obj, (FileInfo)param, "File.write-byte");
 	Byte buffer[1];
 	int count;
 
 	if (file->mode & FILE_MODE_STD)
 		Stdio_Invoked = True;
 
-	buffer[0] = argv[1].unboxed.i8;
+	buffer[0] = byte;
 
 #	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
-	count = _write(file->fd, buffer, 1);
+		count = _write(file->fd, buffer, 1);
 #	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
-	count = write(file->fd, buffer, 1);
+		count = write(file->fd, buffer, 1);
 #	else
 #		error Unsupported OS.
 #	endif
@@ -381,8 +391,59 @@ SMILE_EXTERNAL_FUNCTION(WriteByte)
 	}
 	else {
 		Stdio_File_UpdateLastError(file);
-		return SmileUnboxedSymbol_From(((FileInfo)param)->error);
+		return SmileUnboxedSymbol_From(fileInfo->error);
 	}
+}
+
+static SmileArg WriteBytesInternal(Stdio_File file, FileInfo fileInfo, const Byte *buffer, UInt32 length)
+{
+	int count;
+
+	if (file->mode & FILE_MODE_STD)
+		Stdio_Invoked = True;
+
+#	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+		count = _write(file->fd, buffer, length);
+#	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+		count = write(file->fd, buffer, (int)length);
+#	else
+#		error Unsupported OS.
+#	endif
+
+	if (count > 0) {
+		file->lastErrorCode = 0;
+		file->lastErrorMessage = String_Empty;
+		return SmileUnboxedInteger64_From(count);
+	}
+	else {
+		Stdio_File_UpdateLastError(file);
+		return SmileUnboxedSymbol_From(fileInfo->error);
+	}
+}
+
+SMILE_EXTERNAL_FUNCTION(WriteByte)
+{
+	Stdio_File file = GetFileFromHandle((SmileHandle)argv[0].obj, (FileInfo)param, "File.write-byte");
+	return WriteByteInternal(file, (FileInfo)param, argv[1].unboxed.i8);
+}
+
+SMILE_EXTERNAL_FUNCTION(WriteChar)
+{
+	Stdio_File file = GetFileFromHandle((SmileHandle)argv[0].obj, (FileInfo)param, "File.write-char");
+	return WriteByteInternal(file, (FileInfo)param, argv[1].unboxed.ch);
+}
+
+SMILE_EXTERNAL_FUNCTION(WriteUni)
+{
+	Stdio_File file;
+	DECLARE_INLINE_STRINGBUILDER(stringBuilder, 16);
+
+	INIT_INLINE_STRINGBUILDER(stringBuilder);
+	StringBuilder_AppendUnicode(stringBuilder, argv[1].unboxed.uni);
+
+	file = GetFileFromHandle((SmileHandle)argv[0].obj, (FileInfo)param, "File.write-uni");
+	return WriteBytesInternal(file, (FileInfo)param,
+		StringBuilder_GetBytes(stringBuilder), (UInt32)StringBuilder_GetLength(stringBuilder));
 }
 
 SMILE_EXTERNAL_FUNCTION(Read)
@@ -593,8 +654,13 @@ void Stdio_File_Init(SmileUserObject base)
 	SetupFunction("seek-end", SeekEnd, (void *)fileInfo, "file pos", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _seekChecks);
 	SetupFunction("read-byte", ReadByte, (void *)fileInfo, "file", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _handleChecks);
 	SetupFunction("write-byte", WriteByte, (void *)fileInfo, "file byte", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _writeByteChecks);
+	SetupFunction("write-char", WriteChar, (void *)fileInfo, "file char", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _writeCharChecks);
+	SetupFunction("write-uni", WriteUni, (void *)fileInfo, "file uni", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _writeUniChecks);
 	SetupFunction("read", Read, (void *)fileInfo, "file buffer start size", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 4, 4, _readWriteChecks);
 	SetupFunction("write", Write, (void *)fileInfo, "file buffer start size", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 4, 4, _readWriteChecks);
 	SetupFunction("eof?", IsEof, (void *)fileInfo, "file", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _handleChecks);
 	//SetupFunction("flush", Flush, (void *)fileInfo, "file", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _handleChecks);
+	SetupSynonym("write-byte", "print-byte");
+	SetupSynonym("write-char", "print-char");
+	SetupSynonym("write-uni", "print-uni");
 }

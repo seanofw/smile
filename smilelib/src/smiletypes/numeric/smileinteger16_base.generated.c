@@ -31,6 +31,8 @@
 #include <smile/smiletypes/numeric/smilefloat32.h>
 #include <smile/smiletypes/numeric/smilefloat64.h>
 #include <smile/smiletypes/range/smileinteger16range.h>
+#include <smile/smiletypes/text/smilechar.h>
+#include <smile/smiletypes/text/smileuni.h>
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/base.h>
 #include <smile/internal/staticstring.h>
@@ -212,6 +214,16 @@ SMILE_EXTERNAL_FUNCTION(RangeTo)
 	step = end >= start ? +1 : -1;
 
 	return SmileArg_From((SmileObject)SmileInteger16Range_Create(start, end, step));
+}
+
+SMILE_EXTERNAL_FUNCTION(ToChar)
+{
+	return SmileUnboxedChar_From((Byte)argv[0].unboxed.i16);
+}
+
+SMILE_EXTERNAL_FUNCTION(ToUni)
+{
+	return SmileUnboxedUni_From(argv[0].unboxed.i16);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1651,6 +1663,9 @@ void SmileInteger16_Setup(SmileUserObject base)
 	SetupFunction("real32", ToReal32, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 	SetupFunction("real64", ToReal64, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 	SetupFunction("real", ToReal64, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+
+	SetupFunction("char", ToChar, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer16Checks);
+	SetupFunction("uni", ToUni, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer16Checks);
 
 	SetupFunction("parse", Parse, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX, 1, 3, 0, NULL);
 

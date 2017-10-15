@@ -55,6 +55,8 @@ struct KnownBasesStruct {
 	SmileUserObject     Pair;
 	SmileUserObject     Fn;
 	SmileUserObject     Bool;
+	SmileUserObject     Char;
+	SmileUserObject     Uni;
 	SmileUserObject     Symbol;
 	SmileUserObject     Exception;
 	SmileUserObject     Handle;

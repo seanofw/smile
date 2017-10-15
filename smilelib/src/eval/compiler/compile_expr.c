@@ -21,6 +21,8 @@
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/smilepair.h>
 #include <smile/smiletypes/text/smilesymbol.h>
+#include <smile/smiletypes/text/smilechar.h>
+#include <smile/smiletypes/text/smileuni.h>
 #include <smile/smiletypes/numeric/smilebyte.h>
 #include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
@@ -86,6 +88,10 @@ CompiledBlock Compiler_CompileExpr(Compiler compiler, SmileObject expr, CompileF
 			COMPILE_PRIMITIVE_EXPR(Op_LdStr, index = Compiler_AddString(compiler, (String)expr));
 		case SMILE_KIND_PRIMITIVE:
 			COMPILE_PRIMITIVE_EXPR(Op_LdObj, index = Compiler_AddObject(compiler, Smile_KnownBases.Primitive));
+		case SMILE_KIND_CHAR:
+			COMPILE_PRIMITIVE_EXPR(Op_LdChar, ch = ((SmileChar)expr)->ch);
+		case SMILE_KIND_UNI:
+			COMPILE_PRIMITIVE_EXPR(Op_LdUni, uni = ((SmileUni)expr)->code);
 
 		// Integer constants evaluate to themselves.
 		case SMILE_KIND_BYTE:

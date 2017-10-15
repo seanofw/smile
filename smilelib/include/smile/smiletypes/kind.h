@@ -21,7 +21,9 @@ typedef enum {
 	SMILE_KIND_UNBOXED_SYMBOL	= 0x08,
 	SMILE_KIND_UNBOXED_REAL32	= 0x0A,
 	SMILE_KIND_UNBOXED_REAL64	= 0x0B,
-		
+	SMILE_KIND_UNBOXED_CHAR	= 0x0C,
+	SMILE_KIND_UNBOXED_UNI	= 0x0D,
+
 	// Boxed versions of unboxable types.	
 	SMILE_KIND_BYTE	= 0x10,
 	SMILE_KIND_INTEGER16	= 0x11,
@@ -33,6 +35,8 @@ typedef enum {
 	SMILE_KIND_SYMBOL	= 0x18,
 	SMILE_KIND_REAL32	= 0x1A,
 	SMILE_KIND_REAL64	= 0x1B,
+	SMILE_KIND_CHAR	= 0x1C,
+	SMILE_KIND_UNI	= 0x1D,
 		
 	// The special aggregate types.	
 	SMILE_KIND_NULL	= 0x20,	// Must be a number with a zero in the SMILE_KIND_LIST_BIT position.

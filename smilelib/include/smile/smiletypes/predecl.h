@@ -18,6 +18,8 @@ typedef struct SmileUserObjectInt *SmileUserObject;
 
 typedef struct SmileBoolInt *SmileBool;
 typedef struct SmileSymbolInt *SmileSymbol;
+typedef struct SmileCharInt *SmileChar;
+typedef struct SmileUniInt *SmileUni;
 
 typedef struct SmileByteInt *SmileByte;
 typedef struct SmileInteger16Int *SmileInteger16;
@@ -29,8 +31,11 @@ typedef struct SmileUnboxedByteInt *SmileUnboxedByte;
 typedef struct SmileUnboxedInteger16Int *SmileUnboxedInteger16;
 typedef struct SmileUnboxedInteger32Int *SmileUnboxedInteger32;
 typedef struct SmileUnboxedInteger64Int *SmileUnboxedInteger64;
+
 typedef struct SmileUnboxedBoolInt *SmileUnboxedBool;
 typedef struct SmileUnboxedSymbolInt *SmileUnboxedSymbol;
+typedef struct SmileUnboxedCharInt *SmileUnboxedChar;
+typedef struct SmileUnboxedUniInt *SmileUnboxedUni;
 
 typedef struct SmileReal32Int *SmileReal32;
 typedef struct SmileReal64Int *SmileReal64;

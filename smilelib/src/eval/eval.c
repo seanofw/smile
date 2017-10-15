@@ -22,6 +22,8 @@
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/smileuserobject.h>
 #include <smile/smiletypes/text/smilesymbol.h>
+#include <smile/smiletypes/text/smilechar.h>
+#include <smile/smiletypes/text/smileuni.h>
 #include <smile/smiletypes/numeric/smilebyte.h>
 #include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
@@ -241,6 +243,16 @@ next:
 
 		case Op_LdClos:
 			goto unsupportedOpcode;
+
+		case Op_LdChar:
+			Closure_PushUnboxedChar(closure, byteCode->u.ch);
+			byteCode++;
+			goto next;
+
+		case Op_LdUni:
+			Closure_PushUnboxedUni(closure, byteCode->u.uni);
+			byteCode++;
+			goto next;
 
 		//-------------------------------------------------------
 		// 18-1F: Integer load instructions
@@ -1236,7 +1248,7 @@ next:
 		//-------------------------------------------------------
 		
 		case Op_04: case Op_08: case Op_0C: case Op_0D: case Op_0E:
-		case Op_16: case Op_17: case Op_1D: case Op_1E: case Op_1F:
+		case Op_1D: case Op_1E: case Op_1F:
 		case Op_20: case Op_25: case Op_26: case Op_27: case Op_28: case Op_2D: case Op_2E: case Op_2F:
 		case Op_33: case Op_37: case Op_3B: case Op_3C: case Op_3D: case Op_3E: case Op_3F:
 		case Op_73: case Op_77: case Op_78: case Op_79: case Op_7A: case Op_7B: case Op_7C: case Op_7D: case Op_7E: case Op_7F:
@@ -1275,8 +1287,10 @@ static SmileList MakeStackTrace(Closure closure, ByteCode byteCode, ByteCodeSegm
 
 	if (sourceLocation > 0) {
 		compiledSourceLocation = &segment->compiledTables->sourcelocations[sourceLocation];
-		SmileUserObject_Set(stackFrame, Smile_KnownSymbols.filename,
-			compiledSourceLocation->filename);
+		if (compiledSourceLocation->filename != NULL) {
+			SmileUserObject_Set(stackFrame, Smile_KnownSymbols.filename,
+				compiledSourceLocation->filename);
+		}
 		SmileUserObject_Set(stackFrame, Smile_KnownSymbols.line,
 			SmileInteger64_Create(compiledSourceLocation->line));
 		SmileUserObject_Set(stackFrame, Smile_KnownSymbols.column,

@@ -21,6 +21,7 @@
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/smileuserobject.h>
 #include <smile/smiletypes/smilebool.h>
+#include <smile/smiletypes/text/smilechar.h>
 #include <smile/smiletypes/numeric/smilebyte.h>
 #include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
@@ -147,17 +148,11 @@ SMILE_EXTERNAL_FUNCTION(Plus)
 			case SMILE_KIND_STRING:
 				x = String_Concat(x, (String)argv[1].obj);
 				return SmileArg_From((SmileObject)x);
-			case SMILE_KIND_UNBOXED_BYTE:
-				x = String_ConcatByte(x, argv[1].unboxed.i8);
+			case SMILE_KIND_UNBOXED_CHAR:
+				x = String_ConcatByte(x, argv[1].unboxed.ch);
 				return SmileArg_From((SmileObject)x);
-			case SMILE_KIND_UNBOXED_INTEGER16:
-				value = argv[1].unboxed.i16;
-				break;
-			case SMILE_KIND_INTEGER32:
-				value = argv[1].unboxed.i32;
-				break;
-			case SMILE_KIND_INTEGER64:
-				value = argv[1].unboxed.i64;
+			case SMILE_KIND_UNBOXED_UNI:
+				value = argv[1].unboxed.uni;
 				break;
 			default:
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _plusSuccessiveTypeError);
@@ -190,22 +185,11 @@ concat_many:
 		case SMILE_KIND_STRING:
 			StringBuilder_AppendString(stringBuilder, (String)argv[i].obj);
 			break;
-		case SMILE_KIND_UNBOXED_BYTE:
-			StringBuilder_AppendByte(stringBuilder, argv[1].unboxed.i8);
+		case SMILE_KIND_UNBOXED_CHAR:
+			StringBuilder_AppendByte(stringBuilder, argv[1].unboxed.ch);
 			break;
-		case SMILE_KIND_UNBOXED_INTEGER16:
-			StringBuilder_AppendUnicode(stringBuilder, argv[1].unboxed.i16);
-			break;
-		case SMILE_KIND_UNBOXED_INTEGER32:
-			value = argv[1].unboxed.i32;
-			goto append_unicode;
-		case SMILE_KIND_UNBOXED_INTEGER64:
-			value = argv[1].unboxed.i64;
-		append_unicode:
-			if (value < 0 || value >= 0x110000) {
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _plusIllegalUnicodeChar);
-			}
-			StringBuilder_AppendUnicode(stringBuilder, (UInt32)value);
+		case SMILE_KIND_UNBOXED_UNI:
+			StringBuilder_AppendUnicode(stringBuilder, argv[1].unboxed.uni);
 			break;		
 		default:
 			if (i == 0) continue;
@@ -616,7 +600,7 @@ SMILE_EXTERNAL_FUNCTION(GetMember)
 
 			ch = String_At(x, (Int)index);
 
-			return SmileUnboxedByte_From(ch);
+			return SmileUnboxedChar_From(ch);
 
 		case SMILE_KIND_INTEGER64RANGE:
 			range = (SmileInteger64Range)argv[1].obj;

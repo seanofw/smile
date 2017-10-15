@@ -31,6 +31,8 @@
 #include <smile/smiletypes/numeric/smilefloat32.h>
 #include <smile/smiletypes/numeric/smilefloat64.h>
 #include <smile/smiletypes/range/smilebyterange.h>
+#include <smile/smiletypes/text/smilechar.h>
+#include <smile/smiletypes/text/smileuni.h>
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/base.h>
 #include <smile/internal/staticstring.h>
@@ -212,6 +214,16 @@ SMILE_EXTERNAL_FUNCTION(RangeTo)
 	step = end >= start ? +1 : -1;
 
 	return SmileArg_From((SmileObject)SmileByteRange_Create(start, end, step));
+}
+
+SMILE_EXTERNAL_FUNCTION(ToChar)
+{
+	return SmileUnboxedChar_From(argv[0].unboxed.i8);
+}
+
+SMILE_EXTERNAL_FUNCTION(ToUni)
+{
+	return SmileUnboxedUni_From(argv[0].unboxed.i8);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1652,6 +1664,9 @@ void SmileByte_Setup(SmileUserObject base)
 	SetupFunction("real64", ToReal64, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 	SetupFunction("real", ToReal64, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 
+	SetupFunction("char", ToChar, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("uni", ToUni, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+
 	SetupFunction("parse", Parse, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX, 1, 3, 0, NULL);
 
 	SetupFunction("+", Plus, NULL, "augend addend", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _byteChecks);
@@ -1756,8 +1771,8 @@ void SmileByte_Setup(SmileUserObject base)
 
 	SetupFunction("range-to", RangeTo, NULL, "start end", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _byteChecks);
 
-	SetupData("max-value", SmileByte_CreateInternal(ByteMax));
-	SetupData("min-value", SmileByte_CreateInternal(ByteMin));
-	SetupData("max-value~", SmileByte_CreateInternal(ByteMax));
+	SetupData("max-value", Smile_KnownObjects.Bytes[ByteMax]);
+	SetupData("min-value", Smile_KnownObjects.Bytes[ByteMin]);
+	SetupData("max-value~", Smile_KnownObjects.Bytes[ByteMax]);
 	SetupData("min-value~", Smile_KnownObjects.ZeroByte);
 }
