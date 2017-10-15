@@ -428,6 +428,24 @@ SMILE_EXTERNAL_FUNCTION(UStar)
 	}
 }
 
+SMILE_EXTERNAL_FUNCTION(FMA)
+{
+	Int64 x = argv[0].unboxed.i64;
+	Int64 y = argv[1].unboxed.i64;
+	Int64 z = argv[2].unboxed.i64;
+
+	return SmileUnboxedInteger64_From(x + y * z);
+}
+
+SMILE_EXTERNAL_FUNCTION(UFMA)
+{
+	UInt64 x = (UInt64)argv[0].unboxed.i64;
+	UInt64 y = (UInt64)argv[1].unboxed.i64;
+	UInt64 z = (UInt64)argv[2].unboxed.i64;
+
+	return SmileUnboxedInteger64_From((Int64)(x + y * z));
+}
+
 /// <summary>
 /// Deal with division-by-zero.
 /// </summary>
@@ -996,6 +1014,18 @@ SMILE_EXTERNAL_FUNCTION(Sqrt)
 	}
 
 	return SmileUnboxedInteger64_From(IntSqrt(value));
+}
+
+SMILE_EXTERNAL_FUNCTION(Sqr)
+{
+	Int64 value = argv[0].unboxed.i64;
+	return SmileUnboxedInteger64_From(value * value);
+}
+
+SMILE_EXTERNAL_FUNCTION(Cube)
+{
+	Int64 value = argv[0].unboxed.i64;
+	return SmileUnboxedInteger64_From(value * value * value);
 }
 
 SMILE_EXTERNAL_FUNCTION(Pow2Q)
@@ -1675,6 +1705,8 @@ void SmileInteger64_Setup(SmileUserObject base)
 	SetupSynonym("-", "-~");
 	SetupFunction("*", Star, NULL, "multiplier multiplicand", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _integer64Checks);
 	SetupFunction("*~", UStar, NULL, "multiplier multiplicand", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _integer64Checks);
+	SetupFunction("+*", FMA, NULL, "augend multiplier multiplicand", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _integer64Checks);
+	SetupFunction("+*~", UFMA, NULL, "augend multiplier multiplicand", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _integer64Checks);
 
 	SetupFunction("/", Slash, &_quietMath, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _integer64Checks);
 	SetupFunction("/!", Slash, &_loudMath, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _integer64Checks);
@@ -1704,6 +1736,8 @@ void SmileInteger64_Setup(SmileUserObject base)
 	SetupFunction("^", Power, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _integer64Checks);
 	SetupFunction("sqrt", Sqrt, &_quietMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
 	SetupFunction("sqrt!", Sqrt, &_loudMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupFunction("sqr", Sqr, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupFunction("cube", Cube, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
 	SetupFunction("pow2?", Pow2Q, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
 	SetupFunction("next-pow2", NextPow2, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
 	SetupFunction("int-lg", IntLg, &_quietMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);

@@ -191,7 +191,7 @@
 #define bid32_sub         Real32_Sub
 #define bid32_mul         Real32_Mul
 #define bid32_div         Real32_Div
-#define bid32_fma         __bid32_fma
+#define bid32_fma         Real32_Fma
 #define bid32_sqrt        Real32_Sqrt
 #define bid32_rem         Real32_IeeeRem
 #define bid32_ilogb       __bid32_ilogb
@@ -347,7 +347,7 @@
 #define bid64q_sqrt __bid64q_sqrt
 #define bid64_sqrt Real64_Sqrt
 #define bid64_rem Real64_IeeeRem
-#define bid64_fma __bid64_fma
+#define bid64_fma Real64_Fma
 #define bid64_scalbn __bid64_scalbn
 #define bid64_ldexp  __bid64_ldexp
 #define bid_round128_19_38 __bid_round128_19_38

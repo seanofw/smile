@@ -263,6 +263,17 @@ SMILE_EXTERNAL_FUNCTION(Star)
 	}
 }
 
+SMILE_EXTERNAL_FUNCTION(FMA)
+{
+	%RawType% x, y, z;
+
+	x = argv[0].unboxed.%unboxed%;
+	y = argv[1].unboxed.%unboxed%;
+	z = argv[2].unboxed.%unboxed%;
+
+	return SmileUnboxed%Type%_From(%Type%_Fma(x, y, z));
+}
+
 /// <summary>
 /// Deal with division-by-zero.
 /// </summary>
@@ -508,6 +519,18 @@ SMILE_EXTERNAL_FUNCTION(Sqrt)
 	return SmileUnboxed%Type%_From(%Type%_Sqrt(value));
 }
 
+SMILE_EXTERNAL_FUNCTION(Sqr)
+{
+	%Type% value = argv[0].unboxed.%unboxed%;
+	return SmileUnboxed%Type%_From(%Type%_Mul(value, value));
+}
+
+SMILE_EXTERNAL_FUNCTION(Cube)
+{
+	%Type% value = argv[0].unboxed.%unboxed%;
+	return SmileUnboxed%Type%_From(%Type%_Mul(%Type%_Mul(value, value), value));
+}
+
 //-------------------------------------------------------------------------------------------------
 // Rounding/truncation operations
 
@@ -696,6 +719,8 @@ void Smile%Type%_Setup(SmileUserObject base)
 	SetupFunction("rem!", Rem, &_loudMath, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
 	SetupFunction("sqrt", Sqrt, &_quietMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
 	SetupFunction("sqrt!", Sqrt, &_loudMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("sqr", Sqr, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("cube", Cube, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
 
 	SetupFunction("sign", Sign, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
 	SetupFunction("abs", Abs, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);

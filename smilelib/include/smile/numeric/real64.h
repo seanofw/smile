@@ -60,6 +60,7 @@ SMILE_API_FUNC Real64 Real64_Div(Real64 a, Real64 b);
 SMILE_API_FUNC Real64 Real64_Mod(Real64 a, Real64 b);
 SMILE_API_FUNC Real64 Real64_Rem(Real64 a, Real64 b);
 SMILE_API_FUNC Real64 Real64_IeeeRem(Real64 a, Real64 b);
+SMILE_API_FUNC Real64 Real64_Fma(Real64 a, Real64 b, Real64 c);
 
 SMILE_API_FUNC Real64 Real64_Neg(Real64 real64);
 SMILE_API_FUNC Real64 Real64_Abs(Real64 real64);

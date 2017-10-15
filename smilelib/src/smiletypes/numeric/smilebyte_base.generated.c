@@ -428,6 +428,24 @@ SMILE_EXTERNAL_FUNCTION(UStar)
 	}
 }
 
+SMILE_EXTERNAL_FUNCTION(FMA)
+{
+	Byte x = argv[0].unboxed.i8;
+	Byte y = argv[1].unboxed.i8;
+	Byte z = argv[2].unboxed.i8;
+
+	return SmileUnboxedByte_From(x + y * z);
+}
+
+SMILE_EXTERNAL_FUNCTION(UFMA)
+{
+	Byte x = (Byte)argv[0].unboxed.i8;
+	Byte y = (Byte)argv[1].unboxed.i8;
+	Byte z = (Byte)argv[2].unboxed.i8;
+
+	return SmileUnboxedByte_From((Byte)(x + y * z));
+}
+
 /// <summary>
 /// Deal with division-by-zero.
 /// </summary>
@@ -996,6 +1014,18 @@ SMILE_EXTERNAL_FUNCTION(Sqrt)
 	}
 
 	return SmileUnboxedByte_From(IntSqrt(value));
+}
+
+SMILE_EXTERNAL_FUNCTION(Sqr)
+{
+	Byte value = argv[0].unboxed.i8;
+	return SmileUnboxedByte_From(value * value);
+}
+
+SMILE_EXTERNAL_FUNCTION(Cube)
+{
+	Byte value = argv[0].unboxed.i8;
+	return SmileUnboxedByte_From(value * value * value);
 }
 
 SMILE_EXTERNAL_FUNCTION(Pow2Q)
@@ -1675,6 +1705,8 @@ void SmileByte_Setup(SmileUserObject base)
 	SetupSynonym("-", "-~");
 	SetupFunction("*", Star, NULL, "multiplier multiplicand", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _byteChecks);
 	SetupFunction("*~", UStar, NULL, "multiplier multiplicand", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _byteChecks);
+	SetupFunction("+*", FMA, NULL, "augend multiplier multiplicand", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _byteChecks);
+	SetupFunction("+*~", UFMA, NULL, "augend multiplier multiplicand", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _byteChecks);
 
 	SetupFunction("/", Slash, &_quietMath, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _byteChecks);
 	SetupFunction("/!", Slash, &_loudMath, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _byteChecks);
@@ -1704,6 +1736,8 @@ void SmileByte_Setup(SmileUserObject base)
 	SetupFunction("^", Power, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _byteChecks);
 	SetupFunction("sqrt", Sqrt, &_quietMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
 	SetupFunction("sqrt!", Sqrt, &_loudMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("sqr", Sqr, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("cube", Cube, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
 	SetupFunction("pow2?", Pow2Q, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
 	SetupFunction("next-pow2", NextPow2, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
 	SetupFunction("int-lg", IntLg, &_quietMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);

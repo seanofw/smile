@@ -60,6 +60,7 @@ SMILE_API_FUNC Real32 Real32_Div(Real32 a, Real32 b);
 SMILE_API_FUNC Real32 Real32_Mod(Real32 a, Real32 b);
 SMILE_API_FUNC Real32 Real32_Rem(Real32 a, Real32 b);
 SMILE_API_FUNC Real32 Real32_IeeeRem(Real32 a, Real32 b);
+SMILE_API_FUNC Real32 Real32_Fma(Real32 a, Real32 b, Real32 c);
 
 SMILE_API_FUNC Real32 Real32_Neg(Real32 real32);
 SMILE_API_FUNC Real32 Real32_Abs(Real32 real32);

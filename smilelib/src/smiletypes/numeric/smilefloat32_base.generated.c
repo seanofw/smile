@@ -270,6 +270,21 @@ SMILE_EXTERNAL_FUNCTION(Star)
 	}
 }
 
+SMILE_EXTERNAL_FUNCTION(FMA)
+{
+	Float32 x, y, z;
+
+	x = argv[0].unboxed.f32;
+	y = argv[1].unboxed.f32;
+	z = argv[2].unboxed.f32;
+
+#if 32 == 64
+	return SmileUnboxedFloat32_From(fma(x, y, z));	// C99, C++ 11
+#else
+	return SmileUnboxedFloat32_From(fmaf(x, y, z));	// C99, C++ 11
+#endif
+}
+
 /// <summary>
 /// Deal with division-by-zero.
 /// </summary>
@@ -524,6 +539,18 @@ SMILE_EXTERNAL_FUNCTION(Sqrt)
 	}
 
 	return SmileUnboxedFloat32_From((Float32)sqrt(value));
+}
+
+SMILE_EXTERNAL_FUNCTION(Sqr)
+{
+	Float32 value = argv[0].unboxed.f32;
+	return SmileUnboxedFloat32_From(value * value);
+}
+
+SMILE_EXTERNAL_FUNCTION(Cube)
+{
+	Float32 value = argv[0].unboxed.f32;
+	return SmileUnboxedFloat32_From(value * value * value);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -807,6 +834,7 @@ void SmileFloat32_Setup(SmileUserObject base)
 	SetupFunction("+", Plus, NULL, "augend addend", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _float32Checks);
 	SetupFunction("-", Minus, NULL, "minuend subtrahend", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _float32Checks);
 	SetupFunction("*", Star, NULL, "multiplier multiplicand", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _float32Checks);
+	SetupFunction("+*", FMA, NULL, "augend multiplier multiplicand", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _float32Checks);
 	SetupFunction("/", Slash, &_quietMath, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _float32Checks);
 	SetupFunction("/!", Slash, &_loudMath, "dividend divisor", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 0, 8, _float32Checks);
 	SetupSynonym("/", "div");
@@ -817,6 +845,8 @@ void SmileFloat32_Setup(SmileUserObject base)
 	SetupFunction("rem!", Rem, &_loudMath, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _float32Checks);
 	SetupFunction("sqrt", Sqrt, &_quietMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
 	SetupFunction("sqrt!", Sqrt, &_loudMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
+	SetupFunction("sqr", Sqr, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
+	SetupFunction("cube", Cube, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
 
 	SetupFunction("sign", Sign, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
 	SetupFunction("abs", Abs, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);

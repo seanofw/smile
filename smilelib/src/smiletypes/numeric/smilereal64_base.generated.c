@@ -267,6 +267,17 @@ SMILE_EXTERNAL_FUNCTION(Star)
 	}
 }
 
+SMILE_EXTERNAL_FUNCTION(FMA)
+{
+	Real64 x, y, z;
+
+	x = argv[0].unboxed.r64;
+	y = argv[1].unboxed.r64;
+	z = argv[2].unboxed.r64;
+
+	return SmileUnboxedReal64_From(Real64_Fma(x, y, z));
+}
+
 /// <summary>
 /// Deal with division-by-zero.
 /// </summary>
@@ -512,6 +523,18 @@ SMILE_EXTERNAL_FUNCTION(Sqrt)
 	return SmileUnboxedReal64_From(Real64_Sqrt(value));
 }
 
+SMILE_EXTERNAL_FUNCTION(Sqr)
+{
+	Real64 value = argv[0].unboxed.r64;
+	return SmileUnboxedReal64_From(Real64_Mul(value, value));
+}
+
+SMILE_EXTERNAL_FUNCTION(Cube)
+{
+	Real64 value = argv[0].unboxed.r64;
+	return SmileUnboxedReal64_From(Real64_Mul(Real64_Mul(value, value), value));
+}
+
 //-------------------------------------------------------------------------------------------------
 // Rounding/truncation operations
 
@@ -700,6 +723,8 @@ void SmileReal64_Setup(SmileUserObject base)
 	SetupFunction("rem!", Rem, &_loudMath, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _real64Checks);
 	SetupFunction("sqrt", Sqrt, &_quietMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
 	SetupFunction("sqrt!", Sqrt, &_loudMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
+	SetupFunction("sqr", Sqr, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
+	SetupFunction("cube", Cube, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
 
 	SetupFunction("sign", Sign, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
 	SetupFunction("abs", Abs, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
