@@ -30,7 +30,7 @@ START_TEST(CanEmitNop)
 	ByteCodeSegment segment = ByteCodeSegment_Create(compiledTables);
 	String result;
 
-	const char *expectedResult = "\tNop\n";
+	const char *expectedResult = "0: \tNop\n";
 
 	ByteCodeSegment_Emit(segment, Op_Nop, 0);
 
@@ -46,10 +46,10 @@ START_TEST(CanEmitIntegerLoads)
 	String result;
 
 	const char *expectedResult =
-		"\tLd8 123\n"
-		"\tLd16 12345\n"
-		"\tLd32 12345678\n"
-		"\tLd64 1234567890\n";
+		"0: \tLd8 123\n"
+		"1: \tLd16 12345\n"
+		"2: \tLd32 12345678\n"
+		"3: \tLd64 1234567890\n";
 
 	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Ld8, 0)].u.byte = 123;
 	segment->byteCodes[ByteCodeSegment_Emit(segment, Op_Ld16, 0)].u.int16 = 12345;
@@ -68,14 +68,14 @@ START_TEST(CanEmitBranches)
 	String result;
 
 	String expectedResult = String_Format(
-		"\tLd32 123\n"
-		"\tJmp >L5\n"
-		"L2:\n"
-		"\tLd32 1\n"
-		"\tBinary %d\t; -\n"
-		"L5:\n"
-		"\tDup1\n"
-		"\tBt L2\n",
+		"0: \tLd32 123\n"
+		"1: \tJmp >L5\n"
+		"2: L2:\n"
+		"3: \tLd32 1\n"
+		"4: \tBinary %d\t; -\n"
+		"5: L5:\n"
+		"6: \tDup1\n"
+		"7: \tBt L2\n",
 		Smile_KnownSymbols.minus
 	);
 

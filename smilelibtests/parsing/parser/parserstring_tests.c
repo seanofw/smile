@@ -20,6 +20,8 @@
 #include <smile/parsing/parser.h>
 #include <smile/smiletypes/numeric/smilebyte.h>
 #include <smile/smiletypes/smilepair.h>
+#include <smile/smiletypes/text/smilechar.h>
+#include <smile/smiletypes/text/smileuni.h>
 #include <smile/env/env.h>
 
 #include "testhelpers.h"
@@ -33,8 +35,44 @@ START_TEST(CanParseASingleChar)
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
-	ASSERT(SMILE_KIND(result) == SMILE_KIND_BYTE);
-	ASSERT(((SmileByte)result)->value == 'a');
+	ASSERT(SMILE_KIND(result) == SMILE_KIND_CHAR);
+	ASSERT(((SmileChar)result)->ch == 'a');
+}
+END_TEST
+
+START_TEST(CanParseAnEscapedChar)
+{
+	Lexer lexer = SetupLexer("'\\a'");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(SMILE_KIND(result) == SMILE_KIND_CHAR);
+	ASSERT(((SmileChar)result)->ch == '\a');
+}
+END_TEST
+
+START_TEST(CanParseAnEscapedHexCodeChar)
+{
+	Lexer lexer = SetupLexer("'\\x41'");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(SMILE_KIND(result) == SMILE_KIND_CHAR);
+	ASSERT(((SmileChar)result)->ch == 'A');
+}
+END_TEST
+
+START_TEST(CanParseAUni)
+{
+	Lexer lexer = SetupLexer("'\\u2022'");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(SMILE_KIND(result) == SMILE_KIND_UNI);
+	ASSERT(((SmileUni)result)->code == 0x2022);
 }
 END_TEST
 
