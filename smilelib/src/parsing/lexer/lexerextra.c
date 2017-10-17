@@ -217,12 +217,12 @@ SMILE_API_FUNC Int Lexer_DecodeEscapeCode(const Byte **input, const Byte *end, B
 				return ch;
 			}
 			else {
-				UInt value;
+				Int value;
 
 				// Escaped character in the Unicode higher-than-ASCII range.
 				value = String_ExtractUnicodeCharacterInternal(&src, end);
 				*input = src;
-				return ch;
+				return value;
 			}
 	}
 }

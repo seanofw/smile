@@ -64,7 +64,7 @@ START_TEST(CanParseAnEscapedHexCodeChar)
 }
 END_TEST
 
-START_TEST(CanParseAUni)
+START_TEST(CanParseAnEscapedUni)
 {
 	Lexer lexer = SetupLexer("'\\u2022'");
 	Parser parser = Parser_Create();
@@ -73,6 +73,18 @@ START_TEST(CanParseAUni)
 
 	ASSERT(SMILE_KIND(result) == SMILE_KIND_UNI);
 	ASSERT(((SmileUni)result)->code == 0x2022);
+}
+END_TEST
+
+START_TEST(CanParseAnUnescapedUni)
+{
+	Lexer lexer = SetupLexer("'\xE6\x9C\xAC'");		// Japanese 本 (book, present, main, origin, true, real)
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(SMILE_KIND(result) == SMILE_KIND_UNI);
+	ASSERT(((SmileUni)result)->code == 0x672C);
 }
 END_TEST
 

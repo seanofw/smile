@@ -70,14 +70,14 @@ Int32 String_ExtractUnicodeCharacter(const String str, Int *index)
 	else if (c1 < 0xC2)
 	{
 		// Illegal overencodings for ASCII.
-		return 0xFFFD;
+		return -1;
 	}
 	else if (c1 < 0xE0)
 	{
 		// Low values in the Basic Multilingual Plane, like Latin and Greek and Hebrew.
-		if ((*index) >= String_Length(str)) return 0xFFFD;		// Out of input.
+		if ((*index) >= String_Length(str)) return -1;		// Out of input.
 		c2 = text[(*index)++];
-		if ((c2 & 0xC0) != 0x80) return 0xFFFD;			// Illegal subsequent byte.
+		if ((c2 & 0xC0) != 0x80) return -1;			// Illegal subsequent byte.
 		return (c1 << 6) + c2 - 0x3080;
 	}
 	else if (c1 < 0xF0)
@@ -90,9 +90,9 @@ Int32 String_ExtractUnicodeCharacter(const String str, Int *index)
 		}
 		c2 = text[(*index)++];
 		c3 = text[(*index)++];
-		if ((c2 & 0xC0) != 0x80) return 0xFFFD;			// Illegal subsequent byte.
-		if ((c3 & 0xC0) != 0x80) return 0xFFFD;			// Illegal subsequent byte.
-		if (c1 == 0xE0 && c2 < 0xA0) return 0xFFFD;		// Illegal overlong encoding.
+		if ((c2 & 0xC0) != 0x80) return -1;			// Illegal subsequent byte.
+		if ((c3 & 0xC0) != 0x80) return -1;			// Illegal subsequent byte.
+		if (c1 == 0xE0 && c2 < 0xA0) return -1;		// Illegal overlong encoding.
 		return (c1 << 12) + (c2 << 6) + c3 - 0xE2080;
 	}
 	else if (c1 < 0xF5)
@@ -101,22 +101,22 @@ Int32 String_ExtractUnicodeCharacter(const String str, Int *index)
 		if ((*index) >= String_Length(str) - 2)
 		{
 			(*index) = String_Length(str);
-			return 0xFFFD;
+			return -1;
 		}
 		c2 = text[(*index)++];
 		c3 = text[(*index)++];
 		c4 = text[(*index)++];
-		if ((c2 & 0xC0) != 0x80) return 0xFFFD;			// Illegal subsequent byte.
-		if ((c3 & 0xC0) != 0x80) return 0xFFFD;			// Illegal subsequent byte.
-		if ((c4 & 0xC0) != 0x80) return 0xFFFD;			// Illegal subsequent byte.
-		if (c1 == 0xF0 && c2 < 0x90) return 0xFFFD;		// Illegal overlong encoding.
-		if (c1 == 0xF4 && c2 >= 0x90) return 0xFFFD;	// Illegal high value.
+		if ((c2 & 0xC0) != 0x80) return -1;			// Illegal subsequent byte.
+		if ((c3 & 0xC0) != 0x80) return -1;			// Illegal subsequent byte.
+		if ((c4 & 0xC0) != 0x80) return -1;			// Illegal subsequent byte.
+		if (c1 == 0xF0 && c2 < 0x90) return -1;		// Illegal overlong encoding.
+		if (c1 == 0xF4 && c2 >= 0x90) return -1;	// Illegal high value.
 		return (c1 << 18) + (c2 << 12) + (c3 << 6) + c4 - 0x3C82080;
 	}
 	else
 	{
 		// Illegal high values.
-		return 0xFFFD;
+		return -1;
 	}
 }
 
@@ -144,14 +144,14 @@ Int32 String_ExtractUnicodeCharacterInternal(const Byte **start, const Byte *end
 	else if (c1 < 0xC2)
 	{
 		// Illegal overencodings for ASCII.
-		return (*start = text), 0xFFFD;
+		return (*start = text), -1;
 	}
 	else if (c1 < 0xE0)
 	{
 		// Low values in the Basic Multilingual Plane, like Latin and Greek and Hebrew.
-		if (text >= end) return (*start = text), 0xFFFD;					// Out of input.
+		if (text >= end) return (*start = text), -1;					// Out of input.
 		c2 = *text++;
-		if ((c2 & 0xC0) != 0x80) return (*start = text), 0xFFFD;			// Illegal subsequent byte.
+		if ((c2 & 0xC0) != 0x80) return (*start = text), -1;			// Illegal subsequent byte.
 		return (*start = text), (c1 << 6) + c2 - 0x3080;
 	}
 	else if (c1 < 0xF0)
@@ -160,13 +160,13 @@ Int32 String_ExtractUnicodeCharacterInternal(const Byte **start, const Byte *end
 		if (text >= end - 1)												// Out of input.
 		{
 			text = end;
-			return (*start = text), 0xFFFD;
+			return (*start = text), -1;
 		}
 		c2 = *text++;
 		c3 = *text++;
-		if ((c2 & 0xC0) != 0x80) return (*start = text), 0xFFFD;			// Illegal subsequent byte.
-		if ((c3 & 0xC0) != 0x80) return (*start = text), 0xFFFD;			// Illegal subsequent byte.
-		if (c1 == 0xE0 && c2 < 0xA0) return (*start = text), 0xFFFD;		// Illegal overlong encoding.
+		if ((c2 & 0xC0) != 0x80) return (*start = text), -1;			// Illegal subsequent byte.
+		if ((c3 & 0xC0) != 0x80) return (*start = text), -1;			// Illegal subsequent byte.
+		if (c1 == 0xE0 && c2 < 0xA0) return (*start = text), -1;		// Illegal overlong encoding.
 		return (*start = text), (c1 << 12) + (c2 << 6) + c3 - 0xE2080;
 	}
 	else if (c1 < 0xF5)
@@ -175,22 +175,22 @@ Int32 String_ExtractUnicodeCharacterInternal(const Byte **start, const Byte *end
 		if (text >= end - 2)
 		{
 			text = end;
-			return (*start = text), 0xFFFD;
+			return (*start = text), -1;
 		}
 		c2 = *text++;
 		c3 = *text++;
 		c4 = *text++;
-		if ((c2 & 0xC0) != 0x80) return (*start = text), 0xFFFD;			// Illegal subsequent byte.
-		if ((c3 & 0xC0) != 0x80) return (*start = text), 0xFFFD;			// Illegal subsequent byte.
-		if ((c4 & 0xC0) != 0x80) return (*start = text), 0xFFFD;			// Illegal subsequent byte.
-		if (c1 == 0xF0 && c2 < 0x90) return (*start = text), 0xFFFD;		// Illegal overlong encoding.
-		if (c1 == 0xF4 && c2 >= 0x90) return (*start = text), 0xFFFD;		// Illegal high value.
+		if ((c2 & 0xC0) != 0x80) return (*start = text), -1;			// Illegal subsequent byte.
+		if ((c3 & 0xC0) != 0x80) return (*start = text), -1;			// Illegal subsequent byte.
+		if ((c4 & 0xC0) != 0x80) return (*start = text), -1;			// Illegal subsequent byte.
+		if (c1 == 0xF0 && c2 < 0x90) return (*start = text), -1;		// Illegal overlong encoding.
+		if (c1 == 0xF4 && c2 >= 0x90) return (*start = text), -1;		// Illegal high value.
 		return (*start = text), (c1 << 18) + (c2 << 12) + (c3 << 6) + c4 - 0x3C82080;
 	}
 	else
 	{
 		// Illegal high values.
-		return (*start = text), 0xFFFD;
+		return (*start = text), -1;
 	}
 }
 
@@ -266,6 +266,7 @@ Int String_CompareRangeI(const String a, Int astart, Int alength, const String b
 		else
 		{
 			ach = String_ExtractUnicodeCharacterInternal(&aptr, aend);
+			if (ach < 0) ach = 0xFFFD;
 		}
 
 		// Read one complete Unicode code point from string B.
@@ -278,6 +279,7 @@ Int String_CompareRangeI(const String a, Int astart, Int alength, const String b
 		else
 		{
 			bch = String_ExtractUnicodeCharacterInternal(&bptr, bend);
+			if (bch < 0) bch = 0xFFFD;
 		}
 
 		// Use the case-folding tables to fold both characters, hopefully resulting in the
@@ -376,6 +378,7 @@ static String ConvertCase(const String str, Int start, Int length, const Int32 *
 		else
 		{
 			code = String_ExtractUnicodeCharacter(str, &i);
+			if (code < 0) code = 0xFFFD;
 			codePageIndex = code >> 8;
 			codePage = (codePageIndex < caseTableCount ? caseTable[codePageIndex] : _identityTable);
 			newCodeValue = code + codePage[code & 0xFF];
@@ -532,8 +535,10 @@ String String_ComposeRange(const String str, Int start, Int length)
 			ch = text[i];
 			if (ch < 128)
 				i++, d = ch;
-			else
+			else {
 				d = String_ExtractUnicodeCharacter(str, &i);
+				if (d < 0) d = 0xFFFD;
+			}
 		}
 		else d = -1;
 
@@ -585,7 +590,7 @@ String String_NormalizeRange(const String str, Int start, Int length)
 	StringBuilder stringBuilder;
 	Int i, j, lasti, strLength, codePageIndex, hdest;
 	const Byte *text;
-	UInt32 ch;
+	Int32 ch;
 	Byte b;
 	Byte canonicalCombiningClass;
 	UInt32 *holding, *newHolding;
@@ -631,6 +636,7 @@ String String_NormalizeRange(const String str, Int start, Int length)
 		}
 		else {
 			ch = String_ExtractUnicodeCharacter(str, &i);
+			if (ch < 0) ch = 0xFFFD;
 		}
 
 		// Find out its code page.  If it's *not* a combining character, just copy it to the output.
@@ -660,6 +666,7 @@ String String_NormalizeRange(const String str, Int start, Int length)
 				}
 				else {
 					ch = String_ExtractUnicodeCharacter(str, &i);
+					if (ch < 0) ch = 0xFFFD;
 				}
 
 				if (hdest >= holdingLength) {
@@ -887,6 +894,7 @@ String String_ConvertUtf8ToCodePageRange(const String str, Int start, Int length
 		}
 		else {
 			value = String_ExtractUnicodeCharacter(str, &src);
+			if (value < 0) value = 0xFFFD;
 			codePage = value >> 8;
 			ch = codePage < numTables ? utf8ToCodePageTables[codePage][value & 0xFF] : '?';
 		}

@@ -111,6 +111,7 @@ String String_HtmlEncodeToAscii(const String str)
 		}
 
 		code = String_ExtractUnicodeCharacter(str, &i);
+		if (code < 0) code = 0xFFFD;
 
 		if (code < 10000 && (htmlEntityName = HtmlEntityValueToName(code)) != NULL) {
 			StringBuilder_AppendByte(stringBuilder, '&');

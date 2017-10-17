@@ -1,13 +1,14 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 2ada9db97b3e2b2f9f62832767da6972
+// SourceHash: 8621c7f13fe2781295eaf7f7a707d09d
 
 START_TEST_SUITE(ParserStringTests)
 {
 	CanParseASingleChar,
 	CanParseAnEscapedChar,
 	CanParseAnEscapedHexCodeChar,
-	CanParseAUni,
+	CanParseAnEscapedUni,
+	CanParseAnUnescapedUni,
 	CanParseAPseudoDynamicString,
 	CanParseADynamicString,
 }

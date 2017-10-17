@@ -182,11 +182,16 @@ Int Lexer_ParseChar(Lexer lexer, Bool isFirstContentOnLine)
 		lexer->token->text = String_FormatString(UnterminatedCharMessage, startLine);
 		return END_TOKEN(TOKEN_ERROR);
 	}
+	else if (ch >= 0x80) {
+		src--;
+		value = String_ExtractUnicodeCharacterInternal(&src, end);
+		isUni = True;
+	}
 	else {
 		value = ch;
 	}
 
-	if (src >= end || *src != '\'') {
+	if (src >= end || *src != '\'' || value < 0 || value > 0x110000) {
 		// Too much content for a char, so treat this as an unterminated char.
 		lexer->src = src;
 		lexer->token->text = String_FormatString(UnterminatedCharMessage, startLine);
@@ -195,7 +200,7 @@ Int Lexer_ParseChar(Lexer lexer, Bool isFirstContentOnLine)
 	src++;
 
 	if (isUni) {
-		lexer->token->data.uni = (value >= 0 && value < 0x110000 ? (UInt32)value : 0xFFFD);
+		lexer->token->data.uni = (UInt32)value;
 		return END_TOKEN(TOKEN_UNI);
 	}
 	else {
