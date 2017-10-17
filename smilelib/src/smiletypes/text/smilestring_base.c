@@ -22,6 +22,7 @@
 #include <smile/smiletypes/smileuserobject.h>
 #include <smile/smiletypes/smilebool.h>
 #include <smile/smiletypes/text/smilechar.h>
+#include <smile/smiletypes/text/smileuni.h>
 #include <smile/smiletypes/numeric/smilebyte.h>
 #include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
@@ -609,6 +610,63 @@ SMILE_EXTERNAL_FUNCTION(GetMember)
 		default:
 			Smile_ThrowException(Smile_KnownSymbols.native_method_error, indexTypeError);
 	}
+}
+
+SMILE_EXTERNAL_FUNCTION(UniAt)
+{
+	String str = (String)argv[0].obj;
+	Int64 index = argv[1].unboxed.i64;
+	const Byte *text = String_GetBytes(str);
+	const Byte *src;
+	Int length = String_Length(str);
+	Int32 value;
+
+	STATIC_STRING(indexOutOfRangeError, "Index to 'uni-at' is beyond the length of the string.");
+
+	if (index < 0 || index >= length)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, indexOutOfRangeError);
+
+	src = text + (Int)index;
+
+	value = String_ExtractUnicodeCharacterInternal(&src, src + length);
+	if (value < 0) value = 0xFFFD;
+	return SmileUnboxedUni_From(value);
+}
+
+SMILE_EXTERNAL_FUNCTION(UniLengthAt)
+{
+	String str = (String)argv[0].obj;
+	Int64 index = argv[1].unboxed.i64;
+	const Byte *text = String_GetBytes(str);
+	const Byte *src, *start;
+	Int length = String_Length(str);
+
+	STATIC_STRING(indexOutOfRangeError, "Index to 'uni-length-at' is beyond the length of the string.");
+
+	if (index < 0 || index >= length)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, indexOutOfRangeError);
+
+	start = src = text + (Int)index;
+
+	String_ExtractUnicodeCharacterInternal(&src, src + length);
+	return SmileUnboxedInteger64_From(src - start);
+}
+
+SMILE_EXTERNAL_FUNCTION(UniNext)
+{
+	String str = (String)argv[0].obj;
+	Int64 index = argv[1].unboxed.i64;
+	const Byte *text = String_GetBytes(str);
+	const Byte *src;
+	Int length = String_Length(str);
+
+	if (index < 0 || index >= length)
+		return SmileUnboxedInteger64_From(-1);
+
+	src = text + (Int)index;
+
+	String_ExtractUnicodeCharacterInternal(&src, src + length);
+	return SmileUnboxedInteger64_From(src < text + length ? src - text : -1);
 }
 
 SMILE_EXTERNAL_FUNCTION(Substr)
@@ -1320,6 +1378,10 @@ void String_Setup(SmileUserObject base)
 	SetupSynonym("compare~", "cmp~");
 
 	SetupFunction("get-member", GetMember, NULL, "str index", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringComparisonChecks);
+	SetupSynonym("get-member", "at");
+	SetupFunction("uni-at", UniAt, NULL, "str index", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 2, 2, _stringNumberChecks);
+	SetupFunction("uni-length-at", UniLengthAt, NULL, "str index", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 2, 2, _stringNumberChecks);
+	SetupFunction("uni-next", UniNext, NULL, "str index", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 2, 2, _stringNumberChecks);
 
 	SetupFunction("each", Each, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
 	SetupFunction("map", Map, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
