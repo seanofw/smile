@@ -39,7 +39,7 @@ Int String_SplitWithOptions(const String str, const String pattern, Int limit, I
 	Array array = &a;
 	Int startIndex, splitIndex, len;
 
-	if (limit == 0) limit = IntMax;
+	if (limit < 0) limit = IntMax;
 
 	Array_Init(array, sizeof(String), 64, False);
 
@@ -77,6 +77,11 @@ Int String_SplitWithOptions(const String str, const String pattern, Int limit, I
 		}
 		else {
 			*((String *)Array_Push(array)) = String_Empty;
+		}
+	}
+	else {
+		if (startIndex < String_Length(str)) {
+			*((String *)Array_Push(array)) = startIndex > 0 ? String_Substring(str, startIndex, String_Length(str) - startIndex) : str;
 		}
 	}
 

@@ -27,7 +27,7 @@ START_TEST(SplitHandlesEmptyStrings)
 	String *pieces;
 	Int numPieces;
 
-	numPieces = String_SplitWithOptions(String_FromC(""), String_FromC(";"), 0, 0, &pieces);
+	numPieces = String_SplitWithOptions(String_FromC(""), String_FromC(";"), -1, 0, &pieces);
 
 	ASSERT(numPieces == 1);
 	ASSERT_STRING(pieces[0], NULL, 0);
@@ -39,7 +39,7 @@ START_TEST(SplitExplodesTheCharactersIfThePatternIsEmpty)
 	String *pieces;
 	Int numPieces;
 
-	numPieces = String_SplitWithOptions(String_FromC("This is a test."), String_FromC(""), 0, 0, &pieces);
+	numPieces = String_SplitWithOptions(String_FromC("This is a test."), String_FromC(""), -1, 0, &pieces);
 
 	ASSERT(numPieces == 15);
 	ASSERT_STRING(pieces[0], "T", 1);
@@ -65,7 +65,7 @@ START_TEST(SplitCanSplitUpStrings)
 	String *pieces;
 	Int numPieces;
 
-	numPieces = String_SplitWithOptions(String_FromC("This is a test."), String_FromC(" "), 0, 0, &pieces);
+	numPieces = String_SplitWithOptions(String_FromC("This is a test."), String_FromC(" "), -1, 0, &pieces);
 
 	ASSERT(numPieces == 4);
 	ASSERT_STRING(pieces[0], "This", 4);
@@ -80,7 +80,7 @@ START_TEST(SplitCanSplitUpStringsUsingALargeSplitterString)
 	String *pieces;
 	Int numPieces;
 
-	numPieces = String_SplitWithOptions(String_FromC("testers testtested testing testworthy."), String_FromC("test"), 0, 0, &pieces);
+	numPieces = String_SplitWithOptions(String_FromC("testers testtested testing testworthy."), String_FromC("test"), -1, 0, &pieces);
 
 	ASSERT(numPieces == 6);
 	ASSERT_STRING(pieces[0], NULL, 0);
@@ -114,7 +114,7 @@ START_TEST(SplitCanDiscardEmptyStrings)
 	String *pieces;
 	Int numPieces;
 
-	numPieces = String_SplitWithOptions(String_FromC("testers testtested testing testworthy."), String_FromC("test"), 0, StringSplitOptions_RemoveEmptyEntries, &pieces);
+	numPieces = String_SplitWithOptions(String_FromC("testers testtested testing testworthy."), String_FromC("test"), -1, StringSplitOptions_RemoveEmptyEntries, &pieces);
 
 	ASSERT(numPieces == 4);
 	ASSERT_STRING(pieces[0], "ers ", 4);
@@ -131,11 +131,12 @@ START_TEST(SplitCutsOffAtTheLimit)
 
 	numPieces = String_SplitWithOptions(String_FromC("testers testtested testing testworthy."), String_FromC("test"), 4, 0, &pieces);
 
-	ASSERT(numPieces == 4);
+	ASSERT(numPieces == 5);
 	ASSERT_STRING(pieces[0], NULL, 0);
 	ASSERT_STRING(pieces[1], "ers ", 4);
 	ASSERT_STRING(pieces[2], NULL, 0);
 	ASSERT_STRING(pieces[3], "ed ", 3);
+	ASSERT_STRING(pieces[4], "ing testworthy.", 15);
 }
 END_TEST
 
@@ -144,12 +145,12 @@ START_TEST(SplitCutsOffAtTheLimitWhenDiscardingEmptyStrings)
 	String *pieces;
 	Int numPieces;
 
-	numPieces = String_SplitWithOptions(String_FromC("testers testtested testing testworthy."), String_FromC("test"), 3, StringSplitOptions_RemoveEmptyEntries, &pieces);
+	numPieces = String_SplitWithOptions(String_FromC("testers testtested testing testworthy."), String_FromC("test"), 2, StringSplitOptions_RemoveEmptyEntries, &pieces);
 
 	ASSERT(numPieces == 3);
 	ASSERT_STRING(pieces[0], "ers ", 4);
 	ASSERT_STRING(pieces[1], "ed ", 3);
-	ASSERT_STRING(pieces[2], "ing ", 4);
+	ASSERT_STRING(pieces[2], "ing testworthy.", 15);
 }
 END_TEST
 

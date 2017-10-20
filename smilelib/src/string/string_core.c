@@ -810,18 +810,61 @@ String String_Replace(const String str, const String pattern, const String repla
 
 	lastEnd = 0;
 	index = 0;
-	while ((index = String_IndexOf(str, pattern, index)) >= 0)
-	{
-		if (index > lastEnd)
-		{
+	while ((index = String_IndexOf(str, pattern, index)) >= 0) {
+		if (index > lastEnd) {
 			StringBuilder_Append(stringBuilder, text, lastEnd, index - lastEnd);
 		}
 		StringBuilder_Append(stringBuilder, repText, 0, repLength);
 		lastEnd = (index += String_Length(pattern));
 	}
 
-	if (lastEnd < String_Length(str))
-	{
+	if (lastEnd < String_Length(str)) {
+		StringBuilder_Append(stringBuilder, text, lastEnd, String_Length(str) - lastEnd);
+	}
+
+	return StringBuilder_ToString(stringBuilder);
+}
+
+/// <summary>
+/// Replace at most 'limit' instances of a pattern in a string with a replacement string (scanning from left to right).
+/// </summary>
+/// <param name="str">The string to search through (if NULL, an empty string is returned).</param>
+/// <param name="pattern">The pattern to search for (if NULL, 'str' is returned).</param>
+/// <param name="replacement">Replacement text for each instance of the pattern (if NULL, will be treated as empty).</param>
+/// <param name="limit">The maximum number of replacements to perform (after these, all characters of
+/// the string will be left unchanged.</param>
+/// <returns>A new string where at most 'limit' instances of the pattern have been replaced by the given replacement string.</returns>
+String String_ReplaceWithLimit(const String str, const String pattern, const String replacement, Int limit)
+{
+	DECLARE_INLINE_STRINGBUILDER(stringBuilder, 256);
+	String r;
+	const Byte *text, *patText, *repText;
+	Int lastEnd, index, patLength, repLength;
+
+	if (String_IsNullOrEmpty(str)) return String_Empty;
+	if (String_IsNullOrEmpty(pattern)) return str;
+
+	text = String_GetBytes(str);
+	patText = String_GetBytes(pattern);
+	patLength = String_Length(pattern);
+	r = (replacement != NULL ? replacement : String_Empty);
+	repText = String_GetBytes(r);
+	repLength = String_Length(r);
+
+	INIT_INLINE_STRINGBUILDER(stringBuilder);
+
+	lastEnd = 0;
+	index = 0;
+	while (limit > 0 && (index = String_IndexOf(str, pattern, index)) >= 0) {
+		if (index > lastEnd) {
+			StringBuilder_Append(stringBuilder, text, lastEnd, index - lastEnd);
+		}
+		StringBuilder_Append(stringBuilder, repText, 0, repLength);
+		lastEnd = (index += String_Length(pattern));
+		limit--;
+	}
+
+	if (lastEnd < String_Length(str)) {
 		StringBuilder_Append(stringBuilder, text, lastEnd, String_Length(str) - lastEnd);
 	}
 
@@ -853,9 +896,47 @@ String String_ReplaceChar(const String str, Byte pattern, Byte replacement)
 	src = String_GetBytes(str);
 	dest = newText = newString->_opaque.text;
 
-	for (i = 0; i < length; i++)
-	{
+	for (i = 0; i < length; i++) {
 		*dest++ = ((ch = *src++) == pattern ? replacement : ch);
+	}
+	*dest = '\0';
+
+	return newString;
+}
+
+/// <summary>
+/// Replace at most 'limit' instances of a character in a string with a replacement character.
+/// </summary>
+/// <param name="str">The string to search through (if NULL, an empty string is returned).</param>
+/// <param name="pattern">The pattern to search for.</param>
+/// <param name="replacement">A replacement character for each instance of the pattern.</param>
+/// <param name="limit">The maximum number of replacements to perform (after these, all characters of
+/// the string will be left unchanged.</param>
+/// <returns>A new string where at most 'limit' instances of the pattern character have been replaced by the given replacement character.</returns>
+String String_ReplaceCharWithLimit(const String str, Byte pattern, Byte replacement, Int limit)
+{
+	String newString;
+	const Byte *src;
+	Byte *newText, *dest;
+	Int length;
+	Byte ch;
+	Int i;
+
+	if (String_IsNullOrEmpty(str)) return String_Empty;
+
+	length = String_Length(str);
+
+	newString = String_CreateInternal(length);
+
+	src = String_GetBytes(str);
+	dest = newText = newString->_opaque.text;
+
+	for (i = 0; i < length; i++) {
+		if ((ch = *src++) == pattern && limit > 0) {
+			*dest++ = replacement;
+			limit--;
+		}
+		else *dest++ = ch;
 	}
 	*dest = '\0';
 

@@ -1220,3 +1220,93 @@ Bool String_EndsWithI(const String str, const String pattern)
 	return String_Length(pattern) <= String_Length(str)
 		&& String_CompareRangeI(pattern, 0, String_Length(pattern), str, String_Length(str) - String_Length(pattern), String_Length(pattern), &usedSlowConversion) == 0;
 }
+
+/// <summary>
+/// Replace all instances of a pattern in a string with a replacement string (scanning from left to right),
+/// case-insensitive.
+/// </summary>
+/// <param name="str">The string to search through (if NULL, an empty string is returned).</param>
+/// <param name="pattern">The pattern to search for (if NULL, 'str' is returned).</param>
+/// <param name="replacement">Replacement text for each instance of the pattern (if NULL, will be treated as empty).</param>
+/// <returns>A new string where all instances of the pattern have been replaced by the given replacement string.</returns>
+String String_ReplaceI(const String str, const String pattern, const String replacement)
+{
+	DECLARE_INLINE_STRINGBUILDER(stringBuilder, 256);
+	String r;
+	const Byte *text, *patText, *repText;
+	Int lastEnd, index, patLength, repLength;
+
+	if (String_IsNullOrEmpty(str)) return String_Empty;
+	if (String_IsNullOrEmpty(pattern)) return str;
+
+	text = String_GetBytes(str);
+	patText = String_GetBytes(pattern);
+	patLength = String_Length(pattern);
+	r = (replacement != NULL ? replacement : String_Empty);
+	repText = String_GetBytes(r);
+	repLength = String_Length(r);
+
+	INIT_INLINE_STRINGBUILDER(stringBuilder);
+
+	lastEnd = 0;
+	index = 0;
+	while ((index = String_IndexOfI(str, pattern, index)) >= 0) {
+		if (index > lastEnd) {
+			StringBuilder_Append(stringBuilder, text, lastEnd, index - lastEnd);
+		}
+		StringBuilder_Append(stringBuilder, repText, 0, repLength);
+		lastEnd = (index += String_Length(pattern));
+	}
+
+	if (lastEnd < String_Length(str)) {
+		StringBuilder_Append(stringBuilder, text, lastEnd, String_Length(str) - lastEnd);
+	}
+
+	return StringBuilder_ToString(stringBuilder);
+}
+
+/// <summary>
+/// Replace at most 'limit' instances of a pattern in a string with a replacement string (scanning from left to right).
+/// </summary>
+/// <param name="str">The string to search through (if NULL, an empty string is returned).</param>
+/// <param name="pattern">The pattern to search for (if NULL, 'str' is returned).</param>
+/// <param name="replacement">Replacement text for each instance of the pattern (if NULL, will be treated as empty).</param>
+/// <param name="limit">The maximum number of replacements to perform (after these, all characters of
+/// the string will be left unchanged.</param>
+/// <returns>A new string where at most 'limit' instances of the pattern have been replaced by the given replacement string.</returns>
+String String_ReplaceWithLimitI(const String str, const String pattern, const String replacement, Int limit)
+{
+	DECLARE_INLINE_STRINGBUILDER(stringBuilder, 256);
+	String r;
+	const Byte *text, *patText, *repText;
+	Int lastEnd, index, patLength, repLength;
+
+	if (String_IsNullOrEmpty(str)) return String_Empty;
+	if (String_IsNullOrEmpty(pattern)) return str;
+
+	text = String_GetBytes(str);
+	patText = String_GetBytes(pattern);
+	patLength = String_Length(pattern);
+	r = (replacement != NULL ? replacement : String_Empty);
+	repText = String_GetBytes(r);
+	repLength = String_Length(r);
+
+	INIT_INLINE_STRINGBUILDER(stringBuilder);
+
+	lastEnd = 0;
+	index = 0;
+	while (limit > 0 && (index = String_IndexOfI(str, pattern, index)) >= 0) {
+		if (index > lastEnd) {
+			StringBuilder_Append(stringBuilder, text, lastEnd, index - lastEnd);
+		}
+		StringBuilder_Append(stringBuilder, repText, 0, repLength);
+		lastEnd = (index += String_Length(pattern));
+		limit--;
+	}
+
+	if (lastEnd < String_Length(str)) {
+		StringBuilder_Append(stringBuilder, text, lastEnd, String_Length(str) - lastEnd);
+	}
+
+	return StringBuilder_ToString(stringBuilder);
+}

@@ -168,6 +168,8 @@ SMILE_API_FUNC Bool String_EndsWith(const String str, const String pattern);
 SMILE_API_FUNC Int String_IndexOfChar(const String str, Byte ch, Int start);
 SMILE_API_FUNC Int String_LastIndexOfChar(const String str, Byte ch, Int start);
 SMILE_API_FUNC Int String_IndexOfAnyChar(const String str, const Byte *chars, Int numChars, Int start);
+SMILE_API_FUNC String String_ReplaceWithLimit(const String str, const String pattern, const String replacement, Int limit);
+SMILE_API_FUNC String String_ReplaceCharWithLimit(const String str, Byte pattern, Byte replacement, Int limit);
 SMILE_API_FUNC String String_Replace(const String str, const String pattern, const String replacement);
 SMILE_API_FUNC String String_ReplaceChar(const String str, Byte pattern, Byte replacement);
 SMILE_API_FUNC Int String_CountOf(const String str, const String pattern);
@@ -245,6 +247,8 @@ SMILE_API_FUNC Bool String_ContainsI(const String str, const String pattern);
 SMILE_API_FUNC Bool String_StartsWithI(const String str, const String pattern);
 SMILE_API_FUNC Bool String_EndsWithI(const String str, const String pattern);
 SMILE_API_FUNC Int String_CountOfI(const String str, const String pattern);
+SMILE_API_FUNC String String_ReplaceI(const String str, const String pattern, const String replacement);
+SMILE_API_FUNC String String_ReplaceWithLimitI(const String str, const String pattern, const String replacement, Int limit);
 
 SMILE_API_FUNC String String_ToLowerRange(const String str, Int start, Int length);
 SMILE_API_FUNC String String_ToTitleRange(const String str, Int start, Int length);
@@ -560,7 +564,7 @@ Inline Int String_CompareI(const String a, const String b)
 /// <returns>The number of strings resulting from the split (i.e., the number of strings returned in the 'pieces' array).</returns>
 Inline Int String_Split(const String str, const String pattern, String **pieces)
 {
-	return String_SplitWithOptions(str, pattern, 0, StringSplitOptions_None, pieces);
+	return String_SplitWithOptions(str, pattern, -1, StringSplitOptions_None, pieces);
 }
 
 /// <summary>

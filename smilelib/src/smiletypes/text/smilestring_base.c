@@ -51,6 +51,12 @@ static Byte _stringComparisonChecks[] = {
 	0, 0,
 };
 
+static Byte _stringReplaceChecks[] = {
+	SMILE_KIND_MASK, SMILE_KIND_STRING,
+	0, 0,
+	0, 0,
+};
+
 static Byte _stringNumberChecks[] = {
 	SMILE_KIND_MASK, SMILE_KIND_STRING,
 	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER64,
@@ -601,6 +607,145 @@ SMILE_EXTERNAL_FUNCTION(CountOfI)
 	Int result = String_CountOfI(str, pattern);
 
 	return SmileUnboxedInteger64_From(result);
+}
+
+SMILE_EXTERNAL_FUNCTION(Replace)
+{
+	String str = (String)argv[0].obj;
+	String pattern, replacement;
+	Int patternKind = SMILE_KIND(argv[1].obj);
+	Int replacementKind = SMILE_KIND(argv[2].obj);
+
+	if (patternKind == SMILE_KIND_UNBOXED_CHAR && replacementKind == SMILE_KIND_UNBOXED_CHAR) {
+		if (argc > 3)
+			str = String_ReplaceCharWithLimit(str, argv[1].unboxed.i8, argv[2].unboxed.i8, argv[3].unboxed.i64);
+		else
+			str = String_ReplaceChar(str, argv[1].unboxed.i8, argv[2].unboxed.i8);
+		return SmileArg_From((SmileObject)str);
+	}
+
+	if (patternKind == SMILE_KIND_STRING) {
+		pattern = (String)argv[1].obj;
+	}
+	else if (patternKind == SMILE_KIND_UNBOXED_CHAR) {
+		pattern = String_CreateRepeat(argv[1].unboxed.i8, 1);
+	}
+	else if (patternKind == SMILE_KIND_UNBOXED_UNI) {
+		pattern = String_CreateFromUnicode(argv[1].unboxed.uni);
+	}
+	else {
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+			String_FromC("Expected the pattern for 'String.replace' to be a String, a Char, or a Uni."));
+	}
+
+	if (replacementKind == SMILE_KIND_STRING) {
+		replacement = (String)argv[2].obj;
+	}
+	else if (replacementKind == SMILE_KIND_UNBOXED_CHAR) {
+		replacement = String_CreateRepeat(argv[2].unboxed.i8, 1);
+	}
+	else if (replacementKind == SMILE_KIND_UNBOXED_UNI) {
+		replacement = String_CreateFromUnicode(argv[2].unboxed.uni);
+	}
+	else {
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+			String_FromC("Expected the replacement for 'String.replace' to be a String, a Char, or a Uni."));
+	}
+
+	if (argc > 3)
+		str = String_ReplaceWithLimit(str, pattern, replacement, argv[3].unboxed.i64);
+	else
+		str = String_Replace(str, pattern, replacement);
+
+	return SmileArg_From((SmileObject)str);
+}
+
+SMILE_EXTERNAL_FUNCTION(ReplaceI)
+{
+	String str = (String)argv[0].obj;
+	String pattern, replacement;
+	Int patternKind = SMILE_KIND(argv[1].obj);
+	Int replacementKind = SMILE_KIND(argv[2].obj);
+
+	if (patternKind == SMILE_KIND_STRING) {
+		pattern = (String)argv[1].obj;
+	}
+	else if (patternKind == SMILE_KIND_UNBOXED_CHAR) {
+		pattern = String_CreateRepeat(argv[1].unboxed.i8, 1);
+	}
+	else if (patternKind == SMILE_KIND_UNBOXED_UNI) {
+		pattern = String_CreateFromUnicode(argv[1].unboxed.uni);
+	}
+	else {
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+			String_FromC("Expected the pattern for 'String.replace~' to be a String, a Char, or a Uni."));
+	}
+
+	if (replacementKind == SMILE_KIND_STRING) {
+		replacement = (String)argv[2].obj;
+	}
+	else if (replacementKind == SMILE_KIND_UNBOXED_CHAR) {
+		replacement = String_CreateRepeat(argv[2].unboxed.i8, 1);
+	}
+	else if (replacementKind == SMILE_KIND_UNBOXED_UNI) {
+		replacement = String_CreateFromUnicode(argv[2].unboxed.uni);
+	}
+	else {
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+			String_FromC("Expected the replacement for 'String.replace~' to be a String, a Char, or a Uni."));
+	}
+
+	if (argc > 3)
+		str = String_ReplaceWithLimitI(str, pattern, replacement, argv[3].unboxed.i64);
+	else
+		str = String_ReplaceI(str, pattern, replacement);
+
+	return SmileArg_From((SmileObject)str);
+}
+
+SMILE_EXTERNAL_FUNCTION(Split)
+{
+	String str = (String)argv[0].obj;
+	String pattern;
+	Int patternKind = SMILE_KIND(argv[1].obj);
+	Int limit;
+	Int numPieces;
+	Int i;
+	String *pieces;
+	SmileList head, tail;
+
+	// Decode the pattern.
+	if (patternKind == SMILE_KIND_STRING)
+		pattern = (String)argv[1].obj;
+	else if (patternKind == SMILE_KIND_CHAR)
+		pattern = String_CreateRepeat(argv[1].unboxed.i8, 1);
+	else if (patternKind == SMILE_KIND_UNI)
+		pattern = String_CreateFromUnicode(argv[1].unboxed.uni);
+	else {
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+			String_FromC("The second argument to 'String.split' must be a String, Char, Uni, or Regex."));
+	}
+
+	// If there's a limit, get the limit.
+	if (argc > 2) {
+		limit = argv[2].unboxed.i64;
+		if (limit < 0) limit = 0;
+	}
+	else {
+		limit = -1;
+	}
+
+	// Do the actual splitting.
+	numPieces = String_SplitWithOptions(str, pattern, limit, StringSplitOptions_None, &pieces);
+
+	// Make a list of the resulting pieces.
+	head = tail = NullList;
+	for (i = 0; i < numPieces; i++) {
+		LIST_APPEND(head, tail, pieces[i]);
+	}
+
+	// And we're done.
+	return SmileArg_From((SmileObject)head);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1387,6 +1532,11 @@ void String_Setup(SmileUserObject base)
 	SetupFunction("last-index-of~", LastIndexOfI, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _indexOfChecks);
 	SetupFunction("count-of", CountOf, NULL, "str pattern", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringChecks);
 	SetupFunction("count-of~", CountOfI, NULL, "str pattern", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringChecks);
+	SetupFunction("replace", Replace, NULL, "str pattern replacement", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _stringReplaceChecks);
+	SetupFunction("replace~", ReplaceI, NULL, "str pattern replacement", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _stringReplaceChecks);
+	SetupSynonym("replace", "subst");
+	SetupSynonym("replace~", "subst~");
+	SetupFunction("split", Split, NULL, "str pattern limit", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _indexOfChecks);
 
 	SetupFunction("trim", Trim, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupFunction("trim-start", TrimStart, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
@@ -1399,6 +1549,8 @@ void String_Setup(SmileUserObject base)
 	SetupFunction("pad-start", PadStart, NULL, "string length char", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _padChecks);
 	SetupFunction("pad-end", PadEnd, NULL, "string length char", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _padChecks);
 	SetupFunction("pad-center", PadCenter, NULL, "string length char", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _padChecks);
+	SetupSynonym("pad-start", "left-pad");
+	SetupSynonym("pad-end", "right-pad");
 
 	SetupFunction("case-fold", CaseFold, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupSynonym("case-fold", "fold");
@@ -1469,14 +1621,12 @@ void String_Setup(SmileUserObject base)
 	SetupFunction("split-command-line", SplitCommandLine, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 
 	// Missing:
-	//    replace, replace-newlines, newlines-to-breaks, splice, split, split-newlines
+	//    newlines-to-breaks, splice, split, split-newlines
 	//    alnum?, alpha?, cident?, digits?, uppercase?, lowercase?, hex-digits?, octal?
 	//    uni-digits?, uni-letters?, uni-letters-digits?, uni-lowercase?, uni-uppercase?, uni-titlecase?
 	//    ident?
-	//    left-pad = pad-start, right-pad = pad-end
 	//    match, matches, wildcard-match?
 	//    sprintf, symbol
 	//    each-uni, map-uni, where-uni, count-uni
 	//    uni-array, char-array
-	//    replace, replace~
 }
