@@ -704,6 +704,54 @@ SmileList String_SplitNewlines(const String str)
 }
 
 /// <summary>
+/// Insert the provided prefix token before every newline, as represented in each of the
+/// four forms ('\r', '\n', '\r\n', or '\n\r')
+/// </summary>
+String String_PrefixNewlines(const String str, const String prefix)
+{
+	const Byte *src, *end;
+	const Byte *start;
+	DECLARE_INLINE_STRINGBUILDER(stringBuilder, 256);
+
+	INIT_INLINE_STRINGBUILDER(stringBuilder);
+
+	src = String_GetBytes(str);
+	end = src + String_Length(str);
+
+	while (src < end) {
+
+		// Find the next chunk of string that contains no newlines.
+		start = src;
+		while (src < end && *src != '\r' && *src != '\n') src++;
+
+		// Copy non-newline substring to the output, if it exists.
+		if (src > start)
+			StringBuilder_Append(stringBuilder, start, 0, src - start);
+
+		// If we matched one of the newline forms, skip it in the input,
+		// and copy the replacement to the output.
+		if (src < end) {
+			if (*src == '\r') {
+				start = src;
+				src++;
+				if (src < end && *src == '\n') src++;
+				StringBuilder_AppendString(stringBuilder, prefix);
+				StringBuilder_Append(stringBuilder, start, 0, src - start);
+			}
+			else if (*src == '\n') {
+				start = src;
+				src++;
+				if (src < end && *src == '\r') src++;
+				StringBuilder_AppendString(stringBuilder, prefix);
+				StringBuilder_Append(stringBuilder, start, 0, src - start);
+			}
+		}
+	}
+
+	return StringBuilder_ToString(stringBuilder);
+}
+
+/// <summary>
 /// Replace unsafe characters within the string with their C-style backslash escape sequences.<br />
 /// <br />
 /// Characters in the range of [7, 13] will be replaced with their C-style named escapes, like

@@ -936,6 +936,18 @@ SMILE_EXTERNAL_FUNCTION(ReplaceNewlines)
 	return SmileArg_From((SmileObject)str);
 }
 
+SMILE_EXTERNAL_FUNCTION(NewlinesToBreaks)
+{
+	STATIC_STRING(_break, "<br />");
+
+	String str = (String)argv[0].obj;
+	String prefix = argc > 1 ? (String)argv[1].obj : _break;
+
+	str = String_PrefixNewlines(str, prefix);
+
+	return SmileArg_From((SmileObject)str);
+}
+
 //-------------------------------------------------------------------------------------------------
 
 #define UnaryProxyFunction(__functionName__, __stringName__) \
@@ -1588,6 +1600,7 @@ void String_Setup(SmileUserObject base)
 	SetupFunction("url-query-encode", UrlQueryEncode, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupFunction("url-decode", UrlDecode, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupFunction("regex-escape", RegexEscape, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupFunction("newlines-to-breaks", NewlinesToBreaks, NULL, "string break", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _stringChecks);
 
 	SetupFunction("==", Eq, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringComparisonChecks);
 	SetupFunction("==~", EqI, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringComparisonChecks);
@@ -1623,7 +1636,7 @@ void String_Setup(SmileUserObject base)
 	SetupFunction("split-command-line", SplitCommandLine, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 
 	// Missing:
-	//    newlines-to-breaks, splice, split-newlines
+	//    splice
 	//    alnum?, alpha?, cident?, digits?, uppercase?, lowercase?, hex-digits?, octal?
 	//    uni-digits?, uni-letters?, uni-letters-digits?, uni-lowercase?, uni-uppercase?, uni-titlecase?
 	//    ident?
