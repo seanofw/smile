@@ -94,8 +94,12 @@ SMILE_EXTERNAL_FUNCTION(ToBool)
 
 SMILE_EXTERNAL_FUNCTION(ToInt)
 {
-	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_STRING)
-		return SmileUnboxedInteger64_From(String_Length((String)argv[0].obj));
+	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_STRING) {
+		Int64 result;
+		if (!String_ParseInteger((String)argv[0].obj, 10, &result))
+			result = 0;
+		return SmileUnboxedInteger64_From(result);
+	}
 
 	return SmileUnboxedInteger64_From(0);
 }
@@ -720,6 +724,45 @@ SMILE_EXTERNAL_FUNCTION(Right)
 		: SmileArg_From((SmileObject)String_SubstringAt(x, (Int)stringLength - (Int)length));
 }
 
+SMILE_EXTERNAL_FUNCTION(Chip)
+{
+	String str;
+	Int64 count;
+
+	str = (String)argv[0].obj;
+
+	// Chip away 'count' characters from the start of 'str'.  If 'count'
+	// is not provided, it's 1.
+	count = (argc == 2 ? argv[1].unboxed.i64 : 1);
+
+	if (count >= String_Length(str))
+		str = String_Empty;
+	else if (count > 0)
+		str = String_SubstringAt(str, count);
+
+	return SmileArg_From((SmileObject)str);
+}
+
+SMILE_EXTERNAL_FUNCTION(Chop)
+{
+	String str;
+	Int64 count, length;
+
+	str = (String)argv[0].obj;
+
+	// Chop off 'count' characters from the end of 'str'.  If 'count'
+	// is not provided, it's 1.
+	count = (argc == 2 ? argv[1].unboxed.i64 : 1);
+
+	length = String_Length(str);
+	if (count >= length)
+		str = String_Empty;
+	else if (count > 0)
+		str = String_Substring(str, 0, length - count);
+
+	return SmileArg_From((SmileObject)str);
+}
+
 //-------------------------------------------------------------------------------------------------
 
 #define UnaryProxyFunction(__functionName__, __stringName__) \
@@ -1307,6 +1350,8 @@ void String_Setup(SmileUserObject base)
 	SetupSynonym("substr", "substring");
 	SetupFunction("left", Left, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringNumberChecks);
 	SetupFunction("right", Right, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringNumberChecks);
+	SetupFunction("chip", Chip, NULL, "str count", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _stringNumberChecks);
+	SetupFunction("chop", Chop, NULL, "str count", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _stringNumberChecks);
 
 	SetupFunction("index-of", IndexOf, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 3, 3, _indexOfChecks);
 	SetupFunction("index-of~", IndexOfI, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 3, 3, _indexOfChecks);
@@ -1391,4 +1436,16 @@ void String_Setup(SmileUserObject base)
 	SetupFunction("byte-array", ByteArray, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 
 	SetupFunction("split-command-line", SplitCommandLine, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+
+	// Missing:
+	//    count-of, count-of~, replace, replace-newlines, newlines-to-breaks, splice, split, split-newlines
+	//    alnum?, alpha?, cident?, digits?, uppercase?, lowercase?, hex-digits?, octal?
+	//    uni-digits?, uni-letters?, uni-letters-digits?, uni-lowercase?, uni-uppercase?, uni-titlecase?
+	//    ident?
+	//    left-pad = pad-start, right-pad = pad-end
+	//    match, matches, wildcard-match?
+	//    sprintf, symbol
+	//    each-uni, map-uni, where-uni, count-uni
+	//    uni-array, char-array
+	//    replace, replace~
 }
