@@ -336,8 +336,6 @@ Int Lexer_ParseReal(Lexer lexer, Bool isFirstContentOnLine)
 	const Byte *start;
 	Byte ch;
 	Token token = lexer->token;
-	Int integerDigitCount = 0;
-	Int fractionalDigitCount = 0;
 	const Byte *digits;
 	String digitString, suffix;
 	const Byte *suffixText;
@@ -369,8 +367,6 @@ Int Lexer_ParseReal(Lexer lexer, Bool isFirstContentOnLine)
 		StringBuilder_Append(digitBuilder, start, 0, src - start);
 	}
 
-	integerDigitCount = StringBuilder_GetLength(digitBuilder);
-
 	// Collect the decimal point.
 	if (src < end && *src == '.') {
 		src++;
@@ -393,8 +389,6 @@ Int Lexer_ParseReal(Lexer lexer, Bool isFirstContentOnLine)
 		if (src > start) {
 			StringBuilder_Append(digitBuilder, start, 0, src - start);
 		}
-
-		fractionalDigitCount = StringBuilder_GetLength(digitBuilder) - 1 - integerDigitCount;
 	}
 
 	lexer->src = src;

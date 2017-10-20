@@ -30,7 +30,7 @@ STATIC_STRING(IllegalNameMessage, "Names must not mix characters from different 
 
 static Bool IsValidRestartCharacter(const Byte *src, const Byte *end)
 {
-	Int code, charsets, identifierCharacterKind;
+	Int code, identifierCharacterKind;
 	Byte ch;
 
 	switch (ch = *src) {
@@ -59,7 +59,6 @@ static Bool IsValidRestartCharacter(const Byte *src, const Byte *end)
 		if (ch >= 128) {
 			code = String_ExtractUnicodeCharacterInternal(&src, end);
 			identifierCharacterKind = SmileIdentifierKind(code);
-			charsets |= ((UInt64)1) << ((identifierCharacterKind & IDENTKIND_CHARSET_MASK) >> 4);
 			if ((identifierCharacterKind & IDENTKIND_STARTLETTER))
 				return True;
 		}
@@ -353,24 +352,24 @@ readMorePunctuation:
 	// Recognize certain special punctuation forms faster (performance optimization).
 	if (nameLen == 1) {
 		switch (*nameBytes) {
-		case '<':
-			*tokenKind = TOKEN_PUNCTNAME;
-			return Lexer_NameLt;
-		case '>':
-			*tokenKind = TOKEN_PUNCTNAME;
-			return Lexer_NameGt;
-		case '+':
-			*tokenKind = TOKEN_PUNCTNAME;
-			return Lexer_NamePlus;
-		case '-':
-			*tokenKind = TOKEN_PUNCTNAME;
-			return Lexer_NameMinus;
-		case '*':
-			*tokenKind = TOKEN_PUNCTNAME;
-			return Lexer_NameStar;
-		case '/':
-			*tokenKind = TOKEN_PUNCTNAME;
-			return Lexer_NameSlash;
+			case '<':
+				*tokenKind = TOKEN_PUNCTNAME;
+				return Lexer_NameLt;
+			case '>':
+				*tokenKind = TOKEN_PUNCTNAME;
+				return Lexer_NameGt;
+			case '+':
+				*tokenKind = TOKEN_PUNCTNAME;
+				return Lexer_NamePlus;
+			case '-':
+				*tokenKind = TOKEN_PUNCTNAME;
+				return Lexer_NameMinus;
+			case '*':
+				*tokenKind = TOKEN_PUNCTNAME;
+				return Lexer_NameStar;
+			case '/':
+				*tokenKind = TOKEN_PUNCTNAME;
+				return Lexer_NameSlash;
 		}
 	}
 
