@@ -87,12 +87,40 @@ Int String_SplitWithOptions(const String str, const String pattern, Int limit, I
 }
 
 /// <summary>
+/// Count the number of instances of the pattern found in the given string.
+/// </summary>
+/// <param name="str">The string to search in.</param>
+/// <param name="pattern">The pattern to search for in the string.</param>
+/// <returns>The number of times the pattern can be found within the string,
+/// using a non-overlapping forward linear search.  If the pattern is null
+/// or the empty string, this will return zero.</returns>
+Int String_CountOf(const String str, const String pattern)
+{
+	Int index, patternLength;
+	Int count;
+	
+	if (String_IsNullOrEmpty(pattern) || String_IsNullOrEmpty(str))
+		return 0;
+
+	patternLength = String_Length(pattern);
+	count = 0;
+	index = 0;
+
+	while ((index = String_IndexOf(str, pattern, index)) >= 0) {
+		count++;
+		index += patternLength;
+	}
+
+	return count;
+}
+
+/// <summary>
 /// Find the first pattern in str, and return all of the str after it.
 /// If the pattern is not found, this returns the empty string.
 /// </summary>
+/// <param name="str">The string to search in.</param>
 /// <param name="pattern">The pattern to search for in the string.  If this
 /// is null or the empty string, the original string will be returned unchanged.</param>
-/// <param name="str">The string to search in.</param>
 /// <param name="start">An index within the string to start the search at.</param>
 /// <returns>The substring found after the given pattern, or the empty string
 /// if the pattern does not exist.</returns>
@@ -112,9 +140,9 @@ String String_After(const String str, const String pattern, Int start)
 /// Find the first pattern in str, and return all of the str before it.
 /// If the pattern is not found, this returns the entire string.
 /// </summary>
+/// <param name="str">The string to search in.</param>
 /// <param name="pattern">The pattern to search for in the string.  If this
 /// is null or the empty string, the original string will be returned unchanged.</param>
-/// <param name="str">The string to search in.</param>
 /// <param name="start">An index within the string to start the search at.</param>
 /// <returns>The substring found before the given pattern, or the entire string
 /// if the pattern does not exist.</returns>

@@ -560,7 +560,7 @@ SMILE_EXTERNAL_FUNCTION(LastIndexOf)
 	String x = (String)argv[0].obj;
 	String y = (String)argv[1].obj;
 
-	Int64 startIndex = argc > 2 ? argv[2].unboxed.i64 : 0;
+	Int64 startIndex = argc > 2 ? argv[2].unboxed.i64 : String_Length(x) - 1;
 	Int stringLength = String_Length(x);
 	Int result;
 
@@ -575,12 +575,30 @@ SMILE_EXTERNAL_FUNCTION(LastIndexOfI)
 	String x = (String)argv[0].obj;
 	String y = (String)argv[1].obj;
 
-	Int64 startIndex = argc > 2 ? argv[2].unboxed.i64 : 0;
+	Int64 startIndex = argc > 2 ? argv[2].unboxed.i64 : String_Length(x) - 1;
 	Int stringLength = String_Length(x);
 	Int result;
 
 	result = startIndex < stringLength ? String_LastIndexOfI(x, y, (Int)startIndex) : -1;
 	if (result < 0) return SmileArg_From(NullObject);
+
+	return SmileUnboxedInteger64_From(result);
+}
+
+SMILE_EXTERNAL_FUNCTION(CountOf)
+{
+	String str = (String)argv[0].obj;
+	String pattern = (String)argv[1].obj;
+	Int result = String_CountOf(str, pattern);
+
+	return SmileUnboxedInteger64_From(result);
+}
+
+SMILE_EXTERNAL_FUNCTION(CountOfI)
+{
+	String str = (String)argv[0].obj;
+	String pattern = (String)argv[1].obj;
+	Int result = String_CountOfI(str, pattern);
 
 	return SmileUnboxedInteger64_From(result);
 }
@@ -1353,10 +1371,12 @@ void String_Setup(SmileUserObject base)
 	SetupFunction("chip", Chip, NULL, "str count", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _stringNumberChecks);
 	SetupFunction("chop", Chop, NULL, "str count", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _stringNumberChecks);
 
-	SetupFunction("index-of", IndexOf, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 3, 3, _indexOfChecks);
-	SetupFunction("index-of~", IndexOfI, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 3, 3, _indexOfChecks);
-	SetupFunction("last-index-of", LastIndexOf, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 3, 3, _indexOfChecks);
-	SetupFunction("last-index-of~", LastIndexOfI, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 3, 3, _indexOfChecks);
+	SetupFunction("index-of", IndexOf, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _indexOfChecks);
+	SetupFunction("index-of~", IndexOfI, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _indexOfChecks);
+	SetupFunction("last-index-of", LastIndexOf, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _indexOfChecks);
+	SetupFunction("last-index-of~", LastIndexOfI, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _indexOfChecks);
+	SetupFunction("count-of", CountOf, NULL, "str pattern", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringChecks);
+	SetupFunction("count-of~", CountOfI, NULL, "str pattern", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringChecks);
 
 	SetupFunction("trim", Trim, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupFunction("trim-start", TrimStart, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
@@ -1438,7 +1458,7 @@ void String_Setup(SmileUserObject base)
 	SetupFunction("split-command-line", SplitCommandLine, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 
 	// Missing:
-	//    count-of, count-of~, replace, replace-newlines, newlines-to-breaks, splice, split, split-newlines
+	//    replace, replace-newlines, newlines-to-breaks, splice, split, split-newlines
 	//    alnum?, alpha?, cident?, digits?, uppercase?, lowercase?, hex-digits?, octal?
 	//    uni-digits?, uni-letters?, uni-letters-digits?, uni-lowercase?, uni-uppercase?, uni-titlecase?
 	//    ident?
