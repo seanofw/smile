@@ -781,6 +781,16 @@ SMILE_EXTERNAL_FUNCTION(Chop)
 	return SmileArg_From((SmileObject)str);
 }
 
+SMILE_EXTERNAL_FUNCTION(ReplaceNewlines)
+{
+	String str = (String)argv[0].obj;
+	String replacement = (String)argv[1].obj;
+
+	str = String_ReplaceNewlines(str, replacement);
+
+	return SmileArg_From((SmileObject)str);
+}
+
 //-------------------------------------------------------------------------------------------------
 
 #define UnaryProxyFunction(__functionName__, __stringName__) \
@@ -1382,6 +1392,7 @@ void String_Setup(SmileUserObject base)
 	SetupFunction("trim-start", TrimStart, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupFunction("trim-end", TrimEnd, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupFunction("compact-whitespace", CompactWhitespace, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupFunction("replace-newlines", ReplaceNewlines, NULL, "string replacement", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringChecks);
 	SetupFunction("remove-bom", RemoveBOM, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupFunction("trim-bom", TrimBOM, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupFunction("add-bom", AddBOM, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
