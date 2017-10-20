@@ -957,6 +957,7 @@ UnaryProxyFunction(Trim, String_Trim)
 UnaryProxyFunction(TrimStart, String_TrimStart)
 UnaryProxyFunction(TrimEnd, String_TrimEnd)
 UnaryProxyFunction(CompactWhitespace, String_CompactWhitespace)
+UnaryProxyFunction(SplitNewlines, String_SplitNewlines)
 
 UnaryProxyFunction(Rot13, String_Rot13)
 UnaryProxyFunction(AddCSlashes, String_AddCSlashes)
@@ -1543,6 +1544,7 @@ void String_Setup(SmileUserObject base)
 	SetupFunction("trim-end", TrimEnd, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupFunction("compact-whitespace", CompactWhitespace, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupFunction("replace-newlines", ReplaceNewlines, NULL, "string replacement", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringChecks);
+	SetupFunction("split-newlines", SplitNewlines, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupFunction("remove-bom", RemoveBOM, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupFunction("trim-bom", TrimBOM, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupFunction("add-bom", AddBOM, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
@@ -1621,7 +1623,7 @@ void String_Setup(SmileUserObject base)
 	SetupFunction("split-command-line", SplitCommandLine, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 
 	// Missing:
-	//    newlines-to-breaks, splice, split, split-newlines
+	//    newlines-to-breaks, splice, split-newlines
 	//    alnum?, alpha?, cident?, digits?, uppercase?, lowercase?, hex-digits?, octal?
 	//    uni-digits?, uni-letters?, uni-letters-digits?, uni-lowercase?, uni-uppercase?, uni-titlecase?
 	//    ident?

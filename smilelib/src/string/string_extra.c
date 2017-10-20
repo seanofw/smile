@@ -604,6 +604,7 @@ String String_CompactWhitespace(const String str)
 
 	return String_Create(result, dest - result);
 }
+
 /// <summary>
 /// Replace newlines in any of the standard four forms ('\r', '\n', '\r\n', or '\n\r')
 /// with the provided replacement newline form.
@@ -646,6 +647,60 @@ String String_ReplaceNewlines(const String str, String replacement)
 	}
 
 	return StringBuilder_ToString(stringBuilder);
+}
+
+/// <summary>
+/// Split the string on newlines in any of the standard four forms ('\r', '\n', '\r\n', or '\n\r'),
+/// and return a list of the resulting lines of text.  Each line will include the newline
+/// token that terminated it, at its end.
+/// </summary>
+SmileList String_SplitNewlines(const String str)
+{
+	const Byte *src, *end;
+	const Byte *start;
+	DECLARE_INLINE_STRINGBUILDER(stringBuilder, 256);
+	SmileList head, tail;
+
+	INIT_INLINE_STRINGBUILDER(stringBuilder);
+
+	src = String_GetBytes(str);
+	end = src + String_Length(str);
+
+	head = tail = NullList;
+
+	while (src < end) {
+
+		// Find the next chunk of string that contains no newlines.
+		start = src;
+		while (src < end && *src != '\r' && *src != '\n') src++;
+
+		// Copy non-newline substring to the output, if it exists.
+		if (src > start)
+			StringBuilder_Append(stringBuilder, start, 0, src - start);
+
+		// If we matched one of the newline forms, skip it in the input,
+		// and copy the replacement to the output.
+		if (src < end) {
+			if (*src == '\r') {
+				start = src;
+				src++;
+				if (src < end && *src == '\n') src++;
+				StringBuilder_Append(stringBuilder, start, 0, src - start);
+			}
+			else if (*src == '\n') {
+				start = src;
+				src++;
+				if (src < end && *src == '\r') src++;
+				StringBuilder_Append(stringBuilder, start, 0, src - start);
+			}
+		}
+
+		LIST_APPEND(head, tail, StringBuilder_ToString(stringBuilder));
+
+		StringBuilder_SetLength(stringBuilder, 0);
+	}
+
+	return head;
 }
 
 /// <summary>
