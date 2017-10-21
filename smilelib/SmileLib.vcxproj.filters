@@ -237,20 +237,11 @@
     <ClCompile Include="src\dict\dictstats.c">
       <Filter>src\dict</Filter>
     </ClCompile>
-    <ClCompile Include="src\fnvhash.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\siphash.c">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\env\symboltable.c">
       <Filter>src\env</Filter>
     </ClCompile>
     <ClCompile Include="src\env\knownsymbols.c">
       <Filter>src\env</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ticks.c">
-      <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\env\knownstrings.c">
       <Filter>src\env</Filter>
@@ -998,6 +989,15 @@
     <ClCompile Include="src\smiletypes\text\smileuni.c" />
     <ClCompile Include="src\smiletypes\text\smilechar_base.c" />
     <ClCompile Include="src\smiletypes\text\smileuni_base.c" />
+    <ClCompile Include="src\crypto\hash\fnvhash.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\crypto\hash\siphash.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\time\ticks.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">

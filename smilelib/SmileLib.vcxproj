@@ -821,7 +821,7 @@
     <ClCompile Include="src\eval\eval.c" />
     <ClCompile Include="src\eval\eval_fn_ext.generated.c" />
     <ClCompile Include="src\eval\eval_fn_user.generated.c" />
-    <ClCompile Include="src\fnvhash.c" />
+    <ClCompile Include="src\crypto\hash\fnvhash.c" />
     <ClCompile Include="src\init.c">
       <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</PreprocessToFile>
     </ClCompile>
@@ -866,7 +866,7 @@
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
-    <ClCompile Include="src\siphash.c" />
+    <ClCompile Include="src\crypto\hash\siphash.c" />
     <ClCompile Include="src\smiletypes\kind.c" />
     <ClCompile Include="src\smiletypes\numeric\smilebyte.generated.c" />
     <ClCompile Include="src\smiletypes\numeric\smilebyte_base.generated.c" />
@@ -936,7 +936,7 @@
     <ClCompile Include="src\string\string_static.c" />
     <ClCompile Include="src\string\string_unicode.c" />
     <ClCompile Include="src\string\string_utf16.c" />
-    <ClCompile Include="src\ticks.c" />
+    <ClCompile Include="src\time\ticks.c" />
     <ClCompile Include="src\unicode\casefolding.c" />
     <ClCompile Include="src\unicode\codepages_cpx.c" />
     <ClCompile Include="src\unicode\codepages_iso8859.c" />
