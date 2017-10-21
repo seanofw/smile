@@ -13,7 +13,8 @@ this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 Tweaked slightly for the needs of Smile in 2015 by Sean Werkema.
 */
-#include <smile/types.h>
+
+#include <smile/crypto/hash.h>
 
 /* default: SipHash-2-4 */
 #define cROUNDS 2
@@ -47,7 +48,7 @@ Tweaked slightly for the needs of Smile in 2015 by Sean Werkema.
 		v2 += v1; v1=ROTL(v1,17); v1 ^= v2; v2=ROTL(v2,32); \
     }
 
-UInt64 Smile_SipHash(const void *buffer, Int inlen, UInt64 secret1, UInt64 secret2)
+UInt64 SipHash(const Byte *buffer, Int inlen, UInt64 secret1, UInt64 secret2)
 {
 	const Byte *in = (const Byte *)buffer;
 

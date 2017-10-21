@@ -26,20 +26,27 @@
 #include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
+#include <smile/smiletypes/range/smileinteger64range.h>
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/base.h>
 #include <smile/internal/staticstring.h>
+#include <smile/crypto/hash.h>
 
 SMILE_IGNORE_UNUSED_VARIABLES
 
 static Byte _byteArrayChecks[] = {
-	SMILE_KIND_MASK, SMILE_KIND_STRING,
+	SMILE_KIND_MASK, SMILE_KIND_BYTEARRAY,
 	0, 0,
 	0, 0,
 };
 
+static Byte _hashChecks[] = {
+	SMILE_KIND_MASK, SMILE_KIND_BYTEARRAY,
+	SMILE_KIND_MASK, SMILE_KIND_INTEGER64RANGE,
+};
+
 static Byte _eachChecks[] = {
-	SMILE_KIND_MASK, SMILE_KIND_STRING,
+	SMILE_KIND_MASK, SMILE_KIND_BYTEARRAY,
 	SMILE_KIND_MASK, SMILE_KIND_FUNCTION,
 };
 
@@ -666,6 +673,154 @@ SMILE_EXTERNAL_FUNCTION(Count)
 
 //-------------------------------------------------------------------------------------------------
 
+static Bool SetupForHashing(Int argc, SmileArg *argv,
+	SmileByteArray *returnByteArray, Int64 *returnStart, Int64 *returnLength)
+{
+	Int64 start, length;
+	SmileByteArray byteArray = (SmileByteArray)argv[0].obj;
+
+	if (argc > 1) {
+		Int64 end;
+		start = ((SmileInteger64Range)argv[1].obj)->start;
+		end = ((SmileInteger64Range)argv[1].obj)->end;
+		if (end < start) length = 0;
+		else length = end - start + 1;
+		if (start < 0) {
+			length += start;
+			start = 0;
+		}
+		if (length > start - byteArray->length)
+			length = start - byteArray->length;
+	}
+	else {
+		start = 0;
+		length = byteArray->length;
+	}
+
+	*returnByteArray = byteArray;
+	*returnStart = start;
+	*returnLength = length;
+
+	return length > 0;
+}
+
+SMILE_EXTERNAL_FUNCTION(MakeCrc32)
+{
+	UInt32 crc32;
+	Int64 start, length;
+	SmileByteArray byteArray = (SmileByteArray)argv[0].obj;
+
+	if (!SetupForHashing(argc, argv, &byteArray, &start, &length))
+		return SmileUnboxedInteger32_From(0);
+
+	crc32 = Crc32(byteArray->data + (Int)start, (Int)length);
+
+	return SmileUnboxedInteger32_From((Int32)crc32);
+}
+
+SMILE_EXTERNAL_FUNCTION(MakeMd5)
+{
+	Int64 start, length;
+	SmileByteArray byteArray = (SmileByteArray)argv[0].obj;
+	SmileByteArray result = SmileByteArray_Create((SmileObject)Smile_KnownBases.ByteArray, 16, True);
+
+	if (!SetupForHashing(argc, argv, &byteArray, &start, &length))
+		return SmileUnboxedInteger32_From(0);
+
+	Md5(result->data, byteArray->data + (Int)start, (Int)length);
+
+	return SmileArg_From((SmileObject)result);
+}
+
+SMILE_EXTERNAL_FUNCTION(MakeSha1)
+{
+	Int64 start, length;
+	SmileByteArray byteArray = (SmileByteArray)argv[0].obj;
+	SmileByteArray result = SmileByteArray_Create((SmileObject)Smile_KnownBases.ByteArray, SHA1_HASH_SIZE, True);
+
+	if (!SetupForHashing(argc, argv, &byteArray, &start, &length))
+		return SmileUnboxedInteger32_From(0);
+
+	Sha1(result->data, byteArray->data + (Int)start, (Int)length);
+
+	return SmileArg_From((SmileObject)result);
+}
+
+SMILE_EXTERNAL_FUNCTION(MakeSha256)
+{
+	Int64 start, length;
+	SmileByteArray byteArray = (SmileByteArray)argv[0].obj;
+	SmileByteArray result = SmileByteArray_Create((SmileObject)Smile_KnownBases.ByteArray, SHA256_DIGEST_LENGTH, True);
+
+	if (!SetupForHashing(argc, argv, &byteArray, &start, &length))
+		return SmileUnboxedInteger32_From(0);
+
+	Sha256(result->data, byteArray->data + (Int)start, (Int)length);
+
+	return SmileArg_From((SmileObject)result);
+}
+
+SMILE_EXTERNAL_FUNCTION(MakeSha384)
+{
+	Int64 start, length;
+	SmileByteArray byteArray = (SmileByteArray)argv[0].obj;
+	SmileByteArray result = SmileByteArray_Create((SmileObject)Smile_KnownBases.ByteArray, SHA384_DIGEST_LENGTH, True);
+
+	if (!SetupForHashing(argc, argv, &byteArray, &start, &length))
+		return SmileUnboxedInteger32_From(0);
+
+	Sha384(result->data, byteArray->data + (Int)start, (Int)length);
+
+	return SmileArg_From((SmileObject)result);
+}
+
+SMILE_EXTERNAL_FUNCTION(MakeSha512)
+{
+	Int64 start, length;
+	SmileByteArray byteArray = (SmileByteArray)argv[0].obj;
+	SmileByteArray result = SmileByteArray_Create((SmileObject)Smile_KnownBases.ByteArray, SHA512_DIGEST_LENGTH, True);
+
+	if (!SetupForHashing(argc, argv, &byteArray, &start, &length))
+		return SmileUnboxedInteger32_From(0);
+
+	Sha512(result->data, byteArray->data + (Int)start, (Int)length);
+
+	return SmileArg_From((SmileObject)result);
+}
+
+static const Byte _hexTable[] = {
+	'0', '1', '2', '3', '4', '5', '6', '7',
+	'8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
+};
+
+SMILE_EXTERNAL_FUNCTION(HexString)
+{
+	Int64 start, length;
+	SmileByteArray byteArray = (SmileByteArray)argv[0].obj;
+	const Byte *src;
+	Byte *dest;
+	String result;
+
+	if (!SetupForHashing(argc, argv, &byteArray, &start, &length))
+		return SmileUnboxedInteger32_From(0);
+
+	result = String_CreateInternal(length * 2);
+	dest = (Byte *)String_GetBytes(result);
+	src = byteArray->data + (Int)start;
+
+	for (; length > 0; length--) {
+		Byte b = *src++;
+		*dest++ = _hexTable[b >> 4];
+		*dest++ = _hexTable[b & 0xF];
+	}
+
+	*dest = '\0';
+
+	return SmileArg_From((SmileObject)result);
+}
+
+//-------------------------------------------------------------------------------------------------
+
 void SmileByteArray_Setup(SmileUserObject base)
 {
 	SetupFunction("of-size", OfSize, (void *)base, "count value", 0, 0, 0, 0, NULL);
@@ -682,4 +837,13 @@ void SmileByteArray_Setup(SmileUserObject base)
 	SetupFunction("map", Map, NULL, "byte-array", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
 	SetupFunction("where", Where, NULL, "byte-array", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
 	SetupFunction("count", Count, NULL, "byte-array", ARG_STATE_MACHINE, 0, 0, 0, NULL);
+
+	SetupFunction("crc-32", MakeCrc32, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
+	SetupFunction("md5", MakeMd5, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
+	SetupFunction("sha-1", MakeSha1, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
+	SetupFunction("sha-256", MakeSha256, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
+	SetupFunction("sha-384", MakeSha384, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
+	SetupFunction("sha-512", MakeSha512, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
+
+	SetupFunction("hex-string", HexString, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
 }

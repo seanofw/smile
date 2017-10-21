@@ -998,6 +998,10 @@
     <ClCompile Include="src\time\ticks.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\crypto\hash\crc32.c" />
+    <ClCompile Include="src\crypto\hash\md5.c" />
+    <ClCompile Include="src\crypto\hash\sha1.c" />
+    <ClCompile Include="src\crypto\hash\sha2.c" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">
@@ -1372,6 +1376,12 @@
     <ClInclude Include="include\smile\numeric\float64.h" />
     <ClInclude Include="include\smile\smiletypes\text\smilechar.h" />
     <ClInclude Include="include\smile\smiletypes\text\smileuni.h" />
+    <ClInclude Include="include\smile\crypto\hash.h" />
+    <ClInclude Include="include\smile\crypto\dicthash.h" />
+    <ClInclude Include="include\smile\crypto\crc32.h" />
+    <ClInclude Include="include\smile\crypto\md5.h" />
+    <ClInclude Include="include\smile\crypto\sha1.h" />
+    <ClInclude Include="include\smile\crypto\sha2.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\smile\array.h">

@@ -48,6 +48,12 @@
 #define SMILE_CPU_MIPS_FAMILY	0x05FF
 
 //------------------------------------------------------------------------------------------------
+//  Endianness IDs.
+
+#define SMILE_ENDIAN_LITTLE	0
+#define SMILE_ENDIAN_BIG	1
+
+//------------------------------------------------------------------------------------------------
 //  Platform-specific type declarations.
 //
 //  To port Smile to your platform, you will need to define a suitable 'platform.h' file,

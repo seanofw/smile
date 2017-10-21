@@ -59,8 +59,7 @@
 * And still in the public domain, yo!
 */
 
-#include <smile/types.h>
-#include <smile/internal/types.h>
+#include <smile/crypto/hash.h>
 
 /// <summary>
 /// FnvHash:  Perform a 32 bit hash on a buffer using Fowler/Noll/Vo FNV-1a hashing.
@@ -69,7 +68,7 @@
 /// <param name="buffer">Start of buffer to hash.</param>
 /// <param name="length">Length of buffer in bytes.</param>
 /// <returns>32 bit hash of the buffer.</returns>
-UInt32 Smile_FnvHash(const void *buffer, Int length)
+UInt32 FnvHash(const Byte *buffer, Int length)
 {
 	Byte *bp = (Byte *)buffer;	// Start of buffer
 	Byte *be = bp + length;		// Beyond end of buffer

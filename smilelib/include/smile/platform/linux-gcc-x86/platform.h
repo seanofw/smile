@@ -13,6 +13,7 @@
 #define SMILE_OS	SMILE_OS_LINUX
 #define SMILE_CPU	SMILE_CPU_X86
 #define SMILE_COMPILER	SMILE_COMPILER_GCC
+#define SMILE_ENDIAN	SMILE_ENDIAN_LITTLE
 
 //------------------------------------------------------------------------------------------------
 //  Portable type definitions.

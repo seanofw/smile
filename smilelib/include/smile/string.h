@@ -21,6 +21,10 @@
 #include <smile/smiletypes/kind.h>
 #endif
 
+#ifndef __SMILE_CRYPTO_DICTHASH_H__
+#include <smile/crypto/dicthash.h>
+#endif
+
 //-------------------------------------------------------------------------------------------------
 //  Public type declarations
 

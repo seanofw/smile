@@ -2,7 +2,6 @@
 #ifndef __SMILE_TYPES_H__
 #define __SMILE_TYPES_H__
 
-
 //------------------------------------------------------------------------------------------------
 //  Common type declarations
 
@@ -101,10 +100,6 @@ SMILE_API_FUNC void Smile_End(void);
 SMILE_API_FUNC void Smile_Abort_OutOfMemory(void);
 SMILE_API_FUNC void Smile_Abort_FatalError(const char *message);
 
-SMILE_API_DATA UInt32 Smile_HashOracle;
-SMILE_API_FUNC UInt32 Smile_FnvHash(const void *buffer, Int length);
-SMILE_API_FUNC UInt64 Smile_SipHash(const void *buffer, Int length, UInt64 secret1, UInt64 secret2);
-
 SMILE_API_DATA UInt64 Smile_StartTicks;
 SMILE_API_FUNC UInt64 Smile_GetTicks(void);
 SMILE_API_FUNC double Smile_TicksToSeconds(UInt64 ticks);
@@ -127,35 +122,5 @@ SMILE_API_FUNC UInt64 Smile_TicksToMicroseconds(UInt64 ticks);
 			Smile_Abort_FatalError(__FILE__ ":" TOSTRING_AT_COMPILE_TIME(__LINE__) ": " TOSTRING_AT_COMPILE_TIME(__n__)); \
 		} \
 	} while (0);
-
-#ifndef Smile_Hash
-	/// <summary>
-	/// Compute a 32 bit hash for a buffer.  The hash is guaranteed to always be the
-	/// same value for the same sequence of bytes within the current process, and approximates
-	/// a random distribution for that sequence (quickly!).<br />
-	/// <br />
-	/// <strong>NOTE:  NOT CRYPTOGRAPHICALLY SECURE.</strong>  If you need crypto-safe hashes, use a SHA-2 or SHA-3 hash.
-	/// </summary>
-	/// <param name="buffer">Start of buffer to hash.</param>
-	/// <param name="length">Length of buffer in bytes.</param>
-	/// <returns>32 bit hash of the buffer.</returns>
-	#define Smile_Hash(__buffer__, __length__) \
-		((UInt32)Smile_SipHash((__buffer__), (__length__), Smile_HashOracle, Smile_HashOracle))
-#endif
-
-#ifndef Smile_Hash64
-	/// <summary>
-	/// Compute a 64 bit hash for a buffer.  The hash is guaranteed to always be the
-	/// same value for the same sequence of bytes within the current process, and approximates
-	/// a random distribution for that sequence (quickly!).<br />
-	/// <br />
-	/// <strong>NOTE:  NOT CRYPTOGRAPHICALLY SECURE.</strong>  If you need crypto-safe hashes, use a SHA-2 or SHA-3 hash.
-	/// </summary>
-	/// <param name="buffer">Start of buffer to hash.</param>
-	/// <param name="length">Length of buffer in bytes.</param>
-	/// <returns>64 bit hash of the buffer.</returns>
-	#define Smile_Hash64(__buffer__, __length__) \
-		(Smile_SipHash((__buffer__), (__length__), Smile_HashOracle, Smile_HashOracle))
-#endif
 
 #endif
