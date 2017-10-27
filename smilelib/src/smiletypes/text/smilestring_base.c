@@ -331,6 +331,18 @@ SMILE_EXTERNAL_FUNCTION(PadCenter)
 	return SmileArg_From((SmileObject)padded);
 }
 
+SMILE_EXTERNAL_FUNCTION(Reverse)
+{
+	String x = (String)argv[0].obj;
+	return SmileArg_From((SmileObject)String_RawReverse(x));
+}
+
+SMILE_EXTERNAL_FUNCTION(UniReverse)
+{
+	String x = (String)argv[0].obj;
+	return SmileArg_From((SmileObject)String_Reverse(x));
+}
+
 SMILE_EXTERNAL_FUNCTION(Repeat)
 {
 	String x;
@@ -1859,6 +1871,8 @@ void String_Setup(SmileUserObject base)
 	SetupFunction("pad-center", PadCenter, NULL, "string length char", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _padChecks);
 	SetupSynonym("pad-start", "left-pad");
 	SetupSynonym("pad-end", "right-pad");
+	SetupFunction("reverse", Reverse, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupFunction("uni-reverse", UniReverse, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 
 	SetupFunction("case-fold", CaseFold, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupSynonym("case-fold", "fold");
@@ -1944,9 +1958,10 @@ void String_Setup(SmileUserObject base)
 	SetupFunction("wildcard-matches?", WildcardMatches, NULL, "string", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 2, 3, _wildcardChecks);
 
 	// Missing:
+	//    match, matches?
+	//    set-member
 	//    splice
 	//    uni-digits?, uni-letters?, uni-letters-digits?, uni-lowercase?, uni-uppercase?, uni-titlecase?
-	//    match, matches?
 	//    sprintf, symbol
 	//    each-uni, map-uni, where-uni, count-uni
 	//    uni-array, char-array
