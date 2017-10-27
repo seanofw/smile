@@ -85,6 +85,12 @@ static Byte _hyphenizeChecks[] = {
 	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_BYTE,
 };
 
+static Byte _wildcardChecks[] = {
+	SMILE_KIND_MASK, SMILE_KIND_STRING,
+	SMILE_KIND_MASK, SMILE_KIND_STRING,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_SYMBOL,
+};
+
 STATIC_STRING(_invalidTypeError, "All arguments to 'String.%s' must be of type 'String'");
 
 //-------------------------------------------------------------------------------------------------
@@ -515,6 +521,8 @@ SMILE_EXTERNAL_FUNCTION(ContainsI)
 	return SmileUnboxedBool_From(result);
 }
 
+//-------------------------------------------------------------------------------------------------
+
 SMILE_EXTERNAL_FUNCTION(IsEmpty)
 {
 	String str = (String)argv[0].obj;
@@ -527,6 +535,249 @@ SMILE_EXTERNAL_FUNCTION(IsWhitespace)
 	String str = (String)argv[0].obj;
 	Bool result = String_IsNullOrWhitespace(str);
 	return SmileUnboxedBool_From(result);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsAlpha)
+{
+	String str = (String)argv[0].obj;
+	const Byte *src = String_GetBytes(str);
+	const Byte *end = src + String_Length(str);
+
+	if (src >= end)
+		return SmileUnboxedBool_From(True);
+
+	while (src < end) {
+		Byte ch = *src++;
+		if (!(ch >= 'a' && ch <= 'z'
+			|| ch >= 'A' && ch <= 'Z')) {
+			return SmileUnboxedBool_From(False);
+		}
+	}
+
+	return SmileUnboxedBool_From(True);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsUppercase)
+{
+	String str = (String)argv[0].obj;
+	const Byte *src = String_GetBytes(str);
+	const Byte *end = src + String_Length(str);
+
+	if (src >= end)
+		return SmileUnboxedBool_From(True);
+
+	while (src < end) {
+		Byte ch = *src++;
+		if (!(ch >= 'A' && ch <= 'Z')) {
+			return SmileUnboxedBool_From(False);
+		}
+	}
+
+	return SmileUnboxedBool_From(True);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsLowercase)
+{
+	String str = (String)argv[0].obj;
+	const Byte *src = String_GetBytes(str);
+	const Byte *end = src + String_Length(str);
+
+	if (src >= end)
+		return SmileUnboxedBool_From(True);
+
+	while (src < end) {
+		Byte ch = *src++;
+		if (!(ch >= 'a' && ch <= 'z')) {
+			return SmileUnboxedBool_From(False);
+		}
+	}
+
+	return SmileUnboxedBool_From(True);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsAlnum)
+{
+	String str = (String)argv[0].obj;
+	const Byte *src = String_GetBytes(str);
+	const Byte *end = src + String_Length(str);
+
+	if (src >= end)
+		return SmileUnboxedBool_From(True);
+
+	while (src < end) {
+		Byte ch = *src++;
+		if (!(ch >= 'a' && ch <= 'z'
+			|| ch >= 'A' && ch <= 'Z'
+			|| ch >= '0' && ch <= '9')) {
+			return SmileUnboxedBool_From(False);
+		}
+	}
+
+	return SmileUnboxedBool_From(True);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsDigits)
+{
+	String str = (String)argv[0].obj;
+	const Byte *src = String_GetBytes(str);
+	const Byte *end = src + String_Length(str);
+
+	if (src >= end)
+		return SmileUnboxedBool_From(True);
+
+	while (src < end) {
+		Byte ch = *src++;
+		if (!(ch >= '0' && ch <= '9')) {
+			return SmileUnboxedBool_From(False);
+		}
+	}
+
+	return SmileUnboxedBool_From(True);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsHex)
+{
+	String str = (String)argv[0].obj;
+	const Byte *src = String_GetBytes(str);
+	const Byte *end = src + String_Length(str);
+
+	if (src >= end)
+		return SmileUnboxedBool_From(True);
+
+	while (src < end) {
+		Byte ch = *src++;
+		if (!(ch >= 'a' && ch <= 'f'
+			|| ch >= 'A' && ch <= 'F'
+			|| ch >= '0' && ch <= '9')) {
+			return SmileUnboxedBool_From(False);
+		}
+	}
+
+	return SmileUnboxedBool_From(True);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsOctal)
+{
+	String str = (String)argv[0].obj;
+	const Byte *src = String_GetBytes(str);
+	const Byte *end = src + String_Length(str);
+
+	if (src >= end)
+		return SmileUnboxedBool_From(True);
+
+	while (src < end) {
+		Byte ch = *src++;
+		if (!(ch >= '0' && ch <= '7')) {
+			return SmileUnboxedBool_From(False);
+		}
+	}
+
+	return SmileUnboxedBool_From(True);
+}
+
+//-------------------------------------------------------------------------------------------------
+
+SMILE_EXTERNAL_FUNCTION(IsCIdent)
+{
+	String str = (String)argv[0].obj;
+	const Byte *src = String_GetBytes(str);
+	const Byte *end = src + String_Length(str);
+	Byte ch;
+
+	if (src >= end)
+		return SmileUnboxedBool_From(False);
+
+	ch = *src++;
+	if (!(ch >= 'a' && ch <= 'z'
+		|| ch >= 'A' && ch <= 'Z'
+		|| ch == '_')) {
+		return SmileUnboxedBool_From(False);
+	}
+
+	while (src < end) {
+		ch = *src++;
+		if (!(ch >= 'a' && ch <= 'z'
+			|| ch >= 'A' && ch <= 'Z'
+			|| ch >= '0' && ch <= '9'
+			|| ch == '_')) {
+			return SmileUnboxedBool_From(False);
+		}
+	}
+
+	return SmileUnboxedBool_From(True);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsIdent)
+{
+	String str = (String)argv[0].obj;
+	const Byte *src = String_GetBytes(str);
+	Int length = String_Length(str);
+	const Byte *end = src + length;
+	Lexer lexer = Lexer_Create(str, 0, length, String_Empty, 1, 1);
+	Int token;
+	Bool isIdentifier;
+
+	if (length == 0
+		|| (*src >= '\0' && *src <= ' ')
+		|| (end[-1] >= '\0' && end[-1] <= ' '))
+		return SmileUnboxedBool_From(False);
+
+	token = Lexer_Next(lexer);
+	if (Lexer_Next(lexer) != TOKEN_EOI)
+		return SmileUnboxedBool_From(False);
+
+	isIdentifier = token == TOKEN_ALPHANAME || token == TOKEN_UNKNOWNALPHANAME
+		|| token == TOKEN_PUNCTNAME || token == TOKEN_UNKNOWNPUNCTNAME;
+
+	return SmileUnboxedBool_From(isIdentifier);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsAlphaIdent)
+{
+	String str = (String)argv[0].obj;
+	const Byte *src = String_GetBytes(str);
+	Int length = String_Length(str);
+	const Byte *end = src + length;
+	Lexer lexer = Lexer_Create(str, 0, length, String_Empty, 1, 1);
+	Int token;
+	Bool isIdentifier;
+
+	if (length == 0
+		|| (*src >= '\0' && *src <= ' ')
+		|| (end[-1] >= '\0' && end[-1] <= ' '))
+		return SmileUnboxedBool_From(False);
+
+	token = Lexer_Next(lexer);
+	if (Lexer_Next(lexer) != TOKEN_EOI)
+		return SmileUnboxedBool_From(False);
+
+	isIdentifier = token == TOKEN_ALPHANAME || token == TOKEN_UNKNOWNALPHANAME;
+
+	return SmileUnboxedBool_From(isIdentifier);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsPunctIdent)
+{
+	String str = (String)argv[0].obj;
+	const Byte *src = String_GetBytes(str);
+	Int length = String_Length(str);
+	const Byte *end = src + length;
+	Lexer lexer = Lexer_Create(str, 0, length, String_Empty, 1, 1);
+	Int token;
+	Bool isIdentifier;
+
+	if (length == 0
+		|| (*src >= '\0' && *src <= ' ')
+		|| (end[-1] >= '\0' && end[-1] <= ' '))
+		return SmileUnboxedBool_From(False);
+
+	token = Lexer_Next(lexer);
+	if (Lexer_Next(lexer) != TOKEN_EOI)
+		return SmileUnboxedBool_From(False);
+
+	isIdentifier = token == TOKEN_PUNCTNAME || token == TOKEN_UNKNOWNPUNCTNAME;
+
+	return SmileUnboxedBool_From(isIdentifier);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1514,10 +1765,53 @@ SMILE_EXTERNAL_FUNCTION(SplitCommandLine)
 	return SmileArg_From((SmileObject)args);
 }
 
+static struct {
+	Symbol backslashEscapes;
+	Symbol caseInsensitive;
+	Symbol caseSensitive;
+	Symbol filenameMode;
+} _wildcardMatchingSymbols;
+
+SMILE_EXTERNAL_FUNCTION(WildcardMatches)
+{
+	String str = (String)argv[0].obj;
+	String pattern = (String)argv[1].obj;
+	Int options = StringWildcardOptions_None;
+	Int i;
+
+	if (argc > 2) {
+		for (i = 2; i < argc; i++) {
+			Symbol symbol = argv[i].unboxed.symbol;
+			if (symbol == _wildcardMatchingSymbols.backslashEscapes)
+				options |= StringWildcardOptions_BackslashEscapes;
+			else if (symbol == _wildcardMatchingSymbols.caseInsensitive)
+				options |= StringWildcardOptions_CaseInsensitive;
+			else if (symbol == _wildcardMatchingSymbols.caseSensitive)
+				options &= ~StringWildcardOptions_CaseInsensitive;
+			else if (symbol == _wildcardMatchingSymbols.filenameMode)
+				options |= StringWildcardOptions_FilenameMode;
+			else {
+				Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+					String_Format("wildcard-matches?: Unknown option \"%S\"",
+						SymbolTable_GetName(Smile_SymbolTable, symbol)));
+			}
+		}
+	}
+
+	Bool isMatch = String_WildcardMatch(pattern, str, options);
+
+	return SmileUnboxedBool_From(isMatch);
+}
+
 //-------------------------------------------------------------------------------------------------
 
 void String_Setup(SmileUserObject base)
 {
+	_wildcardMatchingSymbols.backslashEscapes = SymbolTable_GetSymbolC(Smile_SymbolTable, "backslash-escapes");
+	_wildcardMatchingSymbols.caseInsensitive = SymbolTable_GetSymbolC(Smile_SymbolTable, "case-insensitive");
+	_wildcardMatchingSymbols.caseSensitive = SymbolTable_GetSymbolC(Smile_SymbolTable, "case-sensitive");
+	_wildcardMatchingSymbols.filenameMode = SymbolTable_GetSymbolC(Smile_SymbolTable, "filename-mode");
+
 	SetupFunction("bool", ToBool, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 	SetupFunction("int", ToInt, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 	SetupFunction("string", ToString, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX, 1, 2, 0, NULL);
@@ -1588,8 +1882,21 @@ void String_Setup(SmileUserObject base)
 	SetupFunction("ends-with~?", EndsWithI, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringChecks);
 	SetupFunction("contains?", Contains, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringChecks);
 	SetupFunction("contains~?", ContainsI, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringChecks);
+
 	SetupFunction("empty?", IsEmpty, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupFunction("whitespace?", IsWhitespace, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupFunction("alpha?", IsAlpha, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupFunction("lowercase?", IsLowercase, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupFunction("uppercase?", IsUppercase, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupFunction("alnum?", IsAlnum, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupFunction("digits?", IsDigits, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupFunction("hex?", IsHex, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupFunction("octal?", IsOctal, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+
+	SetupFunction("c-ident?", IsCIdent, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupFunction("ident?", IsIdent, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupFunction("alpha-ident?", IsAlphaIdent, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupFunction("punct-ident?", IsPunctIdent, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 
 	SetupFunction("rot13", Rot13, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupFunction("add-c-slashes", AddCSlashes, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
@@ -1634,13 +1941,12 @@ void String_Setup(SmileUserObject base)
 	SetupFunction("byte-array", ByteArray, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 
 	SetupFunction("split-command-line", SplitCommandLine, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupFunction("wildcard-matches?", WildcardMatches, NULL, "string", ARG_CHECK_MIN | ARG_CHECK_TYPES, 2, 2, 3, _wildcardChecks);
 
 	// Missing:
 	//    splice
-	//    alnum?, alpha?, cident?, digits?, uppercase?, lowercase?, hex-digits?, octal?
 	//    uni-digits?, uni-letters?, uni-letters-digits?, uni-lowercase?, uni-uppercase?, uni-titlecase?
-	//    ident?
-	//    match, matches, wildcard-match?
+	//    match, matches?
 	//    sprintf, symbol
 	//    each-uni, map-uni, where-uni, count-uni
 	//    uni-array, char-array

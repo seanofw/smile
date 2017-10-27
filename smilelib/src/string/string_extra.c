@@ -1034,11 +1034,15 @@ static Bool String_WildcardMatchInternal(const Byte *pattern, const Byte *patter
 	while (pattern < patternEnd) {
 		switch (patternChar = *pattern++) {
 			case '?':
-				// If we ran out of characters, or hit a '/' in filename mode, this is a fail.
+				// If we ran out of characters, or hit a '/' in filename mode (or '\' in
+				// filename mode without backslash mode), this is a fail.
 				if (text == textEnd)
 					return False;
 				textChar = *text++;
 				if ((options & StringWildcardOptions_FilenameMode) && textChar == '/')
+					return False;
+				if ((options & (StringWildcardOptions_FilenameMode | StringWildcardOptions_BackslashEscapes))
+						== StringWildcardOptions_FilenameMode && textChar == '\\')
 					return False;
 				break;
 
@@ -1047,6 +1051,8 @@ static Bool String_WildcardMatchInternal(const Byte *pattern, const Byte *patter
 				// which adds mandatory filler space).
 				while (pattern < patternEnd && ((patternChar = *pattern) == '?' || patternChar == '*')) {
 					if (((options & StringWildcardOptions_FilenameMode) && text < textEnd && *text == '/')
+						|| ((options & (StringWildcardOptions_FilenameMode | StringWildcardOptions_BackslashEscapes))
+							== StringWildcardOptions_FilenameMode && text < textEnd && *text == '\\')
 						|| (patternChar == '?' && text == textEnd))
 						return False;
 					pattern++;
@@ -1067,9 +1073,16 @@ static Bool String_WildcardMatchInternal(const Byte *pattern, const Byte *patter
 				// if we know there won't be a match.
 				while (text < textEnd) {
 					textChar = *text;
-					if ((options & StringWildcardOptions_FilenameMode) && textChar == '/') {
+					if (((options & StringWildcardOptions_FilenameMode) && textChar == '/')
+						|| ((options & (StringWildcardOptions_FilenameMode | StringWildcardOptions_BackslashEscapes))
+							== StringWildcardOptions_FilenameMode && textChar == '\\')) {
 						// '/' can't match a '*' or '?' in filename mode.
-						if (nextPatternChar != '/') return False;
+						// Likewise, '\' can't match a '*' or '?' in filename mode (without backslash mode).
+						if (nextPatternChar != '/')
+							return False;
+						else if (((options & (StringWildcardOptions_FilenameMode | StringWildcardOptions_BackslashEscapes))
+							== StringWildcardOptions_FilenameMode) && nextPatternChar != '\\')
+							return False;
 						else return String_WildcardMatchInternal(pattern, patternEnd, text, textEnd, options);
 					}
 					if (textChar == nextPatternChar && String_WildcardMatchInternal(pattern, patternEnd, text, textEnd, options))
