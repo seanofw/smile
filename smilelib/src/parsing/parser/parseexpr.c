@@ -533,7 +533,6 @@ ParseError Parser_ParseTillNames(Parser parser, SmileList *names)
 	SmileObject decl;
 	ParseError error;
 	SmileList head, tail;
-	Token token;
 
 	// Parse the first name, which results in a symbol like 'x'.
 	error = Parser_ParseTillName(parser, &decl);
@@ -546,7 +545,7 @@ ParseError Parser_ParseTillNames(Parser parser, SmileList *names)
 	}
 
 	// Every time we see a comma, parse the next name, and add it to the list.
-	while ((token = Parser_NextToken(parser))->kind == TOKEN_COMMA) {
+	while (Parser_NextToken(parser)->kind == TOKEN_COMMA) {
 
 		error = Parser_ParseTillName(parser, &decl);
 		if (error != NULL) return error;
@@ -839,31 +838,22 @@ Inline SmileSymbol Parser_GetSymbolObjectForCmpOperator(Symbol symbol)
 	switch (symbol) {
 		case SMILE_SPECIAL_SYMBOL_EQ:
 			return Smile_KnownObjects.eqSymbol;
-			break;
 		case SMILE_SPECIAL_SYMBOL_NE:
 			return Smile_KnownObjects.neSymbol;
-			break;
 		case SMILE_SPECIAL_SYMBOL_LT:
 			return Smile_KnownObjects.ltSymbol;
-			break;
 		case SMILE_SPECIAL_SYMBOL_GT:
 			return Smile_KnownObjects.gtSymbol;
-			break;
 		case SMILE_SPECIAL_SYMBOL_LE:
 			return Smile_KnownObjects.leSymbol;
-			break;
 		case SMILE_SPECIAL_SYMBOL_GE:
 			return Smile_KnownObjects.geSymbol;
-			break;
 		case SMILE_SPECIAL_SYMBOL_SUPEREQ:
 			return Smile_KnownObjects._eqSymbol;
-			break;
 		case SMILE_SPECIAL_SYMBOL_SUPERNE:
 			return Smile_KnownObjects._neSymbol;
-			break;
 		case SMILE_SPECIAL_SYMBOL_IS:
 			return Smile_KnownObjects._isSymbol;
-			break;
 		default:
 			return NULL;
 	}

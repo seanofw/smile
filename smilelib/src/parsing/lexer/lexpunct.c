@@ -17,8 +17,6 @@
 
 #include <smile/parsing/lexer.h>
 #include <smile/parsing/tokenkind.h>
-#include <smile/parsing/identkind.h>
-#include <smile/stringbuilder.h>
 
 #include <smile/internal/staticstring.h>
 #include <smile/parsing/internal/lexerinternal.h>
@@ -36,14 +34,13 @@ STATIC_STRING(UnterminatedCommentMessage, "Comment that was started on line %d w
 /// <returns>The next token that was found in the input, or TOKEN_NONE if no token was found (i.e., a comment).</returns>
 Int Lexer_ParseSlash(Lexer lexer, Bool isFirstContentOnLine)
 {
-	Byte nextch;
 	const Byte *src = lexer->src;
 	const Byte *end = lexer->end;
 	Token token = lexer->token;
 	Int startLine;
 	Byte ch;
 
-	switch (nextch = *src++) {
+	switch (*src++) {
 
 		// A // single-line comment.
 		case '/':
@@ -101,7 +98,6 @@ Int Lexer_ParseSlash(Lexer lexer, Bool isFirstContentOnLine)
 /// <returns>The next token that was found in the input, or null if no token was found (i.e., a comment).</returns>
 Int Lexer_ParseHyphenOrEquals(Lexer lexer, Int initialChar, Bool isFirstContentOnLine, Bool hasPrecedingWhitespace)
 {
-	Byte ch;
 	const Byte *src = lexer->src;
 	const Byte *end = lexer->end;
 	Int charCount;
@@ -109,7 +105,7 @@ Int Lexer_ParseHyphenOrEquals(Lexer lexer, Int initialChar, Bool isFirstContentO
 
 	// Read hyphens/equals until we run out of them.
 	charCount = 0;
-	while (src < end && (ch = *src) == initialChar) {
+	while (src < end && *src == initialChar) {
 		charCount++;
 		src++;
 	}

@@ -27,7 +27,6 @@
 #include <smile/smiletypes/text/smileuni.h>
 #include <smile/parsing/parser.h>
 #include <smile/parsing/internal/parserinternal.h>
-#include <smile/parsing/internal/parsedecl.h>
 #include <smile/parsing/internal/parsescope.h>
 
 static void Parser_TransformListIntoTemplate(SmileList *head, SmileList *tail, LexerPosition lastReadPosition);
@@ -93,7 +92,6 @@ ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Int *temp
 	case TOKEN_LEFTPARENTHESIS:
 		Lexer_Unget(parser->lexer);
 		*templateKind = TemplateKind_Template;
-		startPosition = Token_GetPosition(parser->lexer->token);
 		error = Parser_ParseParentheses(parser, result, modeFlags);
 		if (error != NULL)
 			return error;
@@ -139,7 +137,6 @@ ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Int *temp
 	case TOKEN_BACKTICK:
 		{
 			Int childTemplateKind, tokenKind;
-			startPosition = Token_GetPosition(token);
 			if ((tokenKind = Lexer_Peek(parser->lexer)) == TOKEN_LEFTPARENTHESIS
 				|| tokenKind == TOKEN_LEFTBRACE) {
 				error = Parser_ParseTerm(parser, result, modeFlags, Token_Clone(token));
@@ -162,7 +159,6 @@ ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Int *temp
 			// This is the special '@(...)' form, which works like ',@' in Lisp, and
 			// captures the inner list, and then splices it into the current list.
 			*templateKind = TemplateKind_TemplateWithSplicing;
-			startPosition = Token_GetPosition(parser->lexer->token);
 			error = Parser_ParseParentheses(parser, result, modeFlags);
 			if (error != NULL)
 				return error;
@@ -415,14 +411,11 @@ ParseError Parser_ParseRawListDotExpr(Parser parser, SmileObject *result, Int *t
 /// <param name="startPosition">The lexer position of the start of this list, which will be applied to the new [List.of] cell.</param>
 static void Parser_TransformListIntoTemplate(SmileList *head, SmileList *tail, LexerPosition startPosition)
 {
-	SmileList oldHead, oldTail, newHead, newTail;
+	SmileList oldHead, newHead, newTail;
 	SmileObject oldExpr, newExpr;
 	LexerPosition position;
 
 	oldHead = *head;
-	oldTail = *tail;
-	newHead = NullList;
-	newTail = NullList;
 
 	// Add an initial [List.of ... ] to the new list to make it into a proper list template.
 	newHead = newTail = SmileList_ConsWithSource(
@@ -465,14 +458,11 @@ static void Parser_TransformListIntoTemplate(SmileList *head, SmileList *tail, L
 /// <param name="startPosition">The lexer position of the start of this list, which will be applied to the new [List.of] cell.</param>
 static void Parser_TransformListIntoSplicedTemplate(SmileList *head, SmileList *tail, LexerPosition startPosition)
 {
-	SmileList oldHead, oldTail, newHead, newTail;
+	SmileList oldHead, newHead, newTail;
 	SmileObject oldExpr, newExpr;
 	LexerPosition position;
 
 	oldHead = *head;
-	oldTail = *tail;
-	newHead = NullList;
-	newTail = NullList;
 
 	// Add an initial [List.combine ... ] to the new list to make it into a proper list template.
 	newHead = newTail = SmileList_ConsWithSource(
@@ -518,14 +508,11 @@ static void Parser_TransformListIntoSplicedTemplate(SmileList *head, SmileList *
 /// <param name="startPosition">The lexer position of the start of this list, which will be applied to the new [List.of] cell.</param>
 static void Parser_TransformTemplateIntoSplicedTemplate(SmileList *head, SmileList *tail, LexerPosition startPosition)
 {
-	SmileList oldHead, oldTail, newHead, newTail;
+	SmileList oldHead, newHead, newTail;
 	SmileObject oldExpr, newExpr;
 	LexerPosition position;
 
 	oldHead = *head;
-	oldTail = *tail;
-	newHead = NullList;
-	newTail = NullList;
 
 	// Add an initial [List.combine ... ] to the new list to make it into a proper list template.
 	newHead = newTail = SmileList_ConsWithSource(

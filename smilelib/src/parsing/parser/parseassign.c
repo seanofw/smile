@@ -41,10 +41,7 @@ static Bool EnsureLValueIsAssignable(Parser parser, SmileObject lvalue, LexerPos
 ParseError Parser_ParseKeywordList(Parser parser, SmileObject *expr)
 {
 	ParseError error;
-	SmileList head, tail;
 	Token token;
-
-	head = tail = NullList;
 
 	do {
 		token = Parser_NextToken(parser);
@@ -80,7 +77,6 @@ ParseError Parser_ParseVarDecls(Parser parser, SmileObject *expr, Int modeFlags,
 	SmileObject decl;
 	ParseError error;
 	SmileList head, tail;
-	Token token;
 
 	// Parse the first declaration, which will result in either 'null' or a list like [\= x 5].
 	error = Parser_ParseDecl(parser, &decl, modeFlags, declKind);
@@ -94,7 +90,7 @@ ParseError Parser_ParseVarDecls(Parser parser, SmileObject *expr, Int modeFlags,
 
 	// Every time we see a comma, parse the next declaration, and add it to the list if it
 	// is any form of assignment:  [[\= x 5] [\= y 8] [\= z 10] ...]
-	while ((token = Parser_NextToken(parser))->kind == TOKEN_COMMA) {
+	while (Parser_NextToken(parser)->kind == TOKEN_COMMA) {
 
 		error = Parser_ParseDecl(parser, &decl, modeFlags, declKind);
 		if (error != NULL) return error;
@@ -384,7 +380,7 @@ ParseError Parser_ParseClassicSet(Parser parser, SmileObject *result, LexerPosit
 		error = ParseMessage_Create(PARSEMESSAGE_ERROR, startPosition,
 			String_Format("Invalid lvalue in [$set] starting on line %d.", startPosition->line));
 		*result = lvalue;
-		return NULL;
+		return error;
 	}
 
 	// If the target is a variable, ensure proper variable-declaration semantics are followed by looking up

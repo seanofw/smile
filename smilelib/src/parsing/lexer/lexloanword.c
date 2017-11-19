@@ -17,8 +17,6 @@
 
 #include <smile/parsing/lexer.h>
 #include <smile/parsing/tokenkind.h>
-#include <smile/parsing/identkind.h>
-#include <smile/stringbuilder.h>
 
 #include <smile/internal/staticstring.h>
 #include <smile/parsing/internal/lexerinternal.h>
@@ -37,13 +35,10 @@ Int Lexer_ParseLoanword(Lexer lexer, Bool isFirstContentOnLine)
 	const Byte *end = lexer->end;
 	const Byte *nameText;
 	Token token = lexer->token;
-	Int startLine;
 	Int nameLength;
 	Byte ch;
 
 	START_TOKEN(src++);
-
-	startLine = lexer->line;
 
 	// There must be content of some kind after the '#'.
 	if (src >= end) {

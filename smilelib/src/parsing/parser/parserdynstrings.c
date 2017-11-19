@@ -22,9 +22,7 @@
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/smilepair.h>
 #include <smile/parsing/parser.h>
-#include <smile/parsing/internal/lexerinternal.h>
 #include <smile/parsing/internal/parserinternal.h>
-#include <smile/parsing/internal/parsedecl.h>
 #include <smile/parsing/internal/parsescope.h>
 #include <smile/internal/staticstring.h>
 
@@ -45,7 +43,7 @@ typedef struct DynamicStringPieceStruct {
 //-------------------------------------------------------------------------------------------------
 //  Static prototypes.
 
-static ParseError Parser_SplitDynamicString(Lexer lexer, DynamicStringPiece **dynamicStringPieces, Int *numDynamicStringPieces, LexerPosition position);
+static ParseError Parser_SplitDynamicString(Lexer lexer, DynamicStringPiece **dynamicStringPieces, Int *numDynamicStringPieces);
 
 //-------------------------------------------------------------------------------------------------
 //  DynamicStringPiece implementation.
@@ -79,7 +77,7 @@ ParseError Parser_ParseDynamicString(Parser parser, SmileObject *expr, String te
 
 	stringLexer = Lexer_Create(text, 0, String_Length(text), startPosition->filename, startPosition->line, startPosition->column);
 
-	parseError = Parser_SplitDynamicString(stringLexer, &dynamicStringPieces, &numDynamicStringPieces, startPosition);
+	parseError = Parser_SplitDynamicString(stringLexer, &dynamicStringPieces, &numDynamicStringPieces);
 	if (parseError != NULL) {
 		*expr = NULL;
 		return parseError;
@@ -128,7 +126,7 @@ ParseError Parser_ParseDynamicString(Parser parser, SmileObject *expr, String te
 	 position->column = (Int32)(src - lexer->lineStart), \
 	 position->length = 0)
 
-static ParseError Parser_SplitDynamicString(Lexer lexer, DynamicStringPiece **dynamicStringPieces, Int *numDynamicStringPieces, LexerPosition position)
+static ParseError Parser_SplitDynamicString(Lexer lexer, DynamicStringPiece **dynamicStringPieces, Int *numDynamicStringPieces)
 {
 	Array pieces;
 	StringBuilder builder;
@@ -138,14 +136,13 @@ static ParseError Parser_SplitDynamicString(Lexer lexer, DynamicStringPiece **dy
 	Int decoded;
 	DynamicStringPiece *dest;
 	ParseError parseError;
-	LexerPosition startPosition;
-	
+	LexerPosition position;
+
 	pieces = Array_Create(sizeof(DynamicStringPiece), 16, False);
 
 	builder = StringBuilder_Create();
 
 	inParsedContent = False;
-	startPosition = position;
 
 	src = lexer->src;
 	end = lexer->end;
@@ -188,7 +185,6 @@ static ParseError Parser_SplitDynamicString(Lexer lexer, DynamicStringPiece **dy
 						*dest = DynamicStringPiece_Create(StringBuilder_ToString(builder), position, False);
 						StringBuilder_SetLength(builder, 0);
 					}
-					startPosition = position;
 				}
 			}
 			else if (ch == '}') {
@@ -244,7 +240,6 @@ static ParseError Parser_SplitDynamicString(Lexer lexer, DynamicStringPiece **dy
 				MAKE_POSITION();
 				*dest = DynamicStringPiece_Create(StringBuilder_ToString(builder), position, True);
 				StringBuilder_SetLength(builder, 0);
-				startPosition = position;
 			}
 			else {
 				src++;

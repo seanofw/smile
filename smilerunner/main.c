@@ -129,7 +129,8 @@ static Bool PrintParseMessages(CommandLineArgs options, Parser parser)
 		parseMessage = (ParseMessage)LIST_FIRST(list);
 
 		shouldPrint = False;
-	
+		prefix = "";
+
 		switch (parseMessage->messageKind) {
 			case PARSEMESSAGE_INFO:
 				if (options->verbose) {
@@ -246,7 +247,6 @@ static CommandLineArgs ParseCommandLine(int argc, const char **argv)
 								return NULL;
 							}
 							else goto unknownArgument;
-							break;
 						case 'q':
 							if (!strcmp(argv[i] + 2, "quiet")) {
 								options->quiet = True;
@@ -512,12 +512,12 @@ static Int ParseAndEval(CommandLineArgs options, String string, String filename,
 					SymbolTable_GetName(Smile_SymbolTable, exceptionKind),
 					!String_IsNullOrEmpty(exceptionMessage) ? ": " : "",
 					exceptionMessage);
-				fwrite_styled(String_GetBytes(displayMessage), 1, String_Length(displayMessage), stderr);
+				fwrite_styled((const char *)String_GetBytes(displayMessage), 1, String_Length(displayMessage), stderr);
 				fflush(stderr);
 
 				stackTrace = SMILE_VCALL1(evalResult->exception, getProperty, Smile_KnownSymbols.stack_trace);
 				stackTraceMessage = Smile_FormatStackTrace((SmileList)stackTrace);
-				fwrite_styled(String_GetBytes(stackTraceMessage), 1, String_Length(stackTraceMessage), stderr);
+				fwrite_styled((const char *)String_GetBytes(stackTraceMessage), 1, String_Length(stackTraceMessage), stderr);
 				fflush(stderr);
 
 				*result = NullObject;
@@ -541,8 +541,8 @@ static Int ParseAndEval(CommandLineArgs options, String string, String filename,
 
 static int SmileMain(int argc, const char **argv)
 {
-	String script;
-	String scriptName;
+	String script = NULL;
+	String scriptName = NULL;
 	CommandLineArgs options;
 	SmileObject result;
 	Int exitCode;
@@ -562,13 +562,9 @@ static int SmileMain(int argc, const char **argv)
 			printf("Smile v%d.%d / %s\n", SMILE_MAJOR_VERSION, SMILE_MINOR_VERSION, BUILDSTRING);
 			return 0;
 		}
-		else {
-			if (options->verbose)
-				Verbose("No script given, so entering REPL.");
-			PrintSmileWelcome();
-			ReplMain();
-			return 0;
-		}
+		PrintSmileWelcome();
+		ReplMain();
+		return 0;
 	}
 
 	// If they provided a script on the command-line itself using "-e", see if it needs to
@@ -611,7 +607,7 @@ static int SmileMain(int argc, const char **argv)
 		else {
 			String indentedScript;
 			Verbose("Script text:");
-			indentedScript = String_Replace(script, String_Newline, String_FromC("\n    "));
+			indentedScript = String_Replace(script != NULL ? script : String_Empty, String_Newline, String_FromC("\n    "));
 			fwrite(String_GetBytes(indentedScript), 1, String_Length(indentedScript), stdout);
 			puts("\n");
 		}

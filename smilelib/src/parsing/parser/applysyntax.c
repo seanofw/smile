@@ -23,7 +23,6 @@
 #include <smile/stringbuilder.h>
 #include <smile/parsing/parser.h>
 #include <smile/parsing/internal/parserinternal.h>
-#include <smile/parsing/internal/parsedecl.h>
 #include <smile/parsing/internal/parsescope.h>
 #include <smile/parsing/internal/parsesyntax.h>
 
@@ -464,7 +463,6 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 	SmileList localHead, localTail;
 	Bool isFirst;
 	Int32Dict transitionTable;
-	Int tokenKind;
 	Symbol tokenSymbol;
 	Int32Int32Dict oldCustomFollowSet;
 	CustomSyntaxResult nestedSyntaxResult;
@@ -487,7 +485,7 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 	if (syntaxRootMode == SYNTAXROOT_KEYWORD) {
 		// We can only transition via an initial terminal; we don't need to construct or find a
 		// transition table, since the nextTerminals set will be sufficient.
-		tokenKind = Lexer_Next(parser->lexer);
+		Lexer_Next(parser->lexer);
 		tokenSymbol = GetSymbolForToken(parser->lexer->token);
 		if (node->nextTerminals == NULL || !Int32Dict_TryGetValue(node->nextTerminals, tokenSymbol, (void **)&nextNode)) {
 			Lexer_Unget(parser->lexer);
@@ -519,7 +517,7 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 		}
 
 		// Try to actually transition to the next state based on the next token in the input.
-		tokenKind = Lexer_Next(parser->lexer);
+		Lexer_Next(parser->lexer);
 		tokenSymbol = GetSymbolForToken(parser->lexer->token);
 		if (!Int32Dict_TryGetValue(transitionTable, tokenSymbol, (void **)&nextNode)) {
 			// Didn't match it exactly.  See if this transition table has an "every symbol" catch-all rule.

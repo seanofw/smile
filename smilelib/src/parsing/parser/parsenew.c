@@ -20,7 +20,6 @@
 #include <smile/smiletypes/smilepair.h>
 #include <smile/parsing/parser.h>
 #include <smile/parsing/internal/parserinternal.h>
-#include <smile/parsing/internal/parsedecl.h>
 #include <smile/parsing/internal/parsescope.h>
 
 // newexpr ::=	  . NEW LBRACE members_opt RBRACE
@@ -164,7 +163,7 @@ Bool Parser_ParseMembers(Parser parser, SmileObject *expr)
 	Lexer_Unget(parser->lexer);
 
 	*expr = (SmileObject)head;
-	return True;
+	return hasErrors;
 }
 
 //-------------------------------------------------------------------------------------------------

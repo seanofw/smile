@@ -329,7 +329,6 @@ ParseError Parser_ParseParam(Parser parser, SmileObject *param, LexerPosition *p
 				),
 				defaultPosition
 			);
-		tail = (SmileList)((SmileList)tail->d)->d;
 	}
 	else {
 		// No equal sign, so don't eat the next token.

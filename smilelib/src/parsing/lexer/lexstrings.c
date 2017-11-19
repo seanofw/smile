@@ -17,7 +17,6 @@
 
 #include <smile/parsing/lexer.h>
 #include <smile/parsing/tokenkind.h>
-#include <smile/parsing/identkind.h>
 #include <smile/stringbuilder.h>
 
 #include <smile/internal/staticstring.h>
@@ -45,7 +44,6 @@ Int Lexer_ParseDynamicString(Lexer lexer, Bool isFirstContentOnLine)
 	const Byte *end = lexer->end;
 	const Byte *start;
 	Token token = lexer->token;
-	Byte ch;
 
 	START_TOKEN(src - 1);
 	INIT_INLINE_STRINGBUILDER(stringBuilder);
@@ -83,7 +81,7 @@ retry:
 		return END_TOKEN(TOKEN_ERROR);
 	}
 
-	switch (ch = *src++) {
+	switch (*src++) {
 
 		// Handle newlines of the first kind.
 		case '\n':
@@ -93,7 +91,7 @@ retry:
 				lexer->token->text = String_FormatString(UnterminatedDynamicStringMessage, startLine);
 				return END_TOKEN(TOKEN_ERROR);
 			}
-			if (src < end && (ch = *src) == '\r') {
+			if (src < end && *src == '\r') {
 				src++;
 			}
 			lexer->line++;
@@ -107,7 +105,7 @@ retry:
 				lexer->token->text = String_FormatString(UnterminatedDynamicStringMessage, startLine);
 				return END_TOKEN(TOKEN_ERROR);
 			}
-			if (src < end && (ch = *src) == '\n') {
+			if (src < end && *src == '\n') {
 				src++;
 			}
 			lexer->line++;
@@ -224,7 +222,6 @@ Int Lexer_ParseRawString(Lexer lexer, Bool isFirstContentOnLine)
 	const Byte *end = lexer->end;
 	const Byte *start;
 	Token token = lexer->token;
-	Byte ch;
 
 	START_TOKEN(src - 1);
 	INIT_INLINE_STRINGBUILDER(stringBuilder);
@@ -260,7 +257,7 @@ retry:
 		return END_TOKEN(TOKEN_ERROR);
 	}
 
-	switch (ch = *src++) {
+	switch (*src++) {
 
 		// Handle newlines of the first kind.
 		case '\n':
@@ -270,7 +267,7 @@ retry:
 				lexer->token->text = String_FormatString(UnterminatedRawStringMessage, startLine);
 				return END_TOKEN(TOKEN_ERROR);
 			}
-			if (src < end && (ch = *src) == '\r') {
+			if (src < end && *src == '\r') {
 				src++;
 			}
 			lexer->line++;
@@ -284,7 +281,7 @@ retry:
 				lexer->token->text = String_FormatString(UnterminatedRawStringMessage, startLine);
 				return END_TOKEN(TOKEN_ERROR);
 			}
-			if (src < end && (ch = *src) == '\n') {
+			if (src < end && *src == '\n') {
 				src++;
 			}
 			lexer->line++;
