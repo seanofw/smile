@@ -32,6 +32,7 @@ ParseError Parser_ParseNewExpr(Parser parser, SmileObject *expr, Int modeFlags, 
 	SmileObject base, body;
 	ParseError parseError;
 	LexerPosition newTokenPosition;
+	Bool membersHaveErrors;
 
 	token = Parser_NextToken(parser);
 	if (token->kind == TOKEN_LEFTBRACE) {
@@ -75,23 +76,20 @@ ParseError Parser_ParseNewExpr(Parser parser, SmileObject *expr, Int modeFlags, 
 	}
 
 shorthandForm:
-	if (!Parser_ParseMembers(parser, &body)) {
-		token = Parser_Recover(parser, Parser_RightBracesBracketsParentheses_Recovery, Parser_RightBracesBracketsParentheses_Count);
-		if (token->kind != TOKEN_RIGHTBRACE) {
+	membersHaveErrors = Parser_ParseMembers(parser, &body);
+	if (membersHaveErrors || Lexer_Peek(parser->lexer) != TOKEN_RIGHTBRACE) {
+		Parser_Recover(parser, Parser_RightBracesBracketsParentheses_Recovery, Parser_RightBracesBracketsParentheses_Count);
+		if (!membersHaveErrors) {
 			parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
 				String_Format("Missing a '}' to end the members in the 'new' block starting on line %d.", newTokenPosition->line));
 			*expr = NullObject;
 			return parseError;
 		}
-		Lexer_Unget(parser->lexer);
+		return NULL;
 	}
 
-	if (Lexer_Next(parser->lexer) != TOKEN_RIGHTBRACE) {
-		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
-			String_Format("Missing a '}' to end the members in the 'new' block starting on line %d.", newTokenPosition->line));
-		*expr = NullObject;
-		return parseError;
-	}
+	// Reached a curly brace, so consume it.
+	Lexer_Next(parser->lexer);
 
 	*expr = (SmileObject)SmileList_ConsWithSource(
 		(SmileObject)Smile_KnownObjects._newSymbol,
