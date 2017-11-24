@@ -1027,6 +1027,13 @@ String String_RegexEscape(const String str)
 	return StringBuilder_ToString(stringBuilder);
 }
 
+#define IsPathSeparator(__ch__) \
+	( \
+		((options & StringWildcardOptions_FilenameMode) && (__ch__) == '/') \
+		|| ((options & (StringWildcardOptions_FilenameMode | StringWildcardOptions_BackslashEscapes)) \
+			== StringWildcardOptions_FilenameMode && (__ch__) == '\\') \
+	)
+
 static Bool String_WildcardMatchInternal(const Byte *pattern, const Byte *patternEnd, const Byte *text, const Byte *textEnd, Int options)
 {
 	Byte patternChar, textChar, nextPatternChar;
@@ -1039,10 +1046,7 @@ static Bool String_WildcardMatchInternal(const Byte *pattern, const Byte *patter
 				if (text == textEnd)
 					return False;
 				textChar = *text++;
-				if ((options & StringWildcardOptions_FilenameMode) && textChar == '/')
-					return False;
-				if ((options & (StringWildcardOptions_FilenameMode | StringWildcardOptions_BackslashEscapes))
-						== StringWildcardOptions_FilenameMode && textChar == '\\')
+				if (IsPathSeparator(textChar))
 					return False;
 				break;
 
@@ -1050,9 +1054,7 @@ static Bool String_WildcardMatchInternal(const Byte *pattern, const Byte *patter
 				// Consume trailing '*' and '?' characters, since they don't mean much (except '?',
 				// which adds mandatory filler space).
 				while (pattern < patternEnd && ((patternChar = *pattern) == '?' || patternChar == '*')) {
-					if (((options & StringWildcardOptions_FilenameMode) && text < textEnd && *text == '/')
-						|| ((options & (StringWildcardOptions_FilenameMode | StringWildcardOptions_BackslashEscapes))
-							== StringWildcardOptions_FilenameMode && text < textEnd && *text == '\\')
+					if ((text < textEnd && IsPathSeparator(*text))
 						|| (patternChar == '?' && text == textEnd))
 						return False;
 					pattern++;
@@ -1073,15 +1075,10 @@ static Bool String_WildcardMatchInternal(const Byte *pattern, const Byte *patter
 				// if we know there won't be a match.
 				while (text < textEnd) {
 					textChar = *text;
-					if (((options & StringWildcardOptions_FilenameMode) && textChar == '/')
-						|| ((options & (StringWildcardOptions_FilenameMode | StringWildcardOptions_BackslashEscapes))
-							== StringWildcardOptions_FilenameMode && textChar == '\\')) {
+					if (IsPathSeparator(textChar)) {
 						// '/' can't match a '*' or '?' in filename mode.
 						// Likewise, '\' can't match a '*' or '?' in filename mode (without backslash mode).
-						if (nextPatternChar != '/')
-							return False;
-						else if (((options & (StringWildcardOptions_FilenameMode | StringWildcardOptions_BackslashEscapes))
-							== StringWildcardOptions_FilenameMode) && nextPatternChar != '\\')
+						if (!IsPathSeparator(textChar))
 							return False;
 						else return String_WildcardMatchInternal(pattern, patternEnd, text, textEnd, options);
 					}
