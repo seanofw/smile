@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
 //  Copyright 2004-2017 Sean Werkema
 //
@@ -880,8 +880,12 @@ SMILE_EXTERNAL_FUNCTION(Replace)
 	Int replacementKind = SMILE_KIND(argv[2].obj);
 
 	if (patternKind == SMILE_KIND_UNBOXED_CHAR && replacementKind == SMILE_KIND_UNBOXED_CHAR) {
-		if (argc > 3)
-			str = String_ReplaceCharWithLimit(str, argv[1].unboxed.i8, argv[2].unboxed.i8, argv[3].unboxed.i64);
+		if (argc > 3) {
+			Int64 limit = argv[3].unboxed.i64;
+			if (limit < 0) limit = 0;
+			if (limit > String_Length(str)) limit = String_Length(str);
+			str = String_ReplaceCharWithLimit(str, argv[1].unboxed.i8, argv[2].unboxed.i8, (Int)limit);
+		}
 		else
 			str = String_ReplaceChar(str, argv[1].unboxed.i8, argv[2].unboxed.i8);
 		return SmileArg_From((SmileObject)str);
@@ -915,8 +919,12 @@ SMILE_EXTERNAL_FUNCTION(Replace)
 			String_FromC("Expected the replacement for 'String.replace' to be a String, a Char, or a Uni."));
 	}
 
-	if (argc > 3)
-		str = String_ReplaceWithLimit(str, pattern, replacement, argv[3].unboxed.i64);
+	if (argc > 3) {
+		Int64 limit = argv[3].unboxed.i64;
+		if (limit < 0) limit = 0;
+		if (limit > String_Length(str)) limit = String_Length(str);
+		str = String_ReplaceWithLimit(str, pattern, replacement, (Int)limit);
+	}
 	else
 		str = String_Replace(str, pattern, replacement);
 
@@ -958,8 +966,12 @@ SMILE_EXTERNAL_FUNCTION(ReplaceI)
 			String_FromC("Expected the replacement for 'String.replace~' to be a String, a Char, or a Uni."));
 	}
 
-	if (argc > 3)
-		str = String_ReplaceWithLimitI(str, pattern, replacement, argv[3].unboxed.i64);
+	if (argc > 3) {
+		Int64 limit = argv[3].unboxed.i64;
+		if (limit < 0) limit = 0;
+		if (limit > String_Length(str)) limit = String_Length(str);
+		str = String_ReplaceWithLimitI(str, pattern, replacement, (Int)limit);
+	}
 	else
 		str = String_ReplaceI(str, pattern, replacement);
 
@@ -991,8 +1003,10 @@ SMILE_EXTERNAL_FUNCTION(Split)
 
 	// If there's a limit, get the limit.
 	if (argc > 2) {
-		limit = argv[2].unboxed.i64;
-		if (limit < 0) limit = 0;
+		Int64 limit64 = argv[2].unboxed.i64;
+		if (limit64 < 0) limit64 = 0;
+		if (limit64 > String_Length(str) + 1) limit64 = String_Length(str) + 1;
+		limit = (Int)limit64;
 	}
 	else {
 		limit = -1;
@@ -1161,10 +1175,10 @@ SMILE_EXTERNAL_FUNCTION(Chip)
 	// is not provided, it's 1.
 	count = (argc == 2 ? argv[1].unboxed.i64 : 1);
 
-	if (count >= String_Length(str))
+	if (count >= (Int64)String_Length(str))
 		str = String_Empty;
 	else if (count > 0)
-		str = String_SubstringAt(str, count);
+		str = String_SubstringAt(str, (Int)count);
 
 	return SmileArg_From((SmileObject)str);
 }
@@ -1180,11 +1194,11 @@ SMILE_EXTERNAL_FUNCTION(Chop)
 	// is not provided, it's 1.
 	count = (argc == 2 ? argv[1].unboxed.i64 : 1);
 
-	length = String_Length(str);
+	length = (Int64)String_Length(str);
 	if (count >= length)
 		str = String_Empty;
 	else if (count > 0)
-		str = String_Substring(str, 0, length - count);
+		str = String_Substring(str, 0, (Int)(length - count));
 
 	return SmileArg_From((SmileObject)str);
 }

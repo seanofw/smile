@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
 //  Copyright 2004-2017 Sean Werkema
 //
@@ -804,7 +804,7 @@ SMILE_EXTERNAL_FUNCTION(HexString)
 	if (!SetupForHashing(argc, argv, &byteArray, &start, &length))
 		return SmileUnboxedInteger32_From(0);
 
-	result = String_CreateInternal(length * 2);
+	result = String_CreateInternal((Int)length * 2);
 	dest = (Byte *)String_GetBytes(result);
 	src = byteArray->data + (Int)start;
 
