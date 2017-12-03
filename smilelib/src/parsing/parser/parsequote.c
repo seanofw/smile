@@ -22,6 +22,10 @@
 #include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
+#include <smile/smiletypes/numeric/smilereal32.h>
+#include <smile/smiletypes/numeric/smilereal64.h>
+#include <smile/smiletypes/numeric/smilefloat32.h>
+#include <smile/smiletypes/numeric/smilefloat64.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/text/smilechar.h>
 #include <smile/smiletypes/text/smileuni.h>
@@ -62,7 +66,7 @@ ParseError Parser_ParseQuotedTerm(Parser parser, SmileObject *result, Int modeFl
 	return NULL;
 }
 
-static SmileObject WrapForSplicing(SmileObject obj)
+SmileObject Parser_WrapTemplateForSplicing(SmileObject obj)
 {
 	return
 		(SmileObject)SmileList_Cons((SmileObject)SmilePair_Create((SmileObject)Smile_KnownObjects.ListSymbol, (SmileObject)Smile_KnownObjects.consSymbol),
@@ -206,6 +210,26 @@ ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Int *temp
 		*templateKind = TemplateKind_None;
 		return NULL;
 
+	case TOKEN_REAL32:
+		*result = (SmileObject)SmileReal32_Create(token->data.real32);
+		*templateKind = TemplateKind_None;
+		return NULL;
+
+	case TOKEN_REAL64:
+		*result = (SmileObject)SmileReal64_Create(token->data.real64);
+		*templateKind = TemplateKind_None;
+		return NULL;
+
+	case TOKEN_FLOAT32:
+		*result = (SmileObject)SmileFloat32_Create(token->data.float32);
+		*templateKind = TemplateKind_None;
+		return NULL;
+
+	case TOKEN_FLOAT64:
+		*result = (SmileObject)SmileFloat64_Create(token->data.float64);
+		*templateKind = TemplateKind_None;
+		return NULL;
+
 	default:
 		// We got an unknown token that can't be turned into a term.  So we're going to generate
 		// an error message, but we do our best to specialize that message according to the most
@@ -303,7 +327,7 @@ ParseError Parser_ParseRawListItemsOpt(Parser parser, SmileList *head, SmileList
 						itemTemplateKind = TemplateKind_TemplateWithSplicing;
 					}
 					else if (listTemplateKind == TemplateKind_TemplateWithSplicing && itemTemplateKind == TemplateKind_Template) {
-						expr = WrapForSplicing(expr);
+						expr = Parser_WrapTemplateForSplicing(expr);
 						itemTemplateKind = TemplateKind_TemplateWithSplicing;
 					}
 				}
@@ -549,7 +573,7 @@ static void Parser_TransformTemplateIntoSplicedTemplate(SmileList *head, SmileLi
 		}
 		else {
 			// Take each element x in the old list, and wrap it with a [List.cons x null] in the new list.
-			newExpr = WrapForSplicing(oldExpr);
+			newExpr = Parser_WrapTemplateForSplicing(oldExpr);
 		}
 
 		LIST_APPEND_WITH_SOURCE(newHead, newTail, newExpr, position);

@@ -558,8 +558,8 @@ END_TEST
 START_TEST(CanCompileConditionalsAllTheWay)
 {
 	SmileObject expr = Parse(
-		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if x y]\n"
-		"#syntax STMT: [my-if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if (x) (y)]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y] else [STMT z]] => [$if (x) (y) (z)]\n"
 		"\n"
 		"my-if 1 < 10 then\n"
 		"\t`then-side\n"

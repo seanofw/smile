@@ -1,4 +1,4 @@
-﻿//---------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
 //  Copyright 2004-2017 Sean Werkema
 //
@@ -22,6 +22,8 @@
 #include <smile/smiletypes/smilesyntax.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
+#include <smile/smiletypes/smilelist.h>
+#include <smile/smiletypes/smilepair.h>
 #include <smile/stringbuilder.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/parsing/parser.h>
@@ -101,6 +103,8 @@ static ParseError Parser_ParseSyntaxTerminal(Parser parser, SmileList **tailRef)
 static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailRef);
 static ParseError Parser_ParseSyntaxNonterminalWithDeclarations(Parser parser, Int *numWithSymbols, Symbol **withSymbols);
 static void Parser_DeclareNonterminals(SmileList pattern, ParseScope scope, LexerPosition position);
+static SmileObject Parser_ConvertItemToTemplateIfNeeded(SmileObject expr, Int itemTemplateKind, LexerPosition lexerPosition);
+static Bool Parser_VerifySyntaxTemplateIsEvaluableAtParseTime(Parser parser, SmileObject expr);
 
 // syntax_expr :: = . syntax_level COLON LBRACKET syntax_pattern RBRACKET IMPLIES raw_list_term
 SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *expr, Int modeFlags)
@@ -111,7 +115,7 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *ex
 	SmileList *patternTail;
 	SmileObject replacement;
 	ParseError parseError;
-	LexerPosition rulePosition;
+	LexerPosition rulePosition, impliesPosition;
 	Int templateKind;
 
 	// First, read the syntax predicate's leading nonterminal.
@@ -160,6 +164,7 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *ex
 		*expr = NullObject;
 		return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), MissingSyntaxImpliesSymbol);
 	}
+	impliesPosition = Token_GetPosition(token);
 
 	// Create a new scope for the syntax rule's substitution expression.
 	Parser_BeginScope(parser, PARSESCOPE_SYNTAX);
@@ -175,6 +180,22 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *ex
 		return parseError;
 	}
 
+	// Make sure the template is an evaluable expression form, not just a raw term.
+	replacement = Parser_ConvertItemToTemplateIfNeeded(replacement, templateKind, impliesPosition);
+
+	// Now make sure that the template is evaluable at parse-time.  The set of supported
+	// parse-time template-evaluation forms is intentionally limited:
+	//
+	//   - n (where n is any nonterminal symbol)
+	//   - [] (i.e., null)
+	//   - [$quote x] (for any x)
+	//   - [List.of x y z ...]
+	//   - [List.join x y z ...]
+	//   - [List.cons x y]
+	//
+	// All other computation is expressly prohibited and must be implemented using macros.
+	Parser_VerifySyntaxTemplateIsEvaluableAtParseTime(parser, replacement);
+
 	// Make sure that if this is one of the special (known) syntax classes, that the pattern is
 	// a valid form.
 	parseError = Parser_ValidateSpecialSyntaxClasses(nonterminal, pattern, rulePosition);
@@ -186,6 +207,141 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *ex
 	// Everything passes muster, so create and return the new syntax object.
 	*expr = (SmileObject)SmileSyntax_Create(nonterminal, pattern, replacement, rulePosition);
 	return NULL;
+}
+
+static Int Parser_VerifyArgumentsAreEvaluableAtParseTime(Parser parser, SmileList list)
+{
+	Bool passed = True;
+	Int numArgs = 0;
+
+	for (; SMILE_KIND(list) == SMILE_KIND_LIST; list = LIST_REST(list), numArgs++) {
+		passed &= Parser_VerifySyntaxTemplateIsEvaluableAtParseTime(parser, list->a);
+	}
+
+	return SMILE_KIND(list) == SMILE_KIND_NULL ? numArgs : -1;
+}
+
+/// <summary>
+/// Make sure that the given template expression is evaluable at parse-time.  The set of
+/// supported parse-time template-evaluation forms is intentionally very limited:
+///
+///   - n (where n is any nonterminal symbol)
+///   - [] (i.e., null)
+///   - [$quote x] (for any x)
+///   - [List.cons x y]
+///   - [List.of x y z ...]
+///   - [List.combine x y z ...]
+///   - [Pair.of x y]
+///
+/// All other computation is expressly prohibited and must be implemented using macros.
+/// </summary>
+static Bool Parser_VerifySyntaxTemplateIsEvaluableAtParseTime(Parser parser, SmileObject expr)
+{
+	SmileList list;
+
+	switch (SMILE_KIND(expr)) {
+		case SMILE_KIND_SYMBOL:
+		case SMILE_KIND_NULL:
+			return True;
+
+		case SMILE_KIND_LIST:
+			list = (SmileList)expr;
+
+			if (SMILE_KIND(list->a) == SMILE_KIND_SYMBOL) {
+				SmileSymbol symbol = (SmileSymbol)list->a;
+				if (symbol->symbol == SMILE_SPECIAL_SYMBOL__QUOTE) {
+					if (SmileList_SafeLength(list) == 2) return True;
+
+					Parser_AddMessage(parser, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(list, getSourceLocation),
+						String_Format("[$quote] is mis-formed in this syntax template; it must have exactly one argument.")));
+					return False;
+				}
+				else {
+					Parser_AddMessage(parser, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(list, getSourceLocation),
+						String_Format("'%S' is not allowed here in this syntax template (are you incorrectly"
+							" trying to call a function inside a syntax template?).",
+							SymbolTable_GetName(Smile_SymbolTable, symbol->symbol))));
+					return False;
+				}
+			}
+
+			if (SMILE_KIND(list->a) == SMILE_KIND_PAIR) {
+				SmilePair pair = (SmilePair)list->a;
+
+				if (SMILE_KIND(pair->left) == SMILE_KIND_SYMBOL && SMILE_KIND(pair->right) == SMILE_KIND_SYMBOL) {
+
+					SmileSymbol objSymbol = (SmileSymbol)pair->left;
+					SmileSymbol methodSymbol = (SmileSymbol)pair->right;
+
+					if (objSymbol->symbol == Smile_KnownSymbols.List_) {
+						if (methodSymbol->symbol == Smile_KnownSymbols.of
+							|| methodSymbol->symbol == Smile_KnownSymbols.combine) {
+							return Parser_VerifyArgumentsAreEvaluableAtParseTime(parser, LIST_REST(list)) >= 0;
+						}
+						else if (methodSymbol->symbol == Smile_KnownSymbols.cons) {
+							if (Parser_VerifyArgumentsAreEvaluableAtParseTime(parser, LIST_REST(list)) != 2) {
+								Parser_AddMessage(parser, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(list, getSourceLocation),
+									String_FromC("'List.cons' must be called with exactly two arguments.")));
+								return False;
+							}
+							return True;
+						}
+						else {
+							Parser_AddMessage(parser, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(list, getSourceLocation),
+								String_Format("'List.%S' is not allowed here in this syntax template (only List.cons,"
+									" List.of, and List.combine are supported in syntax templates).",
+									SymbolTable_GetName(Smile_SymbolTable, methodSymbol->symbol))));
+							return False;
+						}
+					}
+					else if (objSymbol->symbol == Smile_KnownSymbols.Pair_) {
+						if (methodSymbol->symbol == Smile_KnownSymbols.of) {
+							if (Parser_VerifyArgumentsAreEvaluableAtParseTime(parser, LIST_REST(list)) != 2) {
+								Parser_AddMessage(parser, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(list, getSourceLocation),
+									String_FromC("'Pair.of' must be called with exactly two arguments.")));
+								return False;
+							}
+							return True;
+						}
+						else {
+							Parser_AddMessage(parser, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(list, getSourceLocation),
+								String_Format("'Pair.%S' is not allowed here in this syntax template (only Pair.of"
+									" is supported in syntax templates).",
+									SymbolTable_GetName(Smile_SymbolTable, methodSymbol->symbol))));
+							return False;
+						}
+					}
+				}
+			}
+
+			// For all other forms, fall-through to default error message.
+
+		default:
+			Parser_AddMessage(parser, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(expr, getSourceLocation),
+				String_FromC("Syntax templates may only consist of nonterminals, the empty list, [$quote], and certain [List.*] and [Pair.*] method calls.")));
+			return False;
+	}
+}
+
+/// <summary>
+/// Transform the provided expression, which may be any of the three different kinds of
+/// template forms, into a spliced-template form so that it may be acted on uniformly.
+/// </summary>
+static SmileObject Parser_ConvertItemToTemplateIfNeeded(SmileObject expr, Int itemTemplateKind, LexerPosition lexerPosition)
+{
+	// This is a templated list, but not a templated item (or not templated enough).
+	// So we need to wrap/quote it before adding it to the list.
+	switch (itemTemplateKind) {
+		case TemplateKind_None:
+			return (SmileObject)SmileList_ConsWithSource(
+				(SmileObject)Smile_KnownObjects._quoteSymbol,
+				(SmileObject)SmileList_ConsWithSource(expr, NullObject, lexerPosition),
+				lexerPosition
+			);
+
+		default:
+			return expr;
+	}
 }
 
 // syntax_pattern :: = . syntax_element | . syntax_element syntax_pattern

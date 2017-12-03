@@ -111,6 +111,8 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseClassicTill(Parser parser, SmileObjec
 SMILE_INTERNAL_FUNC ParseError Parser_ParseClassicNew(Parser parser, SmileObject *result, LexerPosition startPosition);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseClassicSet(Parser parser, SmileObject *result, LexerPosition startPosition);
 
+SMILE_INTERNAL_FUNC SmileObject Parser_WrapTemplateForSplicing(SmileObject obj);
+
 SMILE_INTERNAL_FUNC Token Parser_Recover(Parser parser, Int *tokenKinds, Int numTokenKinds);
 SMILE_INTERNAL_FUNC Bool Parser_IsLValue(SmileObject obj);
 SMILE_INTERNAL_FUNC Bool Parser_HasEqualLookahead(Parser parser);
