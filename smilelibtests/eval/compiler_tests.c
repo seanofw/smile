@@ -802,7 +802,7 @@ END_TEST
 START_TEST(CanCompileAWhileLoopThatComputesLogarithms)
 {
 	SmileObject expr = Parse(
-		"#syntax STMT: [my-while [EXPR x] do [STMT y]] => [$while [] x y]\n"
+		"#syntax STMT: [my-while [EXPR x] do [STMT y]] => [$while [] (x) (y)]\n"
 		"\n"
 		"n = 12345678\n"
 		"log = 0\n"
@@ -883,7 +883,7 @@ END_TEST
 START_TEST(CanCompileATillLoopThatActuallyDoesSomething)
 {
 	SmileObject expr = Parse(
-		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if x y]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if (x) (y)]\n"
 		"\n"
 		"var x = 1\n"
 		"[$till [reached-eight-bits] {\n"
@@ -925,8 +925,8 @@ START_TEST(CanCompileATillLoopUsingSimpleSyntax)
 {
 /*
 	SmileObject expr = Parse(
-		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if x y]\n"
-		"#syntax STMT: [my-till [NAME+ names ,] do [with names: STMT body]] => [$till names body]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if (x) (y)]\n"
+		"#syntax STMT: [my-till [NAME+ names ,] do [with names: STMT body]] => [$till (names) (body)]\n"
 		"\n"
 		"var x = 1\n"
 		"my-till reached-eight-bits do {\n"
