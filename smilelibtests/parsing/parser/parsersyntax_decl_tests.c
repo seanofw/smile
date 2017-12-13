@@ -57,7 +57,7 @@ END_TEST
 
 START_TEST(CanParseSyntaxFormsThatUseSyntaxForms)
 {
-	Lexer lexer = SetupLexer("#syntax STMT: [do magic] => (Stdout print \"Hello, World.\")");
+	Lexer lexer = SetupLexer("#syntax STMT: [do magic] => `(Stdout print \"Hello, World.\")");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("Stdout")), PARSEDECL_VARIABLE, NULL, NULL);
@@ -67,7 +67,7 @@ START_TEST(CanParseSyntaxFormsThatUseSyntaxForms)
 	SmileSyntax expectedResult = SmileSyntax_Create(
 		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
 		(SmileList)SimpleParse("[do magic]"),
-		(SmileObject)SimpleParse("[(List.of) (Stdout.print) \"Hello, World.\" ]"),
+		(SmileObject)SimpleParse("[$quote [(Stdout.print) \"Hello, World.\"]]"),
 		NULL
 	);
 
@@ -87,7 +87,7 @@ START_TEST(CanParseSyntaxFormsThatUseListForms)
 	SmileSyntax expectedResult = SmileSyntax_Create(
 		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
 		(SmileList)SimpleParse("[do magic]"),
-		(SmileObject)SimpleParse("[(List.of) (Stdout.print) \"Hello, World.\" ]"),
+		(SmileObject)SimpleParse("[$quote [(Stdout.print) \"Hello, World.\"]]"),
 		NULL
 	);
 
@@ -97,7 +97,7 @@ END_TEST
 
 START_TEST(CanParseSyntaxFormsThatContainNonterminals)
 {
-	Lexer lexer = SetupLexer("#syntax STMT: [magic [EXPR x]] => [x.* x]");
+	Lexer lexer = SetupLexer("#syntax STMT: [magic [EXPR x]] => [(x).* (x)]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
@@ -118,7 +118,7 @@ START_TEST(CanParseSyntaxFormsThatContainNonterminals)
 				NullObject
 			)
 		),
-		(SmileObject)SimpleParse("[(List.of) (x.*) x]"),
+		(SmileObject)SimpleParse("[(List.of) [(Pair.of) x [$quote *]] x]"),
 		NULL
 	);
 
@@ -143,7 +143,7 @@ START_TEST(TheContainingScopeShouldInfluenceTheReplacement)
 	// In this first test, we parse a syntax form that references a function outside its
 	// scope.  If the function 'f' is not visible while parsing the body of this syntax
 	// declaration, then we'll get [(x.f)] instead of [f x] as output.
-	Lexer lexer = SetupLexer("#syntax STMT: [magic [EXPR x]] => [f (x)]");
+	Lexer lexer = SetupLexer("#syntax STMT: [magic [EXPR x]] => `(f x)");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	ParseError parseDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "f"), PARSEDECL_VARIABLE, NULL, NULL);
