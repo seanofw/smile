@@ -1391,23 +1391,17 @@ static Int MapWithOneArgBody(ClosureStateMachine closure)
 	// Body: Append the user function's most recent result to the output array.
 	SmileArg fnResult = Closure_Pop(closure);
 	switch (SMILE_KIND(fnResult.obj)) {
-		case SMILE_KIND_UNBOXED_BYTE:
-			StringBuilder_AppendByte(loopInfo->result, fnResult.unboxed.i8);
+		case SMILE_KIND_UNBOXED_CHAR:
+			StringBuilder_AppendByte(loopInfo->result, fnResult.unboxed.ch);
 			break;
-		case SMILE_KIND_UNBOXED_INTEGER16:
-			StringBuilder_AppendUnicode(loopInfo->result, fnResult.unboxed.i16);
-			break;
-		case SMILE_KIND_UNBOXED_INTEGER32:
-			StringBuilder_AppendUnicode(loopInfo->result, fnResult.unboxed.i32);
-			break;
-		case SMILE_KIND_UNBOXED_INTEGER64:
-			StringBuilder_AppendUnicode(loopInfo->result, (UInt32)fnResult.unboxed.i64);
+		case SMILE_KIND_UNBOXED_UNI:
+			StringBuilder_AppendUnicode(loopInfo->result, fnResult.unboxed.uni);
 			break;
 		case SMILE_KIND_STRING:
 			StringBuilder_AppendString(loopInfo->result, (String)fnResult.obj);
 			break;
 		default:
-			Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FromC("'map' projection must return a String or Integer type."));
+			Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FromC("'map' projection must return a String, a Char, or a Uni."));
 			break;
 	}
 
@@ -1457,23 +1451,17 @@ static Int MapWithTwoArgsBody(ClosureStateMachine closure)
 	// Body: Append the user function's most recent result to the output list.
 	SmileArg fnResult = Closure_Pop(closure);
 	switch (SMILE_KIND(fnResult.obj)) {
-		case SMILE_KIND_UNBOXED_BYTE:
-			StringBuilder_AppendByte(loopInfo->result, fnResult.unboxed.i8);
+		case SMILE_KIND_UNBOXED_CHAR:
+			StringBuilder_AppendByte(loopInfo->result, fnResult.unboxed.ch);
 			break;
-		case SMILE_KIND_UNBOXED_INTEGER16:
-			StringBuilder_AppendUnicode(loopInfo->result, fnResult.unboxed.i16);
-			break;
-		case SMILE_KIND_UNBOXED_INTEGER32:
-			StringBuilder_AppendUnicode(loopInfo->result, fnResult.unboxed.i32);
-			break;
-		case SMILE_KIND_UNBOXED_INTEGER64:
-			StringBuilder_AppendUnicode(loopInfo->result, (UInt32)fnResult.unboxed.i64);
+		case SMILE_KIND_UNBOXED_UNI:
+			StringBuilder_AppendUnicode(loopInfo->result, fnResult.unboxed.uni);
 			break;
 		case SMILE_KIND_STRING:
 			StringBuilder_AppendString(loopInfo->result, (String)fnResult.obj);
 			break;
 		default:
-			Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FromC("'map' projection must return a String or Integer type."));
+			Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FromC("'map' projection must return a String, a Char, or a Uni."));
 			break;
 	}
 
@@ -1760,11 +1748,11 @@ SMILE_EXTERNAL_FUNCTION(Count)
 
 	if (SMILE_KIND(argv[1].obj) != SMILE_KIND_FUNCTION) {
 
-		if (SMILE_KIND(argv[1].obj) != SMILE_KIND_UNBOXED_BYTE)
+		if (SMILE_KIND(argv[1].obj) != SMILE_KIND_UNBOXED_CHAR)
 			return SmileUnboxedInteger64_From(0);
 
 		// Degenerate form:  Count up any bytes that are equal to the given byte.
-		value = argv[1].unboxed.i8;
+		value = argv[1].unboxed.ch;
 		end = ptr + length;
 		for (count = 0; ptr < end; ptr++) {
 			if (*ptr == value) count++;
