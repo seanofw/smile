@@ -43,9 +43,9 @@ typedef struct IntermediateInstructionStruct {
 
 	struct IntermediateInstructionStruct *prev, *next;	// Pointers to nearby instructions.
 
-	UInt32 opcode : 8;	// The opcode for this instruction.
+	UInt32 opcode : 8;				// The opcode for this instruction.
 	UInt32 instructionAddress : 24;	// The offset this instruction is at (after address resolution).
-	UInt32 sourceLocation;	// The index of the source location that generated this (for debugging).
+	UInt32 sourceLocation;			// The index of the source location that generated this (for debugging).
 
 	union {
 		Int64 int64;

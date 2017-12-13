@@ -39,12 +39,12 @@ struct CompilerFunctionStruct;
 /// </summary>
 struct ClosureInfoBaseStruct {
 
-	ClosureInfo parent;	// A pointer to the parent info struct, if any.
-	ClosureInfo global;	// A pointer to the closest global info struct, if any.
+	ClosureInfo parent;			// A pointer to the parent info struct, if any.
+	ClosureInfo global;			// A pointer to the closest global info struct, if any.
 		
-	Int16 kind;	// What kind of closure this is (see the CLOSURE_KIND enum).
-	Int16 reserved1;	// Reserved for use by other closure-info types.
-	Int32 reserved2;	// Reserved for use by other closure-info types.
+	Int16 kind;					// What kind of closure this is (see the CLOSURE_KIND enum).
+	Int16 reserved1;			// Reserved for use by other closure-info types.
+	Int32 reserved2;			// Reserved for use by other closure-info types.
 
 };
 
@@ -54,19 +54,19 @@ struct ClosureInfoBaseStruct {
 /// </summary>
 struct ClosureInfoStruct {
 
-	ClosureInfo parent;	// A pointer to the parent info struct, if any.
-	ClosureInfo global;	// A pointer to the closest global info struct, if any.
+	ClosureInfo parent;			// A pointer to the parent info struct, if any.
+	ClosureInfo global;			// A pointer to the closest global info struct, if any.
 		
-	Int16 kind;	// What kind of closure this is (see the CLOSURE_KIND enum).
-	Int16 numVariables;	// The total number of variables in this closure.
-	Int16 numArgs;	// How many of the variables in the numVariables array are arguments.
-	Int16 tempSize;	// The maximum amount of temporary variables required by this closure.
+	Int16 kind;					// What kind of closure this is (see the CLOSURE_KIND enum).
+	Int16 numVariables;			// The total number of variables in this closure.
+	Int16 numArgs;				// How many of the variables in the numVariables array are arguments.
+	Int16 tempSize;				// The maximum amount of temporary variables required by this closure.
 		
 	VarDict variableDictionary;	// A dictionary that maps Symbol IDs to VarInfo objects.
 		// For local closures, this is used only for debugging, and the values are always null;
 		// for global closures, this contains the actual variable values.
 		
-	Symbol *variableNames;	// If this is a local closure, this is an array of the names of the variables in
+	Symbol *variableNames;		// If this is a local closure, this is an array of the names of the variables in
 		// this closure, in stack order (used only for debugging).
 
 };
@@ -78,18 +78,18 @@ struct ClosureInfoStruct {
 /// </summary>
 struct ClosureStruct {
 
-	Closure parent;	// A pointer to the parent closure, if any.
-	Closure global;	// A pointer to the closest global closure, if any.
+	Closure parent;				// A pointer to the parent closure, if any.
+	Closure global;				// A pointer to the closest global closure, if any.
 		
 	ClosureInfo closureInfo;	// Shared metadata about this closure.
 		
-	Closure returnClosure;	// The continuation's closure.
+	Closure returnClosure;		// The continuation's closure.
 	ByteCodeSegment returnSegment;	// The segment that contains the continuation's code.
-	Int returnPc;	// The continuation's program counter.
+	Int returnPc;				// The continuation's program counter.
 	
-	SmileArg *locals;	// The base address of the start of the closure's local variables.
-	SmileArg *stackTop;	// The current address of the top of the temporary variables (NULL for global closures).
-	SmileArg variables[1];	// The array of variables (matches the ClosureInfo's numVariables + tempSize; size 0 for global closures).
+	SmileArg *locals;			// The base address of the start of the closure's local variables.
+	SmileArg *stackTop;			// The current address of the top of the temporary variables (NULL for global closures).
+	SmileArg variables[1];		// The array of variables (matches the ClosureInfo's numVariables + tempSize; size 0 for global closures).
 
 };
 
@@ -102,15 +102,15 @@ typedef struct ClosureStateMachineStruct {
 	struct ClosureStruct *parent;	// A pointer to the parent closure, if any.
 	struct ClosureStruct *global;	// A pointer to the closest global closure, if any.
 		
-	ClosureInfo closureInfo;	// Shared metadata about this closure.
+	ClosureInfo closureInfo;		// Shared metadata about this closure.
 		
-	Closure returnClosure;	// The continuation's closure.
+	Closure returnClosure;			// The continuation's closure.
 	ByteCodeSegment returnSegment;	// The segment that contains the continuation's code.
-	Int returnPc;	// The continuation's program counter.
+	Int returnPc;					// The continuation's program counter.
 		
-	SmileArg *locals;	// The base address of the start of the closure's local variables.
-	SmileArg *stackTop;	// The current address of the top of the temporary variables.
-	SmileArg variables[16];	// Always a max of 16 variables for a C state machine.
+	SmileArg *locals;				// The base address of the start of the closure's local variables.
+	SmileArg *stackTop;				// The current address of the top of the temporary variables.
+	SmileArg variables[16];			// Always a max of 16 variables for a C state machine.
 		
 	StateMachine stateMachineStart;	// The startup function for the state machine.
 	StateMachine stateMachineBody;	// The body function to repeatedly invoke for the state machine.
