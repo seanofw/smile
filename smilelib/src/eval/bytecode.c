@@ -339,6 +339,7 @@ static String ByteCode_OperandsToString(ByteCodeSegment segment, ByteCode byteCo
 		case Op_LdX:
 		case Op_StX:
 		case Op_StpX:
+		case Op_NullX:
 			return String_Format("%d\t; %S", byteCode->u.symbol, SymbolTable_GetName(Smile_SymbolTable, byteCode->u.symbol));
 
 		// 40-6F (args)
@@ -348,9 +349,12 @@ static String ByteCode_OperandsToString(ByteCodeSegment segment, ByteCode byteCo
 		case Op_StArg4: case Op_StArg5: case Op_StArg6: case Op_StArg7:
 		case Op_StpArg0: case Op_StpArg1: case Op_StpArg2: case Op_StpArg3:
 		case Op_StpArg4: case Op_StpArg5: case Op_StpArg6: case Op_StpArg7:
-			symbol = GetSymbolForArgument(userFunctionInfo, (Int32)byteCode->opcode & 7, (Int32)byteCode->u.int32);
-			return String_Format("%d\t; %S", (Int32)byteCode->u.int32, SymbolTable_GetName(Smile_SymbolTable, symbol));
-		
+			symbol = GetSymbolForArgument(userFunctionInfo, (Int32)byteCode->opcode & 7, (Int32)byteCode->u.index);
+			return String_Format("%d\t; %S", (Int32)byteCode->u.index, SymbolTable_GetName(Smile_SymbolTable, symbol));
+		case Op_NullArg0:
+			symbol = GetSymbolForArgument(userFunctionInfo, 0, (Int32)byteCode->u.index);
+			return String_Format("%d\t; %S", (Int32)byteCode->u.index, SymbolTable_GetName(Smile_SymbolTable, symbol));
+
 		// 40-6F (Locals)
 		case Op_LdLoc0: case Op_LdLoc1: case Op_LdLoc2: case Op_LdLoc3:
 		case Op_LdLoc4: case Op_LdLoc5: case Op_LdLoc6: case Op_LdLoc7:
@@ -358,8 +362,11 @@ static String ByteCode_OperandsToString(ByteCodeSegment segment, ByteCode byteCo
 		case Op_StLoc4: case Op_StLoc5: case Op_StLoc6: case Op_StLoc7:
 		case Op_StpLoc0: case Op_StpLoc1: case Op_StpLoc2: case Op_StpLoc3:
 		case Op_StpLoc4: case Op_StpLoc5: case Op_StpLoc6: case Op_StpLoc7:
-			symbol = GetSymbolForLocalVariable(userFunctionInfo, (Int32)byteCode->opcode & 7, (Int32)byteCode->u.int32);
-			return String_Format("%d\t; %S", (Int32)byteCode->u.int32, SymbolTable_GetName(Smile_SymbolTable, symbol));
+			symbol = GetSymbolForLocalVariable(userFunctionInfo, (Int32)byteCode->opcode & 7, (Int32)byteCode->u.index);
+			return String_Format("%d\t; %S", (Int32)byteCode->u.index, SymbolTable_GetName(Smile_SymbolTable, symbol));
+		case Op_NullLoc0:
+			symbol = GetSymbolForLocalVariable(userFunctionInfo, 0, (Int32)byteCode->u.index);
+			return String_Format("%d\t; %S", (Int32)byteCode->u.index, SymbolTable_GetName(Smile_SymbolTable, symbol));
 
 		// 70-7F
 		case Op_LdProp:

@@ -330,9 +330,10 @@ START_TEST(CanCompileScopeVariableReads)
 	String result;
 
 	String expectedResult = String_Format(
-		"0: \tLdX %d\t; gb\t; test.sm:1\n"
-		"1: \tStLoc0 0\t; a\t; test.sm:1\n"
-		"2: \tRet\n",
+		"0: \tNullLoc0 0\t; a\t; test.sm:1\n"
+		"1: \tLdX %d\t; gb\t; test.sm:1\n"
+		"2: \tStLoc0 0\t; a\t; test.sm:1\n"
+		"3: \tRet\n",
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "gb"),
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "a")
 	);
@@ -354,15 +355,18 @@ START_TEST(CanCompileNestedScopeVariableReads)
 	String result;
 
 	String expectedResult = String_Format(
-		"0: \tLd64 10\t; test.sm:1\n"
-		"1: \tStpLoc0 0\t; b\t; test.sm:1\n"
-		"2: \tLdLoc0 0\t; b\t; test.sm:1\n"
-		"3: \tStpLoc0 1\t; a\t; test.sm:1\n"
-		"4: \tLdLoc0 1\t; a\t; test.sm:1\n"
+		"0: \tNullLoc0 0\t; b\t; test.sm:1\n"
+		"1: \tLd64 10\t; test.sm:1\n"
+		"2: \tStpLoc0 0\t; b\t; test.sm:1\n"
+		"3: \tNullLoc0 1\t; a\t; test.sm:1\n"
+		"4: \tNullLoc0 2\t; c\t; test.sm:1\n"
 		"5: \tLdLoc0 0\t; b\t; test.sm:1\n"
-		"6: \tBinary %d\t; +\t; test.sm:1\n"
-		"7: \tStLoc0 2\t; c\t; test.sm:1\n"
-		"8: \tRet\n",
+		"6: \tStpLoc0 1\t; a\t; test.sm:1\n"
+		"7: \tLdLoc0 1\t; a\t; test.sm:1\n"
+		"8: \tLdLoc0 0\t; b\t; test.sm:1\n"
+		"9: \tBinary %d\t; +\t; test.sm:1\n"
+		"10: \tStLoc0 2\t; c\t; test.sm:1\n"
+		"11: \tRet\n",
 		Smile_KnownSymbols.plus
 	);
 
@@ -383,19 +387,23 @@ START_TEST(NestedScopesVariablesDontOverlap)
 	String result;
 
 	String expectedResult = String_Format(
-		"0: \tLd64 10\t; test.sm:1\n"
-		"1: \tStpLoc0 0\t; b\t; test.sm:1\n"
-		"2: \tLdLoc0 0\t; b\t; test.sm:1\n"
-		"3: \tStpLoc0 1\t; a\t; test.sm:1\n"
-		"4: \tLdLoc0 1\t; a\t; test.sm:1\n"
+		"0: \tNullLoc0 0\t; b\t; test.sm:1\n"
+		"1: \tLd64 10\t; test.sm:1\n"
+		"2: \tStpLoc0 0\t; b\t; test.sm:1\n"
+		"3: \tNullLoc0 1\t; a\t; test.sm:1\n"
+		"4: \tNullLoc0 2\t; c\t; test.sm:1\n"
 		"5: \tLdLoc0 0\t; b\t; test.sm:1\n"
-		"6: \tBinary %d\t; +\t; test.sm:1\n"
-		"7: \tStpLoc0 2\t; c\t; test.sm:1\n"
+		"6: \tStpLoc0 1\t; a\t; test.sm:1\n"
+		"7: \tLdLoc0 1\t; a\t; test.sm:1\n"
 		"8: \tLdLoc0 0\t; b\t; test.sm:1\n"
-		"9: \tLd64 20\t; test.sm:1\n"
-		"10: \tBinary %d\t; *\t; test.sm:1\n"
-		"11: \tStLoc0 3\t; d\t; test.sm:1\n"
-		"12: \tRet\n",
+		"9: \tBinary %d\t; +\t; test.sm:1\n"
+		"10: \tStpLoc0 2\t; c\t; test.sm:1\n"
+		"11: \tNullLoc0 3\t; d\t; test.sm:1\n"
+		"12: \tLdLoc0 0\t; b\t; test.sm:1\n"
+		"13: \tLd64 20\t; test.sm:1\n"
+		"14: \tBinary %d\t; *\t; test.sm:1\n"
+		"15: \tStLoc0 3\t; d\t; test.sm:1\n"
+		"16: \tRet\n",
 		Smile_KnownSymbols.plus,
 		Smile_KnownSymbols.star
 	);
@@ -448,14 +456,16 @@ START_TEST(CanCompileConditionalsWithNullThenSide)
 	String result;
 
 	String expectedResult = String_Format(
-		"0: \tLd64 10\t; test.sm:1\n"
-		"1: \tLd64 1\t; test.sm:1\n"
-		"2: \tBinary %d\t; <\t; test.sm:1\n"
-		"3: \tBt >L6\t; test.sm:1\n"
-		"4: \tLd64 20\t; test.sm:1\n"
-		"5: \tStpLoc0 0\t; a\t; test.sm:1\n"
-		"6: \tLdSym %d\t; done\t; test.sm:1\n"
-		"7: \tRet\n",
+		"0: \tNullLoc0 0\t; a\t; test.sm:1\n"
+		"1: \tNullLoc0 1\t; b\t; test.sm:1\n"
+		"2: \tLd64 10\t; test.sm:1\n"
+		"3: \tLd64 1\t; test.sm:1\n"
+		"4: \tBinary %d\t; <\t; test.sm:1\n"
+		"5: \tBt >L8\t; test.sm:1\n"
+		"6: \tLd64 20\t; test.sm:1\n"
+		"7: \tStpLoc0 0\t; a\t; test.sm:1\n"
+		"8: \tLdSym %d\t; done\t; test.sm:1\n"
+		"9: \tRet\n",
 		Smile_KnownSymbols.lt,
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "done")
 	);
@@ -477,14 +487,16 @@ START_TEST(CanCompileConditionalsWithNullElseSide)
 	String result;
 
 	String expectedResult = String_Format(
-		"0: \tLd64 1\t; test.sm:1\n"
-		"1: \tLd64 10\t; test.sm:1\n"
-		"2: \tBinary %d\t; <\t; test.sm:1\n"
-		"3: \tBf >L6\t; test.sm:1\n"
-		"4: \tLd64 20\t; test.sm:1\n"
-		"5: \tStpLoc0 0\t; a\t; test.sm:1\n"
-		"6: \tLdSym %d\t; done\t; test.sm:1\n"
-		"7: \tRet\n",
+		"0: \tNullLoc0 0\t; a\t; test.sm:1\n"
+		"1: \tNullLoc0 1\t; b\t; test.sm:1\n"
+		"2: \tLd64 1\t; test.sm:1\n"
+		"3: \tLd64 10\t; test.sm:1\n"
+		"4: \tBinary %d\t; <\t; test.sm:1\n"
+		"5: \tBf >L8\t; test.sm:1\n"
+		"6: \tLd64 20\t; test.sm:1\n"
+		"7: \tStpLoc0 0\t; a\t; test.sm:1\n"
+		"8: \tLdSym %d\t; done\t; test.sm:1\n"
+		"9: \tRet\n",
 		Smile_KnownSymbols.lt,
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "done")
 	);
@@ -506,14 +518,16 @@ START_TEST(CanCompileConditionalsWithAMeaninglessThenSide)
 	String result;
 
 	String expectedResult = String_Format(
-		"0: \tLd64 10\t; test.sm:1\n"
-		"1: \tLd64 1\t; test.sm:1\n"
-		"2: \tBinary %d\t; <\t; test.sm:1\n"
-		"3: \tBt >L6\t; test.sm:1\n"
-		"4: \tLd64 20\t; test.sm:1\n"
-		"5: \tStpLoc0 0\t; a\t; test.sm:1\n"
-		"6: \tLdSym %d\t; done\t; test.sm:1\n"
-		"7: \tRet\n",
+		"0: \tNullLoc0 0\t; a\t; test.sm:1\n"
+		"1: \tNullLoc0 1\t; b\t; test.sm:1\n"
+		"2: \tLd64 10\t; test.sm:1\n"
+		"3: \tLd64 1\t; test.sm:1\n"
+		"4: \tBinary %d\t; <\t; test.sm:1\n"
+		"5: \tBt >L8\t; test.sm:1\n"
+		"6: \tLd64 20\t; test.sm:1\n"
+		"7: \tStpLoc0 0\t; a\t; test.sm:1\n"
+		"8: \tLdSym %d\t; done\t; test.sm:1\n"
+		"9: \tRet\n",
 		Smile_KnownSymbols.lt,
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "done")
 	);
@@ -535,14 +549,16 @@ START_TEST(CanCompileConditionalsWithMeaninglessElseSide)
 	String result;
 
 	String expectedResult = String_Format(
-		"0: \tLd64 1\t; test.sm:1\n"
-		"1: \tLd64 10\t; test.sm:1\n"
-		"2: \tBinary %d\t; <\t; test.sm:1\n"
-		"3: \tBf >L6\t; test.sm:1\n"
-		"4: \tLd64 20\t; test.sm:1\n"
-		"5: \tStpLoc0 0\t; a\t; test.sm:1\n"
-		"6: \tLdSym %d\t; done\t; test.sm:1\n"
-		"7: \tRet\n",
+		"0: \tNullLoc0 0\t; a\t; test.sm:1\n"
+		"1: \tNullLoc0 1\t; b\t; test.sm:1\n"
+		"2: \tLd64 1\t; test.sm:1\n"
+		"3: \tLd64 10\t; test.sm:1\n"
+		"4: \tBinary %d\t; <\t; test.sm:1\n"
+		"5: \tBf >L8\t; test.sm:1\n"
+		"6: \tLd64 20\t; test.sm:1\n"
+		"7: \tStpLoc0 0\t; a\t; test.sm:1\n"
+		"8: \tLdSym %d\t; done\t; test.sm:1\n"
+		"9: \tRet\n",
 		Smile_KnownSymbols.lt,
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "done")
 	);
@@ -605,31 +621,34 @@ START_TEST(CanCompileAPreCondPostWhileLoop)
 	String result;
 
 	String expectedResult = String_Format(
-		"0: \tLd64 0\t; test.sm:1\n"
-		"1: \tStpLoc0 0\t; x\t; test.sm:1\n"
+		"0: \tNullLoc0 0\t; x\t; test.sm:1\n"
+		"1: \tNullLoc0 1\t; y\t; test.sm:1\n"
+
 		"2: \tLd64 0\t; test.sm:1\n"
-		"3: \tStpLoc0 1\t; y\t; test.sm:1\n"
+		"3: \tStpLoc0 0\t; x\t; test.sm:1\n"
+		"4: \tLd64 0\t; test.sm:1\n"
+		"5: \tStpLoc0 1\t; y\t; test.sm:1\n"
 
-		"4: \tLdLoc0 0\t; x\t; test.sm:2\n"
-		"5: \tLd64 1\t; test.sm:2\n"
-		"6: \tBinary %d\t; +\t; test.sm:2\n"
-		"7: \tStLoc0 0\t; x\t; test.sm:2\n"
+		"6: \tLdLoc0 0\t; x\t; test.sm:2\n"
+		"7: \tLd64 1\t; test.sm:2\n"
+		"8: \tBinary %d\t; +\t; test.sm:2\n"
+		"9: \tStLoc0 0\t; x\t; test.sm:2\n"
 
-		"8: \tLdLoc0 0\t; x\t; test.sm:2\n"
-		"9: \tLd64 10\t; test.sm:2\n"
-		"10: \tBinary %d\t; <\t; test.sm:2\n"
-		"11: \tBt >L18\t; test.sm:2\n"
+		"10: \tLdLoc0 0\t; x\t; test.sm:2\n"
+		"11: \tLd64 10\t; test.sm:2\n"
+		"12: \tBinary %d\t; <\t; test.sm:2\n"
+		"13: \tBt >L20\t; test.sm:2\n"
 
-		"12: \tPop1\t; test.sm:2\n"
+		"14: \tPop1\t; test.sm:2\n"
 
-		"13: \tLdLoc0 1\t; y\t; test.sm:2\n"
-		"14: \tLd64 1\t; test.sm:2\n"
-		"15: \tBinary %d\t; -\t; test.sm:2\n"
-		"16: \tStpLoc0 1\t; y\t; test.sm:2\n"
+		"15: \tLdLoc0 1\t; y\t; test.sm:2\n"
+		"16: \tLd64 1\t; test.sm:2\n"
+		"17: \tBinary %d\t; -\t; test.sm:2\n"
+		"18: \tStpLoc0 1\t; y\t; test.sm:2\n"
 
-		"17: \tJmp L4\t; test.sm:2\n"
+		"19: \tJmp L6\t; test.sm:2\n"
 
-		"18: \tRet\n",
+		"20: \tRet\n",
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "+"),
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "<"),
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "-")
@@ -653,24 +672,26 @@ START_TEST(CanCompileAPreCondWhileLoop)
 	String result;
 
 	String expectedResult = String_Format(
-		"0: \tLd64 0\t; test.sm:1\n"
-		"1: \tStpLoc0 0\t; x\t; test.sm:1\n"
+		"0: \tNullLoc0 0\t; x\t; test.sm:1\n"
 
-		"2: \tJmp >L4\t; test.sm:2\n"
+		"1: \tLd64 0\t; test.sm:1\n"
+		"2: \tStpLoc0 0\t; x\t; test.sm:1\n"
 
-		"3: \tPop1\n"
+		"3: \tJmp >L5\t; test.sm:2\n"
 
-		"4: \tLdLoc0 0\t; x\t; test.sm:2\n"
-		"5: \tLd64 1\t; test.sm:2\n"
-		"6: \tBinary %d\t; +\t; test.sm:2\n"
-		"7: \tStLoc0 0\t; x\t; test.sm:2\n"
+		"4: \tPop1\n"
 
-		"8: \tLdLoc0 0\t; x\t; test.sm:2\n"
-		"9: \tLd64 10\t; test.sm:2\n"
-		"10: \tBinary %d\t; <\t; test.sm:2\n"
-		"11: \tBt L3\t; test.sm:2\n"
+		"5: \tLdLoc0 0\t; x\t; test.sm:2\n"
+		"6: \tLd64 1\t; test.sm:2\n"
+		"7: \tBinary %d\t; +\t; test.sm:2\n"
+		"8: \tStLoc0 0\t; x\t; test.sm:2\n"
 
-		"12: \tRet\n",
+		"9: \tLdLoc0 0\t; x\t; test.sm:2\n"
+		"10: \tLd64 10\t; test.sm:2\n"
+		"11: \tBinary %d\t; <\t; test.sm:2\n"
+		"12: \tBt L4\t; test.sm:2\n"
+
+		"13: \tRet\n",
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "+"),
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "<")
 	);
@@ -693,25 +714,27 @@ START_TEST(CanCompileANullCondPostWhileLoop)
 	String result;
 
 	String expectedResult = String_Format(
-		"0: \tLd64 0\t; test.sm:1\n"
-		"1: \tStpLoc0 0\t; x\t; test.sm:1\n"
+		"0: \tNullLoc0 0\t; x\t; test.sm:1\n"
 
-		"2: \tLdNull\t; test.sm:2\n"
-		"3: \tJmp >L9\t; test.sm:2\n"
+		"1: \tLd64 0\t; test.sm:1\n"
+		"2: \tStpLoc0 0\t; x\t; test.sm:1\n"
 
-		"4: \tPop1\n"
+		"3: \tLdNull\t; test.sm:2\n"
+		"4: \tJmp >L10\t; test.sm:2\n"
 
-		"5: \tLdLoc0 0\t; x\t; test.sm:2\n"
-		"6: \tLd64 1\t; test.sm:2\n"
-		"7: \tBinary %d\t; +\t; test.sm:2\n"
-		"8: \tStLoc0 0\t; x\t; test.sm:2\n"
+		"5: \tPop1\n"
 
-		"9: \tLdLoc0 0\t; x\t; test.sm:2\n"
-		"10: \tLd64 10\t; test.sm:2\n"
-		"11: \tBinary %d\t; <\t; test.sm:2\n"
-		"12: \tBt L4\t; test.sm:2\n"
+		"6: \tLdLoc0 0\t; x\t; test.sm:2\n"
+		"7: \tLd64 1\t; test.sm:2\n"
+		"8: \tBinary %d\t; +\t; test.sm:2\n"
+		"9: \tStLoc0 0\t; x\t; test.sm:2\n"
 
-		"13: \tRet\n",
+		"10: \tLdLoc0 0\t; x\t; test.sm:2\n"
+		"11: \tLd64 10\t; test.sm:2\n"
+		"12: \tBinary %d\t; <\t; test.sm:2\n"
+		"13: \tBt L5\t; test.sm:2\n"
+
+		"14: \tRet\n",
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "+"),
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "<")
 	);
@@ -734,25 +757,27 @@ START_TEST(CanCompileACondPostWhileLoop)
 	String result;
 
 	String expectedResult = String_Format(
-		"0: \tLd64 0\t; test.sm:1\n"
-		"1: \tStpLoc0 0\t; x\t; test.sm:1\n"
+		"0: \tNullLoc0 0\t; x\t; test.sm:1\n"
 
-		"2: \tLdNull\t; test.sm:2\n"
-		"3: \tJmp >L9\t; test.sm:2\n"
+		"1: \tLd64 0\t; test.sm:1\n"
+		"2: \tStpLoc0 0\t; x\t; test.sm:1\n"
 
-		"4: \tPop1\n"
+		"3: \tLdNull\t; test.sm:2\n"
+		"4: \tJmp >L10\t; test.sm:2\n"
 
-		"5: \tLdLoc0 0\t; x\t; test.sm:2\n"
-		"6: \tLd64 1\t; test.sm:2\n"
-		"7: \tBinary %d\t; +\t; test.sm:2\n"
-		"8: \tStLoc0 0\t; x\t; test.sm:2\n"
+		"5: \tPop1\n"
 
-		"9: \tLdLoc0 0\t; x\t; test.sm:2\n"
-		"10: \tLd64 10\t; test.sm:2\n"
-		"11: \tBinary %d\t; <\t; test.sm:2\n"
-		"12: \tBt L4\t; test.sm:2\n"
+		"6: \tLdLoc0 0\t; x\t; test.sm:2\n"
+		"7: \tLd64 1\t; test.sm:2\n"
+		"8: \tBinary %d\t; +\t; test.sm:2\n"
+		"9: \tStLoc0 0\t; x\t; test.sm:2\n"
 
-		"13: \tRet\n",
+		"10: \tLdLoc0 0\t; x\t; test.sm:2\n"
+		"11: \tLd64 10\t; test.sm:2\n"
+		"12: \tBinary %d\t; <\t; test.sm:2\n"
+		"13: \tBt L5\t; test.sm:2\n"
+
+		"14: \tRet\n",
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "+"),
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "<")
 	);
@@ -775,20 +800,22 @@ START_TEST(CanCompileACondOnlyWhileLoop)
 	String result;
 
 	String expectedResult = String_Format(
-		"0: \tLd64 0\t; test.sm:1\n"
-		"1: \tStpLoc0 0\t; x\t; test.sm:1\n"
+		"0: \tNullLoc0 0\t; x\t; test.sm:1\n"
 
-		"2: \tLdLoc0 0\t; x\t; test.sm:2\n"
-		"3: \tLd64 1\t; test.sm:2\n"
-		"4: \tBinary %d\t; +\t; test.sm:2\n"
-		"5: \tStLoc0 0\t; x\t; test.sm:2\n"
-		"6: \tLd64 10\t; test.sm:2\n"
-		"7: \tBinary %d\t; <\t; test.sm:2\n"
-		"8: \tBt L2\t; test.sm:2\n"
+		"1: \tLd64 0\t; test.sm:1\n"
+		"2: \tStpLoc0 0\t; x\t; test.sm:1\n"
 
-		"9: \tLdNull\t; test.sm:2\n"
+		"3: \tLdLoc0 0\t; x\t; test.sm:2\n"
+		"4: \tLd64 1\t; test.sm:2\n"
+		"5: \tBinary %d\t; +\t; test.sm:2\n"
+		"6: \tStLoc0 0\t; x\t; test.sm:2\n"
+		"7: \tLd64 10\t; test.sm:2\n"
+		"8: \tBinary %d\t; <\t; test.sm:2\n"
+		"9: \tBt L3\t; test.sm:2\n"
 
-		"10: \tRet\n",
+		"10: \tLdNull\t; test.sm:2\n"
+
+		"11: \tRet\n",
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "+"),
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "<")
 	);
@@ -817,24 +844,29 @@ START_TEST(CanCompileAWhileLoopThatComputesLogarithms)
 	String result;
 
 	String expectedResult = String_Format(
-		"0: \tLd64 12345678\t; test.sm:3\n"
-		"1: \tStpLoc0 0\t; n\t; test.sm:3\n"
-		"2: \tLd64 0\t; test.sm:4\n"
-		"3: \tStpLoc0 1\t; log\t; test.sm:4\n"
-		"4: \tLdNull\t; test.sm:1\n"
-		"5: \tJmp >L15\t; test.sm:1\n"
-		"6: \tPop1\n"
-		"7: \tLdLoc0 0\t; n\t; test.sm:6\n"
-		"8: \tLd64 1\t; test.sm:6\n"
-		"9: \tBinary %d\t; >>>\t; test.sm:6\n"
-		"10: \tStpLoc0 0\t; n\t; test.sm:6\n"
-		"11: \tLdLoc0 1\t; log\t; test.sm:7\n"
-		"12: \tLd64 1\t; test.sm:7\n"
-		"13: \tBinary %d\t; +\t; test.sm:7\n"
-		"14: \tStLoc0 1\t; log\t; test.sm:7\n"
-		"15: \tLdLoc0 0\t; n\t; test.sm:1\n"
-		"16: \tBt L6\t; test.sm:1\n"
-		"17: \tRet\n",
+		"0: \tNullLoc0 0\t; n\t; test.sm:1\n"
+		"1: \tNullLoc0 1\t; log\t; test.sm:1\n"
+
+		"2: \tLd64 12345678\t; test.sm:3\n"
+		"3: \tStpLoc0 0\t; n\t; test.sm:3\n"
+		"4: \tLd64 0\t; test.sm:4\n"
+		"5: \tStpLoc0 1\t; log\t; test.sm:4\n"
+
+		"6: \tLdNull\t; test.sm:1\n"
+		"7: \tJmp >L17\t; test.sm:1\n"
+		"8: \tPop1\n"
+		"9: \tLdLoc0 0\t; n\t; test.sm:6\n"
+		"10: \tLd64 1\t; test.sm:6\n"
+		"11: \tBinary %d\t; >>>\t; test.sm:6\n"
+		"12: \tStpLoc0 0\t; n\t; test.sm:6\n"
+		"13: \tLdLoc0 1\t; log\t; test.sm:7\n"
+		"14: \tLd64 1\t; test.sm:7\n"
+		"15: \tBinary %d\t; +\t; test.sm:7\n"
+		"16: \tStLoc0 1\t; log\t; test.sm:7\n"
+		"17: \tLdLoc0 0\t; n\t; test.sm:1\n"
+		"18: \tBt L8\t; test.sm:1\n"
+
+		"19: \tRet\n",
 		SymbolTable_GetSymbolC(Smile_SymbolTable, ">>>"),
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "+")
 	);
@@ -897,20 +929,21 @@ START_TEST(CanCompileATillLoopThatActuallyDoesSomething)
 	String result;
 
 	String expectedResult = String_Format(
-		"0: \tLd64 1\t; test.sm:3\n"
-		"1: \tStpLoc0 0\t; x\t; test.sm:3\n"
-		"2: \tLdLoc0 0\t; x\t; test.sm:5\n"
-		"3: \tLd64 255\t; test.sm:5\n"
-		"4: \tBinary %d\t; >\t; test.sm:5\n"
-		"5: \tBf >L7\t; test.sm:1\n"
-		"6: \tJmp >L12\t; test.sm:1\n"
-		"7: \tLdLoc0 0\t; x\t; test.sm:6\n"
-		"8: \tLd64 1\t; test.sm:6\n"
-		"9: \tBinary %d\t; <<\t; test.sm:6\n"
-		"10: \tStpLoc0 0\t; x\t; test.sm:6\n"
-		"11: \tJmp L2\t; test.sm:4\n"
-		"12: \tLdNull\t; test.sm:4\n"
-		"13: \tRet\n",
+		"0: \tNullLoc0 0\t; x\t; test.sm:1\n"
+		"1: \tLd64 1\t; test.sm:3\n"
+		"2: \tStpLoc0 0\t; x\t; test.sm:3\n"
+		"3: \tLdLoc0 0\t; x\t; test.sm:5\n"
+		"4: \tLd64 255\t; test.sm:5\n"
+		"5: \tBinary %d\t; >\t; test.sm:5\n"
+		"6: \tBf >L8\t; test.sm:1\n"
+		"7: \tJmp >L13\t; test.sm:1\n"
+		"8: \tLdLoc0 0\t; x\t; test.sm:6\n"
+		"9: \tLd64 1\t; test.sm:6\n"
+		"10: \tBinary %d\t; <<\t; test.sm:6\n"
+		"11: \tStpLoc0 0\t; x\t; test.sm:6\n"
+		"12: \tJmp L3\t; test.sm:4\n"
+		"13: \tLdNull\t; test.sm:4\n"
+		"14: \tRet\n",
 		SymbolTable_GetSymbolC(Smile_SymbolTable, ">"),
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "<<")
 	);

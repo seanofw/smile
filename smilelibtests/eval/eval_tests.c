@@ -106,8 +106,8 @@ END_TEST
 START_TEST(CanEvalIfThenElse)
 {
 	UserFunctionInfo globalFunctionInfo = Compile(
-		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if x y]\n"
-		"#syntax STMT: [my-if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if (x) (y)]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y] else [STMT z]] => [$if (x) (y) (z)]\n"
 		"x = 1\n"
 		"my-if x then y = 123\n"
 		"else y = 456\n"
@@ -153,7 +153,7 @@ END_TEST
 START_TEST(CanEvalSmileCodeThatComputesALogarithm)
 {
 	UserFunctionInfo globalFunctionInfo = Compile(
-		"#syntax STMT: [my-while [EXPR x] do [STMT y]] => [$while [] x y]\n"
+		"#syntax STMT: [my-while [EXPR x] do [STMT y]] => [$while [] (x) (y)]\n"
 		"\n"
 		"n = 12345678\n"
 		"log = 0\n"
@@ -175,7 +175,7 @@ END_TEST
 START_TEST(CanEvalATillLoopThatComputesAnExponent)
 {
 	UserFunctionInfo globalFunctionInfo = Compile(
-		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if x y]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if (x) (y)]\n"
 		"\n"
 		"var x = 1\n"
 		"[$till [reached-eight-bits] {\n"
@@ -251,8 +251,8 @@ END_TEST
 START_TEST(CanEvalRecursiveCallsToUserFunctions)
 {
 	UserFunctionInfo globalFunctionInfo = Compile(
-		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if x y]\n"
-		"#syntax STMT: [my-if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if (x) (y)]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y] else [STMT z]] => [$if (x) (y) (z)]\n"
 		"\n"
 		"factorial = |x|\n"
 		"\tmy-if x <= 1 then x\n"

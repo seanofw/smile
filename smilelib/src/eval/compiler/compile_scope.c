@@ -30,7 +30,7 @@ CompiledBlock Compiler_CompileScope(Compiler compiler, SmileList args, CompileFl
 	CompileScope scope;
 	SmileList scopeVars, temp;
 	Int numScopeVars, localIndex;
-	CompiledBlock compiledBlock;
+	CompiledBlock compiledBlock, initBlock;
 
 	// The [$scope] expression must be of the form:  [$scope [locals...] ...].
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->a) != SMILE_KIND_LIST
@@ -42,9 +42,12 @@ CompiledBlock Compiler_CompileScope(Compiler compiler, SmileList args, CompileFl
 
 	scope = Compiler_BeginScope(compiler, PARSESCOPE_SCOPEDECL);
 
-	// Declare the [locals...] list, which must be well-formed, and must consist only of symbols.
+	// Declare the [locals...] list, which must be well-formed, and must consist only of symbols,
+	// and emit NullLoc0 instructions for each local to ensure consistent execution behavior.
+	// TODO: Optimize this by tracking assignments and NOT emitting NullLoc0 for locals that are always assigned before reading.
 	scopeVars = (SmileList)args->a;
 	numScopeVars = 0;
+	initBlock = CompiledBlock_Create();
 	for (temp = scopeVars; SMILE_KIND(temp) == SMILE_KIND_LIST; temp = (SmileList)temp->d) {
 		if (SMILE_KIND(temp->a) != SMILE_KIND_SYMBOL) {
 			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(temp, getSourceLocation),
@@ -54,6 +57,8 @@ CompiledBlock Compiler_CompileScope(Compiler compiler, SmileList args, CompileFl
 		Symbol symbol = ((SmileSymbol)temp->a)->symbol;
 		localIndex = CompilerFunction_AddLocal(compiler->currentFunction, symbol);
 		CompileScope_DefineSymbol(scope, symbol, PARSEDECL_VARIABLE, localIndex);
+		Compiler_SetSourceLocationFromList(compiler, temp);
+		CompiledBlock_Emit(initBlock, Op_NullLoc0, 0, compiler->currentFunction->currentSourceLocation)->u.index = localIndex;
 	}
 	if (SMILE_KIND(temp) != SMILE_KIND_NULL) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
@@ -62,9 +67,13 @@ CompiledBlock Compiler_CompileScope(Compiler compiler, SmileList args, CompileFl
 	}
 
 	// Compile the rest of the [scope] as though it was just a [progn].
+	Compiler_SetSourceLocationFromList(compiler, args);
 	compiledBlock = Compiler_CompileProgN(compiler, (SmileList)args->d, compileFlags);
 
 	Compiler_EndScope(compiler);
+
+	// Combine the initializations with the actual work, and return it.
+	compiledBlock = CompiledBlock_Combine(initBlock, compiledBlock);
 
 	return compiledBlock;
 }
