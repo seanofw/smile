@@ -41,7 +41,13 @@ START_TEST(CanParseSimpleSyntaxForms)
 	SmileSyntax expectedResult = SmileSyntax_Create(
 		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
 		(SmileList)SimpleParse("[a b c]"),
-		(SmileObject)SmileInteger64_Create(123),
+		(SmileObject)SmileList_Cons(
+			(SmileObject)SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__QUOTE),
+			(SmileObject)SmileList_Cons(
+				(SmileObject)SmileInteger64_Create(123),
+				NullObject
+			)
+		),
 		NULL
 	);
 
@@ -61,7 +67,7 @@ START_TEST(CanParseSyntaxFormsThatUseSyntaxForms)
 	SmileSyntax expectedResult = SmileSyntax_Create(
 		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
 		(SmileList)SimpleParse("[do magic]"),
-		(SmileObject)SimpleParse("[ (Stdout.print) \"Hello, World.\" ]"),
+		(SmileObject)SimpleParse("[(List.of) (Stdout.print) \"Hello, World.\" ]"),
 		NULL
 	);
 
@@ -81,7 +87,7 @@ START_TEST(CanParseSyntaxFormsThatUseListForms)
 	SmileSyntax expectedResult = SmileSyntax_Create(
 		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
 		(SmileList)SimpleParse("[do magic]"),
-		(SmileObject)SimpleParse("[ (Stdout.print) \"Hello, World.\" ]"),
+		(SmileObject)SimpleParse("[(List.of) (Stdout.print) \"Hello, World.\" ]"),
 		NULL
 	);
 
@@ -112,7 +118,7 @@ START_TEST(CanParseSyntaxFormsThatContainNonterminals)
 				NullObject
 			)
 		),
-		(SmileObject)SimpleParse("[(x.*) x]"),
+		(SmileObject)SimpleParse("[(List.of) (x.*) x]"),
 		NULL
 	);
 
@@ -137,7 +143,7 @@ START_TEST(TheContainingScopeShouldInfluenceTheReplacement)
 	// In this first test, we parse a syntax form that references a function outside its
 	// scope.  If the function 'f' is not visible while parsing the body of this syntax
 	// declaration, then we'll get [(x.f)] instead of [f x] as output.
-	Lexer lexer = SetupLexer("#syntax STMT: [magic [EXPR x]] => [f x]");
+	Lexer lexer = SetupLexer("#syntax STMT: [magic [EXPR x]] => [f (x)]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	ParseError parseDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "f"), PARSEDECL_VARIABLE, NULL, NULL);
@@ -159,7 +165,7 @@ START_TEST(TheContainingScopeShouldInfluenceTheReplacement)
 				NullObject
 			)
 		),
-		(SmileObject)SimpleParse("[f x]"),
+		(SmileObject)SimpleParse("[(List.of) [$quote f] x]"),
 		NULL
 	);
 

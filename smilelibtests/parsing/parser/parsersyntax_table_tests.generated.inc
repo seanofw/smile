@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: efc24e6f2c270bd40edbbf5be222ddf6
+// SourceHash: 1a1b56226ee7c3b7488de611490d98e6
 
 START_TEST_SUITE(ParserSyntaxTableTests)
 {
@@ -15,7 +15,7 @@ START_TEST_SUITE(ParserSyntaxTableTests)
 	CanAddRulesWithRepeatingZeroOrMoreNonterminals,
 	CanAddRulesWithRepeatingZeroOrOneNonterminals,
 	CanAddRulesThatAreRightRecursive,
-	CannotAddRulesWithNullReplacements,
+	CanAddRulesWithNullReplacements,
 	CannotAddRulesThatAreDuplicatesExceptForTheReplacement,
 	CannotAddRulesThatAreDuplicates,
 	CannotAddRulesWhoseInitialNonterminalsRepeatZeroOrMoreTimes,
