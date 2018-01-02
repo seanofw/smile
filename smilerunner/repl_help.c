@@ -123,6 +123,14 @@ static String GenerateJokeResponse(void)
 					"You see a lamp and a grue here.  Try not to be eaten by the grue.",
 					"Press the 'Reset' button for three seconds while grounding yourself on something metal.",
 					"Try hitting it with a rock.",
+					"Smile is an adjunctive encabulator, with dynamic spurving and a generalized differential grammeter.",
+					"Have you tried travelling back in time to become your own grandfather?",
+					"Try moving your knight to king's bishop 6.",
+					"Go get a golf cart motor and a thousand-volt capacimator.",
+					"Can you believe it's not butter?",
+					"Still not as bad as \"Superman IV: The Quest for Peace.\"",
+					"man man",
+					"You just lost The Game.",	// ...also true if you're reading the source code.
 				};
 				_rand = _rand * 69069 + 1;
 				return String_FromC(funnyAnswers[(_rand >> 16) % (sizeof(funnyAnswers) / sizeof(char *))]);
