@@ -312,6 +312,23 @@ START_TEST(CanExtendExprWithKeywordRoots)
 }
 END_TEST
 
+START_TEST(CanCreateBasicPrintStatementDynamically)
+{
+	Lexer lexer = SetupLexer(
+		"#syntax STMT: [print [EXPR+ exprs ,]] => `[Stdout.print [[List.of @(exprs)].join]]\n"
+		"\n"
+		"print \"Hello, World.\"\n"
+	);
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	ParseError declError = ParseScope_Declare(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "Stdout"), PARSEDECL_GLOBAL, NULL, NULL);
+	SmileList result = (SmileList)Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(RecursiveEquals(LIST_FIRST(result), SimpleParse("$progn")));
+	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(Stdout.print) [([(List.of) \"Hello, World.\"].join)]]")));
+}
+END_TEST
+
 //-------------------------------------------------------------------------------------------------
 // Keyword tests
 

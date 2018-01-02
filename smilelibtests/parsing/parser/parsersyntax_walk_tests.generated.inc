@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 4d9a8e29686d7c2205ad99b26fefa1f2
+// SourceHash: 8ba9f789c5710cf655dcf71864c7cba9
 
 START_TEST_SUITE(ParserSyntaxWalkTests)
 {
@@ -18,6 +18,7 @@ START_TEST_SUITE(ParserSyntaxWalkTests)
 	CustomDslsValidateContentThroughTheirSyntaxRules,
 	CanExtendStmtWithKeywordRoots,
 	CanExtendExprWithKeywordRoots,
+	CanCreateBasicPrintStatementDynamically,
 	CanDeclareKeywords,
 	DeclaringKeywordsChangesParsingBehavior,
 }
