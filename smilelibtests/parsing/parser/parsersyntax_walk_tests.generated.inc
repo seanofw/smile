@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 26d5a1e2bbb1def69395a39fd51d8c98
+// SourceHash: 4d9a8e29686d7c2205ad99b26fefa1f2
 
 START_TEST_SUITE(ParserSyntaxWalkTests)
 {
@@ -15,6 +15,7 @@ START_TEST_SUITE(ParserSyntaxWalkTests)
 	IfThenElseTestWithNestedConditionals,
 	CStyleIfThenElseTest,
 	SimpleCustomDslTest,
+	CustomDslsValidateContentThroughTheirSyntaxRules,
 	CanExtendStmtWithKeywordRoots,
 	CanExtendExprWithKeywordRoots,
 	CanDeclareKeywords,

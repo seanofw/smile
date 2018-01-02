@@ -253,6 +253,26 @@ START_TEST(SimpleCustomDslTest)
 }
 END_TEST
 
+START_TEST(CustomDslsValidateContentThroughTheirSyntaxRules)
+{
+	Lexer lexer = SetupLexer(
+		"#syntax STMT: [fronk { [FOO-FRONKS x] }] => `[fronk [$quote (x)]]\n"
+		"#syntax FOO-FRONKS: [[FOO-GROOP x] [FOO-FRONKS y]] => `[(x) @(y)]\n"
+		"#syntax FOO-FRONKS: [[FOO-GROOP x]] => `[(x)]\n"
+		"#syntax FOO-GROOP: [qux] => `qux\n"
+		"#syntax FOO-GROOP: [xuq] => `xuq\n"
+		"1 + 2\n"
+		"fronk { qux blarg xuq qux }\n"
+		"3 + 4\n"
+	);
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(parser->firstMessage != NullList);
+}
+END_TEST
+
 START_TEST(CanExtendStmtWithKeywordRoots)
 {
 	Lexer lexer = SetupLexer(

@@ -569,6 +569,8 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 	Symbol tokenSymbol;
 	Int32Int32Dict oldCustomFollowSet;
 	CustomSyntaxResult nestedSyntaxResult;
+	ParserSyntaxNode recentNodes[16];	// For error-reporting.
+	Int recentNodeIndex;
 
 	// Get the class that contains all the rules under the provided nonterminal symbol.
 	syntaxClass = GetSyntaxClass(parser, syntaxClassSymbol);
@@ -583,6 +585,9 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 
 	// This is the list where we'll be collecting the nonterminal matches as we find them.
 	localTail = localHead = NullList;
+
+	// Start the list of recent nodes so that we know where we've been, for error-reporting purposes.
+	recentNodeIndex = 0;
 
 	// For the special syntax classes, we may need to apply special behaviors for the initial transition.
 	if (syntaxRootMode == SYNTAXROOT_KEYWORD) {
@@ -603,6 +608,7 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 		if (node->nextNonterminals == NULL || !Int32Dict_TryGetValue(node->nextNonterminals, rootSkipSymbol, (void **)&nextNode))
 			return CustomSyntaxResult_NotMatchedAndNoTokensConsumed;
 		node = nextNode;
+		recentNodes[recentNodeIndex++ & 15] = node;
 	}
 
 	for (;;) {
@@ -633,6 +639,8 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 		node = nextNode;
 	
 	handleTransition:
+		// Record this node as having been visited.
+		recentNodes[recentNodeIndex++ & 15] = node;
 
 		// We have a next state for this token in nextNode, so transition into it.
 		if (!node->variable) {
@@ -727,8 +735,38 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 	else {
 		// No match, and we've traversed at least one node of the tree.  So the
 		// input is an error, and we begin error recovery.
+
+		String recentNodesAsString;
+		String nextTokenAsString;
+		DECLARE_INLINE_STRINGBUILDER(stringBuilder, 256);
+		Int nodeIndex;
+		Bool isFirstPrintedNode;
+
+		// First, turn the recent-node array into a list of printable tokens.
+		INIT_INLINE_STRINGBUILDER(stringBuilder);
+		nodeIndex = recentNodeIndex - 15;
+		if (nodeIndex < 0)
+			nodeIndex = 0;
+		else if (nodeIndex > 0) {
+			StringBuilder_Append(stringBuilder, (const Byte *)"...", 0, 3);
+		}
+		for (isFirstPrintedNode = True; nodeIndex < recentNodeIndex; nodeIndex++) {
+			node = recentNodes[nodeIndex & 15];
+			if (!isFirstPrintedNode)
+				StringBuilder_AppendByte(stringBuilder, ' ');
+			StringBuilder_AppendString(stringBuilder, SymbolTable_GetName(Smile_SymbolTable, node->name));
+			isFirstPrintedNode = False;
+		}
+		recentNodesAsString = StringBuilder_ToString(stringBuilder);
+
+		// Get the next token, as a string.
+		nextTokenAsString = SymbolTable_GetName(Smile_SymbolTable, tokenSymbol);
+
+		// Now make an error message that describes what went wrong.
 		*parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
-			String_Format("Syntax error in %S", SymbolTable_GetName(Smile_SymbolTable, syntaxClassSymbol)));
+			String_Format("Syntax error: '%S' is not allowed in %S after '%S'",
+				nextTokenAsString, SymbolTable_GetName(Smile_SymbolTable, syntaxClassSymbol), recentNodesAsString));
+
 		return CustomSyntaxResult_PartialApplicationWithError;
 	}
 }
