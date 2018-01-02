@@ -410,11 +410,12 @@ Bool SmileList_IsWellFormed(SmileObject probableList)
 		return SMILE_KIND(tortoise) == SMILE_KIND_NULL;
 	hare = tortoise = (SmileList)tortoise->d;
 
-	hare = LIST_REST(hare);
+	hare = (SMILE_KIND(hare) == SMILE_KIND_LIST ? (SmileList)hare->d : NullList);
 
 	while (tortoise != hare && SMILE_KIND(tortoise) == SMILE_KIND_LIST) {
 		tortoise = (SmileList)tortoise->d;
-		hare = LIST_REST(LIST_REST(hare));
+		hare = (SMILE_KIND(hare) == SMILE_KIND_LIST ? (SmileList)hare->d : NullList);
+		hare = (SMILE_KIND(hare) == SMILE_KIND_LIST ? (SmileList)hare->d : NullList);
 	}
 
 	return SMILE_KIND(tortoise) == SMILE_KIND_NULL;

@@ -230,26 +230,14 @@ START_TEST(CStyleIfThenElseTest)
 }
 END_TEST
 
-/*
-//
-// TODO: FIXME: This test doesn't work right now that we're parsing quoted template
-//   forms correctly. Actually, many of the syntax tests are now wrong, because
-//   the correct fix is changing how substitution occurs (proper template evaluation
-//   is what's really required here).  #syntax forms really should use substitutions
-//   like (x) and (y) to represent replaced values so that @(list-splicing) can work
-//   correctly as well, and until it does, proper syntactic forms don't quite work yet.
-//
-// TODO: FIXME FIXME: Now that we're parsing quoted template forms correctly, this
-//   test needs to be resuscitated.
-//
-START_TEST(//SimpleCustomDslTest)
+START_TEST(SimpleCustomDslTest)
 {
 	Lexer lexer = SetupLexer(
-		"#syntax STMT: [fronk { [FOO-FRONKS x] }] => [fronk `x]]\n"
-		"#syntax FOO-FRONKS: [[FOO-GROOP x] [FOO-FRONKS y]] => [x y]\n"
-		"#syntax FOO-FRONKS: [[FOO-GROOP x]] => [x]\n"
-		"#syntax FOO-GROOP: [qux] => qux\n"
-		"#syntax FOO-GROOP: [xuq] => xuq\n"
+		"#syntax STMT: [fronk { [FOO-FRONKS x] }] => `[fronk [$quote (x)]]\n"
+		"#syntax FOO-FRONKS: [[FOO-GROOP x] [FOO-FRONKS y]] => `[(x) @(y)]\n"
+		"#syntax FOO-FRONKS: [[FOO-GROOP x]] => `[(x)]\n"
+		"#syntax FOO-GROOP: [qux] => `qux\n"
+		"#syntax FOO-GROOP: [xuq] => `xuq\n"
 		"1 + 2\n"
 		"fronk { qux xuq xuq qux }\n"
 		"3 + 4\n"
@@ -260,11 +248,10 @@ START_TEST(//SimpleCustomDslTest)
 
 	ASSERT(RecursiveEquals(LIST_FIRST(result), SimpleParse("$progn")));
 	ASSERT(RecursiveEquals(LIST_SEVENTH(result), SimpleParse("[(1 . +) 2]")));
-	ASSERT(RecursiveEquals(LIST_EIGHTH(result), SimpleParse("[fronk [$quote [qux [xuq [xuq [qux]]]]]]")));
+	ASSERT(RecursiveEquals(LIST_EIGHTH(result), SimpleParse("[fronk [$quote [qux xuq xuq qux]]]")));
 	ASSERT(RecursiveEquals(LIST_NINTH(result), SimpleParse("[(3 . +) 4]")));
 }
 END_TEST
-*/
 
 START_TEST(CanExtendStmtWithKeywordRoots)
 {
