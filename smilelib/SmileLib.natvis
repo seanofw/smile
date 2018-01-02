@@ -227,6 +227,7 @@
 		<DisplayString Condition="(kind &amp; 0xFF) == 0x24">UserObject</DisplayString>
 		<DisplayString Condition="(kind &amp; 0xFF) == 0x25">String (text={((struct StringStruct *)this)->_opaque.text,s})</DisplayString>
 		<DisplayString Condition="(kind &amp; 0xFF) == 0x2F">Function</DisplayString>
+		<DisplayString Condition="(kind &amp; 0xFF) == 0xF0">Syntax</DisplayString>
 		<DisplayString Condition="(kind &amp; 0xFF) == 0xFE">ParseDecl</DisplayString>
 		<DisplayString Condition="(kind &amp; 0xFF) == 0xFF">ParseMessage (value={((struct ParseMessageStruct *)this)->message->_opaque.text,s})</DisplayString>
 		<DisplayString>Undefined (kind={(char)kind &amp; 0xFF,X})</DisplayString>
@@ -243,6 +244,7 @@
 			<Item Name="as Bool" Condition="(kind &amp; 0xFF) == 0x14">(struct SmileBoolInt *)this</Item>
 			<Item Name="as UserObject" Condition="(kind &amp; 0xFF) == 0x24">(struct SmileUserObjectInt *)this</Item>
 			<Item Name="as Function" Condition="(kind &amp; 0xFF) == 0x2F">(struct SmileFunctionInt *)this</Item>
+			<Item Name="as Syntax" Condition="(kind &amp; 0xFF) == 0xF0">(struct SmileSyntaxInt *)this</Item>
 			<Item Name="as ParseMessage" Condition="(kind &amp; 0xFF) == 0xFF">(struct ParseMessageStruct *)this</Item>
 
 			<Item Name="[kind]">kind &amp; 0xFF</Item>
@@ -283,6 +285,7 @@
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x24">UserObject</DisplayString>
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x25">String (text={((struct StringStruct *)obj)->_opaque.text,s})</DisplayString>
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x2F">Function</DisplayString>
+		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0xF0">Syntax</DisplayString>
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0xFE">ParseDecl</DisplayString>
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0xFF">ParseMessage (value={((struct ParseMessageStruct *)obj)->message->_opaque.text,s})</DisplayString>
 		<DisplayString>Undefined (kind={(char)kind &amp; 0xFF,X})</DisplayString>
@@ -299,6 +302,7 @@
 			<Item Name="as Bool" Condition="(obj-&gt;kind &amp; 0xFF) == 0x14">(struct SmileBoolInt *)obj</Item>
 			<Item Name="as UserObject" Condition="(obj-&gt;kind &amp; 0xFF) == 0x24">(struct SmileUserObjectInt *)obj</Item>
 			<Item Name="as Function" Condition="(obj-&gt;kind &amp; 0xFF) == 0x2F">(struct SmileFunctionInt *)obj</Item>
+			<Item Name="as Syntax" Condition="(obj-&gt;kind &amp; 0xFF) == 0xF0">(struct SmileSyntaxInt *)obj</Item>
 			<Item Name="as ParseMessage" Condition="(obj-&gt;kind &amp; 0xFF) == 0xFF">(struct ParseMessageStruct *)obj</Item>
 
 			<Item Name="[kind]">obj->kind &amp; 0xFF</Item>
