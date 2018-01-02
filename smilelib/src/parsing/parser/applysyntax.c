@@ -233,15 +233,18 @@ Inline SmileObject Parser_ApplyListCombine(Parser parser, SmileList list, Int32D
 				"Cannot splice into a templated list an object that is not itself a well-formed list.");
 		}
 
-		// Iterate tail to its end so that we can splice the next list onto it.
-		if (SMILE_KIND(tail) == SMILE_KIND_LIST) {
-			for (; SMILE_KIND(tail->d) == SMILE_KIND_LIST; tail = (SmileList)tail->d) ;
+		// Append clones of all list cells to a new list.  Many of them are likely to be quoted
+		// static content, so we *must* append clones to ensure templates can be reused.
+		for (; SMILE_KIND(newValue) == SMILE_KIND_LIST; newValue = ((SmileList)newValue)->d) {
+			SmileObject newItem = ((SmileList)newValue)->a;
+			LexerPosition newPosition = (newValue->kind & SMILE_FLAG_WITHSOURCE) ? ((struct SmileListWithSourceInt *)list)->position : lexerPosition;
+			if (newPosition != NULL) {
+				LIST_APPEND_WITH_SOURCE(head, tail, newItem, newPosition);
+			}
+			else {
+				LIST_APPEND(head, tail, newItem);
+			}
 		}
-
-		// Splice this onto the end of the current tail.
-		if (SMILE_KIND(head) == SMILE_KIND_NULL)
-			tail = head = (SmileList)newValue;
-		else tail = (SmileList)(tail->d = newValue);
 	}
 
 	return (SmileObject)head;
