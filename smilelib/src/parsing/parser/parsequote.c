@@ -93,163 +93,163 @@ ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Int *temp
 
 	switch (token->kind) {
 
-	case TOKEN_LEFTPARENTHESIS:
-		Lexer_Unget(parser->lexer);
-		*templateKind = TemplateKind_Template;
-		error = Parser_ParseParentheses(parser, result, modeFlags);
-		if (error != NULL)
-			return error;
-		return NULL;
-
-	case TOKEN_LEFTBRACE:
-		Lexer_Unget(parser->lexer);
-		*templateKind = TemplateKind_Template;
-		error = Parser_ParseScope(parser, result);
-		if (error != NULL)
-			return error;
-		return NULL;
-
-	case TOKEN_DYNSTRING:
-		error = Parser_ParseDynamicString(parser, result, token->text, Token_GetPosition(token));
-		if (error != NULL)
-			return error;
-		*templateKind = (SMILE_KIND(*result) != SMILE_KIND_STRING) ? TemplateKind_Template : TemplateKind_None;
-		return error;
-
-	case TOKEN_LEFTBRACKET:
-		{
-			SmileList head = NullList, tail = NullList;
-			Int childTemplateKind;
-
-			startPosition = Token_GetPosition(token);
-
-			Parser_ParseRawListItemsOpt(parser, &head, &tail, &childTemplateKind, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
-
-			if (!Parser_HasLookahead(parser, TOKEN_RIGHTBRACKET)) {
-				error = ParseMessage_Create(PARSEMESSAGE_ERROR,
-					startPosition, String_Format("Missing ']' in raw list starting on line %d.", startPosition->line));
-				*result = NullObject;
-				return error;
-			}
-			Parser_NextToken(parser);
-
-			*templateKind = (childTemplateKind == TemplateKind_None ? TemplateKind_None : TemplateKind_Template);
-			*result = (SmileObject)head;
-			return NULL;
-		}
-
-	case TOKEN_BACKTICK:
-		{
-			Int childTemplateKind, tokenKind;
-			if ((tokenKind = Lexer_Peek(parser->lexer)) == TOKEN_LEFTPARENTHESIS
-				|| tokenKind == TOKEN_LEFTBRACE) {
-				error = Parser_ParseTerm(parser, result, modeFlags, Token_Clone(token));
-				childTemplateKind = TemplateKind_None;
-			}
-			else {
-				error = Parser_ParseRawListTerm(parser, result, &childTemplateKind, modeFlags);
-			}
-			if (error != NULL)
-				return error;
-			*templateKind = (childTemplateKind == TemplateKind_None ? TemplateKind_None : TemplateKind_Template);
-			return NULL;
-		}
-
-	case TOKEN_ALPHANAME:
-	case TOKEN_PUNCTNAME:
-	case TOKEN_UNKNOWNALPHANAME:
-	case TOKEN_UNKNOWNPUNCTNAME:
-		if (token->data.symbol == SMILE_SPECIAL_SYMBOL_ATSIGN && Lexer_Peek(parser->lexer) == TOKEN_LEFTPARENTHESIS) {
-			// This is the special '@(...)' form, which works like ',@' in Lisp, and
-			// captures the inner list, and then splices it into the current list.
-			*templateKind = TemplateKind_TemplateWithSplicing;
+		case TOKEN_LEFTPARENTHESIS:
+			Lexer_Unget(parser->lexer);
+			*templateKind = TemplateKind_Template;
 			error = Parser_ParseParentheses(parser, result, modeFlags);
 			if (error != NULL)
 				return error;
-			*templateKind = TemplateKind_TemplateWithSplicing;
 			return NULL;
-		}
-		else {
-			*result = (SmileObject)SmileSymbol_Create(token->data.symbol);
+
+		case TOKEN_LEFTBRACE:
+			Lexer_Unget(parser->lexer);
+			*templateKind = TemplateKind_Template;
+			error = Parser_ParseScope(parser, result);
+			if (error != NULL)
+				return error;
+			return NULL;
+
+		case TOKEN_DYNSTRING:
+			error = Parser_ParseDynamicString(parser, result, token->text, Token_GetPosition(token));
+			if (error != NULL)
+				return error;
+			*templateKind = (SMILE_KIND(*result) != SMILE_KIND_STRING) ? TemplateKind_Template : TemplateKind_None;
+			return error;
+
+		case TOKEN_LEFTBRACKET:
+			{
+				SmileList head = NullList, tail = NullList;
+				Int childTemplateKind;
+
+				startPosition = Token_GetPosition(token);
+
+				Parser_ParseRawListItemsOpt(parser, &head, &tail, &childTemplateKind, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
+
+				if (!Parser_HasLookahead(parser, TOKEN_RIGHTBRACKET)) {
+					error = ParseMessage_Create(PARSEMESSAGE_ERROR,
+						startPosition, String_Format("Missing ']' in raw list starting on line %d.", startPosition->line));
+					*result = NullObject;
+					return error;
+				}
+				Parser_NextToken(parser);
+
+				*templateKind = (childTemplateKind == TemplateKind_None ? TemplateKind_None : TemplateKind_Template);
+				*result = (SmileObject)head;
+				return NULL;
+			}
+
+		case TOKEN_BACKTICK:
+			{
+				Int childTemplateKind, tokenKind;
+				if ((tokenKind = Lexer_Peek(parser->lexer)) == TOKEN_LEFTPARENTHESIS
+					|| tokenKind == TOKEN_LEFTBRACE) {
+					error = Parser_ParseTerm(parser, result, modeFlags, Token_Clone(token));
+					childTemplateKind = TemplateKind_None;
+				}
+				else {
+					error = Parser_ParseRawListTerm(parser, result, &childTemplateKind, modeFlags);
+				}
+				if (error != NULL)
+					return error;
+				*templateKind = (childTemplateKind == TemplateKind_None ? TemplateKind_None : TemplateKind_Template);
+				return NULL;
+			}
+
+		case TOKEN_ALPHANAME:
+		case TOKEN_PUNCTNAME:
+		case TOKEN_UNKNOWNALPHANAME:
+		case TOKEN_UNKNOWNPUNCTNAME:
+			if (token->data.symbol == SMILE_SPECIAL_SYMBOL_ATSIGN && Lexer_Peek(parser->lexer) == TOKEN_LEFTPARENTHESIS) {
+				// This is the special '@(...)' form, which works like ',@' in Lisp, and
+				// captures the inner list, and then splices it into the current list.
+				*templateKind = TemplateKind_TemplateWithSplicing;
+				error = Parser_ParseParentheses(parser, result, modeFlags);
+				if (error != NULL)
+					return error;
+				*templateKind = TemplateKind_TemplateWithSplicing;
+				return NULL;
+			}
+			else {
+				*result = (SmileObject)SmileSymbol_Create(token->data.symbol);
+				*templateKind = TemplateKind_None;
+				return NULL;
+			}
+
+		case TOKEN_RAWSTRING:
+			*result = (SmileObject)token->text;
 			*templateKind = TemplateKind_None;
 			return NULL;
-		}
 
-	case TOKEN_RAWSTRING:
-		*result = (SmileObject)token->text;
-		*templateKind = TemplateKind_None;
-		return NULL;
+		case TOKEN_CHAR:
+			*result = (SmileObject)SmileChar_Create(token->data.ch);
+			*templateKind = TemplateKind_None;
+			return NULL;
 
-	case TOKEN_CHAR:
-		*result = (SmileObject)SmileChar_Create(token->data.ch);
-		*templateKind = TemplateKind_None;
-		return NULL;
+		case TOKEN_UNI:
+			*result = (SmileObject)SmileUni_Create(token->data.uni);
+			*templateKind = TemplateKind_None;
+			return NULL;
 
-	case TOKEN_UNI:
-		*result = (SmileObject)SmileUni_Create(token->data.uni);
-		*templateKind = TemplateKind_None;
-		return NULL;
+		case TOKEN_BYTE:
+			*result = (SmileObject)SmileByte_Create(token->data.byte);
+			*templateKind = TemplateKind_None;
+			return NULL;
 
-	case TOKEN_BYTE:
-		*result = (SmileObject)SmileByte_Create(token->data.byte);
-		*templateKind = TemplateKind_None;
-		return NULL;
+		case TOKEN_INTEGER16:
+			*result = (SmileObject)SmileInteger16_Create(token->data.int16);
+			*templateKind = TemplateKind_None;
+			return NULL;
 
-	case TOKEN_INTEGER16:
-		*result = (SmileObject)SmileInteger16_Create(token->data.int16);
-		*templateKind = TemplateKind_None;
-		return NULL;
+		case TOKEN_INTEGER32:
+			*result = (SmileObject)SmileInteger32_Create(token->data.int32);
+			*templateKind = TemplateKind_None;
+			return NULL;
 
-	case TOKEN_INTEGER32:
-		*result = (SmileObject)SmileInteger32_Create(token->data.int32);
-		*templateKind = TemplateKind_None;
-		return NULL;
+		case TOKEN_INTEGER64:
+			*result = (SmileObject)SmileInteger64_Create(token->data.int64);
+			*templateKind = TemplateKind_None;
+			return NULL;
 
-	case TOKEN_INTEGER64:
-		*result = (SmileObject)SmileInteger64_Create(token->data.int64);
-		*templateKind = TemplateKind_None;
-		return NULL;
+		case TOKEN_REAL32:
+			*result = (SmileObject)SmileReal32_Create(token->data.real32);
+			*templateKind = TemplateKind_None;
+			return NULL;
 
-	case TOKEN_REAL32:
-		*result = (SmileObject)SmileReal32_Create(token->data.real32);
-		*templateKind = TemplateKind_None;
-		return NULL;
+		case TOKEN_REAL64:
+			*result = (SmileObject)SmileReal64_Create(token->data.real64);
+			*templateKind = TemplateKind_None;
+			return NULL;
 
-	case TOKEN_REAL64:
-		*result = (SmileObject)SmileReal64_Create(token->data.real64);
-		*templateKind = TemplateKind_None;
-		return NULL;
+		case TOKEN_FLOAT32:
+			*result = (SmileObject)SmileFloat32_Create(token->data.float32);
+			*templateKind = TemplateKind_None;
+			return NULL;
 
-	case TOKEN_FLOAT32:
-		*result = (SmileObject)SmileFloat32_Create(token->data.float32);
-		*templateKind = TemplateKind_None;
-		return NULL;
+		case TOKEN_FLOAT64:
+			*result = (SmileObject)SmileFloat64_Create(token->data.float64);
+			*templateKind = TemplateKind_None;
+			return NULL;
 
-	case TOKEN_FLOAT64:
-		*result = (SmileObject)SmileFloat64_Create(token->data.float64);
-		*templateKind = TemplateKind_None;
-		return NULL;
-
-	default:
-		// We got an unknown token that can't be turned into a term.  So we're going to generate
-		// an error message, but we do our best to specialize that message according to the most
-		// common mistakes people make.
-		if (token->kind == TOKEN_SEMICOLON) {
-			error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
-				String_FromC("Expected a variable or number or other legal expression term, not a semicolon (remember, semicolons don't terminate statements in Smile!)"));
-		}
-		else if (token->kind == TOKEN_COMMA) {
-			error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
-				String_FromC("Expected a variable or number or other legal expression term, not a comma (did you mistakenly put commas in a list?)"));
-		}
-		else if (token->kind == TOKEN_ERROR) {
-			error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), token->text);
-		}
-		else {
-			error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
-				String_Format("Expected a variable or number or other legal expression term, not \"%S\".", TokenKind_ToString(token->kind)));
-		}
-		return error;
+		default:
+			// We got an unknown token that can't be turned into a term.  So we're going to generate
+			// an error message, but we do our best to specialize that message according to the most
+			// common mistakes people make.
+			if (token->kind == TOKEN_SEMICOLON) {
+				error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
+					String_FromC("Expected a variable or number or other legal expression term, not a semicolon (remember, semicolons don't terminate statements in Smile!)"));
+			}
+			else if (token->kind == TOKEN_COMMA) {
+				error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
+					String_FromC("Expected a variable or number or other legal expression term, not a comma (did you mistakenly put commas in a list?)"));
+			}
+			else if (token->kind == TOKEN_ERROR) {
+				error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), token->text);
+			}
+			else {
+				error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
+					String_Format("Expected a variable or number or other legal expression term, not \"%S\".", TokenKind_ToString(token->kind)));
+			}
+			return error;
 	}
 }
 
