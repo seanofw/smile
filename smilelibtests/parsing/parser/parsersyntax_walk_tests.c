@@ -315,7 +315,7 @@ END_TEST
 START_TEST(CanCreateBasicPrintStatementDynamically)
 {
 	Lexer lexer = SetupLexer(
-		"#syntax STMT: [print [EXPR+ exprs ,]] => `[Stdout.print [[List.of @(exprs)].join]]\n"
+		"#syntax STMT: [print [EXPR+ exprs ,]] => `[Stdout.print [[List.of @@exprs].join]]\n"
 		"\n"
 		"print \"Hello, World.\"\n"
 	);
@@ -336,8 +336,8 @@ START_TEST(CanDeclareKeywords)
 {
 	Lexer lexer = SetupLexer(
 		"keyword my-if\n"
-		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if (x) (y)]\n"
-		"#syntax STMT: [my-if [EXPR x] then [STMT y] else [STMT z]] => [$if (x) (y) (z)]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => `[$if @x @y]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y] else [STMT z]] => `[$if @x @y @z]\n"
 		"4 + 5\n"
 		"my-if 1 < 2 then 10\n"
 		"my-if 3 < 4 then 30 else 40\n"
@@ -387,7 +387,7 @@ START_TEST(DeclaringKeywordsChangesParsingBehavior)
 	// And now the kicker:  *With* the keyword declaration, *and* a syntax rule, this is allowed again,
 	// because 'my-if' and 'my-then' and 'my-else' are still valid for use as syntax keywords.
 	lexer = SetupLexer(
-		"#syntax STMT: [my-if [EXPR x] my-then [STMT y] my-else [STMT z]] => [$if (x) (y) (z)]\n"
+		"#syntax STMT: [my-if [EXPR x] my-then [STMT y] my-else [STMT z]] => `[$if @x @y @z]\n"
 		"keyword my-if, my-then, my-else\n"
 		"my-if 4 my-then 5 my-else 6\n"
 	);

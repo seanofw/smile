@@ -155,25 +155,67 @@ ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Int *temp
 				return NULL;
 			}
 
+		case TOKEN_AT:
+			{
+				Int nextToken = Lexer_Next(parser->lexer);
+				if (nextToken == TOKEN_LEFTPARENTHESIS) {
+					// This is the special '@(...)' form, which works like ',@' in Lisp, and
+					// captures the inner list, and then splices it into the current list.
+					Lexer_Unget(parser->lexer);
+					error = Parser_ParseParentheses(parser, result, modeFlags);
+					if (error != NULL)
+						return error;
+					*templateKind = TemplateKind_TemplateWithSplicing;
+					return NULL;
+				}
+				else if (nextToken == TOKEN_ALPHANAME || nextToken == TOKEN_PUNCTNAME
+					|| nextToken == TOKEN_UNKNOWNALPHANAME || TOKEN_UNKNOWNPUNCTNAME) {
+					// This is '@symbol', which is a shorthand for writing '(symbol)'.
+					//
+					// (TODO: This form exists primarily to allow '@symbol' and '@@symbol' to be
+					// embedded in the future in quoted syntax-translated template forms,
+					// which would be a really useful ability to have.)
+					*result = (SmileObject)SmileSymbol_Create(parser->lexer->token->data.symbol);
+					*templateKind = TemplateKind_Template;
+					return NULL;
+				}
+				else {
+					Lexer_Unget(parser->lexer);
+					error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
+						String_FromC("A symbol or a left parenthesis must follow an '@' in a template."));
+					return error;
+				}
+			}
+
+		case TOKEN_ATAT:
+			{
+				Int nextToken = Lexer_Next(parser->lexer);
+				if (nextToken == TOKEN_ALPHANAME || nextToken == TOKEN_PUNCTNAME
+					|| nextToken == TOKEN_UNKNOWNALPHANAME || TOKEN_UNKNOWNPUNCTNAME) {
+					// This is '@@symbol', which is a shorthand for writing '@(symbol)'.
+					//
+					// (TODO: This form exists primarily to allow '@@symbol' to be
+					// embedded in the future in quoted syntax-translated template forms,
+					// which would be a really useful ability to have.)
+					*result = (SmileObject)SmileSymbol_Create(parser->lexer->token->data.symbol);
+					*templateKind = TemplateKind_TemplateWithSplicing;
+					return NULL;
+				}
+				else {
+					Lexer_Unget(parser->lexer);
+					error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
+						String_FromC("A symbol must follow an '@@' in a template."));
+					return error;
+				}
+			}
+
 		case TOKEN_ALPHANAME:
 		case TOKEN_PUNCTNAME:
 		case TOKEN_UNKNOWNALPHANAME:
 		case TOKEN_UNKNOWNPUNCTNAME:
-			if (token->data.symbol == SMILE_SPECIAL_SYMBOL_ATSIGN && Lexer_Peek(parser->lexer) == TOKEN_LEFTPARENTHESIS) {
-				// This is the special '@(...)' form, which works like ',@' in Lisp, and
-				// captures the inner list, and then splices it into the current list.
-				*templateKind = TemplateKind_TemplateWithSplicing;
-				error = Parser_ParseParentheses(parser, result, modeFlags);
-				if (error != NULL)
-					return error;
-				*templateKind = TemplateKind_TemplateWithSplicing;
-				return NULL;
-			}
-			else {
-				*result = (SmileObject)SmileSymbol_Create(token->data.symbol);
-				*templateKind = TemplateKind_None;
-				return NULL;
-			}
+			*result = (SmileObject)SmileSymbol_Create(token->data.symbol);
+			*templateKind = TemplateKind_None;
+			return NULL;
 
 		case TOKEN_RAWSTRING:
 			*result = (SmileObject)token->text;
