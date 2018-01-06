@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 8e6e602694561021b8c5210a03d9822e
+// SourceHash: e06d3f4266181de508b3413473075c76
 
 START_TEST_SUITE(ParserCoreTests)
 {
@@ -23,6 +23,8 @@ START_TEST_SUITE(ParserCoreTests)
 	SpecialBinaryOperatorsCanBeArbitraryPrefixOperators,
 	CanParseAMixOfBinaryAndPrefixOperators,
 	CanParseAMixOfSpecialBinaryAndArbitraryPrefixOperators,
+	UnaryOperatorsDontWrapLines,
+	UnaryOperatorsCanWrapLinesInParentheses,
 	BinaryOperatorsDontWrapLines,
 	BinaryOperatorsCanWrapLinesInParentheses,
 	BinaryOperatorWrappingPropagatesIntoFunctions1,

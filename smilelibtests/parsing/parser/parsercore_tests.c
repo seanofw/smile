@@ -335,6 +335,32 @@ START_TEST(CanParseAMixOfSpecialBinaryAndArbitraryPrefixOperators)
 }
 END_TEST
 
+START_TEST(UnaryOperatorsDontWrapLines)
+{
+	Lexer lexer = SetupLexer("\t sin -314 * cos +\n314 * tan 123 \t");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(parser->firstMessage != NullList);
+}
+END_TEST
+
+START_TEST(UnaryOperatorsCanWrapLinesInParentheses)
+{
+	Lexer lexer = SetupLexer("\t (sin -314 * cos +\n314 * tan 123) \t");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedResult = SimpleParse(
+		"[([([([(314 . -)] . sin)] . *) [([(314 . +)] . cos)]] . *) [(123 . tan)]]\n"
+	);
+
+	ASSERT(RecursiveEquals(result, (SmileObject)expectedResult));
+}
+END_TEST
+
 START_TEST(BinaryOperatorsDontWrapLines)
 {
 	Lexer lexer = SetupLexer("\t sin -314 * cos +314 \n * tan 123 \t");
