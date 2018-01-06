@@ -209,6 +209,13 @@ static Bool ParseDecimalInteger(Lexer lexer, UInt64 *result)
 			digit = ch - '0';
 
 			if (value > 0x1999999999999999ULL) {
+				while (src < end) {
+					if (((ch = *src) >= '0' && ch <= '9')
+						|| ch == '_' || ch == '\'' || ch == '\"') {
+						src++;
+					}
+					else break;
+				}
 				*result = 0;
 				lexer->src = src;
 				return False;
@@ -217,6 +224,13 @@ static Bool ParseDecimalInteger(Lexer lexer, UInt64 *result)
 			value *= 10;
 
 			if (0xFFFFFFFFFFFFFFFFULL - digit < value) {
+				while (src < end) {
+					if (((ch = *src) >= '0' && ch <= '9')
+						|| ch == '_' || ch == '\'' || ch == '\"') {
+						src++;
+					}
+					else break;
+				}
 				*result = 0;
 				lexer->src = src;
 				return False;
@@ -251,6 +265,13 @@ static Bool ParseOctalInteger(Lexer lexer, UInt64 *result)
 			digit = ch - '0';
 
 			if (value > 0x1FFFFFFFFFFFFFFFULL) {
+				while (src < end) {
+					if ((ch = *src) >= '0' && ch <= '9'
+						|| ch == '_' || ch == '\'' || ch == '\"') {
+						src++;
+					}
+					else break;
+				}
 				*result = 0;
 				lexer->src = src;
 				return False;
@@ -259,6 +280,13 @@ static Bool ParseOctalInteger(Lexer lexer, UInt64 *result)
 			value <<= 3;
 
 			if (0xFFFFFFFFFFFFFFFFULL - digit < value) {
+				while (src < end) {
+					if (((ch = *src) >= '0' && ch <= '9')
+						|| ch == '_' || ch == '\'' || ch == '\"') {
+						src++;
+					}
+					else break;
+				}
 				*result = 0;
 				lexer->src = src;
 				return False;
@@ -269,6 +297,18 @@ static Bool ParseOctalInteger(Lexer lexer, UInt64 *result)
 		}
 		else if (ch == '_' || ch == '\'' || ch == '\"') {
 			src++;
+		}
+		else if (ch == '8' || ch == '9') {
+			while (src < end) {
+				if (((ch = *src) >= '0' && ch <= '9')
+					|| ch == '_' || ch == '\'' || ch == '\"') {
+					src++;
+				}
+				else break;
+			}
+			*result = 0;
+			lexer->src = src;
+			return False;
 		}
 		else break;
 	}
@@ -314,6 +354,16 @@ static Bool ParseHexadecimalInteger(Lexer lexer, UInt64 *result)
 		}
 
 		if (value > 0x0FFFFFFFFFFFFFFFULL) {
+			Byte ch;
+			while (src < end) {
+				if (((ch = *src) >= '0' && ch <= '9')
+					|| ch == '_' || ch == '\'' || ch == '\"'
+					|| (ch >= 'a' && ch <= 'f')
+					|| (ch >= 'A' && ch <= 'F')) {
+					src++;
+				}
+				else break;
+			}
 			*result = 0;
 			lexer->src = src;
 			return False;
@@ -523,8 +573,11 @@ Int Lexer_ParseZero(Lexer lexer, Bool isFirstContentOnLine)
 		// Octal integer, or possibly a real value (if we find a '.').
 		lexer->src = start;
 		if (!ParseOctalInteger(lexer, &value)) {
-			lexer->token->text = IllegalOctalIntegerMessage;
-			return END_TOKEN(TOKEN_ERROR);
+			src = lexer->src;
+			if (!(src < lexer->end && *src == '.' && (src + 1 >= lexer->end || src[1] != '.'))) {
+				lexer->token->text = IllegalOctalIntegerMessage;
+				return END_TOKEN(TOKEN_ERROR);
+			}
 		}
 		digitsEnd = src = lexer->src;
 		if (src < lexer->end && *src == '.' && (src+1 >= lexer->end || src[1] != '.')) {
@@ -560,8 +613,11 @@ Int Lexer_ParseDigit(Lexer lexer, Bool isFirstContentOnLine)
 	// Decimal integer, or possibly a real value (if we find a '.').
 	lexer->src = start;
 	if (!ParseDecimalInteger(lexer, &value)) {
-		lexer->token->text = IllegalDecimalIntegerMessage;
-		return END_TOKEN(TOKEN_ERROR);
+		src = lexer->src;
+		if (!(src < lexer->end && *src == '.' && (src + 1 >= lexer->end || src[1] != '.'))) {
+			lexer->token->text = IllegalDecimalIntegerMessage;
+			return END_TOKEN(TOKEN_ERROR);
+		}
 	}
 	digitsEnd = src = lexer->src;
 	if (src < lexer->end && *src == '.' && (src + 1 == lexer->end || src[1] != '.')) {
