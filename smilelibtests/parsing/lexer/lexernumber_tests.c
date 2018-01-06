@@ -670,6 +670,7 @@ static const char *_testReal64Values[] = {
 	"3.141_59", "31_415.8",
 	"3.141_592_653_589", "3_141_592_653_589.0",
 	"314_159.26_53_58_9",
+	"25345678901234567890.0",
 };
 
 static const Float64 _testFloat64Values[] = {
@@ -678,6 +679,7 @@ static const Float64 _testFloat64Values[] = {
 	3.14159, 31415.8,
 	3.141592653589, 3141592653589.0,
 	314159.2653589,
+	25345678901234567890.0,
 };
 
 START_TEST(ShouldRecognizeFloat32s)
@@ -744,21 +746,37 @@ START_TEST(ShouldRecognizeReal64s)
 }
 END_TEST
 
+static const char *_testReal128Values[] = {
+	"1.0", "1.",
+	"125.0", "125.", ".125", "0.125", "125.125",
+	"3.141_59", "31_415.8",
+	"3.141_592_653_589", "3_141_592_653_589.0",
+	"314_159.26_53_58_9",
+};
+
+static const Float64 _testFloat128Values[] = {
+	1.0, 1.0,
+	125.0, 125.0, 0.125, 0.125, 125.125,
+	3.14159, 31415.8,
+	3.141592653589, 3141592653589.0,
+	314159.2653589,
+};
+
 START_TEST(ShouldRecognizeReal128s)
 {
 	Lexer lexer;
 	int i;
 	Real128 expectedValue;
 
-	for (i = 0; i < sizeof(_testReal64Values) / sizeof(const char *); i++) {
-		lexer = SetupString(String_Format("  \t  %sl  \r\n", _testReal64Values[i]));
+	for (i = 0; i < sizeof(_testReal128Values) / sizeof(const char *); i++) {
+		lexer = SetupString(String_Format("  \t  %sl  \r\n", _testReal128Values[i]));
 		ASSERT(Lexer_Next(lexer) == TOKEN_REAL128);
-		expectedValue = Real64_ToReal128(Real64_FromFloat64(_testFloat64Values[i]));
+		expectedValue = Real64_ToReal128(Real64_FromFloat64(_testFloat128Values[i]));
 		ASSERT(Real128_Eq(lexer->token->data.real128, expectedValue));
 
-		lexer = SetupString(String_Format("  \t  %sL  \r\n", _testReal64Values[i]));
+		lexer = SetupString(String_Format("  \t  %sL  \r\n", _testReal128Values[i]));
 		ASSERT(Lexer_Next(lexer) == TOKEN_REAL128);
-		expectedValue = Real64_ToReal128(Real64_FromFloat64(_testFloat64Values[i]));
+		expectedValue = Real64_ToReal128(Real64_FromFloat64(_testFloat128Values[i]));
 		ASSERT(Real128_Eq(lexer->token->data.real128, expectedValue));
 	}
 }
