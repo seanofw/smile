@@ -41,7 +41,13 @@ START_TEST(CanParseSimpleSyntaxForms)
 	SmileSyntax expectedResult = SmileSyntax_Create(
 		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
 		(SmileList)SimpleParse("[a b c]"),
-		(SmileObject)SmileInteger64_Create(123),
+		(SmileObject)SmileList_Cons(
+			(SmileObject)SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__QUOTE),
+			(SmileObject)SmileList_Cons(
+				(SmileObject)SmileInteger64_Create(123),
+				NullObject
+			)
+		),
 		NULL
 	);
 
@@ -51,7 +57,7 @@ END_TEST
 
 START_TEST(CanParseSyntaxFormsThatUseSyntaxForms)
 {
-	Lexer lexer = SetupLexer("#syntax STMT: [do magic] => (Stdout print \"Hello, World.\")");
+	Lexer lexer = SetupLexer("#syntax STMT: [do magic] => `(Stdout print \"Hello, World.\")");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("Stdout")), PARSEDECL_VARIABLE, NULL, NULL);
@@ -61,7 +67,7 @@ START_TEST(CanParseSyntaxFormsThatUseSyntaxForms)
 	SmileSyntax expectedResult = SmileSyntax_Create(
 		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
 		(SmileList)SimpleParse("[do magic]"),
-		(SmileObject)SimpleParse("[ (Stdout.print) \"Hello, World.\" ]"),
+		(SmileObject)SimpleParse("[$quote [(Stdout.print) \"Hello, World.\"]]"),
 		NULL
 	);
 
@@ -81,7 +87,7 @@ START_TEST(CanParseSyntaxFormsThatUseListForms)
 	SmileSyntax expectedResult = SmileSyntax_Create(
 		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
 		(SmileList)SimpleParse("[do magic]"),
-		(SmileObject)SimpleParse("[ (Stdout.print) \"Hello, World.\" ]"),
+		(SmileObject)SimpleParse("[$quote [(Stdout.print) \"Hello, World.\"]]"),
 		NULL
 	);
 
@@ -91,7 +97,7 @@ END_TEST
 
 START_TEST(CanParseSyntaxFormsThatContainNonterminals)
 {
-	Lexer lexer = SetupLexer("#syntax STMT: [magic [EXPR x]] => [x.* x]");
+	Lexer lexer = SetupLexer("#syntax STMT: [magic [EXPR x]] => [(x).* (x)]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
@@ -112,7 +118,7 @@ START_TEST(CanParseSyntaxFormsThatContainNonterminals)
 				NullObject
 			)
 		),
-		(SmileObject)SimpleParse("[(x.*) x]"),
+		(SmileObject)SimpleParse("[(List.of) [(Pair.of) x [$quote *]] x]"),
 		NULL
 	);
 
@@ -136,8 +142,8 @@ START_TEST(TheContainingScopeShouldInfluenceTheReplacement)
 {
 	// In this first test, we parse a syntax form that references a function outside its
 	// scope.  If the function 'f' is not visible while parsing the body of this syntax
-	// declaration, then we'll get [(x.f)] instead of [f x] as output.
-	Lexer lexer = SetupLexer("#syntax STMT: [magic [EXPR x]] => [f x]");
+	// declaration, then we'll get [[x.f]] instead of [f x] as output.
+	Lexer lexer = SetupLexer("#syntax STMT: [magic [EXPR x]] => `([f x])");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	ParseError parseDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "f"), PARSEDECL_VARIABLE, NULL, NULL);
@@ -159,7 +165,7 @@ START_TEST(TheContainingScopeShouldInfluenceTheReplacement)
 				NullObject
 			)
 		),
-		(SmileObject)SimpleParse("[f x]"),
+		(SmileObject)SimpleParse("[$quote [f x]]"),
 		NULL
 	);
 
@@ -169,7 +175,7 @@ END_TEST
 
 START_TEST(TheContainingScopeShouldInfluenceTheReplacement2)
 {
-	Lexer lexer = SetupLexer("#syntax STMT: [magic [EXPR y]] => (x op y)");
+	Lexer lexer = SetupLexer("#syntax STMT: [magic [EXPR y]] => `(x op y)");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	ParseError parseDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "x"), PARSEDECL_VARIABLE, NULL, NULL);
@@ -196,7 +202,7 @@ START_TEST(TheContainingScopeShouldInfluenceTheReplacement2)
 				NullObject
 			)
 		),
-		(SmileObject)SimpleParse("[(x . op) y]"),
+		(SmileObject)SimpleParse("[$quote [(x . op) y]]"),
 		NULL
 	);
 
@@ -206,7 +212,7 @@ END_TEST
 
 START_TEST(TheContainingScopeShouldInfluenceTheReplacement3)
 {
-	Lexer lexer = SetupLexer("#syntax STMT: [magic [EXPR y]] => (x op y)");
+	Lexer lexer = SetupLexer("#syntax STMT: [magic [EXPR y]] => `(x op y)");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 
@@ -234,7 +240,7 @@ START_TEST(TheContainingScopeShouldInfluenceTheReplacement3)
 				NullObject
 			)
 		),
-		(SmileObject)SimpleParse("[([(y . op)] . x)]"),
+		(SmileObject)SimpleParse("[$quote [([(y . op)] . x)]]"),
 		NULL
 	);
 
@@ -244,7 +250,7 @@ END_TEST
 
 START_TEST(CanParseSyntaxWithEmbeddedCommas)
 {
-	Lexer lexer = SetupLexer("#syntax STMT: [if [EXPR x], [EXPR y] then [STMT z]] => [\\if x y z]");
+	Lexer lexer = SetupLexer("#syntax STMT: [if [EXPR x], [EXPR y] then [STMT z]] => [if (x) (y) (z)]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
@@ -281,7 +287,7 @@ START_TEST(CanParseSyntaxWithEmbeddedCommas)
 			),
 			NULL
 		),
-		(SmileObject)SimpleParse("[if x y z]"),
+		(SmileObject)SimpleParse("[(List.of) [$quote if] x y z]"),
 		NULL
 	);
 
@@ -291,7 +297,7 @@ END_TEST
 
 START_TEST(CanParseSyntaxWithEmbeddedSemicolons)
 {
-	Lexer lexer = SetupLexer("#syntax STMT: [if [EXPR x]; [EXPR y] then [STMT z]] => [\\if x y z]");
+	Lexer lexer = SetupLexer("#syntax STMT: [if [EXPR x]; [EXPR y] then [STMT z]] => [if (x) (y) (z)]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
@@ -328,7 +334,7 @@ START_TEST(CanParseSyntaxWithEmbeddedSemicolons)
 			),
 			NULL
 		),
-		(SmileObject)SimpleParse("[if x y z]"),
+		(SmileObject)SimpleParse("[(List.of) [$quote if] x y z]"),
 		NULL
 	);
 
@@ -338,7 +344,7 @@ END_TEST
 
 START_TEST(CanParseSyntaxWithEmbeddedColons)
 {
-	Lexer lexer = SetupLexer("#syntax STMT: [if [EXPR x]: [EXPR y] then [STMT z]] => [\\if x y z]");
+	Lexer lexer = SetupLexer("#syntax STMT: [if [EXPR x]: [EXPR y] then [STMT z]] => [if (x) (y) (z)]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
@@ -375,7 +381,7 @@ START_TEST(CanParseSyntaxWithEmbeddedColons)
 			),
 			NULL
 		),
-		(SmileObject)SimpleParse("[if x y z]"),
+		(SmileObject)SimpleParse("[(List.of) [$quote if] x y z]"),
 		NULL
 	);
 
@@ -385,7 +391,7 @@ END_TEST
 
 START_TEST(CanParseSyntaxWithEmbeddedParentheses)
 {
-	Lexer lexer = SetupLexer("#syntax STMT: [if ([EXPR x]: [EXPR y]) then [STMT z]] => [\\if x y z]");
+	Lexer lexer = SetupLexer("#syntax STMT: [if ([EXPR x]: [EXPR y]) then [STMT z]] => [if (x) (y) (z)]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
@@ -424,7 +430,7 @@ START_TEST(CanParseSyntaxWithEmbeddedParentheses)
 			),
 			NULL
 		),
-		(SmileObject)SimpleParse("[if x y z]"),
+		(SmileObject)SimpleParse("[(List.of) [$quote if] x y z]"),
 		NULL
 	);
 
@@ -434,7 +440,7 @@ END_TEST
 
 START_TEST(CannotParseSyntaxWithMismatchedParentheses1)
 {
-	Lexer lexer = SetupLexer("#syntax STMT: [if ([EXPR x]: [EXPR y] then [STMT z]] => [\\if x y z]");
+	Lexer lexer = SetupLexer("#syntax STMT: [if ([EXPR x]: [EXPR y] then [STMT z]] => [if (x) (y) (z)]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
@@ -446,7 +452,7 @@ END_TEST
 
 START_TEST(CannotParseSyntaxWithMismatchedParentheses2)
 {
-	Lexer lexer = SetupLexer("#syntax STMT: [if [EXPR x]: [EXPR y]) then [STMT z]] => [\\if x y z]");
+	Lexer lexer = SetupLexer("#syntax STMT: [if [EXPR x]: [EXPR y]) then [STMT z]] => [if (x) (y) (z)]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
@@ -458,7 +464,7 @@ END_TEST
 
 START_TEST(CanParseSyntaxWithEmbeddedCurlyBraces)
 {
-	Lexer lexer = SetupLexer("#syntax STMT: [if {[EXPR x]: [EXPR y]} then [STMT z]] => [\\if x y z]");
+	Lexer lexer = SetupLexer("#syntax STMT: [if {[EXPR x]: [EXPR y]} then [STMT z]] => [if (x) (y) (z)]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
@@ -497,7 +503,7 @@ START_TEST(CanParseSyntaxWithEmbeddedCurlyBraces)
 			),
 			NULL
 		),
-		(SmileObject)SimpleParse("[if x y z]"),
+		(SmileObject)SimpleParse("[(List.of) [$quote if] x y z]"),
 		NULL
 	);
 
@@ -507,7 +513,7 @@ END_TEST
 
 START_TEST(CannotParseSyntaxWithMismatchedCurlyBraces1)
 {
-	Lexer lexer = SetupLexer("#syntax STMT: [if {[EXPR x]: [EXPR y] then [STMT z]] => [\\if x y z]");
+	Lexer lexer = SetupLexer("#syntax STMT: [if {[EXPR x]: [EXPR y] then [STMT z]] => [if (x) (y) (z)]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
@@ -519,7 +525,7 @@ END_TEST
 
 START_TEST(CannotParseSyntaxWithMismatchedCurlyBraces2)
 {
-	Lexer lexer = SetupLexer("#syntax STMT: [if [EXPR x]: [EXPR y]} then [STMT z]] => [\\if x y z]");
+	Lexer lexer = SetupLexer("#syntax STMT: [if [EXPR x]: [EXPR y]} then [STMT z]] => [if (x) (y) (z)]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
@@ -531,7 +537,7 @@ END_TEST
 
 START_TEST(RealWorldSyntaxExample)
 {
-	Lexer lexer = SetupLexer("#syntax STMT: [if [EXPR x] then [STMT y]] => [\\if x y]");
+	Lexer lexer = SetupLexer("#syntax STMT: [if [EXPR x] then [STMT y]] => [if (x) (y)]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
@@ -559,7 +565,7 @@ START_TEST(RealWorldSyntaxExample)
 			),
 			NULL
 		),
-		(SmileObject)SimpleParse("[if x y]"),
+		(SmileObject)SimpleParse("[(List.of) [$quote if] x y]"),
 		NULL
 	);
 

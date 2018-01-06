@@ -349,7 +349,7 @@ next:
 			goto next;
 
 		//-------------------------------------------------------
-		// 38-3F: Global (eXternal) variable instructions
+		// 38-3B: Global (eXternal) variable instructions
 
 		case Op_LdX:
 			Closure_UnboxAndPush(closure, Closure_GetGlobalVariable(closure, byteCode->u.symbol));
@@ -363,6 +363,22 @@ next:
 
 		case Op_StpX:
 			Closure_SetGlobalVariable(closure, byteCode->u.symbol, SmileArg_Box(Closure_Pop(closure)));
+			byteCode++;
+			goto next;
+
+		//-------------------------------------------------------
+		// 3C-3F: Optimized nulling instructions
+
+		case Op_NullLoc0:
+			Closure_SetLocalVariableInScope0(closure, byteCode->u.index, SmileArg_From(NullObject));
+			byteCode++;
+			goto next;
+		case Op_NullArg0:
+			Closure_SetArgumentInScope0(closure, byteCode->u.index, SmileArg_From(NullObject));
+			byteCode++;
+			goto next;
+		case Op_NullX:
+			Closure_SetGlobalVariable(closure, byteCode->u.symbol, NullObject);
 			byteCode++;
 			goto next;
 
@@ -1250,7 +1266,7 @@ next:
 		case Op_04: case Op_08: case Op_0C: case Op_0D: case Op_0E:
 		case Op_1D: case Op_1E: case Op_1F:
 		case Op_20: case Op_25: case Op_26: case Op_27: case Op_28: case Op_2D: case Op_2E: case Op_2F:
-		case Op_33: case Op_37: case Op_3B: case Op_3C: case Op_3D: case Op_3E: case Op_3F:
+		case Op_33: case Op_37: case Op_3B: case Op_3F:
 		case Op_73: case Op_77: case Op_78: case Op_79: case Op_7A: case Op_7B: case Op_7C: case Op_7D: case Op_7E: case Op_7F:
 		case Op_83: case Op_87: case Op_8A:
 		case Op_B3: case Op_BE:

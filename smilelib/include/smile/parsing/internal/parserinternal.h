@@ -13,22 +13,22 @@
 
 // Mode flags.
 
-#define BINARYLINEBREAKS_DISALLOWED	0	// Declare that line breaks are disallowed before a binary operator, causing the start of a new expression.
-#define BINARYLINEBREAKS_ALLOWED	(1 << 0)	// Declare that line breaks are allowed before a binary operator, allowing the expression to cross line breaks.
-#define BINARYLINEBREAKS_MASK	(1 << 0)
+#define BINARYLINEBREAKS_DISALLOWED		0			// Declare that line breaks are disallowed before a binary operator, causing the start of a new expression.
+#define BINARYLINEBREAKS_ALLOWED		(1 << 0)	// Declare that line breaks are allowed before a binary operator, allowing the expression to cross line breaks.
+#define BINARYLINEBREAKS_MASK			(1 << 0)
 		
-#define COMMAMODE_NORMAL	0	// Declare that commas delineate successive operands in N-ary operations.
+#define COMMAMODE_NORMAL				0			// Declare that commas delineate successive operands in N-ary operations.
 #define COMMAMODE_VARIABLEDECLARATION	(1 << 1)	// Declare that commas are being used to separate successive variable declarations.
-#define COMMAMODE_MASK	(1 << 1)
+#define COMMAMODE_MASK					(1 << 1)
 		
-#define COLONMODE_MEMBERACCESS	0	// Declare that colons are used for member-retrieval.
-#define COLONMODE_MEMBERDECL	(1 << 2)	// Declare that colons are used for member-declaration.
-#define COLONMODE_MASK	(1 << 2)	
+#define COLONMODE_MEMBERACCESS			0			// Declare that colons are used for member-retrieval.
+#define COLONMODE_MEMBERDECL			(1 << 2)	// Declare that colons are used for member-declaration.
+#define COLONMODE_MASK					(1 << 2)	
 		
-#define SYNTAXROOT_ASIS	0	// Parse the custom syntax rule as-is.
-#define SYNTAXROOT_NONTERMINAL	1	// Parse the custom syntax rule, skipping a preexisting nonterminal.
-#define SYNTAXROOT_KEYWORD	2	// Parse the custom syntax rule, but only rules starting with an initial keyword.
-#define SYNTAXROOT_RECURSE	3	// Parse the custom syntax rule, recursing from a parent custom syntax rule.
+#define SYNTAXROOT_ASIS					0			// Parse the custom syntax rule as-is.
+#define SYNTAXROOT_NONTERMINAL			1			// Parse the custom syntax rule, skipping a preexisting nonterminal.
+#define SYNTAXROOT_KEYWORD				2			// Parse the custom syntax rule, but only rules starting with an initial keyword.
+#define SYNTAXROOT_RECURSE				3			// Parse the custom syntax rule, recursing from a parent custom syntax rule.
 
 typedef enum {
 	CustomSyntaxResult_PartialApplicationWithError = -1,
@@ -110,6 +110,8 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseClassicScope(Parser parser, SmileObje
 SMILE_INTERNAL_FUNC ParseError Parser_ParseClassicTill(Parser parser, SmileObject *result, LexerPosition startPosition);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseClassicNew(Parser parser, SmileObject *result, LexerPosition startPosition);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseClassicSet(Parser parser, SmileObject *result, LexerPosition startPosition);
+
+SMILE_INTERNAL_FUNC SmileObject Parser_WrapTemplateForSplicing(SmileObject obj);
 
 SMILE_INTERNAL_FUNC Token Parser_Recover(Parser parser, Int *tokenKinds, Int numTokenKinds);
 SMILE_INTERNAL_FUNC Bool Parser_IsLValue(SmileObject obj);

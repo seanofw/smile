@@ -23,6 +23,7 @@
 #include <smile/parsing/internal/parsedecl.h>
 #include <smile/parsing/internal/parsescope.h>
 #include <smile/internal/staticstring.h>
+#include <smile/stringbuilder.h>
 
 //-------------------------------------------------------------------------------------------------
 // Parser Construction
@@ -34,6 +35,7 @@ Parser Parser_Create(void)
 	parser->currentScope = NULL;
 	parser->customFollowSet = NULL;
 	LIST_INIT(parser->firstMessage, parser->lastMessage);
+	parser->parseMessages = String_Empty;
 	return parser;
 }
 
@@ -88,9 +90,11 @@ SmileObject Parser_Parse(Parser parser, Lexer lexer, ParseScope scope)
 	ParseScope parentScope;
 	Lexer oldLexer;
 	SmileObject result;
+	SmileList lastMessage;
 
 	parentScope = parser->currentScope;
 	oldLexer = parser->lexer;
+	lastMessage = parser->lastMessage;
 	
 	parser->currentScope = scope;
 	parser->lexer = lexer;
@@ -100,7 +104,41 @@ SmileObject Parser_Parse(Parser parser, Lexer lexer, ParseScope scope)
 	parser->currentScope = parentScope;
 	parser->lexer = oldLexer;
 
+	parser->parseMessages = (
+		parser->lastMessage != lastMessage ? Parser_JoinMessages(
+			SMILE_KIND(lastMessage) == SMILE_KIND_LIST ? lastMessage : parser->firstMessage,
+			parser->lastMessage
+		)
+		: String_Empty
+	);
+
 	return result;
+}
+
+/// <summary>
+/// Join all of the messages in the provided list, starting at 'start', up to and including 'end'.
+/// </summary>
+String Parser_JoinMessages(SmileList start, SmileList end)
+{
+	ParseMessage parseMessage;
+	String str;
+	DECLARE_INLINE_STRINGBUILDER(stringBuilder, 256);
+
+	INIT_INLINE_STRINGBUILDER(stringBuilder);
+
+	for (; SMILE_KIND(start) == SMILE_KIND_LIST; start = (SmileList)start->d) {
+		if (SMILE_KIND(start->a) == SMILE_KIND_PARSEMESSAGE) {
+			parseMessage = (ParseMessage)start->a;
+			str = SMILE_VCALL1(parseMessage, toString, (SmileUnboxedData){ 0 });
+			StringBuilder_AppendString(stringBuilder, str);
+			StringBuilder_AppendByte(stringBuilder, '\n');
+		}
+
+		if (start == end)
+			break;
+	}
+
+	return StringBuilder_ToString(stringBuilder);
 }
 
 /// <summary>

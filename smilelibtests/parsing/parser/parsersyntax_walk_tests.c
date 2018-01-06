@@ -87,7 +87,7 @@ END_TEST
 START_TEST(SubstitutionWorksWithAKnownNonterminal)
 {
 	Lexer lexer = SetupLexer(
-		"#syntax STMT: [foo [EXPR x] baz] => (123 + x)\n"
+		"#syntax STMT: [foo [EXPR x] baz] => `[123 . + (x)]\n"
 		"4 + 5\n"
 		"foo 999 baz\n"
 		"6 + 7\n"
@@ -106,7 +106,7 @@ END_TEST
 START_TEST(SubstitutionOfComplexContentWorksWithAKnownNonterminal)
 {
 	Lexer lexer = SetupLexer(
-		"#syntax STMT: [foo [EXPR x] baz] => (123 + x)\n"
+		"#syntax STMT: [foo [EXPR x] baz] => `[123 . + (x)]\n"
 		"4 + 5\n"
 		"foo 8 * 9 / 10 baz\n"
 		"6 + 7\n"
@@ -125,7 +125,7 @@ END_TEST
 START_TEST(IfThenTest)
 {
 	Lexer lexer = SetupLexer(
-		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if x y]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if (x) (y)]\n"
 		"4 + 5\n"
 		"my-if 1 < 2 then 10\n"
 		"6 + 7\n"
@@ -144,7 +144,7 @@ END_TEST
 START_TEST(IfThenElseTest)
 {
 	Lexer lexer = SetupLexer(
-		"#syntax STMT: [my-if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y] else [STMT z]] => [$if (x) (y) (z)]\n"
 		"4 + 5\n"
 		"my-if 1 < 2 then 10 else 20\n"
 		"6 + 7\n"
@@ -163,8 +163,8 @@ END_TEST
 START_TEST(IfThenElseTestWithBothIfThenRules)
 {
 	Lexer lexer = SetupLexer(
-		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if x y]\n"
-		"#syntax STMT: [my-if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if (x) (y)]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y] else [STMT z]] => [$if (x) (y) (z)]\n"
 		"4 + 5\n"
 		"my-if 1 < 2 then 10\n"
 		"my-if 3 < 4 then 30 else 40\n"
@@ -185,8 +185,8 @@ END_TEST
 START_TEST(IfThenElseTestWithNestedConditionals)
 {
 	Lexer lexer = SetupLexer(
-		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if x y]\n"
-		"#syntax STMT: [my-if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if (x) (y)]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y] else [STMT z]] => [$if (x) (y) (z)]\n"
 		"4 + 5\n"
 		"my-if 1 < 2 then\n"
 		"  my-if 5 < 6 then 50\n"
@@ -211,8 +211,8 @@ END_TEST
 START_TEST(CStyleIfThenElseTest)
 {
 	Lexer lexer = SetupLexer(
-		"#syntax STMT: [my-if ( [EXPR x] ) [STMT y]] => [$if x y]\n"
-		"#syntax STMT: [my-if ( [EXPR x] ) [STMT y] else [STMT z]] => [$if x y z]\n"
+		"#syntax STMT: [my-if ( [EXPR x] ) [STMT y]] => [$if (x) (y)]\n"
+		"#syntax STMT: [my-if ( [EXPR x] ) [STMT y] else [STMT z]] => [$if (x) (y) (z)]\n"
 		"4 + 5\n"
 		"my-if (1 < 2) 10\n"
 		"my-if (3 < 4) 30 else 40\n"
@@ -230,23 +230,14 @@ START_TEST(CStyleIfThenElseTest)
 }
 END_TEST
 
-/*
-//
-// TODO: FIXME: This test doesn't work right now that we're parsing quoted template
-//   forms correctly. Actually, many of the syntax tests are now wrong, because
-//   the correct fix is changing how substitution occurs (proper template evaluation
-//   is what's really required here).  #syntax forms really should use substitutions
-//   like (x) and (y) to represent replaced values so that @(list-splicing) can work
-//   correctly as well, and until it does, proper syntactic forms don't quite work yet.
-//
-START_TEST(//SimpleCustomDslTest)
+START_TEST(SimpleCustomDslTest)
 {
 	Lexer lexer = SetupLexer(
-		"#syntax STMT: [fronk { [FOO-FRONKS x] }] => [fronk `x]]\n"
-		"#syntax FOO-FRONKS: [[FOO-GROOP x] [FOO-FRONKS y]] => [x y]\n"
-		"#syntax FOO-FRONKS: [[FOO-GROOP x]] => [x]\n"
-		"#syntax FOO-GROOP: [qux] => qux\n"
-		"#syntax FOO-GROOP: [xuq] => xuq\n"
+		"#syntax STMT: [fronk { [FOO-FRONKS x] }] => `[fronk [$quote (x)]]\n"
+		"#syntax FOO-FRONKS: [[FOO-GROOP x] [FOO-FRONKS y]] => `[(x) @(y)]\n"
+		"#syntax FOO-FRONKS: [[FOO-GROOP x]] => `[(x)]\n"
+		"#syntax FOO-GROOP: [qux] => `qux\n"
+		"#syntax FOO-GROOP: [xuq] => `xuq\n"
 		"1 + 2\n"
 		"fronk { qux xuq xuq qux }\n"
 		"3 + 4\n"
@@ -257,16 +248,35 @@ START_TEST(//SimpleCustomDslTest)
 
 	ASSERT(RecursiveEquals(LIST_FIRST(result), SimpleParse("$progn")));
 	ASSERT(RecursiveEquals(LIST_SEVENTH(result), SimpleParse("[(1 . +) 2]")));
-	ASSERT(RecursiveEquals(LIST_EIGHTH(result), SimpleParse("[fronk [$quote [qux [xuq [xuq [qux]]]]]]")));
+	ASSERT(RecursiveEquals(LIST_EIGHTH(result), SimpleParse("[fronk [$quote [qux xuq xuq qux]]]")));
 	ASSERT(RecursiveEquals(LIST_NINTH(result), SimpleParse("[(3 . +) 4]")));
 }
 END_TEST
-*/
+
+START_TEST(CustomDslsValidateContentThroughTheirSyntaxRules)
+{
+	Lexer lexer = SetupLexer(
+		"#syntax STMT: [fronk { [FOO-FRONKS x] }] => `[fronk [$quote (x)]]\n"
+		"#syntax FOO-FRONKS: [[FOO-GROOP x] [FOO-FRONKS y]] => `[(x) @(y)]\n"
+		"#syntax FOO-FRONKS: [[FOO-GROOP x]] => `[(x)]\n"
+		"#syntax FOO-GROOP: [qux] => `qux\n"
+		"#syntax FOO-GROOP: [xuq] => `xuq\n"
+		"1 + 2\n"
+		"fronk { qux blarg xuq qux }\n"
+		"3 + 4\n"
+	);
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(parser->firstMessage != NullList);
+}
+END_TEST
 
 START_TEST(CanExtendStmtWithKeywordRoots)
 {
 	Lexer lexer = SetupLexer(
-		"#syntax STMT: [my-if ( [EXPR x] ) [STMT y]] => [$if x y]\n"
+		"#syntax STMT: [my-if ( [EXPR x] ) [STMT y]] => [$if (x) (y)]\n"
 		"4 + 5\n"
 		"my-if (1 < 2) 10\n"
 		"6 + 7\n"
@@ -285,7 +295,7 @@ END_TEST
 START_TEST(CanExtendExprWithKeywordRoots)
 {
 	Lexer lexer = SetupLexer(
-		"#syntax EXPR: [my-if ( [EXPR x] ) [STMT y]] => [$if x y]\n"
+		"#syntax EXPR: [my-if ( [EXPR x] ) [STMT y]] => [$if (x) (y)]\n"
 		"4 + 5\n"
 		"x = my-if (1 < 2) 10\n"
 		"6 + 7\n"
@@ -302,6 +312,23 @@ START_TEST(CanExtendExprWithKeywordRoots)
 }
 END_TEST
 
+START_TEST(CanCreateBasicPrintStatementDynamically)
+{
+	Lexer lexer = SetupLexer(
+		"#syntax STMT: [print [EXPR+ exprs ,]] => `[Stdout.print [[List.of @@exprs].join]]\n"
+		"\n"
+		"print \"Hello, World.\"\n"
+	);
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	ParseError declError = ParseScope_Declare(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "Stdout"), PARSEDECL_GLOBAL, NULL, NULL);
+	SmileList result = (SmileList)Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(RecursiveEquals(LIST_FIRST(result), SimpleParse("$progn")));
+	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(Stdout.print) [([(List.of) \"Hello, World.\"].join)]]")));
+}
+END_TEST
+
 //-------------------------------------------------------------------------------------------------
 // Keyword tests
 
@@ -309,8 +336,8 @@ START_TEST(CanDeclareKeywords)
 {
 	Lexer lexer = SetupLexer(
 		"keyword my-if\n"
-		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => [$if x y]\n"
-		"#syntax STMT: [my-if [EXPR x] then [STMT y] else [STMT z]] => [$if x y z]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y]] => `[$if @x @y]\n"
+		"#syntax STMT: [my-if [EXPR x] then [STMT y] else [STMT z]] => `[$if @x @y @z]\n"
 		"4 + 5\n"
 		"my-if 1 < 2 then 10\n"
 		"my-if 3 < 4 then 30 else 40\n"
@@ -360,7 +387,7 @@ START_TEST(DeclaringKeywordsChangesParsingBehavior)
 	// And now the kicker:  *With* the keyword declaration, *and* a syntax rule, this is allowed again,
 	// because 'my-if' and 'my-then' and 'my-else' are still valid for use as syntax keywords.
 	lexer = SetupLexer(
-		"#syntax STMT: [my-if [EXPR x] my-then [STMT y] my-else [STMT z]] => [$if x y z]\n"
+		"#syntax STMT: [my-if [EXPR x] my-then [STMT y] my-else [STMT z]] => `[$if @x @y @z]\n"
 		"keyword my-if, my-then, my-else\n"
 		"my-if 4 my-then 5 my-else 6\n"
 	);

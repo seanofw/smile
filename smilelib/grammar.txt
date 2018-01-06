@@ -1,5 +1,5 @@
 
-Grammar for Smile, 14.2
+Grammar for Smile, 15.0
 =======================
 
 This grammar is something like LR(3), with common shift-reduce conflicts resolved in
@@ -22,7 +22,7 @@ parser in the standard Smile implementation.
 
 Tokens:
 	LBRACE RBRACE LPAREN RPAREN LBRACKET RBRACKET
-	BAR EQUAL EQUAL_NOSPACE BACKTICK DOT DOTDOT DOTDOTDOT DOUBLEHASH COLON COMMA
+	BAR EQUAL EQUAL_NOSPACE BACKTICK DOT DOTDOT DOTDOTDOT DOUBLEHASH COLON COMMA AT ATAT
 	IF UNLESS THEN ELSE WHILE UNTIL DO TILL WHEN RETURN VAR AUTO CONST TRY CATCH NEW IS TYPEOF AND OR NOT
 	VAR_NAME UNKNOWN_ALPHA_NAME UNKNOWN_PUNCT_NAME TILL_NAME
 	EQ NE LE GE GT LT SUPEREQ SUPERNE
@@ -191,6 +191,8 @@ raw_list_term ::= raw_list | any_name
 nonraw_term ::= LPAREN expr RPAREN
        | scope
        | DYNSTRING
+	   | AT any_name
+	   | ATAT any_name
 
 raw_list ::= LBRACKET raw_list_items_opt RBRACKET
 raw_list_items_opt ::= raw_list_items |

@@ -65,16 +65,16 @@ static String ParseMessage_ToString(ParseMessage parseMessage, SmileUnboxedData 
 	if (position->filename != NULL) {
 		if (position->line > 0) {
 			// Have a filename and a line number.
-			message = String_Format("%s %S:%d: %S\033[0m\n", prefix, position->filename, position->line, parseMessage->message);
+			message = String_Format("%s%S:%d: %S", prefix, position->filename, position->line, parseMessage->message);
 		}
 		else {
 			// Have a filename but no line number.
-			message = String_Format("%s %S: %S\033[0m\n", prefix, position->filename, parseMessage->message);
+			message = String_Format("%s%S: %S", prefix, position->filename, parseMessage->message);
 		}
 	}
 	else {
 		// Have no filename.
-		message = String_Format("%s %S\033[0m\n", prefix, parseMessage->message);
+		message = String_Format("%s%S", prefix, parseMessage->message);
 	}
 
 	return message;

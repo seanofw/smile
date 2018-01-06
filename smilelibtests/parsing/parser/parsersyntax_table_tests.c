@@ -150,7 +150,7 @@ START_TEST(CanAddASimpleRuleToASyntaxTable)
 	ASSERT(node->nextNonterminals == NULL);
 	ASSERT(node->nextTerminals == NULL);
 
-	obj = SimpleParse("123");
+	obj = SimpleParse("[$quote 123]");
 	ASSERT(RecursiveEquals(obj, node->replacement));
 }
 END_TEST
@@ -160,7 +160,7 @@ START_TEST(CanAddAComplexRuleToASyntaxTable)
 	ParserSyntaxNode finalNode;
 	ParserSyntaxClass cls;
 
-	SmileObject parsedCode = FullParse("#syntax STMT: [if [EXPR x] then [STMT y]] => [\\if x y]");
+	SmileObject parsedCode = FullParse("#syntax STMT: [if [EXPR x] then [STMT y]] => [$if (x) (y)]");
 	SmileSyntax rule = (SmileSyntax)parsedCode;
 	Parser parser = Parser_Create();
 
@@ -180,7 +180,7 @@ START_TEST(CanAddAComplexRuleToASyntaxTable)
 	ASSERT(finalNode != NULL);
 	ASSERT(finalNode->replacement != NullObject);
 
-	ASSERT(RecursiveEquals(SimpleParse("[if x y]"), finalNode->replacement));
+	ASSERT(RecursiveEquals(SimpleParse("[(List . of) [$quote $if] x y]"), finalNode->replacement));
 }
 END_TEST
 
@@ -189,7 +189,7 @@ START_TEST(CanAddOverlappingRulesToASyntaxTable)
 	ParserSyntaxNode finalNode;
 	ParserSyntaxClass cls;
 
-	SmileObject parsedCode = FullParse("#syntax STMT: [if [EXPR x] then [STMT y]] => [\\if x y]");
+	SmileObject parsedCode = FullParse("#syntax STMT: [if [EXPR x] then [STMT y]] => [$if (x) (y)]");
 	SmileSyntax rule = (SmileSyntax)parsedCode;
 	Parser parser = Parser_Create();
 
@@ -201,7 +201,7 @@ START_TEST(CanAddOverlappingRulesToASyntaxTable)
 	ASSERT(resultSyntaxTable == syntaxTable);
 	ASSERT(Int32Dict_Count(syntaxTable->syntaxClasses) == 1);
 
-	parsedCode = FullParse("#syntax STMT: [if [EXPR x] then [STMT y] else [STMT z]] => [\\if x y z]");
+	parsedCode = FullParse("#syntax STMT: [if [EXPR x] then [STMT y] else [STMT z]] => [$if (x) (y) (z)]");
 	rule = (SmileSyntax)parsedCode;
 	result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
 
@@ -217,14 +217,14 @@ START_TEST(CanAddOverlappingRulesToASyntaxTable)
 	ASSERT(finalNode != NULL);
 	ASSERT(finalNode->replacement != NullObject);
 
-	ASSERT(RecursiveEquals(SimpleParse("[if x y]"), finalNode->replacement));
+	ASSERT(RecursiveEquals(SimpleParse("[(List . of) [$quote $if] x y]"), finalNode->replacement));
 
 	finalNode = WalkSyntaxPattern(cls, "if; EXPR x; then; STMT y; else; STMT z");
 
 	ASSERT(finalNode != NULL);
 	ASSERT(finalNode->replacement != NullObject);
 
-	ASSERT(RecursiveEquals(SimpleParse("[if x y z]"), finalNode->replacement));
+	ASSERT(RecursiveEquals(SimpleParse("[(List . of) [$quote $if] x y z]"), finalNode->replacement));
 }
 END_TEST
 
@@ -269,21 +269,21 @@ START_TEST(CanAddRulesWithTerminalForksToASyntaxTable)
 	ASSERT(finalNode != NULL);
 	ASSERT(finalNode->replacement != NullObject);
 
-	ASSERT(RecursiveEquals(SimpleParse("123"), finalNode->replacement));
+	ASSERT(RecursiveEquals(SimpleParse("[$quote 123]"), finalNode->replacement));
 
 	finalNode = WalkSyntaxPattern(cls, "do; the; last; EXPR x; then; stop");
 
 	ASSERT(finalNode != NULL);
 	ASSERT(finalNode->replacement != NullObject);
 
-	ASSERT(RecursiveEquals(SimpleParse("456"), finalNode->replacement));
+	ASSERT(RecursiveEquals(SimpleParse("[$quote 456]"), finalNode->replacement));
 
 	finalNode = WalkSyntaxPattern(cls, "do; the; last; EXPR x; then; repeat");
 
 	ASSERT(finalNode != NULL);
 	ASSERT(finalNode->replacement != NullObject);
 
-	ASSERT(RecursiveEquals(SimpleParse("789"), finalNode->replacement));
+	ASSERT(RecursiveEquals(SimpleParse("[$quote 789]"), finalNode->replacement));
 }
 END_TEST
 
@@ -308,7 +308,7 @@ START_TEST(CanAddRulesWithInitialNonterminals)
 	finalNode = WalkSyntaxPattern(cls, "EXPR x; +; EXPR y");
 	ASSERT(finalNode != NULL);
 	ASSERT(finalNode->replacement != NullObject);
-	ASSERT(RecursiveEquals(SimpleParse("123"), finalNode->replacement));
+	ASSERT(RecursiveEquals(SimpleParse("[$quote 123]"), finalNode->replacement));
 }
 END_TEST
 
@@ -333,7 +333,7 @@ START_TEST(CanAddRulesWithRepeatingNonterminals)
 	finalNode = WalkSyntaxPattern(cls, "till; NAME x +; do; STMT y");
 	ASSERT(finalNode != NULL);
 	ASSERT(finalNode->replacement != NullObject);
-	ASSERT(RecursiveEquals(SimpleParse("123"), finalNode->replacement));
+	ASSERT(RecursiveEquals(SimpleParse("[$quote 123]"), finalNode->replacement));
 }
 END_TEST
 
@@ -358,7 +358,7 @@ START_TEST(CanAddRulesWithRepeatingNonterminalsAndSeparators)
 	finalNode = WalkSyntaxPattern(cls, "till; NAME x + ,; do; STMT y");
 	ASSERT(finalNode != NULL);
 	ASSERT(finalNode->replacement != NullObject);
-	ASSERT(RecursiveEquals(SimpleParse("123"), finalNode->replacement));
+	ASSERT(RecursiveEquals(SimpleParse("[$quote 123]"), finalNode->replacement));
 }
 END_TEST
 
@@ -383,7 +383,7 @@ START_TEST(CanAddRulesWithRepeatingZeroOrMoreNonterminals)
 	finalNode = WalkSyntaxPattern(cls, "till; NAME x *; do; STMT y");
 	ASSERT(finalNode != NULL);
 	ASSERT(finalNode->replacement != NullObject);
-	ASSERT(RecursiveEquals(SimpleParse("123"), finalNode->replacement));
+	ASSERT(RecursiveEquals(SimpleParse("[$quote 123]"), finalNode->replacement));
 }
 END_TEST
 
@@ -408,7 +408,7 @@ START_TEST(CanAddRulesWithRepeatingZeroOrOneNonterminals)
 	finalNode = WalkSyntaxPattern(cls, "till; NAME x ?; do; STMT y");
 	ASSERT(finalNode != NULL);
 	ASSERT(finalNode->replacement != NullObject);
-	ASSERT(RecursiveEquals(SimpleParse("123"), finalNode->replacement));
+	ASSERT(RecursiveEquals(SimpleParse("[$quote 123]"), finalNode->replacement));
 }
 END_TEST
 
@@ -451,28 +451,28 @@ START_TEST(CanAddRulesThatAreRightRecursive)
 	finalNode = WalkSyntaxPattern(cls, "MY-MUL x");
 	ASSERT(finalNode != NULL);
 	ASSERT(finalNode->replacement != NullObject);
-	ASSERT(RecursiveEquals(SimpleParse("456"), finalNode->replacement));
+	ASSERT(RecursiveEquals(SimpleParse("[$quote 456]"), finalNode->replacement));
 
 	finalNode = WalkSyntaxPattern((ParserSyntaxClass)finalNode, "+; MY-ADD y");
 	ASSERT(finalNode != NULL);
 	ASSERT(finalNode->replacement != NullObject);
-	ASSERT(RecursiveEquals(SimpleParse("123"), finalNode->replacement));
+	ASSERT(RecursiveEquals(SimpleParse("[$quote 123]"), finalNode->replacement));
 
 	cls = GetSyntaxClassSafely(syntaxTable, "MY-MUL");
 
 	finalNode = WalkSyntaxPattern(cls, "TERM x");
 	ASSERT(finalNode != NULL);
 	ASSERT(finalNode->replacement != NullObject);
-	ASSERT(RecursiveEquals(SimpleParse("\"abc\""), finalNode->replacement));
+	ASSERT(RecursiveEquals(SimpleParse("[$quote \"abc\"]"), finalNode->replacement));
 
 	finalNode = WalkSyntaxPattern((ParserSyntaxClass)finalNode, "+; MY-MUL y");
 	ASSERT(finalNode != NULL);
 	ASSERT(finalNode->replacement != NullObject);
-	ASSERT(RecursiveEquals(SimpleParse("789"), finalNode->replacement));
+	ASSERT(RecursiveEquals(SimpleParse("[$quote 789]"), finalNode->replacement));
 }
 END_TEST
 
-START_TEST(CannotAddRulesWithNullReplacements)
+START_TEST(CanAddRulesWithNullReplacements)
 {
 	ParserSyntaxTable syntaxTable = ParserSyntaxTable_CreateNew();
 	ParserSyntaxTable resultSyntaxTable = syntaxTable;
@@ -481,8 +481,8 @@ START_TEST(CannotAddRulesWithNullReplacements)
 	SmileObject parsedCode = FullParse("#syntax STMT: [if [EXPR x] then [STMT y]] => []");
 	SmileSyntax rule = (SmileSyntax)parsedCode;
 	Bool result = ParserSyntaxTable_AddRule(parser, &resultSyntaxTable, rule);
-	ASSERT(result == False);
-	ASSERT(Parser_GetErrorCount(parser) > 0);
+	ASSERT(result == True);
+	ASSERT(Parser_GetErrorCount(parser) == 0);
 }
 END_TEST
 

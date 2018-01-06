@@ -48,6 +48,9 @@ STATIC_STRING(TokenString_DoubleHash, "##");
 STATIC_STRING(TokenString_DotDot, "..");
 STATIC_STRING(TokenString_DotDotDot, "...");
 
+STATIC_STRING(TokenString_At, "@");
+STATIC_STRING(TokenString_AtAt, "@@");
+
 STATIC_STRING(TokenString_SuperEq, "===");
 STATIC_STRING(TokenString_SuperNe, "!==");
 STATIC_STRING(TokenString_Eq, "==");
@@ -125,6 +128,8 @@ SMILE_API_FUNC String TokenKind_ToString(Int tokenKind)
 		case TOKEN_COLON: return String_Colon;
 		case TOKEN_COMMA: return String_Comma;
 		case TOKEN_SEMICOLON: return String_Semicolon;
+		case TOKEN_AT: return TokenString_At;
+		case TOKEN_ATAT: return TokenString_AtAt;
 
 		case TOKEN_LOANWORD_INCLUDE: return TokenString_LoanWord_Include;
 		case TOKEN_LOANWORD_REGEX: return TokenString_LoanWord_Regex;

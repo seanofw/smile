@@ -85,66 +85,66 @@ readMoreName:
 	if (src < end) {
 		switch (ch = *src) {
 
-		case '\\':
-			if (src > start) {
-				StringBuilder_Append(namebuf, start, 0, src - start);
-			}
-			src++;
-			code = Lexer_DecodeEscapeCode(&src, end, True);
-			StringBuilder_AppendUnicode(namebuf, code < 0 ? 0xFFFD : (UInt32)code);
-			*hasEscapes = True;
-			start = src;
-			goto readMoreName;
-
-		case 'a': case 'b': case 'c': case 'd':
-		case 'e': case 'f': case 'g': case 'h':
-		case 'i': case 'j': case 'k': case 'l':
-		case 'm': case 'n': case 'o': case 'p':
-		case 'q': case 'r': case 's': case 't':
-		case 'u': case 'v': case 'w': case 'x':
-		case 'y': case 'z':
-		case 'A': case 'B': case 'C': case 'D':
-		case 'E': case 'F': case 'G': case 'H':
-		case 'I': case 'J': case 'K': case 'L':
-		case 'M': case 'N': case 'O': case 'P':
-		case 'Q': case 'R': case 'S': case 'T':
-		case 'U': case 'V': case 'W': case 'X':
-		case 'Y': case 'Z':
-			charsets |= ((UInt64)1) << (IDENTKIND_CHARSET_LATIN >> 4);
-			src++;
-			goto readMoreName;
-
-		case '0': case '1': case '2': case '3':
-		case '4': case '5': case '6': case '7':
-		case '8': case '9':
-		case '_': case '\'': case '\"':
-		case '!': case '?': case '$': case '~':
-			src++;
-			goto readMoreName;
-
-		case '-':
-			src++;
-			if (src < end && IsValidRestartCharacter(src, end))
-				goto readMoreName;
-			src--;
-			break;
-
-		default:
-			if (src > start) {
-				StringBuilder_Append(namebuf, start, 0, src - start);
-			}
-			if (ch >= 128) {
-				code = String_ExtractUnicodeCharacterInternal(&src, end);
-				identifierCharacterKind = SmileIdentifierKind(code);
-				charsets |= ((UInt64)1) << ((identifierCharacterKind & IDENTKIND_CHARSET_MASK) >> 4);
-				if ((identifierCharacterKind & (IDENTKIND_MIDDLELETTER | IDENTKIND_STARTLETTER))) {
-					StringBuilder_AppendUnicode(namebuf, (UInt32)code);
-					start = src;
-					goto readMoreName;
+			case '\\':
+				if (src > start) {
+					StringBuilder_Append(namebuf, start, 0, src - start);
 				}
-			}
-			start = src;
-			break;
+				src++;
+				code = Lexer_DecodeEscapeCode(&src, end, True);
+				StringBuilder_AppendUnicode(namebuf, code < 0 ? 0xFFFD : (UInt32)code);
+				*hasEscapes = True;
+				start = src;
+				goto readMoreName;
+
+			case 'a': case 'b': case 'c': case 'd':
+			case 'e': case 'f': case 'g': case 'h':
+			case 'i': case 'j': case 'k': case 'l':
+			case 'm': case 'n': case 'o': case 'p':
+			case 'q': case 'r': case 's': case 't':
+			case 'u': case 'v': case 'w': case 'x':
+			case 'y': case 'z':
+			case 'A': case 'B': case 'C': case 'D':
+			case 'E': case 'F': case 'G': case 'H':
+			case 'I': case 'J': case 'K': case 'L':
+			case 'M': case 'N': case 'O': case 'P':
+			case 'Q': case 'R': case 'S': case 'T':
+			case 'U': case 'V': case 'W': case 'X':
+			case 'Y': case 'Z':
+				charsets |= ((UInt64)1) << (IDENTKIND_CHARSET_LATIN >> 4);
+				src++;
+				goto readMoreName;
+
+			case '0': case '1': case '2': case '3':
+			case '4': case '5': case '6': case '7':
+			case '8': case '9':
+			case '_': case '\'': case '\"':
+			case '!': case '?': case '$': case '~':
+				src++;
+				goto readMoreName;
+
+			case '-':
+				src++;
+				if (src < end && IsValidRestartCharacter(src, end))
+					goto readMoreName;
+				src--;
+				break;
+
+			default:
+				if (src > start) {
+					StringBuilder_Append(namebuf, start, 0, src - start);
+				}
+				if (ch >= 128) {
+					code = String_ExtractUnicodeCharacterInternal(&src, end);
+					identifierCharacterKind = SmileIdentifierKind(code);
+					charsets |= ((UInt64)1) << ((identifierCharacterKind & IDENTKIND_CHARSET_MASK) >> 4);
+					if ((identifierCharacterKind & (IDENTKIND_MIDDLELETTER | IDENTKIND_STARTLETTER))) {
+						StringBuilder_AppendUnicode(namebuf, (UInt32)code);
+						start = src;
+						goto readMoreName;
+					}
+				}
+				start = src;
+				break;
 		}
 	}
 
@@ -211,6 +211,8 @@ STATIC_STRING(Lexer_NamePlus, "+");
 STATIC_STRING(Lexer_NameMinus, "-");
 STATIC_STRING(Lexer_NameStar, "*");
 STATIC_STRING(Lexer_NameSlash, "/");
+STATIC_STRING(Lexer_NameAt, "@");
+STATIC_STRING(Lexer_NameAtAt, "@@");
 
 static String ParsePunctuationRaw(Lexer lexer, Bool *hasEscapes, Int *tokenKind)
 {
@@ -234,43 +236,43 @@ readMorePunctuation:
 	if (src < end) {
 		switch (ch = *src) {
 
-		case '\\':
-			if (src > start) {
-				StringBuilder_Append(namebuf, start, 0, src - start);
-				StringBuilder_AppendRepeat(escapebuf, 'a', src - start);
-			}
-			src++;
-			code = Lexer_DecodeEscapeCode(&src, end, True);
-			StringBuilder_AppendUnicode(namebuf, code < 0 ? 0xFFFD : (UInt32)code);
-			StringBuilder_AppendByte(escapebuf, '\\');
-			*hasEscapes = True;
-			start = src;
-			goto readMorePunctuation;
-
-		case '~': case '!': case '?':
-		case '@': case '%': case '^': case '&':
-		case '*': case '=': case '+': case '<':
-		case '>': case '/': case '-':
-			src++;
-			goto readMorePunctuation;
-
-		default:
-			if (src > start) {
-				StringBuilder_Append(namebuf, start, 0, src - start);
-				StringBuilder_AppendRepeat(escapebuf, 'a', src - start);
-			}
-			if (ch >= 128) {
-				code = String_ExtractUnicodeCharacterInternal(&src, end);
-				identifierCharacterKind = SmileIdentifierKind(code);
-				if ((identifierCharacterKind & (IDENTKIND_MIDDLELETTER | IDENTKIND_PUNCTUATION))) {
-					StringBuilder_AppendUnicode(namebuf, (UInt32)code);
-					StringBuilder_AppendByte(escapebuf, 'a');
-					start = src;
-					goto readMorePunctuation;
+			case '\\':
+				if (src > start) {
+					StringBuilder_Append(namebuf, start, 0, src - start);
+					StringBuilder_AppendRepeat(escapebuf, 'a', src - start);
 				}
-			}
-			start = src;
-			break;
+				src++;
+				code = Lexer_DecodeEscapeCode(&src, end, True);
+				StringBuilder_AppendUnicode(namebuf, code < 0 ? 0xFFFD : (UInt32)code);
+				StringBuilder_AppendByte(escapebuf, '\\');
+				*hasEscapes = True;
+				start = src;
+				goto readMorePunctuation;
+
+			case '~': case '!': case '?':
+			case '@': case '%': case '^': case '&':
+			case '*': case '=': case '+': case '<':
+			case '>': case '/': case '-':
+				src++;
+				goto readMorePunctuation;
+
+			default:
+				if (src > start) {
+					StringBuilder_Append(namebuf, start, 0, src - start);
+					StringBuilder_AppendRepeat(escapebuf, 'a', src - start);
+				}
+				if (ch >= 128) {
+					code = String_ExtractUnicodeCharacterInternal(&src, end);
+					identifierCharacterKind = SmileIdentifierKind(code);
+					if ((identifierCharacterKind & (IDENTKIND_MIDDLELETTER | IDENTKIND_PUNCTUATION))) {
+						StringBuilder_AppendUnicode(namebuf, (UInt32)code);
+						StringBuilder_AppendByte(escapebuf, 'a');
+						start = src;
+						goto readMorePunctuation;
+					}
+				}
+				start = src;
+				break;
 		}
 	}
 
@@ -286,6 +288,19 @@ readMorePunctuation:
 
 	// Recognize certain special trailing-equals forms upfront.
 	switch (*nameBytes) {
+
+		case '@':
+			if (nameLen == 1) {				// "@"
+				lexer->src = src;
+				*tokenKind = TOKEN_AT;
+				return Lexer_NameAt;
+			}
+			else if (nameLen == 2 && nameBytes[1] == '@') {				// "@@"
+				lexer->src = src;
+				*tokenKind = TOKEN_ATAT;
+				return Lexer_NameAtAt;
+			}
+			break;
 
 		case '=':
 			if (nameLen == 1) {				// "="

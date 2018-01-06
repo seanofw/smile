@@ -1299,6 +1299,7 @@ ParseError Parser_ParsePrefixExpr(Parser parser, SmileObject *expr, Int modeFlag
 	struct TokenStruct *tempOperators;
 	Int numOperators = 0, maxOperators = 16, newMax, i;
 	Symbol symbol;
+	Symbol lastUnaryTokenSymbol;
 
 	// Because this rule is right-recursive, and we don't want to recurse wherever we can
 	// avoid it, we loop to collect unary operators, and then parse the 'new' expression,
@@ -1308,11 +1309,17 @@ ParseError Parser_ParsePrefixExpr(Parser parser, SmileObject *expr, Int modeFlag
 	if (((token = Parser_NextToken(parser))->kind == TOKEN_UNKNOWNALPHANAME || token->kind == TOKEN_UNKNOWNPUNCTNAME)
 		&& Parser_IsAcceptableArbitraryPrefixOperator(token->data.symbol)) {
 
+		// Record which symbol came last, for error-reporting.
+		lastUnaryTokenSymbol = token->data.symbol;
+
 		MemCpy(unaryOperators + numOperators++, token, sizeof(struct TokenStruct));
 		firstUnaryTokenForErrorReporting = &unaryOperators[0];
 
 		// Collect up any successive unary prefix operators in the unaryOperators array.
-		while ((token = Parser_NextToken(parser))->kind == TOKEN_UNKNOWNALPHANAME || token->kind == TOKEN_UNKNOWNPUNCTNAME) {
+		while (((token = Parser_NextToken(parser))->kind == TOKEN_UNKNOWNALPHANAME || token->kind == TOKEN_UNKNOWNPUNCTNAME)
+			&& ((modeFlags & BINARYLINEBREAKS_MASK) == BINARYLINEBREAKS_ALLOWED || !token->isFirstContentOnLine)) {
+			lastUnaryTokenSymbol = token->data.symbol;
+
 			if (numOperators >= maxOperators) {
 				newMax = maxOperators * 2;
 				tempOperators = GC_MALLOC_STRUCT_ARRAY(struct TokenStruct, newMax);
@@ -1322,6 +1329,17 @@ ParseError Parser_ParsePrefixExpr(Parser parser, SmileObject *expr, Int modeFlag
 			}
 
 			MemCpy(unaryOperators + numOperators++, token, sizeof(struct TokenStruct));
+		}
+
+		// The construct after the unary operator cannot be moved to a new line if we're not
+		// wrapped in a safe construct like parentheses; this causes trouble for the expected
+		// behavior of lower-precedence constructs like statement keywords.  This requirement
+		// for unary terms matches the binary-line-break rule; just as "x - \n y" is illegal,
+		// "- \n y" is also illegal.
+		if (token->isFirstContentOnLine && (modeFlags & BINARYLINEBREAKS_MASK) != BINARYLINEBREAKS_ALLOWED) {
+			return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
+				String_Format("Expected an expression term on the same line after unary operator '%S'",
+					SymbolTable_GetName(Smile_SymbolTable, lastUnaryTokenSymbol)));
 		}
 	}
 

@@ -197,83 +197,189 @@ static SmileObject Parser_RecursivelyClone(SmileObject expr)
 	}
 }
 
-static SmileObject Parser_RecursivelyApplyReplacementVariables(SmileObject expr, Int32Dict replacements, Int32Int32Dict usageDict)
+static SmileObject Parser_RecursivelyApplyTemplate(Parser parser, SmileObject expr, Int32Dict replacements, LexerPosition lexerPosition);
+
+Inline SmileObject Parser_ApplyListOf(Parser parser, SmileList list, Int32Dict replacements)
 {
-	switch (expr->kind & (SMILE_KIND_MASK | SMILE_FLAG_WITHSOURCE)) {
-		case SMILE_KIND_LIST:
-		{
-			SmileList oldList = (SmileList)expr;
-			SmileList newList = SmileList_Cons(
-				Parser_RecursivelyApplyReplacementVariables(oldList->a, replacements, usageDict),
-				Parser_RecursivelyApplyReplacementVariables(oldList->d, replacements, usageDict)
-			);
-			return (SmileObject)newList;
+	SmileList head = NullList, tail = NullList;
+
+	for (; SMILE_KIND(list) != SMILE_KIND_NULL; list = LIST_REST(list)) {
+		LexerPosition lexerPosition = (list->kind & SMILE_FLAG_WITHSOURCE) ? ((struct SmileListWithSourceInt *)list)->position : NULL;
+		SmileObject oldValue = list->a;
+		SmileObject newValue = Parser_RecursivelyApplyTemplate(parser, oldValue, replacements, lexerPosition);
+
+		if (lexerPosition != NULL) {
+			LIST_APPEND_WITH_SOURCE(head, tail, newValue, lexerPosition);
+		}
+		else {
+			LIST_APPEND(head, tail, newValue);
+		}
+	}
+
+	return (SmileObject)head;
+}
+
+Inline SmileObject Parser_ApplyListCombine(Parser parser, SmileList list, Int32Dict replacements)
+{
+	SmileList head = NullList, tail = NullList;
+
+	for (; SMILE_KIND(list) != SMILE_KIND_NULL; list = LIST_REST(list)) {
+		LexerPosition lexerPosition = (list->kind & SMILE_FLAG_WITHSOURCE) ? ((struct SmileListWithSourceInt *)list)->position : NULL;
+		SmileObject oldValue = list->a;
+		SmileObject newValue = Parser_RecursivelyApplyTemplate(parser, oldValue, replacements, lexerPosition);
+
+		if (!SmileList_IsWellFormed(newValue)) {
+			Parser_AddError(parser, lexerPosition,
+				"Cannot splice into a templated list an object that is not itself a well-formed list.");
 		}
 
-		case SMILE_KIND_LIST | SMILE_FLAG_WITHSOURCE:
-		{
-			struct SmileListWithSourceInt *oldList = (struct SmileListWithSourceInt *)expr;
-			SmileList newList = SmileList_ConsWithSource(
-				Parser_RecursivelyApplyReplacementVariables(oldList->a, replacements, usageDict),
-				Parser_RecursivelyApplyReplacementVariables(oldList->d, replacements, usageDict),
-				oldList->position
-			);
-			return (SmileObject)newList;
+		// Append clones of all list cells to a new list.  Many of them are likely to be quoted
+		// static content, so we *must* append clones to ensure templates can be reused.
+		for (; SMILE_KIND(newValue) == SMILE_KIND_LIST; newValue = ((SmileList)newValue)->d) {
+			SmileObject newItem = ((SmileList)newValue)->a;
+			LexerPosition newPosition = (newValue->kind & SMILE_FLAG_WITHSOURCE) ? ((struct SmileListWithSourceInt *)list)->position : lexerPosition;
+			if (newPosition != NULL) {
+				LIST_APPEND_WITH_SOURCE(head, tail, newItem, newPosition);
+			}
+			else {
+				LIST_APPEND(head, tail, newItem);
+			}
 		}
+	}
 
-		case SMILE_KIND_PAIR:
-		{
-			SmilePair oldPair = (SmilePair)expr;
-			SmilePair newPair = SmilePair_Create(
-				Parser_RecursivelyApplyReplacementVariables(oldPair->left, replacements, usageDict),
-				Parser_RecursivelyApplyReplacementVariables(oldPair->right, replacements, usageDict)
-			);
-			return (SmileObject)newPair;
-		}
+	return (SmileObject)head;
+}
 
-		case SMILE_KIND_PAIR | SMILE_FLAG_WITHSOURCE:
-		{
-			struct SmilePairWithSourceInt *oldPair = (struct SmilePairWithSourceInt *)expr;
-			SmilePair newPair = SmilePair_CreateWithSource(
-				Parser_RecursivelyApplyReplacementVariables(oldPair->left, replacements, usageDict),
-				Parser_RecursivelyApplyReplacementVariables(oldPair->right, replacements, usageDict),
-				oldPair->position
-			);
-			return (SmileObject)newPair;
-		}
+Inline SmileObject Parser_ApplyListCons(Parser parser, SmileList list, Int32Dict replacements)
+{
+	LexerPosition lexerPosition = (list->kind & SMILE_FLAG_WITHSOURCE) ? ((struct SmileListWithSourceInt *)list)->position : NULL;
+
+	SmileObject oldA = list->a;
+	SmileObject newA = Parser_RecursivelyApplyTemplate(parser, oldA, replacements, lexerPosition);
+
+	SmileObject oldD = ((SmileList)list->d)->a;
+	SmileObject newD = Parser_RecursivelyApplyTemplate(parser, oldD, replacements, lexerPosition);
+
+	return (lexerPosition != NULL)
+		? (SmileObject)SmileList_ConsWithSource(newA, newD, lexerPosition)
+		: (SmileObject)SmileList_Cons(newA, newD);
+}
+
+Inline SmileObject Parser_ApplyPairOf(Parser parser, SmileList list, Int32Dict replacements)
+{
+	LexerPosition lexerPosition = (list->kind & SMILE_FLAG_WITHSOURCE) ? ((struct SmileListWithSourceInt *)list)->position : NULL;
+
+	SmileObject oldLeft = list->a;
+	SmileObject newLeft = Parser_RecursivelyApplyTemplate(parser, oldLeft, replacements, lexerPosition);
+
+	SmileObject oldRight = ((SmileList)list->d)->a;
+	SmileObject newRight = Parser_RecursivelyApplyTemplate(parser, oldRight, replacements, lexerPosition);
+
+	return (lexerPosition != NULL)
+		? (SmileObject)SmilePair_CreateWithSource(newLeft, newRight, lexerPosition)
+		: (SmileObject)SmilePair_Create(newLeft, newRight);
+}
+
+static SmileObject Parser_RecursivelyApplyTemplate(Parser parser, SmileObject expr, Int32Dict replacements, LexerPosition lexerPosition)
+{
+	SmileList list;
+
+	switch (SMILE_KIND(expr)) {
 
 		case SMILE_KIND_SYMBOL:
-		case SMILE_KIND_SYMBOL | SMILE_FLAG_WITHSOURCE:
-		{
-			SmileSymbol symbol = (SmileSymbol)expr;
-			SmileObject newExpr;
-			if (!Int32Dict_TryGetValue(replacements, symbol->symbol, (void **)&newExpr)) {
-				return expr;
-			}
-			if (!Int32Int32Dict_Add(usageDict, symbol->symbol, 1)) {
-				// We already used the original copy of this expression, so this time, add a clone of
-				// the expression to ensure that the result of the parse is a tree, not a DAG.
+			{
+				SmileSymbol symbol = (SmileSymbol)expr;
+				SmileObject newExpr;
+				if (!Int32Dict_TryGetValue(replacements, symbol->symbol, (void **)&newExpr)) {
+					Parser_AddError(parser, lexerPosition, "No nonterminal named '%S' is defined in the syntax pattern.",
+						SymbolTable_GetName(Smile_SymbolTable, symbol->symbol));
+					return NullObject;
+				}
 				newExpr = Parser_RecursivelyClone(newExpr);
+				return newExpr;
 			}
-			return newExpr;
-		}
-		
-		default:
+
+		case SMILE_KIND_NULL:
 			return expr;
+
+		case SMILE_KIND_LIST:
+			list = (SmileList)expr;
+
+			if (SMILE_KIND(list->a) == SMILE_KIND_SYMBOL) {
+				SmileSymbol symbol = (SmileSymbol)list->a;
+				if (symbol->symbol == SMILE_SPECIAL_SYMBOL__QUOTE) {
+					return ((SmileList)list->d)->a;
+				}
+				else {
+					Parser_AddFatalError(parser, lexerPosition, "RecursivelyApplyTemplate encountered unsupported [%S] form. (parser bug?)",
+						SymbolTable_GetName(Smile_SymbolTable, symbol->symbol));
+					return NullObject;
+				}
+			}
+
+			if (SMILE_KIND(list->a) == SMILE_KIND_PAIR) {
+				SmilePair pair = (SmilePair)list->a;
+
+				if (SMILE_KIND(pair->left) == SMILE_KIND_SYMBOL && SMILE_KIND(pair->right) == SMILE_KIND_SYMBOL) {
+
+					SmileSymbol objSymbol = (SmileSymbol)pair->left;
+					SmileSymbol methodSymbol = (SmileSymbol)pair->right;
+
+					if (objSymbol->symbol == Smile_KnownSymbols.List_) {
+						if (methodSymbol->symbol == Smile_KnownSymbols.of) {
+							// Evaluate arguments and then make a list of them.
+							return Parser_ApplyListOf(parser, (SmileList)list->d, replacements);
+						}
+						else if (methodSymbol->symbol == Smile_KnownSymbols.combine) {
+							// Evaluate arguments and then combine them.  Error (normal error) if any aren't lists.
+							return Parser_ApplyListCombine(parser, (SmileList)list->d, replacements);
+						}
+						else if (methodSymbol->symbol == Smile_KnownSymbols.cons) {
+							if (SmileList_SafeLength((SmileList)list->d) != 2) {
+								Parser_AddFatalError(parser, lexerPosition, "RecursivelyApplyTemplate encountered unsupported [List.cons] form. (parser bug?)");
+								return NullObject;
+							}
+							// Evaluate arguments and then cons them.
+							return Parser_ApplyListCons(parser, (SmileList)list->d, replacements);
+						}
+						else {
+							Parser_AddFatalError(parser, lexerPosition, "RecursivelyApplyTemplate encountered unsupported [List.*] form. (parser bug?)");
+							return NullObject;
+						}
+					}
+					else if (objSymbol->symbol == Smile_KnownSymbols.Pair_) {
+						if (methodSymbol->symbol == Smile_KnownSymbols.of) {
+							if (SmileList_SafeLength((SmileList)list->d) != 2) {
+								Parser_AddFatalError(parser, lexerPosition, "RecursivelyApplyTemplate encountered unsupported [Pair.of] form. (parser bug?)");
+								return NullObject;
+							}
+							// Evaluate arguments and then construct a Pair.
+							return Parser_ApplyPairOf(parser, (SmileList)list->d, replacements);
+						}
+						else {
+							Parser_AddFatalError(parser, lexerPosition, "RecursivelyApplyTemplate encountered unsupported [Pair.*] form. (parser bug?)");
+							return NullObject;
+						}
+					}
+				}
+			}
+
+			// For all other forms, fall-through to default error message.
+
+		default:
+			Parser_AddFatalError(parser, lexerPosition, "RecursivelyApplyTemplate encountered unknown form. (parser bug?)");
+			return NullObject;
 	}
 }
 
-static SmileObject Parser_Accept(SmileObject replacement, Symbol *replacementVariables, Int numReplacementVariables, SmileList replacementExpressions)
+static SmileObject Parser_Accept(Parser parser, SmileObject replacement, Symbol *replacementVariables, Int numReplacementVariables, SmileList replacementExpressions, LexerPosition lexerPosition)
 {
 	Int32Dict replacementDict;
-	Int32Int32Dict usageDict;
 	SmileObject result;
 
 	replacementDict = Parser_MapKeysToValues(replacementVariables, numReplacementVariables, replacementExpressions);
 
-	usageDict = Int32Int32Dict_CreateWithSize(64);
-
-	result = Parser_RecursivelyApplyReplacementVariables(replacement, replacementDict, usageDict);
+	result = Parser_RecursivelyApplyTemplate(parser, replacement, replacementDict, lexerPosition);
 
 	return result;
 }
@@ -466,6 +572,8 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 	Symbol tokenSymbol;
 	Int32Int32Dict oldCustomFollowSet;
 	CustomSyntaxResult nestedSyntaxResult;
+	ParserSyntaxNode recentNodes[16];	// For error-reporting.
+	Int recentNodeIndex;
 
 	// Get the class that contains all the rules under the provided nonterminal symbol.
 	syntaxClass = GetSyntaxClass(parser, syntaxClassSymbol);
@@ -480,6 +588,9 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 
 	// This is the list where we'll be collecting the nonterminal matches as we find them.
 	localTail = localHead = NullList;
+
+	// Start the list of recent nodes so that we know where we've been, for error-reporting purposes.
+	recentNodeIndex = 0;
 
 	// For the special syntax classes, we may need to apply special behaviors for the initial transition.
 	if (syntaxRootMode == SYNTAXROOT_KEYWORD) {
@@ -500,6 +611,7 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 		if (node->nextNonterminals == NULL || !Int32Dict_TryGetValue(node->nextNonterminals, rootSkipSymbol, (void **)&nextNode))
 			return CustomSyntaxResult_NotMatchedAndNoTokensConsumed;
 		node = nextNode;
+		recentNodes[recentNodeIndex++ & 15] = node;
 	}
 
 	for (;;) {
@@ -530,6 +642,8 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 		node = nextNode;
 	
 	handleTransition:
+		// Record this node as having been visited.
+		recentNodes[recentNodeIndex++ & 15] = node;
 
 		// We have a next state for this token in nextNode, so transition into it.
 		if (!node->variable) {
@@ -589,7 +703,7 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 
 		// We're done, and have valid expressions for each of the nonterminals.  We now need
 		// to use the expressions and the replacement form and generate the parsed output.
-		*expr = Parser_Accept(node->replacement, node->replacementVariables, node->numReplacementVariables, localHead);
+		*expr = Parser_Accept(parser, node->replacement, node->replacementVariables, node->numReplacementVariables, localHead, node->position);
 		*parseError = NULL;
 
 		return CustomSyntaxResult_SuccessfullyParsed;
@@ -624,8 +738,38 @@ CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, In
 	else {
 		// No match, and we've traversed at least one node of the tree.  So the
 		// input is an error, and we begin error recovery.
+
+		String recentNodesAsString;
+		String nextTokenAsString;
+		DECLARE_INLINE_STRINGBUILDER(stringBuilder, 256);
+		Int nodeIndex;
+		Bool isFirstPrintedNode;
+
+		// First, turn the recent-node array into a list of printable tokens.
+		INIT_INLINE_STRINGBUILDER(stringBuilder);
+		nodeIndex = recentNodeIndex - 15;
+		if (nodeIndex < 0)
+			nodeIndex = 0;
+		else if (nodeIndex > 0) {
+			StringBuilder_Append(stringBuilder, (const Byte *)"...", 0, 3);
+		}
+		for (isFirstPrintedNode = True; nodeIndex < recentNodeIndex; nodeIndex++) {
+			node = recentNodes[nodeIndex & 15];
+			if (!isFirstPrintedNode)
+				StringBuilder_AppendByte(stringBuilder, ' ');
+			StringBuilder_AppendString(stringBuilder, SymbolTable_GetName(Smile_SymbolTable, node->name));
+			isFirstPrintedNode = False;
+		}
+		recentNodesAsString = StringBuilder_ToString(stringBuilder);
+
+		// Get the next token, as a string.
+		nextTokenAsString = SymbolTable_GetName(Smile_SymbolTable, tokenSymbol);
+
+		// Now make an error message that describes what went wrong.
 		*parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
-			String_Format("Syntax error in %S", SymbolTable_GetName(Smile_SymbolTable, syntaxClassSymbol)));
+			String_Format("Syntax error: '%S' is not allowed in %S after '%S'",
+				nextTokenAsString, SymbolTable_GetName(Smile_SymbolTable, syntaxClassSymbol), recentNodesAsString));
+
 		return CustomSyntaxResult_PartialApplicationWithError;
 	}
 }

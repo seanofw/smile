@@ -13,7 +13,7 @@ NULL, Op(LdF16), Op(LdF32), Op(LdF64), Op(LdF128), NULL, NULL, NULL,
 
 // 30-3F
 Op(LdLoc), Op(StLoc), Op(StpLoc), NULL, Op(LdArg), Op(StArg), Op(StpArg), NULL,
-Op(LdX), Op(StX), Op(StpX), NULL, NULL, NULL, NULL, NULL,
+Op(LdX), Op(StX), Op(StpX), NULL, Op(NullLoc0), Op(NullArg0), Op(NullX), NULL,
 
 // 40-4F
 Op(LdArg0), Op(LdArg1), Op(LdArg2), Op(LdArg3), Op(LdArg4), Op(LdArg5), Op(LdArg6), Op(LdArg7),

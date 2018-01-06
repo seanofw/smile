@@ -199,8 +199,14 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 				}
 				if (list->kind & SMILE_FLAG_WITHSOURCE) {
 					String filename = ((struct SmileListWithSourceInt *)list)->position->filename;
-					StringBuilder_AppendFormat(stringBuilder, "\t// %S:%d",
-						Path_GetFilename(filename), ((struct SmileListWithSourceInt *)list)->position->line);
+					if (filename != NULL) {
+						StringBuilder_AppendFormat(stringBuilder, "\t// %S:%d",
+							Path_GetFilename(filename), ((struct SmileListWithSourceInt *)list)->position->line);
+					}
+					else {
+						StringBuilder_AppendFormat(stringBuilder, "\t// line %d",
+							((struct SmileListWithSourceInt *)list)->position->line);
+					}
 				}
 				StringBuilder_AppendByte(stringBuilder, '\n');
 				while (SMILE_KIND(list) == SMILE_KIND_LIST) {
@@ -208,8 +214,14 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 					StringifyRecursive((SmileObject)list->a, stringBuilder, indent + 1, includeSource);
 					if (list->kind & SMILE_FLAG_WITHSOURCE) {
 						String filename = ((struct SmileListWithSourceInt *)list)->position->filename;
-						StringBuilder_AppendFormat(stringBuilder, "\t// %S:%d",
-							Path_GetFilename(filename), ((struct SmileListWithSourceInt *)list)->position->line);
+						if (filename != NULL) {
+							StringBuilder_AppendFormat(stringBuilder, "\t// %S:%d",
+								Path_GetFilename(filename), ((struct SmileListWithSourceInt *)list)->position->line);
+						}
+						else {
+							StringBuilder_AppendFormat(stringBuilder, "\t// line %d",
+								((struct SmileListWithSourceInt *)list)->position->line);
+						}
 					}
 					StringBuilder_AppendByte(stringBuilder, '\n');
 					list = LIST_REST(list);

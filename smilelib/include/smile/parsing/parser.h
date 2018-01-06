@@ -44,6 +44,7 @@ struct ParserStruct {
 	Int32Int32Dict customFollowSet;	// The set of tokens that follow in the current custom syntax rule.
 		
 	SmileList firstMessage, lastMessage;	// A list of messages (errors/warnings) generated during the parse.
+	String parseMessages;	// A newline-joined aggregate of the messages (errors/warnings) from the most recent parse.
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -73,6 +74,8 @@ SMILE_API_FUNC Int Parser_GetWarningCount(Parser parser);
 SMILE_API_FUNC Int Parser_GetErrorCount(Parser parser);
 SMILE_API_FUNC Int Parser_GetFatalErrorCount(Parser parser);
 SMILE_API_FUNC Int Parser_GetErrorOrWarningCount(Parser parser);
+
+SMILE_API_FUNC String Parser_JoinMessages(SmileList start, SmileList end);
 
 //-------------------------------------------------------------------------------------------------
 //  Inline parts of the implementation
