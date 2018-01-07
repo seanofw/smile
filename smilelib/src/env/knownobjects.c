@@ -109,6 +109,7 @@ void KnownObjects_Setup(struct KnownObjectsStruct *knownObjects, struct KnownSym
 	knownObjects->_eqSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__EQ);
 	knownObjects->_neSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__NE);
 	knownObjects->_newSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__NEW);
+	knownObjects->_dotSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__DOT);
 	knownObjects->_isSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__IS);
 	knownObjects->_typeofSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__TYPEOF);
 

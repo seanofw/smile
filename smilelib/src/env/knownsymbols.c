@@ -40,6 +40,7 @@ STATIC_STRING(_And, "$and");
 STATIC_STRING(_Eq, "$eq");
 STATIC_STRING(_Ne, "$ne");
 STATIC_STRING(_New, "$new");
+STATIC_STRING(_Dot, "$dot");
 STATIC_STRING(_Is, "$is");
 STATIC_STRING(_Typeof, "$typeof");
 
@@ -161,6 +162,7 @@ static void KnownSymbolsInt_PreloadSpecials(SymbolTable symbolTable, KnownSymbol
 	knownSymbols->_eq = AddSpecialSymbol(symbolTable, _Eq, SMILE_SPECIAL_SYMBOL__EQ);
 	knownSymbols->_ne = AddSpecialSymbol(symbolTable, _Ne, SMILE_SPECIAL_SYMBOL__NE);
 	knownSymbols->_new = AddSpecialSymbol(symbolTable, _New, SMILE_SPECIAL_SYMBOL__NEW);
+	knownSymbols->_dot = AddSpecialSymbol(symbolTable, _Dot, SMILE_SPECIAL_SYMBOL__DOT);
 	knownSymbols->_is = AddSpecialSymbol(symbolTable, _Is, SMILE_SPECIAL_SYMBOL__IS);
 	knownSymbols->_typeof = AddSpecialSymbol(symbolTable, _Typeof, SMILE_SPECIAL_SYMBOL__TYPEOF);
 
