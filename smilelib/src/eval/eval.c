@@ -684,7 +684,7 @@ next:
 			goto next;
 
 		case Op_NewPair:
-			value = (SmileObject)SmilePair_Create(SmileArg_Box(Closure_GetTemp(closure, 1)), SmileArg_Box(Closure_GetTemp(closure, 0)));
+			value = (SmileObject)SmileList_CreateDot(SmileArg_Box(Closure_GetTemp(closure, 1)), SmileArg_Box(Closure_GetTemp(closure, 0)));
 			Closure_PopCount(closure, 2);
 			Closure_PushBoxed(closure, value);
 			byteCode++;

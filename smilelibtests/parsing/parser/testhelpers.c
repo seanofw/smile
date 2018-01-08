@@ -72,7 +72,7 @@ static SmileObject RecursiveSimpleParse(Lexer lexer)
 		right = RecursiveSimpleParse(lexer);
 		if (Lexer_Next(lexer) != TOKEN_RIGHTPARENTHESIS)
 			ASSERT(False);
-		return (SmileObject)SmilePair_Create(left, right);
+		return (SmileObject)SmileList_CreateDot(left, right);
 	}
 
 	case TOKEN_ALPHANAME:

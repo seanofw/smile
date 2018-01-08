@@ -56,11 +56,7 @@ ParseError Parser_ParseQuotedTerm(Parser parser, SmileObject *result, Int modeFl
 		return parseError;
 
 	if (templateKind == TemplateKind_None) {
-		*result = (SmileObject)SmileList_ConsWithSource(
-			(SmileObject)Smile_KnownObjects._quoteSymbol,
-				(SmileObject)SmileList_ConsWithSource(*result, NullObject, position),
-			position
-		);
+		*result = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol, *result, position);
 	}
 
 	return NULL;
@@ -68,13 +64,10 @@ ParseError Parser_ParseQuotedTerm(Parser parser, SmileObject *result, Int modeFl
 
 SmileObject Parser_WrapTemplateForSplicing(SmileObject obj)
 {
-	return
-		(SmileObject)SmileList_Cons((SmileObject)SmilePair_Create((SmileObject)Smile_KnownObjects.ListSymbol, (SmileObject)Smile_KnownObjects.consSymbol),
-			(SmileObject)SmileList_Cons(obj,
-				(SmileObject)SmileList_Cons(NullObject,
-					NullObject)
-			)
-		);
+	return (SmileObject)SmileList_CreateTwo(
+		SmileList_CreateDot(Smile_KnownObjects.ListSymbol, Smile_KnownObjects.consSymbol),
+		obj
+	);
 }
 
 // raw_list_term :: = . LBRACKET raw_list_items_opt RBRACKET | . any_name
@@ -347,23 +340,12 @@ ParseError Parser_ParseRawListItemsOpt(Parser parser, SmileList *head, SmileList
 					// This is a templated list, but not a templated item (or not templated enough).
 					// So we need to wrap/quote it before adding it to the list.
 					if (listTemplateKind == TemplateKind_Template && itemTemplateKind == TemplateKind_None) {
-						expr = (SmileObject)SmileList_ConsWithSource(
-							(SmileObject)Smile_KnownObjects._quoteSymbol,
-							(SmileObject)SmileList_ConsWithSource(
-								expr,
-								NullObject,
-								lexerPosition),
-							lexerPosition
-						);
+						expr = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol, expr, lexerPosition);
 						itemTemplateKind = TemplateKind_Template;
 					}
 					else if (listTemplateKind == TemplateKind_TemplateWithSplicing && itemTemplateKind == TemplateKind_None) {
-						expr = (SmileObject)SmileList_ConsWithSource(
-							(SmileObject)Smile_KnownObjects._quoteSymbol,
-							(SmileObject)SmileList_ConsWithSource(
-								(SmileObject)SmileList_ConsWithSource(expr, NullObject, lexerPosition),
-								NullObject,
-								lexerPosition),
+						expr = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol,
+							SmileList_CreateOneWithSource(expr, lexerPosition),
 							lexerPosition
 						);
 						itemTemplateKind = TemplateKind_TemplateWithSplicing;
@@ -424,34 +406,15 @@ ParseError Parser_ParseRawListDotExpr(Parser parser, SmileObject *result, Int *t
 
 			if (*templateKind == TemplateKind_None) {
 				// Generate a simple (expr).symbol as output.
-				*result = (SmileObject)SmilePair_CreateWithSource(*result, (SmileObject)SmileSymbol_Create(symbol), lexerPosition);
+				*result = (SmileObject)SmileList_CreateDotWithSource(*result, SmileSymbol_Create(symbol), lexerPosition);
 			}
 			else {
 				// If the left-side expression is a template (spliced or not), then generate
 				// [Pair.of (expr) [$quote symbol]] as output.
-				*result = (SmileObject)SmileList_ConsWithSource(
-					(SmileObject)SmilePair_CreateWithSource(
-						(SmileObject)Smile_KnownObjects.PairSymbol,
-						(SmileObject)Smile_KnownObjects.ofSymbol,
-						lexerPosition
-					),
-					(SmileObject)SmileList_ConsWithSource(
-						*result,
-						(SmileObject)SmileList_ConsWithSource(
-							(SmileObject)SmileList_ConsWithSource(
-								(SmileObject)Smile_KnownObjects._quoteSymbol,
-								(SmileObject)SmileList_ConsWithSource(
-									(SmileObject)SmileSymbol_Create(symbol),
-									NullObject,
-									lexerPosition
-								),
-								lexerPosition
-							),
-							NullObject,
-							lexerPosition
-						),
-						lexerPosition
-					),
+				*result = (SmileObject)SmileList_CreateThreeWithSource(
+					SmileList_CreateDotWithSource(Smile_KnownObjects.PairSymbol, Smile_KnownObjects.ofSymbol, lexerPosition),
+					*result,
+					SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol, SmileSymbol_Create(symbol), lexerPosition),
 					lexerPosition
 				);
 			}
@@ -484,13 +447,8 @@ static void Parser_TransformListIntoTemplate(SmileList *head, SmileList *tail, L
 	oldHead = *head;
 
 	// Add an initial [List.of ... ] to the new list to make it into a proper list template.
-	newHead = newTail = SmileList_ConsWithSource(
-		(SmileObject)SmilePair_CreateWithSource(
-			(SmileObject)Smile_KnownObjects.ListSymbol,
-			(SmileObject)Smile_KnownObjects.ofSymbol,
-			startPosition
-		),
-		NullObject,
+	newHead = newTail = SmileList_CreateOneWithSource(
+		(SmileObject)SmileList_CreateDotWithSource(Smile_KnownObjects.ListSymbol, Smile_KnownObjects.ofSymbol, startPosition),
 		startPosition
 	);
 
@@ -500,11 +458,7 @@ static void Parser_TransformListIntoTemplate(SmileList *head, SmileList *tail, L
 		position = ((struct SmileListWithSourceInt *)oldHead)->position;
 
 		// Take each element x in the old list, and turn it into [$quote x] in the new list.
-		newExpr = (SmileObject)SmileList_ConsWithSource(
-			(SmileObject)Smile_KnownObjects._quoteSymbol,
-			(SmileObject)SmileList_ConsWithSource(oldExpr, NullObject, position),
-			position
-		);
+		newExpr = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol, oldExpr, position);
 
 		LIST_APPEND_WITH_SOURCE(newHead, newTail, newExpr, position);
 	}
@@ -531,13 +485,8 @@ static void Parser_TransformListIntoSplicedTemplate(SmileList *head, SmileList *
 	oldHead = *head;
 
 	// Add an initial [List.combine ... ] to the new list to make it into a proper list template.
-	newHead = newTail = SmileList_ConsWithSource(
-		(SmileObject)SmilePair_CreateWithSource(
-			(SmileObject)Smile_KnownObjects.ListSymbol,
-			(SmileObject)Smile_KnownObjects.combineSymbol,
-			startPosition
-		),
-		NullObject,
+	newHead = newTail = SmileList_CreateOneWithSource(
+		(SmileObject)SmileList_CreateDotWithSource(Smile_KnownObjects.ListSymbol, Smile_KnownObjects.combineSymbol, startPosition),
 		startPosition
 	);
 
@@ -547,12 +496,8 @@ static void Parser_TransformListIntoSplicedTemplate(SmileList *head, SmileList *
 		position = ((struct SmileListWithSourceInt *)oldHead)->position;
 
 		// Take each element x in the old list, and turn it into [$quote [x]] in the new list.
-		newExpr = (SmileObject)SmileList_ConsWithSource(
-			(SmileObject)Smile_KnownObjects._quoteSymbol,
-			(SmileObject)SmileList_ConsWithSource(
-				(SmileObject)SmileList_ConsWithSource(oldExpr, NullObject, position),
-				NullObject,
-				position),
+		newExpr = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol,
+			SmileList_CreateOneWithSource(oldExpr, position),
 			position
 		);
 
@@ -581,13 +526,8 @@ static void Parser_TransformTemplateIntoSplicedTemplate(SmileList *head, SmileLi
 	oldHead = *head;
 
 	// Add an initial [List.combine ... ] to the new list to make it into a proper list template.
-	newHead = newTail = SmileList_ConsWithSource(
-		(SmileObject)SmilePair_CreateWithSource(
-			(SmileObject)Smile_KnownObjects.ListSymbol,
-			(SmileObject)Smile_KnownObjects.combineSymbol,
-			startPosition
-		),
-		NullObject,
+	newHead = newTail = SmileList_CreateOneWithSource(
+		(SmileObject)SmileList_CreateDotWithSource(Smile_KnownObjects.ListSymbol, Smile_KnownObjects.combineSymbol, startPosition),
 		startPosition
 	);
 
@@ -604,12 +544,8 @@ static void Parser_TransformTemplateIntoSplicedTemplate(SmileList *head, SmileLi
 			&& SmileList_SafeLength((SmileList)oldExpr) == 2) {
 
 			SmileObject quotedExpr = ((SmileList)((SmileList)oldExpr)->d)->a;
-			newExpr = (SmileObject)SmileList_ConsWithSource(
-				(SmileObject)Smile_KnownObjects._quoteSymbol,
-				(SmileObject)SmileList_ConsWithSource(
-					(SmileObject)SmileList_ConsWithSource(quotedExpr, NullObject, position),
-					NullObject,
-					position),
+			newExpr = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol,
+				SmileList_CreateOneWithSource(quotedExpr, position),
 				position
 			);
 		}
@@ -653,11 +589,7 @@ ParseError Parser_ParseQuoteBody(Parser parser, SmileObject *result, Int modeFla
 		error = Parser_ParseParentheses(parser, result, modeFlags);
 		if (error != NULL)
 			return error;
-		*result = (SmileObject)SmileList_ConsWithSource(
-			(SmileObject)Smile_KnownObjects._quoteSymbol,
-			(SmileObject)SmileList_ConsWithSource(*result, NullObject, startPosition),
-			startPosition
-		);
+		*result = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol, *result, startPosition);
 		return NULL;
 	}
 

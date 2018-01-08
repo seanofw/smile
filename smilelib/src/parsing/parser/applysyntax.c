@@ -171,27 +171,6 @@ static SmileObject Parser_RecursivelyClone(SmileObject expr)
 			return (SmileObject)newList;
 		}
 
-		case SMILE_KIND_PAIR:
-		{
-			SmilePair oldPair = (SmilePair)expr;
-			SmilePair newPair = SmilePair_Create(
-				Parser_RecursivelyClone(oldPair->left),
-				Parser_RecursivelyClone(oldPair->right)
-			);
-			return (SmileObject)newPair;
-		}
-
-		case SMILE_KIND_PAIR | SMILE_FLAG_WITHSOURCE:
-		{
-			struct SmilePairWithSourceInt *oldPair = (struct SmilePairWithSourceInt *)expr;
-			SmilePair newPair = SmilePair_CreateWithSource(
-				Parser_RecursivelyClone(oldPair->left),
-				Parser_RecursivelyClone(oldPair->right),
-				oldPair->position
-			);
-			return (SmileObject)newPair;
-		}
-
 		default:
 			return expr;
 	}
@@ -276,8 +255,8 @@ Inline SmileObject Parser_ApplyPairOf(Parser parser, SmileList list, Int32Dict r
 	SmileObject newRight = Parser_RecursivelyApplyTemplate(parser, oldRight, replacements, lexerPosition);
 
 	return (lexerPosition != NULL)
-		? (SmileObject)SmilePair_CreateWithSource(newLeft, newRight, lexerPosition)
-		: (SmileObject)SmilePair_Create(newLeft, newRight);
+		? (SmileObject)SmileList_CreateDotWithSource(newLeft, newRight, lexerPosition)
+		: (SmileObject)SmileList_CreateDot(newLeft, newRight);
 }
 
 static SmileObject Parser_RecursivelyApplyTemplate(Parser parser, SmileObject expr, Int32Dict replacements, LexerPosition lexerPosition)

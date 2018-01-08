@@ -91,7 +91,7 @@ ParseError Parser_ParseDynamicString(Parser parser, SmileObject *expr, String te
 
 	// Construct a [[List.of a b c ...].join] form.
 	LIST_INIT(head, tail);
-	LIST_APPEND_WITH_SOURCE(head, tail, SmilePair_Create((SmileObject)Smile_KnownObjects.ListSymbol, (SmileObject)Smile_KnownObjects.ofSymbol), startPosition);
+	LIST_APPEND_WITH_SOURCE(head, tail, SmileList_CreateDotWithSource(Smile_KnownObjects.ListSymbol, Smile_KnownObjects.ofSymbol, startPosition), startPosition);
 
 	// Spin through the pieces and attach them to the list, parsing the expressions as we find them.
 	for (i = 0; i < numDynamicStringPieces; i++) {
@@ -109,9 +109,8 @@ ParseError Parser_ParseDynamicString(Parser parser, SmileObject *expr, String te
 		}
 	}
 
-	*expr = (SmileObject)SmileList_ConsWithSource(
-		(SmileObject)SmilePair_Create((SmileObject)head, (SmileObject)Smile_KnownObjects.joinSymbol),
-		NullObject,
+	*expr = (SmileObject)SmileList_CreateOneWithSource(
+		(SmileObject)SmileList_CreateDotWithSource(head, Smile_KnownObjects.joinSymbol, startPosition),
 		startPosition
 	);
 

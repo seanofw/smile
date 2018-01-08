@@ -58,11 +58,36 @@ SMILE_API_FUNC SmileList SmileList_CloneRange(SmileList list, Int start, Int end
 SMILE_API_FUNC SmileList SmileList_CellAt(SmileList list, Int index);
 SMILE_API_FUNC SmileList SmileList_ApplyStepping(SmileList list, Int stepping);
 
+#define SmileList_CreateOne(__elem1__) \
+	(SmileList_Cons((SmileObject)(__elem1__), NullObject))
+#define SmileList_CreateOneWithSource(__elem1__, __position__) \
+	(SmileList_ConsWithSource((SmileObject)(__elem1__), NullObject, (__position__)))
+
+#define SmileList_CreateTwo(__elem1__, __elem2__) \
+	(SmileList_Cons((SmileObject)(__elem1__), (SmileObject)SmileList_CreateOne((__elem2__))))
+#define SmileList_CreateTwoWithSource(__elem1__, __elem2__, __position__) \
+	(SmileList_ConsWithSource((SmileObject)(__elem1__), (SmileObject)SmileList_CreateOneWithSource((__elem2__), (__position__)), (__position__)))
+
+#define SmileList_CreateThree(__elem1__, __elem2__, __elem3__) \
+	(SmileList_Cons((SmileObject)(__elem1__), (SmileObject)SmileList_CreateTwo((__elem2__), (__elem3__))))
+#define SmileList_CreateThreeWithSource(__elem1__, __elem2__, __elem3__, __position__) \
+	(SmileList_ConsWithSource((SmileObject)(__elem1__), (SmileObject)SmileList_CreateTwoWithSource((__elem2__), (__elem3__), (__position__)), (__position__)))
+
+#define SmileList_CreateFour(__elem1__, __elem2__, __elem3__, __elem4__) \
+	(SmileList_Cons((SmileObject)(__elem1__), (SmileObject)SmileList_CreateThree((__elem2__), (__elem3__), (__elem4__))))
+#define SmileList_CreateFourWithSource(__elem1__, __elem2__, __elem3__, __elem4__, __position__) \
+	(SmileList_ConsWithSource((SmileObject)(__elem1__), (SmileObject)SmileList_CreateThreeWithSource((__elem2__), (__elem3__), (__elem4__), (__position__)), (__position__)))
+
 typedef struct InterruptibleListSortInfoStruct *InterruptibleListSortInfo;
 
 SMILE_API_FUNC InterruptibleListSortInfo InterruptibleListSort_Start(SmileList list);
 SMILE_API_FUNC Bool InterruptibleListSort_Continue(InterruptibleListSortInfo sortInfo, Int64 cmpResult,
 	SmileObject *cmpA, SmileObject *cmpB, SmileList *sortResult);
+
+#define SmileList_CreateDot(__left__, __right__) \
+	(SmileList_CreateThree(Smile_KnownObjects._dotSymbol, (__left__), (__right__)))
+#define SmileList_CreateDotWithSource(__left__, __right__, __position__) \
+	(SmileList_CreateThreeWithSource(Smile_KnownObjects._dotSymbol, (__left__), (__right__), (__position__)))
 
 //-------------------------------------------------------------------------------------------------
 //  Inline operations
