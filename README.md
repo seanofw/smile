@@ -17,7 +17,9 @@ Lisp, but it reads more like Python or Ruby.
 
   * [Smile Website](http://www.smile-lang.org)
   * [Unofficial Dev Blog](http://www.werkema.com)
-  * [Community Standards](COMMUNITY-STANDARDS.md)
+  * [Code of Conduct](CODE-OF-CONDUCT.md)
+  * [Contributing to Smile](CONTRIBUTING.md)
+  * [List of Contributors](CONTRIBUTORS.md)
 
 ## C Interpreter Source Code
 
