@@ -116,8 +116,8 @@ What someone does *outside* the community doesn't affect you unless it's specifi
 The following are examples of things that occur in *private lives* that are *not* considered community violations.  This is not an exhaustive list, but merely some examples.
 
   - A professional stand-up comedian who makes racist jokes as part of his act, but donates to the community in his free time, and when he's off the stage, is polite and respectful to everyone he meets, regardless of race.
-  - A conservative Christian who donates to the community in his free time, and who is respectful of everyone within the community no matter their gender, but who politically donates money to anti-LGBTQ movements.
-  - An artist who paints erotic artwork, but who never discusses his employment while interacting with the community, and is otherwise respectful and professional with everyone he meets.
+  - A conservative Christian who donates to the community in his free time, and who is respectful of everyone within the community no matter their gender or sexual orientation, but who politically donates money to anti-LGBTQ movements.
+  - An artist who paints erotic artwork, but who never discusses his employment while interacting with the community, and is otherwise respectful and professional with everyone he meets, regardless of their gender.
 
 None of these meet the *mens rea* requirement --- the *intent* to directly disparage or harass or hurt someone else.  Just because we don't agree doesn't mean we can't work together.
 
