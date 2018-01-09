@@ -1,6 +1,6 @@
 
-Smile Community Standards
-=========================
+Smile Code of Conduct
+=====================
 
 As I write this, the C implementation of the Smile interpreter has had 141 commits.  It doesn't even work yet, and has only two watchers and one star on GitHub.  So why create a community standards document when there *isn't* a community?
 
@@ -54,3 +54,85 @@ The Ten Commandments of the Smile Community
 There you go.  That's the ten commandments for the as-yet nonexistent Smile community.  When you write in the Smile wiki, or discuss Smile in your blog, or post a bug report, or contribute a new library, or interact in person with others in the Smile community, you will be expected to follow these rules.
 
 And they're really not hard rules to follow:  Everything you really need to know about how to be a good citizen in the Smile community?  <a href="https://www.amazon.com/Really-Need-Know-Learned-Kindergarten/dp/0449908577">You probably learned it</a> in <a href="https://en.wikipedia.org/wiki/Kindergarten">kindergarten</a>.
+
+Special Topics
+==============
+
+Harassment
+----------
+
+It should go without saying that intentional harassment is absolutely unacceptable, but we live in a time where apparently that needs to be said.  The following community rules apply:
+
+  - Do not speak or write or act in ways intended to be sexist, racist, homophobic, transphobic, ableist, ageist, or otherwise discriminatory.
+  - Do not use suggestive, derogatory, or inappropriate nicknames or terms.
+  - Do not insult, attack, or belittle others.
+  - Do not troll, intimidate, or harass others, online or in person.
+  - Do not act violently or threaten violence, online or in person.
+
+Also, because I get to write the rules, the following are very explicitly spelled out as unacceptable behaviors and are not tolerable in any shape or fashion:
+
+  - **The Bannon Rule**: Nativist and racist hate speech will not be tolerated.
+  - **The Breitbart Rule**: Supporting, citing, or in any way attempting to normalize Breitbart, InfoWars, the Daily Stormer, or similar hate sites will not be tolerated.
+  - **The Nazi Rule**: Supporting, citing, or in any way attempting to normalize the KKK, Nazi Party, or any racial supremacist group will not be tolerated.
+  - **The LGBTQ Rule**: Attacks, insults, intimidation, or belittlement of anyone over their gender or sexual preferences will not be tolerated.
+  - **The Weinstein Rule**: Intentionally sexually harassing anyone in the community --- including unwanted writing, speech, and physical contact --- is unacceptable and will not be tolerated.
+
+Jokes
+-----
+
+*a.k.a., the PyCon Rule*
+
+This a tough gray area:  What seems funny and harmless to one person may be insulting and hateful to another.
+
+To that end, there is a special exemption to most of the rules for jokes, but they have to be *intended* to be funny, and there must not be a hidden *intent* to disparage.  It's one thing if you end up hurting someone and apologize; it's another entirely if hurting someone was your goal.
+
+It's also important to understand *who* is saying the joke, whether it is spoken from a position of power, or by a historically disenfranchised group.  So, for example, men making jokes about women can be a mild form of harassment, while women making jokes about men probably isn't.
+
+"Jokes" which are not really jokes and are intended to hurt, belittle, and disparage will be treated no differently than any other form of hate speech.  Jokes that are *not* intended to hurt, belittle, or disparage but end up being interpreted that way by some of their recipients do not violate the Code of Conduct.
+
+Jokes, then, will be handled on a case-by-case basis, in context, with careful analysis of the speaker's *intent*.  When submitting an issue related to this, please provide sufficient evidence to demonstrate the speaker's *intent*.
+
+In other words:
+
+  - You can be funny, but please also try to be nice.
+  - Remember that your jokes may be misinterpreted, so be careful what you say.
+  - If you offend someone with a bad joke, apologize.
+  - And if you hear a bad joke, don't jump to conclusions about its speaker, but gather evidence and make sure they were actually *trying* to attack you.
+ 
+Public Shaming
+--------------
+
+In general, public shaming is the wrong way to solve a problem.  Do not publicly shame people who disagree with you, online or in person.  If you have an issue with someone, report the issue privately through the proper channels described in this Code of Conduct.  Disparagement is disparagement, no matter whether you feel morally-justified in speaking out.
+
+The only exception to this rule is when the person both (A) is a public figure and (B) has been proven to have violated the Code of Conduct and censured/punished for it.  Even there, you should try to avoid public shaming, but it will not be considered a violation of this Code to do so.
+
+Private Lives
+-------------
+
+*a.k.a., the Eich Rule*
+
+What someone does *outside* the community doesn't affect you unless it's specifically *intended* to affect you.  These actions outside the community are part of the *private lives* of their originators, as they do not have the requisite *mens rea* --- the *intent* to disparage.  Someone has to intend to hurt *you* before they can *actually* hurt you.
+
+The following are examples of things that occur in *private lives* that are *not* considered community violations.  This is not an exhaustive list, but merely some examples.
+
+  - A professional stand-up comedian who makes racist jokes as part of his act, but donates to the community in his free time, and when he's off the stage, is polite and respectful to everyone he meets, regardless of race.
+  - A conservative Christian who donates to the community in his free time, and who is respectful of everyone within the community no matter their gender, but who politically donates money to anti-LGBTQ movements.
+  - An artist who paints erotic artwork, but who never discusses his employment while interacting with the community, and is otherwise respectful and professional with everyone he meets.
+
+None of these meet the *mens rea* requirement --- the *intent* to directly disparage or harass or hurt someone else.  Just because we don't agree doesn't mean we can't work together.
+
+If issues arise related to private lives, they will be decided on a case-by-case basis, in context.
+
+Enforcement
+===========
+
+Speech and actions have consequences, and intentionally unacceptable behavior will not be tolerated.
+
+In common law, there are two requirements for someone to be culpable of a crime:  First, the guilty act itself must be committed --- *actus reus* --- and second, the mental state involved --- *mens rea* --- must indicate an *intent* to cause a crime.  These two principles apply to this community policy as well.
+
+Violations of this Code of Conduct will be considered on a case-by-case basis --- these rules are *not* a blanket zero-tolerance policy.  The accused also will be considered innocent until proven guilty, so if you need to report an issue, please back up your claim with evidence.
+
+At some point in the future, I hope that enforcement of this policy will be taken over by a suitable jury; for now, I'm the sole judge.  So if you are the subject of, victim of, or witness to any violations of the above Code of Conduct, please contact me *personally* at <sean AT werkema D0T com>, and I will read your evidence and determine what an appropriate response is.
+
+I want a community where everyone feels comfortable being involved, and I will take every message I receive on this topic very seriously.  I've been on the receiving end of unstopped harassment before, and have no intention of letting it happen when I can do something about it.  If violations occur, I can and will take any appropriate action within my power to stop them, up to and including expulsion.
+
