@@ -810,6 +810,7 @@
     <ClCompile Include="src\eval\compiler\compiledblock.c" />
     <ClCompile Include="src\eval\compiler\compile_and.c" />
     <ClCompile Include="src\eval\compiler\compile_catch.c" />
+    <ClCompile Include="src\eval\compiler\compile_dot.c" />
     <ClCompile Include="src\eval\compiler\compile_expr.c" />
     <ClCompile Include="src\eval\compiler\compile_fn.c" />
     <ClCompile Include="src\eval\compiler\compile_if.c" />

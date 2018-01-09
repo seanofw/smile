@@ -24,27 +24,58 @@
 #include <smile/parsing/internal/parsedecl.h>
 #include <smile/parsing/internal/parsescope.h>
 
-// Form: expr.symbol
-CompiledBlock Compiler_CompileLoadProperty(Compiler compiler, SmilePair pair, CompileFlags compileFlags)
+Bool Compiler_ValidateDotArgs(Compiler compiler, SmileList dotArgs)
+{
+	Int numArgs;
+
+	numArgs = SmileList_SafeLength(dotArgs);
+
+	if (numArgs < 0) {
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(dotArgs, getSourceLocation),
+			String_FromC("Cannot compile $dot expression; it is malformed.")));
+		return False;
+	}
+
+	if (numArgs < 2) {
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(dotArgs, getSourceLocation),
+			String_FromC("Cannot compile $dot expression; it has fewer than the required two arguments.")));
+		return False;
+	}
+
+	if (numArgs > 2) {
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(dotArgs, getSourceLocation),
+			String_FromC("Cannot compile $dot expression; it has more than the required two arguments.")));
+		return False;
+	}
+
+	if (SMILE_KIND(LIST_SECOND(dotArgs)) != SMILE_KIND_SYMBOL) {
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(dotArgs, getSourceLocation),
+			String_FromC("Cannot compile $dot: second argument must be a symbol.")));
+		return False;
+	}
+
+	return True;
+}
+
+// Form: [$dot expr symbol]
+CompiledBlock Compiler_CompileLoadProperty(Compiler compiler, SmileList dotArgs, CompileFlags compileFlags)
 {
 	Symbol symbol;
 	IntermediateInstruction instr;
 	CompiledBlock compiledBlock, childBlock;
+	Int numArgs;
 
-	if (SMILE_KIND(pair->right) != SMILE_KIND_SYMBOL) {
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(pair, getSourceLocation),
-			String_FromC("Cannot compile pair: right side must be a symbol.")));
+	if (!Compiler_ValidateDotArgs(compiler, dotArgs))
 		return CompiledBlock_CreateError();
-	}
 
 	// Evaluate the left side first, which will leave the left side on the stack.
 	compiledBlock = CompiledBlock_Create();
-	childBlock = Compiler_CompileExpr(compiler, pair->left, 0);
+	childBlock = Compiler_CompileExpr(compiler, LIST_FIRST(dotArgs), 0);
 	CompiledBlock_AppendChild(compiledBlock, childBlock);
 	Compiler_EmitRequireResult(compiler, compiledBlock);
 
 	// Extract the property named by the symbol on the right side, leaving the property's value on the stack.
-	symbol = ((SmileSymbol)(pair->right))->symbol;
+	symbol = ((SmileSymbol)LIST_SECOND(dotArgs))->symbol;
 	if (compileFlags & COMPILE_FLAG_NORESULT) {
 		// If they don't want anything, then don't even bother to dereference the data, and
 		// discard anything we have computed so far.

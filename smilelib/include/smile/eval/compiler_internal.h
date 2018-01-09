@@ -20,11 +20,11 @@ extern Bool Compiler_StripNots(SmileObject *objPtr);
 
 extern Int CompilerFunction_AddLocal(CompilerFunction compilerFunction, Symbol local);
 
-extern CompiledBlock Compiler_CompileLoadProperty(Compiler compiler, SmilePair pair, CompileFlags compileFlags);
+extern CompiledBlock Compiler_CompileLoadProperty(Compiler compiler, SmileList dotArgs, CompileFlags compileFlags);
 extern void Compiler_CompileStoreProperty(Compiler compiler, SmilePair pair, CompileFlags compileFlags, CompiledBlock compiledBlock);
 extern CompiledBlock Compiler_CompileLoadVariable(Compiler compiler, Symbol symbol, CompileFlags compileFlags);
 extern void Compiler_CompileStoreVariable(Compiler compiler, Symbol symbol, CompileFlags compileFlags, CompiledBlock compiledBlock);
-extern CompiledBlock Compiler_CompileMethodCall(Compiler compiler, SmilePair pair, SmileList args, CompileFlags compileFlags);
+extern CompiledBlock Compiler_CompileMethodCall(Compiler compiler, SmileList dotArgs, SmileList args, CompileFlags compileFlags);
 
 extern CompiledBlock Compiler_CompileStandardForm(Compiler compiler, Symbol symbol, SmileList args, CompileFlags compileFlags);
 
@@ -41,8 +41,11 @@ extern CompiledBlock Compiler_CompileProg1(Compiler compiler, SmileList args, Co
 extern CompiledBlock Compiler_CompileProgN(Compiler compiler, SmileList args, CompileFlags compileFlags);
 extern CompiledBlock Compiler_CompileScope(Compiler compiler, SmileList args, CompileFlags compileFlags);
 extern CompiledBlock Compiler_CompileNew(Compiler compiler, SmileList args, CompileFlags compileFlags);
+extern CompiledBlock Compiler_CompileDot(Compiler compiler, SmileList args, CompileFlags compileFlags);
 extern CompiledBlock Compiler_CompileAnd(Compiler compiler, SmileList args, CompileFlags compileFlags);
 extern CompiledBlock Compiler_CompileOr(Compiler compiler, SmileList args, CompileFlags compileFlags);
+
+extern Bool Compiler_ValidateDotArgs(Compiler compiler, SmileList dotArgs);
 
 //-------------------------------------------------------------------------------------------------
 // Macros

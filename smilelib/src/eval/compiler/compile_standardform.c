@@ -78,6 +78,8 @@ CompiledBlock Compiler_CompileStandardForm(Compiler compiler, Symbol symbol, Smi
 		// Object creation and type testing.
 		case SMILE_SPECIAL_SYMBOL__NEW:
 			return Compiler_CompileNew(compiler, args, compileFlags);
+		case SMILE_SPECIAL_SYMBOL__DOT:
+			return Compiler_CompileDot(compiler, args, compileFlags);
 		case SMILE_SPECIAL_SYMBOL__IS:
 			return Compiler_CompileTwoArguments(compiler, args, compileFlags, "$is", Op_Is);
 		case SMILE_SPECIAL_SYMBOL__TYPEOF:

@@ -24,7 +24,7 @@
 #include <smile/parsing/internal/parsedecl.h>
 #include <smile/parsing/internal/parsescope.h>
 
-CompiledBlock Compiler_CompileMethodCall(Compiler compiler, SmilePair pair, SmileList args, CompileFlags compileFlags)
+CompiledBlock Compiler_CompileMethodCall(Compiler compiler, SmileList dotArgs, SmileList args, CompileFlags compileFlags)
 {
 	Int length;
 	SmileList temp;
@@ -36,8 +36,12 @@ CompiledBlock Compiler_CompileMethodCall(Compiler compiler, SmilePair pair, Smil
 	// First, make sure the args are well-formed, and count how many of them there are.
 	length = SmileList_Length(args);
 
+	// Now make sure the [$dot] form is well-formed.
+	if (!Compiler_ValidateDotArgs(compiler, dotArgs))
+		return CompiledBlock_CreateError();
+
 	// Make sure this is a valid method call form.
-	if (length < 0 || SMILE_KIND(pair->right) != SMILE_KIND_SYMBOL) {
+	if (length < 0) {
 		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, NULL,
 			String_FromC("Cannot compile method call: Argument list is not well-formed.")));
 		return CompiledBlock_CreateError();
@@ -46,11 +50,11 @@ CompiledBlock Compiler_CompileMethodCall(Compiler compiler, SmilePair pair, Smil
 	compiledBlock = CompiledBlock_Create();
 
 	// Evaluate the left side of the pair (the object to invoke).
-	Compiler_SetSourceLocationFromPair(compiler, pair);
-	childBlock = Compiler_CompileExpr(compiler, pair->left, compileFlags & ~COMPILE_FLAG_NORESULT);
+	Compiler_SetSourceLocationFromList(compiler, dotArgs);
+	childBlock = Compiler_CompileExpr(compiler, LIST_FIRST(dotArgs), compileFlags & ~COMPILE_FLAG_NORESULT);
 	CompiledBlock_AppendChild(compiledBlock, childBlock);
 	Compiler_EmitRequireResult(compiler, compiledBlock);
-	symbol = ((SmileSymbol)pair->right)->symbol;
+	symbol = ((SmileSymbol)LIST_SECOND(dotArgs))->symbol;
 
 	// Evaluate all of the arguments.
 	for (temp = args; SMILE_KIND(temp) == SMILE_KIND_LIST; temp = (SmileList)temp->d) {
