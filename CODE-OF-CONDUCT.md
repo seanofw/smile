@@ -132,7 +132,7 @@ In common law, there are two requirements for someone to be culpable of a crime:
 
 Violations of this Code of Conduct will be considered on a case-by-case basis --- these rules are *not* a blanket zero-tolerance policy.  The accused also will be considered innocent until proven guilty, so if you need to report an issue, please back up your claim with evidence.
 
-At some point in the future, I hope that enforcement of this policy will be taken over by a suitable jury; for now, I'm the sole judge.  So if you are the subject of, victim of, or witness to any violations of the above Code of Conduct, please contact me *personally* at <sean AT werkema D0T com>, and I will read your evidence and determine what an appropriate response is.
+At some point in the future, I hope that enforcement of this policy will be taken over by a suitable jury; for now, I'm the sole judge.  So if you are the subject of, victim of, or witness to any violations of the above Code of Conduct, please contact me *personally* at `sean AT werkema D0T com`, and I will read your evidence and determine what an appropriate response is.
 
 I want a community where everyone feels comfortable being involved, and I will take every message I receive on this topic very seriously.  I've been on the receiving end of unstopped harassment before, and have no intention of letting it happen when I can do something about it.  If violations occur, I can and will take any appropriate action within my power to stop them, up to and including expulsion.
 

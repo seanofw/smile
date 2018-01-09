@@ -8,7 +8,7 @@ Below is a set of guidelines for how to contribute.
 
 ## Code of Conduct
 
-First, make sure you read the [Community Standards](COMMUNITY-STANDARDS.md).  Please make an effort to be nice and to play nice.  By participating, you are expected to uphold these standards.  Please report unacceptable behavior directly to me, <sean AT werkema D0T com>.
+First, make sure you read the [Community Standards](COMMUNITY-STANDARDS.md).  Please make an effort to be nice and to play nice.  By participating, you are expected to uphold these standards.  Please report unacceptable behavior directly to me, `sean AT werkema D0T com`.
 
 
 
