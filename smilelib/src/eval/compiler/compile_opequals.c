@@ -79,7 +79,7 @@ Inline CompiledBlock Compiler_CompileOpEqualsProperty(Compiler compiler, SmileLi
 	EMIT0(Op_Dup1, +1);
 
 	// Load the source property.
-	EMIT1(Op_LdProp, -1, symbol = symbol);
+	EMIT1(Op_LdProp, 0, symbol = symbol);
 
 	// Evaluate the value.
 	childBlock = Compiler_CompileExpr(compiler, value, compileFlags & ~COMPILE_FLAG_NORESULT);
@@ -91,7 +91,7 @@ Inline CompiledBlock Compiler_CompileOpEqualsProperty(Compiler compiler, SmileLi
 
 	// Assign the property.
 	if (compileFlags & COMPILE_FLAG_NORESULT) {
-		EMIT1(Op_StpProp, -1, symbol = symbol);	// Leaves the value on the stack.
+		EMIT1(Op_StpProp, -2, symbol = symbol);	// Leaves the value on the stack.
 		Compiler_RevertSourceLocation(compiler, oldSourceLocation);
 	}
 	else {
@@ -102,27 +102,17 @@ Inline CompiledBlock Compiler_CompileOpEqualsProperty(Compiler compiler, SmileLi
 	return compiledBlock;
 }
 
-// Form [$opset op [[$dot obj get-member] index] value].
-Inline CompiledBlock Compiler_CompileOpEqualsMember(Compiler compiler, SmileList args,
-	Symbol op, SmileList dest, SmileList dotArgs, SmileObject value, CompileFlags compileFlags)
+// Form [$opset op [$index obj index] value].
+Inline CompiledBlock Compiler_CompileOpEqualsMember(Compiler compiler,
+	Symbol op, SmileList dotArgs, SmileObject value, CompileFlags compileFlags)
 {
 	CompiledBlock compiledBlock, childBlock;
 	IntermediateInstruction instr;
 	SmileObject index;
 	SmileObject obj;
 
-	// This is probably of the form [$set [[$dot obj get-member] index] value].  Make sure that the
-	// inner list is well-formed, has two elements, the first element is a pair, and the right
-	// side of the first element is the special symbol "get-member".
-	if (SmileList_Length((SmileList)dest) != 2
-		|| ((SmileSymbol)LIST_FIRST(dotArgs))->symbol != SMILE_SPECIAL_SYMBOL_GET_MEMBER) {
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),
-			String_FromC("Cannot compile [$set]: Expression is not well-formed.")));
-		return CompiledBlock_CreateError();
-	}
-
 	obj = LIST_FIRST((SmileList)dotArgs);
-	index = LIST_SECOND((SmileList)dest);
+	index = LIST_SECOND((SmileList)dotArgs);
 
 	compiledBlock = CompiledBlock_Create();
 
@@ -140,7 +130,7 @@ Inline CompiledBlock Compiler_CompileOpEqualsMember(Compiler compiler, SmileList
 	EMIT0(Op_Dup2, +1);
 
 	// Load the source from the given member.
-	EMIT0(Op_LdMember, -3 + 1);
+	EMIT0(Op_LdMember, -2 + 1);
 
 	// Evaluate the value.
 	childBlock = Compiler_CompileExpr(compiler, value, compileFlags & ~COMPILE_FLAG_NORESULT);
@@ -152,11 +142,11 @@ Inline CompiledBlock Compiler_CompileOpEqualsMember(Compiler compiler, SmileList
 
 	// Store the result.
 	if (compileFlags & COMPILE_FLAG_NORESULT) {
-		EMIT0(Op_StpMember, -4);
+		EMIT0(Op_StpMember, -3);
 	}
 	else {
 		EMIT0(Op_LdNull, +1);
-		EMIT0(Op_StMember, -3);
+		EMIT0(Op_StMember, -2);
 	}
 	return compiledBlock;
 }
@@ -224,17 +214,16 @@ CompiledBlock Compiler_CompileOpEquals(Compiler compiler, SmileList args, Compil
 
 				return Compiler_CompileOpEqualsProperty(compiler, args, op, dotArgs, value, compileFlags);
 			}
-			else if (SMILE_KIND(((SmileList)dest)->a) == SMILE_KIND_LIST
-				&& SMILE_KIND(((SmileList)((SmileList)dest)->a)->a) == SMILE_KIND_SYMBOL
-				&& ((SmileSymbol)((SmileList)((SmileList)dest)->a)->a)->symbol == SMILE_SPECIAL_SYMBOL__DOT) {
+			else if (SMILE_KIND(((SmileList)dest)->a) == SMILE_KIND_SYMBOL
+				&& ((SmileSymbol)((SmileList)dest)->a)->symbol == SMILE_SPECIAL_SYMBOL__INDEX) {
 
-				// We found [$opset op [[$dot ... ] ... ] value].  So this is probably the get-member form.
-				// Make sure the [$dot ... ] is well-formed, and then compile this for real.
-				dotArgs = (SmileList)LIST_REST((SmileList)LIST_FIRST((SmileList)dest));
-				if (!Compiler_ValidateDotArgs(compiler, dotArgs))
+				// We found [$opset op [$index ... ] value].  So this is probably the get-member form.
+				// Make sure the [$index ... ] is well-formed, and then compile this for real.
+				dotArgs = LIST_REST((SmileList)dest);
+				if (!Compiler_ValidateIndexArgs(compiler, dotArgs))
 					return CompiledBlock_CreateError();
 
-				return Compiler_CompileOpEqualsMember(compiler, args, op, (SmileList)dest, dotArgs, value, compileFlags);
+				return Compiler_CompileOpEqualsMember(compiler, op, dotArgs, value, compileFlags);
 			}
 			else {
 				Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(args, getSourceLocation),

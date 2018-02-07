@@ -136,11 +136,11 @@ enum Opcode {
 	Op_StpLoc7	= 0x6F,		//  -1 | int32			; etc.
 				
 	Op_LdProp	= 0x70,		// -1, +1 | int32		; Retrieve the given property from the object on the stack top, or null if there is no such property.
-	Op_StProp	= 0x71,		// -1, +1 | int32		; Store the stack top into the given property of the given object.  Results in the stack top value.
+	Op_StProp	= 0x71,		// -1 | int32			; Store the stack top into the given property of the given object.  Results in the stack top value.
 	Op_StpProp	= 0x72,		// -2 | int32			; Store and pop the stack top into the given property of the given object.
 	Op_73		= 0x73,		
 	Op_LdMember	= 0x74,		// -2, +1				; Call 'get-member', passing member (top-1) and object (top-2).
-	Op_StMember	= 0x75,		// -2, +1				; Call 'set-member', passing value (top-1), member (top-2), and object (top-3).  Results in the stack top value.
+	Op_StMember	= 0x75,		// -3, +1				; Call 'set-member', passing value (top-1), member (top-2), and object (top-3).  Results in the stack top value.
 							// ; Warning: Op_StMember MUST ALWAYS be preceded by an otherwise-unnecessary Op_LdNull instruction!
 	Op_StpMember = 0x76,	// -3					; Call 'set-member', passing value (top-1), member (top-2), and object (top-3).  Pops the stack top value.
 	Op_77		= 0x77,		

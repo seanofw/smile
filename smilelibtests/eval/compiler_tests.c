@@ -318,6 +318,91 @@ START_TEST(CanCompileWritesToMembers)
 END_TEST
 
 //-------------------------------------------------------------------------------------------------
+// In-place update of global variables, properties, and members.
+
+START_TEST(CanCompileGlobalMutations)
+{
+	SmileObject expr = Parse("ga += gb");
+
+	Compiler compiler = Compiler_Create();
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	String result;
+
+	String expectedResult = String_Format(
+		"0: \tLdX %hd\t; ga\t; test.sm:1\n"
+		"1: \tLdX %hd\t; gb\t; test.sm:1\n"
+		"2: \tBinary %hd\t; +\t; test.sm:1\n"
+		"3: \tStX %hd\t; ga\t; test.sm:1\n"
+		"4: \tRet\n",
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "ga"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "gb"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "+"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "ga")
+	);
+
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
+}
+END_TEST
+
+START_TEST(CanCompileMutationsOfProperties)
+{
+	SmileObject expr = Parse("ga.foo += gb");
+
+	Compiler compiler = Compiler_Create();
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	String result;
+
+	String expectedResult = String_Format(
+		"0: \tLdX %hd\t; ga\t; test.sm:1\n"
+		"1: \tDup1\t; test.sm:1\n"
+		"2: \tLdProp %hd\t; foo\t; test.sm:1\n"
+		"3: \tLdX %hd\t; gb\t; test.sm:1\n"
+		"4: \tBinary %hd\t; +\t; test.sm:1\n"
+		"5: \tStProp %hd\t; foo\t; test.sm:1\n"
+		"6: \tRet\n",
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "ga"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "foo"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "gb"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "+"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "foo")
+	);
+
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
+}
+END_TEST
+
+START_TEST(CanCompileMutationsOfMembers)
+{
+	SmileObject expr = Parse("ga:10 += gb");
+
+	Compiler compiler = Compiler_Create();
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	String result;
+
+	String expectedResult = String_Format(
+		"0: \tLdX %hd\t; ga\t; test.sm:1\n"
+		"1: \tLd64 10\t; test.sm:1\n"
+		"2: \tDup2\t; test.sm:1\n"
+		"3: \tDup2\t; test.sm:1\n"
+		"4: \tLdMember\t; test.sm:1\n"
+		"5: \tLdX %d\t; gb\t; test.sm:1\n"
+		"6: \tBinary %hd\t; +\t; test.sm:1\n"
+		"7: \tLdNull\t; test.sm:1\n"
+		"8: \tStMember\t; test.sm:1\n"
+		"9: \tRet\n",
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "ga"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "gb"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "+")
+	);
+
+	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
+}
+END_TEST
+
+//-------------------------------------------------------------------------------------------------
 // Read/write of global variables, properties, and members.
 
 START_TEST(CanCompileScopeVariableReads)
