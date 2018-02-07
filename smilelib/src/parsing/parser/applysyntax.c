@@ -17,7 +17,6 @@
 
 #include <smile/types.h>
 #include <smile/smiletypes/smileobject.h>
-#include <smile/smiletypes/smilepair.h>
 #include <smile/smiletypes/smilelist.h>
 #include <smile/string.h>
 #include <smile/stringbuilder.h>
@@ -244,21 +243,6 @@ Inline SmileObject Parser_ApplyListCons(Parser parser, SmileList list, Int32Dict
 		: (SmileObject)SmileList_Cons(newA, newD);
 }
 
-Inline SmileObject Parser_ApplyPairOf(Parser parser, SmileList list, Int32Dict replacements)
-{
-	LexerPosition lexerPosition = (list->kind & SMILE_FLAG_WITHSOURCE) ? ((struct SmileListWithSourceInt *)list)->position : NULL;
-
-	SmileObject oldLeft = list->a;
-	SmileObject newLeft = Parser_RecursivelyApplyTemplate(parser, oldLeft, replacements, lexerPosition);
-
-	SmileObject oldRight = ((SmileList)list->d)->a;
-	SmileObject newRight = Parser_RecursivelyApplyTemplate(parser, oldRight, replacements, lexerPosition);
-
-	return (lexerPosition != NULL)
-		? (SmileObject)SmileList_CreateDotWithSource(newLeft, newRight, lexerPosition)
-		: (SmileObject)SmileList_CreateDot(newLeft, newRight);
-}
-
 static SmileObject Parser_RecursivelyApplyTemplate(Parser parser, SmileObject expr, Int32Dict replacements, LexerPosition lexerPosition)
 {
 	SmileList list;
@@ -296,13 +280,14 @@ static SmileObject Parser_RecursivelyApplyTemplate(Parser parser, SmileObject ex
 				}
 			}
 
-			if (SMILE_KIND(list->a) == SMILE_KIND_PAIR) {
-				SmilePair pair = (SmilePair)list->a;
+			if (SmileObject_IsCallToSymbol(SMILE_SPECIAL_SYMBOL__DOT, list->a)
+				&& SmileList_SafeLength((SmileList)list->a) == 3) {
+				SmileList dotList = (SmileList)list->a;
 
-				if (SMILE_KIND(pair->left) == SMILE_KIND_SYMBOL && SMILE_KIND(pair->right) == SMILE_KIND_SYMBOL) {
+				if (SMILE_KIND(LIST_SECOND(dotList)) == SMILE_KIND_SYMBOL && SMILE_KIND(LIST_THIRD(dotList)) == SMILE_KIND_SYMBOL) {
 
-					SmileSymbol objSymbol = (SmileSymbol)pair->left;
-					SmileSymbol methodSymbol = (SmileSymbol)pair->right;
+					SmileSymbol objSymbol = (SmileSymbol)LIST_SECOND(dotList);
+					SmileSymbol methodSymbol = (SmileSymbol)LIST_THIRD(dotList);
 
 					if (objSymbol->symbol == Smile_KnownSymbols.List_) {
 						if (methodSymbol->symbol == Smile_KnownSymbols.of) {
@@ -326,20 +311,20 @@ static SmileObject Parser_RecursivelyApplyTemplate(Parser parser, SmileObject ex
 							return NullObject;
 						}
 					}
-					else if (objSymbol->symbol == Smile_KnownSymbols.Pair_) {
+					/*else if (objSymbol->symbol == Smile_KnownSymbols.Pair_) {
 						if (methodSymbol->symbol == Smile_KnownSymbols.of) {
 							if (SmileList_SafeLength((SmileList)list->d) != 2) {
-								Parser_AddFatalError(parser, lexerPosition, "RecursivelyApplyTemplate encountered unsupported [Pair.of] form. (parser bug?)");
+								Parser_AddFatalError(parser, lexerPosition, "RecursivelyApplyTemplate encountered unsupported [$dot] form. (parser bug?)");
 								return NullObject;
 							}
 							// Evaluate arguments and then construct a Pair.
 							return Parser_ApplyPairOf(parser, (SmileList)list->d, replacements);
 						}
 						else {
-							Parser_AddFatalError(parser, lexerPosition, "RecursivelyApplyTemplate encountered unsupported [Pair.*] form. (parser bug?)");
+							Parser_AddFatalError(parser, lexerPosition, "RecursivelyApplyTemplate encountered unsupported [$dot] form. (parser bug?)");
 							return NullObject;
 						}
-					}
+					}*/
 				}
 			}
 

@@ -17,7 +17,6 @@
 
 #include <smile/types.h>
 #include <smile/smiletypes/smileobject.h>
-#include <smile/smiletypes/smilepair.h>
 #include <smile/smiletypes/numeric/smilebyte.h>
 #include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
@@ -410,9 +409,9 @@ ParseError Parser_ParseRawListDotExpr(Parser parser, SmileObject *result, Int *t
 			}
 			else {
 				// If the left-side expression is a template (spliced or not), then generate
-				// [Pair.of (expr) [$quote symbol]] as output.
+				// [List.of [$quote $dot] (expr) [$quote symbol]] as output.
 				*result = (SmileObject)SmileList_CreateThreeWithSource(
-					SmileList_CreateDotWithSource(Smile_KnownObjects.PairSymbol, Smile_KnownObjects.ofSymbol, lexerPosition),
+					SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol, Smile_KnownObjects._dotSymbol, lexerPosition),
 					*result,
 					SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol, SmileSymbol_Create(symbol), lexerPosition),
 					lexerPosition

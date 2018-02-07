@@ -141,7 +141,7 @@ typedef struct {
 ///	Any object may be used as a security key.  By default, all objects start with Null as
 ///	their security key.  This requires you to pass the object's current security key in order
 ///	to be authorized to set a new one.  Not all object types participate in security; but
-///	notably, UserObject and Façade do, and they alone are sufficient to be able to apply
+///	notably, UserObject and FaÃ§ade do, and they alone are sufficient to be able to apply
 ///	security to all other objects.</p>
 ///	
 /// <code>setSecurity</code>:	<p>Change the current security flags applied to this object, from the SMILE_SECURITY_*
@@ -355,11 +355,10 @@ SMILE_API_FUNC const char *SmileObject_StringifyToC(SmileObject obj);
 SMILE_API_FUNC String SmileObject_StringifyWithSource(SmileObject obj);
 SMILE_API_FUNC const char *SmileObject_StringifyWithSourceToC(SmileObject obj);
 
-SMILE_API_FUNC Bool SmileObject_IsRegularList(SmileObject list);
-SMILE_API_FUNC Bool SmileObject_ContainsNestedList(SmileObject obj);
-
 SMILE_API_FUNC Bool SmileObject_DeepCompare(SmileObject self, SmileObject other);
 SMILE_API_FUNC Bool SmileArg_DeepCompare(SmileArg self, SmileArg other);
+
+SMILE_API_FUNC Bool SmileObject_RecursiveEquals(SmileObject a, SmileObject b);
 
 SMILE_API_FUNC String SmileKind_GetName(Int kind);
 
@@ -386,16 +385,6 @@ Inline Bool SmileObject_IsList(SmileObject self)
 Inline Bool SmileObject_IsListWithSource(SmileObject self)
 {
 	return SmileObject_IsList(self) && (self->kind & SMILE_FLAG_WITHSOURCE);
-}
-
-Inline Bool SmileObject_IsPair(SmileObject self)
-{
-	return SMILE_KIND(self) == SMILE_KIND_PAIR;
-}
-
-Inline Bool SmileObject_IsPairWithSource(SmileObject self)
-{
-	return SmileObject_IsPair(self) && (self->kind & SMILE_FLAG_WITHSOURCE);
 }
 
 Inline Bool SmileObject_IsSymbol(SmileObject self)

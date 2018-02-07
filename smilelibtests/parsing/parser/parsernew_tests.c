@@ -19,7 +19,6 @@
 
 #include <smile/parsing/parser.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
-#include <smile/smiletypes/smilepair.h>
 #include <smile/env/env.h>
 
 #include "testhelpers.h"
@@ -88,7 +87,7 @@ START_TEST(NewWithMembersWithNestedColonsIsNotAnError)
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedResult = SimpleParse("[$new Object [ [x 10] [y [(''Foo''.get-member) 2]] [z 20] ]]");
+	SmileObject expectedResult = SimpleParse("[$new Object [ [x 10] [y [$index ''Foo'' 2]] [z 20] ]]");
 
 	ASSERT(RecursiveEquals(result, (SmileObject)expectedResult));
 }
@@ -126,7 +125,7 @@ START_TEST(NewWithMembersAllowsColonsInNestedFunctionsIfWrapped)
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedResult = SimpleParse("[$new Object [ [x [$fn [x] [(x . get-member) 1] ]] [y 20] ]]");
+	SmileObject expectedResult = SimpleParse("[$new Object [ [x [$fn [x] [$index x 1] ]] [y 20] ]]");
 
 	ASSERT(RecursiveEquals(result, (SmileObject)expectedResult));
 }
@@ -139,7 +138,7 @@ START_TEST(NewWithMembersAllowsColonsInNestedFunctionsIfWrapped2)
 	ParseScope parseScope = ParseScope_CreateRoot();
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedResult = SimpleParse("[$new Object [ [x [$fn [x] [(x . get-member) 1] ]] [y 20] ]]");
+	SmileObject expectedResult = SimpleParse("[$new Object [ [x [$fn [x] [$index x 1] ]] [y 20] ]]");
 
 	ASSERT(RecursiveEquals(result, expectedResult));
 }

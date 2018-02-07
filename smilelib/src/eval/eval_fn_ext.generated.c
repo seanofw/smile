@@ -20,7 +20,6 @@
 //---------------------------------------------------------------------------------------
 
 #include <smile/eval/eval.h>
-#include <smile/smiletypes/smilepair.h>
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/smilebool.h>
 #include <smile/smiletypes/smilefunction.h>

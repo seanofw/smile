@@ -20,7 +20,6 @@
 #include <smile/stringbuilder.h>
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/smilelist.h>
-#include <smile/smiletypes/smilepair.h>
 #include <smile/parsing/parser.h>
 #include <smile/parsing/internal/parserinternal.h>
 #include <smile/parsing/internal/parsescope.h>

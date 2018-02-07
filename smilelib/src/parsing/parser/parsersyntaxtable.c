@@ -18,7 +18,6 @@
 #include <smile/types.h>
 #include <smile/atomic.h>
 #include <smile/smiletypes/smileobject.h>
-#include <smile/smiletypes/smilepair.h>
 #include <smile/smiletypes/smilesyntax.h>
 #include <smile/parsing/parser.h>
 #include <smile/parsing/internal/parserinternal.h>

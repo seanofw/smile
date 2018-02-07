@@ -11,7 +11,6 @@ typedef struct SmileHandleInt *SmileHandle;
 
 typedef struct SmileListInt *SmileList;
 typedef struct SmileListInt *SmileNull;
-typedef struct SmilePairInt *SmilePair;
 
 typedef struct SmileFunctionInt *SmileFunction;
 typedef struct SmileUserObjectInt *SmileUserObject;

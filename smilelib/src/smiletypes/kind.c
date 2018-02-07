@@ -48,7 +48,6 @@ STATIC_STRING(BoxedReal64, "boxed Real64");
 STATIC_STRING(Null_, "Null");
 STATIC_STRING(List_, "List");
 STATIC_STRING(Primitive_, "Primitive");
-STATIC_STRING(Pair_, "Pair");
 STATIC_STRING(UserObject_, "Object");
 STATIC_STRING(String_, "String");
 
@@ -106,7 +105,6 @@ String SmileKind_GetName(Int kind)
 		case SMILE_KIND_NULL: return Null_;
 		case SMILE_KIND_LIST: return List_;
 		case SMILE_KIND_PRIMITIVE: return Primitive_;
-		case SMILE_KIND_PAIR: return Pair_;
 		case SMILE_KIND_USEROBJECT: return UserObject_;
 		case SMILE_KIND_STRING: return String_;
 

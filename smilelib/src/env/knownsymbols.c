@@ -41,6 +41,7 @@ STATIC_STRING(_Eq, "$eq");
 STATIC_STRING(_Ne, "$ne");
 STATIC_STRING(_New, "$new");
 STATIC_STRING(_Dot, "$dot");
+STATIC_STRING(_Index, "$index");
 STATIC_STRING(_Is, "$is");
 STATIC_STRING(_Typeof, "$typeof");
 
@@ -163,6 +164,7 @@ static void KnownSymbolsInt_PreloadSpecials(SymbolTable symbolTable, KnownSymbol
 	knownSymbols->_ne = AddSpecialSymbol(symbolTable, _Ne, SMILE_SPECIAL_SYMBOL__NE);
 	knownSymbols->_new = AddSpecialSymbol(symbolTable, _New, SMILE_SPECIAL_SYMBOL__NEW);
 	knownSymbols->_dot = AddSpecialSymbol(symbolTable, _Dot, SMILE_SPECIAL_SYMBOL__DOT);
+	knownSymbols->_index = AddSpecialSymbol(symbolTable, _Index, SMILE_SPECIAL_SYMBOL__INDEX);
 	knownSymbols->_is = AddSpecialSymbol(symbolTable, _Is, SMILE_SPECIAL_SYMBOL__IS);
 	knownSymbols->_typeof = AddSpecialSymbol(symbolTable, _Typeof, SMILE_SPECIAL_SYMBOL__TYPEOF);
 
@@ -274,7 +276,6 @@ STATIC_STRING(MapBase_, "MapBase");
 STATIC_STRING(MathException, "MathException");
 STATIC_STRING(Null_, "Null");
 STATIC_STRING(Object_, "Object");
-STATIC_STRING(Pair_, "Pair");
 STATIC_STRING(Program_, "Program");
 STATIC_STRING(Random_, "Random");
 STATIC_STRING(Range_, "Range");
@@ -382,7 +383,6 @@ static void KnownSymbolsInt_PreloadTypenames(SymbolTable symbolTable, KnownSymbo
 	knownSymbols->MathException = SymbolTableInt_AddFast(symbolTable, MathException);
 	knownSymbols->Null_ = SymbolTableInt_AddFast(symbolTable, Null_);
 	knownSymbols->Object_ = SymbolTableInt_AddFast(symbolTable, Object_);
-	knownSymbols->Pair_ = SymbolTableInt_AddFast(symbolTable, Pair_);
 	knownSymbols->Program_ = SymbolTableInt_AddFast(symbolTable, Program_);
 	knownSymbols->Random_ = SymbolTableInt_AddFast(symbolTable, Random_);
 	knownSymbols->Range_ = SymbolTableInt_AddFast(symbolTable, Range_);

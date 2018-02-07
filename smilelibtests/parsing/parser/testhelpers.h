@@ -4,8 +4,10 @@
 
 SmileObject SimpleParse(const char *input);
 SmileObject FullParse(const char *input);
-Bool RecursiveEquals(SmileObject a, SmileObject b);
 Lexer SetupLexerFromString(String source);
 Lexer SetupLexer(const char *string);
+
+#define RecursiveEquals(__a__, __b__) \
+	(SmileObject_RecursiveEquals((__a__), (__b__)))
 
 #endif

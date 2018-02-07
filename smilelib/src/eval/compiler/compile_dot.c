@@ -18,7 +18,6 @@
 #include <smile/eval/compiler.h>
 #include <smile/eval/compiler_internal.h>
 #include <smile/smiletypes/smilelist.h>
-#include <smile/smiletypes/smilepair.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/parsing/parsemessage.h>
 #include <smile/parsing/internal/parsedecl.h>
@@ -33,6 +32,19 @@ CompiledBlock Compiler_CompileDot(Compiler compiler, SmileList args, CompileFlag
 	oldSourceLocation = compiler->currentFunction->currentSourceLocation;
 	Compiler_SetSourceLocationFromList(compiler, args);
 	compiledBlock = Compiler_CompileLoadProperty(compiler, args, compileFlags);
+	compiler->currentFunction->currentSourceLocation = oldSourceLocation;
+	return compiledBlock;
+}
+
+// Form: [$index object index]
+CompiledBlock Compiler_CompileIndex(Compiler compiler, SmileList args, CompileFlags compileFlags)
+{
+	Int oldSourceLocation;
+	CompiledBlock compiledBlock;
+
+	oldSourceLocation = compiler->currentFunction->currentSourceLocation;
+	Compiler_SetSourceLocationFromList(compiler, args);
+	compiledBlock = Compiler_CompileLoadMember(compiler, args, compileFlags);
 	compiler->currentFunction->currentSourceLocation = oldSourceLocation;
 	return compiledBlock;
 }

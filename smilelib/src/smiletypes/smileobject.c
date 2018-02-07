@@ -18,6 +18,18 @@
 #include <smile/numeric/real64.h>
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/smilelist.h>
+#include <smile/smiletypes/smilebool.h>
+#include <smile/smiletypes/numeric/smilebyte.h>
+#include <smile/smiletypes/numeric/smileinteger16.h>
+#include <smile/smiletypes/numeric/smileinteger32.h>
+#include <smile/smiletypes/numeric/smileinteger64.h>
+#include <smile/smiletypes/numeric/smilereal32.h>
+#include <smile/smiletypes/numeric/smilereal64.h>
+#include <smile/smiletypes/numeric/smilefloat32.h>
+#include <smile/smiletypes/numeric/smilefloat64.h>
+#include <smile/smiletypes/text/smilechar.h>
+#include <smile/smiletypes/text/smileuni.h>
+#include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/easyobject.h>
 #include <smile/internal/staticstring.h>
 
@@ -30,6 +42,101 @@ SmileObject SmileObject_Create(void)
 	obj->base = NULL;
 	obj->vtable = SmileObject_VTable;
 	return obj;
+}
+
+Bool SmileObject_RecursiveEquals(SmileObject a, SmileObject b)
+{
+	if (a == b) return True;	// Easiest case.
+
+	if (a == NULL || b == NULL) return False;		// Should never have C NULL.
+
+	if (SMILE_KIND(a) != SMILE_KIND(b)) return False;	// Differing types can't be equal.
+
+next:
+	switch (SMILE_KIND(a)) {
+
+		case SMILE_KIND_LIST:
+			if (!SmileObject_RecursiveEquals(((SmileList)a)->a, ((SmileList)b)->a))
+				return False;
+			a = ((SmileList)a)->d;
+			b = ((SmileList)b)->d;
+			goto next;
+
+		case SMILE_KIND_PRIMITIVE:
+			return True;
+
+		case SMILE_KIND_NULL:
+			return True;
+
+		case SMILE_KIND_BYTE:
+			if (((SmileByte)a)->value != ((SmileByte)b)->value)
+				return False;
+			return True;
+
+		case SMILE_KIND_INTEGER16:
+			if (((SmileInteger16)a)->value != ((SmileInteger16)b)->value)
+				return False;
+			return True;
+
+		case SMILE_KIND_INTEGER32:
+			if (((SmileInteger32)a)->value != ((SmileInteger32)b)->value)
+				return False;
+			return True;
+
+		case SMILE_KIND_INTEGER64:
+			if (((SmileInteger64)a)->value != ((SmileInteger64)b)->value)
+				return False;
+			return True;
+
+		case SMILE_KIND_BOOL:
+			if (((SmileBool)a)->value != ((SmileBool)b)->value)
+				return False;
+			return True;
+
+		case SMILE_KIND_FLOAT32:
+			if (((SmileFloat32)a)->value != ((SmileFloat32)b)->value)
+				return False;
+			return True;
+
+		case SMILE_KIND_FLOAT64:
+			if (((SmileFloat64)a)->value != ((SmileFloat64)b)->value)
+				return False;
+			return True;
+
+		case SMILE_KIND_SYMBOL:
+			if (((SmileSymbol)a)->symbol != ((SmileSymbol)b)->symbol)
+				return False;
+			return True;
+
+		case SMILE_KIND_REAL32:
+			if (((SmileReal32)a)->value.value != ((SmileReal32)b)->value.value)
+				return False;
+			return True;
+
+		case SMILE_KIND_REAL64:
+			if (((SmileReal64)a)->value.value != ((SmileReal64)b)->value.value)
+				return False;
+			return True;
+
+		case SMILE_KIND_CHAR:
+			if (((SmileChar)a)->ch != ((SmileChar)b)->ch)
+				return False;
+			return True;
+
+		case SMILE_KIND_UNI:
+			if (((SmileUni)a)->code != ((SmileUni)b)->code)
+				return False;
+			return True;
+
+		case SMILE_KIND_STRING:
+			if (!String_Equals((String)a, (String)b))
+				return False;
+			return True;
+
+		default:
+			// All other types are reference types of some kind and are not strictly equal.
+			return False;
+	}
 }
 
 Bool SmileObject_DeepCompare(SmileObject self, SmileObject other)

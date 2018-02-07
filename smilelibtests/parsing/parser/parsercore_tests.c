@@ -19,7 +19,6 @@
 
 #include <smile/parsing/parser.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
-#include <smile/smiletypes/smilepair.h>
 #include <smile/env/env.h>
 
 #include "testhelpers.h"
@@ -450,7 +449,7 @@ START_TEST(CanParseTheColonOperator)
 	ParseError declError2 = ParseScope_DeclareHere(parseScope, ySymbol, PARSEDECL_VARIABLE, NULL, NULL);
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedResult = SimpleParse("[$progn [(x . get-member) 1] [(y . get-member) [(5 . -)]] ]");
+	SmileObject expectedResult = SimpleParse("[$progn [$index x 1] [$index y [(5 . -)]] ]");
 
 	ASSERT(RecursiveEquals(result, expectedResult));
 }

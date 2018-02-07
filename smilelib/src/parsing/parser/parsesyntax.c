@@ -23,7 +23,6 @@
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/smilelist.h>
-#include <smile/smiletypes/smilepair.h>
 #include <smile/stringbuilder.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/parsing/parser.h>
@@ -228,10 +227,9 @@ static Int Parser_VerifyArgumentsAreEvaluableAtParseTime(Parser parser, SmileLis
 ///   - n (where n is any nonterminal symbol)
 ///   - [] (i.e., null)
 ///   - [$quote x] (for any x)
-///   - [List.cons x y]
-///   - [List.of x y z ...]
-///   - [List.combine x y z ...]
-///   - [Pair.of x y]
+///   - [[$dot List cons] x y]
+///   - [[$dot List of] x y z ...]
+///   - [[$dot List combine] x y z ...]
 ///
 /// All other computation is expressly prohibited and must be implemented using macros.
 /// </summary>
@@ -265,13 +263,13 @@ static Bool Parser_VerifySyntaxTemplateIsEvaluableAtParseTime(Parser parser, Smi
 				}
 			}
 
-			if (SMILE_KIND(list->a) == SMILE_KIND_PAIR) {
-				SmilePair pair = (SmilePair)list->a;
+			if (SmileObject_IsCallToSymbol(SMILE_SPECIAL_SYMBOL__DOT, list->a)) {
+				SmileList dotList = (SmileList)list->a;
 
-				if (SMILE_KIND(pair->left) == SMILE_KIND_SYMBOL && SMILE_KIND(pair->right) == SMILE_KIND_SYMBOL) {
+				if (SMILE_KIND(LIST_SECOND(dotList)) == SMILE_KIND_SYMBOL && SMILE_KIND(LIST_THIRD(dotList)) == SMILE_KIND_SYMBOL) {
 
-					SmileSymbol objSymbol = (SmileSymbol)pair->left;
-					SmileSymbol methodSymbol = (SmileSymbol)pair->right;
+					SmileSymbol objSymbol = (SmileSymbol)LIST_SECOND(dotList);
+					SmileSymbol methodSymbol = (SmileSymbol)LIST_THIRD(dotList);
 
 					if (objSymbol->symbol == Smile_KnownSymbols.List_) {
 						if (methodSymbol->symbol == Smile_KnownSymbols.of
@@ -294,23 +292,6 @@ static Bool Parser_VerifySyntaxTemplateIsEvaluableAtParseTime(Parser parser, Smi
 							return False;
 						}
 					}
-					else if (objSymbol->symbol == Smile_KnownSymbols.Pair_) {
-						if (methodSymbol->symbol == Smile_KnownSymbols.of) {
-							if (Parser_VerifyArgumentsAreEvaluableAtParseTime(parser, LIST_REST(list)) != 2) {
-								Parser_AddMessage(parser, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(list, getSourceLocation),
-									String_FromC("'Pair.of' must be called with exactly two arguments.")));
-								return False;
-							}
-							return True;
-						}
-						else {
-							Parser_AddMessage(parser, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(list, getSourceLocation),
-								String_Format("'Pair.%S' is not allowed here in this syntax template (only Pair.of"
-									" is supported in syntax templates).",
-									SymbolTable_GetName(Smile_SymbolTable, methodSymbol->symbol))));
-							return False;
-						}
-					}
 				}
 			}
 
@@ -318,7 +299,7 @@ static Bool Parser_VerifySyntaxTemplateIsEvaluableAtParseTime(Parser parser, Smi
 
 		default:
 			Parser_AddMessage(parser, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(expr, getSourceLocation),
-				String_FromC("Syntax templates may only consist of nonterminals, the empty list, [$quote], and certain [List.*] and [Pair.*] method calls.")));
+				String_FromC("Syntax templates may only consist of nonterminals, the empty list, [$quote], and certain [List.*] method calls.")));
 			return False;
 	}
 }

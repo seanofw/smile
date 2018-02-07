@@ -19,7 +19,6 @@
 #include <smile/eval/compiler_internal.h>
 #include <smile/smiletypes/smilebool.h>
 #include <smile/smiletypes/smilelist.h>
-#include <smile/smiletypes/smilepair.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/text/smilechar.h>
 #include <smile/smiletypes/text/smileuni.h>

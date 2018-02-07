@@ -18,7 +18,6 @@
 #include <smile/eval/compiler.h>
 #include <smile/eval/compiler_internal.h>
 #include <smile/smiletypes/smilelist.h>
-#include <smile/smiletypes/smilepair.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/parsing/parsemessage.h>
 #include <smile/parsing/internal/parsedecl.h>

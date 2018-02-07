@@ -32,7 +32,7 @@ Op(LdProp), Op(StProp), Op(StpProp), NULL, Op(LdMember), Op(StMember), Op(StpMem
 NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 
 // 80-8F
-Op(Cons), Op(Car), Op(Cdr), NULL, Op(NewPair), Op(Left), Op(Right), NULL,
+Op(Cons), Op(Car), Op(Cdr), NULL, NULL, NULL, NULL, NULL,
 Op(NewFn), Op(NewObj), NULL, Op(SuperEq), Op(SuperNe), Op(Not), Op(Is), Op(TypeOf),
 
 // 90-9F
@@ -56,8 +56,8 @@ Op(Each), Op(Map), Op(Where), NULL, Op(Count), Op(Any), Op(Join), NULL,
 Op(UCount), Op(UAny), Op(UJoin), Op(Neg), Op(Bool), Op(Int), Op(String), Op(Hash),
 
 // E0-EF
-Op(NullQ), Op(ListQ), Op(PairQ), Op(FnQ), Op(BoolQ), Op(IntQ), Op(StringQ), Op(SymbolQ),
-Op(LdA), Op(LdD), Op(LdLeft), Op(LdRight), Op(LdStart), Op(LdEnd), Op(LdCount), Op(LdLength),
+Op(NullQ), Op(ListQ), NULL, Op(FnQ), Op(BoolQ), Op(IntQ), Op(StringQ), Op(SymbolQ),
+Op(LdA), Op(LdD), NULL, NULL, Op(LdStart), Op(LdEnd), Op(LdCount), Op(LdLength),
 
 // F0-FF
 Op(StateMachStart), Op(StateMachBody), NULL, NULL, NULL, NULL, NULL, NULL,

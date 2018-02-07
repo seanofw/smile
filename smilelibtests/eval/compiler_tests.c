@@ -23,7 +23,6 @@
 #include <smile/eval/compiler.h>
 #include <smile/parsing/parser.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
-#include <smile/smiletypes/smilepair.h>
 
 TEST_SUITE(CompilerTests)
 

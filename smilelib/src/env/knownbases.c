@@ -176,7 +176,6 @@ static void SetupEnumerableTypes(struct KnownBasesStruct *knownBases)
 
 static void SetupMiscTypes(struct KnownBasesStruct *knownBases)
 {
-	knownBases->Pair = SmileUserObject_Create((SmileObject)knownBases->Object, Smile_KnownSymbols.Pair_);
 	knownBases->Fn = SmileUserObject_Create((SmileObject)knownBases->Object, Smile_KnownSymbols.Fn_);
 	knownBases->Bool = SmileUserObject_Create((SmileObject)knownBases->Object, Smile_KnownSymbols.Bool_);
 	knownBases->Char = SmileUserObject_Create((SmileObject)knownBases->Object, Smile_KnownSymbols.Char_);
@@ -214,7 +213,6 @@ extern void SmileInteger32Range_Setup(SmileUserObject base);
 extern void SmileInteger64Range_Setup(SmileUserObject base);
 extern void SmileFunction_Setup(SmileUserObject base);
 extern void SmileList_Setup(SmileUserObject base);
-extern void SmilePair_Setup(SmileUserObject base);
 extern void SmileObject_Setup(SmileUserObject base);
 extern void String_Setup(SmileUserObject base);
 extern void SmileChar_Setup(SmileUserObject base);
@@ -233,7 +231,6 @@ void KnownBases_Setup(struct KnownBasesStruct *knownBases)
 	SmileFloat64_Setup(knownBases->Float64);
 	SmileFunction_Setup(knownBases->Fn);
 	SmileList_Setup(knownBases->List);
-	SmilePair_Setup(knownBases->Pair);
 	SmileObject_Setup(knownBases->Object);
 	String_Setup(knownBases->String);
 	SmileByteRange_Setup(knownBases->ByteRange);

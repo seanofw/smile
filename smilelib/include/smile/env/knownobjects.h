@@ -44,14 +44,13 @@ struct KnownObjectsStruct {
 
 	SmileSymbol ObjectSymbol;
 	SmileSymbol ListSymbol;
-	SmileSymbol PairSymbol;
 
-	// The twenty core special forms.
+	// The twenty-two core special forms.
 	SmileSymbol _setSymbol, _opsetSymbol;
 	SmileSymbol _ifSymbol, _whileSymbol, _tillSymbol;
 	SmileSymbol _fnSymbol, _quoteSymbol, _scopeSymbol, _prog1Symbol, _prognSymbol, _returnSymbol, _catchSymbol;
 	SmileSymbol _notSymbol, _orSymbol, _andSymbol, _eqSymbol, _neSymbol;
-	SmileSymbol _newSymbol, _dotSymbol, _isSymbol, _typeofSymbol;
+	SmileSymbol _newSymbol, _dotSymbol, _indexSymbol, _isSymbol, _typeofSymbol;
 
 	// Method names used at parse-time.
 	SmileSymbol getMemberSymbol;

@@ -236,7 +236,6 @@
 			<Item Name="as List" Condition="(kind &amp; 0xFF) == 0x20 || (kind &amp; 0xFF) == 0x21">(struct SmileListInt *)this</Item>
 			<Item Name="as Symbol" Condition="(kind &amp; 0xFF) == 0x18">(struct SmileSymbolInt *)this</Item>
 			<Item Name="as String" Condition="(kind &amp; 0xFF) == 0x25">(struct StringStruct *)this</Item>
-			<Item Name="as Pair" Condition="(kind &amp; 0xFF) == 0x23">(struct SmilePairInt *)this</Item>
 			<Item Name="as Byte" Condition="(kind &amp; 0xFF) == 0x10">(struct SmileByteInt *)this</Item>
 			<Item Name="as Integer16" Condition="(kind &amp; 0xFF) == 0x11">(struct SmileInteger16Int *)this</Item>
 			<Item Name="as Integer32" Condition="(kind &amp; 0xFF) == 0x12">(struct SmileInteger32Int *)this</Item>
@@ -294,7 +293,6 @@
 			<Item Name="as List" Condition="(obj-&gt;kind &amp; 0xFF) == 0x20 || (obj-&gt;kind &amp; 0xFF) == 0x21">(struct SmileListInt *)obj</Item>
 			<Item Name="as Symbol" Condition="(obj-&gt;kind &amp; 0xFF) == 0x18">(struct SmileSymbolInt *)obj</Item>
 			<Item Name="as String" Condition="(obj-&gt;kind &amp; 0xFF) == 0x25">(struct StringStruct *)obj</Item>
-			<Item Name="as Pair" Condition="(obj-&gt;kind &amp; 0xFF) == 0x23">(struct SmilePairInt *)obj</Item>
 			<Item Name="as Byte" Condition="(obj-&gt;kind &amp; 0xFF) == 0x10">(struct SmileByteInt *)obj</Item>
 			<Item Name="as Integer16" Condition="(obj-&gt;kind &amp; 0xFF) == 0x11">(struct SmileInteger16Int *)obj</Item>
 			<Item Name="as Integer32" Condition="(obj-&gt;kind &amp; 0xFF) == 0x12">(struct SmileInteger32Int *)obj</Item>
@@ -365,8 +363,6 @@
 		<Expand>
 			<Item Name="[a]" Condition="(a-&gt;kind &amp; 0xFF) != 0x20 &amp;&amp; (a-&gt;kind &amp; 0xFF) != 0x21 &amp;&amp; (a-&gt;kind &amp; 0xFF) != 0x23">a</Item>
 			<Item Name="[d]" Condition="(d-&gt;kind &amp; 0xFF) != 0x20 &amp;&amp; (d-&gt;kind &amp; 0xFF) != 0x21 &amp;&amp; (d-&gt;kind &amp; 0xFF) != 0x23">d</Item>
-			<Item Name="[a]" Condition="(a-&gt;kind &amp; 0xFF) == 0x23">(struct SmilePairInt *)a</Item>
-			<Item Name="[d]" Condition="(d-&gt;kind &amp; 0xFF) == 0x23">(struct SmilePairInt *)d</Item>
 			<Item Name="[a]" Condition="(a-&gt;kind &amp; 0xFF) == 0x20 || (a-&gt;kind &amp; 0xFF) == 0x21">(struct SmileListInt *)a</Item>
 			<Item Name="[d]" Condition="(d-&gt;kind &amp; 0xFF) == 0x20 || (d-&gt;kind &amp; 0xFF) == 0x21">(struct SmileListInt *)d</Item>
 
@@ -380,24 +376,6 @@
 				<NextPointer>(d-&gt;kind &amp; 0xFF) == 0x21 ? (struct SmileListInt *)d : 0</NextPointer>
 				<ValueNode>a</ValueNode>
 			</LinkedListItems>
-		</Expand>
-	</Type>
-
-	<!-- SmilePair -->
-	<Type Name="SmilePairInt">
-		<DisplayString>Pair ({left-&gt;kind},{right-&gt;kind})</DisplayString>
-		<Expand>
-			<Item Name="[a]" Condition="(left-&gt;kind &amp; 0xFF) != 0x20 &amp;&amp; (left-&gt;kind &amp; 0xFF) != 0x21 &amp;&amp; (left-&gt;kind &amp; 0xFF) != 0x23">a</Item>
-			<Item Name="[d]" Condition="(right-&gt;kind &amp; 0xFF) != 0x20 &amp;&amp; (right-&gt;kind &amp; 0xFF) != 0x21 &amp;&amp; (right-&gt;kind &amp; 0xFF) != 0x23">d</Item>
-			<Item Name="[a]" Condition="(left-&gt;kind &amp; 0xFF) == 0x23">(struct SmilePairInt *)a</Item>
-			<Item Name="[d]" Condition="(right-&gt;kind &amp; 0xFF) == 0x23">(struct SmilePairInt *)d</Item>
-			<Item Name="[a]" Condition="(left-&gt;kind &amp; 0xFF) == 0x20 || (left-&gt;kind &amp; 0xFF) == 0x21">(struct SmileListInt *)a</Item>
-			<Item Name="[d]" Condition="(right-&gt;kind &amp; 0xFF) == 0x20 || (right-&gt;kind &amp; 0xFF) == 0x21">(struct SmileListInt *)d</Item>
-
-			<Item Name="[flags]">kind &amp; ~0xFF</Item>
-			<Item Name="[vtable]">vtable</Item>
-			<Item Name="[base]">base</Item>
-			<Item Name="[stringified]">SmileObject_StringifyWithSourceToC((SmileObject)this)</Item>
 		</Expand>
 	</Type>
 

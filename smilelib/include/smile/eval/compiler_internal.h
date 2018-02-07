@@ -7,9 +7,6 @@
 #ifndef __SMILE_SMILETYPES_SMILELIST_H__
 #include <smile/smiletypes/smilelist.h>
 #endif
-#ifndef __SMILE_SMILETYPES_SMILEPAIR_H__
-#include <smile/smiletypes/smilepair.h>
-#endif
 
 //-------------------------------------------------------------------------------------------------
 // Compiler functions
@@ -21,7 +18,7 @@ extern Bool Compiler_StripNots(SmileObject *objPtr);
 extern Int CompilerFunction_AddLocal(CompilerFunction compilerFunction, Symbol local);
 
 extern CompiledBlock Compiler_CompileLoadProperty(Compiler compiler, SmileList dotArgs, CompileFlags compileFlags);
-extern void Compiler_CompileStoreProperty(Compiler compiler, SmilePair pair, CompileFlags compileFlags, CompiledBlock compiledBlock);
+extern CompiledBlock Compiler_CompileLoadMember(Compiler compiler, SmileList indexArgs, CompileFlags compileFlags);
 extern CompiledBlock Compiler_CompileLoadVariable(Compiler compiler, Symbol symbol, CompileFlags compileFlags);
 extern void Compiler_CompileStoreVariable(Compiler compiler, Symbol symbol, CompileFlags compileFlags, CompiledBlock compiledBlock);
 extern CompiledBlock Compiler_CompileMethodCall(Compiler compiler, SmileList dotArgs, SmileList args, CompileFlags compileFlags);
@@ -42,10 +39,12 @@ extern CompiledBlock Compiler_CompileProgN(Compiler compiler, SmileList args, Co
 extern CompiledBlock Compiler_CompileScope(Compiler compiler, SmileList args, CompileFlags compileFlags);
 extern CompiledBlock Compiler_CompileNew(Compiler compiler, SmileList args, CompileFlags compileFlags);
 extern CompiledBlock Compiler_CompileDot(Compiler compiler, SmileList args, CompileFlags compileFlags);
+extern CompiledBlock Compiler_CompileIndex(Compiler compiler, SmileList args, CompileFlags compileFlags);
 extern CompiledBlock Compiler_CompileAnd(Compiler compiler, SmileList args, CompileFlags compileFlags);
 extern CompiledBlock Compiler_CompileOr(Compiler compiler, SmileList args, CompileFlags compileFlags);
 
 extern Bool Compiler_ValidateDotArgs(Compiler compiler, SmileList dotArgs);
+extern Bool Compiler_ValidateIndexArgs(Compiler compiler, SmileList indexArgs);
 
 //-------------------------------------------------------------------------------------------------
 // Macros
@@ -154,19 +153,6 @@ Inline Int Compiler_SetSourceLocationFromList(Compiler compiler, SmileList list)
 		return compiler->currentFunction->currentSourceLocation;
 
 	return Compiler_SetSourceLocation(compiler, ((struct SmileListWithSourceInt *)list)->position);
-}
-
-/// <summary>
-/// If the given Pair is annotated with a source location, update the compiler's
-/// current source location to be that source location.  Returns the index of the
-/// previous source location in the collection of source locations.
-/// </summary>
-Inline Int Compiler_SetSourceLocationFromPair(Compiler compiler, SmilePair pair)
-{
-	if (!(pair->kind & SMILE_FLAG_WITHSOURCE))
-		return compiler->currentFunction->currentSourceLocation;
-
-	return Compiler_SetSourceLocation(compiler, ((struct SmilePairWithSourceInt *)pair)->position);
 }
 
 #endif

@@ -732,9 +732,6 @@
     <ClCompile Include="src\parsing\parser\parserhelpers.c">
       <Filter>src\parsing\parser</Filter>
     </ClCompile>
-    <ClCompile Include="src\smiletypes\smilepair.c">
-      <Filter>src\smiletypes</Filter>
-    </ClCompile>
     <ClCompile Include="src\parsing\parser\parseterm.c">
       <Filter>src\parsing\parser</Filter>
     </ClCompile>
@@ -943,9 +940,6 @@
       <Filter>src\smiletypes</Filter>
     </ClCompile>
     <ClCompile Include="src\smiletypes\smileobject_class.c">
-      <Filter>src\smiletypes</Filter>
-    </ClCompile>
-    <ClCompile Include="src\smiletypes\smilepair_class.c">
       <Filter>src\smiletypes</Filter>
     </ClCompile>
     <ClCompile Include="src\string\string_utf16.c">
@@ -1286,9 +1280,6 @@
     </ClInclude>
     <ClInclude Include="include\smile\parsing\parsemessage.h">
       <Filter>include\parsing</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\smiletypes\smilepair.h">
-      <Filter>include\smiletypes</Filter>
     </ClInclude>
     <ClInclude Include="include\smile\smiletypes\smilemacro.h">
       <Filter>include\smiletypes</Filter>

@@ -22,7 +22,6 @@
 #include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
-#include <smile/smiletypes/smilepair.h>
 #include <smile/smiletypes/smilesyntax.h>
 #include <smile/env/env.h>
 
@@ -132,70 +131,6 @@ SmileObject FullParse(const char *input)
 	result = Parser_Parse(parser, lexer, parseScope);
 
 	return result;
-}
-
-Bool RecursiveEquals(SmileObject a, SmileObject b)
-{
-	if (a == NULL || b == NULL) return False;		// Should never have C NULL.
-
-	if (SMILE_KIND(a) != SMILE_KIND(b)) return False;
-
-next:
-	switch (SMILE_KIND(a)) {
-
-	case SMILE_KIND_LIST:
-		if (!RecursiveEquals(((SmileList)a)->a, ((SmileList)b)->a))
-			return False;
-		a = ((SmileList)a)->d;
-		b = ((SmileList)b)->d;
-		goto next;
-
-	case SMILE_KIND_PRIMITIVE:
-		return True;
-
-	case SMILE_KIND_NULL:
-		return True;
-
-	case SMILE_KIND_PAIR:
-		if (!RecursiveEquals(((SmilePair)a)->left, ((SmilePair)b)->left))
-			return False;
-		if (!RecursiveEquals(((SmilePair)a)->right, ((SmilePair)b)->right))
-			return False;
-		return True;
-
-	case SMILE_KIND_SYMBOL:
-		if (((SmileSymbol)a)->symbol != ((SmileSymbol)b)->symbol)
-			return False;
-		return True;
-
-	case SMILE_KIND_BYTE:
-		if (((SmileByte)a)->value != ((SmileByte)b)->value)
-			return False;
-		return True;
-
-	case SMILE_KIND_INTEGER16:
-		if (((SmileInteger16)a)->value != ((SmileInteger16)b)->value)
-			return False;
-		return True;
-
-	case SMILE_KIND_INTEGER32:
-		if (((SmileInteger32)a)->value != ((SmileInteger32)b)->value)
-			return False;
-		return True;
-
-	case SMILE_KIND_INTEGER64:
-		if (((SmileInteger64)a)->value != ((SmileInteger64)b)->value)
-			return False;
-		return True;
-
-	case SMILE_KIND_STRING:
-		if (!String_Equals((String)a, (String)b))
-			return False;
-		return True;
-
-	default:
-		return False;
-	}
 }
 
 Lexer SetupLexerFromString(String source)

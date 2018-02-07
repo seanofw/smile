@@ -17,7 +17,6 @@
 
 #include <smile/types.h>
 #include <smile/smiletypes/smileobject.h>
-#include <smile/smiletypes/smilepair.h>
 #include <smile/parsing/parser.h>
 #include <smile/parsing/internal/parserinternal.h>
 #include <smile/parsing/internal/parsedecl.h>
@@ -1125,11 +1124,7 @@ ParseError Parser_ParseColonExpr(Parser parser, SmileObject *expr, Int modeFlags
 		if (parseError != NULL)
 			return parseError;
 
-		*expr = (SmileObject)SmileList_CreateTwoWithSource(
-			SmileList_CreateDotWithSource(*expr, Smile_KnownObjects.getMemberSymbol, lexerPosition),
-			rvalue,
-			lexerPosition
-		);
+		*expr = (SmileObject)SmileList_CreateIndexWithSource(*expr, rvalue, lexerPosition);
 	}
 
 	Lexer_Unget(parser->lexer);
