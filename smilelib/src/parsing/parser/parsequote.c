@@ -410,7 +410,8 @@ ParseError Parser_ParseRawListDotExpr(Parser parser, SmileObject *result, Int *t
 			else {
 				// If the left-side expression is a template (spliced or not), then generate
 				// [List.of [$quote $dot] (expr) [$quote symbol]] as output.
-				*result = (SmileObject)SmileList_CreateThreeWithSource(
+				*result = (SmileObject)SmileList_CreateFourWithSource(
+					SmileList_CreateThreeWithSource(Smile_KnownObjects._dotSymbol, Smile_KnownObjects.ListSymbol, Smile_KnownObjects.ofSymbol, lexerPosition),
 					SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol, Smile_KnownObjects._dotSymbol, lexerPosition),
 					*result,
 					SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol, SmileSymbol_Create(symbol), lexerPosition),

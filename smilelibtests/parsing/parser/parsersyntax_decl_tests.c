@@ -117,7 +117,7 @@ START_TEST(CanParseSyntaxFormsThatContainNonterminals)
 				NullObject
 			)
 		),
-		(SmileObject)SimpleParse("[(List.of) [(Pair.of) x [$quote *]] x]"),
+		(SmileObject)SimpleParse("[(List.of) [(List.of) [$quote $dot] x [$quote *]] x]"),
 		NULL
 	);
 
