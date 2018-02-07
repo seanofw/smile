@@ -17,7 +17,6 @@
 
 #include <smile/types.h>
 #include <smile/smiletypes/smileobject.h>
-#include <smile/smiletypes/smilepair.h>
 #include <smile/parsing/parser.h>
 #include <smile/parsing/internal/parserinternal.h>
 #include <smile/parsing/internal/parsedecl.h>
@@ -78,32 +77,23 @@ Token Parser_Recover(Parser parser, Int *tokenKinds, Int numTokenKinds)
 Bool Parser_IsLValue(SmileObject obj)
 {
 	Int kind;
-	SmileList objList;
-	SmilePair firstPair;
-	SmileSymbol rightSymbol;
 	
 	kind = SMILE_KIND(obj);
 
 	// Plain symbols ('x') are assignable to, as variables.
 	if (kind == SMILE_KIND_SYMBOL) return True;
 
-	// Pairs ('x.*') are assignable to, since they represent members of an object.
-	if (kind == SMILE_KIND_PAIR) return True;
+	// Dots ('x.*') are assignable to, since they represent properties of an object.
+	if (SmileObject_IsCallToSymbol(SMILE_SPECIAL_SYMBOL__DOT, obj)
+		&& SmileList_SafeLength((SmileList)obj) == 3)
+		return True;
 
-	// Last, and possibly least, test to see if we have a get-member form ('x:*'),
-	// the third and final kind of assignable target.  Get-member forms are written as
-	// 'x:*' in most code, but they are equivalent to [x.get-member *], so that's the
-	// real pattern we have to test for.
-	if (kind != SMILE_KIND_LIST) return False;
-	objList = (SmileList)obj;
+	// Indexes ('x:*') are assignable to, since they represent members of a collection.
+	if (SmileObject_IsCallToSymbol(SMILE_SPECIAL_SYMBOL__INDEX, obj)
+		&& SmileList_SafeLength((SmileList)obj) == 3)
+		return True;
 
-	if (SMILE_KIND(objList->a) != SMILE_KIND_PAIR) return False;
-	firstPair = (SmilePair)objList->a;
-
-	if (SMILE_KIND(firstPair->right) != SMILE_KIND_SYMBOL) return False;
-	rightSymbol = (SmileSymbol)firstPair->right;
-
-	return rightSymbol->symbol == Smile_KnownSymbols.get_member;
+	return False;
 }
 
 /// <summary>

@@ -19,7 +19,6 @@
 #include <smile/eval/compiler_internal.h>
 #include <smile/smiletypes/smilebool.h>
 #include <smile/smiletypes/smilelist.h>
-#include <smile/smiletypes/smilepair.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/text/smilechar.h>
 #include <smile/smiletypes/text/smileuni.h>
@@ -140,15 +139,6 @@ CompiledBlock Compiler_CompileExpr(Compiler compiler, SmileObject expr, CompileF
 		case SMILE_KIND_PARSEMESSAGE:
 			Smile_Abort_FatalError("Intermediate forms are not supported.");
 
-		// Simple pairs resolve by performing a property lookup on the object in question,
-		// which may walk up the base chain for that object.
-		case SMILE_KIND_PAIR:
-			oldSourceLocation = compiler->currentFunction->currentSourceLocation;
-			Compiler_SetSourceLocationFromPair(compiler, (SmilePair)expr);
-			compiledBlock = Compiler_CompileLoadProperty(compiler, (SmilePair)expr, compileFlags);
-			compiler->currentFunction->currentSourceLocation = oldSourceLocation;
-			return compiledBlock;
-
 		// Symbols (variables) resolve to whatever the current closure (or any base closure) says they are.
 		case SMILE_KIND_SYMBOL:
 			return Compiler_CompileLoadVariable(compiler, ((SmileSymbol)expr)->symbol, compileFlags);
@@ -171,11 +161,19 @@ CompiledBlock Compiler_CompileExpr(Compiler compiler, SmileObject expr, CompileF
 
 			switch (SMILE_KIND(list->a)) {
 
-				// Invocation of a method on an object, of the form [obj.method ...].
-				case SMILE_KIND_PAIR:
-					compiledBlock = Compiler_CompileMethodCall(compiler, (SmilePair)list->a, (SmileList)list->d, compileFlags);
-					compiler->currentFunction->currentSourceLocation = oldSourceLocation;
-					return compiledBlock;
+				// Indirect invocation, possibly of the form [[$dot obj method] ...], which needs to
+				// be compiled as a method call.
+				case SMILE_KIND_LIST:
+					{
+						SmileList subList = (SmileList)(list->a);
+						if (SMILE_KIND(subList->a) == SMILE_KIND_SYMBOL
+							&& ((SmileSymbol)subList->a)->symbol == SMILE_SPECIAL_SYMBOL__DOT) {
+							compiledBlock = Compiler_CompileMethodCall(compiler, (SmileList)subList->d, (SmileList)list->d, compileFlags);
+							compiler->currentFunction->currentSourceLocation = oldSourceLocation;
+							return compiledBlock;
+						}
+					}
+					goto defaultListForm;
 
 				// Either invocation of a known built-in (like [$if] or [$set] or [$scope]), or resolution
 				// of a named function in the current scope.
@@ -194,6 +192,7 @@ CompiledBlock Compiler_CompileExpr(Compiler compiler, SmileObject expr, CompileF
 				// Resolve the given expression, and then call it, passing the rest of the list as
 				// arguments (after they have been evaluated).
 				default:
+				defaultListForm:
 					compiledBlock = CompiledBlock_Create();
 
 					// Resolve each element of the list.  The first element will become the function,

@@ -19,7 +19,6 @@
 
 #include <smile/parsing/parser.h>
 #include <smile/smiletypes/numeric/smilebyte.h>
-#include <smile/smiletypes/smilepair.h>
 #include <smile/smiletypes/text/smilechar.h>
 #include <smile/smiletypes/text/smileuni.h>
 #include <smile/env/env.h>

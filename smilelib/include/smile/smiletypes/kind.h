@@ -42,7 +42,6 @@ typedef enum {
 	SMILE_KIND_NULL					= 0x20,		// Must be a number with a zero in the SMILE_KIND_LIST_BIT position.
 	SMILE_KIND_LIST					= (SMILE_KIND_NULL | SMILE_KIND_LIST_BIT),
 	SMILE_KIND_PRIMITIVE			= 0x22,		// The type of the one-and-only primitive object at the root of the object hierarchy.
-	SMILE_KIND_PAIR					= 0x23,
 	SMILE_KIND_USEROBJECT			= 0x24,
 	SMILE_KIND_STRING				= 0x25,
 		

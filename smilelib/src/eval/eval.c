@@ -16,7 +16,6 @@
 //---------------------------------------------------------------------------------------
 
 #include <smile/eval/eval.h>
-#include <smile/smiletypes/smilepair.h>
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/smilebool.h>
 #include <smile/smiletypes/smilefunction.h>
@@ -683,37 +682,6 @@ next:
 			byteCode++;
 			goto next;
 
-		case Op_NewPair:
-			value = (SmileObject)SmilePair_Create(SmileArg_Box(Closure_GetTemp(closure, 1)), SmileArg_Box(Closure_GetTemp(closure, 0)));
-			Closure_PopCount(closure, 2);
-			Closure_PushBoxed(closure, value);
-			byteCode++;
-			goto next;
-
-		case Op_Left:
-			target = Closure_GetTop(closure).obj;
-			if (SMILE_KIND(target) == SMILE_KIND_PAIR) {
-				value = ((SmilePair)target)->left;
-			}
-			else {
-				value = NullObject;
-			}
-			Closure_SetTop(closure, SmileArg_Unbox(value));
-			byteCode++;
-			goto next;
-
-		case Op_Right:
-			target = Closure_GetTop(closure).obj;
-			if (SMILE_KIND(target) == SMILE_KIND_PAIR) {
-				value = ((SmilePair)target)->right;
-			}
-			else {
-				value = NullObject;
-			}
-			Closure_SetTop(closure, SmileArg_Unbox(value));
-			byteCode++;
-			goto next;
-
 		case Op_NewFn:
 			value = (SmileObject)SmileFunction_CreateUserFunction(_compiledTables->userFunctions[byteCode->u.index], closure);
 			Closure_PushBoxed(closure, value);
@@ -1091,7 +1059,6 @@ next:
 
 		case Op_NullQ:
 		case Op_ListQ:
-		case Op_PairQ:
 		case Op_FnQ:
 		case Op_BoolQ:
 		case Op_IntQ:
@@ -1130,34 +1097,6 @@ next:
 			byteCode++;
 			goto next;
 		
-		case Op_LdLeft:
-			target = Closure_Pop(closure).obj;
-			if (SMILE_KIND(target) == SMILE_KIND_PAIR) {
-				Closure_UnboxAndPush(closure, ((SmilePair)target)->left);
-			}
-			else {
-				STORE_REGISTERS;
-				value = SMILE_VCALL1(target, getProperty, Smile_KnownSymbols.left);
-				LOAD_REGISTERS;
-				Closure_UnboxAndPush(closure, value);
-			}
-			byteCode++;
-			goto next;
-
-		case Op_LdRight:
-			target = Closure_Pop(closure).obj;
-			if (SMILE_KIND(target) == SMILE_KIND_PAIR) {
-				Closure_UnboxAndPush(closure, ((SmilePair)target)->right);
-			}
-			else {
-				STORE_REGISTERS;
-				value = SMILE_VCALL1(target, getProperty, Smile_KnownSymbols.right);
-				LOAD_REGISTERS;
-				Closure_UnboxAndPush(closure, value);
-			}
-			byteCode++;
-			goto next;
-
 		case Op_LdStart:
 			target = Closure_Pop(closure).obj;
 			STORE_REGISTERS;

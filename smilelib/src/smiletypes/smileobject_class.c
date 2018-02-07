@@ -17,7 +17,6 @@
 
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/smileuserobject.h>
-#include <smile/smiletypes/smilepair.h>
 #include <smile/smiletypes/smilebool.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/text/smilesymbol.h>

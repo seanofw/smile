@@ -23,11 +23,28 @@
 #include <smile/parsing/internal/parsedecl.h>
 #include <smile/parsing/internal/parsescope.h>
 
-CompiledBlock Compiler_CompileCatch(Compiler compiler, SmileList args, CompileFlags compileFlags)
+// Form: [$dot object symbol]
+CompiledBlock Compiler_CompileDot(Compiler compiler, SmileList args, CompileFlags compileFlags)
 {
-	UNUSED(compiler);
-	UNUSED(args);
-	UNUSED(compileFlags);
+	Int oldSourceLocation;
+	CompiledBlock compiledBlock;
 
-	return NULL;
+	oldSourceLocation = compiler->currentFunction->currentSourceLocation;
+	Compiler_SetSourceLocationFromList(compiler, args);
+	compiledBlock = Compiler_CompileLoadProperty(compiler, args, compileFlags);
+	compiler->currentFunction->currentSourceLocation = oldSourceLocation;
+	return compiledBlock;
+}
+
+// Form: [$index object index]
+CompiledBlock Compiler_CompileIndex(Compiler compiler, SmileList args, CompileFlags compileFlags)
+{
+	Int oldSourceLocation;
+	CompiledBlock compiledBlock;
+
+	oldSourceLocation = compiler->currentFunction->currentSourceLocation;
+	Compiler_SetSourceLocationFromList(compiler, args);
+	compiledBlock = Compiler_CompileLoadMember(compiler, args, compileFlags);
+	compiler->currentFunction->currentSourceLocation = oldSourceLocation;
+	return compiledBlock;
 }

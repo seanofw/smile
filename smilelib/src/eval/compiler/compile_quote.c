@@ -18,7 +18,6 @@
 #include <smile/eval/compiler.h>
 #include <smile/eval/compiler_internal.h>
 #include <smile/smiletypes/smilelist.h>
-#include <smile/smiletypes/smilepair.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/parsing/parsemessage.h>
 #include <smile/parsing/internal/parsedecl.h>
@@ -47,8 +46,8 @@ CompiledBlock Compiler_CompileQuote(Compiler compiler, SmileList args, CompileFl
 		EMIT1(Op_LdSym, +1, symbol = ((SmileSymbol)args->a)->symbol);
 		return compiledBlock;
 	}
-	else if (SMILE_KIND(args->a) != SMILE_KIND_LIST && SMILE_KIND(args->a) != SMILE_KIND_PAIR) {
-		// It's neither a list nor a pair nor a symbol, so quoting it just results in *it*, whatever it is.
+	else if (SMILE_KIND(args->a) != SMILE_KIND_LIST) {
+		// It's neither a list nor a symbol, so quoting it just results in *it*, whatever it is.
 		compiledBlock = Compiler_CompileExpr(compiler, args->a, compileFlags);
 		Compiler_MakeStackMatchCompileFlags(compiler, compiledBlock, compileFlags);
 		return compiledBlock;

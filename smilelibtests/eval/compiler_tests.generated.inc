@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 3a6129480d4a96e78dd06a3501bb546a
+// SourceHash: 3a09c040792d6bff35b6397df0579ba4
 
 START_TEST_SUITE(CompilerTests)
 {
@@ -16,6 +16,9 @@ START_TEST_SUITE(CompilerTests)
 	CanCompileWritesToProperties,
 	CanCompileReadsFromMembers,
 	CanCompileWritesToMembers,
+	CanCompileGlobalMutations,
+	CanCompileMutationsOfProperties,
+	CanCompileMutationsOfMembers,
 	CanCompileScopeVariableReads,
 	CanCompileNestedScopeVariableReads,
 	NestedScopesVariablesDontOverlap,

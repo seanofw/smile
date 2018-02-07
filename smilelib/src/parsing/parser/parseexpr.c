@@ -17,7 +17,6 @@
 
 #include <smile/types.h>
 #include <smile/smiletypes/smileobject.h>
-#include <smile/smiletypes/smilepair.h>
 #include <smile/parsing/parser.h>
 #include <smile/parsing/internal/parserinternal.h>
 #include <smile/parsing/internal/parsedecl.h>
@@ -77,21 +76,21 @@ ParseError Parser_ParseStmt(Parser parser, SmileObject *expr, Int modeFlags)
 				case SMILE_SPECIAL_SYMBOL_KEYWORD:
 					return Parser_ParseKeywordList(parser, expr);
 				case SMILE_SPECIAL_SYMBOL_IF:
-					return Parser_ParseIfUnless(parser, expr, modeFlags, False);
+					return Parser_ParseIfUnless(parser, expr, modeFlags, False, Token_GetPosition(token));
 				case SMILE_SPECIAL_SYMBOL_UNLESS:
-					return Parser_ParseIfUnless(parser, expr, modeFlags, True);
+					return Parser_ParseIfUnless(parser, expr, modeFlags, True, Token_GetPosition(token));
 				case SMILE_SPECIAL_SYMBOL_DO:
-					return Parser_ParseDo(parser, expr, modeFlags);
+					return Parser_ParseDo(parser, expr, modeFlags, Token_GetPosition(token));
 				case SMILE_SPECIAL_SYMBOL_WHILE:
-					return Parser_ParseWhileUntil(parser, expr, modeFlags, False);
+					return Parser_ParseWhileUntil(parser, expr, modeFlags, False, Token_GetPosition(token));
 				case SMILE_SPECIAL_SYMBOL_UNTIL:
-					return Parser_ParseWhileUntil(parser, expr, modeFlags, True);
+					return Parser_ParseWhileUntil(parser, expr, modeFlags, True, Token_GetPosition(token));
 				case SMILE_SPECIAL_SYMBOL_RETURN:
-					return Parser_ParseReturn(parser, expr, modeFlags);
+					return Parser_ParseReturn(parser, expr, modeFlags, Token_GetPosition(token));
 				case SMILE_SPECIAL_SYMBOL_TILL:
-					return Parser_ParseTill(parser, expr, modeFlags);
+					return Parser_ParseTill(parser, expr, modeFlags, Token_GetPosition(token));
 				case SMILE_SPECIAL_SYMBOL_TRY:
-					return Parser_ParseTry(parser, expr, modeFlags);
+					return Parser_ParseTry(parser, expr, modeFlags, Token_GetPosition(token));
 			}
 			// Fall through to default case if not a special form.
 
@@ -109,7 +108,7 @@ ParseError Parser_ParseStmt(Parser parser, SmileObject *expr, Int modeFlags)
 //           | IF . arith THEN expr ELSE expr
 //           | UNLESS . arith THEN expr
 //           | UNLESS . arith THEN expr ELSE expr
-ParseError Parser_ParseIfUnless(Parser parser, SmileObject *expr, Int modeFlags, Bool invert)
+ParseError Parser_ParseIfUnless(Parser parser, SmileObject *expr, Int modeFlags, Bool invert, LexerPosition lexerPosition)
 {
 	ParseError parseError;
 	SmileObject condition;
@@ -184,34 +183,24 @@ ParseError Parser_ParseIfUnless(Parser parser, SmileObject *expr, Int modeFlags,
 
 	// If we're an 'unless' form, add a [$not] around the condition.
 	if (invert) {
-		condition = (SmileObject)SmileList_Cons((SmileObject)Smile_KnownObjects._notSymbol,
-			(SmileObject)SmileList_Cons(condition, NullObject));
+		condition = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._notSymbol, condition, lexerPosition);
 	}
 
 	// Now make the resulting form.
 	if (SMILE_KIND(elseBody) != SMILE_KIND_NULL) {
 		// Make an [$if cond then else] construct.
-		*expr =
-			(SmileObject)SmileList_Cons((SmileObject)Smile_KnownObjects._ifSymbol,
-				(SmileObject)SmileList_Cons(condition,
-					(SmileObject)SmileList_Cons(thenBody,
-						(SmileObject)SmileList_Cons(elseBody,
-							NullObject))));
+		*expr = (SmileObject)SmileList_CreateFourWithSource(Smile_KnownObjects._ifSymbol, condition, thenBody, elseBody, lexerPosition);
 	}
 	else {
 		// Make an [$if cond then] construct.
-		*expr =
-			(SmileObject)SmileList_Cons((SmileObject)Smile_KnownObjects._ifSymbol,
-				(SmileObject)SmileList_Cons(condition,
-					(SmileObject)SmileList_Cons(thenBody,
-						NullObject)));
+		*expr = (SmileObject)SmileList_CreateThreeWithSource(Smile_KnownObjects._ifSymbol, condition, thenBody, lexerPosition);
 	}
 	return NULL;
 }
 
 // do_while ::= DO . expr WHILE arith
 //            | DO . expr UNTIL arith
-ParseError Parser_ParseDo(Parser parser, SmileObject *expr, Int modeFlags)
+ParseError Parser_ParseDo(Parser parser, SmileObject *expr, Int modeFlags, LexerPosition lexerPosition)
 {
 	ParseError parseError;
 	SmileObject condition;
@@ -259,23 +248,17 @@ ParseError Parser_ParseDo(Parser parser, SmileObject *expr, Int modeFlags)
 
 	// If we're an 'until' form, add a [$not] around the condition.
 	if (invert) {
-		condition = (SmileObject)SmileList_Cons((SmileObject)Smile_KnownObjects._notSymbol,
-			(SmileObject)SmileList_Cons(condition, NullObject));
+		condition = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._notSymbol, condition, lexerPosition);
 	}
 
 	// Now make the resulting form: [$while body condition null]
-	*expr =
-		(SmileObject)SmileList_Cons((SmileObject)Smile_KnownObjects._whileSymbol,
-			(SmileObject)SmileList_Cons(body,
-				(SmileObject)SmileList_Cons(condition,
-					(SmileObject)SmileList_Cons(NullObject,
-						NullObject))));
+	*expr = (SmileObject)SmileList_CreateFourWithSource(Smile_KnownObjects._whileSymbol, body, condition, NullObject, lexerPosition);
 	return NULL;
 }
 
 // while_do ::= WHILE . arith DO expr
 //            | UNTIL . arith DO expr
-ParseError Parser_ParseWhileUntil(Parser parser, SmileObject *expr, Int modeFlags, Bool invert)
+ParseError Parser_ParseWhileUntil(Parser parser, SmileObject *expr, Int modeFlags, Bool invert, LexerPosition lexerPosition)
 {
 	ParseError parseError;
 	SmileObject condition;
@@ -321,21 +304,16 @@ ParseError Parser_ParseWhileUntil(Parser parser, SmileObject *expr, Int modeFlag
 
 	// If we're an 'until' form, add a [$not] around the condition.
 	if (invert) {
-		condition = (SmileObject)SmileList_Cons((SmileObject)Smile_KnownObjects._notSymbol,
-			(SmileObject)SmileList_Cons(condition, NullObject));
+		condition = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._notSymbol, condition, lexerPosition);
 	}
 
 	// Now make the resulting form: [$while condition body]
-	*expr =
-		(SmileObject)SmileList_Cons((SmileObject)Smile_KnownObjects._whileSymbol,
-			(SmileObject)SmileList_Cons(condition,
-				(SmileObject)SmileList_Cons(body,
-					NullObject)));
+	*expr = (SmileObject)SmileList_CreateThreeWithSource(Smile_KnownObjects._whileSymbol, condition, body, lexerPosition);
 	return NULL;
 }
 
 // return ::= RETURN . arith
-ParseError Parser_ParseReturn(Parser parser, SmileObject *expr, Int modeFlags)
+ParseError Parser_ParseReturn(Parser parser, SmileObject *expr, Int modeFlags, LexerPosition lexerPosition)
 {
 	ParseError parseError;
 	SmileObject result;
@@ -348,15 +326,12 @@ ParseError Parser_ParseReturn(Parser parser, SmileObject *expr, Int modeFlags)
 	}
 
 	// Make a [$return result] construct.
-	*expr =
-		(SmileObject)SmileList_Cons((SmileObject)Smile_KnownObjects._returnSymbol,
-			(SmileObject)SmileList_Cons(result,
-				NullObject));
+	*expr = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._returnSymbol, result, lexerPosition);
 	return NULL;
 }
 
 // try_catch ::= TRY . expr CATCH func
-ParseError Parser_ParseTry(Parser parser, SmileObject *expr, Int modeFlags)
+ParseError Parser_ParseTry(Parser parser, SmileObject *expr, Int modeFlags, LexerPosition lexerPosition)
 {
 	ParseError parseError;
 	SmileObject handler;
@@ -428,16 +403,12 @@ ParseError Parser_ParseTry(Parser parser, SmileObject *expr, Int modeFlags)
 	}
 
 	// Now make the resulting form: [$catch body handler]
-	*expr =
-		(SmileObject)SmileList_Cons((SmileObject)Smile_KnownObjects._catchSymbol,
-			(SmileObject)SmileList_Cons(body,
-				(SmileObject)SmileList_Cons(handler,
-					NullObject)));
+	*expr = (SmileObject)SmileList_CreateThreeWithSource(Smile_KnownObjects._catchSymbol, body, handler, lexerPosition);
 	return NULL;
 }
 
 // till_do ::= TILL . till_names DO expr whens_opt
-ParseError Parser_ParseTill(Parser parser, SmileObject *expr, Int modeFlags)
+ParseError Parser_ParseTill(Parser parser, SmileObject *expr, Int modeFlags, LexerPosition lexerPosition)
 {
 	ParseError parseError;
 	Int32Int32Dict tillFlags;
@@ -510,19 +481,10 @@ ParseError Parser_ParseTill(Parser parser, SmileObject *expr, Int modeFlags)
 
 	// Now make the resulting form: [$till flags body whens]
 	if (SMILE_KIND(whens) != SMILE_KIND_NULL) {
-		*expr =
-			(SmileObject)SmileList_Cons((SmileObject)Smile_KnownObjects._tillSymbol,
-				(SmileObject)SmileList_Cons((SmileObject)names,
-					(SmileObject)SmileList_Cons(body,
-						(SmileObject)SmileList_Cons(whens,
-							NullObject))));
+		*expr = (SmileObject)SmileList_CreateFourWithSource(Smile_KnownObjects._tillSymbol, names, body, whens, lexerPosition);
 	}
 	else {
-		*expr =
-			(SmileObject)SmileList_Cons((SmileObject)Smile_KnownObjects._tillSymbol,
-				(SmileObject)SmileList_Cons((SmileObject)names,
-					(SmileObject)SmileList_Cons(body,
-						NullObject)));
+		*expr = (SmileObject)SmileList_CreateThreeWithSource(Smile_KnownObjects._tillSymbol, names, body, lexerPosition);
 	}
 	return NULL;
 }
@@ -656,10 +618,7 @@ ParseError Parser_ParseWhens(Parser parser, SmileObject *expr, Int32Int32Dict ti
 		}
 
 		// Construct the when clause itself:  [flag body]
-		whenClause =
-			(SmileObject)SmileList_Cons(flagName ? (SmileObject)SmileSymbol_Create(flagName) : NullObject,
-				(SmileObject)SmileList_Cons(whenBody,
-					NullObject));
+		whenClause = (SmileObject)SmileList_CreateTwoWithSource(flagName ? (SmileObject)SmileSymbol_Create(flagName) : NullObject, whenBody, position);
 
 		// Add it to the result list.
 		LIST_APPEND_WITH_SOURCE(whenHead, whenTail, whenClause, position);
@@ -699,19 +658,11 @@ ParseError Parser_ParseOrExpr(Parser parser, SmileObject *expr, Int modeFlags)
 			return parseError;
 
 		if (isFirst) {
-			*expr = (SmileObject)SmileList_ConsWithSource(
-				(SmileObject)Smile_KnownObjects._orSymbol,
-				(SmileObject)SmileList_ConsWithSource(*expr,
-					(SmileObject)(tail = SmileList_ConsWithSource(rvalue,
-						NullObject,
-						lexerPosition)),
-					lexerPosition),
-				lexerPosition
-			);
+			*expr = (SmileObject)SmileList_CreateThreeWithSource(Smile_KnownObjects._orSymbol, *expr, rvalue, lexerPosition);
 			isFirst = False;
 		}
 		else {
-			tail = (SmileList)(tail->d = (SmileObject)SmileList_ConsWithSource(rvalue, NullObject, lexerPosition));
+			tail = (SmileList)(tail->d = (SmileObject)SmileList_CreateOneWithSource(rvalue, lexerPosition));
 		}
 	}
 
@@ -745,19 +696,11 @@ ParseError Parser_ParseAndExpr(Parser parser, SmileObject *expr, Int modeFlags)
 			return parseError;
 
 		if (isFirst) {
-			*expr = (SmileObject)SmileList_ConsWithSource(
-				(SmileObject)Smile_KnownObjects._andSymbol,
-				(SmileObject)SmileList_ConsWithSource(*expr,
-					(SmileObject)(tail = SmileList_ConsWithSource(rvalue,
-						NullObject,
-						lexerPosition)),
-					lexerPosition),
-				lexerPosition
-			);
+			*expr = (SmileObject)SmileList_CreateThreeWithSource(Smile_KnownObjects._andSymbol, *expr, rvalue, lexerPosition);
 			isFirst = False;
 		}
 		else {
-			tail = (SmileList)(tail->d = (SmileObject)SmileList_ConsWithSource(rvalue, NullObject, lexerPosition));
+			tail = (SmileList)(tail->d = (SmileObject)SmileList_CreateOneWithSource(rvalue, lexerPosition));
 		}
 	}
 
@@ -819,15 +762,7 @@ ParseError Parser_ParseNotExpr(Parser parser, SmileObject *expr, Int modeFlags)
 	for (i = numOperators - 1; i >= 0; i--) {
 		lexerPosition = Token_GetPosition(&unaryOperators[i]);
 		// Not is a special built-in form:  [$not x]
-		*expr = (SmileObject)SmileList_ConsWithSource(
-			(SmileObject)Smile_KnownObjects._notSymbol,
-			(SmileObject)SmileList_ConsWithSource(
-				*expr,
-				NullObject,
-				lexerPosition
-			),
-			lexerPosition
-		);
+		*expr = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._notSymbol, *expr, lexerPosition);
 	}
 
 	return NULL;
@@ -910,24 +845,11 @@ parseNextOperator:
 
 		if (symbol == SMILE_SPECIAL_SYMBOL_SUPEREQ || symbol == SMILE_SPECIAL_SYMBOL_SUPERNE
 			|| symbol == SMILE_SPECIAL_SYMBOL_IS) {
-			*expr = (SmileObject)SmileList_ConsWithSource(
-				(SmileObject)symbolObject,
-				(SmileObject)SmileList_ConsWithSource(*expr,
-					(SmileObject)SmileList_ConsWithSource(rvalue,
-						NullObject,
-						lexerPosition),
-					lexerPosition),
-				lexerPosition
-			);
+			*expr = (SmileObject)SmileList_CreateThreeWithSource(symbolObject, *expr, rvalue, lexerPosition);
 		}
 		else {
-			*expr = (SmileObject)SmileList_ConsWithSource(
-				(SmileObject)SmilePair_Create(*expr, (SmileObject)symbolObject),
-				(SmileObject)SmileList_ConsWithSource(rvalue,
-					NullObject,
-					lexerPosition),
-				lexerPosition
-			);
+			*expr = (SmileObject)SmileList_CreateTwoWithSource(
+				SmileList_CreateDotWithSource(*expr, symbolObject, lexerPosition), rvalue, lexerPosition);
 		}
 		
 		goto parseNextOperator;
@@ -982,13 +904,11 @@ parseNextOperator:
 		if (parseError != NULL)
 			return parseError;
 
-		*expr = (SmileObject)SmileList_ConsWithSource(
-			(SmileObject)SmilePair_Create(*expr, symbol == SMILE_SPECIAL_SYMBOL_PLUS
-				? (SmileObject)Smile_KnownObjects.plusSymbol
-				: (SmileObject)Smile_KnownObjects.minusSymbol),
-			(SmileObject)SmileList_ConsWithSource(rvalue,
-				NullObject,
+		*expr = (SmileObject)SmileList_CreateTwoWithSource(
+			SmileList_CreateDotWithSource(*expr,
+				symbol == SMILE_SPECIAL_SYMBOL_PLUS ? Smile_KnownObjects.plusSymbol : Smile_KnownObjects.minusSymbol,
 				lexerPosition),
+			rvalue,
 			lexerPosition
 		);
 
@@ -1044,13 +964,11 @@ parseNextOperator:
 		if (parseError != NULL)
 			return parseError;
 
-		*expr = (SmileObject)SmileList_ConsWithSource(
-			(SmileObject)SmilePair_Create(*expr, symbol == SMILE_SPECIAL_SYMBOL_STAR
-				? (SmileObject)Smile_KnownObjects.starSymbol
-				: (SmileObject)Smile_KnownObjects.slashSymbol),
-			(SmileObject)SmileList_ConsWithSource(rvalue,
-				NullObject,
+		*expr = (SmileObject)SmileList_CreateTwoWithSource(
+			SmileList_CreateDotWithSource(*expr,
+				symbol == SMILE_SPECIAL_SYMBOL_STAR ? Smile_KnownObjects.starSymbol : Smile_KnownObjects.slashSymbol,
 				lexerPosition),
+			rvalue,
 			lexerPosition
 		);
 
@@ -1153,15 +1071,12 @@ parseNextOperator:
 		if (parseError != NULL)
 			return parseError;
 
-		binaryExpr = tail = SmileList_ConsWithSource(
-			(SmileObject)SmilePair_CreateWithSource(*expr, (SmileObject)SmileSymbol_Create(symbol), lexerPosition),
-			NullObject,
-			lexerPosition
-		);
+		binaryExpr = tail = SmileList_CreateOneWithSource(
+			SmileList_CreateDotWithSource(*expr, SmileSymbol_Create(symbol), lexerPosition), lexerPosition);
 
 		*expr = (SmileObject)binaryExpr;
 
-		tail = (SmileList)(tail->d = (SmileObject)SmileList_ConsWithSource(rvalue, NullObject, lexerPosition));
+		tail = (SmileList)(tail->d = (SmileObject)SmileList_CreateOneWithSource(rvalue, lexerPosition));
 
 		if ((modeFlags & COMMAMODE_MASK) == COMMAMODE_NORMAL) {
 			while (Lexer_Peek(parser->lexer) == TOKEN_COMMA) {
@@ -1173,7 +1088,7 @@ parseNextOperator:
 				if (parseError != NULL)
 					return parseError;
 
-				tail = (SmileList)(tail->d = (SmileObject)SmileList_ConsWithSource(rvalue, NullObject, lexerPosition));
+				tail = (SmileList)(tail->d = (SmileObject)SmileList_CreateOneWithSource(rvalue, lexerPosition));
 			}
 		}
 
@@ -1209,13 +1124,7 @@ ParseError Parser_ParseColonExpr(Parser parser, SmileObject *expr, Int modeFlags
 		if (parseError != NULL)
 			return parseError;
 
-		*expr = (SmileObject)SmileList_ConsWithSource(
-			(SmileObject)SmilePair_Create(*expr, (SmileObject)Smile_KnownObjects.getMemberSymbol),
-			(SmileObject)SmileList_ConsWithSource(rvalue,
-				NullObject,
-				lexerPosition),
-			lexerPosition
-		);
+		*expr = (SmileObject)SmileList_CreateIndexWithSource(*expr, rvalue, lexerPosition);
 	}
 
 	Lexer_Unget(parser->lexer);
@@ -1244,11 +1153,9 @@ ParseError Parser_ParseRangeExpr(Parser parser, SmileObject *expr, Int modeFlags
 		if (parseError != NULL)
 			return parseError;
 
-		*expr = (SmileObject)SmileList_ConsWithSource(
-			(SmileObject)SmilePair_Create((SmileObject)*expr, (SmileObject)Smile_KnownObjects.rangeToSymbol),
-			(SmileObject)SmileList_ConsWithSource(rvalue,
-				NullObject,
-				lexerPosition),
+		*expr = (SmileObject)SmileList_CreateTwoWithSource(
+			SmileList_CreateDotWithSource(*expr, Smile_KnownObjects.rangeToSymbol, lexerPosition),
+			rvalue,
 			lexerPosition
 		);
 	}
@@ -1361,25 +1268,12 @@ ParseError Parser_ParsePrefixExpr(Parser parser, SmileObject *expr, Int modeFlag
 		symbol = unaryOperators[i].data.symbol;
 		if (symbol == SMILE_SPECIAL_SYMBOL_TYPEOF) {
 			// Typeof is a special built-in form:  [$typeof x]
-			*expr = (SmileObject)SmileList_ConsWithSource(
-				(SmileObject)Smile_KnownObjects._typeofSymbol,
-				(SmileObject)SmileList_ConsWithSource(
-					*expr,
-					NullObject,
-					position
-				),
-				position
-			);
+			*expr = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._typeofSymbol, *expr, position);
 		}
 		else {
 			// Construct an expression of the unary method-call form:  [(expr.unary)]
-			*expr = (SmileObject)SmileList_ConsWithSource(
-				(SmileObject)SmilePair_CreateWithSource(
-					*expr,
-					(SmileObject)SmileSymbol_Create(symbol),
-					position
-				),
-				NullObject,
+			*expr = (SmileObject)SmileList_CreateOneWithSource(
+				SmileList_CreateDotWithSource(*expr, (SmileObject)SmileSymbol_Create(symbol), position),
 				position
 			);
 		}
@@ -1415,7 +1309,7 @@ ParseError Parser_ParseConsExpr(Parser parser, SmileObject *expr, Int modeFlags,
 	if (Lexer_Next(parser->lexer) == TOKEN_DOUBLEHASH) {
 
 		lexerPosition = Token_GetPosition(parser->lexer->token);
-		tail = SmileList_ConsWithSource(*expr, NullObject, lexerPosition);
+		tail = SmileList_CreateOneWithSource(*expr, lexerPosition);
 		*expr = (SmileObject)tail;
 		isFirst = True;
 		rvalue = NullObject;
@@ -1426,7 +1320,7 @@ ParseError Parser_ParseConsExpr(Parser parser, SmileObject *expr, Int modeFlags,
 				return parseError;
 
 			if (!isFirst) {
-				tail = (SmileList)(tail->d = (SmileObject)SmileList_ConsWithSource(rvalue, NullObject, lexerPosition));
+				tail = (SmileList)(tail->d = (SmileObject)SmileList_CreateOneWithSource(rvalue, lexerPosition));
 			}
 
 			rvalue = nextRValue;
@@ -1464,7 +1358,7 @@ ParseError Parser_ParseDotExpr(Parser parser, SmileObject *expr, Int modeFlags, 
 			symbol = parser->lexer->token->data.symbol;
 			lexerPosition = Token_GetPosition(parser->lexer->token);
 
-			*expr = (SmileObject)SmilePair_CreateWithSource(*expr, (SmileObject)SmileSymbol_Create(symbol), lexerPosition);
+			*expr = (SmileObject)SmileList_CreateDotWithSource(*expr, (SmileObject)SmileSymbol_Create(symbol), lexerPosition);
 		}
 		else {
 			return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),

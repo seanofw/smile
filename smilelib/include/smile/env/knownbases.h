@@ -52,7 +52,6 @@ struct KnownBasesStruct {
 	SmileUserObject             Real32Map, Real64Map, Real128Map;
 	SmileUserObject           FloatMapBase;
 	SmileUserObject             Float32Map, Float64Map, Float128Map;
-	SmileUserObject     Pair;
 	SmileUserObject     Fn;
 	SmileUserObject     Bool;
 	SmileUserObject     Char;

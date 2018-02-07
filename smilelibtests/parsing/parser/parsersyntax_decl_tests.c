@@ -20,7 +20,6 @@
 #include <smile/parsing/parser.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
-#include <smile/smiletypes/smilepair.h>
 #include <smile/smiletypes/smilesyntax.h>
 
 #include "testhelpers.h"
@@ -118,7 +117,7 @@ START_TEST(CanParseSyntaxFormsThatContainNonterminals)
 				NullObject
 			)
 		),
-		(SmileObject)SimpleParse("[(List.of) [(Pair.of) x [$quote *]] x]"),
+		(SmileObject)SimpleParse("[(List.of) [(List.of) [$quote $dot] x [$quote *]] x]"),
 		NULL
 	);
 

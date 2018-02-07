@@ -18,7 +18,6 @@
 #include <smile/eval/compiler.h>
 #include <smile/eval/compiler_internal.h>
 #include <smile/smiletypes/smilelist.h>
-#include <smile/smiletypes/smilepair.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/parsing/parsemessage.h>
 #include <smile/parsing/internal/parsedecl.h>
@@ -78,6 +77,10 @@ CompiledBlock Compiler_CompileStandardForm(Compiler compiler, Symbol symbol, Smi
 		// Object creation and type testing.
 		case SMILE_SPECIAL_SYMBOL__NEW:
 			return Compiler_CompileNew(compiler, args, compileFlags);
+		case SMILE_SPECIAL_SYMBOL__DOT:
+			return Compiler_CompileDot(compiler, args, compileFlags);
+		case SMILE_SPECIAL_SYMBOL__INDEX:
+			return Compiler_CompileIndex(compiler, args, compileFlags);
 		case SMILE_SPECIAL_SYMBOL__IS:
 			return Compiler_CompileTwoArguments(compiler, args, compileFlags, "$is", Op_Is);
 		case SMILE_SPECIAL_SYMBOL__TYPEOF:

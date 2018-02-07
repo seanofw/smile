@@ -62,7 +62,7 @@ static String ParseMessage_ToString(ParseMessage parseMessage, SmileUnboxedData 
 			break;
 	}
 
-	if (position->filename != NULL) {
+	if (position != NULL && position->filename != NULL) {
 		if (position->line > 0) {
 			// Have a filename and a line number.
 			message = String_Format("%s%S:%d: %S", prefix, position->filename, position->line, parseMessage->message);

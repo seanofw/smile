@@ -24,7 +24,6 @@
 
 #include <smile.h>
 #include <smile/version.h>
-#include <smile/smiletypes/smilepair.h>
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/parsing/lexer.h>

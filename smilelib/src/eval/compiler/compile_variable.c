@@ -18,7 +18,6 @@
 #include <smile/eval/compiler.h>
 #include <smile/eval/compiler_internal.h>
 #include <smile/smiletypes/smilelist.h>
-#include <smile/smiletypes/smilepair.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/parsing/parsemessage.h>
 #include <smile/parsing/internal/parsedecl.h>
@@ -276,24 +275,24 @@ void Compiler_CompileStoreVariable(Compiler compiler, Symbol symbol, CompileFlag
 	}
 
 	switch (localSymbol->kind) {
-	case PARSEDECL_ARGUMENT:
-		Compiler_CompileStoreArgument(compiler, localSymbol, compileFlags, compiledBlock);
-		break;
+		case PARSEDECL_ARGUMENT:
+			Compiler_CompileStoreArgument(compiler, localSymbol, compileFlags, compiledBlock);
+			break;
 
-	case PARSEDECL_VARIABLE:
-		Compiler_CompileStoreLocalVariable(compiler, localSymbol, compileFlags, compiledBlock);
-		break;
+		case PARSEDECL_VARIABLE:
+			Compiler_CompileStoreLocalVariable(compiler, localSymbol, compileFlags, compiledBlock);
+			break;
 
-	case PARSEDECL_TILL:
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, NULL,
-			String_Format("Cannot assign a value to till-flag \"%S\".",
-				SymbolTable_GetName(Smile_SymbolTable, symbol))));
-		break;
+		case PARSEDECL_TILL:
+			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, NULL,
+				String_Format("Cannot assign a value to till-flag \"%S\".",
+					SymbolTable_GetName(Smile_SymbolTable, symbol))));
+			break;
 
-	default:
-		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, NULL,
-			String_FromC("Cannot compile symbol:  Fatal internal error.")));
-		compiledBlock->blockFlags |= BLOCK_FLAG_ERROR;
-		break;
+		default:
+			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, NULL,
+				String_FromC("Cannot compile symbol:  Fatal internal error.")));
+			compiledBlock->blockFlags |= BLOCK_FLAG_ERROR;
+			break;
 	}
 }

@@ -25,7 +25,6 @@
 #include <smile/parsing/parser.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
-#include <smile/smiletypes/smilepair.h>
 #include <smile/smiletypes/smilebool.h>
 
 TEST_SUITE(EvalTests)

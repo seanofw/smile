@@ -136,11 +136,11 @@ enum Opcode {
 	Op_StpLoc7	= 0x6F,		//  -1 | int32			; etc.
 				
 	Op_LdProp	= 0x70,		// -1, +1 | int32		; Retrieve the given property from the object on the stack top, or null if there is no such property.
-	Op_StProp	= 0x71,		// -1, +1 | int32		; Store the stack top into the given property of the given object.  Results in the stack top value.
+	Op_StProp	= 0x71,		// -1 | int32			; Store the stack top into the given property of the given object.  Results in the stack top value.
 	Op_StpProp	= 0x72,		// -2 | int32			; Store and pop the stack top into the given property of the given object.
 	Op_73		= 0x73,		
 	Op_LdMember	= 0x74,		// -2, +1				; Call 'get-member', passing member (top-1) and object (top-2).
-	Op_StMember	= 0x75,		// -2, +1				; Call 'set-member', passing value (top-1), member (top-2), and object (top-3).  Results in the stack top value.
+	Op_StMember	= 0x75,		// -3, +1				; Call 'set-member', passing value (top-1), member (top-2), and object (top-3).  Results in the stack top value.
 							// ; Warning: Op_StMember MUST ALWAYS be preceded by an otherwise-unnecessary Op_LdNull instruction!
 	Op_StpMember = 0x76,	// -3					; Call 'set-member', passing value (top-1), member (top-2), and object (top-3).  Pops the stack top value.
 	Op_77		= 0x77,		
@@ -157,9 +157,9 @@ enum Opcode {
 	Op_Car		= 0x81,		// -1, +1				; Retrieve the 'a' property from the List on the stack top (UNDEFINED if not a List or Null).
 	Op_Cdr		= 0x82,		// -1, +1				; Retrieve the 'd' property from the List on the stack top (UNDEFINED if not a List or Null).
 	Op_83		= 0x83,		
-	Op_NewPair	= 0x84,		// -2, +1				; Create a new Pair object from the given left/right values on the work stack.
-	Op_Left		= 0x85,		// -1, +1				; Retrieve the 'left' property from the Pair on the stack top (UNDEFINED if not a Pair).
-	Op_Right	= 0x86,		// -1, +1				; Retrieve the 'right' property from the Pair on the stack top (UNDEFINED if not a Pair).
+	Op_84		= 0x84,
+	Op_85		= 0x85,
+	Op_86		= 0x86,
 	Op_87		= 0x87,		
 	Op_NewFn	= 0x88,		// +1 | int32			; Push a new function instance that comes from the given compiled function (by function table index).
 	Op_NewObj	= 0x89,		// -(n*2+1), +1 | int32	; Create a new object from the 'n' property decls and base object on the work stack.
@@ -256,7 +256,7 @@ enum Opcode {
 				
 	Op_NullQ	= 0xE0,		// -1, +1				; Invoke any unary 'null?' operator on the object on the stack top.
 	Op_ListQ	= 0xE1,		// -1, +1				; Invoke any unary 'list?' operator on the object on the stack top.
-	Op_PairQ	= 0xE2,		// -1, +1				; Invoke any unary 'pair?' operator on the object on the stack top.
+	Op_E2		= 0xE2,
 	Op_FnQ		= 0xE3,		// -1, +1				; Invoke any unary 'fn?' operator on the object on the stack top.
 	Op_BoolQ	= 0xE4,		// -1, +1				; Invoke any unary 'bool?' operator on the object on the stack top.
 	Op_IntQ		= 0xE5,		// -1, +1				; Invoke any unary 'int?' operator on the object on the stack top.
@@ -264,8 +264,8 @@ enum Opcode {
 	Op_SymbolQ	= 0xE7,		// -1, +1				; Invoke any unary 'symbol?' operator on the object on the stack top.
 	Op_LdA		= 0xE8,		// -1, +1				; Retrieve the 'a' property from the object on the stack top.
 	Op_LdD		= 0xE9,		// -1, +1				; Retrieve the 'd' property from the object on the stack top.
-	Op_LdLeft	= 0xEA,		// -1, +1				; Retrieve the 'left' property from the object on the stack top.
-	Op_LdRight	= 0xEB,		// -1, +1				; Retrieve the 'right' property from the object on the stack top.
+	Op_EA		= 0xEA,
+	Op_EB		= 0xEB,
 	Op_LdStart	= 0xEC,		// -1, +1				; Retrieve the 'start' property from the object on the stack top.
 	Op_LdEnd	= 0xED,		// -1, +1				; Retrieve the 'end' property from the object on the stack top.
 	Op_LdCount	= 0xEE,		// -1, +1				; Retrieve the 'count' property from the object on the stack top.

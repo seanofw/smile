@@ -480,6 +480,24 @@ String SmileList_Join(SmileList list, String glue)
 	return SMILE_KIND(tortoise) == SMILE_KIND_NULL ? StringBuilder_ToString(stringBuilder) : NULL;
 }
 
+Bool SmileObject_IsCallToSymbol(Symbol symbol, SmileObject obj)
+{
+	SmileList list;
+
+	if (SMILE_KIND(obj) != SMILE_KIND_LIST)
+		return False;
+
+	list = (SmileList)obj;
+
+	if (SMILE_KIND((SmileList)list->a) != SMILE_KIND_SYMBOL)
+		return False;
+
+	if (((SmileSymbol)(SmileList)list->a)->symbol != symbol)
+		return False;
+
+	return True;
+}
+
 static int _indent = 0;
 
 static String SmileList_ToString(SmileList self, SmileUnboxedData unboxedData)

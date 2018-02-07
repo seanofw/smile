@@ -51,12 +51,12 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseStmt(Parser parser, SmileObject *expr
 
 SMILE_INTERNAL_FUNC ParseError Parser_ParseInclude(Parser parser, SmileObject *expr);
 
-SMILE_INTERNAL_FUNC ParseError Parser_ParseIfUnless(Parser parser, SmileObject *expr, Int modeFlags, Bool invert);
-SMILE_INTERNAL_FUNC ParseError Parser_ParseDo(Parser parser, SmileObject *expr, Int modeFlags);
-SMILE_INTERNAL_FUNC ParseError Parser_ParseWhileUntil(Parser parser, SmileObject *expr, Int modeFlags, Bool invert);
-SMILE_INTERNAL_FUNC ParseError Parser_ParseReturn(Parser parser, SmileObject *expr, Int modeFlags);
-SMILE_INTERNAL_FUNC ParseError Parser_ParseTry(Parser parser, SmileObject *expr, Int modeFlags);
-SMILE_INTERNAL_FUNC ParseError Parser_ParseTill(Parser parser, SmileObject *expr, Int modeFlags);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseIfUnless(Parser parser, SmileObject *expr, Int modeFlags, Bool invert, LexerPosition lexerPosition);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseDo(Parser parser, SmileObject *expr, Int modeFlags, LexerPosition lexerPosition);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseWhileUntil(Parser parser, SmileObject *expr, Int modeFlags, Bool invert, LexerPosition lexerPosition);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseReturn(Parser parser, SmileObject *expr, Int modeFlags, LexerPosition lexerPosition);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseTry(Parser parser, SmileObject *expr, Int modeFlags, LexerPosition lexerPosition);
+SMILE_INTERNAL_FUNC ParseError Parser_ParseTill(Parser parser, SmileObject *expr, Int modeFlags, LexerPosition lexerPosition);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseTillNames(Parser parser, SmileList *names);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseTillName(Parser parser, SmileObject *expr);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseWhens(Parser parser, SmileObject *expr, Int32Int32Dict tillFlags, Int modeFlags);
