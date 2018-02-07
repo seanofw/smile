@@ -323,6 +323,30 @@ void CompiledBlock_ResolveBranches(CompiledBlock compiledBlock)
 	}
 }
 
+Int CompiledBlock_CountInstructions(CompiledBlock compiledBlock, Bool includePseudoOps)
+{
+	IntermediateInstruction instr;
+	Int count = 0;
+
+	for (instr = compiledBlock->first; instr != NULL; instr = instr->next) {
+
+		if (instr->opcode == Op_Block) {
+			if (includePseudoOps)
+				count++;
+
+			// Child blocks need to be recursed into.
+			count += CompiledBlock_CountInstructions(instr->p.childBlock, includePseudoOps);
+
+			if (includePseudoOps)
+				count++;
+		}
+		else if (instr->opcode != Op_Label || includePseudoOps)
+			count++;
+	}
+
+	return count;
+}
+
 /// <summary>
 /// Pack the entire given CompiledBlock down into a finished ByteCodeSegment.
 /// </summary>
@@ -330,8 +354,6 @@ void CompiledBlock_AppendToByteCodeSegment(CompiledBlock compiledBlock, ByteCode
 {
 	IntermediateInstruction instr;
 	ByteCode byteCode;
-
-	ByteCodeSegment_More(segment, compiledBlock->numInstructions);
 
 	for (instr = compiledBlock->first; instr != NULL; instr = instr->next) {
 
@@ -417,7 +439,8 @@ IntermediateInstruction CompiledBlock_Emit(CompiledBlock compiledBlock, Int opco
 /// </summary>
 ByteCodeSegment CompiledBlock_Finish(CompiledBlock compiledBlock, struct CompiledTablesStruct *compiledTables, Bool includePseudoOps)
 {
-	ByteCodeSegment segment = ByteCodeSegment_Create(compiledTables);
+	Int numInstructions = CompiledBlock_CountInstructions(compiledBlock, includePseudoOps);
+	ByteCodeSegment segment = ByteCodeSegment_CreateWithSize(compiledTables, numInstructions);
 
 	CompiledBlock_CalculateAddresses(compiledBlock, 0, includePseudoOps);
 	CompiledBlock_ResolveBranches(compiledBlock);

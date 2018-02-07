@@ -87,6 +87,7 @@ extern void CompiledBlock_Flatten(CompiledBlock compiledBlock);
 extern Int CompiledBlock_CalculateAddresses(CompiledBlock compiledBlock, Int startAddress, Bool includePseudoOps);
 extern void CompiledBlock_ResolveBranches(CompiledBlock compiledBlock);
 extern void CompiledBlock_AppendToByteCodeSegment(CompiledBlock compiledBlock, ByteCodeSegment segment, Bool includePseudoOps);
+extern Int CompiledBlock_CountInstructions(CompiledBlock compiledBlock, Bool includePseudoOps);
 extern IntermediateInstruction CompiledBlock_AppendChild(CompiledBlock parentBlock, CompiledBlock newChild);
 extern IntermediateInstruction CompiledBlock_Emit(CompiledBlock compiledBlock, Int opcode, Int stackDelta, Int sourceLocation);
 extern ByteCodeSegment CompiledBlock_Finish(CompiledBlock compiledBlock, struct CompiledTablesStruct *compiledTables, Bool includePseudoOps);
