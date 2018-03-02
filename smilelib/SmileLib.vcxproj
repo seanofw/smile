@@ -144,6 +144,7 @@
     <ClInclude Include="include\smile\env\knownobjects.h" />
     <ClInclude Include="include\smile\env\knownstrings.h" />
     <ClInclude Include="include\smile\env\knownsymbols.h" />
+    <ClInclude Include="include\smile\env\modules.h" />
     <ClInclude Include="include\smile\env\symboltable.h" />
     <ClInclude Include="include\smile\eval\compiledblock.h" />
     <ClInclude Include="include\smile\eval\bytecode.h" />
@@ -801,6 +802,7 @@
     <ClCompile Include="src\env\knownobjects.c" />
     <ClCompile Include="src\env\knownstrings.c" />
     <ClCompile Include="src\env\knownsymbols.c" />
+    <ClCompile Include="src\env\modules.c" />
     <ClCompile Include="src\env\parsedecl.c" />
     <ClCompile Include="src\env\symboltable.c" />
     <ClCompile Include="src\eval\bytecode.c" />
@@ -813,6 +815,7 @@
     <ClCompile Include="src\eval\compiler\compile_expr.c" />
     <ClCompile Include="src\eval\compiler\compile_fn.c" />
     <ClCompile Include="src\eval\compiler\compile_if.c" />
+    <ClCompile Include="src\eval\compiler\compile_include.c" />
     <ClCompile Include="src\eval\compiler\compile_methodcall.c" />
     <ClCompile Include="src\eval\compiler\compile_new.c" />
     <ClCompile Include="src\eval\compiler\compile_opequals.c" />

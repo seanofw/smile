@@ -46,7 +46,7 @@ ParseError Parser_ParseFunc(Parser parser, SmileObject *expr, Int modeFlags)
 		token = Parser_Recover(parser, _barRecoveryTokens, sizeof(_barRecoveryTokens));
 		if (token->kind != TOKEN_BAR) {
 			*expr = NullObject;
-			Parser_EndScope(parser);
+			Parser_EndScope(parser, False);
 			return NULL;
 		}
 	}
@@ -56,14 +56,14 @@ ParseError Parser_ParseFunc(Parser parser, SmileObject *expr, Int modeFlags)
 		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
 			String_Format("Expected |...| to end function parameters starting on line %d", funcPosition->lineStart));
 		*expr = NullObject;
-		Parser_EndScope(parser);
+		Parser_EndScope(parser, False);
 		return parseError;
 	}
 
 	parseError = Parser_ParseExpr(parser, &body, modeFlags);
 	if (parseError != NULL) {
 		*expr = NullObject;
-		Parser_EndScope(parser);
+		Parser_EndScope(parser, False);
 		return parseError;
 	}
 	if (body == Parser_IgnorableObject) body = NullObject;
@@ -73,7 +73,7 @@ ParseError Parser_ParseFunc(Parser parser, SmileObject *expr, Int modeFlags)
 		Lexer_Unget(parser->lexer);
 	}
 
-	Parser_EndScope(parser);
+	Parser_EndScope(parser, False);
 
 	*expr =
 		(SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects._fnSymbol,
@@ -401,7 +401,7 @@ ParseError Parser_ParseClassicFn(Parser parser, SmileObject *result, LexerPositi
 
 	error = Parser_ParseRawListTerm(parser, (SmileObject *)&args, &argsTemplateKind, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
 	if (error != NULL) {
-		Parser_EndScope(parser);
+		Parser_EndScope(parser, False);
 		*result = NullObject;
 		return error;
 	}
@@ -409,14 +409,14 @@ ParseError Parser_ParseClassicFn(Parser parser, SmileObject *result, LexerPositi
 	if ((SMILE_KIND(args) != SMILE_KIND_LIST && SMILE_KIND(args) != SMILE_KIND_NULL) || argsTemplateKind != TemplateKind_None) {
 		error = ParseMessage_Create(PARSEMESSAGE_ERROR, startPosition,
 			String_Format("First argument to [$fn] must be a list of symbols.", startPosition->line));
-		Parser_EndScope(parser);
+		Parser_EndScope(parser, False);
 		*result = NullObject;
 		return error;
 	}
 
 	for (temp = args; SMILE_KIND(temp) == SMILE_KIND_LIST; temp = (SmileList)temp->d) {
 		if ((error = DeclareClassicFnArg(parser, temp->a, SMILE_VCALL(temp, getSourceLocation))) != NULL) {
-			Parser_EndScope(parser);
+			Parser_EndScope(parser, False);
 			*result = NullObject;
 			return error;
 		}
@@ -424,13 +424,13 @@ ParseError Parser_ParseClassicFn(Parser parser, SmileObject *result, LexerPositi
 
 	error = Parser_ParseExpr(parser, &body, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
 	if (error != NULL) {
-		Parser_EndScope(parser);
+		Parser_EndScope(parser, False);
 		*result = NullObject;
 		return error;
 	}
 	if (body == Parser_IgnorableObject) body = NullObject;
 
-	Parser_EndScope(parser);
+	Parser_EndScope(parser, False);
 
 	if ((error = Parser_ExpectRightBracket(parser, result, NULL, "[$fn] form", startPosition)) != NULL)
 		return error;

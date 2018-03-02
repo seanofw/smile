@@ -24,6 +24,7 @@
 // The twenty core special forms.
 STATIC_STRING(_Set, "$set");
 STATIC_STRING(_OpSet, "$opset");
+STATIC_STRING(_Include, "$include");
 STATIC_STRING(_If, "$if");
 STATIC_STRING(_While, "$while");
 STATIC_STRING(_Till, "$till");
@@ -144,9 +145,10 @@ Inline Symbol AddSpecialSymbol(SymbolTable symbolTable, String name, Symbol expe
 
 static void KnownSymbolsInt_PreloadSpecials(SymbolTable symbolTable, KnownSymbols knownSymbols)
 {
-	// The twenty core special forms.
+	// The twenty-three core special forms.
 	knownSymbols->_set = AddSpecialSymbol(symbolTable, _Set, SMILE_SPECIAL_SYMBOL__SET);
 	knownSymbols->_opset = AddSpecialSymbol(symbolTable, _OpSet, SMILE_SPECIAL_SYMBOL__OPSET);
+	knownSymbols->_include = AddSpecialSymbol(symbolTable, _Include, SMILE_SPECIAL_SYMBOL__INCLUDE);
 	knownSymbols->_if = AddSpecialSymbol(symbolTable, _If, SMILE_SPECIAL_SYMBOL__IF);
 	knownSymbols->_while = AddSpecialSymbol(symbolTable, _While, SMILE_SPECIAL_SYMBOL__WHILE);
 	knownSymbols->_till = AddSpecialSymbol(symbolTable, _Till, SMILE_SPECIAL_SYMBOL__TILL);

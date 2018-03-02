@@ -92,6 +92,7 @@ void KnownObjects_Setup(struct KnownObjectsStruct *knownObjects, struct KnownSym
 
 	knownObjects->_setSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__SET);
 	knownObjects->_opsetSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__OPSET);
+	knownObjects->_includeSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__INCLUDE);
 	knownObjects->_ifSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__IF);
 	knownObjects->_whileSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__WHILE);
 	knownObjects->_tillSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__TILL);

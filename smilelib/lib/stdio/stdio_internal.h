@@ -76,7 +76,7 @@ typedef enum {
 	FILE_MODE_STD = (1 << 8),	// This file is one of the three specials: Stdin, Stdout, Stderr
 } Stdio_FileMode;
 
-SMILE_INTERNAL_FUNC void Stdio_File_DeclareStdInOutErr(Closure globalClosure, SmileObject fileBase);
+SMILE_INTERNAL_FUNC void Stdio_File_DeclareStdInOutErr(ExternalVar *vars, Int *numVars, SmileObject fileBase);
 SMILE_INTERNAL_FUNC SmileHandle Stdio_File_CreateFromPath(SmileObject base, String path, UInt32 openMode, UInt32 newFileMode);
 SMILE_INTERNAL_FUNC void Stdio_File_UpdateLastError(Stdio_File file);
 

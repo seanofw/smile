@@ -177,6 +177,58 @@
 		</Expand>
 	</Type>
 
+	<!-- VarDict -->
+	<Type Name="VarDictNode">
+		<DisplayString Condition="key != 0 || value != 0 &amp;&amp; next &gt;= 0">key {key} --&gt; value {value}, next={next}</DisplayString>
+		<DisplayString Condition="key == 0 &amp;&amp; value == 0 &amp;&amp; next &gt;= 0">next={next}</DisplayString>
+		<DisplayString Condition="key != 0 || value != 0 &amp;&amp; next &lt; 0">key {key} --&gt; value {value}</DisplayString>
+		<DisplayString Condition="key == 0 &amp;&amp; value == 0 &amp;&amp; next &lt; 0">null</DisplayString>
+	</Type>
+	<Type Name="VarDictKeyValuePairStruct">
+		<DisplayString>key {key} --&gt; value {value}</DisplayString>
+	</Type>
+	<Type Name="VarDictStruct">
+		<DisplayString>VarDict: {_opaque.count} nodes</DisplayString>
+		<Expand>
+			<ExpandedItem>_opaque</ExpandedItem>
+		</Expand>
+	</Type>
+	<Type Name="VarDictInt">
+		<DisplayString>VarDict: {count} nodes</DisplayString>
+		<Expand>
+			<Item Name="[count]">count</Item>
+			<Item Name="[max nodes]">mask + 1</Item>
+			<Item Name="[first free]">firstFree</Item>
+			<Synthetic Name="[buckets]">
+				<Expand>
+					<Item Name="[address]">buckets</Item>
+					<IndexListItems>
+						<Size>mask + 1</Size>
+						<ValueNode>*(buckets[$i] >= 0 ? heap+buckets[$i] : 0)</ValueNode>
+					</IndexListItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="[raw buckets]">
+				<Expand>
+					<Item Name="[address]">buckets</Item>
+					<IndexListItems>
+						<Size>mask + 1</Size>
+						<ValueNode>buckets[$i]</ValueNode>
+					</IndexListItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="[heap]">
+				<Expand>
+					<Item Name="[address]">heap</Item>
+					<IndexListItems>
+						<Size>mask + 1</Size>
+						<ValueNode>heap[$i]</ValueNode>
+					</IndexListItems>
+				</Expand>
+			</Synthetic>
+		</Expand>
+	</Type>
+
 	<!-- SymbolTable -->
 	<Type Name="SymbolTableStruct">
 		<DisplayString>SymbolTable: {_opaque.count} entries</DisplayString>
@@ -226,6 +278,7 @@
 		<DisplayString Condition="(kind &amp; 0xFF) == 0x23">Pair</DisplayString>
 		<DisplayString Condition="(kind &amp; 0xFF) == 0x24">UserObject</DisplayString>
 		<DisplayString Condition="(kind &amp; 0xFF) == 0x25">String (text={((struct StringStruct *)this)->_opaque.text,s})</DisplayString>
+		<DisplayString Condition="(kind &amp; 0xFF) == 0x2B">Handle</DisplayString>
 		<DisplayString Condition="(kind &amp; 0xFF) == 0x2F">Function</DisplayString>
 		<DisplayString Condition="(kind &amp; 0xFF) == 0xF0">Syntax</DisplayString>
 		<DisplayString Condition="(kind &amp; 0xFF) == 0xFE">ParseDecl</DisplayString>
@@ -233,7 +286,7 @@
 		<DisplayString>Undefined (kind={(char)kind &amp; 0xFF,X})</DisplayString>
 
 		<Expand>
-			<Item Name="as List" Condition="(kind &amp; 0xFF) == 0x20 || (kind &amp; 0xFF) == 0x21">(struct SmileListInt *)this</Item>
+			<Item Name="as List" Condition="(kind &amp; 0xFE) == 0x20">(struct SmileListInt *)this</Item>
 			<Item Name="as Symbol" Condition="(kind &amp; 0xFF) == 0x18">(struct SmileSymbolInt *)this</Item>
 			<Item Name="as String" Condition="(kind &amp; 0xFF) == 0x25">(struct StringStruct *)this</Item>
 			<Item Name="as Byte" Condition="(kind &amp; 0xFF) == 0x10">(struct SmileByteInt *)this</Item>
@@ -242,6 +295,7 @@
 			<Item Name="as Integer64" Condition="(kind &amp; 0xFF) == 0x13">(struct SmileInteger64Int *)this</Item>
 			<Item Name="as Bool" Condition="(kind &amp; 0xFF) == 0x14">(struct SmileBoolInt *)this</Item>
 			<Item Name="as UserObject" Condition="(kind &amp; 0xFF) == 0x24">(struct SmileUserObjectInt *)this</Item>
+			<Item Name="as Handle" Condition="(kind &amp; 0xFF) == 0x2B">(struct SmileHandleInt *)this</Item>
 			<Item Name="as Function" Condition="(kind &amp; 0xFF) == 0x2F">(struct SmileFunctionInt *)this</Item>
 			<Item Name="as Syntax" Condition="(kind &amp; 0xFF) == 0xF0">(struct SmileSyntaxInt *)this</Item>
 			<Item Name="as ParseMessage" Condition="(kind &amp; 0xFF) == 0xFF">(struct ParseMessageStruct *)this</Item>
@@ -283,6 +337,7 @@
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x23">Pair</DisplayString>
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x24">UserObject</DisplayString>
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x25">String (text={((struct StringStruct *)obj)->_opaque.text,s})</DisplayString>
+		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x2B">Handle</DisplayString>
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0x2F">Function</DisplayString>
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0xF0">Syntax</DisplayString>
 		<DisplayString Condition="(obj-&gt;kind &amp; 0xFF) == 0xFE">ParseDecl</DisplayString>
@@ -290,7 +345,7 @@
 		<DisplayString>Undefined (kind={(char)kind &amp; 0xFF,X})</DisplayString>
 
 		<Expand>
-			<Item Name="as List" Condition="(obj-&gt;kind &amp; 0xFF) == 0x20 || (obj-&gt;kind &amp; 0xFF) == 0x21">(struct SmileListInt *)obj</Item>
+			<Item Name="as List" Condition="(obj-&gt;kind &amp; 0xFE) == 0x20">(struct SmileListInt *)obj</Item>
 			<Item Name="as Symbol" Condition="(obj-&gt;kind &amp; 0xFF) == 0x18">(struct SmileSymbolInt *)obj</Item>
 			<Item Name="as String" Condition="(obj-&gt;kind &amp; 0xFF) == 0x25">(struct StringStruct *)obj</Item>
 			<Item Name="as Byte" Condition="(obj-&gt;kind &amp; 0xFF) == 0x10">(struct SmileByteInt *)obj</Item>

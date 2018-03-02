@@ -31,27 +31,38 @@
 #ifndef __SMILE_PARSING_PARSEMESSAGE_H__
 #include <smile/parsing/parsemessage.h>
 #endif
+
 //-------------------------------------------------------------------------------------------------
 //  Public type declarations
+
+/// <summary>
+/// A function that can load "include files" from disk (or wherever).
+/// </summary>
+typedef ParseError (*ParserIncludeLoader)(const String path, const LexerPosition position, String *result);
 
 /// <summary>
 /// The Smile parser.
 /// </summary>
 struct ParserStruct {
-	Lexer lexer;	// The lexer, which provides the source token stream.
+	Lexer lexer;							// The lexer, which provides the source token stream.
 		
-	ParseScope currentScope;	// The current parsing scope.
-	Int32Int32Dict customFollowSet;	// The set of tokens that follow in the current custom syntax rule.
+	ParseScope currentScope;				// The current parsing scope.
+	Int32Int32Dict customFollowSet;			// The set of tokens that follow in the current custom syntax rule.
 		
 	SmileList firstMessage, lastMessage;	// A list of messages (errors/warnings) generated during the parse.
-	String parseMessages;	// A newline-joined aggregate of the messages (errors/warnings) from the most recent parse.
+	String parseMessages;					// A newline-joined aggregate of the messages (errors/warnings) from the most recent parse.
+
+	ExternalVar *externalVars;				// External variables that must be included in the outermost parsed scope.
+	Int numExternalVars;					// How many variables to include.
+
+	ParserIncludeLoader includeLoader;		// A function that knows how to load "include files" from disk (or wherever).
 };
 
 //-------------------------------------------------------------------------------------------------
 //  External parts of the implementation
 
 SMILE_API_FUNC Parser Parser_Create(void);
-SMILE_API_FUNC SmileObject Parser_Parse(Parser parser, Lexer lexer, ParseScope scope);
+SMILE_API_FUNC SmileObject Parser_ParseWithDetails(Parser parser, Lexer lexer, ParseScope outerScope, ParseScope *innerScope);
 SMILE_API_FUNC SmileObject Parser_ParseFromC(Parser parser, ParseScope scope, const char *text);
 SMILE_API_FUNC SmileObject Parser_ParseString(Parser parser, ParseScope scope, String text);
 SMILE_API_FUNC SmileObject Parser_ParseConstant(Parser parser, Lexer lexer, ParseScope scope);
@@ -77,7 +88,14 @@ SMILE_API_FUNC Int Parser_GetErrorOrWarningCount(Parser parser);
 
 SMILE_API_FUNC String Parser_JoinMessages(SmileList start, SmileList end);
 
+SMILE_API_FUNC ParseError Parser_DefaultIncludeLoader(const String path, const LexerPosition position, String *result);
+
 //-------------------------------------------------------------------------------------------------
 //  Inline parts of the implementation
+
+Inline SmileObject Parser_Parse(Parser parser, Lexer lexer, ParseScope scope)
+{
+	return Parser_ParseWithDetails(parser, lexer, scope, NULL);
+}
 
 #endif

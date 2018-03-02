@@ -1,5 +1,19 @@
 
 #include <smile/string.h>
+#include <smile/internal/staticstring.h>
+#include <smile/stringbuilder.h>
+
+#if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+#	define WIN32_LEAN_AND_MEAN
+#	pragma warning(push)
+#	pragma warning(disable: 4255)
+#	include <windows.h>
+#	pragma warning(pop)
+#elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+#   include <unistd.h>
+#else
+#	error Unsupported OS.
+#endif
 
 String Path_GetExt(String path)
 {
@@ -139,4 +153,194 @@ String Path_GetDirname(String path)
 			return String_Create(pathText, dirEndWithoutSlashes - pathText);
 		}
 	}
+}
+
+Bool Path_IsAbsolute(String path)
+{
+	const Byte *pathText = String_GetBytes(path);
+	Int pathLength = String_Length(path);
+	const Byte *pathEnd = pathText + pathLength;
+	const Byte *ptr;
+	const Byte *dirEndWithSlashes, *dirEndWithoutSlashes;
+
+	ptr = pathText;
+	while (ptr < pathEnd && (*ptr == '/' || *ptr == '\\')) ptr++;
+	if (ptr >= pathEnd)
+		return False;
+
+	dirEndWithoutSlashes = ptr;
+	dirEndWithSlashes = ptr;
+	while (dirEndWithSlashes < pathEnd && (*dirEndWithSlashes == '/' || *dirEndWithSlashes == '\\'))
+		dirEndWithSlashes++;
+
+	if (ptr == pathText)
+		return dirEndWithSlashes > pathText;
+	else if (ptr[-1] != ':')
+		return False;
+	else
+		return True;
+}
+
+String Path_GetRoot(String path)
+{
+	const Byte *pathText = String_GetBytes(path);
+	Int pathLength = String_Length(path);
+	const Byte *pathEnd = pathText + pathLength;
+	const Byte *ptr;
+	const Byte *dirEndWithSlashes, *dirEndWithoutSlashes;
+
+	// Start at the beginning, and skim forward to the first '/' or '\' character.
+	ptr = pathText;
+	while (ptr < pathEnd && (*ptr == '/' || *ptr == '\\')) ptr++;
+	if (ptr >= pathEnd)
+		return String_Empty;	// No 'disk:' or initial '/', so we have no root.
+
+	// Collect any slashes.
+	dirEndWithoutSlashes = ptr;
+	dirEndWithSlashes = ptr;
+	while (dirEndWithSlashes < pathEnd && (*dirEndWithSlashes == '/' || *dirEndWithSlashes == '\\'))
+		dirEndWithSlashes++;
+
+	if (ptr == pathText) {
+		// Collected no characters, so there is no root text.  Take whatever initial slashes that
+		// existed as the parent, or the empty string if there are no slashes.
+		return dirEndWithSlashes > pathText
+			? String_Create(pathText, dirEndWithSlashes - pathText)
+			: String_Empty;
+	}
+	else if (ptr[-1] != ':') {
+		// The last character of the root text is not a ':', so there is no root; this is
+		// just a relative fragment.
+		return String_Empty;
+	}
+	else {
+		// Got a colon, so this means that we're probably looking at a "disk:"
+		// form, and we should keep any slashes after it as part of the root.
+		return String_Create(pathText, dirEndWithSlashes - pathText);
+	}
+}
+
+String Path_Resolve(String currentDirectory, String relativePath)
+{
+	STATIC_STRING(slash, "/");
+	STATIC_STRING(backslash, "\\");
+	String *pieces;
+	String piece, result;
+	Int numPieces, i;
+	Int length;
+	const Byte *bytes;
+	String concatBuffer[3];
+
+	if (String_IsNullOrEmpty(relativePath))
+		return currentDirectory;
+
+	result = currentDirectory != NULL ? currentDirectory : String_Empty;
+
+	if (Path_IsAbsolute(relativePath)) {
+		result = Path_GetRoot(relativePath);
+		relativePath = String_SubstringAt(relativePath, String_Length(result));
+	}
+
+	numPieces = String_Split(String_ReplaceChar(relativePath, '\\', '/'), slash, &pieces);
+
+	concatBuffer[1] = slash;
+
+	for (i = 0; i < numPieces; i++) {
+		piece = pieces[i];
+
+		bytes = String_GetBytes(piece);
+		length = String_Length(piece);
+
+		if (length == 1 && bytes[0] == '.') {
+			// Relative directory to here, so just skip this piece.
+			continue;
+		}
+		else if (length == 2 && bytes[0] == '.' && bytes[1] == '.') {
+			// Parent directory, so strip back the current path by one.
+			result = Path_GetDirname(result);
+		}
+		else {
+			// This is a normal filename or directory name, so append this piece.
+			if (String_EndsWith(result, slash) || String_EndsWith(result, backslash)) {
+				result = String_Concat(result, piece);
+			}
+			else {
+				concatBuffer[0] = result;
+				concatBuffer[2] = piece;
+				result = String_ConcatMany(concatBuffer, 3);
+			}
+		}
+	}
+
+	return result;
+}
+
+String Path_GetCurrentDir(void)
+{
+#	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+
+		UInt16 *buffer;
+		UInt16 inline_buffer[256];
+		Int max = 256;
+		Int dirLength;
+
+		buffer = inline_buffer;
+		for (;;) {
+			dirLength = (Int)GetCurrentDirectoryW(max - 1, buffer);
+			if (dirLength == 0)
+				Smile_Abort_FatalError("Cannot get current working directory.");
+			else if (dirLength > max - 2) {
+				max = dirLength + 1;
+				buffer = GC_MALLOC_RAW_ARRAY(UInt16, max);
+				if (buffer == NULL)
+					Smile_Abort_OutOfMemory();
+				continue;
+			}
+			else break;
+		}
+
+		return String_ReplaceChar(String_FromUtf16(buffer, (Int)dirLength), '\\', '/');
+
+#	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+
+		char *buffer;
+		char inline_buffer[256];
+		Int max = 256;
+
+		buffer = inline_buffer;
+
+		while (getcwd(buffer, max - 1) == NULL) {
+			if (errno != ERANGE)
+				Smile_Abort_FatalError("Cannot get current working directory.");
+
+			max *= 2;
+			buffer = GC_MALLOC_RAW_ARRAY(Byte, max);
+			if (buffer == NULL)
+				Smile_Abort_OutOfMemory();
+		}
+
+		return String_FromC(buffer);
+
+#	else
+#		error Unsupported OS.
+#	endif
+}
+
+Bool Path_SetCurrentDir(String path)
+{
+#	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+
+		Int length;
+		UInt16 *buffer = String_ToUtf16(String_ReplaceChar(path, '/', '\\'), &length);
+
+		return SetCurrentDirectoryW(buffer) ? True : False;
+
+#	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+
+		const char *bytes = String_ToC(path);
+		return chdir(bytes) == 0;
+
+#	else
+#		error Unsupported OS.
+#	endif
 }

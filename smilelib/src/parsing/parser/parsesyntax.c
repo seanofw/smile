@@ -173,7 +173,7 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *ex
 
 	// Parse the substitution expression in the syntax rule's scope.
 	parseError = Parser_ParseRawListTerm(parser, &replacement, &templateKind, modeFlags);
-	Parser_EndScope(parser);
+	Parser_EndScope(parser, False);
 	if (parseError != NULL) {
 		*expr = NullObject;
 		return parseError;

@@ -1,5 +1,5 @@
-#ifndef __SMILE_SMLIETYPES_PREDECL_H__
-#define __SMILE_SMLIETYPES_PREDECL_H__
+#ifndef __SMILE_SMILETYPES_PREDECL_H__
+#define __SMILE_SMILETYPES_PREDECL_H__
 
 typedef struct LexerPositionStruct *LexerPosition;
 
@@ -60,13 +60,17 @@ typedef struct SmileNonterminalInt *SmileNonterminal;
 
 typedef struct SmileByteArrayInt *SmileByteArray;
 
-typedef struct ParseMessageStruct *ParseMessage;
 typedef struct EvalResultStruct *EvalResult;
 typedef struct ClosureInfoStruct *ClosureInfo;
 typedef struct ClosureStruct *Closure;
 typedef struct ByteCodeSegmentStruct *ByteCodeSegment;
 typedef struct ByteCodeStruct *ByteCode;
 
-typedef struct LibraryInfoStruct *LibraryInfo;
+typedef struct ParserStruct *Parser;
+typedef struct ParseScopeStruct *ParseScope;
+typedef struct ParseMessageStruct *ParseMessage;
+typedef struct ParseDeclStruct *ParseDecl;
+
+typedef struct ModuleInfoStruct *ModuleInfo;
 
 #endif

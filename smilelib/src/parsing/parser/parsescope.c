@@ -37,6 +37,7 @@ static const char *ParseDecl_Names[] = {
 	"a keyword",
 	"a postcondition result",
 	"a till-loop name",
+	"an included-module value",
 };
 
 /// <summary>
@@ -81,7 +82,8 @@ static Bool AddVariablesToScope(VarInfo varInfo, void *param)
 	struct DeclareVariablesInfo *declareVariablesInfo = (struct DeclareVariablesInfo *)param;
 	ParseError error;
 
-	error = ParseScope_DeclareHere(declareVariablesInfo->scope, varInfo->symbol, PARSEDECL_GLOBAL, NULL, NULL);
+	error = ParseScope_DeclareHere(declareVariablesInfo->scope, varInfo->symbol,
+		varInfo->kind == VAR_KIND_COMMONGLOBAL ? PARSEDECL_INCLUDE : PARSEDECL_GLOBAL, NULL, NULL);
 	declareVariablesInfo->error = error;
 
 	return (error == NULL);
@@ -358,7 +360,7 @@ ParseError Parser_ParseClassicScope(Parser parser, SmileObject *result, LexerPos
 
 	// Make sure there is a ']' to end the variable-names list.
 	if ((error = Parser_ExpectRightBracket(parser, result, NULL, "$scope variables", startPosition)) != NULL) {
-		Parser_EndScope(parser);
+		Parser_EndScope(parser, False);
 		return error;
 	}
 
@@ -379,7 +381,7 @@ ParseError Parser_ParseClassicScope(Parser parser, SmileObject *result, LexerPos
 	Parser_ParseExprsOpt(parser, &head, &tail, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
 
 	// End the scope.
-	Parser_EndScope(parser);
+	Parser_EndScope(parser, False);
 
 	// Make sure there is a ']' to end the scope.
 	if ((error = Parser_ExpectRightBracket(parser, result, NULL, "$scope", startPosition)) != NULL)

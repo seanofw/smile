@@ -41,7 +41,7 @@ void Smile_InitCommonGlobals(ClosureInfo globalClosureInfo)
 	VarDict varDict = globalClosureInfo->variableDictionary;
 	Symbol name;
 
-	varInfo.kind = VAR_KIND_GLOBAL;
+	varInfo.kind = VAR_KIND_COMMONGLOBAL;
 	varInfo.offset = 0;
 
 	DeclareCommonGlobal(Smile_KnownSymbols.Object_,	Smile_KnownBases.Object);
@@ -185,33 +185,25 @@ SmileObject Smile_GetGlobalVariableC(const char *name)
 
 /// <summary>
 /// Parse the given source code (text) into a complete object structure with all of its syntax resolved.
+/// This performs the parse inside the global scope, with the given external variables declared in the
+/// code's local scope.
 /// <summary>
 /// <param name="text">The actual Smile source code to parse.</param>
 /// <param name="filename">The name of the file that source code came from (for error-reporting).</param>
-/// <param name="parseMessages">This will be set to an array of any errors or warnings that were generated while parsing.</param>
-/// <param name="numParseMessages">This will be set to the number of entries in the parseMessages array.</param>
+/// <param name="vars">Any external variables that must be imported for this code.</param>
+/// <param name="numVars">The number of external variables to import.</param>
+/// <param name="parseMessages">If not NULL, this will be set to an array of any errors or warnings that were generated while parsing.</param>
+/// <param name="numParseMessages">If not NULL, this will be set to the number of entries in the parseMessages array.</param>
+/// <param name="moduleScope">If not NULL, this will be set to the scope-declaration collection for the source code.</param>
 /// <returns>The fully-parsed source code, or NullObject if there was a parsing error.</returns>
-SmileObject Smile_Parse(String text, String filename, struct ParseMessageStruct ***parseMessages, Int *numParseMessages)
-{
-	return Smile_ParseInScope(_globalClosureInfo, text, filename, parseMessages, numParseMessages);
-}
-
-/// <summary>
-/// Parse the given source code (text) into a complete object structure with all of its syntax resolved.
-/// This performs the parse inside the given global scope, where some global objects may already have been declared.
-/// <summary>
-/// <param name="globalClosureInfo">The closure in which the parse takes place.</param>
-/// <param name="text">The actual Smile source code to parse.</param>
-/// <param name="filename">The name of the file that source code came from (for error-reporting).</param>
-/// <param name="parseMessages">This will be set to an array of any errors or warnings that were generated while parsing.</param>
-/// <param name="numParseMessages">This will be set to the number of entries in the parseMessages array.</param>
-/// <returns>The fully-parsed source code, or NullObject if there was a parsing error.</returns>
-SmileObject Smile_ParseInScope(ClosureInfo globalClosureInfo, String text, String filename, struct ParseMessageStruct ***parseMessages, Int *numParseMessages)
+SmileObject Smile_ParseInScope(String text, String filename,
+	ExternalVar *vars, Int numVars,
+	ParseMessage **parseMessages, Int *numParseMessages, ParseScope *moduleScope)
 {
 	SmileObject result;
 	Lexer lexer;
 	Parser parser;
-	ParseScope globalScope;
+	ParseScope outerScope;
 	struct ParseMessageStruct *parseMessage, **destMessage;
 	Int numMessages;
 
@@ -219,55 +211,55 @@ SmileObject Smile_ParseInScope(ClosureInfo globalClosureInfo, String text, Strin
 	lexer = Lexer_Create(text, 0, String_Length(text), filename, 1, 0);
 	Lexer_SetSymbolTable(lexer, Smile_SymbolTable);
 	parser = Parser_Create();
-	globalScope = ParseScope_CreateRoot();
+	outerScope = ParseScope_CreateRoot();
+
+	parser->externalVars = vars;
+	parser->numExternalVars = numVars;
 
 	// Declare the names of all of the variables in the global scope.
-	parseMessage = ParseScope_DeclareVariablesFromClosureInfo(globalScope, globalClosureInfo);
+	parseMessage = ParseScope_DeclareVariablesFromClosureInfo(outerScope, Smile_GetGlobalClosureInfo());
 
 	// Deal with any errors resulting from bad global-variable declarations.
 	if (parseMessage != NULL) {
 		*parseMessages = GC_MALLOC_STRUCT(struct ParseMessageStruct *);
 		if (*parseMessages == NULL)
 			Smile_Abort_OutOfMemory();
-		**parseMessages = parseMessage;
+		if (parseMessages != NULL)
+			**parseMessages = parseMessage;
 		*numParseMessages = 1;
 		return NullObject;
 	}
 
 	// Now parse the source code.
-	result = Parser_Parse(parser, lexer, globalScope);
+	result = Parser_ParseWithDetails(parser, lexer, outerScope, moduleScope);
 
 	// Deal with any errors resulting from the user's source code.
 	if (SMILE_KIND(parser->firstMessage) != SMILE_KIND_NULL) {
-		*numParseMessages = numMessages = Parser_GetErrorOrWarningCount(parser);
-		*parseMessages = destMessage = GC_MALLOC_STRUCT_ARRAY(struct ParseMessageStruct *, numMessages);
-		if (*parseMessages == NULL)
-			Smile_Abort_OutOfMemory();
-	
-		for (SmileList list = parser->firstMessage; SMILE_KIND(list) != SMILE_KIND_NULL; list = LIST_REST(list)) {
-			if (((ParseMessage)list->a)->messageKind == PARSEMESSAGE_WARNING
-				|| ((ParseMessage)list->a)->messageKind == PARSEMESSAGE_ERROR
-				|| ((ParseMessage)list->a)->messageKind == PARSEMESSAGE_FATAL) {
-				*destMessage++ = (ParseMessage)list->a;
+		numMessages = Parser_GetErrorOrWarningCount(parser);
+		if (numParseMessages != NULL)
+			*numParseMessages = numMessages;
+		if (parseMessages != NULL) {
+			*parseMessages = destMessage = GC_MALLOC_STRUCT_ARRAY(struct ParseMessageStruct *, numMessages);
+			if (*parseMessages == NULL)
+				Smile_Abort_OutOfMemory();
+
+			for (SmileList list = parser->firstMessage; SMILE_KIND(list) != SMILE_KIND_NULL; list = LIST_REST(list)) {
+				if (((ParseMessage)list->a)->messageKind == PARSEMESSAGE_WARNING
+					|| ((ParseMessage)list->a)->messageKind == PARSEMESSAGE_ERROR
+					|| ((ParseMessage)list->a)->messageKind == PARSEMESSAGE_FATAL) {
+					*destMessage++ = (ParseMessage)list->a;
+				}
 			}
 		}
 		return NullObject;
 	}
 
 	// Done!
-	*parseMessages = NULL;
-	*numParseMessages = 0;
+	if (parseMessages != NULL)
+		*parseMessages = NULL;
+	if (numParseMessages != NULL)
+		*numParseMessages = 0;
 	return result;
-}
-
-/// <summary>
-/// Evaluate the given expression in the global scope.
-/// </summary>
-/// <param name="expression">The expression to evaluate, as a tree of Smile objects.</param>
-/// <returns>The result of evaluating the given expression in the global scope.</returns>
-EvalResult Smile_Eval(SmileObject expression)
-{
-	return Smile_EvalInScope(_globalClosureInfo, expression);
 }
 
 // Helper function for Smile_EvalInScope().
@@ -323,53 +315,6 @@ EvalResult Smile_EvalInScope(ClosureInfo globalClosureInfo, SmileObject expressi
 
 	// Now run the compiled bytecode!
 	result = Eval_Run(globalFunction);
-
-	return result;
-}
-
-/// <summary>
-/// Parse and evaluate the given source code in the global scope.
-/// </summary>
-/// <param name="text">The actual Smile source code to parse.</param>
-/// <param name="filename">The name of the file that source code came from (for error-reporting).</param>
-/// <returns>The result of parsing, compiling, and evaluating the given expression in the given global scope.</returns>
-EvalResult Smile_ParseAndEval(String text, String filename)
-{
-	return Smile_ParseAndEvalInScope(_globalClosureInfo, text, filename);
-}
-
-/// <summary>
-/// Parse and evaluate the given source code in the given scope.
-/// </summary>
-/// <param name="globalClosureInfo">The global scope in which to evaluate the given Smile source code.</param>
-/// <param name="text">The actual Smile source code to parse.</param>
-/// <param name="filename">The name of the file that source code came from (for error-reporting).</param>
-/// <returns>The result of parsing, compiling, and evaluating the given expression in the given global scope.</returns>
-EvalResult Smile_ParseAndEvalInScope(ClosureInfo globalClosureInfo, String text, String filename)
-{
-	ParseMessage *parseMessages;
-	Int numParseMessages;
-	SmileObject expression;
-	EvalResult result;
-
-	expression = Smile_ParseInScope(globalClosureInfo, text, filename, &parseMessages, &numParseMessages);
-
-	if (SMILE_KIND(expression) == SMILE_KIND_NULL) {
-		ParseMessage *m;
-	
-		for (m = parseMessages; m < parseMessages + numParseMessages; m++) {
-			if ((*m)->kind == PARSEMESSAGE_ERROR || (*m)->kind == PARSEMESSAGE_FATAL) {
-
-				// The parser bailed, so we abort with an error before trying to eval.
-				result = EvalResult_Create(EVAL_RESULT_PARSEERRORS);
-				result->parseMessages = parseMessages;
-				result->numMessages = numParseMessages;
-				return result;
-			}
-		}
-	}
-
-	result = Smile_EvalInScope(globalClosureInfo, expression);
 
 	return result;
 }

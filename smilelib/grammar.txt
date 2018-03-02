@@ -1,5 +1,5 @@
 
-Grammar for Smile, 15.0
+Grammar for Smile, 15.1
 =======================
 
 This grammar is something like LR(3), with common shift-reduce conflicts resolved in
@@ -28,7 +28,8 @@ Tokens:
 	EQ NE LE GE GT LT SUPEREQ SUPERNE
 	PLUS MINUS STAR SLASH
 	CHAR STRING BYTE INT32 INT64 REAL32 REAL64
-	LOANWORD_INCLUDE LOANWORD_BRK LOANWORD_SYNTAX
+	LOANWORD_INCLUDE LOANWORD_BRK LOANWORD_SYNTAX LOANWORD_ALL
+	LOANWORD_JSON LOANWORD_XML LOANWORD_HTML LOANWORD_REGEX
 
 ---------------------------------------------------------------------------------------------------
 
@@ -56,7 +57,11 @@ expr ::= arith
 
 include_expr ::= STRING
 		| STRING COLON include_names
-include_names ::= anyname | include_names COMMA anyname
+include_names ::= anyname
+		| anyname AS anyname
+		| LOANWORD_SYNTAX
+		| LOANWORD_ALL
+		| include_names COMMA anyname
 
 if_then ::= IF arith THEN expr				// See note above about binary operators (breaking allowed in 'arith').
 		| IF arith THEN expr ELSE expr		// See note above about binary operators (breaking allowed in 'arith').
@@ -161,7 +166,10 @@ term ::= LPAREN expr RPAREN							// See note above about binary operators (brea
        | DYNSTRING
        | CHAR
        | BYTE | INT16 | INT32 | INT64 | REAL32 | REAL64 | REAL128 | FLOAT32 | FLOAT64
-       | LOANWORD
+       | LOANWORD_JSON
+	   | LOANWORD_XML
+	   | LOANWORD_HTML
+	   | LOANWORD_REGEX
        | LOANWORD_SYNTAX syntax_expr
 
 string ::= RAWSTRING | DYNSTRING
