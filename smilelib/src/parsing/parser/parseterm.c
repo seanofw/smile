@@ -168,6 +168,7 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, T
 		if (!ParserSyntaxTable_AddRule(parser, &parser->currentScope->syntaxTable, (SmileSyntax)*result)) {
 			*result = NullObject;
 		}
+		ParseScope_AddSyntax(parser->currentScope, (SmileSyntax)*result);
 		return NULL;
 
 	default:

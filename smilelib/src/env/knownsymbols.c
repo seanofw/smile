@@ -681,6 +681,7 @@ STATIC_STRING(read_write_append, "read-write-append");
 STATIC_STRING(real_, "real");
 STATIC_STRING(real32_, "real32");
 STATIC_STRING(real64_, "real64");
+STATIC_STRING(reexport, "reexport");
 STATIC_STRING(rem, "rem");
 STATIC_STRING(repeat, "repeat");
 STATIC_STRING(replace, "replace");
@@ -963,6 +964,7 @@ static void KnownSymbolsInt_PreloadGeneralSymbols(SymbolTable symbolTable, Known
 	knownSymbols->real_ = SymbolTableInt_AddFast(symbolTable, real_);
 	knownSymbols->real32_ = SymbolTableInt_AddFast(symbolTable, real32_);
 	knownSymbols->real64_ = SymbolTableInt_AddFast(symbolTable, real64_);
+	knownSymbols->reexport = SymbolTableInt_AddFast(symbolTable, reexport);
 	knownSymbols->rem = SymbolTableInt_AddFast(symbolTable, rem);
 	knownSymbols->repeat = SymbolTableInt_AddFast(symbolTable, repeat);
 	knownSymbols->replace = SymbolTableInt_AddFast(symbolTable, replace);

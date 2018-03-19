@@ -41,7 +41,7 @@ static const char *ParseDecl_Names[] = {
 };
 
 /// <summary>
-/// Create a root scope that contains only the eighteen or so global forms.
+/// Create a root scope that contains only the twenty or so global forms.
 /// </summary>
 /// <returns>The newly-created root scope.</returns>
 ParseScope ParseScope_CreateRoot(void)
@@ -56,6 +56,9 @@ ParseScope ParseScope_CreateRoot(void)
 	parseScope->parentScope = NULL;
 	parseScope->symbolDict = Int32Int32Dict_Create();
 	parseScope->syntaxTable = ParserSyntaxTable_CreateNew();
+	parseScope->syntaxListHead = parseScope->syntaxListTail = NullList;
+	parseScope->syntaxIncludeListHead = parseScope->syntaxIncludeListTail = NullList;
+	parseScope->reexport = False;
 	parseScope->decls = GC_MALLOC_STRUCT_ARRAY(ParseDecl, 16);
 	if (parseScope->decls == NULL)
 		Smile_Abort_OutOfMemory();
@@ -202,6 +205,9 @@ ParseScope ParseScope_CreateChild(ParseScope parentScope, Int kind)
 	parseScope->numDecls = 0;
 	parseScope->maxDecls = 16;
 	ParserSyntaxTable_AddRef(parseScope->syntaxTable = parentScope->syntaxTable);
+	parseScope->syntaxListHead = parseScope->syntaxListTail = NullList;
+	parseScope->syntaxIncludeListHead = parseScope->syntaxIncludeListTail = NullList;
+	parseScope->reexport = False;
 
 	return parseScope;
 }

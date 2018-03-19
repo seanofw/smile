@@ -71,9 +71,15 @@ struct ParseScopeStruct {
 	Int numDecls;
 	Int maxDecls;
 
+	// The list of actual syntax declarations in this scope, in declaration order.
+	SmileList syntaxListHead, syntaxListTail;
+
+	// The list of included syntax rules in this scope, in declaration order.
+	SmileList syntaxIncludeListHead, syntaxIncludeListTail;
+	Bool reexport;
+
 	// The syntax table for this scope, which describes the current effective set of syntax rules.
 	ParserSyntaxTable syntaxTable;
-
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -197,6 +203,22 @@ Inline ParseError ParseScope_DeclareHereC(ParseScope scope, const char *name, In
 {
 	Symbol symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, name);
 	return ParseScope_DeclareHere(scope, symbol, kind, position, decl);
+}
+
+/// <summary>
+/// Add a SmileSyntax object to this scope's collection of declared syntax rules.
+/// </summary>
+Inline void ParseScope_AddSyntax(ParseScope scope, SmileSyntax syntax)
+{
+	LIST_APPEND(scope->syntaxListHead, scope->syntaxListTail, syntax);
+}
+
+/// <summary>
+/// Add a SmileSyntax object to this scope's collection of included syntax rules.
+/// </summary>
+Inline void ParseScope_AddIncludeSyntax(ParseScope scope, SmileSyntax syntax)
+{
+	LIST_APPEND(scope->syntaxIncludeListHead, scope->syntaxIncludeListTail, syntax);
 }
 
 #endif

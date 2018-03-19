@@ -28,14 +28,16 @@
 #include <smile/internal/staticstring.h>
 #include <smile/stringbuilder.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
+#include <smile/smiletypes/smilesyntax.h>
 
 static ModuleInfo Parser_LoadInstalledPackage(Parser parser, String filename, LexerPosition position);
 static ModuleInfo Parser_LoadUserFile(Parser parser, String filename, LexerPosition position);
 
 static ParseError Parser_ParseIncludeName(Parser parser, Symbol *oldName, Symbol *newName);
 
-static SmileObject Parser_ExposeAll(Parser parser, ParseScope target, ModuleInfo moduleInfo);
+static SmileObject Parser_ExposeAll(Parser parser, ParseScope target, ModuleInfo moduleInfo, LexerPosition position);
 static SmileObject Parser_ExposeOne(Parser parser, ParseScope target, ModuleInfo moduleInfo, Symbol oldName, Symbol newName);
+static Bool Parser_ExposeSyntax(Parser parser, ParseScope target, ModuleInfo moduleInfo, LexerPosition position);
 
 static Bool DoesStringEndWithAlphabeticExtension(String str)
 {
@@ -113,31 +115,39 @@ ParseError Parser_ParseInclude(Parser parser, SmileObject *expr)
 	// See if they want only a partial import.
 	if (Lexer_Next(parser->lexer) != TOKEN_COLON) {
 		Lexer_Unget(parser->lexer);
-		*expr = Parser_ExposeAll(parser, parser->currentScope, moduleInfo);
+		*expr = Parser_ExposeAll(parser, parser->currentScope, moduleInfo, position);
 		return NULL;
 	}
 
 	head = tail = NullList;
 	resultHead = resultTail = NullList;
 
-	// Parse the first include name.
-	error = Parser_ParseIncludeName(parser, &oldName, &newName);
-	if (error != NULL)
-		return error;
-
-	// Expose it in the current scope.
-	setExpr = Parser_ExposeOne(parser, parser->currentScope, moduleInfo, oldName, newName);
-	LIST_APPEND(head, tail, setExpr);
-	LIST_APPEND(resultHead, resultTail, SmileSymbol_Create(newName));
-
 	// If there's a comma, keep doing that.
-	while (Lexer_Next(parser->lexer) == TOKEN_COMMA) {
+	do {
 
 		tokenKind = Lexer_Peek(parser->lexer);
-		if (tokenKind != TOKEN_ALPHANAME && tokenKind != TOKEN_UNKNOWNALPHANAME
-			&& tokenKind != TOKEN_PUNCTNAME && tokenKind != TOKEN_UNKNOWNPUNCTNAME) {
+		if (tokenKind == TOKEN_ALPHANAME || tokenKind == TOKEN_UNKNOWNALPHANAME
+			|| tokenKind == TOKEN_PUNCTNAME || tokenKind == TOKEN_UNKNOWNPUNCTNAME) {
 
-			Parser_AddError(parser, Token_GetPosition(parser->lexer->token), "Missing variable name in #include directive");
+			// Parse the next include name.
+			error = Parser_ParseIncludeName(parser, &oldName, &newName);
+			if (error != NULL)
+				return error;
+
+			// Expose it in the current scope.
+			setExpr = Parser_ExposeOne(parser, parser->currentScope, moduleInfo, oldName, newName);
+			LIST_APPEND(head, tail, setExpr);
+			LIST_APPEND(resultHead, resultTail, SmileSymbol_Create(newName));
+		}
+		else if (tokenKind == TOKEN_LOANWORD_SYNTAX) {
+			Lexer_Next(parser->lexer);
+
+			// They want to import the #syntax rules exported by this module, so import them all
+			// (it's all-or-nothing, since there can be interdependencies between them).
+			Parser_ExposeSyntax(parser, parser->currentScope, moduleInfo, Token_GetPosition(parser->lexer->token));
+		}
+		else {
+			Parser_AddError(parser, Token_GetPosition(parser->lexer->token), "Missing variable name after #include directive");
 
 			// If this was a comma, they wrote something like "foo, bar,, baz", so we
 			// can recover by just pretending we didn't see two in a row.
@@ -145,16 +155,8 @@ ParseError Parser_ParseInclude(Parser parser, SmileObject *expr)
 				continue;
 		}
 
-		// Parse the next include name.
-		error = Parser_ParseIncludeName(parser, &oldName, &newName);
-		if (error != NULL)
-			return error;
-
-		// Expose it in the current scope.
-		setExpr = Parser_ExposeOne(parser, parser->currentScope, moduleInfo, oldName, newName);
-		LIST_APPEND(head, tail, setExpr);
-		LIST_APPEND(resultHead, resultTail, SmileSymbol_Create(newName));
-	}
+		// If there's a comma, keep consuming input.
+	} while (Lexer_Next(parser->lexer) == TOKEN_COMMA);
 	Lexer_Unget(parser->lexer);
 
 	// Turn the list of symbols into a [$quote ...] expression, and attach it to the end of the work.
@@ -322,12 +324,13 @@ ParseError Parser_DefaultIncludeLoader(const String fullPath, const LexerPositio
 /// <summary>
 /// Expose all of the module's global objects into the given scope with their original
 /// names, and return an expression that will properly assign all of those names
-/// at execution time.
+/// at execution time.  This also exposes all of the module's syntax rules.
 /// </summary>
 /// <param name="parser">The parser, used here for collecting error messages.</param>
 /// <param name="target">The target scope in which the objects are to be exposed.</param>
 /// <param name="moduleInfo">The module that contains the symbol to expose.</param>
-SmileObject Parser_ExposeAll(Parser parser, ParseScope target, ModuleInfo moduleInfo)
+/// <param name="position">The position at which the #include was found (for error-reporting.</param>
+SmileObject Parser_ExposeAll(Parser parser, ParseScope target, ModuleInfo moduleInfo, LexerPosition position)
 {
 	SmileList head, tail;
 	SmileList resultHead, resultTail;
@@ -371,8 +374,59 @@ SmileObject Parser_ExposeAll(Parser parser, ParseScope target, ModuleInfo module
 	// Prepend a [$progn ...] on the front of the list to make it executable.
 	head = SmileList_Cons((SmileObject)Smile_KnownObjects._prognSymbol, (SmileObject)head);
 
-	// And return the compound expression.
+	// Redeclare all of the module's syntax rules (if any) in the current scope.
+	Parser_ExposeSyntax(parser, target, moduleInfo, position);
+
+	// Finally, return the compound expression for the imported symbols.
 	return (SmileObject)head;
+}
+
+/// <summary>
+/// Expose the syntax from the given module as a set of syntax rules in the current
+/// scope, but import them in the "included" list so that they don't automatically re-export.
+/// </summary>
+Bool Parser_ExposeSyntax(Parser parser, ParseScope target, ModuleInfo moduleInfo, LexerPosition position)
+{
+	// Add the #syntax rules declared in the module's scope, exactly if we'd just written
+	// those same #syntax rules right here, but put them into the 'include' list rather
+	// than the 'declared' list when we add them.
+	for (SmileList list = moduleInfo->parseScope->syntaxListHead;
+		SMILE_KIND(list) == SMILE_KIND_LIST; list = (SmileList)list->d) {
+
+		SmileSyntax rule = (SmileSyntax)list->a;
+		if (SMILE_KIND(rule) != SMILE_KIND_SYNTAX) {
+			Parser_AddFatalError(parser, position, "Illegal non-Syntax object in module's scope's syntax list; this is probably a bug.");
+			return False;
+		}
+
+		// This may generate an error, if the imported rule clashes with existing rules.
+		if (ParserSyntaxTable_AddRule(parser, &target->syntaxTable, rule)) {
+			ParseScope_AddIncludeSyntax(target, (SmileSyntax)rule);
+		}
+	}
+
+	// If this module is re-exporting its own imported #syntax rules, bring those in too.
+	if (moduleInfo->parseScope->reexport) {
+
+		// Add the #syntax rules included in the module's scope, exactly if we'd included
+		// those same #syntax rules from wherever they came from.
+		for (SmileList list = moduleInfo->parseScope->syntaxIncludeListHead;
+			SMILE_KIND(list) == SMILE_KIND_LIST; list = (SmileList)list->d) {
+
+			SmileSyntax rule = (SmileSyntax)list->a;
+			if (SMILE_KIND(rule) != SMILE_KIND_SYNTAX) {
+				Parser_AddFatalError(parser, position, "Illegal non-Syntax object in module's scope's syntax list; this is probably a bug.");
+				return False;
+			}
+
+			// This may generate an error, if the imported rule clashes with existing rules.
+			if (ParserSyntaxTable_AddRule(parser, &target->syntaxTable, rule)) {
+				ParseScope_AddIncludeSyntax(target, (SmileSyntax)rule);
+			}
+		}
+	}
+
+	return True;
 }
 
 /// <summary>

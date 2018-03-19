@@ -116,6 +116,7 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *ex
 	ParseError parseError;
 	LexerPosition rulePosition, impliesPosition;
 	Int templateKind;
+	SmileSyntax syntax;
 
 	// First, read the syntax predicate's leading nonterminal.
 	token = Parser_NextToken(parser);
@@ -126,6 +127,14 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *ex
 		return ParseMessage_Create(PARSEMESSAGE_ERROR, rulePosition, MissingSyntaxClassName);
 	}
 	nonterminal = token->data.symbol;
+
+	// If the leading nonterminal is the special keyword 'reexport', then flag this scope as
+	// reexporting its imported rules, and we're done.
+	if (nonterminal == Smile_KnownSymbols.reexport) {
+		parser->currentScope->reexport = True;
+		*expr = NullObject;
+		return NULL;
+	}
 
 	// There must be a colon next.
 	token = Parser_NextToken(parser);
@@ -203,8 +212,15 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *ex
 		return parseError;
 	}
 
-	// Everything passes muster, so create and return the new syntax object.
-	*expr = (SmileObject)SmileSyntax_Create(nonterminal, pattern, replacement, rulePosition);
+	// Everything passes muster, so create the new syntax object.
+	syntax = SmileSyntax_Create(nonterminal, pattern, replacement, rulePosition);
+
+	// Add it to the list of syntax objects defined in the current scope.
+	// We'll need this list in order to be able to export them.
+	LIST_APPEND(parser->currentScope->syntaxListHead, parser->currentScope->syntaxListTail, syntax);
+
+	// Everything is all set up, so return the finished syntax object.
+	*expr = (SmileObject)syntax;
 	return NULL;
 }
 

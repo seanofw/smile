@@ -221,7 +221,7 @@ typedef struct KnownSymbolsStruct {
 	Symbol other_control, other_format, other_not_assigned, other_private_use, other_surrogate;
 	Symbol parity, parse, parse_and_eval, pattern, pos_q, post, pow2_q, pre, primary_category, printf, process_id, property_names, punct_q, punctuation;
 	Symbol punctuation_close, punctuation_connector, punctuation_dash, punctuation_final_quote, punctuation_initial_quote, punctuation_open, punctuation_other;
-	Symbol range_to, raw_reverse, read_append, read_only, read_write, read_write_append, real_, real32_, real64_, rem, repeat, replace, replacement, resize, rest, result;
+	Symbol range_to, raw_reverse, read_append, read_only, read_write, read_write_append, real_, real32_, real64_, reexport, rem, repeat, replace, replacement, resize, rest, result;
 	Symbol reverse, reverse_bits, reverse_bytes, right, rot_13;
 	Symbol separator, separator_line, separator_paragraph, separator_space;
 	Symbol set_object_security, set_property, sign, sin, space_q, splice, split, sprintf;
