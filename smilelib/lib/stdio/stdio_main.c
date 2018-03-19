@@ -52,9 +52,10 @@ STATIC_STRING(_stdioBootstrap,
 		"file print-list list\n"
 		"file write-char '\\n'\n"
 	"}\n"
-	/*"\n"
-	"#syntax STMT [print [EXPR+ exprs ,]] => (Stdout.print ## exprs)\n"
-	"\n"*/
+	"\n"
+	"#syntax STMT: [print [EXPR+ exprs ,]] => `[Stdout.print @(exprs)]\n"
+	"#syntax STMT: [print-line [EXPR+ exprs ,]] => `[Stdout.print-line @(exprs)]\n"
+	"\n"
 );
 
 ModuleInfo Stdio_Main(void)

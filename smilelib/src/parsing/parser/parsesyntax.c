@@ -215,10 +215,6 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *ex
 	// Everything passes muster, so create the new syntax object.
 	syntax = SmileSyntax_Create(nonterminal, pattern, replacement, rulePosition);
 
-	// Add it to the list of syntax objects defined in the current scope.
-	// We'll need this list in order to be able to export them.
-	LIST_APPEND(parser->currentScope->syntaxListHead, parser->currentScope->syntaxListTail, syntax);
-
 	// Everything is all set up, so return the finished syntax object.
 	*expr = (SmileObject)syntax;
 	return NULL;
