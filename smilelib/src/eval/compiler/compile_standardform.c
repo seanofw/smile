@@ -49,6 +49,8 @@ CompiledBlock Compiler_CompileStandardForm(Compiler compiler, Symbol symbol, Smi
 			return Compiler_CompileSetf(compiler, args, compileFlags);
 		case SMILE_SPECIAL_SYMBOL__OPSET:
 			return Compiler_CompileOpEquals(compiler, args, compileFlags);
+		case SMILE_SPECIAL_SYMBOL__INCLUDE:
+			return Compiler_CompileInclude(compiler, args, compileFlags);
 
 		// Control flow.
 		case SMILE_SPECIAL_SYMBOL__IF:

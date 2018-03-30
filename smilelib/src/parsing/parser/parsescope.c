@@ -37,10 +37,11 @@ static const char *ParseDecl_Names[] = {
 	"a keyword",
 	"a postcondition result",
 	"a till-loop name",
+	"an included-module value",
 };
 
 /// <summary>
-/// Create a root scope that contains only the eighteen or so global forms.
+/// Create a root scope that contains only the twenty or so global forms.
 /// </summary>
 /// <returns>The newly-created root scope.</returns>
 ParseScope ParseScope_CreateRoot(void)
@@ -55,6 +56,9 @@ ParseScope ParseScope_CreateRoot(void)
 	parseScope->parentScope = NULL;
 	parseScope->symbolDict = Int32Int32Dict_Create();
 	parseScope->syntaxTable = ParserSyntaxTable_CreateNew();
+	parseScope->syntaxListHead = parseScope->syntaxListTail = NullList;
+	parseScope->syntaxIncludeListHead = parseScope->syntaxIncludeListTail = NullList;
+	parseScope->reexport = False;
 	parseScope->decls = GC_MALLOC_STRUCT_ARRAY(ParseDecl, 16);
 	if (parseScope->decls == NULL)
 		Smile_Abort_OutOfMemory();
@@ -81,7 +85,8 @@ static Bool AddVariablesToScope(VarInfo varInfo, void *param)
 	struct DeclareVariablesInfo *declareVariablesInfo = (struct DeclareVariablesInfo *)param;
 	ParseError error;
 
-	error = ParseScope_DeclareHere(declareVariablesInfo->scope, varInfo->symbol, PARSEDECL_GLOBAL, NULL, NULL);
+	error = ParseScope_DeclareHere(declareVariablesInfo->scope, varInfo->symbol,
+		varInfo->kind == VAR_KIND_COMMONGLOBAL ? PARSEDECL_INCLUDE : PARSEDECL_GLOBAL, NULL, NULL);
 	declareVariablesInfo->error = error;
 
 	return (error == NULL);
@@ -200,6 +205,9 @@ ParseScope ParseScope_CreateChild(ParseScope parentScope, Int kind)
 	parseScope->numDecls = 0;
 	parseScope->maxDecls = 16;
 	ParserSyntaxTable_AddRef(parseScope->syntaxTable = parentScope->syntaxTable);
+	parseScope->syntaxListHead = parseScope->syntaxListTail = NullList;
+	parseScope->syntaxIncludeListHead = parseScope->syntaxIncludeListTail = NullList;
+	parseScope->reexport = False;
 
 	return parseScope;
 }
@@ -358,7 +366,7 @@ ParseError Parser_ParseClassicScope(Parser parser, SmileObject *result, LexerPos
 
 	// Make sure there is a ']' to end the variable-names list.
 	if ((error = Parser_ExpectRightBracket(parser, result, NULL, "$scope variables", startPosition)) != NULL) {
-		Parser_EndScope(parser);
+		Parser_EndScope(parser, False);
 		return error;
 	}
 
@@ -379,7 +387,7 @@ ParseError Parser_ParseClassicScope(Parser parser, SmileObject *result, LexerPos
 	Parser_ParseExprsOpt(parser, &head, &tail, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
 
 	// End the scope.
-	Parser_EndScope(parser);
+	Parser_EndScope(parser, False);
 
 	// Make sure there is a ']' to end the scope.
 	if ((error = Parser_ExpectRightBracket(parser, result, NULL, "$scope", startPosition)) != NULL)

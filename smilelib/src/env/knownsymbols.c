@@ -24,6 +24,7 @@
 // The twenty core special forms.
 STATIC_STRING(_Set, "$set");
 STATIC_STRING(_OpSet, "$opset");
+STATIC_STRING(_Include, "$include");
 STATIC_STRING(_If, "$if");
 STATIC_STRING(_While, "$while");
 STATIC_STRING(_Till, "$till");
@@ -144,9 +145,10 @@ Inline Symbol AddSpecialSymbol(SymbolTable symbolTable, String name, Symbol expe
 
 static void KnownSymbolsInt_PreloadSpecials(SymbolTable symbolTable, KnownSymbols knownSymbols)
 {
-	// The twenty core special forms.
+	// The twenty-three core special forms.
 	knownSymbols->_set = AddSpecialSymbol(symbolTable, _Set, SMILE_SPECIAL_SYMBOL__SET);
 	knownSymbols->_opset = AddSpecialSymbol(symbolTable, _OpSet, SMILE_SPECIAL_SYMBOL__OPSET);
+	knownSymbols->_include = AddSpecialSymbol(symbolTable, _Include, SMILE_SPECIAL_SYMBOL__INCLUDE);
 	knownSymbols->_if = AddSpecialSymbol(symbolTable, _If, SMILE_SPECIAL_SYMBOL__IF);
 	knownSymbols->_while = AddSpecialSymbol(symbolTable, _While, SMILE_SPECIAL_SYMBOL__WHILE);
 	knownSymbols->_till = AddSpecialSymbol(symbolTable, _Till, SMILE_SPECIAL_SYMBOL__TILL);
@@ -679,6 +681,7 @@ STATIC_STRING(read_write_append, "read-write-append");
 STATIC_STRING(real_, "real");
 STATIC_STRING(real32_, "real32");
 STATIC_STRING(real64_, "real64");
+STATIC_STRING(reexport, "reexport");
 STATIC_STRING(rem, "rem");
 STATIC_STRING(repeat, "repeat");
 STATIC_STRING(replace, "replace");
@@ -961,6 +964,7 @@ static void KnownSymbolsInt_PreloadGeneralSymbols(SymbolTable symbolTable, Known
 	knownSymbols->real_ = SymbolTableInt_AddFast(symbolTable, real_);
 	knownSymbols->real32_ = SymbolTableInt_AddFast(symbolTable, real32_);
 	knownSymbols->real64_ = SymbolTableInt_AddFast(symbolTable, real64_);
+	knownSymbols->reexport = SymbolTableInt_AddFast(symbolTable, reexport);
 	knownSymbols->rem = SymbolTableInt_AddFast(symbolTable, rem);
 	knownSymbols->repeat = SymbolTableInt_AddFast(symbolTable, repeat);
 	knownSymbols->replace = SymbolTableInt_AddFast(symbolTable, replace);

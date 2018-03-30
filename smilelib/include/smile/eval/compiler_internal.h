@@ -27,6 +27,7 @@ extern CompiledBlock Compiler_CompileStandardForm(Compiler compiler, Symbol symb
 
 extern CompiledBlock Compiler_CompileSetf(Compiler compiler, SmileList args, CompileFlags compileFlags);
 extern CompiledBlock Compiler_CompileOpEquals(Compiler compiler, SmileList args, CompileFlags compileFlags);
+extern CompiledBlock Compiler_CompileInclude(Compiler compiler, SmileList args, CompileFlags compileFlags);
 extern CompiledBlock Compiler_CompileIf(Compiler compiler, SmileList args, CompileFlags compileFlags);
 extern CompiledBlock Compiler_CompileWhile(Compiler compiler, SmileList args, CompileFlags compileFlags);
 extern CompiledBlock Compiler_CompileTill(Compiler compiler, SmileList args, CompileFlags compileFlags);
@@ -45,6 +46,8 @@ extern CompiledBlock Compiler_CompileOr(Compiler compiler, SmileList args, Compi
 
 extern Bool Compiler_ValidateDotArgs(Compiler compiler, SmileList dotArgs);
 extern Bool Compiler_ValidateIndexArgs(Compiler compiler, SmileList indexArgs);
+
+extern VarDict Compiler_PrecomputeModuleClosureLayout(SmileObject scope, ParseScope parseScope);
 
 //-------------------------------------------------------------------------------------------------
 // Macros

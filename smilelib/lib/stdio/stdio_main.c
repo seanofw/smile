@@ -53,19 +53,20 @@ STATIC_STRING(_stdioBootstrap,
 		"file write-char '\\n'\n"
 	"}\n"
 	"\n"
-	/*"\n"
-	"#syntax STMT [print [EXPR+ exprs ,]] => (Stdout.print ## exprs)\n"
-	"\n"*/
+	"#syntax STMT: [print [EXPR+ exprs ,]] => `[Stdout.print @(exprs)]\n"
+	"#syntax STMT: [print-line [EXPR+ exprs ,]] => `[Stdout.print-line @(exprs)]\n"
+	"\n"
 );
 
-LibraryInfo Stdio_Main(void)
+ModuleInfo Stdio_Main(void)
 {
-	ClosureInfo globalClosureInfo;
-	Closure globalClosure;
 	ParseMessage *parseMessages;
 	Int numParseMessages;
-	SmileObject parseResult;
+	SmileObject expr;
 	SmileUserObject fileBase, dirBase, pathBase;
+	ParseScope moduleScope;
+	ExternalVar vars[8];
+	Int numVars;
 
 	STATIC_STRING(stdioName, "stdio");
 
@@ -77,34 +78,16 @@ LibraryInfo Stdio_Main(void)
 	Stdio_Dir_Init(dirBase);
 	Stdio_Path_Init(pathBase);
 
-	globalClosureInfo = ClosureInfo_Create(NULL, CLOSURE_KIND_GLOBAL);
-	globalClosure = Closure_CreateGlobal(globalClosureInfo, NULL);
+	numVars = 0;
+	vars[numVars].symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "File");
+	vars[numVars++].obj = (SmileObject)fileBase;
+	vars[numVars].symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "Dir");
+	vars[numVars++].obj = (SmileObject)dirBase;
+	vars[numVars].symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "Path");
+	vars[numVars++].obj = (SmileObject)pathBase;
+	Stdio_File_DeclareStdInOutErr(vars, &numVars, (SmileObject)fileBase);
 
-	Closure_SetGlobalVariable(globalClosure, SymbolTable_GetSymbolC(Smile_SymbolTable, "File"), (SmileObject)fileBase);
-	Closure_SetGlobalVariable(globalClosure, SymbolTable_GetSymbolC(Smile_SymbolTable, "Dir"), (SmileObject)dirBase);
-	Closure_SetGlobalVariable(globalClosure, SymbolTable_GetSymbolC(Smile_SymbolTable, "Path"), (SmileObject)pathBase);
-	Stdio_File_DeclareStdInOutErr(globalClosure, (SmileObject)fileBase);
+	expr = Smile_ParseInScope(_stdioBootstrap, _stdioFilename, vars, numVars, &parseMessages, &numParseMessages, &moduleScope);
 
-	parseResult = Smile_ParseInScope(globalClosureInfo, _stdioBootstrap, _stdioFilename, &parseMessages, &numParseMessages);
-
-	if (numParseMessages > 0) {
-		DECLARE_INLINE_STRINGBUILDER(stringBuilder, 256);
-		String formattedError;
-		Int i;
-
-		INIT_INLINE_STRINGBUILDER(stringBuilder);
-
-		StringBuilder_AppendFormat(stringBuilder, "Parse errors in library:\n");
-		for (i = 0; i < numParseMessages; i++) {
-			formattedError = SMILE_VCALL1(parseMessages[i], toString, (SmileUnboxedData) { 0 });
-			StringBuilder_AppendByte(stringBuilder, '\t');
-			StringBuilder_AppendString(stringBuilder, formattedError);
-			StringBuilder_AppendByte(stringBuilder, '\n');
-		}
-		Smile_ThrowException(Smile_KnownSymbols.load_error, String_Format("Parse errors in library:"));
-	}
-
-	Smile_EvalInScope(globalClosureInfo, parseResult);
-
-	return LibraryInfo_Create(stdioName, True, globalClosureInfo, NULL, 0);
+	return ModuleInfo_Create(stdioName, numParseMessages == 0, expr, moduleScope, parseMessages, numParseMessages);
 }

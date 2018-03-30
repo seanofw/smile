@@ -997,6 +997,8 @@
     <ClCompile Include="src\crypto\hash\sha1.c" />
     <ClCompile Include="src\crypto\hash\sha2.c" />
     <ClCompile Include="src\eval\compiler\compile_dot.c" />
+    <ClCompile Include="src\env\modules.c" />
+    <ClCompile Include="src\eval\compiler\compile_include.c" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">
@@ -1374,6 +1376,7 @@
     <ClInclude Include="include\smile\crypto\md5.h" />
     <ClInclude Include="include\smile\crypto\sha1.h" />
     <ClInclude Include="include\smile\crypto\sha2.h" />
+    <ClInclude Include="include\smile\env\modules.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\smile\array.h">
