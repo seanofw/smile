@@ -172,7 +172,7 @@ ParseError Parser_ParseClassicTill(Parser parser, SmileObject *result, LexerPosi
 
 	// Make sure there is a ']' to end the flags list.
 	if ((error = Parser_ExpectRightBracket(parser, result, NULL, "$till flags", startPosition)) != NULL) {
-		Parser_EndScope(parser);
+		Parser_EndScope(parser, False);
 		return error;
 	}
 
@@ -197,7 +197,7 @@ ParseError Parser_ParseClassicTill(Parser parser, SmileObject *result, LexerPosi
 	if (body == Parser_IgnorableObject) body = NullObject;
 
 	// The scope for the flags is no longer valid after the body expression.
-	Parser_EndScope(parser);
+	Parser_EndScope(parser, False);
 
 	// If there's a bracket, parse any 'when' declarations.
 	if (!Parser_HasLookahead(parser, TOKEN_LEFTBRACKET))

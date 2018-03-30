@@ -45,8 +45,8 @@ struct KnownObjectsStruct {
 	SmileSymbol ObjectSymbol;
 	SmileSymbol ListSymbol;
 
-	// The twenty-two core special forms.
-	SmileSymbol _setSymbol, _opsetSymbol;
+	// The twenty-three core special forms.
+	SmileSymbol _setSymbol, _opsetSymbol, _includeSymbol;
 	SmileSymbol _ifSymbol, _whileSymbol, _tillSymbol;
 	SmileSymbol _fnSymbol, _quoteSymbol, _scopeSymbol, _prog1Symbol, _prognSymbol, _returnSymbol, _catchSymbol;
 	SmileSymbol _notSymbol, _orSymbol, _andSymbol, _eqSymbol, _neSymbol;

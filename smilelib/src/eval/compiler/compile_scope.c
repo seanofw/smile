@@ -23,6 +23,64 @@
 #include <smile/parsing/internal/parsedecl.h>
 #include <smile/parsing/internal/parsescope.h>
 
+// Given a [$scope [vars ...] a b c ...] form that is the outermost expression in a module, figure
+// out how its content will be laid out in the resulting closure, and return that as a dictionary
+// that maps symbol names to variable offsets within that closure.
+VarDict Compiler_PrecomputeModuleClosureLayout(SmileObject scope, ParseScope parseScope)
+{
+	SmileList scopeVars, temp;
+	VarDict varDict;
+	SmileList args;
+	Symbol symbol;
+	struct VarInfoStruct varInfo;
+	Int32 offset;
+	ParseDecl parseDecl;
+	Int declKind;
+
+	// This must be a list that starts with [$scope ...]
+	if (SMILE_KIND(scope) != SMILE_KIND_LIST || SMILE_KIND((args = (SmileList)scope)->a) != SMILE_KIND_SYMBOL
+		|| ((SmileSymbol)args->a)->symbol != SMILE_SPECIAL_SYMBOL__SCOPE)
+		return NULL;
+	args = (SmileList)args->d;
+
+	// The [$scope] expression must be of the form:  [$scope [locals...] ...].
+	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->a) != SMILE_KIND_LIST
+		|| !(SMILE_KIND(args->d) == SMILE_KIND_LIST || SMILE_KIND(args->d) == SMILE_KIND_NULL))
+		return NULL;
+
+	// Spin over the [locals...] list, which must be well-formed, and must consist only of symbols,
+	// and construct the dictionary that describes the closure offsets of its entries.
+	varDict = VarDict_Create();
+	scopeVars = (SmileList)args->a;
+	offset = 0;
+	for (temp = scopeVars; SMILE_KIND(temp) == SMILE_KIND_LIST; temp = (SmileList)temp->d) {
+		if (SMILE_KIND(temp->a) != SMILE_KIND_SYMBOL)
+			continue;
+
+		symbol = ((SmileSymbol)temp->a)->symbol;
+
+		parseDecl = ParseScope_FindDeclarationHere(parseScope, symbol);
+		declKind = parseDecl != NULL ? parseDecl->declKind : PARSEDECL_INCLUDE;
+
+		varInfo.kind =
+			  declKind == PARSEDECL_ARGUMENT ? VAR_KIND_ARG
+			: declKind == PARSEDECL_AUTO || declKind == PARSEDECL_VARIABLE ? VAR_KIND_VAR
+			: declKind == PARSEDECL_CONST ? VAR_KIND_CONST
+			: VAR_KIND_GLOBAL;
+		varInfo.offset = offset;
+		varInfo.symbol = symbol;
+		varInfo.value = NullObject;
+		VarDict_Add(varDict, symbol, &varInfo);
+
+		offset++;
+	}
+
+	if (SMILE_KIND(temp) != SMILE_KIND_NULL)
+		return NULL;
+
+	return varDict;
+}
+
 // Form: [$scope [vars...] a b c ...]
 CompiledBlock Compiler_CompileScope(Compiler compiler, SmileList args, CompileFlags compileFlags)
 {

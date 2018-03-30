@@ -95,15 +95,18 @@ STATIC_STRING(_stderrName, "<stderr>");
 		return handle;
 	}
 
-	void Stdio_File_DeclareStdInOutErr(Closure globalClosure, SmileObject fileBase)
+	void Stdio_File_DeclareStdInOutErr(ExternalVar *vars, Int *numVars, SmileObject fileBase)
 	{
 		SmileHandle stdinHandle = Stdio_File_CreateFromWin32Handle((SmileObject)fileBase, _stdinName, GetStdHandle(STD_INPUT_HANDLE), FILE_MODE_READ | FILE_MODE_STD);
 		SmileHandle stdoutHandle = Stdio_File_CreateFromWin32Handle((SmileObject)fileBase, _stdoutName, GetStdHandle(STD_OUTPUT_HANDLE), FILE_MODE_WRITE | FILE_MODE_APPEND | FILE_MODE_STD);
 		SmileHandle stderrHandle = Stdio_File_CreateFromWin32Handle((SmileObject)fileBase, _stderrName, GetStdHandle(STD_ERROR_HANDLE), FILE_MODE_WRITE | FILE_MODE_APPEND | FILE_MODE_STD);
 
-		Closure_SetGlobalVariable(globalClosure, SymbolTable_GetSymbolC(Smile_SymbolTable, "Stdin"), (SmileObject)stdinHandle);
-		Closure_SetGlobalVariable(globalClosure, SymbolTable_GetSymbolC(Smile_SymbolTable, "Stdout"), (SmileObject)stdoutHandle);
-		Closure_SetGlobalVariable(globalClosure, SymbolTable_GetSymbolC(Smile_SymbolTable, "Stderr"), (SmileObject)stderrHandle);
+		vars[*numVars].symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "Stdin");
+		vars[(*numVars)++].obj = (SmileObject)stdinHandle;
+		vars[*numVars].symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "Stdout");
+		vars[(*numVars)++].obj = (SmileObject)stdoutHandle;
+		vars[*numVars].symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "Stderr");
+		vars[(*numVars)++].obj = (SmileObject)stderrHandle;
 	}
 
 	SmileHandle Stdio_File_CreateFromPath(SmileObject base, String path, UInt32 mode, UInt32 newFileMode)
@@ -303,15 +306,18 @@ STATIC_STRING(_stderrName, "<stderr>");
 		return handle;
 	}
 
-	void Stdio_File_DeclareStdInOutErr(Closure globalClosure, SmileObject fileBase)
+	void Stdio_File_DeclareStdInOutErr(ExternalVar *vars, Int *numVars, SmileObject fileBase)
 	{
 		SmileHandle stdinHandle = Stdio_File_CreateFromUnixFD((SmileObject)fileBase, _stdinName, STDIN_FILENO, FILE_MODE_READ | FILE_MODE_STD);
 		SmileHandle stdoutHandle = Stdio_File_CreateFromUnixFD((SmileObject)fileBase, _stdoutName, STDOUT_FILENO, FILE_MODE_WRITE | FILE_MODE_APPEND | FILE_MODE_STD);
 		SmileHandle stderrHandle = Stdio_File_CreateFromUnixFD((SmileObject)fileBase, _stderrName, STDERR_FILENO, FILE_MODE_WRITE | FILE_MODE_APPEND | FILE_MODE_STD);
 
-		Closure_SetGlobalVariable(globalClosure, SymbolTable_GetSymbolC(Smile_SymbolTable, "Stdin"), (SmileObject)stdinHandle);
-		Closure_SetGlobalVariable(globalClosure, SymbolTable_GetSymbolC(Smile_SymbolTable, "Stdout"), (SmileObject)stdoutHandle);
-		Closure_SetGlobalVariable(globalClosure, SymbolTable_GetSymbolC(Smile_SymbolTable, "Stderr"), (SmileObject)stderrHandle);
+		vars[*numVars].symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "Stdin");
+		vars[(*numVars)++].obj = (SmileObject)stdinHandle;
+		vars[*numVars].symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "Stdout");
+		vars[(*numVars)++].obj = (SmileObject)stdoutHandle;
+		vars[*numVars].symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "Stderr");
+		vars[(*numVars)++].obj = (SmileObject)stdoutHandle;
 	}
 
 #else

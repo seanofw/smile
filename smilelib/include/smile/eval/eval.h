@@ -37,11 +37,19 @@ typedef struct EscapeContinuationStruct {
 struct EvalResultStruct {
 	Int evalResultKind;				// How eval() exited, from the EVAL_RESULT_* enumeration.
 		
+	Closure closure;				// The closure containing the resulting value (needed for module exports).
 	SmileObject value;				// The value resulting from the evaluation.
 	SmileObject exception;			// The exception thrown.
 		
 	ParseMessage *parseMessages;	// For "wrapper" functions, this holds an array of any parse errors/warnings that were generated (NULL if none).
 	Int numMessages;				// For "wrapper" functions, this is the number of parse errors/warnings that were generated.
+};
+
+struct EvalStateStruct {
+	Closure closure;
+	ByteCodeSegment segment;
+	ByteCode byteCode;
+	EscapeContinuation exceptionContinuation;
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -63,6 +71,9 @@ Inline EscapeContinuation EscapeContinuation_Create(Int escapeKind)
 	escapeContinuation->isValid = False;
 	return escapeContinuation;
 }
+
+SMILE_API_FUNC void Eval_BeforeRecurse(struct EvalStateStruct *evalState);
+SMILE_API_FUNC void Eval_AfterRecurse(struct EvalStateStruct *evalState);
 
 #endif
 

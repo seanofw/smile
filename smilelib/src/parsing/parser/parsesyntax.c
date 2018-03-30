@@ -116,6 +116,7 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *ex
 	ParseError parseError;
 	LexerPosition rulePosition, impliesPosition;
 	Int templateKind;
+	SmileSyntax syntax;
 
 	// First, read the syntax predicate's leading nonterminal.
 	token = Parser_NextToken(parser);
@@ -126,6 +127,14 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *ex
 		return ParseMessage_Create(PARSEMESSAGE_ERROR, rulePosition, MissingSyntaxClassName);
 	}
 	nonterminal = token->data.symbol;
+
+	// If the leading nonterminal is the special keyword 'reexport', then flag this scope as
+	// reexporting its imported rules, and we're done.
+	if (nonterminal == Smile_KnownSymbols.reexport) {
+		parser->currentScope->reexport = True;
+		*expr = NullObject;
+		return NULL;
+	}
 
 	// There must be a colon next.
 	token = Parser_NextToken(parser);
@@ -173,7 +182,7 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *ex
 
 	// Parse the substitution expression in the syntax rule's scope.
 	parseError = Parser_ParseRawListTerm(parser, &replacement, &templateKind, modeFlags);
-	Parser_EndScope(parser);
+	Parser_EndScope(parser, False);
 	if (parseError != NULL) {
 		*expr = NullObject;
 		return parseError;
@@ -203,8 +212,11 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *ex
 		return parseError;
 	}
 
-	// Everything passes muster, so create and return the new syntax object.
-	*expr = (SmileObject)SmileSyntax_Create(nonterminal, pattern, replacement, rulePosition);
+	// Everything passes muster, so create the new syntax object.
+	syntax = SmileSyntax_Create(nonterminal, pattern, replacement, rulePosition);
+
+	// Everything is all set up, so return the finished syntax object.
+	*expr = (SmileObject)syntax;
 	return NULL;
 }
 

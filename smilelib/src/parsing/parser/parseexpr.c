@@ -46,9 +46,8 @@ ParseError Parser_ParseExpr(Parser parser, SmileObject *expr, Int modeFlags)
 //         | . var_decl
 //         | . scope
 //         | . return
-//         | . INCLUDE string
-//         | . INSERT_BRK base_expr
-//         | . INSERT_UNDEFINE any_name
+//         | . LOANWORD_INCLUDE string
+//         | . LOANWORD_BRK base_expr
 ParseError Parser_ParseStmt(Parser parser, SmileObject *expr, Int modeFlags)
 {
 	Token token;
@@ -434,7 +433,7 @@ ParseError Parser_ParseTill(Parser parser, SmileObject *expr, Int modeFlags, Lex
 			names = NullList;
 		}
 		else {
-			Parser_EndScope(parser);
+			Parser_EndScope(parser, False);
 			*expr = NullObject;
 			return parseError;
 		}
@@ -464,13 +463,13 @@ ParseError Parser_ParseTill(Parser parser, SmileObject *expr, Int modeFlags, Lex
 			names = NullList;
 		}
 		else {
-			Parser_EndScope(parser);
+			Parser_EndScope(parser, False);
 			*expr = NullObject;
 			return parseError;
 		}
 	}
 
-	Parser_EndScope(parser);
+	Parser_EndScope(parser, False);
 
 	// Parse any 'when' clauses hanging off the bottom of the loop.
 	parseError = Parser_ParseWhens(parser, &whens, tillFlags, modeFlags);

@@ -32,6 +32,9 @@
 #include <smile/smiletypes/numeric/smilereal64.h>
 #include <smile/smiletypes/numeric/smilefloat32.h>
 #include <smile/smiletypes/numeric/smilefloat64.h>
+#include <smile/env/modules.h>
+
+extern ModuleInfo *ModuleArray;
 
 Closure _closure;
 CompiledTables _compiledTables;
@@ -42,6 +45,7 @@ EscapeContinuation _exceptionContinuation;
 
 static Bool Eval_RunCore(void);
 static Bool Is(SmileArg descendant, SmileArg ancestor);
+static void InitModule(ModuleInfo moduleInfo);
 
 EvalResult EvalResult_Create(Int kind)
 {
@@ -60,6 +64,23 @@ void Eval_GetCurrentBreakpointInfo(Closure *closure, CompiledTables *compiledTab
 	if (compiledTables != NULL) *compiledTables = _compiledTables;
 	if (segment != NULL) *segment = _segment;
 	if (byteCode != NULL) *byteCode = _byteCode;
+}
+
+void Eval_BeforeRecurse(struct EvalStateStruct *evalState)
+{
+	evalState->segment = _segment;
+	evalState->closure = _closure;
+	evalState->byteCode = _byteCode;
+	evalState->exceptionContinuation = _exceptionContinuation;
+}
+
+void Eval_AfterRecurse(struct EvalStateStruct *evalState)
+{
+	_segment = evalState->segment;
+	_compiledTables = _segment->compiledTables;
+	_closure = evalState->closure;
+	_byteCode = evalState->byteCode;
+	_exceptionContinuation = evalState->exceptionContinuation;
 }
 
 EvalResult Eval_Run(UserFunctionInfo functionInfo)
@@ -89,6 +110,7 @@ EvalResult Eval_Continue(void)
 
 			// Expression evaluated normally.
 			evalResult = EvalResult_Create(EVAL_RESULT_VALUE);
+			evalResult->closure = _closure;
 			evalResult->value = SmileArg_Box(Closure_Pop(_closure));
 
 			_exceptionContinuation->isValid = False;
@@ -145,6 +167,7 @@ static Bool Eval_RunCore(void)
 	// they're primarily used for less-frequent operations, so it's okay if they end up on the stack.
 	SmileObject target, value;
 	SmileArg arg, arg2;
+	ModuleInfo moduleInfo;
 
 	LOAD_REGISTERS;
 
@@ -646,6 +669,17 @@ next:
 			STORE_REGISTERS;
 			SMILE_CALL_METHOD(target, SMILE_SPECIAL_SYMBOL_SET_MEMBER, 3);
 			LOAD_REGISTERS;
+			goto next;
+
+		case Op_LdInclude:
+			moduleInfo = ModuleArray[byteCode->u.i2.a];
+			if (moduleInfo->evalResult == NULL) {
+				STORE_REGISTERS;
+				InitModule(moduleInfo);
+				LOAD_REGISTERS;
+			}
+			Closure_Push(closure, moduleInfo->closure->variables[byteCode->u.i2.b]);
+			byteCode++;
 			goto next;
 
 		//-------------------------------------------------------
@@ -1206,7 +1240,7 @@ next:
 		case Op_1D: case Op_1E: case Op_1F:
 		case Op_20: case Op_25: case Op_26: case Op_27: case Op_28: case Op_2D: case Op_2E: case Op_2F:
 		case Op_33: case Op_37: case Op_3B: case Op_3F:
-		case Op_73: case Op_77: case Op_78: case Op_79: case Op_7A: case Op_7B: case Op_7C: case Op_7D: case Op_7E: case Op_7F:
+		case Op_73: case Op_77: case Op_78: case Op_79: case Op_7A: case Op_7B: case Op_7C: case Op_7D: case Op_7E:
 		case Op_83: case Op_87: case Op_8A:
 		case Op_B3: case Op_BE:
 		case Op_C6:
@@ -1295,7 +1329,7 @@ void Smile_Throw(SmileObject thrownObject)
 	SMILE_UNREACHABLE
 }
 
-Inline Bool Is(SmileArg descendant, SmileArg ancestor)
+static Bool Is(SmileArg descendant, SmileArg ancestor)
 {
 	switch (SMILE_KIND(descendant.obj)) {
 
@@ -1357,6 +1391,15 @@ Inline Bool Is(SmileArg descendant, SmileArg ancestor)
 		default:
 			return SmileObject_Is(descendant.obj, ancestor.obj);
 	}
+}
+
+static void InitModule(ModuleInfo moduleInfo)
+{
+	struct EvalStateStruct evalState;
+
+	Eval_BeforeRecurse(&evalState);
+	ModuleInfo_InitForReal(moduleInfo);
+	Eval_AfterRecurse(&evalState);
 }
 
 /*

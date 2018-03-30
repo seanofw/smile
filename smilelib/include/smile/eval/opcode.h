@@ -151,7 +151,7 @@ enum Opcode {
 	Op_7C		= 0x7C,		
 	Op_7D		= 0x7D,		
 	Op_7E		= 0x7E,		
-	Op_7F		= 0x7F,		
+	Op_LdInclude = 0x7F,	// +1 | int32, int32	; Get from loaded module #N exported variable #M.
 				
 	Op_Cons		= 0x80,		// -2, +1				; Create a new List object from the given a/d values on the work stack.
 	Op_Car		= 0x81,		// -1, +1				; Retrieve the 'a' property from the List on the stack top (UNDEFINED if not a List or Null).

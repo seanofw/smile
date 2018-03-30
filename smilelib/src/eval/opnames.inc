@@ -29,7 +29,7 @@ Op(StpLoc0), Op(StpLoc1), Op(StpLoc2), Op(StpLoc3), Op(StpLoc4), Op(StpLoc5), Op
 
 // 70-7F
 Op(LdProp), Op(StProp), Op(StpProp), NULL, Op(LdMember), Op(StMember), Op(StpMember), NULL,
-NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+NULL, NULL, NULL, NULL, NULL, NULL, NULL, Op(LdInclude),
 
 // 80-8F
 Op(Cons), Op(Car), Op(Cdr), NULL, NULL, NULL, NULL, NULL,

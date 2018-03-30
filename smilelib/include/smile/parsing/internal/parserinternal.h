@@ -46,8 +46,9 @@ typedef enum {
 // Parser-internal methods
 
 SMILE_INTERNAL_FUNC ParseError Parser_ParseScope(Parser parser, SmileObject *expr);
-SMILE_INTERNAL_FUNC SmileObject Parser_ParseScopeBody(Parser parser);
+SMILE_INTERNAL_FUNC SmileObject Parser_ParseScopeBody(Parser parser, ParseScope *parseScope);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseStmt(Parser parser, SmileObject *expr, Int modeFlags);
+SMILE_INTERNAL_FUNC void Parser_ImportExternalVars(Parser parser, SmileList *head, SmileList *tail);
 
 SMILE_INTERNAL_FUNC ParseError Parser_ParseInclude(Parser parser, SmileObject *expr);
 
@@ -266,11 +267,12 @@ Inline void Parser_BeginScope(Parser parser, Int parseScopeKind)
 /// End the current parsing scope (a function, for example), in which local declarations are contained.
 /// </summary>
 /// <param name="parser">The parser that is ending its current parsing scope.</param>
-Inline void Parser_EndScope(Parser parser)
+Inline void Parser_EndScope(Parser parser, Bool keepScopeData)
 {
 	ParseScope currentScope = parser->currentScope;
 	parser->currentScope = currentScope->parentScope;
-	ParseScope_Finish(currentScope);
+	if (!keepScopeData)
+		ParseScope_Finish(currentScope);
 }
 
 #endif

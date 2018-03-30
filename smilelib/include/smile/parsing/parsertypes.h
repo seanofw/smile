@@ -6,11 +6,6 @@ typedef struct LexerStruct *Lexer;
 typedef struct TokenStruct *Token;
 enum TokenKind;
 
-typedef struct ParserStruct *Parser;
-typedef struct ParseScopeStruct *ParseScope;
-typedef struct ParseMessageStruct *ParseMessage;
-typedef struct ParseDeclStruct *ParseDecl;
-
 typedef struct ParserSyntaxNodeStruct *ParserSyntaxNode;
 typedef struct ParserSyntaxClassStruct *ParserSyntaxClass;
 typedef struct ParserSyntaxTableStruct *ParserSyntaxTable;

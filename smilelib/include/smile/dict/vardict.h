@@ -18,10 +18,11 @@
 //  Variable-specific types.
 
 // The possible kinds of variables in a given closure.
-#define VAR_KIND_GLOBAL	0	// A global variable (accessed by name/symbol, not by index).
-#define VAR_KIND_ARG	1	// A function argument.
-#define VAR_KIND_VAR	2	// A variable.
-#define VAR_KIND_CONST	3	// A constant value.
+#define VAR_KIND_GLOBAL			0	// A global variable (accessed by name/symbol, not by index).
+#define VAR_KIND_COMMONGLOBAL	1	// One of the built-in globals (not a custom global).
+#define VAR_KIND_ARG			2	// A function argument.
+#define VAR_KIND_VAR			3	// A variable.
+#define VAR_KIND_CONST			4	// A constant value.
 
 // This structure describes a single variable in a given closure.
 typedef struct VarInfoStruct {

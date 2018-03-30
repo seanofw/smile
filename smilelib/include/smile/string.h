@@ -273,10 +273,16 @@ SMILE_API_FUNC String String_ConvertCodePageToUtf8Range(const String str, Int st
 //-------------------------------------------------------------------------------------------------
 //  External parts of the implementation (path-specific functions).
 
+SMILE_API_FUNC Bool Path_IsAbsolute(String path);
+SMILE_API_FUNC String Path_GetRoot(String path);
 SMILE_API_FUNC String Path_GetExt(String path);
 SMILE_API_FUNC String Path_GetFilename(String path);
 SMILE_API_FUNC String Path_GetFilenameWithoutExt(String path);
 SMILE_API_FUNC String Path_GetDirname(String path);
+SMILE_API_FUNC String Path_Resolve(String currentDirectory, String relativePath);
+
+SMILE_API_FUNC String Path_GetCurrentDir(void);
+SMILE_API_FUNC Bool Path_SetCurrentDir(String path);
 
 //-------------------------------------------------------------------------------------------------
 //  Known (supported) legacy code pages.
