@@ -2,27 +2,33 @@
 
 ## On Windows
 
-You will need Microsoft Visual Studio 2017.  A ''.sln'' solution file,
+You will need [Microsoft Visual Studio 2017](https://www.visualstudio.com)
+installed, with its C/C++ compiler.  A standard Visual Studio ''.sln'' solution file,
 along with associated ''.vcxproj'' project files, is provided.
 
-You will also need a Perl install for certain generated files.
-The proejcts expect to find a Perl executable in `C:\unix\usr\bin\perl.exe`.
+You will also need to have the
+[Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
+installed.  The build expects to be able to invoke `bash` and `sed` and `date` and `perl`,
+among other Un*x tools.  The build expects the GNU implementations of the tools as well.
+We recommend the Ubuntu distribution.
 
-To build, open the solution file and then ''Rebuild All''.  After it has
-built, run the ''SmileLibTests'' project to run all of the unit tests and
-be certain that the interpreter was correctly built.  The command-line
-executable for Smile can be found in the ''SmileRunner'' project.
+To get the repository, simply `git clone` it into a new folder.  Do not clone
+the repository into a path that includes spaces in its name.  This will cause
+the build to fail.  (And we do *not* intend to fix this issue.)
+
+To build, open the `.sln` solution file in Visual Studio and then simply
+''Rebuild All''.  After it has built, run the ''SmileLibTests'' project to
+run all of the unit tests and be certain that the interpreter was correctly
+built.  The command-line executable for Smile can be found in the
+''SmileRunner'' project.
 
 Smile on Windows can be built in Debug or Release mode, for either x86 or
 x64 architectures.
 
 (Note: With effort, you could probably get it to build under VS2012/13/15
-as well, but I only build and test it on VS2017 now.)
-
-If the formatting looks weird, you may need to install the Visual Studio
-[Elastic Tabstops](http://nickgravgaard.com/elastic-tabstops/) extension,
-since all of the source code uses elastic tabstops (no spaces _or_ tabs
-for indentation!).
+as well, but I only build and test it on VS2017 now.  Older versions of
+Visual Studio are *not* recommended.  Visual Studio Code has not been tested,
+and may not be able to build it.)
 
 ------------------------
 

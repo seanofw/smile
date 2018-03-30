@@ -67,7 +67,7 @@
       <Command>copy /y "$(SolutionDir)smilelib\bin\$(Platform)-$(Configuration)\smilelib.*" "$(ProjectDir)bin\$(Platform)-$(Configuration)"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>c:\unix\bin\sh "$(ProjectDir)buildnum.sh"</Command>
+      <Command>%windir%\sysnative\bash.exe -c "`echo '$(ProjectDir)buildnum.sh' | sed -re 's/\\\\/\//g; s/([A-Z]):/\/mnt\/\L\1\E/i;'`"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">

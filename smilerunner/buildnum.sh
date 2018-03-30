@@ -10,6 +10,6 @@
 #define BUILDDATE \"%s\"\r\n\
 #define BUILDSTRING (\"r\" BUILD_STR(BUILDNUM) \" / \" BUILDDATE)\r\n\
 " \
-`/usr/bin/git rev-list --count HEAD` \
-`/usr/bin/date -I` > buildnum.h
+`git rev-list --count HEAD` \
+`date -I` > buildnum.h
 
