@@ -26,17 +26,18 @@
 #endif
 
 typedef struct CommandLineArgsStruct {
-	String scriptName;	// script.sm
-	String script;	// -e "script"
-	Bool verbose;	// -v --verbose
-	Bool quiet;	// -q --quiet
-	Bool checkOnly;	// -c --check
-	Bool wrapWithWhile;	// -n
-	Bool printLineInLoop;	// -p
-	Bool outputResult;	// -o
-	Bool warningsAsErrors;	// --warnings-as-errors
-	SmileList globalDefinitions, globalDefinitionsTail;	// -Dfoo=bar
-	SmileList scriptArgs, scriptArgsTail;	// -- ...args...
+	String scriptName;			// script.sm
+	String script;				// -e "script"
+	Bool verbose;				// -v --verbose
+	Bool quiet;					// -q --quiet
+	Bool checkOnly;				// -c --check
+	Bool showRawForm;			// -r --raw
+	Bool wrapWithWhile;			// -n
+	Bool printLineInLoop;		// -p
+	Bool outputResult;			// -o
+	Bool warningsAsErrors;		// --warnings-as-errors
+	SmileList globalDefinitions, globalDefinitionsTail;		// -Dfoo=bar
+	SmileList scriptArgs, scriptArgsTail;					// -- ...args...
 } *CommandLineArgs;
 
 void ReplMain(void);
@@ -213,6 +214,7 @@ static CommandLineArgs CommandLineArgs_Create(void)
 	options->verbose = False;
 	options->quiet = False;
 	options->checkOnly = False;
+	options->showRawForm = False;
 	options->wrapWithWhile = False;
 	options->printLineInLoop = False;
 	options->outputResult = False;
@@ -263,6 +265,10 @@ static CommandLineArgs ParseCommandLine(int argc, const char **argv)
 								options->warningsAsErrors = True;
 							}
 							break;
+						case 'r':
+							if (!strcmp(argv[i] + 2, "raw")) {
+								options->showRawForm = True;
+							}
 						case 'c':
 							if (!strcmp(argv[i] + 2, "check")) {
 								options->checkOnly = True;
@@ -299,6 +305,9 @@ static CommandLineArgs ParseCommandLine(int argc, const char **argv)
 								break;
 							case 'c':
 								options->checkOnly = True;
+								break;
+							case 'r':
+								options->showRawForm = True;
 								break;
 							case 'v':
 								options->verbose = True;
@@ -433,6 +442,8 @@ static Int ParseOnly(CommandLineArgs options, String string, String filename, In
 	Parser parser;
 	ParseScope globalScope;
 	ClosureInfo closureInfo;
+	SmileObject expr;
+	String stringified;
 
 	closureInfo = SetupGlobalClosureInfo(options);
 	globalScope = ParseScope_CreateRoot();
@@ -445,11 +456,17 @@ static Int ParseOnly(CommandLineArgs options, String string, String filename, In
 	if (options->verbose) {
 		Verbose("Parsing \"%s\".", String_ToC(filename));
 	}
-	Parser_Parse(parser, lexer, globalScope);
+	expr = Parser_Parse(parser, lexer, globalScope);
 
 	if (parser->firstMessage != NullList) {
 		Bool hasErrors = PrintParseMessages(options, parser);
 		if (hasErrors) return 1;
+	}
+
+	if (options->showRawForm) {
+		stringified = SmileObject_Stringify(expr);
+		fwrite(String_GetBytes(stringified), 1, String_Length(stringified), stdout);
+		printf("\n");
 	}
 
 	return 0;
@@ -593,6 +610,8 @@ static int SmileMain(int argc, const char **argv)
 			Verbose("Warnings as errors: true");
 		if (options->checkOnly)
 			Verbose("Check only: true");
+		if (options->showRawForm)
+			Verbose("Show raw form: true");
 		if (options->outputResult)
 			Verbose("Output result: true");
 		if (options->wrapWithWhile)
@@ -628,7 +647,7 @@ static int SmileMain(int argc, const char **argv)
 	}
 
 	// Now parse and evaluate the program!
-	if (options->checkOnly) {
+	if (options->checkOnly || options->showRawForm) {
 		exitCode = ParseOnly(options, script, scriptName, 1);
 		result = NullObject;
 	}
