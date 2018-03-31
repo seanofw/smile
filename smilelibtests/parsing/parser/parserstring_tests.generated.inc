@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: b21f56d30c7125a8e36922f5af96c214
+// SourceHash: 390e445f9055e6422ffa39fa64a585b8
 
 START_TEST_SUITE(ParserStringTests)
 {
@@ -11,6 +11,7 @@ START_TEST_SUITE(ParserStringTests)
 	CanParseAnUnescapedUni,
 	CanParseAPseudoDynamicString,
 	CanParseADynamicString,
+	CanEscapeBackslashesInADynamicString,
 }
 END_TEST_SUITE(ParserStringTests)
 

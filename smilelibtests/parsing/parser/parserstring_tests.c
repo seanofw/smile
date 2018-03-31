@@ -122,4 +122,26 @@ START_TEST(CanParseADynamicString)
 }
 END_TEST
 
+START_TEST(CanEscapeBackslashesInADynamicString)
+{
+	Lexer lexer;
+	Parser parser;
+	SmileObject expectedResult;
+	ParseScope parseScope;
+	SmileObject result;
+
+	lexer = SetupLexer("  \"This {x}is a \\{y\\}test.\"  ");
+
+	expectedResult = SimpleParse("[ ([ (List.of) ''This '' x ''is a {y}test.'' ].join) ]");
+
+	parser = Parser_Create();
+	parseScope = ParseScope_CreateRoot();
+	ParseScope_Declare(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "x"), PARSEDECL_VARIABLE, NULL, NULL);
+	ParseScope_Declare(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "y"), PARSEDECL_VARIABLE, NULL, NULL);
+	result = Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(RecursiveEquals(result, expectedResult));
+}
+END_TEST
+
 #include "parserstring_tests.generated.inc"

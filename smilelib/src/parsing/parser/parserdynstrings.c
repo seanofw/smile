@@ -204,6 +204,7 @@ static ParseError Parser_SplitDynamicString(Lexer lexer, DynamicStringPiece **dy
 				if ((ch = *src) == '{' || ch == '}') {
 					// Backslash can be used to escape curly braces in a dynamic string.
 					StringBuilder_AppendByte(builder, ch);
+					src++;
 				}
 				else {
 					decoded = Lexer_DecodeEscapeCode(&src, end, False);

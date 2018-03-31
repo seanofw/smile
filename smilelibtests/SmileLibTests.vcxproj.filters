@@ -218,6 +218,7 @@
     <None Include="parsing\lexer\lexerunicode_tests.generated.inc">
       <Filter>parsing\lexer</Filter>
     </None>
+    <None Include="smile\test.sm" />
   </ItemGroup>
   <ItemGroup>
     <Media Include="..\smilelib\bin\$(Platform)-$(Configuration)\SmileLib.dll" />

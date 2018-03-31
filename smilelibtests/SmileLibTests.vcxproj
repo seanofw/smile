@@ -174,6 +174,7 @@
     <None Include="parsing\lexer\lexerpunctuation_tests.generated.inc" />
     <None Include="parsing\lexer\lexerstring_tests.generated.inc" />
     <None Include="parsing\lexer\lexerunicode_tests.generated.inc" />
+    <None Include="smile\test.sm" />
     <None Include="string\stringcore_tests.generated.inc" />
     <None Include="string\stringextra_tests.generated.inc" />
     <None Include="string\stringformat_tests.generated.inc" />
