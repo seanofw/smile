@@ -468,6 +468,23 @@ START_TEST(CanParseTheRangeOperator)
 }
 END_TEST
 
+START_TEST(CanParsePropertyLookupsInsideADynamicString)
+{
+	Lexer lexer = SetupLexer("var foo, bar\n"
+		"\"{[foo bar.baz]}\"");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedResult = SimpleParse("[$scope\n"
+		"\t[foo bar]\n"
+		"\t[([(List.of) [foo (bar.baz)]].join)]\n"
+		"]\n");
+
+	ASSERT(RecursiveEquals(result, expectedResult));
+}
+END_TEST
+
 START_TEST(CanParseTheTypeofOperator)
 {
 	Lexer lexer = SetupLexer("\t typeof 5 \n");

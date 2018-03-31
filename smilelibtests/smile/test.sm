@@ -1,0 +1,94 @@
+
+#include "stdio"
+
+// Run the given function, and ensure it returns a truthy value.  If it
+// returns falsy, print an error to stderr that includes the falsy value
+// and the body of the function, and then throw an exception that contains
+// information about the assertion that failed.
+var run-assertion = |fn description=""| {
+	var result = [fn]
+	if not result then {
+		Stderr print-line """assertion failed: {result}{if description then ": " + description}\n{fn.body}\n"""
+		throw new {
+			kind: `assert
+			message: "assertion failed",
+			function: fn
+		}
+	}
+}
+
+// Given a test suite that consists of a list like this:
+//    [[symbol1 function1] [symbol2 function2] [symbol3 function3] ...]
+// run each function, in the given order, printing the symbol first as the function's human-readable name.
+var run-all-tests = |suite-name test-list| {
+	print-line "Running {suite-name}"
+
+	test-list each |test-pair| {
+
+		print "  {first test-pair}: "
+		flush Stdout
+		failed = false
+
+		try [second test-pair]
+		catch exception
+			failed = true
+
+		if not failed then print "OK!"
+		print "\n"
+		flush Stdout
+	}
+}
+
+// Add a syntax rule so that we can easily declare test suites, like this:
+//
+//   tests for something { ...tests... }
+#syntax STMT: [tests for [NAME name] { [TEST-DECL* decls] }] => `[run-all-tests [$quote @name] @decls]
+keyword suite
+
+// Add a syntax rule so that we can easily declare short and long tests within a test suite, like this:
+//
+//   can something: ...some value to assert...
+//   should something: ...some value to assert...
+//   must something: ...some value to assert...
+//   does something: ...some value to assert...
+//
+//   can something { ...statements... }
+//   should something { ...statements... }
+//   must something { ...statements... }
+//   does something { ...statements... }
+#syntax TEST-DECL: [[TEST-KEYWORD] [NAME name] [STMT body]] => `[List.of [$quote @name] [$fn [] @body]]
+#syntax TEST-DECL: [[TEST-KEYWORD] [NAME name]: [STMT body]] => `[List.of [$quote @name] [run-assertion [$fn [] @body]]]
+#syntax TEST-DECL: [[TEST-KEYWORD] [NAME name]: [STMT body] as [EXPR description]] => `[List.of [$quote @name] [run-assertion [$fn [] @body] @description]]
+#syntax TEST-KEYWORD: [can] => `can
+#syntax TEST-KEYWORD: [should] => `should
+#syntax TEST-KEYWORD: [must] => `must
+#syntax TEST-KEYWORD: [does] => `does
+keyword can, should, must, does
+
+// Add a syntax rule so that we can easily assert truths without requiring a lot of
+// unnecessary punctuation, like this:
+//
+//   assert x == y
+//   assert x == y as "x should equal y"
+//
+#syntax STMT: [assert [STMT stmt]] => `[run-assertion [$fn [] @stmt]]
+#syntax STMT: [assert [STMT stmt] as [EXPR description]] => `[run-assertion [$fn [] @stmt] @description]
+keyword assert
+
+----------------
+
+#include "test"
+
+tests for Integer64 {
+
+	can add zeros: 0 + 0 === 0
+	can add the identity left: 0 + 5 === 5
+	can add the identity right: 5 + 0 === 5
+
+	should produce the same results for multiplication and addition {
+		sum = 5 + 5 + 5 + 5
+		product = 5 * 4
+		assert sum === product
+	}
+
+}

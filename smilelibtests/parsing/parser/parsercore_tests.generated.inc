@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: f67fb58257e321bac4afeddc026670db
+// SourceHash: db1a3772576e918141ecbb111a1e69ca
 
 START_TEST_SUITE(ParserCoreTests)
 {
@@ -32,6 +32,7 @@ START_TEST_SUITE(ParserCoreTests)
 	CanParseTheDotOperator,
 	CanParseTheColonOperator,
 	CanParseTheRangeOperator,
+	CanParsePropertyLookupsInsideADynamicString,
 	CanParseTheTypeofOperator,
 	CanParseTheTypeofOperatorInASequenceOfOtherUnaryOperators,
 	CannotSplitLinesAfterTheTypeofOperator,
