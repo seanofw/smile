@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 92d706385f20c0dfdd0064622c6ac0e4
+// SourceHash: f67fb58257e321bac4afeddc026670db
 
 START_TEST_SUITE(ParserCoreTests)
 {
@@ -32,6 +32,9 @@ START_TEST_SUITE(ParserCoreTests)
 	CanParseTheDotOperator,
 	CanParseTheColonOperator,
 	CanParseTheRangeOperator,
+	CanParseTheTypeofOperator,
+	CanParseTheTypeofOperatorInASequenceOfOtherUnaryOperators,
+	CannotSplitLinesAfterTheTypeofOperator,
 	CanParseTheSpecialDoubleHashOperator,
 }
 END_TEST_SUITE(ParserCoreTests)

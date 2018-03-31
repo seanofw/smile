@@ -1212,8 +1212,9 @@ ParseError Parser_ParsePrefixExpr(Parser parser, SmileObject *expr, Int modeFlag
 	// and then build up the same tree of unary invocations we would have built recursively.
 
 	// Collect the first unary prefix operator.
-	if (((token = Parser_NextToken(parser))->kind == TOKEN_UNKNOWNALPHANAME || token->kind == TOKEN_UNKNOWNPUNCTNAME)
-		&& Parser_IsAcceptableArbitraryPrefixOperator(token->data.symbol)) {
+	if ((((token = Parser_NextToken(parser))->kind == TOKEN_UNKNOWNALPHANAME || token->kind == TOKEN_UNKNOWNPUNCTNAME)
+			&& Parser_IsAcceptableArbitraryPrefixOperator(token->data.symbol))
+		|| (token->kind == TOKEN_ALPHANAME && token->data.symbol == SMILE_SPECIAL_SYMBOL_TYPEOF)) {
 
 		// Record which symbol came last, for error-reporting.
 		lastUnaryTokenSymbol = token->data.symbol;
@@ -1222,8 +1223,10 @@ ParseError Parser_ParsePrefixExpr(Parser parser, SmileObject *expr, Int modeFlag
 		firstUnaryTokenForErrorReporting = &unaryOperators[0];
 
 		// Collect up any successive unary prefix operators in the unaryOperators array.
-		while (((token = Parser_NextToken(parser))->kind == TOKEN_UNKNOWNALPHANAME || token->kind == TOKEN_UNKNOWNPUNCTNAME)
+		while (((token = Parser_NextToken(parser))->kind == TOKEN_UNKNOWNALPHANAME || token->kind == TOKEN_UNKNOWNPUNCTNAME
+				|| (token->kind == TOKEN_ALPHANAME && token->data.symbol == SMILE_SPECIAL_SYMBOL_TYPEOF))
 			&& ((modeFlags & BINARYLINEBREAKS_MASK) == BINARYLINEBREAKS_ALLOWED || !token->isFirstContentOnLine)) {
+
 			lastUnaryTokenSymbol = token->data.symbol;
 
 			if (numOperators >= maxOperators) {

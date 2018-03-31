@@ -468,6 +468,43 @@ START_TEST(CanParseTheRangeOperator)
 }
 END_TEST
 
+START_TEST(CanParseTheTypeofOperator)
+{
+	Lexer lexer = SetupLexer("\t typeof 5 \n");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedResult = SimpleParse("[$typeof 5]");
+
+	ASSERT(RecursiveEquals(result, expectedResult));
+}
+END_TEST
+
+START_TEST(CanParseTheTypeofOperatorInASequenceOfOtherUnaryOperators)
+{
+	Lexer lexer = SetupLexer("\t string typeof -5 \n");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedResult = SimpleParse("[[$dot [$typeof [[$dot 5 -]]] string]]");
+
+	ASSERT(RecursiveEquals(result, expectedResult));
+}
+END_TEST
+
+START_TEST(CannotSplitLinesAfterTheTypeofOperator)
+{
+	Lexer lexer = SetupLexer("\t typeof\n5 \n");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(parser->firstMessage != NullList);
+}
+END_TEST
+
 START_TEST(CanParseTheSpecialDoubleHashOperator)
 {
 	Lexer lexer = SetupLexer("\t 1 ## 2 \n");
