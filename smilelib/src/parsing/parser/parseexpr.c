@@ -1342,9 +1342,9 @@ ParseError Parser_ParseConsExpr(Parser parser, SmileObject *expr, Int modeFlags,
 ParseError Parser_ParseDotExpr(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting)
 {
 	ParseError parseError;
-	Int tokenKind;
 	LexerPosition lexerPosition;
 	Symbol symbol;
+	Token token;
 
 	parseError = Parser_ParseTerm(parser, expr, modeFlags, firstUnaryTokenForErrorReporting);
 	if (parseError != NULL)
@@ -1352,24 +1352,24 @@ ParseError Parser_ParseDotExpr(Parser parser, SmileObject *expr, Int modeFlags, 
 
 	while (Parser_NextToken(parser)->kind == TOKEN_DOT) {
 
-		if ((tokenKind = Lexer_Next(parser->lexer)) == TOKEN_ALPHANAME
-			|| tokenKind == TOKEN_UNKNOWNALPHANAME
-			|| tokenKind == TOKEN_PUNCTNAME
-			|| tokenKind == TOKEN_UNKNOWNPUNCTNAME) {
+		if ((token = Parser_NextToken(parser))->kind == TOKEN_ALPHANAME
+			|| token->kind == TOKEN_UNKNOWNALPHANAME
+			|| token->kind == TOKEN_PUNCTNAME
+			|| token->kind == TOKEN_UNKNOWNPUNCTNAME) {
 
-			symbol = parser->lexer->token->data.symbol;
-			lexerPosition = Token_GetPosition(parser->lexer->token);
+			symbol = token->data.symbol;
+			lexerPosition = Token_GetPosition(token);
 
 			*expr = (SmileObject)SmileList_CreateDotWithSource(*expr, (SmileObject)SmileSymbol_Create(symbol), lexerPosition);
 		}
 		else {
-			return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
-				String_Format("Expected a property name after '.', not '%S.'", TokenKind_ToString(tokenKind)));
+			Lexer_Unget(parser->lexer);
+			return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
+				String_Format("Expected a property name after '.', not '%S.'", TokenKind_ToString(token->kind)));
 		}
 	}
 
 	Lexer_Unget(parser->lexer);
-
 	return NULL;
 }
 
