@@ -171,7 +171,7 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 					list = LIST_REST(list);
 					isFirst = False;
 				}
-				if (list->kind & SMILE_FLAG_WITHSOURCE) {
+				if (includeSource && (list->kind & SMILE_FLAG_WITHSOURCE)) {
 					String filename = ((struct SmileListWithSourceInt *)list)->position->filename;
 					if (filename != NULL) {
 						StringBuilder_AppendFormat(stringBuilder, "\t// %S:%d",
@@ -186,7 +186,7 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 				while (SMILE_KIND(list) == SMILE_KIND_LIST) {
 					StringBuilder_AppendRepeat(stringBuilder, ' ', (indent + 1) * 4);
 					StringifyRecursive((SmileObject)list->a, stringBuilder, indent + 1, includeSource);
-					if (list->kind & SMILE_FLAG_WITHSOURCE) {
+					if (includeSource && (list->kind & SMILE_FLAG_WITHSOURCE)) {
 						String filename = ((struct SmileListWithSourceInt *)list)->position->filename;
 						if (filename != NULL) {
 							StringBuilder_AppendFormat(stringBuilder, "\t// %S:%d",
