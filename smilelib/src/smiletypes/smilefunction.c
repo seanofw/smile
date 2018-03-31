@@ -115,6 +115,7 @@ static Bool UserFunctionArg_Init(UserFunctionArg arg, SmileObject obj, String *e
 				return False;
 			}
 			arg->typeName = ((SmileSymbol)argList->a)->symbol;
+			arg->flags |= USER_ARG_TYPECHECK;
 			argList = LIST_REST(argList);
 		}
 		else if (modifier == Smile_KnownSymbols.default_) {
@@ -126,6 +127,7 @@ static Bool UserFunctionArg_Init(UserFunctionArg arg, SmileObject obj, String *e
 				return False;
 			}
 			arg->defaultValue = SmileArg_Unbox(argList->a);
+			arg->flags |= USER_ARG_OPTIONAL;
 			argList = LIST_REST(argList);
 		}
 		else if (modifier == Smile_KnownSymbols.rest) {

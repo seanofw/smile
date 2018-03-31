@@ -949,4 +949,28 @@ START_TEST(CanConcatenateManyStringsMoreEfficiently3)
 }
 END_TEST
 
+START_TEST(CanCallFunctionsWhileFillingInOptionalArguments)
+{
+	UserFunctionInfo globalFunctionInfo = Compile("f = |x y=3| x + y\n"
+		"[f 2 5]\n");
+	EvalResult result = Eval_Run(globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 7);
+}
+END_TEST
+
+START_TEST(CanCallFunctionsWithoutFillingInOptionalArguments)
+{
+	UserFunctionInfo globalFunctionInfo = Compile("f = |x y=3| x + y\n"
+		"[f 2]\n");
+	EvalResult result = Eval_Run(globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 5);
+}
+END_TEST
+
 #include "eval_tests.generated.inc"

@@ -293,7 +293,8 @@ ParseError Parser_ParseParam(Parser parser, SmileObject *param, LexerPosition *p
 	}
 
 	// Next, see if this has a default value assigned after it.
-	if (Lexer_Next(parser->lexer) == TOKEN_EQUAL) {
+	if ((tokenKind = Lexer_Next(parser->lexer)) == TOKEN_EQUAL
+		|| tokenKind == TOKEN_EQUALWITHOUTWHITESPACE) {
 	
 		// Optional parameter, with an assigned default value.
 		defaultPosition = Lexer_GetPosition(parser->lexer);
@@ -315,6 +316,7 @@ ParseError Parser_ParseParam(Parser parser, SmileObject *param, LexerPosition *p
 				NullObject,
 				paramPosition
 			);
+			tail = (SmileList)*param;
 		}
 
 		// Now append [... default foo] to the argument's annotation list.
@@ -328,6 +330,7 @@ ParseError Parser_ParseParam(Parser parser, SmileObject *param, LexerPosition *p
 				),
 				defaultPosition
 			);
+		tail = (SmileList)((SmileList)tail->d)->d;
 	}
 	else {
 		// No equal sign, so don't eat the next token.

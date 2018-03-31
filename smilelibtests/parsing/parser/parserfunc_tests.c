@@ -79,6 +79,19 @@ START_TEST(CanParseAFunctionWithOptionalCommas)
 }
 END_TEST
 
+START_TEST(CanParseAFunctionWithADefaultArgument)
+{
+	Lexer lexer = SetupLexer("|x y=0| x + y");
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileObject result = Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedForm = SimpleParse("[$fn [x [y default 0]] [[$dot x +] y]]");
+
+	ASSERT(RecursiveEquals(result, expectedForm));
+}
+END_TEST
+
 START_TEST(AFunctionWithBrokenCommasShouldFail)
 {
 	Lexer lexer = SetupLexer("|w, x, y,| [w x y]");
