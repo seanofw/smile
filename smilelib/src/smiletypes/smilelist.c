@@ -468,6 +468,8 @@ String SmileList_Join(SmileList list, String glue)
 
 		if (SMILE_KIND(tortoise->a) == SMILE_KIND_STRING)
 			piece = (String)tortoise->a;
+		else if (SMILE_KIND(tortoise->a) == SMILE_KIND_NULL)
+			piece = String_Empty;
 		else
 			piece = SMILE_VCALL1(tortoise->a, toString, (SmileUnboxedData) { 0 });
 
