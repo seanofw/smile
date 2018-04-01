@@ -63,6 +63,8 @@ CompiledBlock Compiler_CompileStandardForm(Compiler compiler, Symbol symbol, Smi
 			return Compiler_CompileCatch(compiler, args, compileFlags);
 		case SMILE_SPECIAL_SYMBOL__RETURN:
 			return Compiler_CompileReturn(compiler, args, compileFlags);
+		case SMILE_SPECIAL_SYMBOL__BRK:
+			return Compiler_CompileBrk(compiler, args, compileFlags);
 
 		// Expression-evaluation control.
 		case SMILE_SPECIAL_SYMBOL__FN:

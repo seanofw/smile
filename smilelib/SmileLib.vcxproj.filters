@@ -999,6 +999,7 @@
     <ClCompile Include="src\eval\compiler\compile_dot.c" />
     <ClCompile Include="src\env\modules.c" />
     <ClCompile Include="src\eval\compiler\compile_include.c" />
+    <ClCompile Include="src\eval\compiler\compile_brk.c" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">

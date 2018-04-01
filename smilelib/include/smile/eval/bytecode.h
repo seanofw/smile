@@ -28,8 +28,8 @@
 /// Total size:  16 bytes.
 /// </summary>
 struct ByteCodeStruct {
-	Byte opcode;	// The opcode for this instruction.
-	Byte reserved[3];	
+	Byte opcode;			// The opcode for this instruction.
+	Byte reserved[3];
 	Int32 sourceLocation;	// The index of the source location that generated this (for debugging).
 
 	union {

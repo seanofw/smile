@@ -53,7 +53,7 @@ expr ::= arith
 		| scope
 		| return
 		| LOANWORD_INCLUDE include_expr
-		| LOANWORD_BRK base_expr
+		| LOANWORD_BRK
 
 include_expr ::= STRING
 		| STRING COLON include_names
@@ -102,7 +102,6 @@ name ::= ALPHA_NAME | PUNCT_NAME | unknown_name
 unknown_name ::= UNKNOWN_ALPHA_NAME | UNKNOWN_PUNCT_NAME
 
 arith ::= lvalue unknown_name EQUAL_NOSPACE arith | assign		// There may not be a space between the operator name and the equal sign.
-        | INSERT_BRK arith
 
 assign ::= lvalue EQUAL assign
 		| lvalue EQUAL_NOSPACE assign

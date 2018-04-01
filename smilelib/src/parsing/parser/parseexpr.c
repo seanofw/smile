@@ -63,6 +63,14 @@ ParseError Parser_ParseStmt(Parser parser, SmileObject *expr, Int modeFlags)
 		case TOKEN_LOANWORD_INCLUDE:
 			return Parser_ParseInclude(parser, expr);
 
+		case TOKEN_LOANWORD_BRK:
+			*expr = (SmileObject)SmileList_ConsWithSource(
+				(SmileObject)SmileSymbol_Create(Smile_KnownSymbols._brk),
+				NullObject,
+				Token_GetPosition(token)
+			);
+			return NULL;
+
 		case TOKEN_ALPHANAME:
 		case TOKEN_UNKNOWNALPHANAME:
 			switch (token->data.symbol) {

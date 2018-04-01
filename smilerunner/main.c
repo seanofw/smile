@@ -543,7 +543,22 @@ static Int ParseAndEval(CommandLineArgs options, String string, String filename,
 
 		case EVAL_RESULT_BREAK:
 			{
-				String message = String_Format("%S: Stopped at breakpoint.\r\n", filename);
+				Closure closure;
+				CompiledTables compiledTables;
+				ByteCodeSegment segment;
+				String message;
+				ByteCode byteCode;
+
+				Eval_GetCurrentBreakpointInfo(&closure, &compiledTables, &segment, &byteCode);
+
+				if (byteCode->sourceLocation > 0 && byteCode->sourceLocation < compiledTables->numSourceLocations) {
+					CompiledSourceLocation sourceLocation = &compiledTables->sourcelocations[byteCode->sourceLocation];
+					message = String_Format("%S: Stopped at breakpoint in \"%S\", line %d.\r\n",
+						filename, sourceLocation->filename, sourceLocation->line);
+				}
+				else {
+					message = String_Format("%S: Stopped at breakpoint.\r\n", filename);
+				}
 				fwrite(String_GetBytes(message), 1, String_Length(message), stderr);
 				fflush(stderr);
 				*result = NullObject;

@@ -233,6 +233,7 @@ next:
 			goto next;
 
 		case Op_Brk:
+			STORE_REGISTERS;
 			return False;
 		
 		//-------------------------------------------------------

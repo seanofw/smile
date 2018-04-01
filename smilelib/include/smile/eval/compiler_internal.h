@@ -33,6 +33,7 @@ extern CompiledBlock Compiler_CompileWhile(Compiler compiler, SmileList args, Co
 extern CompiledBlock Compiler_CompileTill(Compiler compiler, SmileList args, CompileFlags compileFlags);
 extern CompiledBlock Compiler_CompileCatch(Compiler compiler, SmileList args, CompileFlags compileFlags);
 extern CompiledBlock Compiler_CompileReturn(Compiler compiler, SmileList args, CompileFlags compileFlags);
+extern CompiledBlock Compiler_CompileBrk(Compiler compiler, SmileList args, CompileFlags compileFlags);
 extern CompiledBlock Compiler_CompileFn(Compiler compiler, SmileList args, CompileFlags compileFlags);
 extern CompiledBlock Compiler_CompileQuote(Compiler compiler, SmileList args, CompileFlags compileFlags);
 extern CompiledBlock Compiler_CompileProg1(Compiler compiler, SmileList args, CompileFlags compileFlags);

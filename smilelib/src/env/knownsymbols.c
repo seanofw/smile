@@ -21,7 +21,7 @@
 //-------------------------------------------------------------------------------------------------
 //  Special symbols.
 
-// The twenty core special forms.
+// The twenty-ish core special forms.
 STATIC_STRING(_Set, "$set");
 STATIC_STRING(_OpSet, "$opset");
 STATIC_STRING(_Include, "$include");
@@ -45,6 +45,7 @@ STATIC_STRING(_Dot, "$dot");
 STATIC_STRING(_Index, "$index");
 STATIC_STRING(_Is, "$is");
 STATIC_STRING(_Typeof, "$typeof");
+STATIC_STRING(_Brk, "$brk");
 
 // Special keywords.
 STATIC_STRING(Var_, "var");
@@ -169,6 +170,7 @@ static void KnownSymbolsInt_PreloadSpecials(SymbolTable symbolTable, KnownSymbol
 	knownSymbols->_index = AddSpecialSymbol(symbolTable, _Index, SMILE_SPECIAL_SYMBOL__INDEX);
 	knownSymbols->_is = AddSpecialSymbol(symbolTable, _Is, SMILE_SPECIAL_SYMBOL__IS);
 	knownSymbols->_typeof = AddSpecialSymbol(symbolTable, _Typeof, SMILE_SPECIAL_SYMBOL__TYPEOF);
+	knownSymbols->_brk = AddSpecialSymbol(symbolTable, _Brk, SMILE_SPECIAL_SYMBOL__BRK);
 
 	// Special keywords.
 	knownSymbols->var_ = AddSpecialSymbol(symbolTable, Var_, SMILE_SPECIAL_SYMBOL_VAR);
