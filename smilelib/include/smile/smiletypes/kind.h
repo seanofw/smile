@@ -60,7 +60,7 @@ typedef enum {
 	SMILE_KIND_REAL128				= 0x38,
 	SMILE_KIND_BIGREAL				= 0x39,
 
-	// Boxed versions of unboxable types.	
+	// Range versions of numeric types.	
 	SMILE_KIND_BYTERANGE			= 0x40,
 	SMILE_KIND_INTEGER16RANGE		= 0x41,
 	SMILE_KIND_INTEGER32RANGE		= 0x42,

@@ -136,3 +136,83 @@ String SmileKind_GetName(Int kind)
 		default: return String_Empty;
 	}
 }
+
+Symbol SmileKind_GetTypeOf(Int smileKind)
+{
+	switch (smileKind & 0xFF) {
+
+		// Unboxed types.
+		case SMILE_KIND_UNBOXED_BYTE: return Smile_KnownSymbols.byte_;
+		case SMILE_KIND_UNBOXED_INTEGER16: return Smile_KnownSymbols.integer16_;
+		case SMILE_KIND_UNBOXED_INTEGER32: return Smile_KnownSymbols.integer32_;
+		case SMILE_KIND_UNBOXED_INTEGER64: return Smile_KnownSymbols.integer64_;
+		case SMILE_KIND_UNBOXED_BOOL: return Smile_KnownSymbols.bool_;
+		case SMILE_KIND_UNBOXED_FLOAT32: return Smile_KnownSymbols.float32_;
+		case SMILE_KIND_UNBOXED_FLOAT64: return Smile_KnownSymbols.float64_;
+		case SMILE_KIND_UNBOXED_SYMBOL: return Smile_KnownSymbols.symbol;
+		case SMILE_KIND_UNBOXED_REAL32: return Smile_KnownSymbols.real32_;
+		case SMILE_KIND_UNBOXED_REAL64: return Smile_KnownSymbols.real64_;
+		case SMILE_KIND_UNBOXED_CHAR: return Smile_KnownSymbols.char_;
+		case SMILE_KIND_UNBOXED_UNI: return Smile_KnownSymbols.uni_;
+
+		// Boxed versions of unboxable types.	
+		case SMILE_KIND_BYTE: return Smile_KnownSymbols.byte_;
+		case SMILE_KIND_INTEGER16: return Smile_KnownSymbols.integer16_;
+		case SMILE_KIND_INTEGER32: return Smile_KnownSymbols.integer32_;
+		case SMILE_KIND_INTEGER64: return Smile_KnownSymbols.integer64_;
+		case SMILE_KIND_BOOL: return Smile_KnownSymbols.bool_;
+		case SMILE_KIND_FLOAT32: return Smile_KnownSymbols.float32_;
+		case SMILE_KIND_FLOAT64: return Smile_KnownSymbols.float64_;
+		case SMILE_KIND_SYMBOL: return Smile_KnownSymbols.symbol;
+		case SMILE_KIND_REAL32: return Smile_KnownSymbols.real32_;
+		case SMILE_KIND_REAL64: return Smile_KnownSymbols.real64_;
+		case SMILE_KIND_CHAR: return Smile_KnownSymbols.char_;
+		case SMILE_KIND_UNI: return Smile_KnownSymbols.uni_;
+
+		// The special aggregate types.
+		case SMILE_KIND_NULL: return Smile_KnownSymbols.null_;
+		case SMILE_KIND_LIST: return Smile_KnownSymbols.list;
+		case SMILE_KIND_PRIMITIVE: return Smile_KnownSymbols.primitive;
+		case SMILE_KIND_USEROBJECT: return Smile_KnownSymbols.user_object;
+		case SMILE_KIND_STRING: return Smile_KnownSymbols.string_;
+
+		// Opaque handles.	
+		case SMILE_KIND_HANDLE: return Smile_KnownSymbols.handle;
+		case SMILE_KIND_CLOSURE: return Smile_KnownSymbols.closure;
+		case SMILE_KIND_FACADE: return Smile_KnownSymbols.facade;
+		case SMILE_KIND_MACRO: return Smile_KnownSymbols.macro;
+		case SMILE_KIND_FUNCTION: return Smile_KnownSymbols.fn;
+
+		// Bigger numeric types.	
+		case SMILE_KIND_INTEGER128: return Smile_KnownSymbols.integer128_;
+		case SMILE_KIND_BIGINT: return Smile_KnownSymbols.big_int;
+		case SMILE_KIND_FLOAT128: return Smile_KnownSymbols.float128_;
+		case SMILE_KIND_BIGFLOAT: return Smile_KnownSymbols.big_float;
+		case SMILE_KIND_REAL128: return Smile_KnownSymbols.real128_;
+		case SMILE_KIND_BIGREAL: return Smile_KnownSymbols.big_real;
+
+		// Range versions of numeric types.
+		case SMILE_KIND_BYTERANGE: return Smile_KnownSymbols.byte_range;
+		case SMILE_KIND_INTEGER16RANGE: return Smile_KnownSymbols.integer16_range;
+		case SMILE_KIND_INTEGER32RANGE: return Smile_KnownSymbols.integer32_range;
+		case SMILE_KIND_INTEGER64RANGE: return Smile_KnownSymbols.integer64_range;
+		case SMILE_KIND_FLOAT32RANGE: return Smile_KnownSymbols.float32_range;
+		case SMILE_KIND_FLOAT64RANGE: return Smile_KnownSymbols.float64_range;
+		case SMILE_KIND_REAL32RANGE: return Smile_KnownSymbols.real32_range;
+		case SMILE_KIND_REAL64RANGE: return Smile_KnownSymbols.real64_range;
+
+		// Raw buffer types.
+		case SMILE_KIND_BYTEARRAY: return Smile_KnownSymbols.byte_array;
+
+		// Types used for parsing.	
+		case SMILE_KIND_SYNTAX: return Smile_KnownSymbols.syntax;
+		case SMILE_KIND_NONTERMINAL: return Smile_KnownSymbols.nonterminal;
+
+		// Internal types used during parsing.	
+		case SMILE_KIND_PARSEDECL: return Smile_KnownSymbols.parse_decl;
+		case SMILE_KIND_PARSEMESSAGE: return Smile_KnownSymbols.parse_message;
+
+		// Unknown objects.
+		default: return Smile_KnownSymbols.unknown;
+	}
+}

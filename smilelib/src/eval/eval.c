@@ -773,7 +773,9 @@ next:
 			goto next;
 
 		case Op_TypeOf:
-			goto unsupportedOpcode;
+			Closure_SetTop(closure, SmileUnboxedSymbol_From(SmileKind_GetTypeOf(Closure_GetTop(closure).obj->kind)));
+			byteCode++;
+			goto next;
 		
 		//-------------------------------------------------------
 		// 90-9F: Special-purpose function and method calls

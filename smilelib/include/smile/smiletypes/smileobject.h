@@ -361,6 +361,7 @@ SMILE_API_FUNC Bool SmileArg_DeepCompare(SmileArg self, SmileArg other);
 SMILE_API_FUNC Bool SmileObject_RecursiveEquals(SmileObject a, SmileObject b);
 
 SMILE_API_FUNC String SmileKind_GetName(Int kind);
+SMILE_API_FUNC Symbol SmileKind_GetTypeOf(Int kind);
 
 SMILE_API_FUNC SmileObject SmileArg_BoxByPointer(SmileArg *arg);
 
