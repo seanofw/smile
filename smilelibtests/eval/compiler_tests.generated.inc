@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 3a09c040792d6bff35b6397df0579ba4
+// SourceHash: a5ae4a01c4a7547bfde2f2616d16124f
 
 START_TEST_SUITE(CompilerTests)
 {

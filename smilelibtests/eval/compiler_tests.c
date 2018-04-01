@@ -533,7 +533,7 @@ END_TEST
 
 START_TEST(CanCompileConditionalsWithNullThenSide)
 {
-	SmileObject expr = Parse("{ var a, b [$if 10 < 1 [] { a = 20 }] `done }");
+	SmileObject expr = Parse("{ var a, b [$if 10 < 1 [] ({ a = 20 })] `done }");
 
 	Compiler compiler = Compiler_Create();
 	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
@@ -564,7 +564,7 @@ END_TEST
 
 START_TEST(CanCompileConditionalsWithNullElseSide)
 {
-	SmileObject expr = Parse("{ var a, b [$if 1 < 10 { a = 20 } []] `done }");
+	SmileObject expr = Parse("{ var a, b [$if 1 < 10 ({ a = 20 }) []] `done }");
 
 	Compiler compiler = Compiler_Create();
 	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
@@ -595,7 +595,7 @@ END_TEST
 
 START_TEST(CanCompileConditionalsWithAMeaninglessThenSide)
 {
-	SmileObject expr = Parse("{ var a, b [$if 10 < 1 `bar { a = 20 }] `done }");
+	SmileObject expr = Parse("{ var a, b [$if 10 < 1 `bar ({ a = 20 })] `done }");
 
 	Compiler compiler = Compiler_Create();
 	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
@@ -626,7 +626,7 @@ END_TEST
 
 START_TEST(CanCompileConditionalsWithMeaninglessElseSide)
 {
-	SmileObject expr = Parse("{ var a, b [$if 1 < 10 { a = 20 } `bar] `done }");
+	SmileObject expr = Parse("{ var a, b [$if 1 < 10 ({ a = 20 }) `bar] `done }");
 
 	Compiler compiler = Compiler_Create();
 	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
@@ -697,7 +697,7 @@ START_TEST(CanCompileAPreCondPostWhileLoop)
 {
 	SmileObject expr = Parse(
 		"var x = 0, y = 0\n"
-		"[$while x += 1 x < 10 y -= 1]\n"
+		"[$while (x += 1) x < 10 (y -= 1)]\n"
 	);
 
 	Compiler compiler = Compiler_Create();
@@ -748,7 +748,7 @@ START_TEST(CanCompileAPreCondWhileLoop)
 {
 	SmileObject expr = Parse(
 		"var x = 0\n"
-		"[$while x += 1 x < 10 []]\n"
+		"[$while (x += 1) x < 10 []]\n"
 	);
 
 	Compiler compiler = Compiler_Create();
@@ -790,7 +790,7 @@ START_TEST(CanCompileANullCondPostWhileLoop)
 {
 	SmileObject expr = Parse(
 		"var x = 0\n"
-		"[$while [] x < 10 x += 1]\n"
+		"[$while [] x < 10 (x += 1)]\n"
 	);
 
 	Compiler compiler = Compiler_Create();
@@ -833,7 +833,7 @@ START_TEST(CanCompileACondPostWhileLoop)
 {
 	SmileObject expr = Parse(
 		"var x = 0\n"
-		"[$while x < 10 x += 1]\n"
+		"[$while x < 10 (x += 1)]\n"
 	);
 
 	Compiler compiler = Compiler_Create();
