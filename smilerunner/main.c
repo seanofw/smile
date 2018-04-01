@@ -449,7 +449,7 @@ static Int ParseOnly(CommandLineArgs options, String string, String filename, In
 	globalScope = ParseScope_CreateRoot();
 	ParseScope_DeclareVariablesFromClosureInfo(globalScope, closureInfo);
 
-	lexer = Lexer_Create(string, 0, String_Length(string), filename, line, 1);
+	lexer = Lexer_Create(string, 0, String_Length(string), Path_Resolve(Path_GetCurrentDir(), filename), line, 1);
 	lexer->symbolTable = Smile_SymbolTable;
 	parser = Parser_Create();
 
