@@ -192,21 +192,24 @@ SmileObject Parser_ParseConstant(Parser parser, Lexer lexer, ParseScope scope)
 ParseError Parser_ParseScope(Parser parser, SmileObject *expr)
 {
 	ParseError parseError;
-	Token token;
+	Token endToken, startToken;
+	LexerPosition startPosition;
 
 	STATIC_STRING(expectedOpenBraceError, "Expected { ... to begin a scope");
-	STATIC_STRING(expectedCloseBraceError, "Expected ... } to end the scope");
+	STATIC_STRING(expectedCloseBraceError, "Expected ... } to end the scope starting on line %d");
 
-	if ((token = Parser_NextToken(parser))->kind != TOKEN_LEFTBRACE) {
-		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), expectedOpenBraceError);
+	if ((startToken = Parser_NextToken(parser))->kind != TOKEN_LEFTBRACE) {
+		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(startToken), expectedOpenBraceError);
 		return parseError;
 	}
+	startPosition = Token_GetPosition(startToken);
 
 	*expr = Parser_ParseScopeBody(parser, NULL);
 
-	if ((token = Parser_NextToken(parser))->kind != TOKEN_RIGHTBRACE) {
+	if ((endToken = Parser_NextToken(parser))->kind != TOKEN_RIGHTBRACE) {
 		*expr = NULL;
-		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), expectedCloseBraceError);
+		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(endToken),
+			String_FormatString(expectedCloseBraceError, startPosition->line));
 		return parseError;
 	}
 

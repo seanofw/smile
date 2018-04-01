@@ -305,9 +305,11 @@ ParseError Parser_ExpectRightBracket(Parser parser, SmileObject *result, Token f
 {
 	ParseError error;
 
+	UNUSED(firstUnaryTokenForErrorReporting);
+
 	if (!Parser_HasLookahead(parser, TOKEN_RIGHTBRACKET)) {
-		error = ParseMessage_Create(PARSEMESSAGE_ERROR,
-			firstUnaryTokenForErrorReporting != NULL ? Token_GetPosition(firstUnaryTokenForErrorReporting) : startPosition,
+		LexerPosition lexerPosition = Token_GetPosition(parser->lexer->token);
+		error = ParseMessage_Create(PARSEMESSAGE_ERROR, lexerPosition,
 			String_Format("Missing ']' in %s starting on line %d.", name, startPosition->line));
 		Parser_Recover(parser, Parser_RightBracesBracketsParentheses_Recovery, Parser_RightBracesBracketsParentheses_Count);
 		*result = NullObject;
