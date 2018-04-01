@@ -97,26 +97,7 @@ SmileList String_GetPropertyNames(String self)
 
 Bool String_ToBool(String self, SmileUnboxedData unboxedData)
 {
-	Bool result;
-	return String_ParseBool(self, &result) ? result : False;
-}
-
-Int32 String_ToInteger32(String self, SmileUnboxedData unboxedData)
-{
-	Int64 result;
-	return String_ParseInteger(self, 10, &result) ? (Int32)result : 0;
-}
-
-Float64 String_ToFloat64(String self, SmileUnboxedData unboxedData)
-{
-	Float64 result;
-	return String_ParseFloat(self, 10, &result) ? result : 0.0;
-}
-
-Real64 String_ToReal64(String self, SmileUnboxedData unboxedData)
-{
-	Real128 result;
-	return String_ParseReal(self, 10, &result) ? Real128_ToReal64(result) : Real64_Zero;
+	return self->_opaque.length > 0;
 }
 
 String String_ToString(String str, SmileUnboxedData unboxedData)
