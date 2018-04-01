@@ -345,6 +345,49 @@ void Parser_ParseExprsOpt(Parser parser, SmileList *head, SmileList *tail, Int m
 	Lexer_Unget(parser->lexer);
 }
 
+//  call_args_opt ::= . call_args | .
+//  call_args ::= . orexpr | . call_args orexpr
+void Parser_ParseCallArgsOpt(Parser parser, SmileList *head, SmileList *tail, Int modeFlags)
+{
+	Token token;
+	LexerPosition lexerPosition;
+	SmileObject expr;
+	ParseError error;
+
+	// Consume expressions until the lookahead reaches a terminating '}' or ']' or ')'.
+	while ((token = Parser_NextToken(parser))->kind != TOKEN_EOI
+		&& token->kind != TOKEN_RIGHTBRACE && token->kind != TOKEN_RIGHTBRACKET && token->kind != TOKEN_RIGHTPARENTHESIS) {
+
+		lexerPosition = Token_GetPosition(token);
+		Lexer_Unget(parser->lexer);
+
+		// Parse the next expression.
+		error = Parser_ParseOrExpr(parser, &expr, modeFlags);
+		if (error == NULL) {
+			if (expr != Parser_IgnorableObject) {
+				// Add the successfully-parsed expression to the output, if it's worth keeping.
+				LIST_APPEND_WITH_SOURCE(*head, *tail, expr, lexerPosition);
+			}
+		}
+		else {
+			// Record the error message.
+			Parser_AddMessage(parser, error);
+
+			// If that expression was garbage, perform simple error-recovery by skipping to the
+			// next '{' '}' '[' ']' '(' ')' or '|'.
+			token = Parser_Recover(parser, Parser_BracesBracketsParenthesesBar_Recovery, Parser_BracesBracketsParenthesesBar_Count);
+
+			// Reached a terminating '}' or ']' or ')', so presume we're done consuming expressions for now.
+			if (token->kind == TOKEN_RIGHTBRACE || token->kind == TOKEN_RIGHTBRACKET || token->kind == TOKEN_RIGHTPARENTHESIS)
+				return;
+
+			expr = NullObject;
+		}
+	}
+
+	Lexer_Unget(parser->lexer);
+}
+
 //-------------------------------------------------------------------------------------------------
 // Includes and sub-parsing
 

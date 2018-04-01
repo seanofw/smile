@@ -1,5 +1,5 @@
 
-Grammar for Smile, 15.1
+Grammar for Smile, 16.0
 =======================
 
 This grammar is something like LR(3), with common shift-reduce conflicts resolved in
@@ -156,7 +156,7 @@ dotexpr ::= dotexpr DOT any_name | term
 
 term ::= LPAREN expr RPAREN							// See note above about binary operators (breaking allowed in 'expr').
        | func
-       | LBRACKET exprs_opt RBRACKET				// See note above about binary operators (no breaking allowed in 'exprs_opt').
+       | LBRACKET call_args_opt RBRACKET			// See note above about binary operators (no breaking allowed in 'call_args_opt').
        | BACKTICK LPAREN expr RPAREN
        | BACKTICK scope
        | BACKTICK raw_list_term
@@ -171,6 +171,9 @@ term ::= LPAREN expr RPAREN							// See note above about binary operators (brea
 	   | LOANWORD_HTML
 	   | LOANWORD_REGEX
        | LOANWORD_SYNTAX syntax_expr
+
+call_args_opt: call_args |
+call_args: orexpr call_args | orexpr
 
 string ::= RAWSTRING | DYNSTRING
 

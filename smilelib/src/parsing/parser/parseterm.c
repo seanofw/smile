@@ -71,7 +71,7 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, T
 			return error;
 
 		head = NullList, tail = NullList;
-		Parser_ParseExprsOpt(parser, &head, &tail, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
+		Parser_ParseCallArgsOpt(parser, &head, &tail, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
 
 		if ((error = Parser_ExpectRightBracket(parser, result, firstUnaryTokenForErrorReporting, "list", startPosition)) != NULL)
 			return error;

@@ -87,6 +87,8 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseTerm(Parser parser, SmileObject *expr
 SMILE_INTERNAL_FUNC ParseError Parser_ParseParentheses(Parser parser, SmileObject *result, Int modeFlags);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseAnyName(Parser parser, SmileObject *expr);
 
+SMILE_INTERNAL_FUNC void Parser_ParseCallArgsOpt(Parser parser, SmileList *head, SmileList *tail, Int modeFlags);
+
 SMILE_INTERNAL_FUNC ParseError Parser_ParseQuotedTerm(Parser parser, SmileObject *result, Int modeFlags, LexerPosition position);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Int *templateKind, Int modeFlags);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseRawListItemsOpt(Parser parser, SmileList *head, SmileList *tail, Int *templateKind, Int modeFlags);
