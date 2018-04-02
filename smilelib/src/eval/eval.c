@@ -15,6 +15,10 @@
 //  limitations under the License.
 //---------------------------------------------------------------------------------------
 
+// Whether to print out every instruction that eval() excutes before it gets executed.
+// This is really only useful for debugging eval() itself.
+#define ENABLE_INSTRUCTION_TRACING 0
+
 #include <smile/eval/eval.h>
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/smilebool.h>
@@ -34,6 +38,10 @@
 #include <smile/smiletypes/numeric/smilefloat64.h>
 #include <smile/env/modules.h>
 
+#if ENABLE_INSTRUCTION_TRACING
+#include <stdio.h>
+#endif
+
 extern ModuleInfo *ModuleArray;
 
 Closure _closure;
@@ -46,6 +54,7 @@ EscapeContinuation _exceptionContinuation;
 static Bool Eval_RunCore(void);
 static Bool Is(SmileArg descendant, SmileArg ancestor);
 static void InitModule(ModuleInfo moduleInfo);
+static void Eval_DumpCurrentInstruction(void);
 
 EvalResult EvalResult_Create(Int kind)
 {
@@ -172,6 +181,12 @@ static Bool Eval_RunCore(void)
 	LOAD_REGISTERS;
 
 next:
+
+#if ENABLE_INSTRUCTION_TRACING
+	STORE_REGISTERS;
+	Eval_DumpCurrentInstruction();
+#endif
+
 	switch (byteCode->opcode) {
 	
 		//-------------------------------------------------------
@@ -1399,11 +1414,81 @@ static Bool Is(SmileArg descendant, SmileArg ancestor)
 static void InitModule(ModuleInfo moduleInfo)
 {
 	struct EvalStateStruct evalState;
+	EvalResult evalResult;
+
+#if ENABLE_INSTRUCTION_TRACING
+	printf("\n- begin init of module \"%s\"\n", String_ToC(moduleInfo->name));
+#endif
 
 	Eval_BeforeRecurse(&evalState);
-	ModuleInfo_InitForReal(moduleInfo);
+	evalResult = ModuleInfo_InitForReal(moduleInfo);
 	Eval_AfterRecurse(&evalState);
+
+#if ENABLE_INSTRUCTION_TRACING
+	printf("\n- end init of module \"%s\": %s\n", String_ToC(moduleInfo->name),
+		evalResult->evalResultKind == EVAL_RESULT_BREAK ? "stopped at breakpoint"
+		: evalResult->evalResultKind == EVAL_RESULT_EXCEPTION ? "exception thrown"
+		: evalResult->evalResultKind == EVAL_RESULT_PARSEERRORS ? "aborted due to prior parse errors"
+		: evalResult->evalResultKind == EVAL_RESULT_VALUE ? "ok"
+		: "unknown");
+	fflush(stdout);
+#endif
+
+	switch (evalResult->evalResultKind) {
+		case EVAL_RESULT_BREAK:
+			Smile_ThrowException(Smile_KnownSymbols.eval_error, String_Format("Module loading of \"%S\" stopped at #brk.", moduleInfo->name));
+		case EVAL_RESULT_EXCEPTION:
+			Smile_Throw(evalResult->exception);
+		case EVAL_RESULT_PARSEERRORS:
+			Smile_ThrowException(Smile_KnownSymbols.eval_error, String_Format("Module loading of \"%S\" failed due to parse errors.", moduleInfo->name));
+	}
 }
+
+#if ENABLE_INSTRUCTION_TRACING
+
+static Int _lastSourceLocation = -1;
+static Int _lastSourceLine = -1;
+static String _lastSourceFilename = NULL;
+static ByteCodeSegment _lastSegment = NULL;
+
+static void Eval_DumpCurrentInstruction(void)
+{
+	String instr;
+	
+	if (_segment != _lastSegment) {
+		if (_lastSegment != NULL)
+			printf("\n");
+		_lastSegment = _segment;
+	}
+
+	if (_byteCode->sourceLocation != _lastSourceLocation) {
+		CompiledSourceLocation sourceLocation = &_compiledTables->sourcelocations[_byteCode->sourceLocation];
+
+		if (sourceLocation->filename != _lastSourceFilename || sourceLocation->line != _lastSourceLine) {
+			if (sourceLocation != NULL) {
+				if (sourceLocation->filename != NULL) {
+					if (sourceLocation->line != 0)
+						printf("- %s:%d\n", String_ToC(Path_GetFilename(sourceLocation->filename)), sourceLocation->line);
+					else
+						printf("- %s:\n", String_ToC(Path_GetFilename(sourceLocation->filename)));
+				}
+				else if (sourceLocation->line != 0)
+					printf("- line %d\n", sourceLocation->line);
+			}
+
+			_lastSourceFilename = sourceLocation->filename;
+			_lastSourceLine = sourceLocation->line;
+		}
+
+		_lastSourceLocation = _byteCode->sourceLocation;
+	}
+
+	instr = ByteCode_ToString(_segment, _byteCode, _byteCode - _segment->byteCodes, _closure->closureInfo, False);
+	printf("%p:%-3d: %s\n", _segment, _byteCode - _segment->byteCodes, String_ToC(instr));
+	fflush(stdout);
+}
+
+#endif
 
 /*
 #define FAST_INLINE_BINARY_OP(__type__, __kind__, __resultType__, __resultKind__, __op__) { \
