@@ -525,16 +525,23 @@ ClosureInfo Compiler_MakeClosureInfoForCompilerFunction(Compiler compiler, Compi
 	dest = 0;
 
 	if (numVariables > 0) {
-		for (SmileList args = compilerFunction->args; SMILE_KIND(args) != SMILE_KIND_NULL; args = LIST_REST(args)) {
-			symbol = ((SmileSymbol)args->a)->symbol;
 
-			varInfo.kind = VAR_KIND_ARG;
-			varInfo.offset = (Int32)dest;
-			varInfo.symbol = symbol;
-			varInfo.value = NullObject;
-			VarDict_SetValue(closureInfo->variableDictionary, symbol, &varInfo);
+		if (compilerFunction->numArgs > 0) {
+			UserFunctionArg args = compilerFunction->userFunctionInfo->args;
+			Int numArgs = compilerFunction->userFunctionInfo->numArgs;
+			Int i;
 
-			variableNames[dest++] = symbol;
+			for (i = 0; i < numArgs; i++) {
+				symbol = args[i].name;
+
+				varInfo.kind = VAR_KIND_ARG;
+				varInfo.offset = (Int32)dest;
+				varInfo.symbol = symbol;
+				varInfo.value = NullObject;
+				VarDict_SetValue(closureInfo->variableDictionary, symbol, &varInfo);
+
+				variableNames[dest++] = symbol;
+			}
 		}
 
 		for (src = 0; src < compilerFunction->localSize; src++) {
