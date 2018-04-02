@@ -458,14 +458,15 @@
   </Type>
 
   <Type Name="ClosureStruct">
-    <DisplayString>Closure (size {closureInfo->numVariables + closureInfo->tempSize})</DisplayString>
+    <DisplayString>Closure ({closureInfo->numArgs} args, {closureInfo->numVariables - closureInfo->numArgs} vars, {closureInfo->tempSize} temp)</DisplayString>
     <Expand>
       <Item Name="parent">parent</Item>
       <Item Name="closureInfo">closureInfo</Item>
       <Item Name="[stackMax]">closureInfo->numVariables + closureInfo->tempSize</Item>
       <Item Name="[stackTop]">stackTop > variables ? stackTop - variables : 0</Item>
-      <Item Name="[variables]">ClosureInfo_StringifyVariableNames(closureInfo)</Item>
-      <ArrayItems>
+      <Item Name="[variableNames]">ClosureInfo_StringifyVariableNames(closureInfo)</Item>
+			<Item Name="[variableValues]">Closure_StringifyToC(this, 0)</Item>
+			<ArrayItems>
         <Size>stackTop > variables ? stackTop - variables : 0</Size>
         <ValuePointer>variables</ValuePointer>
       </ArrayItems>
@@ -476,7 +477,8 @@
           <Item Name="returnPc">returnPc</Item>
         </Expand>
       </Synthetic>
-    </Expand>
+			<Item Name="[fullDetails]">Closure_StringifyToC(this, 1)</Item>
+		</Expand>
   </Type>
 
 </AutoVisualizer>
