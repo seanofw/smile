@@ -807,6 +807,7 @@
     <ClCompile Include="src\env\symboltable.c" />
     <ClCompile Include="src\eval\bytecode.c" />
     <ClCompile Include="src\eval\closure.c" />
+    <ClCompile Include="src\eval\closure_stringify.c" />
     <ClCompile Include="src\eval\compiler.c" />
     <ClCompile Include="src\eval\compiler\compiledblock.c" />
     <ClCompile Include="src\eval\compiler\compile_and.c" />

@@ -354,6 +354,8 @@ SMILE_API_FUNC String SmileObject_Stringify(SmileObject obj);
 SMILE_API_FUNC const char *SmileObject_StringifyToC(SmileObject obj);
 SMILE_API_FUNC String SmileObject_StringifyWithSource(SmileObject obj);
 SMILE_API_FUNC const char *SmileObject_StringifyWithSourceToC(SmileObject obj);
+SMILE_API_FUNC void SmileObject_StringifyToStringBuilder(StringBuilder stringBuilder,
+	SmileObject obj, Int indent, Bool includeSource);
 
 SMILE_API_FUNC Bool SmileObject_DeepCompare(SmileObject self, SmileObject other);
 SMILE_API_FUNC Bool SmileArg_DeepCompare(SmileArg self, SmileArg other);

@@ -98,6 +98,11 @@ const char *SmileObject_StringifyWithSourceToC(SmileObject obj)
 	return String_ToC(SmileObject_StringifyWithSource(obj));
 }
 
+void SmileObject_StringifyToStringBuilder(StringBuilder stringBuilder, SmileObject obj, Int indent, Bool includeSource)
+{
+	StringifyRecursive(obj, stringBuilder, indent, includeSource);
+}
+
 static int UserObjectKeyComparer(const void *a, const void *b)
 {
 	const Int32DictKeyValuePair *aPair = (const Int32DictKeyValuePair *)a;

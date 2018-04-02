@@ -141,6 +141,10 @@ SMILE_API_FUNC void Closure_SetLocalVariableInScope(Closure closure, Int scope, 
 SMILE_API_FUNC SmileArg Closure_GetArgumentInScope(Closure closure, Int scope, Int index);
 SMILE_API_FUNC void Closure_SetArgumentInScope(Closure closure, Int scope, Int index, SmileArg arg);
 
+SMILE_API_FUNC const char *Closure_StringifyToC(Closure closure, Bool includeAncestors);
+SMILE_API_FUNC String Closure_Stringify(Closure closure, Bool includeAncestors);
+SMILE_API_FUNC void Closure_StringifyToStringBuilder(StringBuilder stringBuilder, Closure closure, Bool includeAncestors, Int indent);
+
 //-------------------------------------------------------------------------------------------------
 // Inlines and Macro Forms.
 
