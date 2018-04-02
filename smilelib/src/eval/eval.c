@@ -994,10 +994,10 @@ next:
 			goto next;
 
 		case Op_Met:
-			target = Closure_GetTemp(closure, byteCode->u.i2.b + 1).obj;	// Get the target object
+			target = Closure_GetTemp(closure, byteCode->u.i2.a).obj;	// Get the target object
 			byteCode++;	
 			STORE_REGISTERS;
-			SMILE_CALL_METHOD(target, byteCode[-1].u.i2.a, byteCode[-1].u.i2.b + 1);
+			SMILE_CALL_METHOD(target, byteCode[-1].u.i2.b, byteCode[-1].u.i2.a + 1);
 			LOAD_REGISTERS;
 			goto next;
 
