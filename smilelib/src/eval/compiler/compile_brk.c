@@ -29,5 +29,7 @@ CompiledBlock Compiler_CompileBrk(Compiler compiler, SmileList args, CompileFlag
 
 	EMIT0(Op_Brk, 0);
 
+	Compiler_MakeStackMatchCompileFlags(compiler, compiledBlock, compileFlags);
+
 	return compiledBlock;
 }
