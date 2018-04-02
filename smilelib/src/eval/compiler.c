@@ -228,6 +228,7 @@ Int Compiler_AddNewSourceLocation(Compiler compiler, String filename, Int line, 
 CompilerFunction Compiler_BeginFunction(Compiler compiler, SmileList args, SmileObject body)
 {
 	CompilerFunction newFunction;
+	ClosureInfo closureInfo;
 
 	// Create the new function.
 	newFunction = GC_MALLOC_STRUCT(struct CompilerFunctionStruct);
@@ -246,6 +247,13 @@ CompilerFunction Compiler_BeginFunction(Compiler compiler, SmileList args, Smile
 	newFunction->currentSourceLocation = 0;
 	newFunction->userFunctionInfo = NULL;
 
+	// Set up the ClosureInfo object that will eventually describe how this function's variables will behave.
+	closureInfo = ClosureInfo_Create(newFunction->parent != NULL ? newFunction->parent->closureInfo : compiler->compiledTables->globalClosureInfo,
+		CLOSURE_KIND_LOCAL);
+	newFunction->closureInfo = closureInfo;
+
+	closureInfo->global = closureInfo->parent != NULL ? closureInfo->parent->global : compiler->compiledTables->globalClosureInfo;
+
 	// Finally, make the new function the current function.
 	compiler->currentFunction = newFunction;
 
@@ -261,7 +269,7 @@ void Compiler_EndFunction(Compiler compiler)
 {
 	CompilerFunction compilerFunction = compiler->currentFunction;
 
-	compilerFunction->closureInfo = Compiler_MakeClosureInfoForCompilerFunction(compiler, compilerFunction);
+	Compiler_SetupClosureInfoForCompilerFunction(compiler, compilerFunction);
 
 	compiler->currentFunction = compilerFunction->parent;
 }
@@ -477,7 +485,7 @@ UserFunctionInfo Compiler_CompileGlobal(Compiler compiler, SmileObject expr)
 
 	Compiler_EndFunction(compiler);
 
-	closureInfo = Compiler_MakeClosureInfoForCompilerFunction(compiler, compilerFunction);
+	closureInfo = Compiler_SetupClosureInfoForCompilerFunction(compiler, compilerFunction);
 	MemCpy(&userFunctionInfo->closureInfo, closureInfo, sizeof(struct ClosureInfoStruct));
 	userFunctionInfo->byteCodeSegment = byteCodeSegment;
 
@@ -489,7 +497,7 @@ UserFunctionInfo Compiler_CompileGlobal(Compiler compiler, SmileObject expr)
 /// </summary>
 /// <param name="compilerFunction">The compiled function to compact into a ClosureInfo object.</param>
 /// <returns>The compiled function's data, as a ClosureInfo object.</returns>
-ClosureInfo Compiler_MakeClosureInfoForCompilerFunction(Compiler compiler, CompilerFunction compilerFunction)
+ClosureInfo Compiler_SetupClosureInfoForCompilerFunction(Compiler compiler, CompilerFunction compilerFunction)
 {
 	ClosureInfo closureInfo;
 	Int numVariables, src, dest;
@@ -497,10 +505,9 @@ ClosureInfo Compiler_MakeClosureInfoForCompilerFunction(Compiler compiler, Compi
 	Symbol symbol;
 	struct VarInfoStruct varInfo;
 	
-	closureInfo = ClosureInfo_Create(compilerFunction->parent != NULL ? compilerFunction->parent->closureInfo : compiler->compiledTables->globalClosureInfo,
-		CLOSURE_KIND_LOCAL);
+	UNUSED(compiler);
 
-	closureInfo->global = closureInfo->parent != NULL ? closureInfo->parent->global : compiler->compiledTables->globalClosureInfo;
+	closureInfo = compilerFunction->closureInfo;
 
 	if (compilerFunction->numArgs > Int16Max / 2)
 		Smile_Abort_FatalError("Function cannot be compiled because it has too many arguments (> 16383).");

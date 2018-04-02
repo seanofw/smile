@@ -179,7 +179,7 @@ SMILE_API_FUNC CompileScope Compiler_BeginScope(Compiler compiler, Int kind);
 SMILE_API_FUNC CompiledLocalSymbol CompileScope_DefineSymbol(CompileScope scope, Symbol symbol, Int kind, Int index);
 SMILE_API_FUNC CompiledLocalSymbol CompileScope_FindSymbol(CompileScope compileScope, Symbol symbol);
 SMILE_API_FUNC CompiledLocalSymbol CompileScope_FindSymbolHere(CompileScope compileScope, Symbol symbol);
-SMILE_API_FUNC ClosureInfo Compiler_MakeClosureInfoForCompilerFunction(Compiler compiler, CompilerFunction compilerFunction);
+SMILE_API_FUNC ClosureInfo Compiler_SetupClosureInfoForCompilerFunction(Compiler compiler, CompilerFunction compilerFunction);
 
 //-------------------------------------------------------------------------------------------------
 //  Inline functions.

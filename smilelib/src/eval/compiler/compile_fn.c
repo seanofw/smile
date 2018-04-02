@@ -94,7 +94,7 @@ CompiledBlock Compiler_CompileFn(Compiler compiler, SmileList args, CompileFlags
 	compilerFunction->stackSize = compiledBlock->maxStackDepth;
 
 	// Make a suitable closure decriptor for it, and an actual function object.
-	closureInfo = Compiler_MakeClosureInfoForCompilerFunction(compiler, compilerFunction);
+	closureInfo = Compiler_SetupClosureInfoForCompilerFunction(compiler, compilerFunction);
 	MemCpy(&userFunctionInfo->closureInfo, closureInfo, sizeof(struct ClosureInfoStruct));
 
 	Compiler_RevertSourceLocation(compiler, oldSourceLocation);

@@ -63,7 +63,7 @@ static UserFunctionInfo CreateRawGlobalCode(const ByteCode byteCodes, Int numByt
 
 	userFunctionInfo->byteCodeSegment = ByteCodeSegment_CreateFromByteCodes(compiler->compiledTables, byteCodes, numByteCodes, True);
 
-	closureInfo = Compiler_MakeClosureInfoForCompilerFunction(compiler, compilerFunction);
+	closureInfo = Compiler_SetupClosureInfoForCompilerFunction(compiler, compilerFunction);
 	MemCpy(&userFunctionInfo->closureInfo, closureInfo, sizeof(struct ClosureInfoStruct));
 
 	Compiler_EndFunction(compiler);
