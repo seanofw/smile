@@ -31,6 +31,7 @@ CompiledBlock Compiler_CompileIf(Compiler compiler, SmileList args, CompileFlags
 	Bool not;
 	CompiledBlock compiledBlock, condBlock, trueBlock, falseBlock;
 	IntermediateInstruction bf, jmp, bfLabel, jmpLabel;
+	Int baselineStackDelta;
 
 	// Must be an expression of the form [$if cond then-clause] or [$if cond then-clause else-clause].
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->d) != SMILE_KIND_LIST) {
@@ -96,7 +97,9 @@ CompiledBlock Compiler_CompileIf(Compiler compiler, SmileList args, CompileFlags
 		compiledBlock = CompiledBlock_Create();
 		CompiledBlock_AppendChild(compiledBlock, condBlock);
 		bf = EMIT0(Op_Bf, -1);
+		baselineStackDelta = compiledBlock->finalStackDelta;
 		CompiledBlock_AppendChild(compiledBlock, trueBlock);
+		compiledBlock->finalStackDelta = baselineStackDelta;
 		jmp = EMIT0(Op_Jmp, 0);
 		bfLabel = EMIT0(Op_Label, 0);
 		CompiledBlock_AppendChild(compiledBlock, falseBlock);
