@@ -120,6 +120,7 @@ SMILE_API_FUNC UserFunctionInfo UserFunctionInfo_Create(UserFunctionInfo parent,
 SMILE_API_FUNC SmileFunction SmileFunction_CreateUserFunction(UserFunctionInfo userFunctionInfo, Closure declaringClosure);
 SMILE_API_FUNC SmileFunction SmileFunction_CreateExternalFunction(ExternalFunction externalFunction, void *param,
 	const char *name, const char *argNames, Int argCheckFlags, Int minArgs, Int maxArgs, Int numArgsToTypeCheck, const Byte *argTypeChecks);
+SMILE_API_FUNC String UserFunctionInfo_ToString(UserFunctionInfo userFunctionInfo);
 
 //-------------------------------------------------------------------------------------------------
 //  Inline functions

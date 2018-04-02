@@ -234,10 +234,8 @@ START_TEST(CanEvalCallsToUserFunctions)
 		"m = [f n]\n"
 	);
 
-	String global = ByteCodeSegment_ToString(globalFunctionInfo->byteCodeSegment, globalFunctionInfo);
-	String f = ByteCodeSegment_ToString(
-		globalFunctionInfo->byteCodeSegment->compiledTables->userFunctions[0]->byteCodeSegment,
-		globalFunctionInfo->byteCodeSegment->compiledTables->userFunctions[0]);
+	String global = UserFunctionInfo_ToString(globalFunctionInfo);
+	String f = UserFunctionInfo_ToString(globalFunctionInfo->byteCodeSegment->compiledTables->userFunctions[0]);
 
 	EvalResult result = Eval_Run(globalFunctionInfo);
 

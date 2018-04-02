@@ -25,7 +25,7 @@
 #include <smile/internal/staticstring.h>
 #include <smile/numeric/real.h>
 
-static String ByteCode_OperandsToString(ByteCodeSegment segment, ByteCode byteCode, Int address, UserFunctionInfo userFunctionInfo);
+static String ByteCode_OperandsToString(ByteCodeSegment segment, ByteCode byteCode, Int address, ClosureInfo closureInfo);
 
 /// <summary>
 /// Create a new byte-code segment, with room for 'size' instructions initially.
@@ -142,11 +142,9 @@ static void AssemblyIndent(StringBuilder stringBuilder, Int depth)
 /// in order.
 /// </summary>
 /// <param name="segment">The byte-code segment to dump.</param>
-/// <param name="userFunctionInfo">The function that this code segment is a part of.</param>
-/// <param name="compiledTables">The compiled tables of objects and functions and strings
-/// that this segment may reference.</param>
+/// <param name="closureInfo">The closure describing the metadata for this segment's objects.</param>
 /// <returns>The byte-code segment's instructions, as a string.</returns>
-String ByteCodeSegment_ToString(ByteCodeSegment segment, UserFunctionInfo userFunctionInfo)
+String ByteCodeSegment_ToString(ByteCodeSegment segment, ClosureInfo closureInfo)
 {
 	Int i, end, depth = 1;
 	DECLARE_INLINE_STRINGBUILDER(stringBuilder, 256);
@@ -158,7 +156,7 @@ String ByteCodeSegment_ToString(ByteCodeSegment segment, UserFunctionInfo userFu
 	for (i = 0, end = segment->numByteCodes; i < end; i++) {
 		byteCode = segment->byteCodes + i;
 		StringBuilder_AppendFormat(stringBuilder, "%d: ", i);
-		string = ByteCode_ToString(segment, byteCode, i, userFunctionInfo);
+		string = ByteCode_ToString(segment, byteCode, i, closureInfo, True);
 		if (byteCode->opcode < Op_Pseudo) {
 			AssemblyIndent(stringBuilder, depth);
 		}
@@ -179,12 +177,13 @@ String ByteCodeSegment_ToString(ByteCodeSegment segment, UserFunctionInfo userFu
 /// <summary>
 /// Convert the individual byte code to a string representation.
 /// </summary>
-/// <param name="byteCode">The byte code to dump.</param>
+/// <param name="segment">The byte code segment that contains this (used for accessing static data).</param>
+/// <param name="byteCode">The byte code whose operands you want to dump.</param>
 /// <param name="address">The address at which this byte code is stored within its segment.</param>
-/// <param name="compiledTables">The compiled tables of objects and functions and strings
-/// that this byte code may reference.</param>
+/// <param name="closureInfo">The closure that contains this byteCode, used for resolving variable and argument names.</param>
+/// <param name="includeSourceLocations">Whether to include source locations as comments.</param>
 /// <returns>The byte code's contents, as a string.</returns>
-String ByteCode_ToString(ByteCodeSegment segment, ByteCode byteCode, Int address, UserFunctionInfo userFunctionInfo)
+String ByteCode_ToString(ByteCodeSegment segment, ByteCode byteCode, Int address, ClosureInfo closureInfo, Bool includeSourceLocations)
 {
 	String opcode, operands;
 	DECLARE_INLINE_STRINGBUILDER(stringBuilder, 64);
@@ -199,20 +198,22 @@ String ByteCode_ToString(ByteCodeSegment segment, ByteCode byteCode, Int address
 	opcode = Opcode_Names[byteCode->opcode];
 	if (opcode == NULL) opcode = String_Format("Op%02X", byteCode->opcode);
 
-	operands = ByteCode_OperandsToString(segment, byteCode, address, userFunctionInfo);
+	operands = ByteCode_OperandsToString(segment, byteCode, address, closureInfo);
 	if (operands == NULL && !byteCode->sourceLocation)
 		return opcode;
 
 	INIT_INLINE_STRINGBUILDER(stringBuilder);
 
 	StringBuilder_AppendString(stringBuilder, opcode);
+	if (String_Length(opcode) < 7)
+		StringBuilder_AppendRepeat(stringBuilder, ' ', 7 - String_Length(opcode));
 
 	if (operands != NULL) {
 		StringBuilder_AppendByte(stringBuilder, ' ');
 		StringBuilder_AppendString(stringBuilder, operands);
 	}
 
-	if (byteCode->sourceLocation) {
+	if (includeSourceLocations && byteCode->sourceLocation) {
 		CompiledSourceLocation sourceLocation = &segment->compiledTables->sourcelocations[byteCode->sourceLocation];
 		if (sourceLocation->filename != NULL && sourceLocation->line != 0) {
 			StringBuilder_AppendFormat(stringBuilder, "\t; %S:%d", Path_GetFilename(sourceLocation->filename), sourceLocation->line);
@@ -231,39 +232,48 @@ String ByteCode_ToString(ByteCodeSegment segment, ByteCode byteCode, Int address
 	return StringBuilder_ToString(stringBuilder);
 }
 
-static UserFunctionInfo GetFunctionByDepth(UserFunctionInfo userFunctionInfo, Int depth)
+static ClosureInfo GetClosureInfoByDepth(ClosureInfo closureInfo, Int depth)
 {
-	while (depth-- > 0 && userFunctionInfo != NULL) {
-		userFunctionInfo = userFunctionInfo->parent;
+	while (depth-- > 0 && closureInfo != NULL) {
+		closureInfo = closureInfo->parent;
 	}
-	return userFunctionInfo;
+	return closureInfo;
 }
 
-static Symbol GetSymbolForLocalVariable(UserFunctionInfo userFunctionInfo, Int scope, Int index)
+static Symbol GetSymbolForLocalVariable(ClosureInfo closureInfo, Int scope, Int index)
 {
-	userFunctionInfo = GetFunctionByDepth(userFunctionInfo, scope);
-	if (userFunctionInfo == NULL) return 0;
+	closureInfo = GetClosureInfoByDepth(closureInfo, scope);
+	if (closureInfo == NULL) return 0;
 
-	return index < userFunctionInfo->closureInfo.numVariables ? userFunctionInfo->closureInfo.variableNames[index] : 0;
+	return index < closureInfo->numVariables ? closureInfo->variableNames[closureInfo->numArgs + index] : 0;
 }
 
-static Symbol GetSymbolForArgument(UserFunctionInfo userFunctionInfo, Int scope, Int index)
+static Symbol GetSymbolForArgument(ClosureInfo closureInfo, Int scope, Int index)
 {
-	userFunctionInfo = GetFunctionByDepth(userFunctionInfo, scope);
-	if (userFunctionInfo == NULL) return 0;
+	closureInfo = GetClosureInfoByDepth(closureInfo, scope);
+	if (closureInfo == NULL) return 0;
 
-	return index < userFunctionInfo->numArgs ? userFunctionInfo->args[index].name : 0;
+	return index < closureInfo->numArgs ? closureInfo->variableNames[index] : 0;
+}
+
+static String GetPrintableString(String str)
+{
+	STATIC_STRING(ellipsis, "...");
+
+	if (String_Length(str) > 50)
+		return String_Concat(String_Substring(str, 0, 47), ellipsis);
+	return str;
 }
 
 /// <summary>
 /// Convert the given byte code's operands to a string representation.
 /// </summary>
+/// <param name="segment">The byte code segment that contains this (used for accessing static data).</param>
 /// <param name="byteCode">The byte code whose operands you want to dump.</param>
 /// <param name="address">The address at which this byte code is stored within its segment.</param>
-/// <param name="compiledTables">The compiled tables of objects and functions and strings
-/// that this byte code may reference.</param>
+/// <param name="closureInfo">The closure that contains this byteCode, used for resolving variable and argument names.</param>
 /// <returns>The byte code's operands, as a string.</returns>
-static String ByteCode_OperandsToString(ByteCodeSegment segment, ByteCode byteCode, Int address, UserFunctionInfo userFunctionInfo)
+static String ByteCode_OperandsToString(ByteCodeSegment segment, ByteCode byteCode, Int address, ClosureInfo closureInfo)
 {
 	Int opcode = byteCode->opcode;
 	Symbol symbol;
@@ -282,10 +292,11 @@ static String ByteCode_OperandsToString(ByteCodeSegment segment, ByteCode byteCo
 		case Op_LdBool:
 			return String_Format("%s", byteCode->u.boolean ? "true" : "false");
 		case Op_LdStr:
-			return String_Format("%lld\t; \"%S\"", (Int64)byteCode->u.index,
-				segment->compiledTables != NULL ? String_AddCSlashes(segment->compiledTables->strings[byteCode->u.index]) : String_FromC("???"));
+			return String_Format("\"%S\" (%lld)",
+				String_AddCSlashes(GetPrintableString(segment->compiledTables != NULL ? segment->compiledTables->strings[byteCode->u.index] : String_FromC("???"))),
+				(Int64)byteCode->u.index);
 		case Op_LdSym:
-			return String_Format("%d\t; %S", byteCode->u.symbol, SymbolTable_GetName(Smile_SymbolTable, byteCode->u.symbol));
+			return String_Format("`%S (%d)", SymbolTable_GetName(Smile_SymbolTable, byteCode->u.symbol), byteCode->u.symbol);
 		case Op_LdObj:
 			return String_Format("@%lld", (Int64)byteCode->u.index);
 		
@@ -325,22 +336,22 @@ static String ByteCode_OperandsToString(ByteCodeSegment segment, ByteCode byteCo
 		case Op_LdLoc:
 		case Op_StLoc:
 		case Op_StpLoc:
-			symbol = GetSymbolForLocalVariable(userFunctionInfo, (Int32)byteCode->u.i2.a, (Int32)byteCode->u.i2.b);
-			return String_Format("%d, %d\t; %S", (Int32)byteCode->u.i2.a, (Int32)byteCode->u.i2.b, SymbolTable_GetName(Smile_SymbolTable, symbol));
+			symbol = GetSymbolForLocalVariable(closureInfo, (Int32)byteCode->u.i2.a, (Int32)byteCode->u.i2.b);
+			return String_Format("%d, `%S (%d)", (Int32)byteCode->u.i2.a, SymbolTable_GetName(Smile_SymbolTable, symbol), (Int32)byteCode->u.i2.b);
 
 		// 34-37
 		case Op_LdArg:
 		case Op_StArg:
 		case Op_StpArg:
-			symbol = GetSymbolForArgument(userFunctionInfo, (Int32)byteCode->u.i2.a, (Int32)byteCode->u.i2.b);
-			return String_Format("%d, %d\t; %S", (Int32)byteCode->u.i2.a, (Int32)byteCode->u.i2.b, SymbolTable_GetName(Smile_SymbolTable, symbol));
+			symbol = GetSymbolForArgument(closureInfo, (Int32)byteCode->u.i2.a, (Int32)byteCode->u.i2.b);
+			return String_Format("%d, `%S (%d)", (Int32)byteCode->u.i2.a, SymbolTable_GetName(Smile_SymbolTable, symbol), (Int32)byteCode->u.i2.b);
 
 		// 38-3F
 		case Op_LdX:
 		case Op_StX:
 		case Op_StpX:
 		case Op_NullX:
-			return String_Format("%d\t; %S", byteCode->u.symbol, SymbolTable_GetName(Smile_SymbolTable, byteCode->u.symbol));
+			return String_Format("`%S (%d)", SymbolTable_GetName(Smile_SymbolTable, byteCode->u.symbol), byteCode->u.symbol);
 
 		// 40-6F (args)
 		case Op_LdArg0: case Op_LdArg1: case Op_LdArg2: case Op_LdArg3:
@@ -349,11 +360,11 @@ static String ByteCode_OperandsToString(ByteCodeSegment segment, ByteCode byteCo
 		case Op_StArg4: case Op_StArg5: case Op_StArg6: case Op_StArg7:
 		case Op_StpArg0: case Op_StpArg1: case Op_StpArg2: case Op_StpArg3:
 		case Op_StpArg4: case Op_StpArg5: case Op_StpArg6: case Op_StpArg7:
-			symbol = GetSymbolForArgument(userFunctionInfo, (Int32)byteCode->opcode & 7, (Int32)byteCode->u.index);
-			return String_Format("%d\t; %S", (Int32)byteCode->u.index, SymbolTable_GetName(Smile_SymbolTable, symbol));
+			symbol = GetSymbolForArgument(closureInfo, (Int32)byteCode->opcode & 7, (Int32)byteCode->u.index);
+			return String_Format("`%S (%d)", SymbolTable_GetName(Smile_SymbolTable, symbol), (Int32)byteCode->u.index);
 		case Op_NullArg0:
-			symbol = GetSymbolForArgument(userFunctionInfo, 0, (Int32)byteCode->u.index);
-			return String_Format("%d\t; %S", (Int32)byteCode->u.index, SymbolTable_GetName(Smile_SymbolTable, symbol));
+			symbol = GetSymbolForArgument(closureInfo, 0, (Int32)byteCode->u.index);
+			return String_Format("`%S (%d)", SymbolTable_GetName(Smile_SymbolTable, symbol), (Int32)byteCode->u.index);
 
 		// 40-6F (Locals)
 		case Op_LdLoc0: case Op_LdLoc1: case Op_LdLoc2: case Op_LdLoc3:
@@ -362,18 +373,20 @@ static String ByteCode_OperandsToString(ByteCodeSegment segment, ByteCode byteCo
 		case Op_StLoc4: case Op_StLoc5: case Op_StLoc6: case Op_StLoc7:
 		case Op_StpLoc0: case Op_StpLoc1: case Op_StpLoc2: case Op_StpLoc3:
 		case Op_StpLoc4: case Op_StpLoc5: case Op_StpLoc6: case Op_StpLoc7:
-			symbol = GetSymbolForLocalVariable(userFunctionInfo, (Int32)byteCode->opcode & 7, (Int32)byteCode->u.index);
-			return String_Format("%d\t; %S", (Int32)byteCode->u.index, SymbolTable_GetName(Smile_SymbolTable, symbol));
+			symbol = GetSymbolForLocalVariable(closureInfo, (Int32)byteCode->opcode & 7, (Int32)byteCode->u.index);
+			return String_Format("`%S (%d)", SymbolTable_GetName(Smile_SymbolTable, symbol), (Int32)byteCode->u.index);
 		case Op_NullLoc0:
-			symbol = GetSymbolForLocalVariable(userFunctionInfo, 0, (Int32)byteCode->u.index);
-			return String_Format("%d\t; %S", (Int32)byteCode->u.index, SymbolTable_GetName(Smile_SymbolTable, symbol));
+			symbol = GetSymbolForLocalVariable(closureInfo, 0, (Int32)byteCode->u.index);
+			return String_Format("`%S (%d)", SymbolTable_GetName(Smile_SymbolTable, symbol), (Int32)byteCode->u.index);
 
 		// 70-7F
 		case Op_LdProp:
 		case Op_StProp:
 		case Op_StpProp:
-			return String_Format("%d\t; %S", byteCode->u.symbol, SymbolTable_GetName(Smile_SymbolTable, byteCode->u.symbol));
-		
+			return String_Format("`%S (%d)", SymbolTable_GetName(Smile_SymbolTable, byteCode->u.symbol), byteCode->u.symbol);
+		case Op_LdInclude:
+			return String_Format("%d, %d", byteCode->u.i2.a, byteCode->u.i2.b);
+
 		// 80-8F
 		case Op_Try:
 			return String_Format(byteCode->u.i2.a < 0 ? "L%d, %d" : ">L%d, %d", address + byteCode->u.i2.a, byteCode->u.i2.b);
@@ -383,7 +396,7 @@ static String ByteCode_OperandsToString(ByteCodeSegment segment, ByteCode byteCo
 		case Op_Met4: case Op_Met5: case Op_Met6: case Op_Met7:
 		case Op_TMet0: case Op_TMet1: case Op_TMet2: case Op_TMet3:
 		case Op_TMet4: case Op_TMet5: case Op_TMet6: case Op_TMet7:
-			return String_Format("%d\t; %S", byteCode->u.symbol, SymbolTable_GetName(Smile_SymbolTable, byteCode->u.symbol));
+			return String_Format("`%S (%d)", SymbolTable_GetName(Smile_SymbolTable, byteCode->u.symbol), byteCode->u.symbol);
 
 		// B0-BF
 		case Op_Jmp:
@@ -392,7 +405,7 @@ static String ByteCode_OperandsToString(ByteCodeSegment segment, ByteCode byteCo
 			return String_Format(byteCode->u.index < 0 ? "L%lld" : ">L%lld", (Int64)(address + byteCode->u.index));
 		case Op_Met:
 		case Op_TMet:
-			return String_Format("%d, %d\t; %S", byteCode->u.i2.a, byteCode->u.i2.b, SymbolTable_GetName(Smile_SymbolTable, (Symbol)byteCode->u.i2.a));
+			return String_Format("%d, `%S (%d)", byteCode->u.i2.a, SymbolTable_GetName(Smile_SymbolTable, (Symbol)byteCode->u.i2.b), byteCode->u.i2.b);
 		case Op_Call:
 		case Op_TCall:
 			return String_Format("%d", byteCode->u.int32);

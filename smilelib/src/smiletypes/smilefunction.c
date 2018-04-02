@@ -20,6 +20,7 @@
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/easyobject.h>
 #include <smile/smiletypes/text/smilesymbol.h>
+#include <smile/eval/bytecode.h>
 
 extern SmileVTable SmileUserFunction_NoArgs_VTable;
 extern SmileVTable SmileUserFunction_Fast1_VTable;
@@ -223,6 +224,12 @@ UserFunctionInfo UserFunctionInfo_Create(UserFunctionInfo parent, LexerPosition 
 	userFunctionInfo->body = body;
 
 	return UserFunctionInfo_ApplyArgs(userFunctionInfo, args, errorMessage) ? userFunctionInfo : NULL;
+}
+
+String UserFunctionInfo_ToString(UserFunctionInfo userFunctionInfo)
+{
+	String result = ByteCodeSegment_ToString(userFunctionInfo->byteCodeSegment, &userFunctionInfo->closureInfo);
+	return result;
 }
 
 Inline SmileVTable GetUserFunctionVTableByFlags(Int flags, Int numArgs)

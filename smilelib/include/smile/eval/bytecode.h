@@ -67,15 +67,15 @@ typedef struct ByteCodeSegmentStruct {
 //  External API.
 
 struct CompiledTablesStruct;
-struct UserFunctionInfoStruct;
+struct ClosureInfoStruct;
 
 SMILE_API_FUNC void ByteCodeSegment_Grow(ByteCodeSegment segment, Int count);
 SMILE_API_FUNC ByteCodeSegment ByteCodeSegment_CreateWithSize(struct CompiledTablesStruct *compiledTables, Int size);
 SMILE_API_FUNC ByteCodeSegment ByteCodeSegment_CreateFromByteCodes(struct CompiledTablesStruct *compiledTables, const ByteCode byteCodes, Int numByteCodes, Bool addRet);
-SMILE_API_FUNC String ByteCodeSegment_ToString(ByteCodeSegment segment, struct UserFunctionInfoStruct *userFunctionInfo);
+SMILE_API_FUNC String ByteCodeSegment_ToString(ByteCodeSegment segment, struct ClosureInfoStruct *closureInfo);
 SMILE_API_FUNC String ByteCodeSegment_Stringify(ByteCodeSegment segment);
 SMILE_API_FUNC const char *ByteCodeSegment_StringifyToC(ByteCodeSegment segment);
-SMILE_API_FUNC String ByteCode_ToString(ByteCodeSegment segment, ByteCode byteCode, Int address, struct UserFunctionInfoStruct *userFunctionInfo);
+SMILE_API_FUNC String ByteCode_ToString(ByteCodeSegment segment, ByteCode byteCode, Int address, struct ClosureInfoStruct *closureInfo, Bool includeSourceLocations);
 
 SMILE_API_DATA String *Opcode_Names;
 

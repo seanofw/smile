@@ -80,7 +80,7 @@ START_TEST(CanCompileNull)
 		"0: \tLdNull\n"
 		"1: \tRet\n";
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
 }
 END_TEST
@@ -97,7 +97,7 @@ START_TEST(CanCompileByte)
 		"0: \tLd8 123\n"
 		"1: \tRet\n";
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
 }
 END_TEST
@@ -114,7 +114,7 @@ START_TEST(CanCompileInt16)
 		"0: \tLd16 123\n"
 		"1: \tRet\n";
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
 }
 END_TEST
@@ -131,7 +131,7 @@ START_TEST(CanCompileInt32)
 		"0: \tLd32 123\n"
 		"1: \tRet\n";
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
 }
 END_TEST
@@ -148,7 +148,7 @@ START_TEST(CanCompileInt64)
 		"0: \tLd64 123\n"
 		"1: \tRet\n";
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 	ASSERT_STRING(result, expectedResult, StrLen(expectedResult));
 }
 END_TEST
@@ -169,7 +169,7 @@ START_TEST(CanCompileBasicArithmetic)
 		Smile_KnownSymbols.plus
 	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
 END_TEST
@@ -195,7 +195,7 @@ START_TEST(CanCompileMildlyInterestingArithmetic)
 		Smile_KnownSymbols.star
 	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
 END_TEST
@@ -219,7 +219,7 @@ START_TEST(CanCompileGlobalReadsAndWrites)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "ga")
 	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
 END_TEST
@@ -242,7 +242,7 @@ START_TEST(CanCompileReadsFromProperties)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "ga")
 	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
 END_TEST
@@ -265,7 +265,7 @@ START_TEST(CanCompileWritesToProperties)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "foo")
 	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
 END_TEST
@@ -288,7 +288,7 @@ START_TEST(CanCompileReadsFromMembers)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "ga")
 	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
 END_TEST
@@ -312,7 +312,7 @@ START_TEST(CanCompileWritesToMembers)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "gb")
 	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
 END_TEST
@@ -340,7 +340,7 @@ START_TEST(CanCompileGlobalMutations)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "ga")
 	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
 END_TEST
@@ -368,7 +368,7 @@ START_TEST(CanCompileMutationsOfProperties)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "foo")
 	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
 END_TEST
@@ -397,7 +397,7 @@ START_TEST(CanCompileMutationsOfMembers)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "+")
 	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
 END_TEST
@@ -422,7 +422,7 @@ START_TEST(CanCompileScopeVariableReads)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "a")
 	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 
 	ASSERT(globalFunction->closureInfo.numVariables == 1);
@@ -454,7 +454,7 @@ START_TEST(CanCompileNestedScopeVariableReads)
 		Smile_KnownSymbols.plus
 	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 
 	ASSERT(globalFunction->closureInfo.numVariables == 3);
@@ -492,7 +492,7 @@ START_TEST(NestedScopesVariablesDontOverlap)
 		Smile_KnownSymbols.star
 	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 
 	ASSERT(globalFunction->closureInfo.numVariables == 4);
@@ -524,7 +524,7 @@ START_TEST(CanCompileSimpleConditionals)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "else-side")
 	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 
 	ASSERT(globalFunction->closureInfo.tempSize == 2);
@@ -554,7 +554,7 @@ START_TEST(CanCompileConditionalsWithNullThenSide)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "done")
 	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 
 	ASSERT(globalFunction->closureInfo.numVariables == 2);
@@ -585,7 +585,7 @@ START_TEST(CanCompileConditionalsWithNullElseSide)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "done")
 	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 
 	ASSERT(globalFunction->closureInfo.numVariables == 2);
@@ -616,7 +616,7 @@ START_TEST(CanCompileConditionalsWithAMeaninglessThenSide)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "done")
 	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 
 	ASSERT(globalFunction->closureInfo.numVariables == 2);
@@ -647,7 +647,7 @@ START_TEST(CanCompileConditionalsWithMeaninglessElseSide)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "done")
 	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 
 	ASSERT(globalFunction->closureInfo.numVariables == 2);
@@ -685,7 +685,7 @@ START_TEST(CanCompileConditionalsAllTheWay)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "else-side")
 	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 	ASSERT(globalFunction->closureInfo.tempSize == 2);
 }
@@ -738,7 +738,7 @@ START_TEST(CanCompileAPreCondPostWhileLoop)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "-")
 	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
@@ -780,7 +780,7 @@ START_TEST(CanCompileAPreCondWhileLoop)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "<")
 	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
@@ -823,7 +823,7 @@ START_TEST(CanCompileANullCondPostWhileLoop)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "<")
 	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
@@ -866,7 +866,7 @@ START_TEST(CanCompileACondPostWhileLoop)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "<")
 	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
@@ -904,7 +904,7 @@ START_TEST(CanCompileACondOnlyWhileLoop)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "<")
 	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
@@ -955,7 +955,7 @@ START_TEST(CanCompileAWhileLoopThatComputesLogarithms)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "+")
 	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
@@ -990,7 +990,7 @@ START_TEST(CanCompileASimpleTillLoop)
 		"8: \tRet\n"
 	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
@@ -1032,7 +1032,7 @@ START_TEST(CanCompileATillLoopThatActuallyDoesSomething)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "<<")
 	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 }
@@ -1075,7 +1075,7 @@ START_TEST(CanCompileATillLoopUsingSimpleSyntax)
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "<<")
 	);
 
-	result = ByteCodeSegment_ToString(globalFunction->byteCodeSegment, globalFunction);
+	result = UserFunctionInfo_ToString(globalFunction);
 
 	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
 */
