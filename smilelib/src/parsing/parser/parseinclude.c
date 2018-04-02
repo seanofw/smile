@@ -109,8 +109,9 @@ ParseError Parser_ParseInclude(Parser parser, SmileObject *expr)
 	Smile_SetGlobalClosureInfo(oldGlobalClosure);
 
 	// If we failed, let the caller deal with it.
-	if (!moduleInfo->loadedSuccessfully)
-		return NULL;
+	if (!moduleInfo->loadedSuccessfully) {
+		return ParseMessage_Create(PARSEMESSAGE_ERROR, position, String_Format("Loading of module \"%S\" failed.", filename));
+	}
 
 	// See if they want only a partial import.
 	if (Lexer_Next(parser->lexer) != TOKEN_COLON) {
