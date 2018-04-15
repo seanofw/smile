@@ -96,20 +96,31 @@ CompiledBlock Compiler_CompileIf(Compiler compiler, SmileList args, CompileFlags
 		// Have both a 'then' clause and an 'else' one, so emit the full 'if'.
 		compiledBlock = CompiledBlock_Create();
 		CompiledBlock_AppendChild(compiledBlock, condBlock);
+
 		bf = EMIT0(Op_Bf, -1);
+
 		baselineStackDelta = compiledBlock->finalStackDelta;
 		CompiledBlock_AppendChild(compiledBlock, trueBlock);
 		compiledBlock->finalStackDelta = baselineStackDelta;
-		jmp = EMIT0(Op_Jmp, 0);
+
+		if (trueBlock->blockFlags & BLOCK_FLAG_ESCAPE)
+			jmp = NULL;
+		else jmp = EMIT0(Op_Jmp, 0);
+
 		bfLabel = EMIT0(Op_Label, 0);
 		CompiledBlock_AppendChild(compiledBlock, falseBlock);
-		jmpLabel = EMIT0(Op_Label, 0);
+
+		if (trueBlock->blockFlags & BLOCK_FLAG_ESCAPE)
+			jmpLabel = NULL;
+		else jmpLabel = EMIT0(Op_Label, 0);
 
 		// Point the jumps at the appropriate target labels.
 		bf->p.branchTarget = bfLabel;
 		bfLabel->p.branchTarget = bf;
-		jmp->p.branchTarget = jmpLabel;
-		jmpLabel->p.branchTarget = jmp;
+		if (!(trueBlock->blockFlags & BLOCK_FLAG_ESCAPE)) {
+			jmp->p.branchTarget = jmpLabel;
+			jmpLabel->p.branchTarget = jmp;
+		}
 
 		return compiledBlock;
 	}
