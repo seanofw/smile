@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 86db3ee0e5c077781c128cb311ebe60b
+// SourceHash: b9e95a124b95d69784132cd0ae694035
 
 START_TEST_SUITE(ParserNewTests)
 {
@@ -15,6 +15,7 @@ START_TEST_SUITE(ParserNewTests)
 	NewWithMembersAllowsColonsInNestedFunctionsIfWrapped2,
 	CanElideNewKeywordWhenInAnRValue,
 	MemberExpressionsUseOrScope,
+	MemberExpressionsDisallowArbitraryAssignment,
 }
 END_TEST_SUITE(ParserNewTests)
 

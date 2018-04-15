@@ -21,7 +21,7 @@
 #include <smile/parsing/internal/parserinternal.h>
 #include <smile/parsing/internal/parsescope.h>
 
-// newexpr ::=	  . NEW LBRACE members_opt RBRACE
+// newexpr ::= . NEW LBRACE members_opt RBRACE
 // 	| . NEW dotexpr LBRACE members_opt RBRACE
 //	| . LBRACE members_opt RBRACE
 // 	| . consexpr
@@ -33,7 +33,9 @@ ParseError Parser_ParseNewExpr(Parser parser, SmileObject *expr, Int modeFlags, 
 	LexerPosition newTokenPosition;
 	Bool membersHaveErrors;
 
+	// Peek at the next token.
 	token = Parser_NextToken(parser);
+
 	if (token->kind == TOKEN_LEFTBRACE) {
 		// If we got here, that means it's a curly brace in an rvalue position, so we treat it
 		// as a shorthand object instantiation, same as JavaScript does.
@@ -41,17 +43,18 @@ ParseError Parser_ParseNewExpr(Parser parser, SmileObject *expr, Int modeFlags, 
 		base = (SmileObject)Smile_KnownObjects.ObjectSymbol;
 		goto shorthandForm;
 	}
-
-	if (!((token->kind == TOKEN_ALPHANAME || token->kind == TOKEN_UNKNOWNALPHANAME)
+	else if (!((token->kind == TOKEN_ALPHANAME || token->kind == TOKEN_UNKNOWNALPHANAME)
 		&& token->data.symbol == Smile_KnownSymbols.new_)) {
+		// Didn't the keyword 'new', so just recurse deeper.
 		Lexer_Unget(parser->lexer);
 		return Parser_ParsePostfixExpr(parser, expr, modeFlags, firstUnaryTokenForErrorReporting);
 	}
 
+	// Got the keyword 'new', so parse an object construction after it.
 	newTokenPosition = Token_GetPosition(token);
-
 	newToken = Token_Clone(token);
 
+	// If we got a '{', then inherit from Object.  Otherwise, inherit from the next expression.
 	if (Parser_HasLookahead(parser, TOKEN_LEFTBRACE)) {
 		base = (SmileObject)Smile_KnownObjects.ObjectSymbol;
 	}
@@ -67,6 +70,7 @@ ParseError Parser_ParseNewExpr(Parser parser, SmileObject *expr, Int modeFlags, 
 		}
 	}
 
+	// If we didn't get a '{' at this point to start the object's members, that's an error.
 	if (Lexer_Next(parser->lexer) != TOKEN_LEFTBRACE) {
 		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
 			String_FromC("Missing a '{' after 'new'."));
@@ -75,21 +79,23 @@ ParseError Parser_ParseNewExpr(Parser parser, SmileObject *expr, Int modeFlags, 
 	}
 
 shorthandForm:
+	// Collect the member-declarations in the object.
 	membersHaveErrors = Parser_ParseMembers(parser, &body);
+
+	// Make sure there's a succeeding closing '}'.
 	if (membersHaveErrors || Lexer_Peek(parser->lexer) != TOKEN_RIGHTBRACE) {
+		*expr = NullObject;
 		Parser_Recover(parser, Parser_RightBracesBracketsParentheses_Recovery, Parser_RightBracesBracketsParentheses_Count);
 		if (!membersHaveErrors) {
 			parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
 				String_Format("Missing a '}' to end the members in the 'new' block starting on line %d.", newTokenPosition->line));
-			*expr = NullObject;
 			return parseError;
 		}
 		return NULL;
 	}
-
-	// Reached a curly brace, so consume it.
 	Lexer_Next(parser->lexer);
 
+	// Finally, build the resulting object-construction.
 	*expr = (SmileObject)SmileList_ConsWithSource(
 		(SmileObject)Smile_KnownObjects._newSymbol,
 		(SmileObject)SmileList_ConsWithSource(
