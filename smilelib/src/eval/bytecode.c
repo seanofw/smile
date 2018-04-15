@@ -205,7 +205,7 @@ String ByteCode_ToString(ByteCodeSegment segment, ByteCode byteCode, Int address
 	INIT_INLINE_STRINGBUILDER(stringBuilder);
 
 	StringBuilder_AppendString(stringBuilder, opcode);
-	if (String_Length(opcode) < 7)
+	if (String_Length(opcode) < 7 && operands != NULL)
 		StringBuilder_AppendRepeat(stringBuilder, ' ', 7 - String_Length(opcode));
 
 	if (operands != NULL) {
