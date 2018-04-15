@@ -34,11 +34,6 @@ and may not be able to build it.)
 
 ## On Un*x
 
-(**Warning:** The Smile interpreter hasn't been built on Linux in some time.
-Getting it to run here may require some hacking.  It _should_ be able to run,
-but most of the development focus has been on core functionality, not platform
-compatibility.)
-
 Go into the SmileC directory and run these two commands.
 
 - ''make dep''
@@ -53,14 +48,10 @@ A successful build may be installed with ''make install''.
 Supported, tested build environments use the GNU build chain
 (Make and GCC).  These are the current test platforms:
 
-- Linux x64 (GCC 5.x)
-- Cygwin x86 (GCC 4.x)
-
-Anything not on that list isn't guaranteed, but might work.  Note that
-Cygwin x64 seems to have problems compiling the GC right now.
+- Linux x64 (Debian 9, built with GCC 6.3)
 
 Many configuration options are available in ''SmileC/Makefile.conf'',
-if you have customization requirements for the buildor installation.
+if you have customization requirements for the build or installation.
 
 ------------------------
 
@@ -68,8 +59,8 @@ if you have customization requirements for the buildor installation.
 
 (**Warning:** The Smile interpreter hasn't been built on MacOS in some time.
 Getting it to run here may require some hacking.  It _should_ be able to run,
-but most of the development focus has been on core functionality, not platform
-compatibility.)
+with some effort, but most of the development focus has been on core
+functionality, not platform compatibility.)
 
 Test builds have been made on MacOS X x86 64-bit.  In theory, it follows
 the same sequence as Un*x above:
