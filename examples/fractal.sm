@@ -24,8 +24,8 @@ maxx = 80
             x = xtemp
             iteration += 1
         }
-        Stdout print graphics:iteration
-        if screenx == maxx then print-line Stdout
+        print graphics:iteration
+        if screenx == maxx then print-line ""
     }
 }
 
