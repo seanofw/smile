@@ -286,7 +286,7 @@ static String ByteCode_OperandsToString(ByteCodeSegment segment, ByteCode byteCo
 		case Op_Dup:
 		case Op_Pop:
 		case Op_Rep:
-			return String_Format("%d", byteCode->u.int32);
+			return String_Format("%hd", byteCode->u.int32);
 		
 		// 10-17
 		case Op_LdBool:
@@ -296,17 +296,17 @@ static String ByteCode_OperandsToString(ByteCodeSegment segment, ByteCode byteCo
 				String_AddCSlashes(GetPrintableString(segment->compiledTables != NULL ? segment->compiledTables->strings[byteCode->u.index] : String_FromC("???"))),
 				(Int64)byteCode->u.index);
 		case Op_LdSym:
-			return String_Format("`%S (%d)", SymbolTable_GetName(Smile_SymbolTable, byteCode->u.symbol), byteCode->u.symbol);
+			return String_Format("`%S (%hd)", SymbolTable_GetName(Smile_SymbolTable, byteCode->u.symbol), byteCode->u.symbol);
 		case Op_LdObj:
 			return String_Format("@%lld", (Int64)byteCode->u.index);
 		
 		// 18-1F
 		case Op_Ld8:
-			return String_Format("%u", (Int32)byteCode->u.byte);
+			return String_Format("%hu", (Int32)byteCode->u.byte);
 		case Op_Ld16:
-			return String_Format("%d", (Int32)byteCode->u.int16);
+			return String_Format("%hd", (Int32)byteCode->u.int16);
 		case Op_Ld32:
-			return String_Format("%d", byteCode->u.int32);
+			return String_Format("%hd", byteCode->u.int32);
 		case Op_Ld64:
 			return String_Format("%ld", byteCode->u.int64);
 		case Op_Ld128:
@@ -337,21 +337,21 @@ static String ByteCode_OperandsToString(ByteCodeSegment segment, ByteCode byteCo
 		case Op_StLoc:
 		case Op_StpLoc:
 			symbol = GetSymbolForLocalVariable(closureInfo, (Int32)byteCode->u.i2.a, (Int32)byteCode->u.i2.b);
-			return String_Format("%d, `%S (%d)", (Int32)byteCode->u.i2.a, SymbolTable_GetName(Smile_SymbolTable, symbol), (Int32)byteCode->u.i2.b);
+			return String_Format("%hd, `%S (%hd)", (Int32)byteCode->u.i2.a, SymbolTable_GetName(Smile_SymbolTable, symbol), (Int32)byteCode->u.i2.b);
 
 		// 34-37
 		case Op_LdArg:
 		case Op_StArg:
 		case Op_StpArg:
 			symbol = GetSymbolForArgument(closureInfo, (Int32)byteCode->u.i2.a, (Int32)byteCode->u.i2.b);
-			return String_Format("%d, `%S (%d)", (Int32)byteCode->u.i2.a, SymbolTable_GetName(Smile_SymbolTable, symbol), (Int32)byteCode->u.i2.b);
+			return String_Format("%hd, `%S (%hd)", (Int32)byteCode->u.i2.a, SymbolTable_GetName(Smile_SymbolTable, symbol), (Int32)byteCode->u.i2.b);
 
 		// 38-3F
 		case Op_LdX:
 		case Op_StX:
 		case Op_StpX:
 		case Op_NullX:
-			return String_Format("`%S (%d)", SymbolTable_GetName(Smile_SymbolTable, byteCode->u.symbol), byteCode->u.symbol);
+			return String_Format("`%S (%hd)", SymbolTable_GetName(Smile_SymbolTable, byteCode->u.symbol), byteCode->u.symbol);
 
 		// 40-6F (args)
 		case Op_LdArg0: case Op_LdArg1: case Op_LdArg2: case Op_LdArg3:
@@ -361,10 +361,10 @@ static String ByteCode_OperandsToString(ByteCodeSegment segment, ByteCode byteCo
 		case Op_StpArg0: case Op_StpArg1: case Op_StpArg2: case Op_StpArg3:
 		case Op_StpArg4: case Op_StpArg5: case Op_StpArg6: case Op_StpArg7:
 			symbol = GetSymbolForArgument(closureInfo, (Int32)byteCode->opcode & 7, (Int32)byteCode->u.index);
-			return String_Format("`%S (%d)", SymbolTable_GetName(Smile_SymbolTable, symbol), (Int32)byteCode->u.index);
+			return String_Format("`%S (%hd)", SymbolTable_GetName(Smile_SymbolTable, symbol), (Int32)byteCode->u.index);
 		case Op_NullArg0:
 			symbol = GetSymbolForArgument(closureInfo, 0, (Int32)byteCode->u.index);
-			return String_Format("`%S (%d)", SymbolTable_GetName(Smile_SymbolTable, symbol), (Int32)byteCode->u.index);
+			return String_Format("`%S (%hd)", SymbolTable_GetName(Smile_SymbolTable, symbol), (Int32)byteCode->u.index);
 
 		// 40-6F (Locals)
 		case Op_LdLoc0: case Op_LdLoc1: case Op_LdLoc2: case Op_LdLoc3:
@@ -374,29 +374,29 @@ static String ByteCode_OperandsToString(ByteCodeSegment segment, ByteCode byteCo
 		case Op_StpLoc0: case Op_StpLoc1: case Op_StpLoc2: case Op_StpLoc3:
 		case Op_StpLoc4: case Op_StpLoc5: case Op_StpLoc6: case Op_StpLoc7:
 			symbol = GetSymbolForLocalVariable(closureInfo, (Int32)byteCode->opcode & 7, (Int32)byteCode->u.index);
-			return String_Format("`%S (%d)", SymbolTable_GetName(Smile_SymbolTable, symbol), (Int32)byteCode->u.index);
+			return String_Format("`%S (%hd)", SymbolTable_GetName(Smile_SymbolTable, symbol), (Int32)byteCode->u.index);
 		case Op_NullLoc0:
 			symbol = GetSymbolForLocalVariable(closureInfo, 0, (Int32)byteCode->u.index);
-			return String_Format("`%S (%d)", SymbolTable_GetName(Smile_SymbolTable, symbol), (Int32)byteCode->u.index);
+			return String_Format("`%S (%hd)", SymbolTable_GetName(Smile_SymbolTable, symbol), (Int32)byteCode->u.index);
 
 		// 70-7F
 		case Op_LdProp:
 		case Op_StProp:
 		case Op_StpProp:
-			return String_Format("`%S (%d)", SymbolTable_GetName(Smile_SymbolTable, byteCode->u.symbol), byteCode->u.symbol);
+			return String_Format("`%S (%hd)", SymbolTable_GetName(Smile_SymbolTable, byteCode->u.symbol), byteCode->u.symbol);
 		case Op_LdInclude:
-			return String_Format("%d, %d", byteCode->u.i2.a, byteCode->u.i2.b);
+			return String_Format("%hd, %hd", byteCode->u.i2.a, byteCode->u.i2.b);
 
 		// 80-8F
 		case Op_Try:
-			return String_Format(byteCode->u.i2.a < 0 ? "L%d, %d" : ">L%d, %d", address + byteCode->u.i2.a, byteCode->u.i2.b);
+			return String_Format(byteCode->u.i2.a < 0 ? "L%hd, %hd" : ">L%hd, %hd", address + byteCode->u.i2.a, byteCode->u.i2.b);
 		
 		// 90-AF
 		case Op_Met0: case Op_Met1: case Op_Met2: case Op_Met3:
 		case Op_Met4: case Op_Met5: case Op_Met6: case Op_Met7:
 		case Op_TMet0: case Op_TMet1: case Op_TMet2: case Op_TMet3:
 		case Op_TMet4: case Op_TMet5: case Op_TMet6: case Op_TMet7:
-			return String_Format("`%S (%d)", SymbolTable_GetName(Smile_SymbolTable, byteCode->u.symbol), byteCode->u.symbol);
+			return String_Format("`%S (%hd)", SymbolTable_GetName(Smile_SymbolTable, byteCode->u.symbol), byteCode->u.symbol);
 
 		// B0-BF
 		case Op_Jmp:
@@ -405,16 +405,16 @@ static String ByteCode_OperandsToString(ByteCodeSegment segment, ByteCode byteCo
 			return String_Format(byteCode->u.index < 0 ? "L%lld" : ">L%lld", (Int64)(address + byteCode->u.index));
 		case Op_Met:
 		case Op_TMet:
-			return String_Format("%d, `%S (%d)", byteCode->u.i2.a, SymbolTable_GetName(Smile_SymbolTable, (Symbol)byteCode->u.i2.b), byteCode->u.i2.b);
+			return String_Format("%hd, `%S (%hd)", byteCode->u.i2.a, SymbolTable_GetName(Smile_SymbolTable, (Symbol)byteCode->u.i2.b), byteCode->u.i2.b);
 		case Op_Call:
 		case Op_TCall:
-			return String_Format("%d", byteCode->u.int32);
+			return String_Format("%hd", byteCode->u.int32);
 		
 		// C0-CF
 		case Op_NewFn:
-			return String_Format("@%d", byteCode->u.int32);
+			return String_Format("@%hd", byteCode->u.int32);
 		case Op_NewObj:
-			return String_Format("%d", byteCode->u.int32);
+			return String_Format("%hd", byteCode->u.int32);
 		
 		// D0-DF
 			
