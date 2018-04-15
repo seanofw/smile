@@ -11,6 +11,7 @@
 #	pragma warning(pop)
 #elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
 #   include <unistd.h>
+#   include <errno.h>
 #else
 #	error Unsupported OS.
 #endif
