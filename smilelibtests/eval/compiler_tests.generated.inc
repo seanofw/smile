@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 8b059c22bda13eefae09c566d3ef8490
+// SourceHash: 5f60caf9b96f516470990a4a63b2b0d4
 
 START_TEST_SUITE(CompilerTests)
 {
@@ -37,7 +37,9 @@ START_TEST_SUITE(CompilerTests)
 	CanCompileASimpleTillLoop,
 	CanCompileATillLoopThatActuallyDoesSomething,
 	CanCompileASimpleTillLoopUsingBuiltInSyntax,
+	CanCompileASimpleTillLoopUsingBuiltInSyntaxAndNoResultingValue,
 	CanCompileATillLoopWithWhenClauses,
+	CanCompileATillLoopWithWhenClausesAndNoResultingValue,
 }
 END_TEST_SUITE(CompilerTests)
 

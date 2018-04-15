@@ -1077,6 +1077,48 @@ START_TEST(CanCompileASimpleTillLoopUsingBuiltInSyntax)
 }
 END_TEST
 
+START_TEST(CanCompileASimpleTillLoopUsingBuiltInSyntaxAndNoResultingValue)
+{
+	SmileObject expr = Parse(
+		"var x = 1\n"
+		"till reached-eight-bits do {\n"
+		"\tif x > 0xFF then reached-eight-bits\n"
+		"\tx <<= 1\n"
+		"}\n"
+		"x = 0\n"
+	);
+
+	Compiler compiler = Compiler_Create();
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	String result;
+
+	String expectedResult = String_Format(
+		"0: \tNullLoc0 `x (0)\t; test.sm:1\n"
+		"1: \tLd64    1\t; test.sm:1\n"
+		"2: \tStpLoc0 `x (0)\t; test.sm:1\n"
+		"3: \tLdLoc0  `x (0)\t; test.sm:3\n"
+		"4: \tLd64    255\t; test.sm:3\n"
+		"5: \tBinary  `> (%hd)\t; test.sm:3\n"
+		"6: \tBf      >L8\t; test.sm:3\n"
+		"7: \tJmp     >L13\t; test.sm:3\n"
+		"8: \tLdLoc0  `x (0)\t; test.sm:4\n"
+		"9: \tLd64    1\t; test.sm:4\n"
+		"10: \tBinary  `<< (%hd)\t; test.sm:4\n"
+		"11: \tStpLoc0 `x (0)\t; test.sm:4\n"
+		"12: \tJmp     L3\t; test.sm:2\n"
+		"13: \tLd64    0\t; test.sm:6\n"
+		"14: \tStLoc0  `x (0)\t; test.sm:6\n"
+		"15: \tRet\n",
+		SymbolTable_GetSymbolC(Smile_SymbolTable, ">"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "<<")
+	);
+
+	result = UserFunctionInfo_ToString(globalFunction);
+
+	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
+}
+END_TEST
+
 START_TEST(CanCompileATillLoopWithWhenClauses)
 {
 	SmileObject expr = Parse(
@@ -1132,6 +1174,76 @@ START_TEST(CanCompileATillLoopWithWhenClauses)
 		"23: \tStLoc0  `y (1)\t; test.sm:11\n"
 
 		"24: \tRet\n",
+		SymbolTable_GetSymbolC(Smile_SymbolTable, ">"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, ">"),
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "<<")
+	);
+
+	result = UserFunctionInfo_ToString(globalFunction);
+
+	ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
+}
+END_TEST
+
+START_TEST(CanCompileATillLoopWithWhenClausesAndNoResultingValue)
+{
+	SmileObject expr = Parse(
+		"var x = 1, y\n"
+		"till reached-eight-bits, failed do {\n"
+		"\tif x > 0xFF then reached-eight-bits\n"
+		"\telse if x > 0x1FF then failed\n"
+		"\tx <<= 1\n"
+		"}\n"
+		"when reached-eight-bits {\n"
+		"\ty = 1\n"
+		"}\n"
+		"when failed {\n"
+		"\ty = 2\n"
+		"}\n"
+		"x = 0\n"
+	);
+
+	Compiler compiler = Compiler_Create();
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	String result;
+
+	String expectedResult = String_Format(
+		"0: \tNullLoc0 `x (0)\t; test.sm:1\n"
+		"1: \tNullLoc0 `y (1)\t; test.sm:1\n"
+
+		"2: \tLd64    1\t; test.sm:1\n"
+		"3: \tStpLoc0 `x (0)\t; test.sm:1\n"
+
+		"4: \tLdLoc0  `x (0)\t; test.sm:3\n"
+		"5: \tLd64    255\t; test.sm:3\n"
+		"6: \tBinary  `> (%hd)\t; test.sm:3\n"
+		"7: \tBf      >L9\t; test.sm:3\n"
+		"8: \tJmp     >L19\t; test.sm:3\n"
+
+		"9: \tLdLoc0  `x (0)\t; test.sm:4\n"
+		"10: \tLd64    511\t; test.sm:4\n"
+		"11: \tBinary  `> (%hd)\t; test.sm:4\n"
+		"12: \tBf      >L14\t; test.sm:4\n"
+		"13: \tJmp     >L22\t; test.sm:4\n"
+
+		"14: \tLdLoc0  `x (0)\t; test.sm:5\n"
+		"15: \tLd64    1\t; test.sm:5\n"
+		"16: \tBinary  `<< (%hd)\t; test.sm:5\n"
+		"17: \tStpLoc0 `x (0)\t; test.sm:5\n"
+
+		"18: \tJmp     L4\t; test.sm:2\n"
+
+		"19: \tLd64    1\t; test.sm:8\n"
+		"20: \tStpLoc0 `y (1)\t; test.sm:8\n"
+		"21: \tJmp     >L24\t; test.sm:7\n"
+
+		"22: \tLd64    2\t; test.sm:11\n"
+		"23: \tStpLoc0 `y (1)\t; test.sm:11\n"
+
+		"24: \tLd64    0\t; test.sm:13\n"
+		"25: \tStLoc0  `x (0)\t; test.sm:13\n"
+
+		"26: \tRet\n",
 		SymbolTable_GetSymbolC(Smile_SymbolTable, ">"),
 		SymbolTable_GetSymbolC(Smile_SymbolTable, ">"),
 		SymbolTable_GetSymbolC(Smile_SymbolTable, "<<")
