@@ -27,7 +27,8 @@ static Bool ValidateTill(Compiler compiler, SmileList args, SmileList *flags, Sm
 static Int CountFlags(Compiler compiler, SmileList flags);
 static void DefineVariablesForFlags(Compiler compiler, SmileList flags, Int numFlags, CompileScope tillScope,
 	TillContinuationInfo tillInfo, Int tillContinuationVariableIndex, IntermediateInstruction nullLabel);
-static Int CompileWhens(Compiler compiler, CompiledBlock parentBlock, CompileScope tillScope,
+static Int CompileWhens(Compiler compiler, IntermediateInstruction nullLabel, Int numFlags,
+	CompiledBlock parentBlock, CompileScope tillScope,
 	SmileList whens, IntermediateInstruction exitTarget, CompileFlags compileFlags);
 static CompiledBlock CompileNullCase(Compiler compiler, IntermediateInstruction nullLabel, Int numFlags, Int numWhens,
 	CompileFlags compileFlags);
@@ -86,9 +87,10 @@ CompiledBlock Compiler_CompileTill(Compiler compiler, SmileList args, CompileFla
 
 	// Make the block for the whens.
 	whensBlock = CompiledBlock_Create();
-	numWhens = CompileWhens(compiler, whensBlock, tillScope, whens, exitLabel, compileFlags);
+	numWhens = CompileWhens(compiler, nullLabel, numFlags, whensBlock, tillScope, whens, exitLabel, compileFlags);
 	nullBlock = CompileNullCase(compiler, nullLabel, numFlags, numWhens, compileFlags);
-	CompiledBlock_AppendChild(whensBlock, nullBlock);
+	if (nullBlock != NULL)
+		CompiledBlock_AppendChild(whensBlock, nullBlock);
 
 	//---------------------------------------------------------
 	// Phase 4.  Core loop.
@@ -272,14 +274,17 @@ static CompiledBlock GenerateTillContinuation(Compiler compiler, Int numFlags, I
 /// Compile all the [when] clauses, and update the till object to point to their emitted
 /// instructions.  This returns the number of [when] clauses emitted.
 /// </summary>
-static Int CompileWhens(Compiler compiler, CompiledBlock parentBlock, CompileScope tillScope,
+static Int CompileWhens(Compiler compiler, IntermediateInstruction nullLabel, Int numFlags,
+	CompiledBlock parentBlock, CompileScope tillScope,
 	SmileList whens, IntermediateInstruction exitTarget, CompileFlags compileFlags)
 {
 	Int numWhens, index;
+	Int oldSourceLocation;
 	SmileSymbol smileSymbol;
 	CompiledTillSymbol compiledTillSymbol;
 	IntermediateInstruction instr;
 	CompiledBlock compiledBlock, childBlock;
+	SmileList whenList;
 
 	if (SMILE_KIND(whens) != SMILE_KIND_LIST)
 		return 0;
@@ -298,18 +303,20 @@ static Int CompileWhens(Compiler compiler, CompiledBlock parentBlock, CompileSco
 	// get an absolute address.
 	for (index = 0; SMILE_KIND(whens) == SMILE_KIND_LIST; whens = LIST_REST(whens), index++) {
 
+		whenList = (SmileList)whens->a;
+
 		// Make sure this [when] is well-formed.
-		if (SMILE_KIND(whens->a) != SMILE_KIND_LIST
-			|| SMILE_KIND(((SmileList)whens->a)->a) != SMILE_KIND_SYMBOL
-			|| SMILE_KIND(((SmileList)whens->a)->d) != SMILE_KIND_LIST
-			|| SMILE_KIND(((SmileList)((SmileList)whens->a)->d)->d) != SMILE_KIND_NULL) {
+		if (SMILE_KIND(whenList) != SMILE_KIND_LIST
+			|| SMILE_KIND(whenList->a) != SMILE_KIND_SYMBOL
+			|| SMILE_KIND(whenList->d) != SMILE_KIND_LIST
+			|| SMILE_KIND(((SmileList)whenList->d)->d) != SMILE_KIND_NULL) {
 			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(whens, getSourceLocation),
 				String_FromC("Cannot compile [$till]: Whens must be sub-lists of the form [symbol body].")));
 			continue;
 		}
 
 		// Get the flag object for this [when].  The flag object will have any nearby branches attached to it.
-		smileSymbol = (SmileSymbol)((SmileList)whens->a)->a;
+		smileSymbol = (SmileSymbol)whenList->a;
 		compiledTillSymbol = (CompiledTillSymbol)CompileScope_FindSymbolHere(tillScope, smileSymbol->symbol);
 		if (compiledTillSymbol == NULL) {
 			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(whens, getSourceLocation),
@@ -317,28 +324,36 @@ static Int CompileWhens(Compiler compiler, CompiledBlock parentBlock, CompileSco
 				SymbolTable_GetName(Smile_SymbolTable, smileSymbol->symbol))));
 			continue;
 		}
-		if (compiledTillSymbol->whenLabel != NULL) {
+		if (compiledTillSymbol->whenLabel != nullLabel) {
 			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(whens, getSourceLocation),
 				String_Format("Cannot compile [$till]: When clause '%S' is defined multiple times.",
 				SymbolTable_GetName(Smile_SymbolTable, smileSymbol->symbol))));
 			continue;
 		}
 
-		// Attach a new block for the [when] clause.
+		// Create a new block for the [when] clause.
 		compiledBlock = CompiledBlock_Create();
-		CompiledBlock_AppendChild(parentBlock, compiledBlock);
+		oldSourceLocation = Compiler_SetSourceLocationFromList(compiler, whenList);
 
 		// Emit the label that will be branched to, either by escape continuation or, if possible, by a local Jmp.
 		compiledTillSymbol->whenLabel = EMIT0(Op_Label, 0);
 
 		// Compile the body of the [when], and leave it on the stack as the output.
-		childBlock = Compiler_CompileExpr(compiler, ((SmileList)((SmileList)whens->a)->d)->a, compileFlags);
+		childBlock = Compiler_CompileExpr(compiler, ((SmileList)whenList->d)->a, compileFlags);
 		Compiler_MakeStackMatchCompileFlags(compiler, childBlock, compileFlags);
 		CompiledBlock_AppendChild(compiledBlock, childBlock);
 
-		// Branch to the exit label for this till-loop.
-		instr = EMIT0(Op_Jmp, 0);
-		instr->p.branchTarget = exitTarget;
+		// Branch to the exit label for this till-loop, if and only if this is not
+		// the last when-flag (and no null case is needed).
+		if (!(numWhens == numFlags && SMILE_KIND(whens->d) == SMILE_KIND_NULL)) {
+			instr = EMIT0(Op_Jmp, 0);
+			instr->p.branchTarget = exitTarget;
+		}
+
+		// Attach the finished [when] block to the parent's collection.
+		CompiledBlock_AppendChild(parentBlock, compiledBlock);
+
+		Compiler_RevertSourceLocation(compiler, oldSourceLocation);
 	}
 
 	return numWhens;
