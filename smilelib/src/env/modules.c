@@ -95,7 +95,7 @@ ModuleInfo ModuleInfo_GetModuleById(UInt32 id)
 ModuleInfo ModuleInfo_GetModuleByName(String name)
 {
 	ModuleInfo moduleInfo;
-	if (_moduleDict == NULL || !StringDict_TryGetValue(_moduleDict, name, &moduleInfo))
+	if (_moduleDict == NULL || !StringDict_TryGetValue(_moduleDict, name, (void **)&moduleInfo))
 		return NULL;
 	return moduleInfo;
 }
