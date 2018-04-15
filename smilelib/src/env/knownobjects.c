@@ -42,15 +42,15 @@ void KnownObjects_Setup(struct KnownObjectsStruct *knownObjects, struct KnownSym
 
 	knownObjects->NullInstance = SmileNull_Create();
 
-	for (i = 0; i <= 255; i++) {
+	for (i = 0; i < 256; i++) {
 		knownObjects->Chars[i] = SmileChar_Init(&_chars[i], (Byte)i);
 	}
 
-	for (i = 0; i <= 1023; i++) {
+	for (i = 0; i < 1024; i++) {
 		knownObjects->Unis[i] = SmileUni_Init(&_unis[i], (UInt32)i);
 	}
 
-	for (i = 0; i <= 255; i++) {
+	for (i = 0; i < 256; i++) {
 		knownObjects->Bytes[i] = SmileByte_Init(&_bytes[i], (Byte)i);
 	}
 
