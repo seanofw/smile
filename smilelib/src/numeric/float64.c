@@ -169,9 +169,10 @@ String Float64_ToFixedString(Float64 value, Int minIntDigits, Int maxFracDigits,
 			break;
 	}
 
-	// Use sprintf to actually format the number.
-	sprintf_s(start, numberBuffer + sizeof(numberBuffer) - start, "%.*f",
+	// Use sprintf to actually format the number (safely).
+	snprintf(start, numberBuffer + sizeof(numberBuffer) - start, "%.*f",
 		(Int32)maxFracDigits, value);
+	numberBuffer[sizeof(numberBuffer) - 1] = '\0';
 
 	// Trim any trailing zeros, but ensure that there's always one digit after the decimal point.
 	end = start + strlen(start);
@@ -241,8 +242,9 @@ String Float64_ToExpString(Float64 value, Int maxFracDigits, Bool forceSign)
 	}
 
 	// Now use sprintf to actually format the number.
-	sprintf_s(start, numberBuffer + sizeof(numberBuffer) - start, "%.*e",
+	snprintf(start, numberBuffer + sizeof(numberBuffer) - start, "%.*e",
 		(maxFracDigits > Int32Max ? Int32Max : (Int32)maxFracDigits), value);
+	numberBuffer[sizeof(numberBuffer) - 1] = '\0';
 
 	// And we're done.
 	return String_FromC(numberBuffer);
