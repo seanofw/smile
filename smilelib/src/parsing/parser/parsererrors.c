@@ -100,8 +100,9 @@ void Parser_AddWarningv(Parser parser, LexerPosition position, const char *messa
 Int Parser_GetWarningCount(Parser parser)
 {
 	Int count = 0;
+	SmileList list;
 
-	for (SmileList list = parser->firstMessage; SMILE_KIND(list) != SMILE_KIND_NULL; list = LIST_REST(list)) {
+	for (list = parser->firstMessage; SMILE_KIND(list) != SMILE_KIND_NULL; list = LIST_REST(list)) {
 		if (((ParseMessage)list->a)->messageKind == PARSEMESSAGE_WARNING)
 			count++;
 	}
@@ -149,8 +150,9 @@ void Parser_AddErrorv(Parser parser, LexerPosition position, const char *message
 Int Parser_GetErrorCount(Parser parser)
 {
 	Int count = 0;
+	SmileList list;
 
-	for (SmileList list = parser->firstMessage; SMILE_KIND(list) != SMILE_KIND_NULL; list = LIST_REST(list)) {
+	for (list = parser->firstMessage; SMILE_KIND(list) != SMILE_KIND_NULL; list = LIST_REST(list)) {
 		if (((ParseMessage)list->a)->messageKind == PARSEMESSAGE_ERROR)
 			count++;
 	}
@@ -198,8 +200,9 @@ void Parser_AddFatalErrorv(Parser parser, LexerPosition position, const char *me
 Int Parser_GetFatalErrorCount(Parser parser)
 {
 	Int count = 0;
+	SmileList list;
 
-	for (SmileList list = parser->firstMessage; SMILE_KIND(list) != SMILE_KIND_NULL; list = LIST_REST(list)) {
+	for (list = parser->firstMessage; SMILE_KIND(list) != SMILE_KIND_NULL; list = LIST_REST(list)) {
 		if (((ParseMessage)list->a)->messageKind == PARSEMESSAGE_FATAL)
 			count++;
 	}
@@ -215,8 +218,9 @@ Int Parser_GetFatalErrorCount(Parser parser)
 Int Parser_GetErrorOrWarningCount(Parser parser)
 {
 	Int count = 0;
+	SmileList list;
 
-	for (SmileList list = parser->firstMessage; SMILE_KIND(list) != SMILE_KIND_NULL; list = LIST_REST(list)) {
+	for (list = parser->firstMessage; SMILE_KIND(list) != SMILE_KIND_NULL; list = LIST_REST(list)) {
 		if (((ParseMessage)list->a)->messageKind == PARSEMESSAGE_WARNING
 			|| ((ParseMessage)list->a)->messageKind == PARSEMESSAGE_ERROR
 			|| ((ParseMessage)list->a)->messageKind == PARSEMESSAGE_FATAL)
