@@ -388,13 +388,16 @@ SmileObject Parser_ExposeAll(Parser parser, ParseScope target, ModuleInfo module
 /// </summary>
 Bool Parser_ExposeSyntax(Parser parser, ParseScope target, ModuleInfo moduleInfo, LexerPosition position)
 {
+	SmileList list;
+	SmileSyntax rule;
+
 	// Add the #syntax rules declared in the module's scope, exactly if we'd just written
 	// those same #syntax rules right here, but put them into the 'include' list rather
 	// than the 'declared' list when we add them.
-	for (SmileList list = moduleInfo->parseScope->syntaxListHead;
+	for (list = moduleInfo->parseScope->syntaxListHead;
 		SMILE_KIND(list) == SMILE_KIND_LIST; list = (SmileList)list->d) {
 
-		SmileSyntax rule = (SmileSyntax)list->a;
+		rule = (SmileSyntax)list->a;
 		if (SMILE_KIND(rule) != SMILE_KIND_SYNTAX) {
 			Parser_AddFatalError(parser, position, "Illegal non-Syntax object in module's scope's syntax list; this is probably a bug.");
 			return False;
@@ -411,10 +414,10 @@ Bool Parser_ExposeSyntax(Parser parser, ParseScope target, ModuleInfo moduleInfo
 
 		// Add the #syntax rules included in the module's scope, exactly if we'd included
 		// those same #syntax rules from wherever they came from.
-		for (SmileList list = moduleInfo->parseScope->syntaxIncludeListHead;
+		for (list = moduleInfo->parseScope->syntaxIncludeListHead;
 			SMILE_KIND(list) == SMILE_KIND_LIST; list = (SmileList)list->d) {
 
-			SmileSyntax rule = (SmileSyntax)list->a;
+			rule = (SmileSyntax)list->a;
 			if (SMILE_KIND(rule) != SMILE_KIND_SYNTAX) {
 				Parser_AddFatalError(parser, position, "Illegal non-Syntax object in module's scope's syntax list; this is probably a bug.");
 				return False;
