@@ -1,6 +1,6 @@
 # Smile Programming Language Interpreter
 
-**Copyright &copy; 2004-2017 Sean Werkema**
+**Copyright &copy; 2004-2018 Sean Werkema**
 
 [![Coverity Scan Status](https://scan.coverity.com/projects/seanofw-smile/badge.svg?flat=1)](https://scan.coverity.com/projects/seanofw-smile)
 
@@ -32,11 +32,10 @@ Lisp, but it reads more like Python or Ruby.
       * [Evaluation Overview](smilelib/src/eval)
     * [C Header Overview](smilelib/include)
 
-(_Note: This C implementation is currently incomplete but growing,
-and it will eventually become the official implementation.  It is **minimally**
-usable in its current form.  If you want the more-complete
-(but slow) C# implementation, you'll need to look elsewhere,
-as it's not hosted here._)
+(_Note: This C implementation is somewhat incomplete but growing,
+and it will soon become the official implementation.  It is **somewhat**
+usable in its current form, and will likely pass the old C# implementation by
+the end of 2018._)
 
 -------------
 
