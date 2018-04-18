@@ -85,8 +85,21 @@
 * <machine/endian.h> where the appropriate definitions are actually
 * made).
 */
+
+/* Some machines define these weirdly, so if they exist, just redefine them. */
+#ifdef LITTLE_ENDIAN
+#undef LITTLE_ENDIAN
+#endif
+#ifdef BIG_ENDIAN
+#undef BIG_ENDIAN
+#endif
+#ifdef BYTE_ORDER
+#undef BYTE_ORDER
+#endif
+
 #define LITTLE_ENDIAN 0
 #define BIG_ENDIAN 1
+
 #if SMILE_ENDIAN == SMILE_ENDIAN_LITTLE
 #	define BYTE_ORDER LITTLE_ENDIAN
 #elif SMILE_ENDIAN == SMILE_ENDIAN_BIG
