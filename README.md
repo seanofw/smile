@@ -2,6 +2,7 @@
 
 **Copyright &copy; 2004-2018 Sean Werkema**
 
+[![Travis CI Build Status](https://travis-ci.org/seanofw/smile.svg?branch=master)](https://travis-ci.org/seanofw/smile)
 [![Coverity Scan Status](https://scan.coverity.com/projects/seanofw-smile/badge.svg?flat=1)](https://scan.coverity.com/projects/seanofw-smile)
 
 -------------
