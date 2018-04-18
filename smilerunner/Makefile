@@ -58,6 +58,9 @@ obj/$(PLATFORM_NAME)/%.o : %.c
 #  in Makefile.src.
 
 dep:
+	@$(PRINTF) 'Generating build number.\n'
+	@chmod 755 ./buildnum.sh
+	$(SHELL) ./buildnum.sh
 	@$(PRINTF) 'Generating source list from SmileRunner.vcxproj.\n'
 	$(SHELL) ../scripts/getsrc.sh SmileRunner.vcxproj > Makefile.src
 	@$(PRINTF) '\nGenerating dependencies in Makefile.dep (this may take a moment).\n'
