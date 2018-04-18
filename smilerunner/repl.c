@@ -31,7 +31,7 @@
 #	include <limits.h>
 #	include <unistd.h>
 #	include <errno.h>
-#	include <editline/readline.h>
+#	include <readline/readline.h>
 #endif
 
 extern void ListFiles(String commandLine, Bool longMode, Int consoleWidth);
