@@ -239,11 +239,13 @@ SmileObject Smile_ParseInScope(String text, String filename,
 		if (numParseMessages != NULL)
 			*numParseMessages = numMessages;
 		if (parseMessages != NULL) {
+			SmileList list;
+
 			*parseMessages = destMessage = GC_MALLOC_STRUCT_ARRAY(struct ParseMessageStruct *, numMessages);
 			if (*parseMessages == NULL)
 				Smile_Abort_OutOfMemory();
 
-			for (SmileList list = parser->firstMessage; SMILE_KIND(list) != SMILE_KIND_NULL; list = LIST_REST(list)) {
+			for (list = parser->firstMessage; SMILE_KIND(list) != SMILE_KIND_NULL; list = LIST_REST(list)) {
 				if (((ParseMessage)list->a)->messageKind == PARSEMESSAGE_WARNING
 					|| ((ParseMessage)list->a)->messageKind == PARSEMESSAGE_ERROR
 					|| ((ParseMessage)list->a)->messageKind == PARSEMESSAGE_FATAL) {
