@@ -10,7 +10,11 @@ compiler: gcc
 addons:
   apt:
     sources:
+      - ubuntu-toolchain-r-test
+    packages:
       - libreadline-dev
 
-script: make dep && make && make check
+script:
+- chmod 755 scripts/detect-os.sh scripts/detect-proc.sh
+- make dep && make && make check
 
