@@ -8,7 +8,7 @@ MAKEFILE_EXTRA_DIR := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 include $(MAKEFILE_EXTRA_DIR)Makefile.os
 
 # Reset any weird or wrong or nonstandard defaults.
-SHELL := /bin/sh
+SHELL := /bin/bash
 .SUFFIXES:
 
 # Cygwin needs output suffixes for Windows.
