@@ -1,0 +1,13 @@
+# Configuration for the Travis CI build system.
+# Yes, this configuration is pretty primitive in its current form.
+
+language: c
+
+os: linux
+
+compiler: gcc
+
+script:
+- make dep
+- make
+- make check
