@@ -82,6 +82,7 @@ extern CompiledBlock CompiledBlock_Create(void);
 extern CompiledBlock CompiledBlock_CreateError(void);
 extern void CompiledBlock_AttachInstruction(CompiledBlock compiledBlock, IntermediateInstruction insertAfterThis, IntermediateInstruction newInstruction);
 extern void CompiledBlock_DetachInstruction(CompiledBlock compiledBlock, IntermediateInstruction instruction);
+extern void CompiledBlock_Clear(CompiledBlock compiledBlock);
 extern CompiledBlock CompiledBlock_Combine(CompiledBlock firstblock, CompiledBlock secondBlock);
 extern void CompiledBlock_Flatten(CompiledBlock compiledBlock);
 extern Int CompiledBlock_CalculateAddresses(CompiledBlock compiledBlock, Int startAddress, Bool includePseudoOps);

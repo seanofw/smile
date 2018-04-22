@@ -151,6 +151,26 @@ void CompiledBlock_DetachInstruction(CompiledBlock compiledBlock, IntermediateIn
 }
 
 /// <summary>
+/// Detach all instructions from the given CompiledBlock, resetting it back to its
+/// initial state.
+/// </summary>
+/// <param name="compiledBlock">The CompiledBlock to detach the instruction from.</param>
+void CompiledBlock_Clear(CompiledBlock compiledBlock)
+{
+	// Basic sanity checks.
+	SMILE_ASSERT(compiledBlock != NULL);
+
+	// Reset everything meaningful.  Note that this doesn't cause any parent block's data
+	// to change, so its stats or expectations may be invalid as a result of doing this.
+	compiledBlock->finalStackDelta = 0;
+	compiledBlock->maxStackDepth = 0;
+	compiledBlock->first = NULL;
+	compiledBlock->last = NULL;
+	compiledBlock->numInstructions = 0;
+	compiledBlock->blockFlags = 0;
+}
+
+/// <summary>
 /// Join two basic blocks together in sequence.  This destroys the original two basic
 /// blocks, and results in a new combined block that contains all of the instructions
 /// of the originals.  Note that the combined block's instruction addresses will be wrong,

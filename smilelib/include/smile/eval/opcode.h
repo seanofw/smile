@@ -207,7 +207,7 @@ enum Opcode {
 	Op_Jmp		= 0xB0,		//  0 | label			; Unconditional jump to the given label.
 	Op_Bt		= 0xB1,		// -1 | label			; Branch to the given label if the stack top is truthy.
 	Op_Bf		= 0xB2,		// -1 | label			; Branch to the given label if the stack top is falsy.
-	Op_B3		= 0xB3,		
+	Op_B3		= 0xB3,
 	Op_Met		= 0xB4,		// -n, +1 | int32, int32	; Call the given method with 'n' arguments.  Target and arguments must all be on the stack.
 	Op_TMet		= 0xB5,		// -n, +1 | int32, int32	; Jump to the given method with 'n' arguments, as a tail-call.  Target and arguments must all be on the stack.
 	Op_Call		= 0xB6,		// -(n+1), +1 | int32	; Call the given function with 'n' arguments.  Function and arguments must all be on the stack.
@@ -215,10 +215,11 @@ enum Opcode {
 	Op_NewTill	= 0xB8,		// +1 | int32			; Load the given 'till' escape-continuation branch-table object.
 	Op_EndTill	= 0xB9,		// -1					; Destroy (mark as unusable) the 'till' escape-continuation on the stack top.
 	Op_TillEsc	= 0xBA,		// -1 | int32			; Invoke the escape continuation on the stack, escaping to the given indexed when clause.
-	Op_Try		= 0xBC,		//  0 | label, int32	; Set up a new exception scope, branching to 'label' function if an exception is raised, pushing exception
-	Op_EndTry	= 0xBD,		//  0					; Revert to the previous exception scope.
-	Op_BE		= 0xBE,		
-	Op_Ret		= 0xBF,		//  0					; Return to caller, destroying the current function's dynamic scope.  Stack top must contain return value.
+	Op_Ret		= 0xBB,		//  0					; Return to caller, destroying the current function's dynamic scope.  Stack top must contain return value.
+	Op_Try		= 0xBC,		//  0 | label, int32	; Set up a new exception handler, branching to 'label' function if an exception is raised, pushing exception.
+	Op_EndTry	= 0xBD,		//  0					; Revert to the previous exception handler.
+	Op_Auto		= 0xBE,		//  0 | label			; Set up a new auto scope, branching to 'label' if the scope is abnormally exited.
+	Op_EndAuto	= 0xBF,		//  0					; Finish the current auto scope, and continue any closure-unwinding in progress.
 				
 	Op_Add		= 0xC0,		// -2, +1				; Invoke any binary '+' operator on the object on the stack top.
 	Op_Sub		= 0xC1,		// -2, +1				; Invoke any binary '-' operator on the object on the stack top.

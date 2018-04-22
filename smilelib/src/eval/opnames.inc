@@ -45,7 +45,7 @@ Op(TUnary), Op(TBinary), Op(TMet2), Op(TMet3), Op(TMet4), Op(TMet5), Op(TMet6), 
 
 // B0-BF
 Op(Jmp), Op(Bt), Op(Bf), NULL, Op(Met), Op(TMet), Op(Call), Op(TCall),
-Op(NewTill), Op(EndTill), Op(TillEsc), NULL, Op(Try), Op(EndTry), NULL, Op(Ret),
+Op(NewTill), Op(EndTill), Op(TillEsc), Op(Ret), Op(Try), Op(EndTry), Op(Auto), Op(EndAuto),
 
 // C0-CF
 Op(Add), Op(Sub), Op(Mul), Op(Div), Op(Mod), Op(Rem), NULL, Op(RangeTo),
