@@ -109,9 +109,14 @@ Inline void Compiler_PopIfNecessary(Compiler compiler, CompiledBlock compiledBlo
 
 /// <summary>
 /// If the previous operation resulted in unwanted content on the stack, get rid of it by popping it.
+/// We only do this, though, if the previous operation didn't escape (via return/exception/till-flag/etc),
+/// since if it did, nothing after it matters anyway.
 /// </summary>
 Inline void Compiler_EmitNoResult(Compiler compiler, CompiledBlock compiledBlock)
 {
+	if (compiledBlock->blockFlags & BLOCK_FLAG_ESCAPE)
+		return;
+
 	if (compiledBlock->finalStackDelta != 0) {
 		EMIT0(Op_Pop1, -1);
 	}
@@ -119,10 +124,14 @@ Inline void Compiler_EmitNoResult(Compiler compiler, CompiledBlock compiledBlock
 
 /// <summary>
 /// Force there to be at least a null on the stack, even if the previous operation didn't
-/// emit any output.
+/// emit any output.  We only do this, though, if the previous operation didn't escape
+/// (via return/exception/till-flag/etc), since if it did, nothing after it matters anyway.
 /// </summary>
 Inline void Compiler_EmitRequireResult(Compiler compiler, CompiledBlock compiledBlock)
 {
+	if (compiledBlock->blockFlags & BLOCK_FLAG_ESCAPE)
+		return;
+
 	if (compiledBlock->finalStackDelta == 0) {
 		EMIT0(Op_LdNull, +1);
 	}

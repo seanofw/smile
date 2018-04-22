@@ -1255,4 +1255,29 @@ START_TEST(CanCompileATillLoopWithWhenClausesAndNoResultingValue)
 }
 END_TEST
 
+START_TEST(CanUseATillLoopToEscapeNestedFunctions)
+{
+	SmileObject expr = Parse(
+		"var list = `[1 2 3 4 5]\n"
+		"till found-odd, found-even, found-nothing do\n"
+		"\tlist each |x|\n"
+		"\t\tif even? x then found-even\n"
+	);
+
+	Compiler compiler = Compiler_Create();
+	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	String result, result2;
+
+	result = UserFunctionInfo_ToString(globalFunction);
+	result2 = UserFunctionInfo_ToString(compiler->compiledTables->userFunctions[0]);
+
+	puts("global:");
+	puts(String_ToC(result));
+
+	puts("fn1:");
+	puts(String_ToC(result2));
+	//ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
+}
+END_TEST
+
 #include "compiler_tests.generated.inc"

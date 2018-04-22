@@ -35,6 +35,7 @@ static CompiledBlock CompileNullCase(Compiler compiler, IntermediateInstruction 
 static CompiledBlock GenerateTillContinuation(Compiler compiler, Int numFlags, Int tillContinuationVariableIndex,
 	TillContinuationInfo *tillInfo);
 static Bool IsRealContinuationNeeded(SmileList flags, CompileScope tillScope);
+static void PopulateTillBranchTargets(CompileScope tillScope, TillContinuationInfo tillInfo, SmileList flags);
 static void FinalizeTillContinuation(Compiler compiler, CompiledBlock compiledBlock, IntermediateInstruction tillBlockInstr,
 	Int tillContinuationVariableIndex, Bool realContinuationNeeded);
 
@@ -123,6 +124,13 @@ CompiledBlock Compiler_CompileTill(Compiler compiler, SmileList args, CompileFla
 	// Phase 6.  Determine if we really need a true continuation or not.
 
 	realContinuationNeeded = IsRealContinuationNeeded(flags, tillScope);
+	tillInfo->realContinuationNeeded = realContinuationNeeded;
+	if (realContinuationNeeded) {
+		// We need a true escape continuation for this to work.  So fill in the
+		// holes in the TillContinuationInfo with the IntermediateInstructions that
+		// will be the branch targets for each flag (symbol).
+		PopulateTillBranchTargets(tillScope, tillInfo, flags);
+	}
 
 	//---------------------------------------------------------
 	// Phase 7.  Cleanup.
@@ -218,9 +226,15 @@ static void DefineVariablesForFlags(Compiler compiler, SmileList flags, Int numF
 
 	tillInfo->numSymbols = numFlags;
 
-	// Allocate an array to hold all their metadata.
+	// Allocate an array to hold all the flags' metadata, and their branch targets.
 	tillInfo->symbols = allCompiledTillSymbols = GC_MALLOC_STRUCT_ARRAY(CompiledTillSymbol, numFlags);
 	if (allCompiledTillSymbols == NULL)
+		Smile_Abort_OutOfMemory();
+	tillInfo->branchTargetAddresses = GC_MALLOC_STRUCT_ARRAY(Int32, numFlags);
+	if (tillInfo->branchTargetAddresses == NULL)
+		Smile_Abort_OutOfMemory();
+	tillInfo->branchTargetInstructions = GC_MALLOC_STRUCT_ARRAY(IntermediateInstruction, numFlags);
+	if (tillInfo->branchTargetInstructions == NULL)
 		Smile_Abort_OutOfMemory();
 
 	// For each flag, construct a flag variable with a CompiledTillSymbol object attached.
@@ -262,8 +276,7 @@ static CompiledBlock GenerateTillContinuation(Compiler compiler, Int numFlags, I
 
 	// Load a "till continuation" into the variable we reserved for it.  The till continuation
 	// is only used if child functions need to escape to it.  If no children invoke it, these
-	// two instructions will be replaced with simple NOP instructions at the end of all this.
-	// (Subsequent peephole optimizations can remove the NOPs.)
+	// two instructions will be deleted at the end of all this.
 	EMIT1(Op_NewTill, +1, index = (*tillInfo)->tillIndex);
 	EMIT1(Op_StpLoc0, -1, index = tillContinuationVariableIndex);
 
@@ -414,6 +427,28 @@ static Bool IsRealContinuationNeeded(SmileList flags, CompileScope tillScope)
 }
 
 /// <summary>
+/// When we know we need a real escape continuation for this till to work correctly,
+/// we have to fill in its TillContinuationInfo with the target branch instructions, so
+/// that the generated 'escape' instructions will be able to branch to the right target.
+///
+/// Eventually, when the CompiledFunction is converted to actual ByteCode, the array of
+/// target instructions will be transformed into an array of instruction offsets.
+/// </summary>
+static void PopulateTillBranchTargets(CompileScope tillScope, TillContinuationInfo tillInfo, SmileList flags)
+{
+	SmileList temp;
+	Int index;
+	CompiledTillSymbol compiledTillSymbol;
+	SmileSymbol smileSymbol;
+
+	for (temp = flags, index = 0; SMILE_KIND(temp) == SMILE_KIND_LIST; temp = LIST_REST(temp), index++) {
+		smileSymbol = (SmileSymbol)temp->a;
+		compiledTillSymbol = (CompiledTillSymbol)CompileScope_FindSymbolHere(tillScope, smileSymbol->symbol);
+		tillInfo->branchTargetInstructions[index] = compiledTillSymbol->whenLabel;
+	}
+}
+
+/// <summary>
 /// If we've emitted an unnecessary true continuation for this till, go back and un-emit it
 /// by replacing it with NOPs.  The NOPs take time, but considerably less than allocating
 /// an unnecessary real escape continuation on the heap.  Otherwise, add an instruction that
@@ -437,5 +472,36 @@ static void FinalizeTillContinuation(Compiler compiler, CompiledBlock compiledBl
 		// else inside the loop is very low (almost impossible), so it's no big deal
 		// that we're off here:  Worst-case scenario, we waste one word of memory.
 		CompiledBlock_DetachInstruction(compiledBlock, tillBlockInstr);
+	}
+}
+
+/// <summary>
+/// Given a collection of TillContinuationInfo objects whose attached IntermediateInstructions
+/// have been given actual addresses, copy those addresses into the finished branch-target array,
+/// and then release the IntermediateInstructions back to the GC.  This releases most of the
+/// TillContinuationInfo back to the GC, leaving behind only the branch targets.
+/// </summary>
+void Compiler_ResolveTillBranchTargets(TillContinuationInfo *tillInfos, Int numTillInfos)
+{
+	Int i, j;
+
+	for (i = 0; i < numTillInfos; i++) {
+
+		TillContinuationInfo tillInfo = tillInfos[i];
+
+		for (j = 0; j < tillInfo->numSymbols; j++) {
+
+			if (tillInfo->realContinuationNeeded)
+				tillInfo->branchTargetAddresses[j] = tillInfo->branchTargetInstructions[j]->instructionAddress;
+
+			tillInfo->branchTargetInstructions[j] = NULL;
+			tillInfo->symbols[j] = NULL;
+		}
+
+		if (!tillInfo->realContinuationNeeded)
+			tillInfo->branchTargetAddresses = NULL;
+
+		tillInfo->branchTargetInstructions = NULL;
+		tillInfo->symbols = NULL;
 	}
 }

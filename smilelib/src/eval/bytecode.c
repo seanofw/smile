@@ -409,7 +409,11 @@ static String ByteCode_OperandsToString(ByteCodeSegment segment, ByteCode byteCo
 		case Op_Call:
 		case Op_TCall:
 			return String_Format("%hd", byteCode->u.int32);
-		
+		case Op_NewTill:
+			return String_Format("%hd", byteCode->u.int32);
+		case Op_TillEsc:
+			return String_Format("%hd", byteCode->u.int32);
+
 		// C0-CF
 		case Op_NewFn:
 			return String_Format("@%hd", byteCode->u.int32);
