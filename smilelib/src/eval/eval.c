@@ -24,6 +24,7 @@
 #include <smile/smiletypes/smilebool.h>
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/smileuserobject.h>
+#include <smile/smiletypes/smiletillcontinuation.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/text/smilechar.h>
 #include <smile/smiletypes/text/smileuni.h>
@@ -1016,9 +1017,46 @@ next:
 			goto unsupportedOpcode;
 
 		case Op_NewTill:
+			{
+				Int32 tillIndex = byteCode->u.int32;
+				TillContinuationInfo tillInfo = _compiledTables->tillInfos[tillIndex];
+				value = (SmileObject)SmileTillContinuation_Create(Smile_KnownBases.Primitive,
+					_closure, _compiledTables, _segment, tillInfo->branchTargetAddresses, tillInfo->numSymbols); 
+				Closure_PushBoxed(closure, value);
+			}
+			byteCode++;
+			goto next;
+
 		case Op_EndTill:
+			{
+				SmileTillContinuation tillContinuation = (SmileTillContinuation)Closure_Pop(closure).obj;
+				tillContinuation->closure = NULL;
+				tillContinuation->compiledTables = NULL;
+				tillContinuation->segment = NULL;
+				tillContinuation->branchTargetAddresses = NULL;
+				tillContinuation->numBranchTargetAddresses = 0;
+			}
+			byteCode++;
+			goto next;
+
 		case Op_TillEsc:
-			goto unsupportedOpcode;
+			{
+				SmileTillContinuation tillContinuation = (SmileTillContinuation)Closure_Pop(closure).obj;
+				Int address;
+
+				if (byteCode->u.int32 >= tillContinuation->numBranchTargetAddresses) {
+					Smile_ThrowException(Smile_KnownSymbols.eval_error,
+						tillContinuation->numBranchTargetAddresses <= 0
+							? String_FromC("Cannot re-exit a 'till' loop that has already exited.")
+							: String_FromC("Cannot exit a 'till' loop to an invalid target."));
+				}
+				_closure = tillContinuation->closure;
+				_compiledTables = tillContinuation->compiledTables;
+				_segment = tillContinuation->segment;
+				address = tillContinuation->branchTargetAddresses[byteCode->u.int32];
+				_byteCode = byteCode = _segment->byteCodes + address;
+			}
+			goto next;
 
 		case Op_Try:
 		case Op_EndTry:

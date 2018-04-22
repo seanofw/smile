@@ -210,6 +210,7 @@
     <ClInclude Include="include\smile\smiletypes\kind.h" />
     <ClInclude Include="include\smile\smiletypes\predecl.h" />
     <ClInclude Include="include\smile\smiletypes\smilesyntax.h" />
+    <ClInclude Include="include\smile\smiletypes\smiletillcontinuation.h" />
     <ClInclude Include="include\smile\smiletypes\text\smilechar.h" />
     <ClInclude Include="include\smile\smiletypes\text\smilesymbol.h" />
     <ClInclude Include="include\smile\smiletypes\smileuserobject.h" />
@@ -922,6 +923,7 @@
     <ClCompile Include="src\smiletypes\smileobject_class.c" />
     <ClCompile Include="src\smiletypes\smileobject_stringify.c" />
     <ClCompile Include="src\smiletypes\smilesyntax.c" />
+    <ClCompile Include="src\smiletypes\smiletillcontinuation.c" />
     <ClCompile Include="src\smiletypes\smileuserobject.c" />
     <ClCompile Include="src\smiletypes\text\smilechar.c" />
     <ClCompile Include="src\smiletypes\text\smilechar_base.c" />

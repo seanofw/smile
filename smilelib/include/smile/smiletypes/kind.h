@@ -46,6 +46,7 @@ typedef enum {
 	SMILE_KIND_STRING				= 0x25,
 		
 	// Opaque handles.	
+	SMILE_KIND_TILL_CONTINUATION	= 0x2A,
 	SMILE_KIND_HANDLE				= 0x2B,
 	SMILE_KIND_CLOSURE				= 0x2C,
 	SMILE_KIND_FACADE				= 0x2D,

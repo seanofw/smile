@@ -71,6 +71,8 @@ typedef struct ParseScopeStruct *ParseScope;
 typedef struct ParseMessageStruct *ParseMessage;
 typedef struct ParseDeclStruct *ParseDecl;
 
+typedef struct SmileTillContinuationInt *SmileTillContinuation;
+
 typedef struct ModuleInfoStruct *ModuleInfo;
 
 #endif
