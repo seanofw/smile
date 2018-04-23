@@ -1021,7 +1021,7 @@ next:
 				Int32 tillIndex = byteCode->u.int32;
 				TillContinuationInfo tillInfo = _compiledTables->tillInfos[tillIndex];
 				value = (SmileObject)SmileTillContinuation_Create(Smile_KnownBases.Primitive,
-					_closure, _compiledTables, _segment, tillInfo->branchTargetAddresses, tillInfo->numSymbols); 
+					_closure, _segment, tillInfo->branchTargetAddresses, (Int32)tillInfo->numSymbols); 
 				Closure_PushBoxed(closure, value);
 			}
 			byteCode++;
@@ -1031,7 +1031,6 @@ next:
 			{
 				SmileTillContinuation tillContinuation = (SmileTillContinuation)Closure_Pop(closure).obj;
 				tillContinuation->closure = NULL;
-				tillContinuation->compiledTables = NULL;
 				tillContinuation->segment = NULL;
 				tillContinuation->branchTargetAddresses = NULL;
 				tillContinuation->numBranchTargetAddresses = 0;
@@ -1051,10 +1050,12 @@ next:
 							: String_FromC("Cannot exit a 'till' loop to an invalid target."));
 				}
 				_closure = tillContinuation->closure;
-				_compiledTables = tillContinuation->compiledTables;
+				_closure->stackTop = _closure->variables + tillContinuation->stackTop;
 				_segment = tillContinuation->segment;
+				_compiledTables = _segment->compiledTables;
 				address = tillContinuation->branchTargetAddresses[byteCode->u.int32];
 				_byteCode = byteCode = _segment->byteCodes + address;
+				LOAD_REGISTERS;
 			}
 			goto next;
 
@@ -1500,10 +1501,12 @@ static void Eval_DumpCurrentInstruction(void)
 	}
 
 	if (_byteCode->sourceLocation != _lastSourceLocation) {
-		CompiledSourceLocation sourceLocation = &_compiledTables->sourcelocations[_byteCode->sourceLocation];
+		CompiledSourceLocation sourceLocation = _compiledTables != NULL && _compiledTables->sourcelocations != NULL
+			? &_compiledTables->sourcelocations[_byteCode->sourceLocation]
+			: NULL;
 
-		if (sourceLocation->filename != _lastSourceFilename || sourceLocation->line != _lastSourceLine) {
-			if (sourceLocation != NULL) {
+		if (sourceLocation != NULL) {
+			if (sourceLocation->filename != _lastSourceFilename || sourceLocation->line != _lastSourceLine) {
 				if (sourceLocation->filename != NULL) {
 					if (sourceLocation->line != 0)
 						printf("- %s:%d\n", String_ToC(Path_GetFilename(sourceLocation->filename)), sourceLocation->line);

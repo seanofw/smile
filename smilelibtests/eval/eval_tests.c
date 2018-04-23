@@ -971,4 +971,19 @@ START_TEST(CanCallFunctionsWithoutFillingInOptionalArguments)
 }
 END_TEST
 
+START_TEST(CanEvalATillLoopThatEscapesANestedFunction)
+{
+	UserFunctionInfo globalFunctionInfo = Compile(
+		"var list = `[1 2 3 4 5]\n"
+		"till found-even do\n"
+		"\tlist each |x|\n"
+		"\t\tif even? x then found-even\n"
+	);
+	EvalResult result = Eval_Run(globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_NULL);
+}
+END_TEST
+
 #include "eval_tests.generated.inc"

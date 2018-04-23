@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 8a0dc0340cb0e11c2943504b4b4258bb
+// SourceHash: bc0ed4ba58484086cba761be0e62852c
 
 START_TEST_SUITE(CompilerTests)
 {
@@ -40,7 +40,7 @@ START_TEST_SUITE(CompilerTests)
 	CanCompileASimpleTillLoopUsingBuiltInSyntaxAndNoResultingValue,
 	CanCompileATillLoopWithWhenClauses,
 	CanCompileATillLoopWithWhenClausesAndNoResultingValue,
-	CanUseATillLoopToEscapeNestedFunctions,
+	CanCompileATillLoopToEscapeNestedFunctions,
 }
 END_TEST_SUITE(CompilerTests)
 

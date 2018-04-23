@@ -1255,7 +1255,7 @@ START_TEST(CanCompileATillLoopWithWhenClausesAndNoResultingValue)
 }
 END_TEST
 
-START_TEST(CanUseATillLoopToEscapeNestedFunctions)
+START_TEST(CanCompileATillLoopToEscapeNestedFunctions)
 {
 	SmileObject expr = Parse(
 		"var list = `[1 2 3 4 5]\n"

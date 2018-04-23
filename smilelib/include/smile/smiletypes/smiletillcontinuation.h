@@ -26,11 +26,11 @@ struct SmileTillContinuationInt {
 	DECLARE_BASE_OBJECT_PROPERTIES;
 
 	Closure closure;				// The closure in which we were executing.
-	struct CompiledTablesStruct *compiledTables;	// The collection of constant data for this closure.
 	ByteCodeSegment segment;		// The segment containing the code that can be executed.
+	Int32 stackTop;					// How deep the closure stack was.
 
+	Int32 numBranchTargetAddresses;	// How many entries exist in the branch target array.
 	Int32 *branchTargetAddresses;	// An array of allowed branch targets (copied from TillContinuationInfo).
-	Int numBranchTargetAddresses;	// How many entries exist in the array.
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -39,7 +39,6 @@ struct SmileTillContinuationInt {
 SMILE_API_DATA SmileVTable SmileTillContinuation_VTable;
 
 SMILE_API_FUNC SmileTillContinuation SmileTillContinuation_Create(SmileObject base, Closure closure,
-	struct CompiledTablesStruct *compiledTables, ByteCodeSegment segment,
-	Int32 *branchTargetAddresses, Int numBranchTargetAddresses);
+	ByteCodeSegment segment, Int32 *branchTargetAddresses, Int32 numBranchTargetAddresses);
 
 #endif

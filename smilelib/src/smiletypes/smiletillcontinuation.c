@@ -24,14 +24,14 @@
 #include <smile/stringbuilder.h>
 #include <smile/internal/staticstring.h>
 #include <smile/smiletypes/easyobject.h>
+#include <smile/eval/closure.h>
 
 SMILE_IGNORE_UNUSED_VARIABLES
 
 SMILE_EASY_OBJECT_VTABLE(SmileTillContinuation);
 
 SmileTillContinuation SmileTillContinuation_Create(SmileObject base, Closure closure,
-	struct CompiledTablesStruct *compiledTables, ByteCodeSegment segment,
-	Int32 *branchTargetAddresses, Int numBranchTargetAddresses)
+	ByteCodeSegment segment, Int32 *branchTargetAddresses, Int32 numBranchTargetAddresses)
 {
 	SmileTillContinuation smileTillContinuation = GC_MALLOC_STRUCT(struct SmileTillContinuationInt);
 	if (smileTillContinuation == NULL) Smile_Abort_OutOfMemory();
@@ -40,8 +40,8 @@ SmileTillContinuation SmileTillContinuation_Create(SmileObject base, Closure clo
 	smileTillContinuation->kind = SMILE_KIND_TILL_CONTINUATION;
 	smileTillContinuation->vtable = SmileTillContinuation_VTable;
 	smileTillContinuation->closure = closure;
-	smileTillContinuation->compiledTables = compiledTables;
 	smileTillContinuation->segment = segment;
+	smileTillContinuation->stackTop = closure->stackTop - closure->variables;
 	smileTillContinuation->branchTargetAddresses = branchTargetAddresses;
 	smileTillContinuation->numBranchTargetAddresses = numBranchTargetAddresses;
 

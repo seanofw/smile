@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: f62085f6ebfaed522720cede66dbe797
+// SourceHash: 8b643992f2582b97614e16b0c3cca2f8
 
 START_TEST_SUITE(EvalTests)
 {
@@ -63,6 +63,7 @@ START_TEST_SUITE(EvalTests)
 	CanConcatenateManyStringsMoreEfficiently3,
 	CanCallFunctionsWhileFillingInOptionalArguments,
 	CanCallFunctionsWithoutFillingInOptionalArguments,
+	CanEvalATillLoopThatEscapesANestedFunction,
 }
 END_TEST_SUITE(EvalTests)
 
