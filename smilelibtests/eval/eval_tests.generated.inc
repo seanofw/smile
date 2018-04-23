@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 8b643992f2582b97614e16b0c3cca2f8
+// SourceHash: ba15a86b7e8a24e6e557bda114492508
 
 START_TEST_SUITE(EvalTests)
 {
@@ -64,6 +64,8 @@ START_TEST_SUITE(EvalTests)
 	CanCallFunctionsWhileFillingInOptionalArguments,
 	CanCallFunctionsWithoutFillingInOptionalArguments,
 	CanEvalATillLoopThatEscapesANestedFunction,
+	CanEvalATillLoopThatEscapesANestedFunctionForTheRightReason,
+	CanEvalATillLoopThatEscapesANestedFunctionForTheRightReason2,
 }
 END_TEST_SUITE(EvalTests)
 
