@@ -1266,17 +1266,50 @@ START_TEST(CanUseATillLoopToEscapeNestedFunctions)
 
 	Compiler compiler = Compiler_Create();
 	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
-	String result, result2;
 
-	result = UserFunctionInfo_ToString(globalFunction);
-	result2 = UserFunctionInfo_ToString(compiler->compiledTables->userFunctions[0]);
+	String outerExpectedResult = String_Format(
+		"0: \tNullLoc0 `list (0)\t; test.sm:1\n"
 
-	puts("global:");
-	puts(String_ToC(result));
+		"1: \tLdObj   @0\t; test.sm:1\n"
+		"2: \tStpLoc0 `list (0)\t; test.sm:1\n"
 
-	puts("fn1:");
-	puts(String_ToC(result2));
-	//ASSERT_STRING(result, String_ToC(expectedResult), String_Length(expectedResult));
+		"3: \tNewTill 0\t; test.sm:2\n"
+		"4: \tStpLoc0 ` (1)\t; test.sm:2\n"
+
+		"5: \tLdLoc0  `list (0)\t; test.sm:3\n"
+		"6: \tNewFn   @0\t; test.sm:3\n"
+		"7: \tBinary  `each (%hd)\t; test.sm:3\n"
+		"8: \tPop1\t; test.sm:3\n"
+		"9: \tJmp     L5\t; test.sm:2\n"
+
+		"10: \tLdLoc0  ` (1)\t; test.sm:2\n"
+		"11: \tEndTill\t; test.sm:2\n"
+		"12: \tLdNull\t; test.sm:2\n"
+
+		"13: \tRet\n",
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "each")
+	);
+
+	String innerExpectedResult = String_Format(
+		"0: \tLdArg0  `x (0)\t; test.sm:4\n"
+		"1: \tUnary   `even? (%hd)\t; test.sm:4\n"
+
+		"2: \tBf      >L5\t; test.sm:4\n"
+
+		"3: \tLdLoc1  ` (1)\t; test.sm:4\n"
+		"4: \tTillEsc 1\t; test.sm:4\n"
+
+		"5: \tLdNull\t; test.sm:4\n"
+
+		"6: \tRet\t; test.sm:3\n",
+		SymbolTable_GetSymbolC(Smile_SymbolTable, "even?")
+	);
+
+	String outerResult = UserFunctionInfo_ToString(globalFunction);
+	String innerResult = UserFunctionInfo_ToString(compiler->compiledTables->userFunctions[0]);
+
+	ASSERT_STRING(outerResult, String_ToC(outerExpectedResult), String_Length(outerExpectedResult));
+	ASSERT_STRING(innerResult, String_ToC(innerExpectedResult), String_Length(innerExpectedResult));
 }
 END_TEST
 
