@@ -72,6 +72,39 @@ struct ClosureInfoStruct {
 };
 
 /// <summary>
+/// The possible kinds of unwinding we can perform when abnormally exiting a closure:
+/// Unwind to a try/catch block, unwind to an auto block, or unwind to a till/when.
+/// These are the unwinding rules:
+/// - Unwinding for a thrown exception invokes all autos and stops at the nearest try/catch.
+/// - Unwinding for Op_TillEsc invokes all autos and stops at the nearest till.
+/// - Unwinding for Op_EndTry simply removes the try/catch from the top of the stack.
+/// - Unwinding for Op_EndAuto simply removes the auto from the top of the stack.
+/// - Unwinding for Op_EndTill simply removes the till from the top of the stack.
+/// </summary>
+typedef enum {
+	UnwindKind_None = 0,
+
+	UnwindKind_TryCatch,
+	UnwindKind_Auto,
+	UnwindKind_Till,
+} UnwindKind;
+
+/// <summary>
+/// An UnwindInfo object stores a stack of things that need to be done if a closure is
+/// exited abnormally.  Each UnwindInfo is effectively a kind of continuation, since it
+/// contains a reference to a Closure and a branch offset within it; but we maintain
+/// them in a stack, so that the continuations may only "unwind time," not fast-forward it.
+typedef struct UnwindInfoStruct {
+	struct UnwindInfoStruct *parent;	// The parent node of the unwind stack.
+
+	UnwindKind kind;					// What kind of unwinding we're doing: Try/catch, auto, or till.
+
+	Closure closure;					// The target closure to unwind to.
+	ByteCodeSegment segment;			// The segment that contains the closure's code.
+	Int targetAddress;					// What address to branch to in that segment.
+} *UnwindInfo;
+
+/// <summary>
 /// A Closure object stores the current instance data of a closure, and is designed to be as
 /// small as possible.  Anything that doesn't absolutely have to be stored here is stored in the
 /// ClosureInfo struct, to which this object points.
@@ -86,11 +119,12 @@ struct ClosureStruct {
 	Closure returnClosure;		// The continuation's closure.
 	ByteCodeSegment returnSegment;	// The segment that contains the continuation's code.
 	Int returnPc;				// The continuation's program counter.
-	
+
+	UnwindInfo unwindInfo;		// How to recover, if either TillEsc or a thrown exception is encountered.
+
 	SmileArg *locals;			// The base address of the start of the closure's local variables.
 	SmileArg *stackTop;			// The current address of the top of the temporary variables (NULL for global closures).
 	SmileArg variables[1];		// The array of variables (matches the ClosureInfo's numVariables + tempSize; size 0 for global closures).
-
 };
 
 struct ClosureStateMachineStruct;
@@ -107,7 +141,9 @@ typedef struct ClosureStateMachineStruct {
 	Closure returnClosure;			// The continuation's closure.
 	ByteCodeSegment returnSegment;	// The segment that contains the continuation's code.
 	Int returnPc;					// The continuation's program counter.
-		
+
+	UnwindInfo unwindInfo;			// How to recover, if either TillEsc or a thrown exception is encountered.
+
 	SmileArg *locals;				// The base address of the start of the closure's local variables.
 	SmileArg *stackTop;				// The current address of the top of the temporary variables.
 	SmileArg variables[16];			// Always a max of 16 variables for a C state machine.

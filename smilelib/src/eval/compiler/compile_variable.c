@@ -222,7 +222,7 @@ Inline CompiledBlock Compiler_CompileTillFlag(Compiler compiler, CompiledLocalSy
 		// onto the stack.  (Every flag will reference the same escape continuation, so
 		// the "simple" way of loading a local variable still works.)
 		if (functionDepth <= 7) {
-			EMIT1(Op_LdLoc0 + functionDepth, +1, index = localSymbol->index);
+			EMIT1(Op_LdLoc0 + functionDepth, +1, int32 = (Int32)localSymbol->index);
 		}
 		else {
 			EMIT2(Op_LdLoc, +1, i2.a = (Int32)functionDepth, i2.b = (Int32)localSymbol->index);

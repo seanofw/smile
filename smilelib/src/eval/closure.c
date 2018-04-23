@@ -78,6 +78,8 @@ Closure Closure_CreateGlobal(ClosureInfo closureInfo, Closure parent)
 	closure->returnSegment = NULL;
 	closure->returnPc = 0;
 
+	closure->unwindInfo = NULL;
+
 	closure->locals = NULL;
 	closure->stackTop = NULL;
 
@@ -102,6 +104,8 @@ Closure Closure_CreateLocal(ClosureInfo closureInfo, Closure parent,
 	closure->returnSegment = returnSegment;
 	closure->returnPc = returnPc;
 
+	closure->unwindInfo = NULL;
+
 	closure->locals = closure->variables + closureInfo->numArgs;
 	closure->stackTop = closure->variables + closureInfo->numVariables;
 
@@ -122,6 +126,8 @@ ClosureStateMachine Closure_CreateStateMachine(StateMachine stateMachineStart, S
 	closure->returnClosure = returnClosure;
 	closure->returnSegment = returnSegment;
 	closure->returnPc = returnPc;
+
+	closure->unwindInfo = NULL;
 
 	closure->stackTop = closure->variables;
 	closure->locals = closure->variables;

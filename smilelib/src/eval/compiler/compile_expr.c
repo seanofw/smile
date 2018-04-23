@@ -125,6 +125,7 @@ CompiledBlock Compiler_CompileExpr(Compiler compiler, SmileObject expr, CompileF
 			Smile_Abort_FatalError("Float128 and BigFloat are not yet supported.");
 
 		// User data evaluates to iteself.
+		case SMILE_KIND_TILL_CONTINUATION:
 		case SMILE_KIND_FUNCTION:
 		case SMILE_KIND_HANDLE:
 		case SMILE_KIND_USEROBJECT:

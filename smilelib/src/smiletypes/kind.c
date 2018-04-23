@@ -51,6 +51,7 @@ STATIC_STRING(Primitive_, "Primitive");
 STATIC_STRING(UserObject_, "Object");
 STATIC_STRING(String_, "String");
 
+STATIC_STRING(TillContinuation_, "TillContinuation");
 STATIC_STRING(Handle_, "Handle");
 STATIC_STRING(Closure_, "Closure");
 STATIC_STRING(Facade_, "Facade");
@@ -108,6 +109,7 @@ String SmileKind_GetName(Int kind)
 		case SMILE_KIND_USEROBJECT: return UserObject_;
 		case SMILE_KIND_STRING: return String_;
 
+		case SMILE_KIND_TILL_CONTINUATION: return TillContinuation_;
 		case SMILE_KIND_HANDLE: return Handle_;
 		case SMILE_KIND_CLOSURE: return Closure_;
 		case SMILE_KIND_FACADE: return Facade_;
@@ -177,6 +179,7 @@ Symbol SmileKind_GetTypeOf(Int smileKind)
 		case SMILE_KIND_STRING: return Smile_KnownSymbols.string_;
 
 		// Opaque handles.	
+		case SMILE_KIND_TILL_CONTINUATION: return Smile_KnownSymbols.till_;
 		case SMILE_KIND_HANDLE: return Smile_KnownSymbols.handle;
 		case SMILE_KIND_CLOSURE: return Smile_KnownSymbols.closure;
 		case SMILE_KIND_FACADE: return Smile_KnownSymbols.facade;

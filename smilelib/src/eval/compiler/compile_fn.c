@@ -86,10 +86,10 @@ CompiledBlock Compiler_CompileFn(Compiler compiler, SmileList args, CompileFlags
 
 	// We're done intermediate-compiling this function.
 	Compiler_EndScope(compiler);
+	byteCodeSegment = CompiledBlock_Finish(compiledBlock, compiler->compiledTables, False);
 	Compiler_EndFunction(compiler);
 
 	// Now transform it into finished bytecodes.
-	byteCodeSegment = CompiledBlock_Finish(compiledBlock, compiler->compiledTables, False);
 	userFunctionInfo->byteCodeSegment = byteCodeSegment;
 	compilerFunction->stackSize = compiledBlock->maxStackDepth;
 

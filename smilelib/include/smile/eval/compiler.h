@@ -75,6 +75,10 @@ typedef struct CompilerFunctionStruct {
 	ClosureInfo closureInfo;				// The ClosureInfo object needed to actually eval this function.
 	Int currentSourceLocation;				// The current source location, if any.
 	UserFunctionInfo userFunctionInfo;		// The UserFunctionInfo object that is being generated from this.
+
+	struct TillContinuationInfoStruct **tillInfos;	// The till-continuation-info objects collected during the compile.
+	Int numTillInfos;						// The number of till-continuation-info objects collected.
+	Int maxTillInfos;						// The maximum number of till-continuation-info objects in the array.
 } *CompilerFunction;
 
 typedef struct CompileScopeStruct {
@@ -98,8 +102,11 @@ typedef struct CompiledLocalSymbolStruct {
 typedef struct TillContinuationInfoStruct {
 	Int tillIndex;							// The index of this till-info in the compiler's collection of till-info objects.
 	UserFunctionInfo userFunctionInfo;		// The user function this till object belongs to.
-	Int numSymbols;							// The number of symbols (flags) defined by this till continuation.
+	Bool realContinuationNeeded;			// Whether we need a true escape continuation, or whether this is leftover data.
+	Int32 numSymbols;							// The number of symbols (flags) defined by this till continuation.
 	struct CompiledTillSymbolStruct **symbols;	// The symbols (flags) defined by this till continuation.
+	Int32 *branchTargetAddresses;			// The branch target addresses of each symbol (flag), after address resolution.
+	IntermediateInstruction *branchTargetInstructions;	// The branch targets of each symbol (flag), before address resolution.
 } *TillContinuationInfo;
 
 typedef struct TillContinuationStruct {
@@ -180,6 +187,7 @@ SMILE_API_FUNC CompiledLocalSymbol CompileScope_DefineSymbol(CompileScope scope,
 SMILE_API_FUNC CompiledLocalSymbol CompileScope_FindSymbol(CompileScope compileScope, Symbol symbol);
 SMILE_API_FUNC CompiledLocalSymbol CompileScope_FindSymbolHere(CompileScope compileScope, Symbol symbol);
 SMILE_API_FUNC ClosureInfo Compiler_SetupClosureInfoForCompilerFunction(Compiler compiler, CompilerFunction compilerFunction);
+SMILE_API_FUNC void Compiler_ResolveTillBranchTargets(TillContinuationInfo *tillInfos, Int numTillInfos);
 
 //-------------------------------------------------------------------------------------------------
 //  Inline functions.

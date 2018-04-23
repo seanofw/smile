@@ -29,14 +29,17 @@ static void DefineVariablesForFlags(Compiler compiler, SmileList flags, Int numF
 	TillContinuationInfo tillInfo, Int tillContinuationVariableIndex, IntermediateInstruction nullLabel);
 static Int CompileWhens(Compiler compiler, IntermediateInstruction nullLabel, Int numFlags,
 	CompiledBlock parentBlock, CompileScope tillScope,
-	SmileList whens, IntermediateInstruction exitTarget, CompileFlags compileFlags);
+	SmileList whens, IntermediateInstruction exitTarget,
+	Int tillContinuationVariableIndex, CompileFlags compileFlags);
 static CompiledBlock CompileNullCase(Compiler compiler, IntermediateInstruction nullLabel, Int numFlags, Int numWhens,
-	CompileFlags compileFlags);
-static CompiledBlock GenerateTillContinuation(Compiler compiler, Int numFlags, Int tillContinuationVariableIndex,
+	Int tillContinuationVariableIndex, CompileFlags compileFlags);
+static CompiledBlock GenerateNewTillBlock(Compiler compiler, Int numFlags, Int tillContinuationVariableIndex,
 	TillContinuationInfo *tillInfo);
+static CompiledBlock GenerateEndTillBlock(Compiler compiler, Int tillContinuationVariableIndex);
 static Bool IsRealContinuationNeeded(SmileList flags, CompileScope tillScope);
-static void FinalizeTillContinuation(Compiler compiler, CompiledBlock compiledBlock, IntermediateInstruction tillBlockInstr,
-	Int tillContinuationVariableIndex, Bool realContinuationNeeded);
+static void PopulateTillBranchTargets(CompileScope tillScope, TillContinuationInfo tillInfo, SmileList flags);
+static void RemoveTillContinuation(CompiledBlock compiledBlock,
+	IntermediateInstruction tillBlockInstr, CompileScope tillScope, SmileList flags);
 
 // Form: [$till [flag1 flag2 flag3 ...] body [[flag1 when1] [flag2 when2] ...]]
 CompiledBlock Compiler_CompileTill(Compiler compiler, SmileList args, CompileFlags compileFlags)
@@ -78,7 +81,7 @@ CompiledBlock Compiler_CompileTill(Compiler compiler, SmileList args, CompileFla
 
 	// Construct the code to load the till's actual live continuation into the till-continuation variable.
 	// This also sets up the TillContinuationInfo object, which will hold all the when-branch targets.
-	tillBlock = GenerateTillContinuation(compiler, numFlags, tillContinuationVariableIndex, &tillInfo);
+	tillBlock = GenerateNewTillBlock(compiler, numFlags, tillContinuationVariableIndex, &tillInfo);
 
 	// Declare variables for each flag, in the till-scope, and attach those variables to the till-continuation.
 	nullLabel = IntermediateInstruction_Create(Op_Label);
@@ -87,8 +90,8 @@ CompiledBlock Compiler_CompileTill(Compiler compiler, SmileList args, CompileFla
 
 	// Make the block for the whens.
 	whensBlock = CompiledBlock_Create();
-	numWhens = CompileWhens(compiler, nullLabel, numFlags, whensBlock, tillScope, whens, exitLabel, compileFlags);
-	nullBlock = CompileNullCase(compiler, nullLabel, numFlags, numWhens, compileFlags);
+	numWhens = CompileWhens(compiler, nullLabel, numFlags, whensBlock, tillScope, whens, exitLabel, tillContinuationVariableIndex, compileFlags);
+	nullBlock = CompileNullCase(compiler, nullLabel, numFlags, numWhens, tillContinuationVariableIndex, compileFlags);
 	if (nullBlock != NULL)
 		CompiledBlock_AppendChild(whensBlock, nullBlock);
 
@@ -123,14 +126,26 @@ CompiledBlock Compiler_CompileTill(Compiler compiler, SmileList args, CompileFla
 	// Phase 6.  Determine if we really need a true continuation or not.
 
 	realContinuationNeeded = IsRealContinuationNeeded(flags, tillScope);
+	tillInfo->realContinuationNeeded = realContinuationNeeded;
 
 	//---------------------------------------------------------
 	// Phase 7.  Cleanup.
 
-	// If we really don't need a true escape-continuation for this till (i.e., all exits are through
-	// simple jump instructions in the same closure), then remove the instructions that allocate an
-	// escape-continuation on the heap.  Otherwise, mark the 'till' continuation as finished.
-	FinalizeTillContinuation(compiler, compiledBlock, tillBlockInstr, tillContinuationVariableIndex, realContinuationNeeded);
+	if (realContinuationNeeded) {
+		// We need a true escape continuation for this to work.  So fill in the
+		// holes in the TillContinuationInfo with the IntermediateInstructions that
+		// will be the branch targets for each flag (symbol).
+		PopulateTillBranchTargets(tillScope, tillInfo, flags);
+	}
+	else {
+		// If we really don't need a true escape-continuation for this till (i.e., all
+		// exits are through simple jump instructions in the same closure), then go
+		// back and remove all the instructions that allocate and manage the actual
+		// escape-continuation on the heap at runtime.  This is an optimization, to be
+		// sure, but it's a big one, and allows a till that only uses local escapes to
+		// run as fast as (or even faster than) a while-loop.
+		RemoveTillContinuation(compiledBlock, tillBlockInstr, tillScope, flags);
+	}
 
 	return compiledBlock;
 }
@@ -218,9 +233,15 @@ static void DefineVariablesForFlags(Compiler compiler, SmileList flags, Int numF
 
 	tillInfo->numSymbols = numFlags;
 
-	// Allocate an array to hold all their metadata.
+	// Allocate an array to hold all the flags' metadata, and their branch targets.
 	tillInfo->symbols = allCompiledTillSymbols = GC_MALLOC_STRUCT_ARRAY(CompiledTillSymbol, numFlags);
 	if (allCompiledTillSymbols == NULL)
+		Smile_Abort_OutOfMemory();
+	tillInfo->branchTargetAddresses = GC_MALLOC_STRUCT_ARRAY(Int32, numFlags);
+	if (tillInfo->branchTargetAddresses == NULL)
+		Smile_Abort_OutOfMemory();
+	tillInfo->branchTargetInstructions = GC_MALLOC_STRUCT_ARRAY(IntermediateInstruction, numFlags);
+	if (tillInfo->branchTargetInstructions == NULL)
 		Smile_Abort_OutOfMemory();
 
 	// For each flag, construct a flag variable with a CompiledTillSymbol object attached.
@@ -251,7 +272,7 @@ static void DefineVariablesForFlags(Compiler compiler, SmileList flags, Int numF
 /// an 'escape' continuation; 'escape' continuations must obey stack semantics, acting like
 /// non-local returns).
 /// </summary>
-static CompiledBlock GenerateTillContinuation(Compiler compiler, Int numFlags, Int tillContinuationVariableIndex,
+static CompiledBlock GenerateNewTillBlock(Compiler compiler, Int numFlags, Int tillContinuationVariableIndex,
 	TillContinuationInfo *tillInfo)
 {
 	CompiledBlock compiledBlock = CompiledBlock_Create();
@@ -262,10 +283,26 @@ static CompiledBlock GenerateTillContinuation(Compiler compiler, Int numFlags, I
 
 	// Load a "till continuation" into the variable we reserved for it.  The till continuation
 	// is only used if child functions need to escape to it.  If no children invoke it, these
-	// two instructions will be replaced with simple NOP instructions at the end of all this.
-	// (Subsequent peephole optimizations can remove the NOPs.)
+	// two instructions will be deleted at the end of all this.
 	EMIT1(Op_NewTill, +1, index = (*tillInfo)->tillIndex);
 	EMIT1(Op_StpLoc0, -1, index = tillContinuationVariableIndex);
+
+	return compiledBlock;
+}
+
+/// <summary>
+/// Generate a block that destroys the dynamic extent of the given till, so that a till can only
+/// be used as an escape continuation (and not as a way to rewind time itself).
+/// </summary>
+static CompiledBlock GenerateEndTillBlock(Compiler compiler, Int tillContinuationVariableIndex)
+{
+	CompiledBlock compiledBlock;
+	IntermediateInstruction instr;
+
+	compiledBlock = CompiledBlock_Create();
+
+	EMIT1(Op_LdLoc0, +1, index = tillContinuationVariableIndex);
+	EMIT0(Op_EndTill, -1);
 
 	return compiledBlock;
 }
@@ -276,7 +313,8 @@ static CompiledBlock GenerateTillContinuation(Compiler compiler, Int numFlags, I
 /// </summary>
 static Int CompileWhens(Compiler compiler, IntermediateInstruction nullLabel, Int numFlags,
 	CompiledBlock parentBlock, CompileScope tillScope,
-	SmileList whens, IntermediateInstruction exitTarget, CompileFlags compileFlags)
+	SmileList whens, IntermediateInstruction exitTarget,
+	Int tillContinuationVariableIndex, CompileFlags compileFlags)
 {
 	Int numWhens, index;
 	Int oldSourceLocation;
@@ -338,6 +376,9 @@ static Int CompileWhens(Compiler compiler, IntermediateInstruction nullLabel, In
 		// Emit the label that will be branched to, either by escape continuation or, if possible, by a local Jmp.
 		compiledTillSymbol->whenLabel = EMIT0(Op_Label, 0);
 
+		// End the dynamic extent of the till loop itself.
+		CompiledBlock_AppendChild(compiledBlock, GenerateEndTillBlock(compiler, tillContinuationVariableIndex));
+
 		// Compile the body of the [when], and leave it on the stack as the output.
 		childBlock = Compiler_CompileExpr(compiler, ((SmileList)whenList->d)->a, compileFlags);
 		Compiler_MakeStackMatchCompileFlags(compiler, childBlock, compileFlags);
@@ -364,7 +405,8 @@ static Int CompileWhens(Compiler compiler, IntermediateInstruction nullLabel, In
 /// does not have a matching [when] clause.  Returns the label for the null case, or (somewhat
 /// ironically) returns NULL if there is no null case.
 /// </summary>
-static CompiledBlock CompileNullCase(Compiler compiler, IntermediateInstruction nullLabel, Int numFlags, Int numWhens, CompileFlags compileFlags)
+static CompiledBlock CompileNullCase(Compiler compiler, IntermediateInstruction nullLabel, Int numFlags, Int numWhens,
+	Int tillContinuationVariableIndex, CompileFlags compileFlags)
 {
 	CompiledBlock compiledBlock;
 
@@ -376,8 +418,13 @@ static CompiledBlock CompileNullCase(Compiler compiler, IntermediateInstruction 
 	// Attach a new block for the null case.
 	compiledBlock = CompiledBlock_Create();
 
-	// Add the null label to it, and produce a null if the compile flags expect a result.
+	// Add the null label to it.
 	CompiledBlock_AttachInstruction(compiledBlock, compiledBlock->last, nullLabel);
+
+	// End the dynamic extent of the till loop itself.
+	CompiledBlock_AppendChild(compiledBlock, GenerateEndTillBlock(compiler, tillContinuationVariableIndex));
+
+	// Produce a null if the compile flags expect a result.
 	if (!(compileFlags & COMPILE_FLAG_NORESULT)) {
 		EMIT0(Op_LdNull, +1);
 	}
@@ -414,28 +461,100 @@ static Bool IsRealContinuationNeeded(SmileList flags, CompileScope tillScope)
 }
 
 /// <summary>
-/// If we've emitted an unnecessary true continuation for this till, go back and un-emit it
-/// by replacing it with NOPs.  The NOPs take time, but considerably less than allocating
-/// an unnecessary real escape continuation on the heap.  Otherwise, add an instruction that
-/// causes the dynamic extent of 'till' to be marked as concluded, so that the till's
-/// continuation may only be used as an 'escape' continuation.
+/// When we know we need a real escape continuation for this till to work correctly,
+/// we have to fill in its TillContinuationInfo with the target branch instructions, so
+/// that the generated 'escape' instructions will be able to branch to the right target.
+///
+/// Eventually, when the CompiledFunction is converted to actual ByteCode, the array of
+/// target instructions will be transformed into an array of instruction offsets.
 /// </summary>
-static void FinalizeTillContinuation(Compiler compiler, CompiledBlock compiledBlock, IntermediateInstruction tillBlockInstr,
-	Int tillContinuationVariableIndex, Bool realContinuationNeeded)
+static void PopulateTillBranchTargets(CompileScope tillScope, TillContinuationInfo tillInfo, SmileList flags)
 {
-	IntermediateInstruction instr;
+	SmileList temp;
+	Int index;
+	CompiledTillSymbol compiledTillSymbol;
+	SmileSymbol smileSymbol;
 
-	if (realContinuationNeeded) {
-		// Mark this till has having its dynamic extent now exited.
-		EMIT1(Op_LdLoc0, +1, index = tillContinuationVariableIndex);
-		EMIT0(Op_EndTill, -1);
+	for (temp = flags, index = 0; SMILE_KIND(temp) == SMILE_KIND_LIST; temp = LIST_REST(temp), index++) {
+		smileSymbol = (SmileSymbol)temp->a;
+		compiledTillSymbol = (CompiledTillSymbol)CompileScope_FindSymbolHere(tillScope, smileSymbol->symbol);
+		tillInfo->branchTargetInstructions[index] = compiledTillSymbol->whenLabel;
 	}
-	else {
-		// This till doesn't need an escape continuation or cleanup, so get rid of
-		// the load-till instruction.  This may result in the stack max being too high
-		// by one, but the likelihood that the max wasn't matched or exceeded by something
-		// else inside the loop is very low (almost impossible), so it's no big deal
-		// that we're off here:  Worst-case scenario, we waste one word of memory.
-		CompiledBlock_DetachInstruction(compiledBlock, tillBlockInstr);
+}
+
+/// <summary>
+/// If we determine that this till doesn't actually need a true escape continuation, then let's
+/// not spend CPU or memory at runtime creating or maintaining one!  We do this by removing
+/// all of the NewTill/EndTill instructions that we generated, since there are no matching TillEsc
+/// instructions that require them.
+/// </summary>
+static void RemoveTillContinuation(CompiledBlock compiledBlock,
+	IntermediateInstruction tillBlockInstr, CompileScope tillScope, SmileList flags)
+{
+	SmileList temp;
+	Int index;
+	CompiledTillSymbol compiledTillSymbol;
+	SmileSymbol smileSymbol;
+	IntermediateInstruction instr;
+	CompiledBlock endTillBlock;
+
+	// This till doesn't need an escape continuation or cleanup, so first get rid of
+	// the load-till instruction.  This may result in the stack max being too high
+	// by one, and will result in an unneeded (empty) local variable slot, but
+	// the slightly higher memory consumption is a small price to pay for the
+	// substantial improvement in execution time.
+	CompiledBlock_DetachInstruction(compiledBlock, tillBlockInstr);
+
+	// Now, spin over each of the branch-target blocks and remove their successive
+	// LdLoc0/EndTill blocks, since those aren't needed either.
+	for (temp = flags, index = 0; SMILE_KIND(temp) == SMILE_KIND_LIST; temp = LIST_REST(temp), index++) {
+		smileSymbol = (SmileSymbol)temp->a;
+		compiledTillSymbol = (CompiledTillSymbol)CompileScope_FindSymbolHere(tillScope, smileSymbol->symbol);
+
+		// Get the 'label' instruction.  The EndTill block should immediately follow it.
+		instr = compiledTillSymbol->whenLabel->next;
+
+		// Safety check:  Make sure we're removing what we think we're removing, and abort if we aren't.
+		endTillBlock = instr->p.childBlock;
+		if (instr->opcode != Op_Block
+			|| endTillBlock == NULL
+			|| !(endTillBlock->numInstructions == 0 && endTillBlock->first == NULL
+				|| endTillBlock->numInstructions == 2 && endTillBlock->first->next->opcode == Op_EndTill))
+			Smile_Abort_FatalError("Compiler generated an invalid EndTill block.");
+
+		// We don't know enough to detach the Op_Block instruction itself, but we *can* remove
+		// its children.
+		CompiledBlock_Clear(endTillBlock);
+	}
+}
+
+/// <summary>
+/// Given a collection of TillContinuationInfo objects whose attached IntermediateInstructions
+/// have been given actual addresses, copy those addresses into the finished branch-target array,
+/// and then release the IntermediateInstructions back to the GC.  This releases most of the
+/// TillContinuationInfo back to the GC, leaving behind only the branch targets.
+/// </summary>
+void Compiler_ResolveTillBranchTargets(TillContinuationInfo *tillInfos, Int numTillInfos)
+{
+	Int i, j;
+
+	for (i = 0; i < numTillInfos; i++) {
+
+		TillContinuationInfo tillInfo = tillInfos[i];
+
+		for (j = 0; j < tillInfo->numSymbols; j++) {
+
+			if (tillInfo->realContinuationNeeded)
+				tillInfo->branchTargetAddresses[j] = tillInfo->branchTargetInstructions[j]->instructionAddress;
+
+			tillInfo->branchTargetInstructions[j] = NULL;
+			tillInfo->symbols[j] = NULL;
+		}
+
+		if (!tillInfo->realContinuationNeeded)
+			tillInfo->branchTargetAddresses = NULL;
+
+		tillInfo->branchTargetInstructions = NULL;
+		tillInfo->symbols = NULL;
 	}
 }

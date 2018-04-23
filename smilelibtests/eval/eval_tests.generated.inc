@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: f62085f6ebfaed522720cede66dbe797
+// SourceHash: 07ca2ddd2110baf01a4aa6ac823166ed
 
 START_TEST_SUITE(EvalTests)
 {
@@ -63,6 +63,10 @@ START_TEST_SUITE(EvalTests)
 	CanConcatenateManyStringsMoreEfficiently3,
 	CanCallFunctionsWhileFillingInOptionalArguments,
 	CanCallFunctionsWithoutFillingInOptionalArguments,
+	CanEvalATillLoopThatEscapesANestedFunction,
+	CanEvalATillLoopThatEscapesANestedFunctionForTheRightReason,
+	CanEvalATillLoopThatEscapesANestedFunctionForTheRightReason2,
+	TillLoopEscapesRestoreTheStackState,
 }
 END_TEST_SUITE(EvalTests)
 

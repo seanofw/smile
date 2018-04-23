@@ -24,6 +24,7 @@
 #include <smile/smiletypes/smilebool.h>
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/smileuserobject.h>
+#include <smile/smiletypes/smiletillcontinuation.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/text/smilechar.h>
 #include <smile/smiletypes/text/smileuni.h>
@@ -1016,9 +1017,47 @@ next:
 			goto unsupportedOpcode;
 
 		case Op_NewTill:
+			{
+				Int32 tillIndex = byteCode->u.int32;
+				TillContinuationInfo tillInfo = _compiledTables->tillInfos[tillIndex];
+				value = (SmileObject)SmileTillContinuation_Create(Smile_KnownBases.Primitive,
+					_closure, _segment, tillInfo->branchTargetAddresses, (Int32)tillInfo->numSymbols); 
+				Closure_PushBoxed(closure, value);
+			}
+			byteCode++;
+			goto next;
+
 		case Op_EndTill:
+			{
+				SmileTillContinuation tillContinuation = (SmileTillContinuation)Closure_Pop(closure).obj;
+				tillContinuation->closure = NULL;
+				tillContinuation->segment = NULL;
+				tillContinuation->branchTargetAddresses = NULL;
+				tillContinuation->numBranchTargetAddresses = 0;
+			}
+			byteCode++;
+			goto next;
+
 		case Op_TillEsc:
-			goto unsupportedOpcode;
+			{
+				SmileTillContinuation tillContinuation = (SmileTillContinuation)Closure_Pop(closure).obj;
+				Int address;
+
+				if (byteCode->u.int32 >= tillContinuation->numBranchTargetAddresses) {
+					Smile_ThrowException(Smile_KnownSymbols.eval_error,
+						tillContinuation->numBranchTargetAddresses <= 0
+							? String_FromC("Cannot re-exit a 'till' loop that has already exited.")
+							: String_FromC("Cannot exit a 'till' loop to an invalid target."));
+				}
+				_closure = tillContinuation->closure;
+				_closure->stackTop = _closure->variables + tillContinuation->stackTop;
+				_segment = tillContinuation->segment;
+				_compiledTables = _segment->compiledTables;
+				address = tillContinuation->branchTargetAddresses[byteCode->u.int32];
+				_byteCode = byteCode = _segment->byteCodes + address;
+				LOAD_REGISTERS;
+			}
+			goto next;
 
 		case Op_Try:
 		case Op_EndTry:
@@ -1260,7 +1299,7 @@ next:
 		case Op_33: case Op_37: case Op_3B: case Op_3F:
 		case Op_73: case Op_77: case Op_78: case Op_79: case Op_7A: case Op_7B: case Op_7C: case Op_7D: case Op_7E:
 		case Op_83: case Op_87: case Op_8A:
-		case Op_B3: case Op_BE:
+		case Op_B3:
 		case Op_C6:
 		case Op_D3: case Op_D7:
 		case Op_F2: case Op_F3: case Op_F4: case Op_F5: case Op_F6: case Op_F7:
@@ -1462,10 +1501,12 @@ static void Eval_DumpCurrentInstruction(void)
 	}
 
 	if (_byteCode->sourceLocation != _lastSourceLocation) {
-		CompiledSourceLocation sourceLocation = &_compiledTables->sourcelocations[_byteCode->sourceLocation];
+		CompiledSourceLocation sourceLocation = _compiledTables != NULL && _compiledTables->sourcelocations != NULL
+			? &_compiledTables->sourcelocations[_byteCode->sourceLocation]
+			: NULL;
 
-		if (sourceLocation->filename != _lastSourceFilename || sourceLocation->line != _lastSourceLine) {
-			if (sourceLocation != NULL) {
+		if (sourceLocation != NULL) {
+			if (sourceLocation->filename != _lastSourceFilename || sourceLocation->line != _lastSourceLine) {
 				if (sourceLocation->filename != NULL) {
 					if (sourceLocation->line != 0)
 						printf("- %s:%d\n", String_ToC(Path_GetFilename(sourceLocation->filename)), sourceLocation->line);
@@ -1489,128 +1530,3 @@ static void Eval_DumpCurrentInstruction(void)
 }
 
 #endif
-
-/*
-#define FAST_INLINE_BINARY_OP(__type__, __kind__, __resultType__, __resultKind__, __op__) { \
-		__type__ a, b; \
-		__resultType__ result; \
-		if ((b = (__type__)closure->stacktop[-1])->kind == (__kind__)) { \
-			result = (__resultType__)&closure->unboxed[closure->stacktop - closure->base - 2]; \
-			a = (__type__)(*--closure->stacktop); \
-			closure->stacktop[-1] = (SmileObject)dest; \
-			result->kind = (__resultKind__); \
-			result->vtable = __resultType__##_VTable; \
-			(__op__); \
-			_byteCode++; \
-			goto next; \
-		} \
-	}
-
-case Op_Add:
-	switch (closure->stacktop[-2]->kind) {
-		case SMILE_KIND_BYTE:
-			FAST_INLINE_BINARY_OP(SmileByte, SMILE_KIND_BYTE, SmileByte, SMILE_KIND_BYTE,
-				{ result->value = a->value + b->value; })
-		case SMILE_KIND_INTEGER16:
-			FAST_INLINE_BINARY_OP(SmileInteger16, SMILE_KIND_INTEGER16, SmileInteger16, SMILE_KIND_INTEGER16,
-				{ result->value = a->value + b->value; })
-		case SMILE_KIND_INTEGER32:
-			FAST_INLINE_BINARY_OP(SmileInteger32, SMILE_KIND_INTEGER32, SmileInteger32, SMILE_KIND_INTEGER32,
-				{ result->value = a->value + b->value; })
-		case SMILE_KIND_INTEGER64:
-			FAST_INLINE_BINARY_OP(SmileInteger64, SMILE_KIND_INTEGER64, SmileInteger64, SMILE_KIND_INTEGER64,
-				{ result->value = a->value + b->value; })
-	}
-	symbol = SMILE_SPECIAL_SYMBOL_PLUS;
-	goto method2;
-
-case Op_Sub:
-	switch (closure->stacktop[-2]->kind) {
-		case SMILE_KIND_BYTE:
-			FAST_INLINE_BINARY_OP(SmileByte, SMILE_KIND_BYTE, SmileByte, SMILE_KIND_BYTE,
-				{ result->value = a->value - b->value; })
-		case SMILE_KIND_INTEGER16:
-			FAST_INLINE_BINARY_OP(SmileInteger16, SMILE_KIND_INTEGER16, SmileInteger16, SMILE_KIND_INTEGER16,
-				{ result->value = a->value - b->value; })
-		case SMILE_KIND_INTEGER32:
-			FAST_INLINE_BINARY_OP(SmileInteger32, SMILE_KIND_INTEGER32, SmileInteger32, SMILE_KIND_INTEGER32,
-				{ result->value = a->value - b->value; })
-		case SMILE_KIND_INTEGER64:
-			FAST_INLINE_BINARY_OP(SmileInteger64, SMILE_KIND_INTEGER64, SmileInteger64, SMILE_KIND_INTEGER64,
-				{ result->value = a->value - b->value; })
-	}
-	symbol = SMILE_SPECIAL_SYMBOL_MINUS;
-	goto method2;
-
-case Op_Mul:
-	switch (closure->stacktop[-2]->kind) {
-		case SMILE_KIND_BYTE:
-			FAST_INLINE_BINARY_OP(SmileByte, SMILE_KIND_BYTE, SmileByte, SMILE_KIND_BYTE,
-				{ result->value = a->value * b->value; })
-		case SMILE_KIND_INTEGER16:
-			FAST_INLINE_BINARY_OP(SmileInteger16, SMILE_KIND_INTEGER16, SmileInteger16, SMILE_KIND_INTEGER16,
-				{ result->value = a->value * b->value; })
-		case SMILE_KIND_INTEGER32:
-			FAST_INLINE_BINARY_OP(SmileInteger32, SMILE_KIND_INTEGER32, SmileInteger32, SMILE_KIND_INTEGER32,
-				{ result->value = a->value * b->value; })
-		case SMILE_KIND_INTEGER64:
-			FAST_INLINE_BINARY_OP(SmileInteger64, SMILE_KIND_INTEGER64, SmileInteger64, SMILE_KIND_INTEGER64,
-				{ result->value = a->value * b->value; })
-	}
-	symbol = SMILE_SPECIAL_SYMBOL_STAR;
-	goto method2;
-
-case Op_Div:
-	switch (closure->stacktop[-2]->kind) {
-		case SMILE_KIND_BYTE:
-			FAST_INLINE_BINARY_OP(SmileByte, SMILE_KIND_BYTE, SmileByte, SMILE_KIND_BYTE,
-				{ if (b->value == 0) Smile_ThrowException(); result->value = a->value / b->value; })
-		case SMILE_KIND_INTEGER16:
-			FAST_INLINE_BINARY_OP(SmileInteger16, SMILE_KIND_INTEGER16, SmileInteger16, SMILE_KIND_INTEGER16,
-				{ if (b->value == 0) Smile_ThrowException(); result->value = a->value / b->value; })
-		case SMILE_KIND_INTEGER32:
-			FAST_INLINE_BINARY_OP(SmileInteger32, SMILE_KIND_INTEGER32, SmileInteger32, SMILE_KIND_INTEGER32,
-				{ if (b->value == 0) Smile_ThrowException(); result->value = a->value / b->value; })
-		case SMILE_KIND_INTEGER64:
-			FAST_INLINE_BINARY_OP(SmileInteger64, SMILE_KIND_INTEGER64, SmileInteger64, SMILE_KIND_INTEGER64,
-				{ if (b->value == 0) Smile_ThrowException(); result->value = a->value / b->value; })
-	}
-	symbol = SMILE_SPECIAL_SYMBOL_SLASH;
-	goto method2;
-
-case Op_Eq:
-	switch (closure->stacktop[-2]->kind) {
-		case SMILE_KIND_BYTE:
-			FAST_INLINE_BINARY_OP(SmileByte, SMILE_KIND_BYTE, SmileBool, SMILE_KIND_BOOL,
-				{ result->value = a->value == b->value; })
-		case SMILE_KIND_INTEGER16:
-			FAST_INLINE_BINARY_OP(SmileInteger16, SMILE_KIND_INTEGER16, SmileBool, SMILE_KIND_BOOL,
-				{ result->value = a->value == b->value; })
-		case SMILE_KIND_INTEGER32:
-			FAST_INLINE_BINARY_OP(SmileInteger32, SMILE_KIND_INTEGER32, SmileBool, SMILE_KIND_BOOL,
-				{ result->value = a->value == b->value; })
-		case SMILE_KIND_INTEGER64:
-			FAST_INLINE_BINARY_OP(SmileInteger64, SMILE_KIND_INTEGER64, SmileBool, SMILE_KIND_BOOL,
-				{ result->value = a->value == b->value; })
-	}
-	symbol = SMILE_SPECIAL_SYMBOL_EQ;
-	goto method2;
-
-case Op_Ne:
-	switch (closure->stacktop[-2]->kind) {
-		case SMILE_KIND_BYTE:
-			FAST_INLINE_BINARY_OP(SmileByte, SMILE_KIND_BYTE, SmileBool, SMILE_KIND_BOOL,
-				{ result->value = a->value != b->value; })
-		case SMILE_KIND_INTEGER16:
-			FAST_INLINE_BINARY_OP(SmileInteger16, SMILE_KIND_INTEGER16, SmileBool, SMILE_KIND_BOOL,
-				{ result->value = a->value != b->value; })
-		case SMILE_KIND_INTEGER32:
-			FAST_INLINE_BINARY_OP(SmileInteger32, SMILE_KIND_INTEGER32, SmileBool, SMILE_KIND_BOOL,
-				{ result->value = a->value != b->value; })
-		case SMILE_KIND_INTEGER64:
-			FAST_INLINE_BINARY_OP(SmileInteger64, SMILE_KIND_INTEGER64, SmileBool, SMILE_KIND_BOOL,
-				{ result->value = a->value != b->value; })
-	}
-	symbol = SMILE_SPECIAL_SYMBOL_NE;
-	goto method2;
-*/

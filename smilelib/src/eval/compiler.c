@@ -247,6 +247,11 @@ CompilerFunction Compiler_BeginFunction(Compiler compiler, SmileList args, Smile
 	newFunction->currentSourceLocation = 0;
 	newFunction->userFunctionInfo = NULL;
 
+	// There are no 'till' forms inside this function (yet).
+	newFunction->tillInfos = NULL;
+	newFunction->numTillInfos = 0;
+	newFunction->maxTillInfos = 0;
+
 	// Set up the ClosureInfo object that will eventually describe how this function's variables will behave.
 	closureInfo = ClosureInfo_Create(newFunction->parent != NULL ? newFunction->parent->closureInfo : compiler->compiledTables->globalClosureInfo,
 		CLOSURE_KIND_LOCAL);
@@ -269,6 +274,7 @@ void Compiler_EndFunction(Compiler compiler)
 {
 	CompilerFunction compilerFunction = compiler->currentFunction;
 
+	Compiler_ResolveTillBranchTargets(compilerFunction->tillInfos, compilerFunction->numTillInfos);
 	Compiler_SetupClosureInfoForCompilerFunction(compiler, compilerFunction);
 
 	compiler->currentFunction = compilerFunction->parent;
@@ -390,7 +396,7 @@ TillContinuationInfo Compiler_AddTillContinuationInfo(Compiler compiler, UserFun
 	Int index;
 	TillContinuationInfo tillInfo;
 
-	// Do we have enough space to add a new one?  If not, reallocate.
+	// Do we have enough space to add a new one globally?  If not, reallocate.
 	if (compiledTables->numTillInfos >= compiledTables->maxTillInfos) {
 		TillContinuationInfo *newTillInfos;
 		Int newMax;
@@ -406,8 +412,26 @@ TillContinuationInfo Compiler_AddTillContinuationInfo(Compiler compiler, UserFun
 		compiledTables->maxTillInfos = newMax;
 	}
 
-	// Okay, we have enough space, and it's not there yet, so add it.
+	// Do we have enough space to add a new one locally?  If not, reallocate.
+	if (compiler->currentFunction->numTillInfos >= compiler->currentFunction->maxTillInfos) {
+		TillContinuationInfo *newTillInfos;
+		Int newMax;
+
+		newMax = compiler->currentFunction->maxTillInfos * 2;
+		if (newMax < 8) newMax = 8;
+		newTillInfos = GC_MALLOC_STRUCT_ARRAY(TillContinuationInfo, newMax);
+		if (newTillInfos == NULL)
+			Smile_Abort_OutOfMemory();
+		if (compiler->currentFunction->numTillInfos > 0)
+			MemCpy(newTillInfos, compiler->currentFunction->tillInfos, compiler->currentFunction->numTillInfos);
+		compiler->currentFunction->tillInfos = newTillInfos;
+		compiler->currentFunction->maxTillInfos = newMax;
+	}
+
+	// Generate a global index for it.
 	index = compiledTables->numTillInfos++;
+
+	// Okay, we have enough space, and it's not there yet, so add it.
 	tillInfo = (TillContinuationInfo)GC_MALLOC(sizeof(struct TillContinuationInfoStruct) + (sizeof(Int) * (numOffsets - 1)));
 	if (tillInfo == NULL)
 		Smile_Abort_OutOfMemory();
@@ -415,7 +439,13 @@ TillContinuationInfo Compiler_AddTillContinuationInfo(Compiler compiler, UserFun
 	tillInfo->userFunctionInfo = userFunctionInfo;
 	tillInfo->numSymbols = 0;
 	tillInfo->symbols = NULL;
+
+	// Add it globally.
 	compiledTables->tillInfos[index] = tillInfo;
+
+	// Add it locally, so that its branch targets can be resolved when
+	// the function is done compiling.
+	compiler->currentFunction->tillInfos[compiler->currentFunction->numTillInfos++] = tillInfo;
 
 	return tillInfo;
 }
