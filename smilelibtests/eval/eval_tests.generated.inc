@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: ba15a86b7e8a24e6e557bda114492508
+// SourceHash: 07ca2ddd2110baf01a4aa6ac823166ed
 
 START_TEST_SUITE(EvalTests)
 {
@@ -66,6 +66,7 @@ START_TEST_SUITE(EvalTests)
 	CanEvalATillLoopThatEscapesANestedFunction,
 	CanEvalATillLoopThatEscapesANestedFunctionForTheRightReason,
 	CanEvalATillLoopThatEscapesANestedFunctionForTheRightReason2,
+	TillLoopEscapesRestoreTheStackState,
 }
 END_TEST_SUITE(EvalTests)
 

@@ -1038,4 +1038,29 @@ START_TEST(CanEvalATillLoopThatEscapesANestedFunctionForTheRightReason2)
 }
 END_TEST
 
+START_TEST(TillLoopEscapesRestoreTheStackState)
+{
+	UserFunctionInfo globalFunctionInfo = Compile(
+		"var list = `[1 2 3 4 5]\n"
+		"var value = 0\n"
+		"10 + (till found-even, not-found do {\n"
+		"\tlist each |x| {\n"
+		"\t\tif x > 3 and even? x then {\n"
+		"\t\t\tvalue = x\n"
+		"\t\t\tfound-even\n"
+		"\t\t}\n"
+		"\t}\n"
+		"\tnot-found\n"
+		"}\n"
+		"when found-even { value }\n"
+		"when not-found { -1 })\n"
+	);
+	EvalResult result = Eval_Run(globalFunctionInfo);
+
+	ASSERT(result->evalResultKind == EVAL_RESULT_VALUE);
+	ASSERT(SMILE_KIND(result->value) == SMILE_KIND_INTEGER64);
+	ASSERT(((SmileInteger64)result->value)->value == 14);
+}
+END_TEST
+
 #include "eval_tests.generated.inc"
