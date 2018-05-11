@@ -73,7 +73,30 @@ typedef enum {
 
 	// Raw buffer types.
 	SMILE_KIND_BYTEARRAY			= 0x50,
-		
+
+	// General-purpose arrays.
+	SMILE_KIND_ARRAY				= 0x5F,
+
+	// Maps (hash-based unordered key/value dictionaries), both general- and special-purpose.
+	SMILE_KIND_MAP					= 0x60,
+	SMILE_KIND_INTEGER64MAP			= 0x61,
+	SMILE_KIND_FLOAT64MAP			= 0x62,
+	SMILE_KIND_REAL64MAP			= 0x63,
+	SMILE_KIND_SYMBOLMAP			= 0x64,
+	SMILE_KIND_STRINGMAP			= 0x65,
+	SMILE_KIND_CHARMAP				= 0x66,
+	SMILE_KIND_UNIMAP				= 0x67,
+
+	// Sets (hash-based unordered collections), both general- and special-purpose.
+	SMILE_KIND_SET					= 0x68,
+	SMILE_KIND_INTEGER64SET			= 0x69,
+	SMILE_KIND_FLOAT64SET			= 0x6A,
+	SMILE_KIND_REAL64SET			= 0x6B,
+	SMILE_KIND_SYMBOLSET			= 0x6C,
+	SMILE_KIND_STRINGSET			= 0x6D,
+	SMILE_KIND_CHARSET				= 0x6E,
+	SMILE_KIND_UNISET				= 0x6F,
+
 	// Types used for parsing.	
 	SMILE_KIND_SYNTAX				= 0xF0,
 	SMILE_KIND_NONTERMINAL			= 0xF1,

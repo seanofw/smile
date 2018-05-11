@@ -171,48 +171,50 @@ typedef struct KnownSymbolsStruct {
 	//------------------------------------------
 
 	// Typename symbols.
-	Symbol Actor_, Array_, ArrayBase_, Bool_, BoolArray_, Char_, Closure, Enumerable_, Exception_, Facade_, FacadeProper_, Fn_, Handle_;
+	Symbol Actor_, Array_, ArrayBase_, Bool_, Char_, CharArray_, CharMap_, CharSet_, Closure;
+	Symbol Enumerable_, Exception_, Facade_, FacadeProper_, Fn_, Handle_;
 	Symbol List_, Map_, MapBase_, MathException, Null_, Object_, Program_, Random_, Range_;
-	Symbol Regex_, String_, StringArray_, StringMap_, Symbol_, SymbolArray_, SymbolMap_, Uni_, UserObject_;
+	Symbol Regex_, Set_, SetBase_, String_, StringArray_, StringMap_, StringSet_, Symbol_, SymbolArray_, SymbolMap_, SymbolSet_;
+	Symbol Uni_, UniArray_, UniMap_, UniSet_, UserObject_;
 
 	// Numeric typename symbols.
-	Symbol Number_, NumericArray_, NumericRange_, NumericMap_;
+	Symbol Number_, NumericArray_, NumericRange_, NumericMap_, NumericSet_;
 
 	// Integer typename symbols.
-	Symbol Integer_, IntegerBase_, IntegerArrayBase_, IntegerRange_, IntegerRangeBase_, IntegerMap_, IntegerMapBase_;
-	Symbol Byte_, ByteArray_, ByteRange_, ByteMap_;
-	Symbol Integer16_, Integer16Array_, Integer16Range_, Integer16Map_;
-	Symbol Integer32_, Integer32Array_, Integer32Range_, Integer32Map_;
-	Symbol Integer64_, Integer64Array_, Integer64Range_, Integer64Map_;
-	Symbol Integer128_, Integer128Array_, Integer128Range_, Integer128Map_;
+	Symbol Integer_, IntegerBase_, IntegerArrayBase_, IntegerRange_, IntegerRangeBase_, IntegerMap_, IntegerMapBase_, IntegerSet_, IntegerSetBase_;
+	Symbol Byte_, ByteArray_, ByteRange_, ByteMap_, ByteSet_;
+	Symbol Integer16_, Integer16Array_, Integer16Range_, Integer16Map_, Integer16Set_;
+	Symbol Integer32_, Integer32Array_, Integer32Range_, Integer32Map_, Integer32Set_;
+	Symbol Integer64_, Integer64Array_, Integer64Range_, Integer64Map_, Integer64Set_;
+	Symbol Integer128_, Integer128Array_, Integer128Range_, Integer128Map_, Integer128Set_;
 
 	// Real typename symbols.
-	Symbol Real_, RealBase_, RealArrayBase_, RealRange_, RealRangeBase_, RealMap_, RealMapBase_;
-	Symbol Real32_, Real32Array_, Real32Range_, Real32Map_;
-	Symbol Real64_, Real64Array_, Real64Range_, Real64Map_;
-	Symbol Real128_, Real128Array_, Real128Range_, Real128Map_;
+	Symbol Real_, RealBase_, RealArrayBase_, RealRange_, RealRangeBase_, RealMap_, RealMapBase_, RealSet_, RealSetBase_;
+	Symbol Real32_, Real32Array_, Real32Range_, Real32Map_, Real32Set_;
+	Symbol Real64_, Real64Array_, Real64Range_, Real64Map_, Real64Set_;
+	Symbol Real128_, Real128Array_, Real128Range_, Real128Map_, Real128Set_;
 
 	// Float typename symbols.
-	Symbol Float_, FloatBase_, FloatArrayBase_, FloatRange_, FloatRangeBase_, FloatMap_, FloatMapBase_;
-	Symbol Float32_, Float32Array_, Float32Range_, Float32Map_;
-	Symbol Float64_, Float64Array_, Float64Range_, Float64Map_;
-	Symbol Float128_, Float128Array_, Float128Range_, Float128Map_;
+	Symbol Float_, FloatBase_, FloatArrayBase_, FloatRange_, FloatRangeBase_, FloatMap_, FloatMapBase_, FloatSet_, FloatSetBase_;
+	Symbol Float32_, Float32Array_, Float32Range_, Float32Map_, Float32Set_;
+	Symbol Float64_, Float64Array_, Float64Range_, Float64Map_, Float64Set_;
+	Symbol Float128_, Float128Array_, Float128Range_, Float128Map_, Float128Set_;
 
 	// General symbols.
-	Symbol a, abs, acos, add_c_slashes, alnum_q, alpha_q, apply, apply_method, arguments, asin, assertions, assigned_name, atan, atan2;
+	Symbol a, abs, acos, add_c_slashes, alnum_q, alpha_q, apply, apply_method, arguments, array_, asin, assertions, assigned_name, atan, atan2;
 	Symbol base_, big_float, big_int, big_real, bit_and, bit_not, bit_or, bit_xor, body, bool_, byte_, byte_array, byte_range;
-	Symbol call, call_method, camelCase, CamelCase, case_fold, case_insensitive, case_sensitive, category, ceil, char_, chip, chop;
+	Symbol call, call_method, camelCase, CamelCase, case_fold, case_insensitive, case_sensitive, category, ceil, char_, char_map, char_set, chip, chop;
 	Symbol cident_q, clip, clone, closure, cmp, code_at, code_length, column, combine, compare, compare_i, compose, composed_q, cons, contains, contains_i, control_q, context, cos, count, count64;
 	Symbol count_left_ones, count_left_zeros, count_of, count_of_i, count_ones, count_right_ones, count_right_zeros, count_zeros, crc32, create, create_child_closure;
 	Symbol d, decompose, default_, diacritic_q, digit_q, div, divide_by_zero, does_not_understand;
 	Symbol each, end, ends_with, ends_with_i, escape, eval, even_q, exit, exp, extend_object, extend_where_new;
 	Symbol facade, false_, filename, filename_mode, first;
-	Symbol float32_, float32_range, float64_, float64_range, float128_;
+	Symbol float32_, float32_range, float64_, float64_map, float64_range, float64_set, float128_;
 	Symbol floor, fn, fold, from_seed;
 	Symbol get_object_security, get_property;
 	Symbol handle, handle_kind, has_property, hash, hex_string, hex_string_pretty, html_decode, html_encode, hyphenize;
 	Symbol id, in_, include, index_of, index_of_i, int_, int16_, int32_, int64_, int_lg;
-	Symbol integer16_, integer16_range, integer32_, integer32_range, integer64_, integer64_range, integer128_;
+	Symbol integer16_, integer16_range, integer32_, integer32_range, integer64_, integer64_map, integer64_range, integer64_set, integer128_;
 	Symbol join;
 	Symbol keys, kind;
 	Symbol last_index_of, last_index_of_i, latin1_to_utf8, left, length, letter, letter_q;
@@ -227,16 +229,16 @@ typedef struct KnownSymbolsStruct {
 	Symbol parity, parse, parse_and_eval, parse_decl, parse_message, pattern, pos_q, post, pow2_q, pre, primary_category, primitive, printf, process_id, property_names, punct_q, punctuation;
 	Symbol punctuation_close, punctuation_connector, punctuation_dash, punctuation_final_quote, punctuation_initial_quote, punctuation_open, punctuation_other;
 	Symbol range_to, raw_reverse, read_append, read_only, read_write, read_write_append;
-	Symbol real_, real32_, real32_range, real64_, real64_range, real128_;
+	Symbol real_, real32_, real32_range, real64_, real64_map, real64_range, real64_set, real128_;
 	Symbol reexport, rem, repeat, replace, replacement, resize, rest, result;
 	Symbol reverse, reverse_bits, reverse_bytes, right, rot_13;
 	Symbol separator, separator_line, separator_paragraph, separator_space;
-	Symbol set_object_security, set_property, sign, sin, space_q, splice, split, sprintf;
+	Symbol set, set_object_security, set_property, sign, sin, space_q, splice, split, sprintf;
 	Symbol sqrt, sqrt_domain, stack_trace, start, starts_with, starts_with_i, step, stepping;
-	Symbol string_, strip_c_slashes, studied_, study, substr, substring, symbol;
-	Symbol symbol_currency, symbol_math, symbol_modifier, symbol_other, syntax;
+	Symbol string_, string_map, string_set, strip_c_slashes, studied_, study, substr, substring, symbol;
+	Symbol symbol_currency, symbol_map, symbol_math, symbol_modifier, symbol_other, symbol_set, syntax;
 	Symbol tan, text, this_, this_closure, throw_, title, titlecase, titlecase_q, trim, trim_end, trim_start, true_, type;
-	Symbol underscorize, uni_, unknown, upper, uppercase, uppercase_q, url_decode, url_encode, url_query_encode, user_object, utf8_to_latin1;
+	Symbol underscorize, uni_, uni_map, uni_set, unknown, upper, uppercase, uppercase_q, url_decode, url_encode, url_query_encode, user_object, utf8_to_latin1;
 	Symbol values;
 	Symbol where_, whitespace_q, wildcard_matches, without;
 	Symbol xdigit_q, xor;

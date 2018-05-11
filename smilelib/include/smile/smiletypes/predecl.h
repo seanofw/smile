@@ -60,6 +60,8 @@ typedef struct SmileNonterminalInt *SmileNonterminal;
 
 typedef struct SmileByteArrayInt *SmileByteArray;
 
+typedef struct SmileSymbolMapInt *SmileSymbolMap;
+
 typedef struct EvalResultStruct *EvalResult;
 typedef struct ClosureInfoStruct *ClosureInfo;
 typedef struct ClosureStruct *Closure;

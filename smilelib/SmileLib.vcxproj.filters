@@ -1002,6 +1002,8 @@
     <ClCompile Include="src\eval\compiler\compile_brk.c" />
     <ClCompile Include="src\eval\closure_stringify.c" />
     <ClCompile Include="src\smiletypes\smiletillcontinuation.c" />
+    <ClCompile Include="src\smiletypes\collections\smilesymbolmap.c" />
+    <ClCompile Include="src\smiletypes\collections\smilesymbolmap_base.c" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">
@@ -1381,6 +1383,7 @@
     <ClInclude Include="include\smile\crypto\sha2.h" />
     <ClInclude Include="include\smile\env\modules.h" />
     <ClInclude Include="include\smile\smiletypes\smiletillcontinuation.h" />
+    <ClInclude Include="include\smile\smiletypes\collections\smilesymbolmap.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\smile\array.h">

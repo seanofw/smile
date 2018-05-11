@@ -83,6 +83,8 @@ void Smile_InitCommonGlobals(ClosureInfo globalClosureInfo)
 	DeclareCommonGlobal(Smile_KnownSymbols.Integer64Range_, Smile_KnownBases.Integer64Range);
 	DeclareCommonGlobal(Smile_KnownSymbols.IntegerRange_, Smile_KnownBases.Integer64Range);
 
+	DeclareCommonGlobal(Smile_KnownSymbols.SymbolMap_, Smile_KnownBases.SymbolMap);
+
 	DeclareCommonGlobal(Smile_KnownSymbols.true_,	Smile_KnownObjects.TrueObj);
 	DeclareCommonGlobal(Smile_KnownSymbols.false_,	Smile_KnownObjects.FalseObj);
 	DeclareCommonGlobal(Smile_KnownSymbols.null_,	Smile_KnownObjects.NullInstance);

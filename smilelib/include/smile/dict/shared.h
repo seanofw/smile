@@ -53,4 +53,29 @@ SMILE_API_FUNC String DictStats_ToString(DictStats stats);
 		__else__ \
 	}
 
+/// <summary>
+/// Walk through every node in a dictionary (hash table with internal linked lists) construct,
+/// performing a specific action for each node (in no particular order).
+/// </summary>
+/// <param name="__dicttype__">The internal struct type of the dictionary container.</param>
+/// <param name="__nodetype__">The internal struct type of the dictionary's nodes.</param>
+/// <param name="__indextype__">The integer index type to use for the nodes.</param>
+/// <param name="__dict__">A pointer to the dictionary struct itself (uncast).</param>
+/// <param name="__action__">Code block: What action to perform for each 'node'.</param>
+#define SMILE_DICT_WALK(__dicttype__, __nodetype__, __indextype__, __dict__, __action__) \
+	{ \
+		__dicttype__ *self = (__dicttype__ *)(__dict__); \
+		__indextype__ bucket, nodeIndex; \
+		__nodetype__ *heap = self->heap, *node; \
+		\
+		for (bucket = 0; bucket <= self->mask; bucket++) { \
+			nodeIndex = self->buckets[bucket]; \
+			while (nodeIndex >= 0) { \
+				node = heap + nodeIndex; \
+				__action__ \
+				nodeIndex = node->next; \
+			} \
+		} \
+	}
+
 #endif

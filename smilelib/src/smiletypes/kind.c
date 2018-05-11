@@ -67,6 +67,26 @@ STATIC_STRING(BigReal_, "bigReal");
 
 STATIC_STRING(ByteArray_, "ByteArray");
 
+STATIC_STRING(Array_, "Array");
+
+STATIC_STRING(Map_, "Map");
+STATIC_STRING(Integer64Map_, "Integer64Map");
+STATIC_STRING(Float64Map_, "Float64Map");
+STATIC_STRING(Real64Map_, "Real64Map");
+STATIC_STRING(SymbolMap_, "SymbolMap");
+STATIC_STRING(StringMap_, "StringMap");
+STATIC_STRING(CharMap_, "CharMap");
+STATIC_STRING(UniMap_, "UniMap");
+
+STATIC_STRING(Set_, "Set");
+STATIC_STRING(Integer64Set_, "Integer64Set");
+STATIC_STRING(Float64Set_, "Float64Set");
+STATIC_STRING(Real64Set_, "Real64Set");
+STATIC_STRING(SymbolSet_, "SymbolSet");
+STATIC_STRING(StringSet_, "StringSet");
+STATIC_STRING(CharSet_, "CharSet");
+STATIC_STRING(UniSet_, "UniSet");
+
 STATIC_STRING(Syntax_, "Syntax");
 STATIC_STRING(Nonterminal_, "Nonterminal");
 
@@ -126,6 +146,29 @@ String SmileKind_GetName(Int kind)
 
 		// Raw buffer types.
 		case SMILE_KIND_BYTEARRAY: return ByteArray_;
+
+		// General-purpose arrays.
+		case SMILE_KIND_ARRAY: return Array_;
+
+		// Maps (hash-based unordered key/value dictionaries), both general- and special-purpose.
+		case SMILE_KIND_MAP: return Map_;
+		case SMILE_KIND_INTEGER64MAP: return Integer64Map_;
+		case SMILE_KIND_FLOAT64MAP: return Float64Map_;
+		case SMILE_KIND_REAL64MAP: return Real64Map_;
+		case SMILE_KIND_SYMBOLMAP: return SymbolMap_;
+		case SMILE_KIND_STRINGMAP: return StringMap_;
+		case SMILE_KIND_CHARMAP: return CharMap_;
+		case SMILE_KIND_UNIMAP: return UniMap_;
+
+		// Sets (hash-based unordered collections), both general- and special-purpose.
+		case SMILE_KIND_SET: return Set_;
+		case SMILE_KIND_INTEGER64SET: return Integer64Set_;
+		case SMILE_KIND_FLOAT64SET: return Float64Set_;
+		case SMILE_KIND_REAL64SET: return Real64Set_;
+		case SMILE_KIND_SYMBOLSET: return SymbolSet_;
+		case SMILE_KIND_STRINGSET: return StringSet_;
+		case SMILE_KIND_CHARSET: return CharSet_;
+		case SMILE_KIND_UNISET: return UniSet_;
 
 		// Types used for parsing.	
 		case SMILE_KIND_SYNTAX: return Syntax_;
@@ -206,6 +249,29 @@ Symbol SmileKind_GetTypeOf(Int smileKind)
 
 		// Raw buffer types.
 		case SMILE_KIND_BYTEARRAY: return Smile_KnownSymbols.byte_array;
+
+		// General-purpose arrays.
+		case SMILE_KIND_ARRAY: return Smile_KnownSymbols.array_;
+
+		// Maps (hash-based unordered key/value dictionaries), both general- and special-purpose.
+		case SMILE_KIND_MAP: return Smile_KnownSymbols.map;
+		case SMILE_KIND_INTEGER64MAP: return Smile_KnownSymbols.integer64_map;
+		case SMILE_KIND_FLOAT64MAP: return Smile_KnownSymbols.float64_map;
+		case SMILE_KIND_REAL64MAP: return Smile_KnownSymbols.real64_map;
+		case SMILE_KIND_SYMBOLMAP: return Smile_KnownSymbols.symbol_map;
+		case SMILE_KIND_STRINGMAP: return Smile_KnownSymbols.string_map;
+		case SMILE_KIND_CHARMAP: return Smile_KnownSymbols.char_map;
+		case SMILE_KIND_UNIMAP: return Smile_KnownSymbols.uni_map;
+
+		// Sets (hash-based unordered collections), both general- and special-purpose.
+		case SMILE_KIND_SET: return Smile_KnownSymbols.set;
+		case SMILE_KIND_INTEGER64SET: return Smile_KnownSymbols.integer64_set;
+		case SMILE_KIND_FLOAT64SET: return Smile_KnownSymbols.float64_set;
+		case SMILE_KIND_REAL64SET: return Smile_KnownSymbols.real64_set;
+		case SMILE_KIND_SYMBOLSET: return Smile_KnownSymbols.symbol_set;
+		case SMILE_KIND_STRINGSET: return Smile_KnownSymbols.string_set;
+		case SMILE_KIND_CHARSET: return Smile_KnownSymbols.char_set;
+		case SMILE_KIND_UNISET: return Smile_KnownSymbols.uni_set;
 
 		// Types used for parsing.	
 		case SMILE_KIND_SYNTAX: return Smile_KnownSymbols.syntax;

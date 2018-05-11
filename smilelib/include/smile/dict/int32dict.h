@@ -244,4 +244,12 @@ Inline Bool Int32Dict_TryGetValue(Int32Dict intDict, Int32 key, void **value)
 		})
 }
 
+/// <summary>
+/// Walk through every node in an Int32Dict, performing a specific action for each node (in no particular order).
+/// </summary>
+/// <param name="__intDict__">A pointer to the dictionary itself.</param>
+/// <param name="__action__">Code block: What action to perform for each 'node'.</param>
+#define INT32DICT_WALK(__intDict__, __action__) \
+	SMILE_DICT_WALK(struct Int32DictInt, struct Int32DictNode, Int32, &(__intDict__)->_opaque, __action__)
+
 #endif
