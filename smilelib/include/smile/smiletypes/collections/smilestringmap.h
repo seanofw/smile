@@ -1,5 +1,5 @@
-#ifndef __SMILE_SMILETYPES_COLLECTIONS_SMILESYMBOLMAP_H__
-#define __SMILE_SMILETYPES_COLLECTIONS_SMILESYMBOLMAP_H__
+#ifndef __SMILE_SMILETYPES_COLLECTIONS_SMILESTRINGMAP_H__
+#define __SMILE_SMILETYPES_COLLECTIONS_SMILESTRINGMAP_H__
 
 #ifndef __SMILE_SMILETYPES_PREDECL_H__
 #include <smile/smiletypes/predecl.h>
@@ -9,29 +9,29 @@
 #include <smile/smiletypes/smileobject.h>
 #endif
 
-#ifndef __SMILE_DICT_INT32DICT_H__
-#include <smile/dict/int32dict.h>
+#ifndef __SMILE_DICT_STRINGDICT_H__
+#include <smile/dict/stringdict.h>
 #endif
 
 //-------------------------------------------------------------------------------------------------
 //  Type declarations
 
-struct SmileSymbolMapInt {
+struct SmileStringMapInt {
 	DECLARE_BASE_OBJECT_PROPERTIES;
 
-	struct Int32DictStruct dict;
+	struct StringDictStruct dict;
 };
 
 //-------------------------------------------------------------------------------------------------
 //  Public interface
 
-SMILE_API_DATA SmileVTable SmileSymbolMap_VTable;
+SMILE_API_DATA SmileVTable SmileStringMap_VTable;
 
-SMILE_API_FUNC SmileSymbolMap SmileSymbolMap_CreateWithSize(Int32 newSize);
+SMILE_API_FUNC SmileStringMap SmileStringMap_CreateWithSize(Int newSize);
 
-Inline SmileSymbolMap SmileSymbolMap_Create(void)
+Inline SmileStringMap SmileStringMap_Create(void)
 {
-	return SmileSymbolMap_CreateWithSize(16);
+	return SmileStringMap_CreateWithSize(16);
 }
 
 #endif

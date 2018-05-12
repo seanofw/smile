@@ -252,7 +252,15 @@ Inline Bool Int32Int32Dict_TryAddValue(Int32Int32Dict intDict, Int32 key, Int32 
 		{
 			Int32Int32DictInt_Append((struct Int32Int32DictInt *)intDict, key, *result = value);
 			return True;
+	
 		})
 }
+/// <summary>
+/// Walk through every node in an Int32Int32Dict, performing a specific action for each node (in no particular order).
+/// </summary>
+/// <param name="__intDict__">A pointer to the dictionary itself.</param>
+/// <param name="__action__">Code block: What action to perform for each 'node'.</param>
+#define INT32INT32DICT_WALK(__intDict__, __action__) \
+	SMILE_DICT_WALK(struct Int32Int32DictInt, struct Int32Int32DictNode, Int32, &(__intDict__)->_opaque, __action__)
 
 #endif

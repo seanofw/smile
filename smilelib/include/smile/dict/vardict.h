@@ -259,4 +259,12 @@ Inline Bool VarDict_TryGetValue(VarDict varDict, Int32 key, VarInfo *value)
 		})
 }
 
+/// <summary>
+/// Walk through every node in a VarDict, performing a specific action for each node (in no particular order).
+/// </summary>
+/// <param name="__varDict__">A pointer to the dictionary itself.</param>
+/// <param name="__action__">Code block: What action to perform for each 'node'.</param>
+#define VARDICT_WALK(__varDict__, __action__) \
+	SMILE_DICT_WALK(struct VarDictInt, struct VarDictNode, Int, &(__varDict__)->_opaque, __action__)
+
 #endif

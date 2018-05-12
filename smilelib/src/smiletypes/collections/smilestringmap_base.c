@@ -20,7 +20,7 @@
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/smilebool.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
-#include <smile/smiletypes/collections/smilesymbolmap.h>
+#include <smile/smiletypes/collections/smilestringmap.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/eval/eval.h>
@@ -29,25 +29,25 @@
 
 SMILE_IGNORE_UNUSED_VARIABLES
 
-static Byte _symbolMapChecks[] = {
-	SMILE_KIND_MASK, SMILE_KIND_SYMBOLMAP,
-	SMILE_KIND_MASK, SMILE_KIND_SYMBOLMAP,
-	SMILE_KIND_MASK, SMILE_KIND_SYMBOLMAP,
-	SMILE_KIND_MASK, SMILE_KIND_SYMBOLMAP,
-	SMILE_KIND_MASK, SMILE_KIND_SYMBOLMAP,
-	SMILE_KIND_MASK, SMILE_KIND_SYMBOLMAP,
-	SMILE_KIND_MASK, SMILE_KIND_SYMBOLMAP,
-	SMILE_KIND_MASK, SMILE_KIND_SYMBOLMAP,
+static Byte _stringMapChecks[] = {
+	SMILE_KIND_MASK, SMILE_KIND_STRINGMAP,
+	SMILE_KIND_MASK, SMILE_KIND_STRINGMAP,
+	SMILE_KIND_MASK, SMILE_KIND_STRINGMAP,
+	SMILE_KIND_MASK, SMILE_KIND_STRINGMAP,
+	SMILE_KIND_MASK, SMILE_KIND_STRINGMAP,
+	SMILE_KIND_MASK, SMILE_KIND_STRINGMAP,
+	SMILE_KIND_MASK, SMILE_KIND_STRINGMAP,
+	SMILE_KIND_MASK, SMILE_KIND_STRINGMAP,
 };
 
-static Byte _symbolMapMemberChecks[] = {
-	SMILE_KIND_MASK, SMILE_KIND_SYMBOLMAP,
-	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_SYMBOL,
+static Byte _stringMapMemberChecks[] = {
+	SMILE_KIND_MASK, SMILE_KIND_STRINGMAP,
+	SMILE_KIND_MASK, SMILE_KIND_STRING,
 	0, 0,
 };
 
 static Byte _eachChecks[] = {
-	SMILE_KIND_MASK, SMILE_KIND_SYMBOLMAP,
+	SMILE_KIND_MASK, SMILE_KIND_STRINGMAP,
 	SMILE_KIND_MASK, SMILE_KIND_FUNCTION,
 };
 
@@ -56,28 +56,28 @@ static Byte _eachChecks[] = {
 
 SMILE_EXTERNAL_FUNCTION(ToBool)
 {
-	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_SYMBOLMAP)
-		return SmileUnboxedBool_From(Int32Dict_Count(&((SmileSymbolMap)argv[0].obj)->dict) > 0);
+	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_STRINGMAP)
+		return SmileUnboxedBool_From(StringDict_Count(&((SmileStringMap)argv[0].obj)->dict) > 0);
 
 	return SmileUnboxedBool_From(True);
 }
 
 SMILE_EXTERNAL_FUNCTION(ToInt)
 {
-	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_SYMBOLMAP)
-		return SmileUnboxedInteger64_From(Int32Dict_Count(&((SmileSymbolMap)argv[0].obj)->dict));
+	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_STRINGMAP)
+		return SmileUnboxedInteger64_From(StringDict_Count(&((SmileStringMap)argv[0].obj)->dict));
 
 	return SmileUnboxedInteger64_From(0);
 }
 
 SMILE_EXTERNAL_FUNCTION(ToString)
 {
-	STATIC_STRING(symbolMap, "SymbolMap");
+	STATIC_STRING(stringMap, "StringMap");
 
-	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_SYMBOLMAP)
-		return SmileArg_From((SmileObject)String_Format("SymbolMap of %d", Int32Dict_Count(&((SmileSymbolMap)argv[0].obj)->dict)));
+	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_STRINGMAP)
+		return SmileArg_From((SmileObject)String_Format("StringMap of %d", StringDict_Count(&((SmileStringMap)argv[0].obj)->dict)));
 
-	return SmileArg_From((SmileObject)symbolMap);
+	return SmileArg_From((SmileObject)stringMap);
 }
 
 SMILE_EXTERNAL_FUNCTION(Hash)
@@ -90,9 +90,9 @@ SMILE_EXTERNAL_FUNCTION(Hash)
 
 SMILE_EXTERNAL_FUNCTION(Create)
 {
-	SmileSymbolMap symbolMap = SmileSymbolMap_Create();
+	SmileStringMap stringMap = SmileStringMap_Create();
 
-	return SmileArg_From((SmileObject)symbolMap);
+	return SmileArg_From((SmileObject)stringMap);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -100,11 +100,11 @@ SMILE_EXTERNAL_FUNCTION(Create)
 
 SMILE_EXTERNAL_FUNCTION(GetMember)
 {
-	SmileSymbolMap symbolMap = (SmileSymbolMap)argv[0].obj;
-	Symbol symbol = argv[1].unboxed.symbol;
+	SmileStringMap stringMap = (SmileStringMap)argv[0].obj;
+	String string = (String)argv[1].obj;
 
 	void *value;
-	if (!Int32Dict_TryGetValue(&symbolMap->dict, symbol, &value))
+	if (!StringDict_TryGetValue(&stringMap->dict, string, &value))
 		return SmileArg_From(NullObject);
 
 	return SmileArg_From((SmileObject)value);
@@ -112,11 +112,11 @@ SMILE_EXTERNAL_FUNCTION(GetMember)
 
 SMILE_EXTERNAL_FUNCTION(SetMember)
 {
-	SmileSymbolMap symbolMap = (SmileSymbolMap)argv[0].obj;
-	Symbol symbol = argv[1].unboxed.symbol;
+	SmileStringMap stringMap = (SmileStringMap)argv[0].obj;
+	String string = (String)argv[1].obj;
 	SmileObject value = SmileArg_Box(argv[2]);
 
-	Int32Dict_SetValue(&symbolMap->dict, symbol, (void *)value);
+	StringDict_SetValue(&stringMap->dict, string, (void *)value);
 
 	return argv[2];
 }
@@ -126,34 +126,34 @@ SMILE_EXTERNAL_FUNCTION(SetMember)
 
 SMILE_EXTERNAL_FUNCTION(Add)
 {
-	SmileSymbolMap symbolMap = (SmileSymbolMap)argv[0].obj;
-	Symbol symbol = argv[1].unboxed.symbol;
+	SmileStringMap stringMap = (SmileStringMap)argv[0].obj;
+	String string = (String)argv[1].obj;
 	SmileObject value = SmileArg_Box(argv[2]);
 
-	return SmileUnboxedBool_From(Int32Dict_Add(&symbolMap->dict, symbol, (void *)value));
+	return SmileUnboxedBool_From(StringDict_Add(&stringMap->dict, string, (void *)value));
 }
 
 SMILE_EXTERNAL_FUNCTION(Remove)
 {
-	SmileSymbolMap symbolMap;
-	Symbol symbol;
+	SmileStringMap stringMap;
+	String string;
 	Int i;
 	Bool result = True;
-	
-	if (SMILE_KIND(argv[0].obj) != SMILE_KIND_SYMBOLMAP)
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("Argument 1 to 'remove' should be a SymbolMap but is a %S.",
+
+	if (SMILE_KIND(argv[0].obj) != SMILE_KIND_STRINGMAP)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("Argument 1 to 'remove' should be a StringMap but is a %S.",
 			SmileKind_GetName(SMILE_KIND(argv[0].obj))));
-	symbolMap = (SmileSymbolMap)argv[0].obj;
+	stringMap = (SmileStringMap)argv[0].obj;
 
 	// Remove all of the provided symbols, at once.
 	for (i = 1; i < argc; i++) {
-		if (SMILE_KIND(argv[i].obj) != SMILE_KIND_UNBOXED_SYMBOL) {
-			Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("Argument %d to 'remove' should be a Symbol but is a %S.",
+		if (SMILE_KIND(argv[i].obj) != SMILE_KIND_STRING) {
+			Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_Format("Argument %d to 'remove' should be a String but is a %S.",
 				i + 1, SmileKind_GetName(SMILE_KIND(argv[i].obj))));
 		}
 
-		symbol = argv[i].unboxed.symbol;
-		result &= Int32Dict_Remove(&symbolMap->dict, symbol);
+		string = (String)argv[i].obj;
+		result &= StringDict_Remove(&stringMap->dict, string);
 	}
 
 	// True if all of them were removed, false if any of them didn't exist.
@@ -162,19 +162,19 @@ SMILE_EXTERNAL_FUNCTION(Remove)
 
 SMILE_EXTERNAL_FUNCTION(ContainsKey)
 {
-	SmileSymbolMap symbolMap = (SmileSymbolMap)argv[0].obj;
-	Symbol symbol = argv[1].unboxed.symbol;
+	SmileStringMap stringMap = (SmileStringMap)argv[0].obj;
+	String string = (String)argv[1].obj;
 
-	return SmileUnboxedBool_From(Int32Dict_ContainsKey(&symbolMap->dict, symbol));
+	return SmileUnboxedBool_From(StringDict_ContainsKey(&stringMap->dict, string));
 }
 
 SMILE_EXTERNAL_FUNCTION(Keys)
 {
-	SmileSymbolMap symbolMap = (SmileSymbolMap)argv[0].obj;
+	SmileStringMap stringMap = (SmileStringMap)argv[0].obj;
 	SmileList head = NullList, tail = NullList;
 
-	INT32DICT_WALK(&symbolMap->dict, {
-		LIST_APPEND(head, tail, SmileSymbol_Create(node->key));
+	STRINGDICT_WALK(&stringMap->dict, {
+		LIST_APPEND(head, tail, node->key);
 	})
 
 	return SmileArg_From((SmileObject)head);
@@ -182,10 +182,10 @@ SMILE_EXTERNAL_FUNCTION(Keys)
 
 SMILE_EXTERNAL_FUNCTION(Values)
 {
-	SmileSymbolMap symbolMap = (SmileSymbolMap)argv[0].obj;
+	SmileStringMap stringMap = (SmileStringMap)argv[0].obj;
 	SmileList head = NullList, tail = NullList;
 
-	INT32DICT_WALK(&symbolMap->dict, {
+	STRINGDICT_WALK(&stringMap->dict, {
 		LIST_APPEND(head, tail, node->value);
 	})
 
@@ -194,11 +194,11 @@ SMILE_EXTERNAL_FUNCTION(Values)
 
 SMILE_EXTERNAL_FUNCTION(Pairs)
 {
-	SmileSymbolMap symbolMap = (SmileSymbolMap)argv[0].obj;
+	SmileStringMap stringMap = (SmileStringMap)argv[0].obj;
 	SmileList head = NullList, tail = NullList;
 
-	INT32DICT_WALK(&symbolMap->dict, {
-		LIST_APPEND(head, tail, SmileList_CreateTwo(SmileSymbol_Create(node->key), node->value));
+	STRINGDICT_WALK(&stringMap->dict, {
+		LIST_APPEND(head, tail, SmileList_CreateTwo(node->key, node->value));
 	})
 
 	return SmileArg_From((SmileObject)head);
@@ -207,7 +207,7 @@ SMILE_EXTERNAL_FUNCTION(Pairs)
 //-------------------------------------------------------------------------------------------------
 
 typedef struct EachInfoStruct {
-	SmileSymbolMap symbolMap;
+	SmileStringMap stringMap;
 	SmileFunction function;
 	Int32 bucket, nodeIndex;
 	Int32 index, numArgs;
@@ -216,8 +216,8 @@ typedef struct EachInfoStruct {
 static Int EachCommon(ClosureStateMachine closure)
 {
 	EachInfo eachInfo = (EachInfo)closure->state;
-	struct Int32DictInt *dict = &eachInfo->symbolMap->dict._opaque;
-	struct Int32DictNode *node;
+	struct StringDictInt *dict = &eachInfo->stringMap->dict._opaque;
+	struct StringDictNode *node;
 	Int32 index;
 
 	// Get the current list node, and then quietly move the index to the next list node.
@@ -243,7 +243,7 @@ static Int EachCommon(ClosureStateMachine closure)
 
 		default:
 			// Three args: Pass all the pieces individually, shaped like |key value index|
-			Closure_PushUnboxedSymbol(closure, node->key);
+			Closure_PushBoxed(closure, node->key);
 			Closure_UnboxAndPush(closure, node->value);
 			Closure_PushUnboxedInt64(closure, index);
 			return 3;
@@ -253,7 +253,7 @@ static Int EachCommon(ClosureStateMachine closure)
 static Int EachStartBucket(ClosureStateMachine closure)
 {
 	EachInfo eachInfo = (EachInfo)closure->state;
-	struct Int32DictInt *dict = &eachInfo->symbolMap->dict._opaque;
+	struct StringDictInt *dict = &eachInfo->stringMap->dict._opaque;
 
 	//---------- begin outer for-loop iteration ----------
 
@@ -261,7 +261,7 @@ nextBucket:
 	// Condition: If we've run out of buckets, we're done.
 	if (eachInfo->bucket > dict->mask) {
 		Closure_Pop(closure);								// Pop the previous return value
-		Closure_PushBoxed(closure, eachInfo->symbolMap);	// and push 'symbolMap' as the new return value.
+		Closure_PushBoxed(closure, eachInfo->stringMap);	// and push 'stringMap' as the new return value.
 		return -1;
 	}
 
@@ -299,7 +299,7 @@ static Int EachNext(ClosureStateMachine closure)
 SMILE_EXTERNAL_FUNCTION(Each)
 {
 	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
-	SmileSymbolMap symbolMap = (SmileSymbolMap)argv[0].obj;
+	SmileStringMap stringMap = (SmileStringMap)argv[0].obj;
 	SmileFunction function = (SmileFunction)argv[1].obj;
 	Int minArgs, maxArgs;
 	EachInfo eachInfo;
@@ -310,7 +310,7 @@ SMILE_EXTERNAL_FUNCTION(Each)
 	closure = Eval_BeginStateMachine(EachStartBucket, EachNext);
 
 	eachInfo = (EachInfo)closure->state;
-	eachInfo->symbolMap = symbolMap;
+	eachInfo->stringMap = stringMap;
 	eachInfo->function = function;
 	eachInfo->bucket = 0;
 	eachInfo->index = 0;
@@ -323,7 +323,7 @@ SMILE_EXTERNAL_FUNCTION(Each)
 
 //-------------------------------------------------------------------------------------------------
 
-void SmileSymbolMap_Setup(SmileUserObject base)
+void SmileStringMap_Setup(SmileUserObject base)
 {
 	SetupFunction("bool", ToBool, NULL, "map", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 	SetupFunction("int", ToInt, NULL, "map", ARG_CHECK_EXACT, 1, 1, 0, NULL);
@@ -332,20 +332,20 @@ void SmileSymbolMap_Setup(SmileUserObject base)
 
 	SetupFunction("create", Create, NULL, "", ARG_CHECK_MIN | ARG_CHECK_MAX, 0, 1, 0, NULL);
 
-	SetupFunction("get-member", GetMember, NULL, "map symbol", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _symbolMapMemberChecks);
-	SetupFunction("set-member", SetMember, NULL, "map symbol value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _symbolMapMemberChecks);
+	SetupFunction("get-member", GetMember, NULL, "map string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringMapMemberChecks);
+	SetupFunction("set-member", SetMember, NULL, "map string value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _stringMapMemberChecks);
 
-	SetupFunction("add", Add, NULL, "map symbol value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _symbolMapMemberChecks);
-	SetupFunction("remove", Remove, NULL, "map symbols...", ARG_CHECK_MIN, 2, 0, 0, NULL);
+	SetupFunction("add", Add, NULL, "map string value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _stringMapMemberChecks);
+	SetupFunction("remove", Remove, NULL, "map strings...", ARG_CHECK_MIN, 2, 0, 0, NULL);
 
-	SetupFunction("contains-key?", ContainsKey, NULL, "map symbol", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _symbolMapMemberChecks);
+	SetupFunction("contains-key?", ContainsKey, NULL, "map string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringMapMemberChecks);
 	SetupSynonym("contains-key?", "contains?");
 
-	SetupFunction("keys", Keys, NULL, "map", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _symbolMapChecks);
+	SetupFunction("keys", Keys, NULL, "map", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringMapChecks);
 	SetupSynonym("keys", "keys-of");
-	SetupFunction("values", Values, NULL, "map", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _symbolMapChecks);
+	SetupFunction("values", Values, NULL, "map", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringMapChecks);
 	SetupSynonym("values", "values-of");
-	SetupFunction("pairs", Pairs, NULL, "map", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _symbolMapChecks);
+	SetupFunction("pairs", Pairs, NULL, "map", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringMapChecks);
 	SetupSynonym("pairs", "pairs-of");
 	SetupSynonym("pairs", "list");
 

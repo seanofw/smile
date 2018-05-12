@@ -185,6 +185,7 @@
     <ClInclude Include="include\smile\platform\windows\ansi-console.h" />
     <ClInclude Include="include\smile\simplestats.h" />
     <ClInclude Include="include\smile\smiletypes\base.h" />
+    <ClInclude Include="include\smile\smiletypes\collections\smilestringmap.h" />
     <ClInclude Include="include\smile\smiletypes\collections\smilesymbolmap.h" />
     <ClInclude Include="include\smile\smiletypes\easyobject.h" />
     <ClInclude Include="include\smile\smiletypes\numeric\smilefloat32.h" />
@@ -884,6 +885,8 @@
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="src\crypto\hash\siphash.c" />
+    <ClCompile Include="src\smiletypes\collections\smilestringmap.c" />
+    <ClCompile Include="src\smiletypes\collections\smilestringmap_base.c" />
     <ClCompile Include="src\smiletypes\collections\smilesymbolmap.c" />
     <ClCompile Include="src\smiletypes\collections\smilesymbolmap_base.c" />
     <ClCompile Include="src\smiletypes\kind.c" />

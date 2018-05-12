@@ -259,6 +259,7 @@ extern void String_Setup(SmileUserObject base);
 extern void SmileChar_Setup(SmileUserObject base);
 extern void SmileUni_Setup(SmileUserObject base);
 extern void SmileSymbolMap_Setup(SmileUserObject base);
+extern void SmileStringMap_Setup(SmileUserObject base);
 
 void KnownBases_Setup(struct KnownBasesStruct *knownBases)
 {
@@ -283,6 +284,7 @@ void KnownBases_Setup(struct KnownBasesStruct *knownBases)
 	SmileUni_Setup(knownBases->Uni);
 
 	SmileSymbolMap_Setup(knownBases->SymbolMap);
+	SmileStringMap_Setup(knownBases->StringMap);
 
 	SmileUnboxedBool_Instance->base = (SmileObject)knownBases->Bool;
 	SmileUnboxedSymbol_Instance->base = (SmileObject)knownBases->Symbol;

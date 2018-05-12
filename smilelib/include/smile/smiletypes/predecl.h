@@ -61,6 +61,7 @@ typedef struct SmileNonterminalInt *SmileNonterminal;
 typedef struct SmileByteArrayInt *SmileByteArray;
 
 typedef struct SmileSymbolMapInt *SmileSymbolMap;
+typedef struct SmileStringMapInt *SmileStringMap;
 
 typedef struct EvalResultStruct *EvalResult;
 typedef struct ClosureInfoStruct *ClosureInfo;

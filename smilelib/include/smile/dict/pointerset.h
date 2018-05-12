@@ -149,4 +149,12 @@ Inline Int32 PointerSet_Count(PointerSet pointerSet)
 	return ((struct PointerSetInt *)pointerSet)->count;
 }
 
+/// <summary>
+/// Walk through every node in a PointerSet, performing a specific action for each node (in no particular order).
+/// </summary>
+/// <param name="__intDict__">A pointer to the dictionary itself.</param>
+/// <param name="__action__">Code block: What action to perform for each 'node'.</param>
+#define POINTERSET_WALK(__set__, __action__) \
+	SMILE_DICT_WALK(struct PointerSetInt, struct PointerSetNode, Int32, &(__set__)->_opaque, __action__)
+
 #endif

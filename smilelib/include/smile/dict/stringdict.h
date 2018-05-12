@@ -353,4 +353,12 @@ Inline Bool StringDict_TryGetValueC(StringDict stringDict, const char *ckey, voi
 		})
 }
 
+/// <summary>
+/// Walk through every node in a StringDict, performing a specific action for each node (in no particular order).
+/// </summary>
+/// <param name="__stringDict__">A pointer to the dictionary itself.</param>
+/// <param name="__action__">Code block: What action to perform for each 'node'.</param>
+#define STRINGDICT_WALK(__stringDict__, __action__) \
+	SMILE_DICT_WALK(struct StringDictInt, struct StringDictNode, Int, &(__stringDict__)->_opaque, __action__)
+
 #endif

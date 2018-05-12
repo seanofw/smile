@@ -19,63 +19,63 @@
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/smilelist.h>
-#include <smile/smiletypes/collections/smilesymbolmap.h>
+#include <smile/smiletypes/collections/smilestringmap.h>
 #include <smile/smiletypes/easyobject.h>
 
 SMILE_IGNORE_UNUSED_VARIABLES
 
-SMILE_EASY_OBJECT_VTABLE(SmileSymbolMap);
+SMILE_EASY_OBJECT_VTABLE(SmileStringMap);
 
-SMILE_EASY_OBJECT_READONLY_SECURITY(SmileSymbolMap)
-SMILE_EASY_OBJECT_NO_CALL(SmileSymbolMap, "A SymbolMap object")
-SMILE_EASY_OBJECT_NO_SOURCE(SmileSymbolMap)
-SMILE_EASY_OBJECT_NO_UNBOX(SmileSymbolMap)
+SMILE_EASY_OBJECT_READONLY_SECURITY(SmileStringMap)
+SMILE_EASY_OBJECT_NO_CALL(SmileStringMap, "A StringMap object")
+SMILE_EASY_OBJECT_NO_SOURCE(SmileStringMap)
+SMILE_EASY_OBJECT_NO_UNBOX(SmileStringMap)
 
-SMILE_EASY_OBJECT_TOBOOL(SmileSymbolMap, Int32Dict_Count(&obj->dict) > 0)
-SMILE_EASY_OBJECT_TOSTRING(SmileSymbolMap, String_Format("SymbolMap of %d", Int32Dict_Count(&obj->dict)))
-SMILE_EASY_OBJECT_HASH(SmileSymbolMap, (PtrInt)obj)
+SMILE_EASY_OBJECT_TOBOOL(SmileStringMap, StringDict_Count(&obj->dict) > 0)
+SMILE_EASY_OBJECT_TOSTRING(SmileStringMap, String_Format("StringMap of %d", StringDict_Count(&obj->dict)))
+SMILE_EASY_OBJECT_HASH(SmileStringMap, (PtrInt)obj)
 
-SmileSymbolMap SmileSymbolMap_CreateWithSize(Int32 newSize)
+SmileStringMap SmileStringMap_CreateWithSize(Int newSize)
 {
-	SmileSymbolMap smileMap = GC_MALLOC_STRUCT(struct SmileSymbolMapInt);
+	SmileStringMap smileMap = GC_MALLOC_STRUCT(struct SmileStringMapInt);
 	if (smileMap == NULL) Smile_Abort_OutOfMemory();
-	smileMap->base = (SmileObject)Smile_KnownBases.SymbolMap;
-	smileMap->kind = SMILE_KIND_SYMBOLMAP;
-	smileMap->vtable = SmileSymbolMap_VTable;
-	Int32Dict_ClearWithSize(&smileMap->dict, newSize);
+	smileMap->base = (SmileObject)Smile_KnownBases.StringMap;
+	smileMap->kind = SMILE_KIND_STRINGMAP;
+	smileMap->vtable = SmileStringMap_VTable;
+	StringDict_ClearWithSize(&smileMap->dict, newSize);
 	return smileMap;
 }
 
-static SmileObject SmileSymbolMap_GetProperty(SmileSymbolMap self, Symbol propertyName)
+static SmileObject SmileStringMap_GetProperty(SmileStringMap self, Symbol propertyName)
 {
 	if (propertyName == Smile_KnownSymbols.length)
-		return (SmileObject)SmileInteger64_Create(Int32Dict_Count(&self->dict));
+		return (SmileObject)SmileInteger64_Create(StringDict_Count(&self->dict));
 	else
 		return self->base->vtable->getProperty(self->base, propertyName);
 }
 
-static void SmileSymbolMap_SetProperty(SmileSymbolMap self, Symbol propertyName, SmileObject value)
+static void SmileStringMap_SetProperty(SmileStringMap self, Symbol propertyName, SmileObject value)
 {
 	UNUSED(self);
 	if (propertyName == Smile_KnownSymbols.length) {
 		Smile_ThrowException(Smile_KnownSymbols.property_error,
-			String_Format("Cannot set property \"%S\" on SymbolMap.",
+			String_Format("Cannot set property \"%S\" on StringMap.",
 				SymbolTable_GetName(Smile_SymbolTable, propertyName)));
 	}
 	else {
 		Smile_ThrowException(Smile_KnownSymbols.property_error,
-			String_Format("Cannot set property \"%S\" on SymbolMap: This property does not exist, and maps are not appendable objects.",
+			String_Format("Cannot set property \"%S\" on StringMap: This property does not exist, and maps are not appendable objects.",
 				SymbolTable_GetName(Smile_SymbolTable, propertyName)));
 	}
 }
 
-static Bool SmileSymbolMap_HasProperty(SmileSymbolMap self, Symbol propertyName)
+static Bool SmileStringMap_HasProperty(SmileStringMap self, Symbol propertyName)
 {
 	UNUSED(self);
 	return (propertyName == Smile_KnownSymbols.length);
 }
 
-static SmileList SmileSymbolMap_GetPropertyNames(SmileSymbolMap self)
+static SmileList SmileStringMap_GetPropertyNames(SmileStringMap self)
 {
 	SmileList head, tail;
 
@@ -87,16 +87,16 @@ static SmileList SmileSymbolMap_GetPropertyNames(SmileSymbolMap self)
 	return head;
 }
 
-static Bool SmileSymbolMap_CompareEqual(SmileSymbolMap a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
+static Bool SmileStringMap_CompareEqual(SmileStringMap a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
 {
 	return (SmileObject)a == b;
 }
 
-static Bool SmileSymbolMap_DeepEqual(SmileSymbolMap a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData, PointerSet visitedPointers)
+static Bool SmileStringMap_DeepEqual(SmileStringMap a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData, PointerSet visitedPointers)
 {
 	UNUSED(visitedPointers);
 
-	if (SMILE_KIND(b) == SMILE_KIND_SYMBOLMAP) {
+	if (SMILE_KIND(b) == SMILE_KIND_STRINGMAP) {
 		// If they're the same object, early-out.
 		if ((SmileObject)a == b)
 			return True;
@@ -107,14 +107,14 @@ static Bool SmileSymbolMap_DeepEqual(SmileSymbolMap a, SmileUnboxedData aData, S
 		}
 
 		// First, make sure they're both of the same cardinality.
-		if (Int32Dict_Count(&a->dict) != Int32Dict_Count(&((SmileSymbolMap)b)->dict))
+		if (StringDict_Count(&a->dict) != StringDict_Count(&((SmileStringMap)b)->dict))
 			return False;
 
 		// For each key/value pair in 'b'...
-		INT32DICT_WALK(&((SmileSymbolMap)b)->dict, {
+		STRINGDICT_WALK(&((SmileStringMap)b)->dict, {
 			// See if this node in 'b' has a matching node in 'a'.
 			void *avalue;
-			if (!Int32Dict_TryGetValue(&a->dict, node->key, &avalue))
+			if (!StringDict_TryGetValue(&a->dict, node->key, &avalue))
 				return False;
 
 			// If they're not the same pointer, recursively deep-compare their data.
