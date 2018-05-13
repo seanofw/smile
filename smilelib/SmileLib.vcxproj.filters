@@ -1006,6 +1006,7 @@
     <ClCompile Include="src\smiletypes\collections\smilesymbolmap_base.c" />
     <ClCompile Include="src\smiletypes\collections\smilestringmap.c" />
     <ClCompile Include="src\smiletypes\collections\smilestringmap_base.c" />
+    <ClCompile Include="src\smiletypes\text\smilesymbol_base.c" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">

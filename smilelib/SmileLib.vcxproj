@@ -936,6 +936,7 @@
     <ClCompile Include="src\smiletypes\text\smilestring.c" />
     <ClCompile Include="src\smiletypes\text\smilestring_base.c" />
     <ClCompile Include="src\smiletypes\text\smilesymbol.c" />
+    <ClCompile Include="src\smiletypes\text\smilesymbol_base.c" />
     <ClCompile Include="src\smiletypes\text\smileuni.c" />
     <ClCompile Include="src\smiletypes\text\smileuni_base.c" />
     <ClCompile Include="src\string\html_entitytable.c" />

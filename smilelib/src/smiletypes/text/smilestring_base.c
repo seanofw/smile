@@ -23,6 +23,7 @@
 #include <smile/smiletypes/smilebool.h>
 #include <smile/smiletypes/text/smilechar.h>
 #include <smile/smiletypes/text/smileuni.h>
+#include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/numeric/smilebyte.h>
 #include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
@@ -61,6 +62,12 @@ static Byte _stringNumberChecks[] = {
 	SMILE_KIND_MASK, SMILE_KIND_STRING,
 	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER64,
 	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER64,
+};
+
+static Byte _stringSymbolChecks[] = {
+	SMILE_KIND_MASK, SMILE_KIND_STRING,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_SYMBOL,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_SYMBOL,
 };
 
 static Byte _padChecks[] = {
@@ -136,6 +143,15 @@ SMILE_EXTERNAL_FUNCTION(Hash)
 	}
 
 	return SmileUnboxedInteger64_From(((PtrInt)argv[0].obj) ^ Smile_HashOracle);
+}
+
+//-------------------------------------------------------------------------------------------------
+// Specialized type conversion.
+
+SMILE_EXTERNAL_FUNCTION(ToSymbol)
+{
+	Symbol symbol = SymbolTable_GetSymbol(Smile_SymbolTable, (String)argv[0].obj);
+	return SmileUnboxedSymbol_From(symbol);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1830,6 +1846,8 @@ void String_Setup(SmileUserObject base)
 	SetupFunction("int", ToInt, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 	SetupFunction("string", ToString, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX, 1, 2, 0, NULL);
 	SetupFunction("hash", Hash, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+
+	SetupFunction("symbol", ToSymbol, NULL, "str", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 
 	SetupFunction("+", Plus, NULL, "x y", ARG_CHECK_MIN, 1, 0, 0, NULL);
 	SetupSynonym("+", "concat");
