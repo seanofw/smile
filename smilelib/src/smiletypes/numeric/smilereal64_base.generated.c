@@ -437,6 +437,13 @@ SMILE_EXTERNAL_FUNCTION(Clip)
 	else return argv[0];
 }
 
+SMILE_EXTERNAL_FUNCTION(Ramp)
+{
+	Real64 value = argv[0].unboxed.r64;
+
+	return Real64_Ge(value, Real64_Zero) ? argv[0] : SmileUnboxedReal64_From(Real64_Zero);
+}
+
 SMILE_EXTERNAL_FUNCTION(Min)
 {
 	Real64 x, y;
@@ -983,6 +990,7 @@ void SmileReal64_Setup(SmileUserObject base)
 	SetupFunction("sign", Sign, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
 	SetupFunction("abs", Abs, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
 	SetupFunction("clip", Clip, NULL, "value min max", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _real64Checks);
+	SetupFunction("ramp", Ramp, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
 	SetupFunction("min", Min, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _real64Checks);
 	SetupFunction("max", Max, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _real64Checks);
 	SetupFunction("sqrt", Sqrt, &_quietMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);

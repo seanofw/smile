@@ -455,6 +455,13 @@ SMILE_EXTERNAL_FUNCTION(Clip)
 	else return argv[0];
 }
 
+SMILE_EXTERNAL_FUNCTION(Ramp)
+{
+	Float32 value = argv[0].unboxed.f32;
+
+	return value >= 0 ? argv[0] : SmileUnboxedFloat32_From(0);
+}
+
 SMILE_EXTERNAL_FUNCTION(Min)
 {
 	Float32 x, y;
@@ -1029,6 +1036,7 @@ void SmileFloat32_Setup(SmileUserObject base)
 	SetupFunction("sign", Sign, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
 	SetupFunction("abs", Abs, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);
 	SetupFunction("clip", Clip, NULL, "value min max", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _float32Checks);
+	SetupFunction("ramp", Ramp, NULL, "value", ARG_CHECK_EXACT, 1, 1, 1, _float32Checks);
 	SetupFunction("min", Min, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _float32Checks);
 	SetupFunction("max", Max, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _float32Checks);
 	SetupFunction("sqrt", Sqrt, &_quietMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _float32Checks);

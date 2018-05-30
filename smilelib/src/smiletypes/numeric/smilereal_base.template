@@ -433,6 +433,13 @@ SMILE_EXTERNAL_FUNCTION(Clip)
 	else return argv[0];
 }
 
+SMILE_EXTERNAL_FUNCTION(Ramp)
+{
+	%Type% value = argv[0].unboxed.%unboxed%;
+
+	return %Type%_Ge(value, %Type%_Zero) ? argv[0] : SmileUnboxed%Type%_From(%Type%_Zero);
+}
+
 SMILE_EXTERNAL_FUNCTION(Min)
 {
 	%Type% x, y;
@@ -979,6 +986,7 @@ void Smile%Type%_Setup(SmileUserObject base)
 	SetupFunction("sign", Sign, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
 	SetupFunction("abs", Abs, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
 	SetupFunction("clip", Clip, NULL, "value min max", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _%type%Checks);
+	SetupFunction("ramp", Ramp, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
 	SetupFunction("min", Min, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _%type%Checks);
 	SetupFunction("max", Max, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _%type%Checks);
 	SetupFunction("sqrt", Sqrt, &_quietMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);

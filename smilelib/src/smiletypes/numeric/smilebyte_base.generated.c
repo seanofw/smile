@@ -776,6 +776,17 @@ SMILE_EXTERNAL_FUNCTION(UClip)
 	else return argv[0];
 }
 
+SMILE_EXTERNAL_FUNCTION(Ramp)
+{
+#if 8 > 8
+	Byte value = argv[0].unboxed.i8;
+
+	return value >= 0 ? argv[0] : SmileUnboxedByte_From(0);
+#else
+	return argv[0];
+#endif
+}
+
 SMILE_EXTERNAL_FUNCTION(Min)
 {
 	Byte x, y;
@@ -1747,6 +1758,7 @@ void SmileByte_Setup(SmileUserObject base)
 	SetupFunction("abs", Abs, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
 	SetupFunction("clip", Clip, NULL, "value min max", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _byteChecks);
 	SetupFunction("clip~", UClip, NULL, "value min max", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _byteChecks);
+	SetupFunction("ramp", Ramp, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
 	SetupFunction("min", Min, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _byteChecks);
 	SetupFunction("min~", UMin, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _byteChecks);
 	SetupFunction("max", Max, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _byteChecks);

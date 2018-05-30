@@ -437,6 +437,13 @@ SMILE_EXTERNAL_FUNCTION(Clip)
 	else return argv[0];
 }
 
+SMILE_EXTERNAL_FUNCTION(Ramp)
+{
+	Real32 value = argv[0].unboxed.r32;
+
+	return Real32_Ge(value, Real32_Zero) ? argv[0] : SmileUnboxedReal32_From(Real32_Zero);
+}
+
 SMILE_EXTERNAL_FUNCTION(Min)
 {
 	Real32 x, y;
@@ -983,6 +990,7 @@ void SmileReal32_Setup(SmileUserObject base)
 	SetupFunction("sign", Sign, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real32Checks);
 	SetupFunction("abs", Abs, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real32Checks);
 	SetupFunction("clip", Clip, NULL, "value min max", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _real32Checks);
+	SetupFunction("ramp", Ramp, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real32Checks);
 	SetupFunction("min", Min, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _real32Checks);
 	SetupFunction("max", Max, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _real32Checks);
 	SetupFunction("sqrt", Sqrt, &_quietMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real32Checks);

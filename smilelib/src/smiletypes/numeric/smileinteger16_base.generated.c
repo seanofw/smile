@@ -776,6 +776,17 @@ SMILE_EXTERNAL_FUNCTION(UClip)
 	else return argv[0];
 }
 
+SMILE_EXTERNAL_FUNCTION(Ramp)
+{
+#if 16 > 8
+	Int16 value = argv[0].unboxed.i16;
+
+	return value >= 0 ? argv[0] : SmileUnboxedInteger16_From(0);
+#else
+	return argv[0];
+#endif
+}
+
 SMILE_EXTERNAL_FUNCTION(Min)
 {
 	Int16 x, y;
@@ -1747,6 +1758,7 @@ void SmileInteger16_Setup(SmileUserObject base)
 	SetupFunction("abs", Abs, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer16Checks);
 	SetupFunction("clip", Clip, NULL, "value min max", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _integer16Checks);
 	SetupFunction("clip~", UClip, NULL, "value min max", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _integer16Checks);
+	SetupFunction("ramp", Ramp, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer16Checks);
 	SetupFunction("min", Min, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _integer16Checks);
 	SetupFunction("min~", UMin, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _integer16Checks);
 	SetupFunction("max", Max, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _integer16Checks);
