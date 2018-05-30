@@ -787,6 +787,21 @@ SMILE_EXTERNAL_FUNCTION(Ramp)
 #endif
 }
 
+SMILE_EXTERNAL_FUNCTION(Heaviside)
+{
+	Byte value = argv[0].unboxed.i8;
+
+	return value <= 0 ? SmileUnboxedByte_From(0) : SmileUnboxedByte_From(1);
+}
+
+SMILE_EXTERNAL_FUNCTION(RectTri)
+{
+	Byte value = argv[0].unboxed.i8;
+	value = value < 0 ? -value : value;
+
+	return value > 0 ? SmileUnboxedByte_From(0) : SmileUnboxedByte_From(1);
+}
+
 SMILE_EXTERNAL_FUNCTION(Min)
 {
 	Byte x, y;
@@ -1759,10 +1774,14 @@ void SmileByte_Setup(SmileUserObject base)
 	SetupFunction("clip", Clip, NULL, "value min max", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _byteChecks);
 	SetupFunction("clip~", UClip, NULL, "value min max", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _byteChecks);
 	SetupFunction("ramp", Ramp, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("heaviside", Heaviside, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("rect", RectTri, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("tri", RectTri, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
 	SetupFunction("min", Min, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _byteChecks);
 	SetupFunction("min~", UMin, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _byteChecks);
 	SetupFunction("max", Max, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _byteChecks);
 	SetupFunction("max~", UMax, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _byteChecks);
+
 	SetupFunction("^", Power, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _byteChecks);
 	SetupFunction("sqrt", Sqrt, &_quietMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
 	SetupFunction("sqrt!", Sqrt, &_loudMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);

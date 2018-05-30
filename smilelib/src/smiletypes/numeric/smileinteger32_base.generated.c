@@ -787,6 +787,21 @@ SMILE_EXTERNAL_FUNCTION(Ramp)
 #endif
 }
 
+SMILE_EXTERNAL_FUNCTION(Heaviside)
+{
+	Int32 value = argv[0].unboxed.i32;
+
+	return value <= 0 ? SmileUnboxedInteger32_From(0) : SmileUnboxedInteger32_From(1);
+}
+
+SMILE_EXTERNAL_FUNCTION(RectTri)
+{
+	Int32 value = argv[0].unboxed.i32;
+	value = value < 0 ? -value : value;
+
+	return value > 0 ? SmileUnboxedInteger32_From(0) : SmileUnboxedInteger32_From(1);
+}
+
 SMILE_EXTERNAL_FUNCTION(Min)
 {
 	Int32 x, y;
@@ -1759,10 +1774,14 @@ void SmileInteger32_Setup(SmileUserObject base)
 	SetupFunction("clip", Clip, NULL, "value min max", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _integer32Checks);
 	SetupFunction("clip~", UClip, NULL, "value min max", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _integer32Checks);
 	SetupFunction("ramp", Ramp, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+	SetupFunction("heaviside", Heaviside, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+	SetupFunction("rect", RectTri, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
+	SetupFunction("tri", RectTri, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
 	SetupFunction("min", Min, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _integer32Checks);
 	SetupFunction("min~", UMin, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _integer32Checks);
 	SetupFunction("max", Max, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _integer32Checks);
 	SetupFunction("max~", UMax, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _integer32Checks);
+
 	SetupFunction("^", Power, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _integer32Checks);
 	SetupFunction("sqrt", Sqrt, &_quietMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);
 	SetupFunction("sqrt!", Sqrt, &_loudMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer32Checks);

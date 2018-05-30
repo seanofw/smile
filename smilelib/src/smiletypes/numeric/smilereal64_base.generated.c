@@ -444,6 +444,34 @@ SMILE_EXTERNAL_FUNCTION(Ramp)
 	return Real64_Ge(value, Real64_Zero) ? argv[0] : SmileUnboxedReal64_From(Real64_Zero);
 }
 
+SMILE_EXTERNAL_FUNCTION(Heaviside)
+{
+	Real64 value = argv[0].unboxed.r64;
+
+	return Real64_Lt(value, Real64_Zero) ? SmileUnboxedReal64_From(Real64_Zero)
+		: Real64_Gt(value, Real64_Zero) ? SmileUnboxedReal64_From(Real64_One)
+		: SmileUnboxedReal64_From(Real64_OneHalf);
+}
+
+SMILE_EXTERNAL_FUNCTION(Rect)
+{
+	Real64 value = argv[0].unboxed.r64;
+	value = Real64_Abs(value);
+
+	return Real64_Gt(value, Real64_OneHalf) ? SmileUnboxedReal64_From(Real64_Zero)
+		: Real64_Lt(value, Real64_OneHalf) ? SmileUnboxedReal64_From(Real64_One)
+		: SmileUnboxedReal64_From(Real64_OneHalf);
+}
+
+SMILE_EXTERNAL_FUNCTION(Tri)
+{
+	Real64 value = argv[0].unboxed.r64;
+	value = Real64_Abs(value);
+
+	return Real64_Ge(value, Real64_One) ? SmileUnboxedReal64_From(Real64_Zero)
+		: SmileUnboxedReal64_From(Real64_Sub(Real64_One, value));
+}
+
 SMILE_EXTERNAL_FUNCTION(Min)
 {
 	Real64 x, y;
@@ -991,6 +1019,9 @@ void SmileReal64_Setup(SmileUserObject base)
 	SetupFunction("abs", Abs, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
 	SetupFunction("clip", Clip, NULL, "value min max", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _real64Checks);
 	SetupFunction("ramp", Ramp, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
+	SetupFunction("heaviside", Heaviside, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
+	SetupFunction("rect", Rect, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
+	SetupFunction("tri", Tri, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
 	SetupFunction("min", Min, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _real64Checks);
 	SetupFunction("max", Max, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _real64Checks);
 	SetupFunction("sqrt", Sqrt, &_quietMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);

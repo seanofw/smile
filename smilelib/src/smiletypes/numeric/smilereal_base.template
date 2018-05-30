@@ -440,6 +440,34 @@ SMILE_EXTERNAL_FUNCTION(Ramp)
 	return %Type%_Ge(value, %Type%_Zero) ? argv[0] : SmileUnboxed%Type%_From(%Type%_Zero);
 }
 
+SMILE_EXTERNAL_FUNCTION(Heaviside)
+{
+	%Type% value = argv[0].unboxed.%unboxed%;
+
+	return %Type%_Lt(value, %Type%_Zero) ? SmileUnboxed%Type%_From(%Type%_Zero)
+		: %Type%_Gt(value, %Type%_Zero) ? SmileUnboxed%Type%_From(%Type%_One)
+		: SmileUnboxed%Type%_From(%Type%_OneHalf);
+}
+
+SMILE_EXTERNAL_FUNCTION(Rect)
+{
+	%Type% value = argv[0].unboxed.%unboxed%;
+	value = %Type%_Abs(value);
+
+	return %Type%_Gt(value, %Type%_OneHalf) ? SmileUnboxed%Type%_From(%Type%_Zero)
+		: %Type%_Lt(value, %Type%_OneHalf) ? SmileUnboxed%Type%_From(%Type%_One)
+		: SmileUnboxed%Type%_From(%Type%_OneHalf);
+}
+
+SMILE_EXTERNAL_FUNCTION(Tri)
+{
+	%Type% value = argv[0].unboxed.%unboxed%;
+	value = %Type%_Abs(value);
+
+	return %Type%_Ge(value, %Type%_One) ? SmileUnboxed%Type%_From(%Type%_Zero)
+		: SmileUnboxed%Type%_From(%Type%_Sub(%Type%_One, value));
+}
+
 SMILE_EXTERNAL_FUNCTION(Min)
 {
 	%Type% x, y;
@@ -987,8 +1015,12 @@ void Smile%Type%_Setup(SmileUserObject base)
 	SetupFunction("abs", Abs, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
 	SetupFunction("clip", Clip, NULL, "value min max", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _%type%Checks);
 	SetupFunction("ramp", Ramp, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("heaviside", Heaviside, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("rect", Rect, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
+	SetupFunction("tri", Tri, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
 	SetupFunction("min", Min, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _%type%Checks);
 	SetupFunction("max", Max, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _%type%Checks);
+
 	SetupFunction("sqrt", Sqrt, &_quietMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
 	SetupFunction("sqrt!", Sqrt, &_loudMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
 	SetupFunction("sqr", Sqr, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
