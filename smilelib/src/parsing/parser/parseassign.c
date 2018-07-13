@@ -137,11 +137,7 @@ ParseError Parser_ParseDecl(Parser parser, SmileObject *expr, Int modeFlags, Int
 		return error;
 	}
 
-	// Declare it in the current scope.
 	symbol = token->data.symbol;
-	error = ParseScope_Declare(parser->currentScope, symbol, declKind, Token_GetPosition(token), NULL);
-	if (error != NULL)
-		return error;
 
 	// If it's followed by an equal sign (in variable mode), or *when* it's followed
 	// by an equal sign (in const/auto mode), collect the assignment value.
@@ -151,6 +147,11 @@ ParseError Parser_ParseDecl(Parser parser, SmileObject *expr, Int modeFlags, Int
 		// This is an assignment, so collect up the assignment value.
 		error = Parser_ParseOpEquals(parser, &rvalue, (modeFlags & ~COMMAMODE_MASK) | COMMAMODE_VARIABLEDECLARATION);
 		if (error != NULL) return error;
+
+		// Now that we've parsed the value, we can safely declare it in the current scope.
+		error = ParseScope_Declare(parser->currentScope, symbol, declKind, Token_GetPosition(token), NULL);
+		if (error != NULL)
+			return error;
 
 		// Build the result, which is a list shaped like [$set symbol rvalue]
 		lexerPosition = Token_GetPosition(token);
@@ -175,6 +176,11 @@ ParseError Parser_ParseDecl(Parser parser, SmileObject *expr, Int modeFlags, Int
 		return error;
 	}
 	else {
+
+		// Declare it in the current scope.
+		error = ParseScope_Declare(parser->currentScope, symbol, declKind, Token_GetPosition(token), NULL);
+		if (error != NULL)
+			return error;
 
 		// It's 'var', without an assignment.  That is fully allowed, so we return the
 		// nonexistent assignment (i.e., null).
@@ -421,9 +427,21 @@ static Bool EnsureLValueIsAssignable(Parser parser, SmileObject lvalue, LexerPos
 
 	if (decl->declKind != PARSEDECL_VARIABLE && decl->declKind != PARSEDECL_ARGUMENT
 		&& decl->declKind != PARSEDECL_GLOBAL) {
-		*error = ParseMessage_Create(PARSEMESSAGE_ERROR, startPosition,
-			String_Format("\"%S\" is not a legal assignment target in [$set] on line %d.",
-			SymbolTable_GetName(Smile_SymbolTable, ((SmileSymbol)lvalue)->symbol), startPosition->line));
+		if (decl->declKind == PARSEDECL_CONST) {
+			*error = ParseMessage_Create(PARSEMESSAGE_ERROR, startPosition,
+				String_Format("\"%S\" is a const variable and already has a value.",
+					SymbolTable_GetName(Smile_SymbolTable, ((SmileSymbol)lvalue)->symbol), startPosition->line));
+		}
+		else if (decl->declKind == PARSEDECL_AUTO) {
+			*error = ParseMessage_Create(PARSEMESSAGE_ERROR, startPosition,
+				String_Format("\"%S\" is a auto variable and already has a value.",
+					SymbolTable_GetName(Smile_SymbolTable, ((SmileSymbol)lvalue)->symbol), startPosition->line));
+		}
+		else {
+			*error = ParseMessage_Create(PARSEMESSAGE_ERROR, startPosition,
+				String_Format("\"%S\" is not an assignable variable.",
+				SymbolTable_GetName(Smile_SymbolTable, ((SmileSymbol)lvalue)->symbol), startPosition->line));
+		}
 		*result = lvalue;
 		return False;
 	}

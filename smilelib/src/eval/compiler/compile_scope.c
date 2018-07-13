@@ -23,6 +23,46 @@
 #include <smile/parsing/internal/parsedecl.h>
 #include <smile/parsing/internal/parsescope.h>
 
+static Bool Compiler_DecodeScopeVariable(Compiler compiler, Int index, SmileObject obj, Symbol *symbol, Int *declKind)
+{
+	SmileList sublist;
+
+	*declKind = PARSEDECL_VARIABLE;
+
+	if (SMILE_KIND(obj) == SMILE_KIND_SYMBOL) {
+		*symbol = ((SmileSymbol)obj)->symbol;
+		return True;
+	}
+
+	if (SMILE_KIND(obj) != SMILE_KIND_LIST) goto fail;
+	sublist = (SmileList)obj;
+
+	if (SMILE_KIND(sublist->a) != SMILE_KIND_SYMBOL) goto fail;
+	*symbol = ((SmileSymbol)sublist->a)->symbol;
+
+	for (sublist = LIST_REST(sublist); SMILE_KIND(sublist) == SMILE_KIND_LIST; sublist = LIST_REST(sublist)) {
+		Symbol modifier;
+		if (SMILE_KIND(sublist->a) != SMILE_KIND_SYMBOL) goto fail;
+		modifier = ((SmileSymbol)sublist->a)->symbol;
+		if (modifier == Smile_KnownSymbols.auto_) {
+			*declKind = PARSEDECL_SETONCEAUTO;
+		}
+		else if (modifier == Smile_KnownSymbols.set_once) {
+			*declKind = PARSEDECL_SETONCECONST;
+		}
+		else goto fail;
+	}
+
+	return True;
+
+fail:
+	if (compiler != NULL) {
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(obj, getSourceLocation),
+			String_Format("Cannot compile [$scope]: Variable #%d is not a valid local variable declaration.", index + 1)));
+	}
+	return False;
+}
+
 // Given a [$scope [vars ...] a b c ...] form that is the outermost expression in a module, figure
 // out how its content will be laid out in the resulting closure, and return that as a dictionary
 // that maps symbol names to variable offsets within that closure.
@@ -48,13 +88,14 @@ VarDict Compiler_PrecomputeModuleClosureLayout(SmileObject scope, ParseScope par
 		|| !(SMILE_KIND(args->d) == SMILE_KIND_LIST || SMILE_KIND(args->d) == SMILE_KIND_NULL))
 		return NULL;
 
-	// Spin over the [locals...] list, which must be well-formed, and must consist only of symbols,
-	// and construct the dictionary that describes the closure offsets of its entries.
+	// Spin over the [locals...] list, which must be well-formed, and must consist only of symbols
+	// or sublists of symbols, and construct the dictionary that describes the closure offsets of
+	// its entries.
 	varDict = VarDict_Create();
 	scopeVars = (SmileList)args->a;
 	offset = 0;
 	for (temp = scopeVars; SMILE_KIND(temp) == SMILE_KIND_LIST; temp = (SmileList)temp->d) {
-		if (SMILE_KIND(temp->a) != SMILE_KIND_SYMBOL)
+		if (!Compiler_DecodeScopeVariable(NULL, offset, temp->a, &symbol, &declKind))
 			continue;
 
 		symbol = ((SmileSymbol)temp->a)->symbol;
@@ -64,8 +105,9 @@ VarDict Compiler_PrecomputeModuleClosureLayout(SmileObject scope, ParseScope par
 
 		varInfo.kind =
 			  declKind == PARSEDECL_ARGUMENT ? VAR_KIND_ARG
-			: declKind == PARSEDECL_AUTO || declKind == PARSEDECL_VARIABLE ? VAR_KIND_VAR
-			: declKind == PARSEDECL_CONST ? VAR_KIND_CONST
+			: declKind == PARSEDECL_VARIABLE ? VAR_KIND_VAR
+			: declKind == PARSEDECL_AUTO || declKind == PARSEDECL_SETONCEAUTO
+				|| declKind == PARSEDECL_CONST || declKind == PARSEDECL_SETONCECONST ? VAR_KIND_CONST
 			: VAR_KIND_GLOBAL;
 		varInfo.offset = offset;
 		varInfo.symbol = symbol;
@@ -88,6 +130,8 @@ CompiledBlock Compiler_CompileScope(Compiler compiler, SmileList args, CompileFl
 	SmileList scopeVars, temp;
 	Int numScopeVars, localIndex;
 	CompiledBlock compiledBlock, initBlock;
+	Symbol symbol;
+	Int declKind;
 
 	// The [$scope] expression must be of the form:  [$scope [locals...] ...].
 	if (SMILE_KIND(args) != SMILE_KIND_LIST || SMILE_KIND(args->a) != SMILE_KIND_LIST
@@ -106,14 +150,13 @@ CompiledBlock Compiler_CompileScope(Compiler compiler, SmileList args, CompileFl
 	numScopeVars = 0;
 	initBlock = CompiledBlock_Create();
 	for (temp = scopeVars; SMILE_KIND(temp) == SMILE_KIND_LIST; temp = (SmileList)temp->d) {
-		if (SMILE_KIND(temp->a) != SMILE_KIND_SYMBOL) {
+		if (!Compiler_DecodeScopeVariable(compiler, numScopeVars, temp->a, &symbol, &declKind)) {
 			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(temp, getSourceLocation),
-				String_Format("Cannot compile [$scope]: Variable #%d is not a valid local variable name.", numScopeVars + 1)));
+				String_Format("Cannot compile [$scope]: Variable #%d is not a valid local variable declaration.", numScopeVars + 1)));
 		}
 
-		Symbol symbol = ((SmileSymbol)temp->a)->symbol;
 		localIndex = CompilerFunction_AddLocal(compiler->currentFunction, symbol);
-		CompileScope_DefineSymbol(scope, symbol, PARSEDECL_VARIABLE, localIndex);
+		CompileScope_DefineSymbol(scope, symbol, declKind, localIndex);
 		Compiler_SetSourceLocationFromList(compiler, temp);
 		CompiledBlock_Emit(initBlock, Op_NullLoc0, 0, compiler->currentFunction->currentSourceLocation)->u.index = localIndex;
 	}

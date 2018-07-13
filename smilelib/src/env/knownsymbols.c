@@ -728,6 +728,7 @@ STATIC_STRING(separator_line, "separator-line");
 STATIC_STRING(separator_paragraph, "separator-paragraph");
 STATIC_STRING(separator_space, "separator-space");
 STATIC_STRING(set_object_security, "set-object-security");
+STATIC_STRING(set_once, "set-once");
 STATIC_STRING(set_property, "set-property");
 STATIC_STRING(sign, "sign");
 STATIC_STRING(sin_, "sin");
@@ -1041,6 +1042,7 @@ static void KnownSymbolsInt_PreloadGeneralSymbols(SymbolTable symbolTable, Known
 	knownSymbols->separator_paragraph = SymbolTableInt_AddFast(symbolTable, separator_paragraph);
 	knownSymbols->separator_space = SymbolTableInt_AddFast(symbolTable, separator_space);
 	knownSymbols->set_object_security = SymbolTableInt_AddFast(symbolTable, set_object_security);
+	knownSymbols->set_once = SymbolTableInt_AddFast(symbolTable, set_once);
 	knownSymbols->set_property = SymbolTableInt_AddFast(symbolTable, set_property);
 	knownSymbols->sign = SymbolTableInt_AddFast(symbolTable, sign);
 	knownSymbols->sin = SymbolTableInt_AddFast(symbolTable, sin_);

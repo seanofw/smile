@@ -33,7 +33,9 @@ static const char *ParseDecl_Names[] = {
 	"a local variable",
 
 	"a const value",
+	"an unassigned const value",
 	"an auto variable",
+	"an unassigned auto variable",
 	"a keyword",
 	"a postcondition result",
 	"a till-loop name",
@@ -304,7 +306,7 @@ ParseError ParseScope_DeclareHere(ParseScope scope, Symbol symbol, Int kind, Lex
 }
 
 // scope-vars ::= . names
-static ParseError Parser_ParseClassicScopeVariableNames(Parser parser, SmileList *result)
+static ParseError Parser_ParseNameSublist(Parser parser, SmileList *result)
 {
 	SmileList head = NullList, tail = NullList;
 	Token token;
@@ -335,6 +337,59 @@ static ParseError Parser_ParseClassicScopeVariableNames(Parser parser, SmileList
 				break;
 
 			default:
+				error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), String_FromC("Missing name for [$scope] variable."));
+				Parser_AddMessage(parser, error);
+				break;
+		}
+	}
+}
+
+// scope-vars ::= . names
+static ParseError Parser_ParseClassicScopeVariableNames(Parser parser, SmileList *result)
+{
+	SmileList head = NullList, tail = NullList;
+	Token token;
+	Symbol name;
+	ParseError error;
+
+	for (;;) {
+		token = Parser_NextToken(parser);
+		switch (token->kind) {
+
+			case TOKEN_BAR:
+			case TOKEN_LEFTBRACE:
+			case TOKEN_LEFTPARENTHESIS:
+			case TOKEN_RIGHTBRACE:
+			case TOKEN_RIGHTBRACKET:
+			case TOKEN_RIGHTPARENTHESIS:
+				Lexer_Unget(parser->lexer);
+				*result = head;
+				return NULL;
+
+			case TOKEN_LEFTBRACKET:
+				{
+					LexerPosition lexerPosition = Token_GetPosition(token);
+					SmileList sublist;
+					error = Parser_ParseNameSublist(parser, &sublist);
+					if (error != NULL) return error;
+					error = Parser_ExpectRightBracket(parser, (SmileObject *)&sublist, NULL, "$scope names", lexerPosition);
+					if (error != NULL) return error;
+					if (SMILE_KIND(sublist) == SMILE_KIND_NULL)
+						goto missingName;
+					LIST_APPEND_WITH_SOURCE(head, tail, sublist, lexerPosition);
+				}
+				break;
+
+			case TOKEN_ALPHANAME:
+			case TOKEN_UNKNOWNALPHANAME:
+			case TOKEN_PUNCTNAME:
+			case TOKEN_UNKNOWNPUNCTNAME:
+				name = token->data.symbol;
+				LIST_APPEND_WITH_SOURCE(head, tail, SmileSymbol_Create(name), Token_GetPosition(token));
+				break;
+
+			default:
+			missingName:
 				error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), String_FromC("Missing name for [$scope] variable."));
 				Parser_AddMessage(parser, error);
 				break;
@@ -373,8 +428,27 @@ ParseError Parser_ParseClassicScope(Parser parser, SmileObject *result, LexerPos
 	// Spin over the variable-names list and declare each one in the new parsing scope.
 	if (SMILE_KIND(variableNames) == SMILE_KIND_LIST) {
 		for (temp = variableNames; SMILE_KIND(temp) == SMILE_KIND_LIST; temp = (SmileList)temp->d) {
-			smileSymbol = (SmileSymbol)temp->a;
-			ParseScope_DeclareHere(parser->currentScope, smileSymbol->symbol, PARSEDECL_VARIABLE, SMILE_VCALL(temp, getSourceLocation), &decl);
+			if (SMILE_KIND(temp->a) == SMILE_KIND_SYMBOL) {
+				smileSymbol = (SmileSymbol)temp->a;
+				ParseScope_DeclareHere(parser->currentScope, smileSymbol->symbol, PARSEDECL_VARIABLE, SMILE_VCALL(temp, getSourceLocation), &decl);
+			}
+			else {
+				SmileList sublist = (SmileList)temp->a;
+				Int parseDeclKind = PARSEDECL_VARIABLE;
+				smileSymbol = (SmileSymbol)sublist->a;
+				for (sublist = LIST_REST(sublist); SMILE_KIND(sublist) == SMILE_KIND_LIST; sublist = LIST_REST(sublist)) {
+					SmileSymbol modifierSymbol = (SmileSymbol)sublist->a;
+					if (modifierSymbol->symbol == Smile_KnownSymbols.auto_)
+						parseDeclKind = PARSEDECL_AUTO;
+					else if (modifierSymbol->symbol == Smile_KnownSymbols.set_once)
+						parseDeclKind = PARSEDECL_CONST;
+					else {
+						error = ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(sublist, getSourceLocation), String_FromC("Unknown modifier for [$scope] variable."));
+						Parser_AddMessage(parser, error);
+					}
+				}
+				ParseScope_DeclareHere(parser->currentScope, smileSymbol->symbol, parseDeclKind, SMILE_VCALL(temp, getSourceLocation), &decl);
+			}
 		}
 	}
 

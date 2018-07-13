@@ -252,10 +252,24 @@ CompiledBlock Compiler_CompileLoadVariable(Compiler compiler, Symbol symbol, Com
 			return Compiler_CompileLoadArgument(compiler, localSymbol, compileFlags);
 
 		case PARSEDECL_VARIABLE:
+		case PARSEDECL_CONST:
+		case PARSEDECL_AUTO:
 			return Compiler_CompileLoadLocalVariable(compiler, localSymbol, compileFlags);
 
 		case PARSEDECL_TILL:
 			return Compiler_CompileTillFlag(compiler, localSymbol, compileFlags);
+
+		case PARSEDECL_SETONCECONST:
+			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, NULL,
+				String_Format("Cannot read a value from unassigned const variable \"%S\".",
+					SymbolTable_GetName(Smile_SymbolTable, symbol))));
+			return CompiledBlock_CreateError();
+
+		case PARSEDECL_SETONCEAUTO:
+			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, NULL,
+				String_Format("Cannot read a value from unassigned auto variable \"%S\".",
+					SymbolTable_GetName(Smile_SymbolTable, symbol))));
+			return CompiledBlock_CreateError();
 
 		default:
 			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, NULL,
@@ -283,10 +297,34 @@ void Compiler_CompileStoreVariable(Compiler compiler, Symbol symbol, CompileFlag
 			Compiler_CompileStoreLocalVariable(compiler, localSymbol, compileFlags, compiledBlock);
 			break;
 
+		case PARSEDECL_SETONCECONST:
+			Compiler_CompileStoreLocalVariable(compiler, localSymbol, compileFlags, compiledBlock);
+			localSymbol->kind = PARSEDECL_CONST;
+			break;
+
+		case PARSEDECL_SETONCEAUTO:
+			Compiler_CompileStoreLocalVariable(compiler, localSymbol, compileFlags, compiledBlock);
+			localSymbol->kind = PARSEDECL_AUTO;
+			break;
+
 		case PARSEDECL_TILL:
 			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, NULL,
 				String_Format("Cannot assign a value to till-flag \"%S\".",
 					SymbolTable_GetName(Smile_SymbolTable, symbol))));
+			break;
+
+		case PARSEDECL_CONST:
+			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, NULL,
+				String_Format("Cannot assign a new value to const variable \"%S\".",
+					SymbolTable_GetName(Smile_SymbolTable, symbol))));
+			compiledBlock->blockFlags |= BLOCK_FLAG_ERROR;
+			break;
+
+		case PARSEDECL_AUTO:
+			Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, NULL,
+				String_Format("Cannot assign a new value to auto variable \"%S\".",
+					SymbolTable_GetName(Smile_SymbolTable, symbol))));
+			compiledBlock->blockFlags |= BLOCK_FLAG_ERROR;
 			break;
 
 		default:

@@ -248,10 +248,20 @@ SmileObject Parser_ParseScopeBody(Parser parser, ParseScope *bodyScope)
 	LIST_INIT(declHead, declTail);
 	for (i = 0; i < numDecls; i++) {
 		switch (decls[i]->declKind) {
-			case PARSEDECL_VARIABLE:
-			case PARSEDECL_CONST:
 			case PARSEDECL_AUTO:
+				LIST_APPEND(declHead, declTail,
+					SmileList_Cons((SmileObject)SmileSymbol_Create(decls[i]->symbol),
+						(SmileObject)SmileList_Cons((SmileObject)SmileSymbol_Create(Smile_KnownSymbols.auto_),
+							NullObject)));
+				break;
+			case PARSEDECL_CONST:
 			case PARSEDECL_INCLUDE:
+				LIST_APPEND(declHead, declTail,
+					SmileList_Cons((SmileObject)SmileSymbol_Create(decls[i]->symbol),
+						(SmileObject)SmileList_Cons((SmileObject)SmileSymbol_Create(Smile_KnownSymbols.set_once),
+							NullObject)));
+				break;
+			case PARSEDECL_VARIABLE:
 				LIST_APPEND(declHead, declTail, SmileSymbol_Create(decls[i]->symbol));
 				break;
 		}
@@ -274,7 +284,7 @@ SmileObject Parser_ParseScopeBody(Parser parser, ParseScope *bodyScope)
 		}
 	}
 	else {
-		// We have declarations, so we need to wrap whatever we got in a [$scope].
+		// We have variable declarations, so we need to wrap whatever we got in a [$scope].
 		return (SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects._scopeSymbol,
 			(SmileObject)SmileList_ConsWithSource((SmileObject)declHead, (SmileObject)head, startPosition), startPosition);
 	}

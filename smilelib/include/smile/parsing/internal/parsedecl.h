@@ -28,12 +28,14 @@
 #define PARSEDECL_VARIABLE		4	// An ordinary local variable.
 
 // Fixed forms within their scope.
-#define PARSEDECL_CONST			5	// A local variable declared with a single static assignment.
-#define PARSEDECL_AUTO			6	// A local variable declared to have auto-cleanup.
-#define PARSEDECL_KEYWORD		7	// A name that cannot be used as an implicit variable or unary/binary operator.
-#define PARSEDECL_POSTCONDITION	8	// The special variable 'result' in a post: condition.
-#define PARSEDECL_TILL			9	// A till-name declared for a till...do loop.
-#define PARSEDECL_INCLUDE		10	// A single static assignment of a variable included from another module.
+#define PARSEDECL_CONST			5	// A local variable whose value cannot be changed.
+#define PARSEDECL_SETONCECONST	6	// A local variable whose value can be assigned exactly once (and then it becomes const).
+#define PARSEDECL_AUTO			7	// A local variable declared to have auto-cleanup.
+#define PARSEDECL_SETONCEAUTO	8	// A local variable whose value can be assigned exactly once (and then it becomes auto).
+#define PARSEDECL_KEYWORD		9	// A name that cannot be used as an implicit variable or unary/binary operator.
+#define PARSEDECL_POSTCONDITION	10	// The special variable 'result' in a post: condition.
+#define PARSEDECL_TILL			11	// A till-name declared for a till...do loop.
+#define PARSEDECL_INCLUDE		12	// A single static assignment of a variable included from another module.
 
 //-------------------------------------------------------------------------------------------------
 //  Parse declarations.

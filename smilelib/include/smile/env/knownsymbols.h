@@ -231,7 +231,7 @@ typedef struct KnownSymbolsStruct {
 	Symbol reexport, rem, repeat, replace, replacement, resize, rest, result;
 	Symbol reverse, reverse_bits, reverse_bytes, right, rot_13;
 	Symbol separator, separator_line, separator_paragraph, separator_space;
-	Symbol set_object_security, set_property, sign, sin, space_q, splice, split, sprintf;
+	Symbol set_object_security, set_once, set_property, sign, sin, space_q, splice, split, sprintf;
 	Symbol sqrt, sqrt_domain, stack_trace, start, starts_with, starts_with_i, step, stepping;
 	Symbol string_, strip_c_slashes, studied_, study, substr, substring, symbol;
 	Symbol symbol_currency, symbol_math, symbol_modifier, symbol_other, syntax;
