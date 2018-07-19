@@ -1,0 +1,151 @@
+
+MapBase.each-key = |map fn|
+	map each (
+		if count fn.args <= 1 then |key value index| [fn key]
+		else |key value index| [fn key index]
+	)
+
+MapBase.each-value = |map fn|
+	map each (
+		if count fn.args <= 1 then |key value index| [fn value]
+		else |key value index| [fn value index]
+	)
+
+MapBase.count = |map fn=[]| {
+	total = 0
+
+	if not fn then return map.length
+
+	if count fn.args == 1 then {
+		predicate = |pair|
+			if [fn pair] then total += 1
+	}
+	else if count fn.args == 2 then {
+		predicate = |pair index|
+			if [fn pair index] then total += 1
+	}
+	else {
+		predicate = |key value index|
+			if [fn key value index] then total += 1
+	}
+
+	map each predicate
+
+	map from-pairs result
+}
+
+MapBase.where = |map fn| {
+	result = null
+
+	if count fn.args == 1 then {
+		predicate = |pair|
+			if [fn pair] then
+				result = List cons pair, result
+	}
+	else if count fn.args == 2 then {
+		predicate = |pair index|
+			if [fn pair index] then
+				result = List cons pair, result
+	}
+	else {
+		predicate = |key value index|
+			if [fn key value index] then
+				result = List cons `[@key @value], result
+	}
+
+	map each predicate
+
+	map from-pairs result
+}
+
+MapBase.without = |map fn| {
+	result = null
+
+	if count fn.args == 1 then {
+		predicate = |pair|
+			if not [fn pair] then
+				result = List cons pair, result
+	}
+	else if count fn.args == 2 then {
+		predicate = |pair index|
+			if not [fn pair index] then
+				result = List cons pair, result
+	}
+	else {
+		predicate = |key value index|
+			if not [fn key value index] then
+				result = List cons `[@key @value], result
+	}
+
+	map each predicate
+
+	map from-pairs result
+}
+
+MapBase.map = |map fn| {
+	result = null
+
+	if count fn.args == 1 then {
+		predicate = |pair|
+			result = List cons [fn pair], result
+	}
+	else {
+		predicate = |pair index|
+			result = List cons [fn pair index], result
+	}
+
+	map each predicate
+
+	map from-pairs result
+}
+
+MapBase.any? = |map fn| {
+	till one-matches, none-match do {
+		if count fn.args == 1 then {
+			predicate = |pair|
+				if [fn pair] then one-matches
+		}
+		else if count fn.args == 2 then {
+			predicate = |pair index|
+				if [fn pair index] then one-matches
+		}
+		else {
+			predicate = |key value index|
+				if [fn key value index] then one-matches
+		}
+
+		map each predicate
+
+		none-match
+	}
+	when one-matches true
+	when none-match false
+}
+
+MapBase.all? = |map fn| {
+	till all-match, one-doesn't-match do {
+		if count fn.args == 1 then {
+			predicate = |pair|
+				if not [fn pair] then one-doesn't-match
+		}
+		else if count fn.args == 2 then {
+			predicate = |pair index|
+				if not [fn pair index] then one-doesn't-match
+		}
+		else {
+			predicate = |key value index|
+				if not [fn key value index] then one-doesn't-match
+		}
+
+		map each predicate
+
+		all-match
+	}
+	when all-match true
+	when one-doesn't-match false
+}
+
+MapBase.empty? = |map| map.length == 0
+
+MapBase.clone = |map| map from-pairs list map
+
