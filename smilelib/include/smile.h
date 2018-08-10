@@ -24,20 +24,26 @@
 #ifndef __SMILE_GC_H__
 #include <smile/gc.h>
 #endif
+
 #ifndef __SMILE_STRING_H__
 #include <smile/string.h>
 #endif
 #ifndef __SMILE_STRINGBUILDER_H__
 #include <smile/stringbuilder.h>
 #endif
+
 #ifndef __SMILE_BITTWIDDLING_H__
 #include <smile/bittwiddling.h>
 #endif
 #ifndef __SMILE_ARRAY_H__
 #include <smile/array.h>
 #endif
+
 #ifndef __SMILE_DICT_INT32DICT_H__
 #include <smile/dict/int32dict.h>
+#endif
+#ifndef __SMILE_DICT_INT32INT32DICT_H__
+#include <smile/dict/int32int32dict.h>
 #endif
 #ifndef __SMILE_DICT_STRINGDICT_H__
 #include <smile/dict/stringdict.h>
@@ -45,15 +51,24 @@
 #ifndef __SMILE_DICT_STRINGINTDICT_H__
 #include <smile/dict/stringintdict.h>
 #endif
+#ifndef __SMILE_DICT_POINTERDICT_H__
+#include <smile/dict/pointerdict.h>
+#endif
+#ifndef __SMILE_DICT_POINTERSET_H__
+#include <smile/dict/pointerset.h>
+#endif
+
 #ifndef __SMILE_NUMERIC_REAL_H__
 #include <smile/numeric/real.h>
 #endif
+
 #ifndef __SMILE_ENV_SYMBOLTABLE_H__
 #include <smile/env/symboltable.h>
 #endif
 #ifndef __SMILE_ENV_KNOWNSYMBOLS_H__
 #include <smile/env/knownsymbols.h>
 #endif
+
 #ifndef __SMILE_ENV_ENV_H__
 #include <smile/env/env.h>
 #endif

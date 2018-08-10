@@ -167,6 +167,10 @@ SMILE_API_FUNC Closure Closure_CreateLocal(ClosureInfo info, Closure parent,
 SMILE_API_FUNC ClosureStateMachine Closure_CreateStateMachine(StateMachine stateMachineStart, StateMachine stateMachineBody,
 	Closure returnClosure, ByteCodeSegment returnSegment, Int returnPc);
 
+SMILE_API_FUNC SmileObject ClosureInfo_GetGlobalVariable(ClosureInfo globalClosure, Symbol name);
+SMILE_API_FUNC Bool ClosureInfo_HasGlobalVariable(ClosureInfo globalClosure, Symbol name);
+SMILE_API_FUNC void ClosureInfo_SetGlobalVariable(ClosureInfo globalClosure, Symbol name, SmileObject value);
+
 SMILE_API_FUNC SmileObject Closure_GetGlobalVariable(Closure closure, Symbol name);
 SMILE_API_FUNC Bool Closure_HasGlobalVariable(Closure closure, Symbol name);
 SMILE_API_FUNC void Closure_SetGlobalVariable(Closure closure, Symbol name, SmileObject value);

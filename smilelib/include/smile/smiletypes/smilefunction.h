@@ -117,6 +117,8 @@ struct SmileFunctionInt {
 //  Public interface
 
 SMILE_API_FUNC UserFunctionInfo UserFunctionInfo_Create(UserFunctionInfo parent, LexerPosition position, SmileList args, SmileObject body, String *errorMessage);
+SMILE_API_FUNC void UserFunctionInfo_Init(UserFunctionInfo userFunctionInfo, UserFunctionInfo parent, LexerPosition position, SmileList args, SmileObject body);
+SMILE_API_FUNC void SmileFunction_InitUserFunction(SmileFunction smileFunction, UserFunctionInfo userFunctionInfo, Closure declaringClosure);
 SMILE_API_FUNC SmileFunction SmileFunction_CreateUserFunction(UserFunctionInfo userFunctionInfo, Closure declaringClosure);
 SMILE_API_FUNC SmileFunction SmileFunction_CreateExternalFunction(ExternalFunction externalFunction, void *param,
 	const char *name, const char *argNames, Int argCheckFlags, Int minArgs, Int maxArgs, Int numArgsToTypeCheck, const Byte *argTypeChecks);

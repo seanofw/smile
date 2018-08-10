@@ -1,0 +1,19 @@
+
+Integer64.m1 = |self| self - 1
+
+Integer64.p1 = |self| self + 1
+
+Integer64.half = |self| self >> 1
+
+Integer64.double = |self| self << 1
+
+Integer64.^^ = |x y| (x ^ y) ^ y
+
+Integer64.to-hex-string = |self| to-hex-string int32 (self >> 32) + to-hex-string int32 self
+
+Integer64.zero = 0
+
+Integer64.string-zero = "0"
+
+Integer64.one = (2 - 1)
+

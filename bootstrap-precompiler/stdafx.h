@@ -26,6 +26,10 @@
 #include <smile/version.h>
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/text/smilesymbol.h>
+#include <smile/smiletypes/numeric/smilebyte.h>
+#include <smile/smiletypes/numeric/smileinteger16.h>
+#include <smile/smiletypes/numeric/smileinteger32.h>
+#include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/parsing/lexer.h>
 #include <smile/parsing/parser.h>
 #include <smile/eval/eval.h>

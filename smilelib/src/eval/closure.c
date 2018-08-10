@@ -138,6 +138,34 @@ ClosureStateMachine Closure_CreateStateMachine(StateMachine stateMachineStart, S
 	return closure;
 }
 
+SmileObject ClosureInfo_GetGlobalVariable(ClosureInfo globalClosureInfo, Symbol name)
+{
+	VarInfo varInfo;
+	if (VarDict_TryGetValue(globalClosureInfo->variableDictionary, name, &varInfo))
+		return varInfo->value;
+	return NullObject;
+}
+
+Bool ClosureInfo_HasGlobalVariable(ClosureInfo globalClosureInfo, Symbol name)
+{
+	return VarDict_ContainsKey(globalClosureInfo->variableDictionary, name);
+}
+
+void ClosureInfo_SetGlobalVariable(ClosureInfo globalClosureInfo, Symbol name, SmileObject value)
+{
+	VarInfo varInfo;
+
+	varInfo = GC_MALLOC_STRUCT(struct VarInfoStruct);
+	if (varInfo == NULL)
+		Smile_Abort_OutOfMemory();
+	varInfo->symbol = name;
+	varInfo->kind = VAR_KIND_GLOBAL;
+	varInfo->offset = 0;
+	varInfo->value = value;
+
+	VarDict_SetValue(globalClosureInfo->variableDictionary, name, varInfo);
+}
+
 SmileObject Closure_GetGlobalVariable(Closure closure, Symbol name)
 {
 	VarInfo varInfo;
@@ -174,14 +202,7 @@ void Closure_SetGlobalVariable(Closure closure, Symbol name, SmileObject value)
 		}
 
 		if (closure->parent == NULL) {
-			varInfo = GC_MALLOC_STRUCT(struct VarInfoStruct);
-			if (varInfo == NULL)
-				Smile_Abort_OutOfMemory();
-			varInfo->symbol = name;
-			varInfo->kind = VAR_KIND_GLOBAL;
-			varInfo->offset = 0;
-			varInfo->value = value;
-			VarDict_Add(nearestGlobal->closureInfo->variableDictionary, name, varInfo);
+			ClosureInfo_SetGlobalVariable(nearestGlobal->closureInfo, name, value);
 			return;
 		}
 	}

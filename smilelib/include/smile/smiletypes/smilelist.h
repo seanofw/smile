@@ -41,6 +41,7 @@ SMILE_API_DATA SmileVTable SmileList_VTable;
 
 SMILE_API_FUNC SmileList SmileList_Cons(SmileObject a, SmileObject d);
 SMILE_API_FUNC SmileList SmileList_ConsWithSource(SmileObject a, SmileObject d, LexerPosition position);
+SMILE_API_FUNC void SmileList_Init(SmileList smileList, SmileObject a, SmileObject d);
 SMILE_API_FUNC SmileList SmileList_CreateListFromArray(SmileObject *objects, Int numObjects);
 SMILE_API_FUNC SmileList SmileList_CreateList(SmileObject firstObject, ...);
 SMILE_API_FUNC SmileList SmileList_CreateListv(SmileObject firstObject, va_list v);

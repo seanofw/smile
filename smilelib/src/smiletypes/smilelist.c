@@ -54,6 +54,15 @@ SmileList SmileList_ConsWithSource(SmileObject a, SmileObject d, LexerPosition p
 	return (SmileList)smileList;
 }
 
+void SmileList_Init(SmileList smileList, SmileObject a, SmileObject d)
+{
+	smileList->base = (SmileObject)Smile_KnownBases.List;
+	smileList->kind = SMILE_KIND_LIST | SMILE_SECURITY_WRITABLE;
+	smileList->vtable = SmileList_VTable;
+	smileList->a = a;
+	smileList->d = d;
+}
+
 SmileList SmileList_CreateListFromArray(SmileObject *objects, Int numObjects)
 {
 	SmileList head, tail;

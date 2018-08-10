@@ -226,6 +226,20 @@ UserFunctionInfo UserFunctionInfo_Create(UserFunctionInfo parent, LexerPosition 
 	return UserFunctionInfo_ApplyArgs(userFunctionInfo, args, errorMessage) ? userFunctionInfo : NULL;
 }
 
+void UserFunctionInfo_Init(UserFunctionInfo userFunctionInfo, UserFunctionInfo parent, LexerPosition position, SmileList args, SmileObject body)
+{
+	String errorMessage;
+
+	MemZero(userFunctionInfo, sizeof(struct UserFunctionInfoStruct));
+
+	userFunctionInfo->parent = parent;
+	userFunctionInfo->position = position;
+	userFunctionInfo->argList = args;
+	userFunctionInfo->body = body;
+
+	UserFunctionInfo_ApplyArgs(userFunctionInfo, args, &errorMessage);
+}
+
 String UserFunctionInfo_ToString(UserFunctionInfo userFunctionInfo)
 {
 	String result = ByteCodeSegment_ToString(userFunctionInfo->byteCodeSegment, &userFunctionInfo->closureInfo);
@@ -281,6 +295,16 @@ SmileFunction SmileFunction_CreateUserFunction(UserFunctionInfo userFunctionInfo
 	smileFunction->u.u.declaringClosure = declaringClosure;
 
 	return smileFunction;
+}
+
+void SmileFunction_InitUserFunction(SmileFunction smileFunction, UserFunctionInfo userFunctionInfo, Closure declaringClosure)
+{
+	smileFunction->kind = SMILE_KIND_FUNCTION;
+	smileFunction->vtable = GetUserFunctionVTableByFlags(userFunctionInfo->flags, userFunctionInfo->numArgs);
+	smileFunction->base = (SmileObject)Smile_KnownBases.Fn;
+
+	smileFunction->u.u.userFunctionInfo = userFunctionInfo;
+	smileFunction->u.u.declaringClosure = declaringClosure;
 }
 
 Inline SmileVTable GetExternalFunctionVTableByFlags(Int argCheckFlags)
