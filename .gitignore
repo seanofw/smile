@@ -49,6 +49,7 @@ ipch/
 *.sdf
 *.cachefile
 .vs
+.vscode
 
 # Temporary junk
 ~$*

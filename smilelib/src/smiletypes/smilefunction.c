@@ -78,20 +78,23 @@ static Bool UserFunctionArg_Init(UserFunctionArg arg, SmileObject obj, String *e
 	if (SMILE_KIND(obj) == SMILE_KIND_SYMBOL) {
 		// Common shorthand:  The argument is just a symbol.
 		arg->name = ((SmileSymbol)obj)->symbol;
-		*errorMessage = NULL;
+		if (errorMessage != NULL)
+			*errorMessage = NULL;
 		return True;
 	}
 	
 	if (SMILE_KIND(obj) != SMILE_KIND_LIST) {
 		// The argument must be a list, if it's not a symbol.
-		*errorMessage = String_Format("Invalid argument form.");
+		if (errorMessage != NULL)
+			*errorMessage = String_Format("Invalid argument form.");
 		return False;
 	}
 
 	// The first element of the list must be a symbol:  The argument's name.
 	argList = (SmileList)obj;
 	if (SMILE_KIND(argList->a) != SMILE_KIND_SYMBOL) {
-		*errorMessage = String_Format("Argument sub-list must start with a symbol.");
+		if (errorMessage != NULL)
+			*errorMessage = String_Format("Argument sub-list must start with a symbol.");
 		return False;
 	}
 	arg->name = ((SmileSymbol)argList->a)->symbol;
@@ -101,7 +104,8 @@ static Bool UserFunctionArg_Init(UserFunctionArg arg, SmileObject obj, String *e
 		Symbol modifier;
 	
 		if (SMILE_KIND(argList->a) != SMILE_KIND_SYMBOL) {
-			*errorMessage = String_Format("Argument modifier for '%S' must start with 'type', 'default', or 'rest'.",
+			if (errorMessage != NULL)
+				*errorMessage = String_Format("Argument modifier for '%S' must start with 'type', 'default', or 'rest'.",
 					SymbolTable_GetName(Smile_SymbolTable, arg->name));
 			return False;
 		}
@@ -111,8 +115,9 @@ static Bool UserFunctionArg_Init(UserFunctionArg arg, SmileObject obj, String *e
 			// Handle the [type name] modifier.
 			argList = LIST_REST(argList);
 			if (SMILE_KIND(argList) != SMILE_KIND_LIST || SMILE_KIND(argList->a) != SMILE_KIND_SYMBOL) {
-				*errorMessage = String_Format("Argument 'type' modifier for '%S' must be followed by a name of a type.",
-					SymbolTable_GetName(Smile_SymbolTable, arg->name));
+				if (errorMessage != NULL)
+					*errorMessage = String_Format("Argument 'type' modifier for '%S' must be followed by a name of a type.",
+						SymbolTable_GetName(Smile_SymbolTable, arg->name));
 				return False;
 			}
 			arg->typeName = ((SmileSymbol)argList->a)->symbol;
@@ -123,8 +128,9 @@ static Bool UserFunctionArg_Init(UserFunctionArg arg, SmileObject obj, String *e
 			// Handle the [default value] modifier.
 			argList = LIST_REST(argList);
 			if (SMILE_KIND(argList) != SMILE_KIND_LIST) {
-				*errorMessage = String_Format("Argument 'default' modifier for '%S' must be followed by a default value.",
-					SymbolTable_GetName(Smile_SymbolTable, arg->name));
+				if (errorMessage != NULL)
+					*errorMessage = String_Format("Argument 'default' modifier for '%S' must be followed by a default value.",
+						SymbolTable_GetName(Smile_SymbolTable, arg->name));
 				return False;
 			}
 			arg->defaultValue = SmileArg_Unbox(argList->a);
@@ -137,17 +143,19 @@ static Bool UserFunctionArg_Init(UserFunctionArg arg, SmileObject obj, String *e
 			argList = LIST_REST(argList);
 		}
 		else {
-			*errorMessage = String_Format("Argument modifier for '%S' must be 'type', 'default', or 'rest', not '%S'.",
-				SymbolTable_GetName(Smile_SymbolTable, arg->name), SymbolTable_GetName(Smile_SymbolTable, modifier));
+			if (errorMessage != NULL)
+				*errorMessage = String_Format("Argument modifier for '%S' must be 'type', 'default', or 'rest', not '%S'.",
+					SymbolTable_GetName(Smile_SymbolTable, arg->name), SymbolTable_GetName(Smile_SymbolTable, modifier));
 			return False;
 		}
 	}
 
-	*errorMessage = NULL;
+	if (errorMessage != NULL)
+		*errorMessage = NULL;
 	return True;
 }
 
-static Bool UserFunctionInfo_ApplyArgs(UserFunctionInfo userFunctionInfo, SmileList argList, String *errorMessage)
+Bool UserFunctionInfo_ApplyArgs(UserFunctionInfo userFunctionInfo, SmileList argList, String *errorMessage)
 {
 	UserFunctionArg arg, argArray;
 	Int numArgs, minArgs, maxArgs, argIndex;
@@ -174,8 +182,9 @@ static Bool UserFunctionInfo_ApplyArgs(UserFunctionInfo userFunctionInfo, SmileL
 			flags |= (Int16)arg->flags;
 		
 			if (haveRest) {
-				*errorMessage = String_Format("Function argument '%S' cannot appear after the 'rest...' argument.",
-					SymbolTable_GetName(Smile_SymbolTable, arg->name));
+				if (errorMessage != NULL)
+					*errorMessage = String_Format("Function argument '%S' cannot appear after the 'rest...' argument.",
+						SymbolTable_GetName(Smile_SymbolTable, arg->name));
 				return False;
 			}
 
@@ -189,8 +198,9 @@ static Bool UserFunctionInfo_ApplyArgs(UserFunctionInfo userFunctionInfo, SmileL
 			}
 			else {
 				if (haveOptional) {
-					*errorMessage = String_Format("Required function argument '%S' cannot appear after an optional argument.",
-						SymbolTable_GetName(Smile_SymbolTable, arg->name));
+					if (errorMessage != NULL)
+						*errorMessage = String_Format("Required function argument '%S' cannot appear after an optional argument.",
+							SymbolTable_GetName(Smile_SymbolTable, arg->name));
 					return False;
 				}
 				maxArgs = ++minArgs;
@@ -204,7 +214,8 @@ static Bool UserFunctionInfo_ApplyArgs(UserFunctionInfo userFunctionInfo, SmileL
 	userFunctionInfo->minArgs = (Int16)minArgs;
 	userFunctionInfo->maxArgs = (Int16)maxArgs;
 
-	*errorMessage = NULL;
+	if (errorMessage != NULL)
+		*errorMessage = NULL;
 	return True;
 }
 

@@ -1,19 +1,16 @@
 
-Integer64.m1 = |self| self - 1
+IntegerBase.half = |self| self >> 1
+IntegerBase.double = |self| self << 1
 
-Integer64.p1 = |self| self + 1
+Real32.half = |self| self * .5t
+Real32.double = |self| self * 2.t
 
-Integer64.half = |self| self >> 1
+Real64.half = |self| self * .5
+Real64.double = |self| self * 2.
 
-Integer64.double = |self| self << 1
+Float32.half = |self| self * .5tf
+Float32.double = |self| self * 2.tf
 
-Integer64.^^ = |x y| (x ^ y) ^ y
-
-Integer64.to-hex-string = |self| to-hex-string int32 (self >> 32) + to-hex-string int32 self
-
-Integer64.zero = 0
-
-Integer64.string-zero = "0"
-
-Integer64.one = (2 - 1)
+Float64.half = |self| self * .5f
+Float64.double = |self| self * 2.f
 

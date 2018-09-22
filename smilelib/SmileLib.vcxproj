@@ -781,6 +781,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="lib\bootstrap.c" />
     <ClCompile Include="lib\stdio\stdio_dir.c" />
     <ClCompile Include="lib\stdio\stdio_dir_base.c" />
     <ClCompile Include="lib\stdio\stdio_file.c" />

@@ -1005,6 +1005,7 @@
     <ClCompile Include="src\dict\pointerdict.c">
       <Filter>src\dict</Filter>
     </ClCompile>
+    <ClCompile Include="lib\bootstrap.c" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">

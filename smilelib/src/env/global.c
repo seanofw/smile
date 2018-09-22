@@ -30,6 +30,8 @@
 	varInfo.value = (SmileObject)(__value__), \
 	VarDict_SetValue(varDict, name, &varInfo))
 
+void InitBootstrap(SymbolTable symbolTable, ClosureInfo dest);
+
 /// <summary>
 /// In the given "global scope," declare all of the common objects that people expect to exist
 /// in the "global scope":  That is, declare common objects like 'true' and 'false' and 'null',
@@ -86,6 +88,8 @@ void Smile_InitCommonGlobals(ClosureInfo globalClosureInfo)
 	DeclareCommonGlobal(Smile_KnownSymbols.true_,	Smile_KnownObjects.TrueObj);
 	DeclareCommonGlobal(Smile_KnownSymbols.false_,	Smile_KnownObjects.FalseObj);
 	DeclareCommonGlobal(Smile_KnownSymbols.null_,	Smile_KnownObjects.NullInstance);
+
+	InitBootstrap(Smile_SymbolTable, globalClosureInfo);
 }
 
 //-------------------------------------------------------------------------------------------------

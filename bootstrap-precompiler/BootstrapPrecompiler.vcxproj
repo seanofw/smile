@@ -48,14 +48,14 @@
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetName>smile</TargetName>
+    <TargetName>smile-pc</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>..\smilelib\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\smilelib\include;include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -103,11 +103,24 @@
     </Media>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.c" />
+    <ClCompile Include="src\error.c" />
+    <ClCompile Include="src\eval.c" />
+    <ClCompile Include="src\generate_toplevel.c" />
+    <ClCompile Include="src\load_and_parse.c" />
+    <ClCompile Include="src\main.c" />
+    <ClCompile Include="src\generate_compiledtables.c" />
+    <ClCompile Include="src\generate_function.c" />
+    <ClCompile Include="src\generate_values.c" />
+    <ClCompile Include="src\string_helpers.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="buildnum.h" />
-    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="include\error.h" />
+    <ClInclude Include="include\eval.h" />
+    <ClInclude Include="include\load_and_parse.h" />
+    <ClInclude Include="include\output_generator.h" />
+    <ClInclude Include="include\string_helpers.h" />
+    <ClInclude Include="include\stdafx.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
