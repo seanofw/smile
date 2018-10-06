@@ -161,7 +161,7 @@ Int Compiler_AddUserFunctionInfo(Compiler compiler, UserFunctionInfo userFunctio
 		if (newUserFunctions == NULL)
 			Smile_Abort_OutOfMemory();
 		if (compiledTables->numUserFunctions > 0)
-			MemCpy(newUserFunctions, compiledTables->userFunctions, compiledTables->numUserFunctions);
+			MemCpy(newUserFunctions, compiledTables->userFunctions, sizeof(UserFunctionInfo) * compiledTables->numUserFunctions);
 		compiledTables->userFunctions = newUserFunctions;
 		compiledTables->maxUserFunctions = newMax;
 	}
@@ -201,7 +201,7 @@ Int Compiler_AddNewSourceLocation(Compiler compiler, String filename, Int line, 
 		if (newSourceLocations == NULL)
 			Smile_Abort_OutOfMemory();
 		if (compiledTables->numSourceLocations > 0)
-			MemCpy(newSourceLocations, compiledTables->sourcelocations, compiledTables->numSourceLocations);
+			MemCpy(newSourceLocations, compiledTables->sourcelocations, sizeof(CompiledSourceLocation) * compiledTables->numSourceLocations);
 		compiledTables->sourcelocations = newSourceLocations;
 		compiledTables->maxSourceLocations = newMax;
 	}
@@ -371,7 +371,7 @@ Int Compiler_AddString(Compiler compiler, String string)
 		if (newStrings == NULL)
 			Smile_Abort_OutOfMemory();
 		if (compiledTables->numStrings > 0)
-			MemCpy(newStrings, compiledTables->strings, compiledTables->numStrings);
+			MemCpy(newStrings, compiledTables->strings, sizeof(String) * compiledTables->numStrings);
 		compiledTables->strings = newStrings;
 		compiledTables->maxStrings = newMax;
 	}
@@ -407,7 +407,7 @@ TillContinuationInfo Compiler_AddTillContinuationInfo(Compiler compiler, UserFun
 		if (newTillInfos == NULL)
 			Smile_Abort_OutOfMemory();
 		if (compiledTables->numTillInfos > 0)
-			MemCpy(newTillInfos, compiledTables->tillInfos, compiledTables->numTillInfos);
+			MemCpy(newTillInfos, compiledTables->tillInfos, sizeof(TillContinuationInfo) * compiledTables->numTillInfos);
 		compiledTables->tillInfos = newTillInfos;
 		compiledTables->maxTillInfos = newMax;
 	}
@@ -423,7 +423,7 @@ TillContinuationInfo Compiler_AddTillContinuationInfo(Compiler compiler, UserFun
 		if (newTillInfos == NULL)
 			Smile_Abort_OutOfMemory();
 		if (compiler->currentFunction->numTillInfos > 0)
-			MemCpy(newTillInfos, compiler->currentFunction->tillInfos, compiler->currentFunction->numTillInfos);
+			MemCpy(newTillInfos, compiler->currentFunction->tillInfos, sizeof(TillContinuationInfo) * compiler->currentFunction->numTillInfos);
 		compiler->currentFunction->tillInfos = newTillInfos;
 		compiler->currentFunction->maxTillInfos = newMax;
 	}
@@ -472,7 +472,7 @@ Int Compiler_AddObject(Compiler compiler, SmileObject obj)
 		if (newObjects == NULL)
 			Smile_Abort_OutOfMemory();
 		if (compiledTables->numObjects > 0)
-			MemCpy(newObjects, compiledTables->objects, compiledTables->numObjects);
+			MemCpy(newObjects, compiledTables->objects, sizeof(SmileObject) * compiledTables->numObjects);
 		compiledTables->objects = newObjects;
 		compiledTables->maxObjects = newMax;
 	}

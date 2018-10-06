@@ -20,40 +20,6 @@ Inline void GetVarAndProp(SmileObject target, Symbol *var, Symbol *prop)
 	}
 }
 
-static Int SetPairsComparer(SmileObject a, SmileObject b, void *param)
-{
-	SmileObject aTarget, bTarget;
-	Symbol aVar, bVar, aProp, bProp;
-
-	aTarget = LIST_FIRST((SmileList)a);
-	bTarget = LIST_FIRST((SmileList)b);
-
-	// Decode what we're writing to.
-	GetVarAndProp(aTarget, &aVar, &aProp);
-	GetVarAndProp(bTarget, &bVar, &bProp);
-
-	if (aVar != bVar) {
-		// If they're different variables, then sort by top-level symbol (ASCII-betically, case-sensitive).
-		return String_Compare(SymbolTable_GetName(Smile_SymbolTable, aVar), SymbolTable_GetName(Smile_SymbolTable, bVar));
-	}
-	else if (aProp != bProp) {
-		// If they're different properties, then sort by property symbol (ASCII-betically, case-sensitive).
-		return String_Compare(SymbolTable_GetName(Smile_SymbolTable, aProp), SymbolTable_GetName(Smile_SymbolTable, bProp));
-	}
-	else {
-		// If they're the same, that's an error.
-		if (aProp) {
-			Error(NULL, 0, "Cannot repeat assignment to \"%S.%S\".",
-				SymbolTable_GetName(Smile_SymbolTable, aVar), SymbolTable_GetName(Smile_SymbolTable, aProp));
-		}
-		else {
-			Error(NULL, 0, "Cannot repeat assignment to \"%S\".",
-				SymbolTable_GetName(Smile_SymbolTable, aVar));
-		}
-		return 0;
-	}
-}
-
 static void CompilePropAssignment(Compiler compiler, OutputData outputData, Symbol var, Symbol prop, SmileObject valueExpr, ClosureInfo closureInfo)
 {
 	String symbolRef = GenerateSymbolId(outputData, prop);
@@ -139,7 +105,7 @@ OutputData GenerateOutput(SmileList setPairs, ClosureInfo closureInfo)
 	outputData->symbolIdsDict = Int32Dict_Create();
 	outputData->symbolToStaticsDict = Int32Dict_Create();
 
-	sortedPairs = SmileList_Sort(setPairs, SetPairsComparer, NULL);
+	sortedPairs = SmileList_SafeClone(setPairs, NULL);
 
 	compiler = Compiler_Create();
 

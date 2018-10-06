@@ -20,6 +20,80 @@ Float64.double = |self| self * 2.f
 -------------------------------------------------------------
 // Function extensions
 
+// Compose functions 'f' and 'g' as a single function, using 'f o g' as in many
+// textbooks, or 'f+g' as a convenient shorthand, or 'f compose g' as the long,
+// spelled-out version.  'g' must take a single argument, the return value of 'f'.
+// The composed function will return a single argument, the return value of 'g'.
 Fn.+ = |f g|
     |args...| [f [g.apply args]]
 Fn.o = Fn.+
+Fn.compose = Fn.+
+
+// Bind a function to a provided set of initial arguments, creating a new function
+// in which the user can still fill in the trailing arguments.  Works for all multi-
+// parameter functions, deferring all parameter-checking to the bound function itself.
+Fn.bind = |fn x...| |y...| fn apply (x conc-list y)
+
+// Bind the tail of a function's parameters to the given final arguments, creating
+// a new function in which the user can still fill in the initial arguments.  Works
+// for all multi-parameter functions, deferring all parameter-checking to the bound
+// function itself.
+Fn.bind-tail = |fn x...| |y...| fn apply (y conc-list x)
+
+// Create a derivative "partially memoized" function in which the first invocation
+// actually invokes the nested function, and all subsequent invocations ignore their
+// arguments, do not invoke the nested function, and simply return the original value.
+Fn.once = |fn| {
+    is-first = true
+    value = null
+    |args...| {
+        if is-first then {
+            is-first = false
+            value = fn apply args
+        }
+        else value
+    }
+}
+
+// The Y combinator!  This transforms a given non-recursive function 'f' into a recursive
+// function by passing an instance of itself to itself.  A more proper definition looks like
+// the code below, but we use the form involving the local variable 'g' because it runs more
+// efficiently:
+//
+//   Y = |f| [
+//     |x| [x x]
+//     |y| [f |args| [y y] apply args]
+//   ]
+//
+// Usage of the Y combinator looks like this (to implement factorial, as an example):
+//   Y (|f| |n| if n > 1 then n * [f n - 1] else 1)
+//
+Fn.Y = |f| {
+    g = [f |args...| g apply args]
+}
+
+// Create a derived function whose arguments are in the reverse order of those of the
+// provided function.
+Fn.reverse-args = |fn| {
+    |args...| fn apply reverse args
+}
+
+// Repeatedly apply the given binary function over the given enumerable, passing the first two
+// values into the function initially (or using an optional initial value), and then passing
+// each successive value into the function along with the previous result.  This is similar to
+// the Enumerable.aggregate or Enumerable.reduce methods, only with its arguments reversed.
+// So, for example:
+//     Integer64.+ over `[1 2 3 4 5]  ===  15
+// while
+//     `[1 2 3 4 5] aggregate Integer64.+  ===  15
+Fn.over = |fn enumerable initial-value = []| {
+    result = initial-value
+    is-first = result === null
+    enumerable each |x|
+        if is-first then {
+            result = x
+            is-first = false
+        }
+        else result = [fn result x]
+    result
+}
