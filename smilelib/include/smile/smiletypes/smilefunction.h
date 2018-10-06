@@ -64,10 +64,11 @@ typedef struct ExternalFunctionInfoStruct {
 //-------------------------------------------------------------------------------------------------
 //  Type declarations for user-function support
 
-#define USER_ARG_NORMAL	0	// A normal argument
-#define USER_ARG_REST	(1 << 0)	// This is a "rest" argument
-#define USER_ARG_TYPECHECK	(1 << 1)	// This argument requires a type check
-#define USER_ARG_OPTIONAL	(1 << 2)	// This argument is optional (and has an assigned default value)
+#define USER_ARG_NORMAL		 0			// A normal argument
+#define USER_ARG_REST		(1 <<  0)	// This is a "rest" argument
+#define USER_ARG_TYPECHECK	(1 <<  1)	// This argument requires a type check
+#define USER_ARG_OPTIONAL	(1 <<  2)	// This argument is optional (and has an assigned default value)
+#define USER_ARG_BOOTSTRAP	(1 << 14)	// This is a bootstrap function (only used in the UserFunctionInfo flags)
 
 typedef struct UserFunctionArgStruct {
 
@@ -118,7 +119,7 @@ struct SmileFunctionInt {
 
 SMILE_API_FUNC UserFunctionInfo UserFunctionInfo_Create(UserFunctionInfo parent, LexerPosition position, SmileList args, SmileObject body, String *errorMessage);
 SMILE_API_FUNC void UserFunctionInfo_Init(UserFunctionInfo userFunctionInfo, UserFunctionInfo parent, LexerPosition position, SmileList args, SmileObject body);
-SMILE_API_FUNC Bool UserFunctionInfo_ApplyArgs(UserFunctionInfo userFunctionInfo, SmileList argList, String *errorMessage);
+SMILE_API_FUNC Bool UserFunctionInfo_ApplyArgs(UserFunctionInfo userFunctionInfo, SmileList argList, Int16 flags, String *errorMessage);
 SMILE_API_FUNC void SmileFunction_InitUserFunction(SmileFunction smileFunction, UserFunctionInfo userFunctionInfo, Closure declaringClosure);
 SMILE_API_FUNC SmileFunction SmileFunction_CreateUserFunction(UserFunctionInfo userFunctionInfo, Closure declaringClosure);
 SMILE_API_FUNC SmileFunction SmileFunction_CreateExternalFunction(ExternalFunction externalFunction, void *param,

@@ -155,11 +155,10 @@ static Bool UserFunctionArg_Init(UserFunctionArg arg, SmileObject obj, String *e
 	return True;
 }
 
-Bool UserFunctionInfo_ApplyArgs(UserFunctionInfo userFunctionInfo, SmileList argList, String *errorMessage)
+Bool UserFunctionInfo_ApplyArgs(UserFunctionInfo userFunctionInfo, SmileList argList, Int16 flags, String *errorMessage)
 {
 	UserFunctionArg arg, argArray;
 	Int numArgs, minArgs, maxArgs, argIndex;
-	Int16 flags = 0;
 	Bool haveRest = False, haveOptional = False;
 
 	numArgs = SmileList_Length(argList);
@@ -234,7 +233,7 @@ UserFunctionInfo UserFunctionInfo_Create(UserFunctionInfo parent, LexerPosition 
 	userFunctionInfo->argList = args;
 	userFunctionInfo->body = body;
 
-	return UserFunctionInfo_ApplyArgs(userFunctionInfo, args, errorMessage) ? userFunctionInfo : NULL;
+	return UserFunctionInfo_ApplyArgs(userFunctionInfo, args, 0, errorMessage) ? userFunctionInfo : NULL;
 }
 
 void UserFunctionInfo_Init(UserFunctionInfo userFunctionInfo, UserFunctionInfo parent, LexerPosition position, SmileList args, SmileObject body)
@@ -248,7 +247,7 @@ void UserFunctionInfo_Init(UserFunctionInfo userFunctionInfo, UserFunctionInfo p
 	userFunctionInfo->argList = args;
 	userFunctionInfo->body = body;
 
-	UserFunctionInfo_ApplyArgs(userFunctionInfo, args, &errorMessage);
+	UserFunctionInfo_ApplyArgs(userFunctionInfo, args, 0, &errorMessage);
 }
 
 String UserFunctionInfo_ToString(UserFunctionInfo userFunctionInfo)
@@ -261,6 +260,7 @@ Inline SmileVTable GetUserFunctionVTableByFlags(Int flags, Int numArgs)
 {
 	switch (flags) {
 		case 0:
+		case USER_ARG_BOOTSTRAP:
 			switch (numArgs) {
 				case 0:	return SmileUserFunction_NoArgs_VTable;
 				case 1:	return SmileUserFunction_Fast1_VTable;
@@ -275,15 +275,22 @@ Inline SmileVTable GetUserFunctionVTableByFlags(Int flags, Int numArgs)
 			}
 
 		case USER_ARG_OPTIONAL:
+		case USER_ARG_BOOTSTRAP | USER_ARG_OPTIONAL:
 			return SmileUserFunction_Optional_VTable;
 		case USER_ARG_REST:
 		case USER_ARG_REST | USER_ARG_OPTIONAL:
+		case USER_ARG_BOOTSTRAP | USER_ARG_REST:
+		case USER_ARG_BOOTSTRAP | USER_ARG_REST | USER_ARG_OPTIONAL:
 			return SmileUserFunction_Rest_VTable;
 		case USER_ARG_TYPECHECK:
 		case USER_ARG_TYPECHECK | USER_ARG_OPTIONAL:
+		case USER_ARG_BOOTSTRAP | USER_ARG_TYPECHECK:
+		case USER_ARG_BOOTSTRAP | USER_ARG_TYPECHECK | USER_ARG_OPTIONAL:
 			return SmileUserFunction_Checked_VTable;
 		case USER_ARG_REST | USER_ARG_TYPECHECK:
 		case USER_ARG_REST | USER_ARG_TYPECHECK | USER_ARG_OPTIONAL:
+		case USER_ARG_BOOTSTRAP | USER_ARG_REST | USER_ARG_TYPECHECK:
+		case USER_ARG_BOOTSTRAP | USER_ARG_REST | USER_ARG_TYPECHECK | USER_ARG_OPTIONAL:
 			return SmileUserFunction_CheckedRest_VTable;
 	}
 
@@ -500,13 +507,13 @@ SmileObject SmileExternalFunction_GetProperty(SmileFunction self, Symbol propert
 	
 		LIST_INIT(head, tail);
 		for (i = 0; i < numPieces; i++) {
-			LIST_APPEND(head, tail, pieces[i]);
+			LIST_APPEND(head, tail, SmileSymbol_Create(SymbolTable_GetSymbol(Smile_SymbolTable, pieces[i])));
 		}
 	
 		return (SmileObject)head;
 	}
 	else if (propertyName == Smile_KnownSymbols.body) {
-		return (SmileObject)String_Format("<%S>", self->u.externalFunctionInfo.name);
+		return NullObject;
 	}
 	else {
 		return self->base->vtable->getProperty(self->base, propertyName);

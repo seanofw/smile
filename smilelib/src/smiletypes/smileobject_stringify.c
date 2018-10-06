@@ -377,9 +377,15 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 
 	case SMILE_KIND_FUNCTION:
 		{
+			STATIC_STRING(nativeString, "<native>");
+
 			SmileFunction function = (SmileFunction)obj;
 			if (obj->kind & SMILE_FLAG_EXTERNAL_FUNCTION) {
-				StringBuilder_AppendFormat(stringBuilder, "|%S| <native>", function->u.externalFunctionInfo.argNames);
+				StringBuilder_AppendByte(stringBuilder, '|');
+				StringBuilder_AppendString(stringBuilder, function->u.externalFunctionInfo.argNames);
+				StringBuilder_AppendByte(stringBuilder, '|');
+				StringBuilder_AppendByte(stringBuilder, ' ');
+				StringBuilder_AppendString(stringBuilder, nativeString);
 			}
 			else {
 				SmileObject body = function->u.u.userFunctionInfo->body;
@@ -403,7 +409,10 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 				StringBuilder_AppendByte(stringBuilder, '|');
 				StringBuilder_AppendByte(stringBuilder, ' ');
 
-				if (SMILE_KIND(body) == SMILE_KIND_LIST) {
+				if (function->u.u.userFunctionInfo->flags & USER_ARG_BOOTSTRAP) {
+					StringBuilder_AppendString(stringBuilder, nativeString);
+				}
+				else if (SMILE_KIND(body) == SMILE_KIND_LIST) {
 					if (SmileList_IsWellFormed(body)) {
 						// Don't need parentheses when we're outputting a list form anyway.
 						StringifyRecursive(body, stringBuilder, indent, includeSource);

@@ -59,10 +59,14 @@ static void CompilePropAssignment(Compiler compiler, OutputData outputData, Symb
 	String symbolRef = GenerateSymbolId(outputData, prop);
 
 	SmileObject value = EvalExpr(compiler, valueExpr, closureInfo, String_FromC("<no file>"));
+	SmileObject target;
 
 	StringBuilder_AppendFormat(outputData->functions,
 		"\tSMILE_VCALL2(target, setProperty, %S, (SmileObject)(%S));\n",
 		symbolRef, GenerateValue(outputData, value));
+
+	target = ClosureInfo_GetGlobalVariable(closureInfo, var);
+	SMILE_VCALL2(target, setProperty, prop, value);
 }
 
 static void CompileVarBegin(OutputData outputData, Symbol var, ClosureInfo closureInfo)
@@ -101,6 +105,8 @@ static void CompileVarAssignment(Compiler compiler, OutputData outputData, Symbo
 
 	StringBuilder_AppendFormat(outputData->functions,
 		"\tClosureInfo_SetGlobalVariable(dest, targetSymbol, target);\n");
+	
+	ClosureInfo_SetGlobalVariable(closureInfo, var, value);
 }
 
 //-----------------------------------------------------------------------------

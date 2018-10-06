@@ -186,7 +186,7 @@ String GenerateUserFunctionInfo(OutputData outputData, UserFunctionInfo userFunc
 		"\tci = (ClosureInfo)&%S.closureInfo;\n",
 		ident);
 	GenerateClosureInfoInline(outputData, String_FromC("ci"), &userFunctionInfo->closureInfo);
-	StringBuilder_AppendFormat(outputData->dataInits, "\tUserFunctionInfo_ApplyArgs(%S, %S, NULL);\n",
+	StringBuilder_AppendFormat(outputData->dataInits, "\tUserFunctionInfo_ApplyArgs(%S, %S, USER_ARG_BOOTSTRAP, NULL);\n",
 		result, argList);
 
 	StringBuilder_AppendFormat(outputData->dataInits, "\n");

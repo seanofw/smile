@@ -1,4 +1,7 @@
 
+-------------------------------------------------------------
+// Numeric extensions
+
 IntegerBase.half = |self| self >> 1
 IntegerBase.double = |self| self << 1
 
@@ -14,3 +17,9 @@ Float32.double = |self| self * 2.tf
 Float64.half = |self| self * .5f
 Float64.double = |self| self * 2.f
 
+-------------------------------------------------------------
+// Function extensions
+
+Fn.+ = |f g|
+    |args...| [f [g.apply args]]
+Fn.o = Fn.+
