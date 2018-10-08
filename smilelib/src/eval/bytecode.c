@@ -299,7 +299,11 @@ static String ByteCode_OperandsToString(ByteCodeSegment segment, ByteCode byteCo
 			return String_Format("`%S (%hd)", SymbolTable_GetName(Smile_SymbolTable, byteCode->u.symbol), byteCode->u.symbol);
 		case Op_LdObj:
 			return String_Format("@%lld", (Int64)byteCode->u.index);
-		
+		case Op_LdChar:
+			return String_Format("'%c' (%hd)", (int)byteCode->u.ch, (Int32)byteCode->u.ch);
+		case Op_LdUni:
+			return String_Format("%hd", (Int32)byteCode->u.uni);
+
 		// 18-1F
 		case Op_Ld8:
 			return String_Format("%hu", (Int32)byteCode->u.byte);
@@ -408,7 +412,7 @@ static String ByteCode_OperandsToString(ByteCodeSegment segment, ByteCode byteCo
 			return String_Format("%hd, `%S (%hd)", byteCode->u.i2.a, SymbolTable_GetName(Smile_SymbolTable, (Symbol)byteCode->u.i2.b), byteCode->u.i2.b);
 		case Op_Call:
 		case Op_TCall:
-			return String_Format("%hd", byteCode->u.int32);
+			return String_Format("%lld", (Int64)byteCode->u.index);
 		case Op_NewTill:
 			return String_Format("%hd", byteCode->u.int32);
 		case Op_TillEsc:

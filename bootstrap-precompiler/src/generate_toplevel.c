@@ -105,7 +105,7 @@ OutputData GenerateOutput(SmileList setPairs, ClosureInfo closureInfo)
 	outputData->symbolIdsDict = Int32Dict_Create();
 	outputData->symbolToStaticsDict = Int32Dict_Create();
 
-	sortedPairs = SmileList_SafeClone(setPairs, NULL);
+	sortedPairs = SmileList_SafeClone(setPairs, NULL, NULL);
 
 	compiler = Compiler_Create();
 

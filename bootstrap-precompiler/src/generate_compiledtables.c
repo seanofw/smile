@@ -42,8 +42,8 @@ static void GenerateCompiledTableSourceLocations(OutputData outputData, Compiled
 		StringBuilder_AppendFormat(outputData->compiledTablesDecls,
 			"\t{ %S, %d, %d, 0 },\n",
 			filename,
-			compiledTables->sourcelocations[i].column,
-			compiledTables->sourcelocations[i].line
+			compiledTables->sourcelocations[i].line,
+			compiledTables->sourcelocations[i].column
 		);
 	}
 	if (compiledTables->numSourceLocations <= 0)

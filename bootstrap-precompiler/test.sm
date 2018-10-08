@@ -18,6 +18,51 @@ Float64.half = |self| self * .5f
 Float64.double = |self| self * 2.f
 
 -------------------------------------------------------------
+// List extensions
+
+// You can't truncate the tail of a singly-linked list by a count without
+// either measuring the list twice or keeping a queue of back-pointers; so
+// we use the simple technique of measuring the list twice.  (Truncating
+// the head can be easily done with the built-in `skip` method.)
+List.truncate = |list n| list truncate-to (count list - n)
+List.truncate! = |list n| list truncate-to! (count list - n)
+
+// This should probably be implemented in C for performance reasons.
+List.set-member = |list index value| {
+    if typeof index === `integer64-range then {
+        start = index.start
+        end = index.end
+        if start > end then {
+            temp = start
+            start = end
+            end = temp
+        }
+        if start < 0 then {
+            if end < 0 then return value
+            start = 0
+        }
+        count-to-remove = end - start
+        cell = list nth-cell start
+        if not cell then return value
+        cell.a = value
+        while count-to-remove > 0 and typeof cell.d === `list do {
+            cell.d = cell.d.d
+            count-to-remove -= 1
+        }
+        value
+    }
+    else if typeof index === `integer64 then {
+        cell = list nth-cell index
+        if not cell then return value
+        cell.a = value
+    }
+    else {
+        // throw exception?
+        `FAIL
+    }
+}
+
+-------------------------------------------------------------
 // Function extensions
 
 // Compose functions 'f' and 'g' as a single function, using 'f o g' as in many
@@ -32,13 +77,60 @@ Fn.compose = Fn.+
 // Bind a function to a provided set of initial arguments, creating a new function
 // in which the user can still fill in the trailing arguments.  Works for all multi-
 // parameter functions, deferring all parameter-checking to the bound function itself.
-Fn.bind = |fn x...| |y...| fn apply (x conc-list y)
+Fn.bind = |fn x...|
+    |y...| fn apply (x conc-list y)
+
+// Bind a function to a provided list of initial arguments, creating a new function
+// in which the user can still fill in the trailing arguments.  Works for all multi-
+// parameter functions, deferring all parameter-checking to the bound function itself.
+Fn.bind-list = |fn x|
+    |y...| fn apply (x conc-list y)
 
 // Bind the tail of a function's parameters to the given final arguments, creating
 // a new function in which the user can still fill in the initial arguments.  Works
 // for all multi-parameter functions, deferring all parameter-checking to the bound
 // function itself.
-Fn.bind-tail = |fn x...| |y...| fn apply (y conc-list x)
+Fn.bind-tail = |fn x...|
+    |y...| fn apply (y conc-list x)
+
+// Bind the tail of a function's parameters to the given list of final arguments, creating
+// a new function in which the user can still fill in the initial arguments.  Works
+// for all multi-parameter functions, deferring all parameter-checking to the bound
+// function itself.
+Fn.bind-tail-list = |fn x|
+    |y...| fn apply (y conc-list x)
+
+// Given a function, `curry` returns a new function that allows you to partially apply
+// some arguments, returning new partial functions until the original function's arity
+// (its argument count, or a provided arity) has been met, at which point the real
+// function is invoked with the collected arguments.  `curry-tail` applies the arguments
+// in sets from last to first; while `curry` applies the arguments from first to last.
+Fn.curry = |fn arity=[]| {
+    if arity === null then arity = count fn.arguments
+    |args...| {
+        num-args = count args
+        if num-args >= arity then
+            fn apply args
+        else
+            (fn bind-list args) curry (arity - num-args)
+    }
+}
+
+// Given a function, `curry-tail` returns a new function that allows you to partially apply
+// some arguments, returning new partial functions until the original function's arity
+// (its argument count, or a provided arity) has been met, at which point the real
+// function is invoked with the collected arguments.  `curry-tail` applies the arguments
+// in sets from last to first; while `curry` applies the arguments from first to last.
+Fn.curry-tail = |fn arity=[]| {
+    if arity === null then arity = count fn.arguments
+    |args...| {
+        num-args = count args
+        if num-args >= arity then
+            fn apply args
+        else
+            (fn bind-tail-list args) curry-tail (arity - num-args)
+    }
+}
 
 // Create a derivative "partially memoized" function in which the first invocation
 // actually invokes the nested function, and all subsequent invocations ignore their
@@ -55,28 +147,25 @@ Fn.once = |fn| {
     }
 }
 
-// The Y combinator!  This transforms a given non-recursive function 'f' into a recursive
-// function by passing an instance of itself to itself.  A more proper definition looks like
-// the code below, but we use the form involving the local variable 'g' because it runs more
-// efficiently:
-//
-//   Y = |f| [
-//     |x| [x x]
-//     |y| [f |args| [y y] apply args]
-//   ]
-//
-// Usage of the Y combinator looks like this (to implement factorial, as an example):
-//   Y (|f| |n| if n > 1 then n * [f n - 1] else 1)
-//
-Fn.Y = |f| {
-    g = [f |args...| g apply args]
-}
+// Given a predicate function, like `String.ends-with?`, derive a new predicate function
+// that takes the same arguments but returns the opposite result (i.e., the equivalent of
+// `String.doesn't-end-with?`).
+Fn.negate = |fn|
+    |args...| not (fn apply args)
 
 // Create a derived function whose arguments are in the reverse order of those of the
 // provided function.
-Fn.reverse-args = |fn| {
+Fn.reverse-args = |fn|
     |args...| fn apply reverse args
-}
+
+// Create a derived function whose arguments are in the given rearranged order.  The
+// order must be an enumerable collection of zero-based Integer indexes, each specifying
+// which caller argument becomes which callee argument.  For example:
+//   f = |x y z| List of x, y, z
+//   g = f reorder-args `[2 0 1]
+//   [g `b `c `a] === `[a b c]
+Fn.reorder-args = |fn order|
+    |args...| fn apply (order map |index| args:index)
 
 // Repeatedly apply the given binary function over the given enumerable, passing the first two
 // values into the function initially (or using an optional initial value), and then passing
@@ -96,4 +185,51 @@ Fn.over = |fn enumerable initial-value = []| {
         }
         else result = [fn result x]
     result
+}
+
+// Create a new function that ensures that the given function is passed at most
+// `n` arguments, no matter how many are passed to it, discarding any extras.
+Fn.max-args = |fn n=[]| {
+    if n === null then n = count fn.arguments
+    |args...|
+        fn apply (args truncate-to! n)
+}
+
+// Create a new function that ensures that the given function is passed at least
+// `n` arguments, no matter how many are passed to it.  You may optionally include
+// a "padding" value used to fill out the extra arguments.
+Fn.min-args = |fn n=[] padding=[]| {
+    if n === null then n = count fn.arguments
+    |args...| {
+        args pad-to! n, padding
+        fn apply args
+    }
+}
+
+// Create a new function that ensures that the given function is passed exactly
+// `n` arguments, no matter how many are passed to it.  You may optionally include
+// a "padding" value used to fill out missing arguments.
+Fn.exact-args = |fn n=[] padding=[]| {
+    if n === null then n = count fn.arguments
+    |args...| {
+        args truncate-to! n pad-to! n, padding
+        fn apply args
+    }
+}
+
+// The Y combinator!  This transforms a given non-recursive function 'f' into a recursive
+// function by passing an instance of itself to itself.  A more proper definition looks like
+// the code below, but we use the form involving the local variable 'g' because it runs more
+// efficiently:
+//
+//   Y = |f| [
+//     |x| [x x]
+//     |y| [f |args| [y y] apply args]
+//   ]
+//
+// Usage of the Y combinator looks like this (to implement factorial, as an example):
+//   Y |f| |n| if n > 1 then n * [f n - 1] else 1
+//
+Fn.Y = |f| {
+    g = [f |args...| g apply args]
 }

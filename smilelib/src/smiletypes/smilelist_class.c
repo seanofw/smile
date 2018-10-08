@@ -62,7 +62,11 @@ static Byte _combineChecks[] = {
 static Byte _nthChecks[] = {
 	SMILE_KIND_MASK & ~SMILE_KIND_LIST_BIT, SMILE_KIND_NULL,
 	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER64,
+	0, 0
 };
+
+STATIC_STRING(_appendCycleError, "List cannot be appended to because it contains a cycle.");
+STATIC_STRING(_cycleError, "List has infinite length because it contains a cycle.");
 
 //-------------------------------------------------------------------------------------------------
 // Generic type conversion
@@ -159,12 +163,11 @@ SMILE_EXTERNAL_FUNCTION(AppendInPlace)
 	SmileList head = NullList, tail = NullList;
 	SmileObject obj;
 	Int i;
-	STATIC_STRING(cycleError, "List cannot be appended to because it contains a cycle.");
 
 	head = (SmileList)argv[0].obj;
-	tail = SmileList_SafeTail(head);
+	tail = SmileList_SafeTail(head, NULL);
 	if (tail == NULL)
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, cycleError);
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _appendCycleError);
 
 	for (i = 1; i < argc; i++) {
 		obj = SmileArg_Box(argv[i]);
@@ -179,11 +182,10 @@ SMILE_EXTERNAL_FUNCTION(Append)
 	SmileList head, tail;
 	SmileObject obj;
 	Int i;
-	STATIC_STRING(cycleError, "List cannot be appended to because it contains a cycle.");
 
-	head = SmileList_SafeClone((SmileList)argv[0].obj, &tail);
+	head = SmileList_SafeClone((SmileList)argv[0].obj, &tail, NULL);
 	if (tail == NULL)
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, cycleError);
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _appendCycleError);
 
 	for (i = 1; i < argc; i++) {
 		obj = SmileArg_Box(argv[i]);
@@ -198,13 +200,12 @@ SMILE_EXTERNAL_FUNCTION(AppendListInPlace)
 	SmileList head, tail;
 	SmileList source;
 	Int i;
-	STATIC_STRING(cycleError, "List cannot be appended to because it contains a cycle.");
 	STATIC_STRING(wellFormedError, "Object cannot be used with List.append-list! because it is not a List or is not well-formed.");
 
 	head = (SmileList)argv[0].obj;
-	tail = SmileList_SafeTail(head);
+	tail = SmileList_SafeTail(head, NULL);
 	if (tail == NULL)
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, cycleError);
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _appendCycleError);
 
 	for (i = 1; i < argc; i++) {
 		source = (SmileList)argv[i].obj;
@@ -223,12 +224,11 @@ SMILE_EXTERNAL_FUNCTION(AppendList)
 	SmileList head, tail;
 	SmileList source;
 	Int i;
-	STATIC_STRING(cycleError, "List cannot be appended to because it contains a cycle.");
 	STATIC_STRING(wellFormedError, "Object cannot be used with List.append-list because it is not a List or is not well-formed.");
 
-	head = SmileList_SafeClone((SmileList)argv[0].obj, &tail);
+	head = SmileList_SafeClone((SmileList)argv[0].obj, &tail, NULL);
 	if (tail == NULL)
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, cycleError);
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _appendCycleError);
 
 	for (i = 1; i < argc; i++) {
 		source = (SmileList)argv[i].obj;
@@ -245,22 +245,171 @@ SMILE_EXTERNAL_FUNCTION(AppendList)
 SMILE_EXTERNAL_FUNCTION(Clone)
 {
 	SmileList source = (SmileList)argv[0].obj, clone;
-	STATIC_STRING(cycleError, "List has infinite length because it contains a cycle.");
 
-	clone = SmileList_SafeClone(source, NULL);
+	clone = SmileList_SafeClone(source, NULL, NULL);
 	if (clone == NULL)
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, cycleError);
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _cycleError);
 
 	return SmileArg_From((SmileObject)clone);
+}
+
+SMILE_EXTERNAL_FUNCTION(PadTail)
+{
+	SmileList source = (SmileList)argv[0].obj;
+	Int64 count = argv[1].unboxed.i64, i;
+	SmileObject padding;
+	SmileList head, tail;
+
+	padding = argc > 2 ? SmileArg_Box(argv[2]) : NullObject;
+
+	head = SmileList_SafeClone(source, &tail, NULL);
+	if (head == NULL)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _cycleError);
+
+	for (i = 0; i < count; i++) {
+		LIST_APPEND(head, tail, padding);
+	}
+
+	return SmileArg_From((SmileObject)head);
+}
+
+SMILE_EXTERNAL_FUNCTION(PadTailTo)
+{
+	SmileList source = (SmileList)argv[0].obj;
+	Int64 desiredLength = argv[1].unboxed.i64;
+	Int currentLength;
+	SmileObject padding;
+	SmileList head, tail;
+
+	padding = argc > 2 ? SmileArg_Box(argv[2]) : NullObject;
+
+	head = SmileList_SafeClone(source, &tail, &currentLength);
+	if (head == NULL)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _cycleError);
+
+	for (; currentLength < desiredLength; currentLength++) {
+		LIST_APPEND(head, tail, padding);
+	}
+
+	return SmileArg_From((SmileObject)head);
+}
+
+SMILE_EXTERNAL_FUNCTION(PadTailInPlace)
+{
+	SmileList source = (SmileList)argv[0].obj;
+	Int64 count = argv[1].unboxed.i64, i;
+	SmileObject padding;
+	SmileList head, tail;
+
+	padding = argc > 2 ? SmileArg_Box(argv[2]) : NullObject;
+
+	head = source;
+	tail = SmileList_SafeTail(source, NULL);
+	if (tail == NULL)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _cycleError);
+
+	for (i = 0; i < count; i++) {
+		LIST_APPEND(head, tail, padding);
+	}
+
+	return SmileArg_From((SmileObject)head);
+}
+
+SMILE_EXTERNAL_FUNCTION(PadTailInPlaceTo)
+{
+	SmileList source = (SmileList)argv[0].obj;
+	Int64 desiredLength = argv[1].unboxed.i64;
+	SmileObject padding;
+	SmileList head, tail;
+	Int currentLength;
+
+	padding = argc > 2 ? SmileArg_Box(argv[2]) : NullObject;
+
+	head = source;
+	tail = SmileList_SafeTail(source, &currentLength);
+	if (tail == NULL)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _cycleError);
+
+	for (; currentLength < desiredLength; currentLength++) {
+		LIST_APPEND(head, tail, padding);
+	}
+
+	return SmileArg_From((SmileObject)head);
+}
+
+SMILE_EXTERNAL_FUNCTION(PadHead)
+{
+	SmileList head = (SmileList)argv[0].obj;
+	Int64 count = argv[1].unboxed.i64, i;
+	SmileObject padding;
+
+	padding = argc > 2 ? SmileArg_Box(argv[2]) : NullObject;
+
+	for (i = 0; i < count; i++) {
+		head = SmileList_Cons(padding, (SmileObject)head);
+	}
+
+	return SmileArg_From((SmileObject)head);
+}
+
+SMILE_EXTERNAL_FUNCTION(PadHeadTo)
+{
+	SmileList head = (SmileList)argv[0].obj;
+	Int64 desiredLength = argv[1].unboxed.i64;
+	Int currentLength = SmileList_SafeLength(head);
+	SmileObject padding;
+
+	padding = argc > 2 ? SmileArg_Box(argv[2]) : NullObject;
+
+	if (currentLength < 0)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _cycleError);
+
+	for (; currentLength < desiredLength; currentLength++) {
+		head = SmileList_Cons(padding, (SmileObject)head);
+	}
+
+	return SmileArg_From((SmileObject)head);
+}
+
+SMILE_EXTERNAL_FUNCTION(Truncate)
+{
+	SmileList source = (SmileList)argv[0].obj;
+	Int64 desiredLength = argv[1].unboxed.i64;
+	SmileList head;
+
+	if (desiredLength <= 0)
+		return SmileArg_From(NullObject);
+
+	head = SmileList_SafeCloneTo(source, (Int)desiredLength, NULL, NULL);
+	if (head == NULL)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _cycleError);
+
+	return SmileArg_From((SmileObject)head);
+}
+
+SMILE_EXTERNAL_FUNCTION(TruncateInPlace)
+{
+	SmileList source = (SmileList)argv[0].obj;
+	Int64 desiredLength = argv[1].unboxed.i64;
+	SmileList lastCell;
+
+	if (desiredLength <= 0)
+		return SmileArg_From(NullObject);
+
+	lastCell = SmileList_CellAt(source, (Int)(desiredLength - 1));
+	if (lastCell != NULL) {
+		lastCell->d = NullObject;
+	}
+
+	return SmileArg_From((SmileObject)source);
 }
 
 SMILE_EXTERNAL_FUNCTION(Reverse)
 {
 	SmileList source = (SmileList)argv[0].obj, clone;
-	STATIC_STRING(cycleError, "List has infinite length because it contains a cycle.");
 
 	if (!SmileList_IsWellFormed((SmileObject)source))
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, cycleError);
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _cycleError);
 
 	clone = SmileList_CloneReverse(source, NULL);
 
@@ -270,10 +419,9 @@ SMILE_EXTERNAL_FUNCTION(Reverse)
 SMILE_EXTERNAL_FUNCTION(ReverseInPlace)
 {
 	SmileList source = (SmileList)argv[0].obj, clone;
-	STATIC_STRING(cycleError, "List has infinite length because it contains a cycle.");
 
 	if (!SmileList_IsWellFormed((SmileObject)source))
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, cycleError);
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _cycleError);
 
 	clone = SmileList_Reverse(source, NULL);
 
@@ -283,11 +431,10 @@ SMILE_EXTERNAL_FUNCTION(ReverseInPlace)
 SMILE_EXTERNAL_FUNCTION(Length)
 {
 	Int length;
-	STATIC_STRING(cycleError, "List has infinite length because it contains a cycle.");
 
 	length = SmileList_SafeLength((SmileList)argv[0].obj);
 	if (length < 0) {
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, cycleError);
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, _cycleError);
 	}
 
 	return SmileUnboxedInteger64_From(length);
@@ -1219,7 +1366,7 @@ SMILE_EXTERNAL_FUNCTION(Sort)
 		cmp = (SmileFunction)argv[1].obj;
 	}
 
-	list = SmileList_SafeClone(list, NULL);
+	list = SmileList_SafeClone(list, NULL, NULL);
 	if (list == NULL)
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, cycleError);
 
@@ -1411,7 +1558,7 @@ SMILE_EXTERNAL_FUNCTION(Tail)
 {
 	SmileList list = (SmileList)argv[0].obj;
 
-	SmileList tail = SmileList_SafeTail(list);
+	SmileList tail = SmileList_SafeTail(list, NULL);
 	if (tail == NULL) {
 		STATIC_STRING(cycleError, "List has no tail because it contains a cycle.");
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, cycleError);
@@ -1610,6 +1757,16 @@ void SmileList_Setup(SmileUserObject base)
 	SetupSynonym("append-list", "conc-list");
 	SetupFunction("append-list!", AppendListInPlace, NULL, "list lists...", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 1, _listChecks);
 	SetupSynonym("append-list!", "conc-list!");
+	SetupFunction("pad-tail", PadTail, NULL, "list count element", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _nthChecks);
+	SetupFunction("pad-tail!", PadTailInPlace, NULL, "list count element", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _nthChecks);
+	SetupFunction("pad-tail-to", PadTailTo, NULL, "list count element", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _nthChecks);
+	SetupFunction("pad-tail-to!", PadTailInPlaceTo, NULL, "list count element", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _nthChecks);
+	SetupFunction("pad-head", PadHead, NULL, "list count element", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _nthChecks);
+	SetupFunction("pad-head-to", PadHeadTo, NULL, "list count element", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _nthChecks);
+	SetupSynonym("pad-tail", "pad");
+	SetupSynonym("pad-tail!", "pad!");
+	SetupSynonym("pad-tail-to", "pad-to");
+	SetupSynonym("pad-tail-to!", "pad-to!");
 
 	SetupFunction("nth", Nth, NULL, "list index", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _nthChecks);
 	SetupFunction("nth-cell", NthCell, NULL, "list index", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _nthChecks);
@@ -1617,6 +1774,8 @@ void SmileList_Setup(SmileUserObject base)
 	SetupFunction("nth-cell-reverse", NthCellReverse, NULL, "list index", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _nthChecks);
 	SetupFunction("skip", Skip, NULL, "list index", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _nthChecks);
 	SetupFunction("take", Take, NULL, "list count", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _nthChecks);
+	SetupFunction("truncate-to", Truncate, NULL, "list count", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _nthChecks);
+	SetupFunction("truncate-to!", TruncateInPlace, NULL, "list count", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _nthChecks);
 
 	SetupFunction("get-member", GetMember, NULL, "list index", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _indexOfChecks);
 

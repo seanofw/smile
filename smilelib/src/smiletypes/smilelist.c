@@ -247,49 +247,158 @@ Int SmileList_SafeLength(SmileList list)
 	return (SMILE_KIND(tortoise) != SMILE_KIND_LIST ? length : -1);
 }
 
-SmileList SmileList_SafeTail(SmileList list)
+/// <summary>
+/// Perform a "safe" search for the tail cell of a given non-cyclical, regular list.
+/// </summary>
+/// <param name="list">The list to search through.</param>
+/// <param name="length">Optional: If non-NULL, this will be filled in with the length of the new list.</param>
+/// <returns>A pointer to the tail cell of the list, if successful; or NULL if the list is irregular or
+/// contains a cycle. If the list is irregular or contains a cycle, the length will be zero.</returns>
+SmileList SmileList_SafeTail(SmileList list, Int *length)
 {
 	SmileList tortoise = list, hare, last;
+	Int count = 0;
 
-	if (SMILE_KIND(list) != SMILE_KIND_LIST)
+	if (SMILE_KIND(list) != SMILE_KIND_LIST) {
+		if (length != NULL)
+			*length = 0;
 		return list;
+	}
 
+	count++;
 	last = tortoise;
 	hare = tortoise = (SmileList)tortoise->d;
 
 	hare = LIST_REST(hare);
 
 	while (tortoise != hare && SMILE_KIND(tortoise) == SMILE_KIND_LIST) {
+		count++;
 		last = tortoise;
 		tortoise = (SmileList)tortoise->d;
 		hare = LIST_REST(LIST_REST(hare));
 	}
 
-	return (SMILE_KIND(tortoise) != SMILE_KIND_LIST ? last : NULL);
+	if (SMILE_KIND(tortoise) != SMILE_KIND_LIST) {
+		if (length != NULL)
+			*length = count;
+		return last;
+	}
+	else {
+		if (length != NULL)
+			*length = 0;
+		return NULL;
+	}
 }
 
-SmileList SmileList_SafeClone(SmileList list, SmileList *newTail)
+/// <summary>
+/// Perform a "safe" shallow clone of the given non-cyclical, regular list.
+/// </summary>
+/// <param name="list">The list to clone.</param>
+/// <param name="newTail">Optional: If non-NULL, this will be filled in with a pointer
+/// to the tail cell of the new list. If the list is the Null object, this will also be the Null object.</param>
+/// <param name="length">Optional: If non-NULL, this will be filled in with the length of the new list.</param>
+/// <returns>A pointer to the head of the cloned list, if successful; or NULL if the list is irregular or
+/// contains a cycle. If the list is irregular or contains a cycle, newTail will contain NullList and
+/// the length will be zero.</returns>
+SmileList SmileList_SafeClone(SmileList list, SmileList *newTail, Int *length)
 {
 	SmileList tortoise = list, hare;
 	SmileList destHead = NullList, destTail = NullList;
+	Int count = 0;
 
-	if (SMILE_KIND(tortoise) != SMILE_KIND_LIST)
+	if (SMILE_KIND(tortoise) != SMILE_KIND_LIST) {
+		if (newTail != NULL)
+			*newTail = NullList;
+		if (length != NULL)
+			*length = 0;
 		return destHead;
+	}
+
 	LIST_APPEND(destHead, destTail, tortoise->a);
+	count++;
 	hare = tortoise = (SmileList)tortoise->d;
 
 	hare = LIST_REST(hare);
 
 	while (tortoise != hare && SMILE_KIND(tortoise) == SMILE_KIND_LIST) {
 		LIST_APPEND(destHead, destTail, tortoise->a);
+		count++;
 		tortoise = (SmileList)tortoise->d;
 		hare = LIST_REST(LIST_REST(hare));
 	}
 
-	if (newTail != NULL)
-		*newTail = destTail;
+	if (SMILE_KIND(tortoise) != SMILE_KIND_LIST) {
+		if (newTail != NULL)
+			*newTail = destTail;
+		if (length != NULL)
+			*length = count;
+		return destHead;
+	}
+	else {
+		if (newTail != NULL)
+			*newTail = NullList;
+		if (length != NULL)
+			*length = 0;
+		return NULL;
+	}
+}
 
-	return (SMILE_KIND(tortoise) != SMILE_KIND_LIST ? destHead : NULL);
+/// <summary>
+/// Perform a "safe" shallow clone of the given non-cyclical, regular list, of at most 'limit' cells.
+/// </summary>
+/// <param name="list">The list to clone.</param>
+/// <param name="limit">The maximum number of cells to clone.</param>
+/// <param name="newTail">Optional: If non-NULL, this will be filled in with a pointer
+/// to the tail cell of the new list. If the list is the Null object, this will also be the Null object.</param>
+/// <param name="length">Optional: If non-NULL, this will be filled in with the length of the new list.</param>
+/// <returns>A pointer to the head of the cloned list, if successful; or NULL if the list is irregular or
+/// contains a cycle. If the list is irregular or contains a cycle, newTail will contain NullList and
+/// the length will be zero.</returns>
+SmileList SmileList_SafeCloneTo(SmileList list, Int limit, SmileList *newTail, Int *length)
+{
+	SmileList tortoise = list, hare;
+	SmileList destHead = NullList, destTail = NullList;
+	Int count = 0;
+
+	if (SMILE_KIND(tortoise) != SMILE_KIND_LIST) {
+		if (newTail != NULL)
+			*newTail = NullList;
+		if (length != NULL)
+			*length = 0;
+		return destHead;
+	}
+
+	if (count >= limit) goto done;
+	LIST_APPEND(destHead, destTail, tortoise->a);
+	count++;
+	if (count >= limit) goto done;
+	hare = tortoise = (SmileList)tortoise->d;
+
+	hare = LIST_REST(hare);
+
+	while (tortoise != hare && SMILE_KIND(tortoise) == SMILE_KIND_LIST) {
+		LIST_APPEND(destHead, destTail, tortoise->a);
+		count++;
+		if (count >= limit) goto done;
+		tortoise = (SmileList)tortoise->d;
+		hare = LIST_REST(LIST_REST(hare));
+	}
+
+	if (SMILE_KIND(tortoise) != SMILE_KIND_LIST) {
+	done:
+		if (newTail != NULL)
+			*newTail = destTail;
+		if (length != NULL)
+			*length = count;
+		return destHead;
+	}
+	else {
+		if (newTail != NULL)
+			*newTail = NullList;
+		if (length != NULL)
+			*length = 0;
+		return NULL;
+	}
 }
 
 SmileList SmileList_CellAt(SmileList list, Int index)

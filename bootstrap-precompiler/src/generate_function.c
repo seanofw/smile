@@ -38,11 +38,115 @@ static void GenerateByteCodeFixupIfNeeded(OutputData outputData, ByteCode byteCo
 	}
 }
 
+static String GetByteCodeSymbolName(ByteCode byteCode)
+{
+	switch (byteCode->opcode) {
+		case Op_LdSym:
+		case Op_LdX:
+		case Op_StX:
+		case Op_StpX:
+		case Op_NullX:
+		case Op_LdProp:
+		case Op_StProp:
+		case Op_StpProp:
+		case Op_Met0: case Op_Met1: case Op_Met2: case Op_Met3:
+		case Op_Met4: case Op_Met5: case Op_Met6: case Op_Met7:
+		case Op_TMet0: case Op_TMet1: case Op_TMet2: case Op_TMet3:
+		case Op_TMet4: case Op_TMet5: case Op_TMet6: case Op_TMet7:
+			return SymbolTable_GetName(Smile_SymbolTable, byteCode->u.symbol);
+		case Op_Met:
+		case Op_TMet:
+			return SymbolTable_GetName(Smile_SymbolTable, byteCode->u.i2.b);
+		default:
+			return String_Empty;
+	}
+}
+
+static String GenerateByteCodeOperand(ByteCode byteCode)
+{
+	switch (byteCode->opcode) {
+		case Op_Dup:
+		case Op_Pop:
+		case Op_Rep:
+		case Op_LdStr:
+		case Op_LdSym:
+		case Op_LdObj:
+		case Op_Ld32:
+		case Op_LdX:
+		case Op_NullLoc0:
+		case Op_NullArg0:
+		case Op_NewFn:
+		case Op_NewObj:
+		case Op_NewTill:
+		case Op_TillEsc:
+		case Op_LdArg0: case Op_LdArg1: case Op_LdArg2: case Op_LdArg3:
+		case Op_LdArg4: case Op_LdArg5: case Op_LdArg6: case Op_LdArg7:
+		case Op_LdLoc0: case Op_LdLoc1: case Op_LdLoc2: case Op_LdLoc3:
+		case Op_LdLoc4: case Op_LdLoc5: case Op_LdLoc6: case Op_LdLoc7:
+		case Op_StArg0: case Op_StArg1: case Op_StArg2: case Op_StArg3:
+		case Op_StArg4: case Op_StArg5: case Op_StArg6: case Op_StArg7:
+		case Op_StLoc0: case Op_StLoc1: case Op_StLoc2: case Op_StLoc3:
+		case Op_StLoc4: case Op_StLoc5: case Op_StLoc6: case Op_StLoc7:
+		case Op_StpArg0: case Op_StpArg1: case Op_StpArg2: case Op_StpArg3:
+		case Op_StpArg4: case Op_StpArg5: case Op_StpArg6: case Op_StpArg7:
+		case Op_StpLoc0: case Op_StpLoc1: case Op_StpLoc2: case Op_StpLoc3:
+		case Op_StpLoc4: case Op_StpLoc5: case Op_StpLoc6: case Op_StpLoc7:
+			return String_Format(".int32 = %hd", byteCode->u.int32);
+		case Op_LdBool:
+			return String_Format(".boolean = %d", (Int32)byteCode->u.boolean);
+		case Op_LdChar:
+			return String_Format(".ch = %hd", (Int32)byteCode->u.ch);
+		case Op_LdUni:
+			return String_Format(".uni = %hd", (Int32)byteCode->u.uni);
+		case Op_Ld8:
+			return String_Format(".byte = %hd", (Int32)byteCode->u.byte);
+		case Op_Ld16:
+			return String_Format(".int16 = %hd", (Int32)byteCode->u.int16);
+		case Op_Ld64:
+			return String_Format(".int64 = %lldLL", (Int64)byteCode->u.int64);
+		case Op_Ld128:
+		case Op_LdR128:
+		case Op_LdF128:
+			return String_Format(".index = %lld", (Int64)byteCode->u.index);
+		case Op_Jmp:
+		case Op_Bt:
+		case Op_Bf:
+		case Op_Auto:
+			return String_Format(".index = %lld", (Int64)byteCode->u.index);
+		case Op_Call:
+		case Op_TCall:
+			return String_Format(".index = %lld", (Int64)byteCode->u.index);
+		case Op_LdR16:
+		case Op_LdR32:
+		case Op_LdF16:
+		case Op_LdF32:
+			return String_Format(".int32 = 0x%hX", (Int32)byteCode->u.int32);
+		case Op_LdR64:
+		case Op_LdF64:
+			return String_Format(".int64 = 0x%llXLLU", (Int64)byteCode->u.int64);
+		case Op_LdLoc:
+		case Op_StLoc:
+		case Op_StpLoc:
+		case Op_LdArg:
+		case Op_StArg:
+		case Op_StpArg:
+		case Op_LdInclude:
+		case Op_Met:
+		case Op_TMet:
+		case Op_Try:
+			return String_Format(".i2 = { .a = %hd, .b = %hd }", (Int32)byteCode->u.i2.a, (Int32)byteCode->u.i2.b);
+		default:
+			return String_FromC("0\t\t\t");
+	}
+}
+
 static String GenerateByteCodeSegment(OutputData outputData, Int dataId, ByteCodeSegment byteCodeSegment)
 {
 	String bcIdent;
 	String bcsIdent;
 	Int i;
+	String unknownOpcode = String_FromC("<unknown>");
+	CompiledSourceLocation sourceLocation;
 
 	if (outputData->compiledTables == NULL) {
 		outputData->compiledTables = byteCodeSegment->compiledTables;
@@ -55,13 +159,23 @@ static String GenerateByteCodeSegment(OutputData outputData, Int dataId, ByteCod
 	bcIdent = String_Format("_bc_%d", dataId);
 	bcsIdent = String_Format("_bcs_%d", dataId);
 
+	sourceLocation = &byteCodeSegment->compiledTables->sourcelocations[byteCodeSegment->byteCodes[0].sourceLocation];
+	StringBuilder_AppendFormat(outputData->bytecodeDecls, "\n// %S:%hd\n",
+		Path_GetFilename(sourceLocation->filename), sourceLocation->line);
 	StringBuilder_AppendFormat(outputData->bytecodeDecls, "static struct ByteCodeStruct %S[] = {\n", bcIdent);
 
 	for (i = 0; i < byteCodeSegment->numByteCodes; i++) {
 		ByteCode byteCode = &byteCodeSegment->byteCodes[i];
+		String opcodeName = Opcode_Names[byteCode->opcode];
+		String symbolName = GetByteCodeSymbolName(byteCode);
+		const char *symbolSpace = symbolName != String_Empty ? " " : "";
+
 		StringBuilder_AppendFormat(outputData->bytecodeDecls,
-			"\t{ 0x%02X, { 0 }, 0, { 0x%lX%s } },\n",
-			(UInt32)byteCode->opcode, byteCode->u.int64, (byteCode->u.int64 & ~(UInt64)Int32Max) ? "LLU" : "");
+			"\t{ 0x%02X, { 0 }, %d, { %S } },\t\t// %S%s%S\n",
+			(UInt32)byteCode->opcode, byteCode->sourceLocation,
+			GenerateByteCodeOperand(byteCode),
+			opcodeName != NULL ? opcodeName : unknownOpcode,
+			symbolSpace, symbolName);
 
 		GenerateByteCodeFixupIfNeeded(outputData, byteCode, bcIdent, i);
 	}

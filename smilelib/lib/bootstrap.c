@@ -41,6 +41,26 @@ STATIC_STRING(_str__2A, "*");
 STATIC_STRING(_str_Real64, "Real64");
 STATIC_STRING(_str_Float32, "Float32");
 STATIC_STRING(_str_Float64, "Float64");
+STATIC_STRING(_str_List, "List");
+STATIC_STRING(_str_truncate, "truncate");
+STATIC_STRING(_str_list, "list");
+STATIC_STRING(_str_n, "n");
+STATIC_STRING(_str_count, "count");
+STATIC_STRING(_str__2D, "-");
+STATIC_STRING(_str_truncate_2Dto, "truncate-to");
+STATIC_STRING(_str_truncate_21, "truncate!");
+STATIC_STRING(_str_truncate_2Dto_21, "truncate-to!");
+STATIC_STRING(_str_set_2Dmember, "set-member");
+STATIC_STRING(_str_index, "index");
+STATIC_STRING(_str_value, "value");
+STATIC_STRING(_str_integer64_2Drange, "integer64-range");
+STATIC_STRING(_str__3E, ">");
+STATIC_STRING(_str__3C, "<");
+STATIC_STRING(_str_nth_2Dcell, "nth-cell");
+STATIC_STRING(_str_a, "a");
+STATIC_STRING(_str_d, "d");
+STATIC_STRING(_str_integer64, "integer64");
+STATIC_STRING(_str_FAIL, "FAIL");
 STATIC_STRING(_str_Fn, "Fn");
 STATIC_STRING(_str__2B, "+");
 STATIC_STRING(_str_f, "f");
@@ -51,21 +71,37 @@ STATIC_STRING(_str_bind, "bind");
 STATIC_STRING(_str_fn, "fn");
 STATIC_STRING(_str_x, "x");
 STATIC_STRING(_str_rest, "rest");
+STATIC_STRING(_str_bind_2Dlist, "bind-list");
 STATIC_STRING(_str_bind_2Dtail, "bind-tail");
+STATIC_STRING(_str_bind_2Dtail_2Dlist, "bind-tail-list");
+STATIC_STRING(_str_curry, "curry");
+STATIC_STRING(_str_arity, "arity");
+STATIC_STRING(_str_default, "default");
+STATIC_STRING(_str_arguments, "arguments");
+STATIC_STRING(_str_curry_2Dtail, "curry-tail");
 STATIC_STRING(_str_once, "once");
-STATIC_STRING(_str_Y, "Y");
+STATIC_STRING(_str_negate, "negate");
 STATIC_STRING(_str_reverse_2Dargs, "reverse-args");
+STATIC_STRING(_str_reorder_2Dargs, "reorder-args");
+STATIC_STRING(_str_order, "order");
 STATIC_STRING(_str_over, "over");
 STATIC_STRING(_str_enumerable, "enumerable");
 STATIC_STRING(_str_initial_2Dvalue, "initial-value");
-STATIC_STRING(_str_default, "default");
 STATIC_STRING(_str_each, "each");
+STATIC_STRING(_str_max_2Dargs, "max-args");
+STATIC_STRING(_str_min_2Dargs, "min-args");
+STATIC_STRING(_str_padding, "padding");
+STATIC_STRING(_str_exact_2Dargs, "exact-args");
+STATIC_STRING(_str_Y, "Y");
 STATIC_STRING(_str_test_2Esm, "test.sm");
 STATIC_STRING(_str_args, "args");
 STATIC_STRING(_str_apply, "apply");
 STATIC_STRING(_str_y, "y");
 STATIC_STRING(_str_conc_2Dlist, "conc-list");
+STATIC_STRING(_str__3E_3D, ">=");
 STATIC_STRING(_str_reverse, "reverse");
+STATIC_STRING(_str_map, "map");
+STATIC_STRING(_str_pad_2Dto_21, "pad-to!");
 
 //--- Symbol declarations ---
 
@@ -80,6 +116,26 @@ static Int32 _sym__2A;
 static Int32 _sym_Real64;
 static Int32 _sym_Float32;
 static Int32 _sym_Float64;
+static Int32 _sym_List;
+static Int32 _sym_truncate;
+static Int32 _sym_list;
+static Int32 _sym_n;
+static Int32 _sym_count;
+static Int32 _sym__2D;
+static Int32 _sym_truncate_2Dto;
+static Int32 _sym_truncate_21;
+static Int32 _sym_truncate_2Dto_21;
+static Int32 _sym_set_2Dmember;
+static Int32 _sym_index;
+static Int32 _sym_value;
+static Int32 _sym_integer64_2Drange;
+static Int32 _sym__3E;
+static Int32 _sym__3C;
+static Int32 _sym_nth_2Dcell;
+static Int32 _sym_a;
+static Int32 _sym_d;
+static Int32 _sym_integer64;
+static Int32 _sym_FAIL;
 static Int32 _sym_Fn;
 static Int32 _sym__2B;
 static Int32 _sym_f;
@@ -90,32 +146,55 @@ static Int32 _sym_bind;
 static Int32 _sym_fn;
 static Int32 _sym_x;
 static Int32 _sym_rest;
+static Int32 _sym_bind_2Dlist;
 static Int32 _sym_bind_2Dtail;
+static Int32 _sym_bind_2Dtail_2Dlist;
+static Int32 _sym_curry;
+static Int32 _sym_arity;
+static Int32 _sym_default;
+static Int32 _sym_arguments;
+static Int32 _sym_curry_2Dtail;
 static Int32 _sym_once;
-static Int32 _sym_Y;
+static Int32 _sym_negate;
 static Int32 _sym_reverse_2Dargs;
+static Int32 _sym_reorder_2Dargs;
+static Int32 _sym_order;
 static Int32 _sym_over;
 static Int32 _sym_enumerable;
 static Int32 _sym_initial_2Dvalue;
-static Int32 _sym_default;
 static Int32 _sym_each;
+static Int32 _sym_max_2Dargs;
+static Int32 _sym_min_2Dargs;
+static Int32 _sym_padding;
+static Int32 _sym_exact_2Dargs;
+static Int32 _sym_Y;
 static Int32 _sym_args;
 static Int32 _sym_apply;
 static Int32 _sym_y;
 static Int32 _sym_conc_2Dlist;
+static Int32 _sym__3E_3D;
 static Int32 _sym_reverse;
+static Int32 _sym_map;
+static Int32 _sym_pad_2Dto_21;
 
 //--- SmileSymbol declarations ---
 
 static struct SmileSymbolInt _smileSym_self;
+static struct SmileSymbolInt _smileSym_list;
+static struct SmileSymbolInt _smileSym_n;
+static struct SmileSymbolInt _smileSym_index;
+static struct SmileSymbolInt _smileSym_value;
 static struct SmileSymbolInt _smileSym_f;
 static struct SmileSymbolInt _smileSym_g;
 static struct SmileSymbolInt _smileSym_fn;
 static struct SmileSymbolInt _smileSym_x;
 static struct SmileSymbolInt _smileSym_rest;
+static struct SmileSymbolInt _smileSym_arity;
+static struct SmileSymbolInt _smileSym_default;
+static struct SmileSymbolInt _smileSym_order;
 static struct SmileSymbolInt _smileSym_enumerable;
 static struct SmileSymbolInt _smileSym_initial_2Dvalue;
-static struct SmileSymbolInt _smileSym_default;
+static struct SmileSymbolInt _smileSym_padding;
 static struct SmileSymbolInt _smileSym_args;
 static struct SmileSymbolInt _smileSym_y;
 
@@ -144,55 +223,152 @@ static struct SmileFunctionInt _fn_9;
 static struct SmileListInt _list_11;
 static struct SmileListInt _list_10;
 static struct SmileFunctionInt _fn_10;
-static struct SmileListInt _list_15;
-static struct SmileListInt _list_14;
 static struct SmileListInt _list_13;
 static struct SmileListInt _list_12;
 static struct SmileFunctionInt _fn_11;
-static struct SmileListInt _list_19;
+static struct SmileListInt _list_16;
+static struct SmileListInt _list_15;
+static struct SmileListInt _list_14;
+static struct SmileFunctionInt _fn_12;
 static struct SmileListInt _list_18;
 static struct SmileListInt _list_17;
-static struct SmileListInt _list_16;
-static struct SmileFunctionInt _fn_12;
-static struct SmileListInt _list_20;
 static struct SmileFunctionInt _fn_13;
-static struct SmileListInt _list_21;
-static struct SmileFunctionInt _fn_14;
 static struct SmileListInt _list_22;
+static struct SmileListInt _list_21;
+static struct SmileListInt _list_20;
+static struct SmileListInt _list_19;
+static struct SmileFunctionInt _fn_14;
+static struct SmileListInt _list_24;
+static struct SmileListInt _list_23;
 static struct SmileFunctionInt _fn_15;
 static struct SmileListInt _list_28;
 static struct SmileListInt _list_27;
 static struct SmileListInt _list_26;
 static struct SmileListInt _list_25;
-static struct SmileListInt _list_24;
-static struct SmileListInt _list_23;
 static struct SmileFunctionInt _fn_16;
-static struct SmileListInt _list_31;
 static struct SmileListInt _list_30;
 static struct SmileListInt _list_29;
-static struct ClosureInfoStruct _ci_0;
+static struct SmileFunctionInt _fn_17;
+static struct SmileListInt _list_35;
 static struct SmileListInt _list_34;
 static struct SmileListInt _list_33;
 static struct SmileListInt _list_32;
-static struct ClosureInfoStruct _ci_1;
-static struct SmileListInt _list_37;
-static struct SmileListInt _list_36;
-static struct SmileListInt _list_35;
-static struct ClosureInfoStruct _ci_2;
+static struct SmileListInt _list_31;
+static struct SmileFunctionInt _fn_18;
 static struct SmileListInt _list_40;
 static struct SmileListInt _list_39;
 static struct SmileListInt _list_38;
-static struct ClosureInfoStruct _ci_3;
-static struct SmileListInt _list_43;
-static struct SmileListInt _list_42;
+static struct SmileListInt _list_37;
+static struct SmileListInt _list_36;
+static struct SmileFunctionInt _fn_19;
 static struct SmileListInt _list_41;
-static struct ClosureInfoStruct _ci_4;
-static struct SmileListInt _list_46;
+static struct SmileFunctionInt _fn_20;
+static struct SmileListInt _list_42;
+static struct SmileFunctionInt _fn_21;
+static struct SmileListInt _list_43;
+static struct SmileFunctionInt _fn_22;
 static struct SmileListInt _list_45;
 static struct SmileListInt _list_44;
-static struct ClosureInfoStruct _ci_5;
+static struct SmileFunctionInt _fn_23;
+static struct SmileListInt _list_51;
+static struct SmileListInt _list_50;
+static struct SmileListInt _list_49;
+static struct SmileListInt _list_48;
 static struct SmileListInt _list_47;
+static struct SmileListInt _list_46;
+static struct SmileFunctionInt _fn_24;
+static struct SmileListInt _list_56;
+static struct SmileListInt _list_55;
+static struct SmileListInt _list_54;
+static struct SmileListInt _list_53;
+static struct SmileListInt _list_52;
+static struct SmileFunctionInt _fn_25;
+static struct SmileListInt _list_61;
+static struct SmileListInt _list_60;
+static struct SmileListInt _list_59;
+static struct SmileListInt _list_65;
+static struct SmileListInt _list_64;
+static struct SmileListInt _list_63;
+static struct SmileListInt _list_62;
+static struct SmileListInt _list_58;
+static struct SmileListInt _list_57;
+static struct SmileFunctionInt _fn_26;
+static struct SmileListInt _list_70;
+static struct SmileListInt _list_69;
+static struct SmileListInt _list_68;
+static struct SmileListInt _list_74;
+static struct SmileListInt _list_73;
+static struct SmileListInt _list_72;
+static struct SmileListInt _list_71;
+static struct SmileListInt _list_67;
+static struct SmileListInt _list_66;
+static struct SmileFunctionInt _fn_27;
+static struct SmileListInt _list_75;
+static struct SmileFunctionInt _fn_28;
+static struct SmileListInt _list_78;
+static struct SmileListInt _list_77;
+static struct SmileListInt _list_76;
+static struct ClosureInfoStruct _ci_0;
+static struct SmileListInt _list_81;
+static struct SmileListInt _list_80;
+static struct SmileListInt _list_79;
+static struct ClosureInfoStruct _ci_1;
+static struct SmileListInt _list_84;
+static struct SmileListInt _list_83;
+static struct SmileListInt _list_82;
+static struct ClosureInfoStruct _ci_2;
+static struct SmileListInt _list_87;
+static struct SmileListInt _list_86;
+static struct SmileListInt _list_85;
+static struct ClosureInfoStruct _ci_3;
+static struct SmileListInt _list_90;
+static struct SmileListInt _list_89;
+static struct SmileListInt _list_88;
+static struct ClosureInfoStruct _ci_4;
+static struct SmileListInt _list_93;
+static struct SmileListInt _list_92;
+static struct SmileListInt _list_91;
+static struct ClosureInfoStruct _ci_5;
+static struct SmileListInt _list_96;
+static struct SmileListInt _list_95;
+static struct SmileListInt _list_94;
 static struct ClosureInfoStruct _ci_6;
+static struct SmileListInt _list_99;
+static struct SmileListInt _list_98;
+static struct SmileListInt _list_97;
+static struct ClosureInfoStruct _ci_7;
+static struct SmileListInt _list_102;
+static struct SmileListInt _list_101;
+static struct SmileListInt _list_100;
+static struct ClosureInfoStruct _ci_8;
+static struct SmileListInt _list_105;
+static struct SmileListInt _list_104;
+static struct SmileListInt _list_103;
+static struct ClosureInfoStruct _ci_9;
+static struct SmileListInt _list_108;
+static struct SmileListInt _list_107;
+static struct SmileListInt _list_106;
+static struct ClosureInfoStruct _ci_10;
+static struct SmileListInt _list_109;
+static struct ClosureInfoStruct _ci_11;
+static struct SmileListInt _list_110;
+static struct ClosureInfoStruct _ci_12;
+static struct SmileListInt _list_113;
+static struct SmileListInt _list_112;
+static struct SmileListInt _list_111;
+static struct ClosureInfoStruct _ci_13;
+static struct SmileListInt _list_116;
+static struct SmileListInt _list_115;
+static struct SmileListInt _list_114;
+static struct ClosureInfoStruct _ci_14;
+static struct SmileListInt _list_119;
+static struct SmileListInt _list_118;
+static struct SmileListInt _list_117;
+static struct ClosureInfoStruct _ci_15;
+static struct SmileListInt _list_122;
+static struct SmileListInt _list_121;
+static struct SmileListInt _list_120;
+static struct ClosureInfoStruct _ci_16;
 
 //-----------------------------------------------------------------------------
 // UserFunction declarations 
@@ -221,6 +397,28 @@ static struct UserFunctionInfoStruct _ufn_20;
 static struct UserFunctionInfoStruct _ufn_21;
 static struct UserFunctionInfoStruct _ufn_22;
 static struct UserFunctionInfoStruct _ufn_23;
+static struct UserFunctionInfoStruct _ufn_24;
+static struct UserFunctionInfoStruct _ufn_25;
+static struct UserFunctionInfoStruct _ufn_26;
+static struct UserFunctionInfoStruct _ufn_27;
+static struct UserFunctionInfoStruct _ufn_28;
+static struct UserFunctionInfoStruct _ufn_29;
+static struct UserFunctionInfoStruct _ufn_30;
+static struct UserFunctionInfoStruct _ufn_31;
+static struct UserFunctionInfoStruct _ufn_32;
+static struct UserFunctionInfoStruct _ufn_33;
+static struct UserFunctionInfoStruct _ufn_34;
+static struct UserFunctionInfoStruct _ufn_35;
+static struct UserFunctionInfoStruct _ufn_36;
+static struct UserFunctionInfoStruct _ufn_37;
+static struct UserFunctionInfoStruct _ufn_38;
+static struct UserFunctionInfoStruct _ufn_39;
+static struct UserFunctionInfoStruct _ufn_40;
+static struct UserFunctionInfoStruct _ufn_41;
+static struct UserFunctionInfoStruct _ufn_42;
+static struct UserFunctionInfoStruct _ufn_43;
+static struct UserFunctionInfoStruct _ufn_44;
+static struct UserFunctionInfoStruct _ufn_45;
 
 //-----------------------------------------------------------------------------
 // Compiler data tables
@@ -228,141 +426,402 @@ static struct UserFunctionInfoStruct _ufn_23;
 static String _compiledTables_Strings[1] = {
 	NULL,
 };
-static struct CompiledSourceLocationStruct _compiledTables_SrcLocs[132] = {
+static struct CompiledSourceLocationStruct _compiledTables_SrcLocs[393] = {
 	{ NULL, 0, 0, 0 },
-	{ ((String)&_str_test_2EsmStruct), 19, 5, 0 },
-	{ ((String)&_str_test_2EsmStruct), 31, 5, 0 },
-	{ ((String)&_str_test_2EsmStruct), 19, 5, 0 },
-	{ ((String)&_str_test_2EsmStruct), 21, 6, 0 },
-	{ ((String)&_str_test_2EsmStruct), 33, 6, 0 },
-	{ ((String)&_str_test_2EsmStruct), 21, 6, 0 },
-	{ ((String)&_str_test_2EsmStruct), 14, 8, 0 },
-	{ ((String)&_str_test_2EsmStruct), 26, 8, 0 },
-	{ ((String)&_str_test_2EsmStruct), 14, 8, 0 },
-	{ ((String)&_str_test_2EsmStruct), 16, 9, 0 },
-	{ ((String)&_str_test_2EsmStruct), 28, 9, 0 },
-	{ ((String)&_str_test_2EsmStruct), 16, 9, 0 },
-	{ ((String)&_str_test_2EsmStruct), 14, 11, 0 },
-	{ ((String)&_str_test_2EsmStruct), 26, 11, 0 },
-	{ ((String)&_str_test_2EsmStruct), 14, 11, 0 },
-	{ ((String)&_str_test_2EsmStruct), 16, 12, 0 },
-	{ ((String)&_str_test_2EsmStruct), 28, 12, 0 },
-	{ ((String)&_str_test_2EsmStruct), 16, 12, 0 },
-	{ ((String)&_str_test_2EsmStruct), 15, 14, 0 },
-	{ ((String)&_str_test_2EsmStruct), 27, 14, 0 },
-	{ ((String)&_str_test_2EsmStruct), 15, 14, 0 },
-	{ ((String)&_str_test_2EsmStruct), 17, 15, 0 },
-	{ ((String)&_str_test_2EsmStruct), 29, 15, 0 },
-	{ ((String)&_str_test_2EsmStruct), 17, 15, 0 },
+	{ ((String)&_str_test_2EsmStruct), 5, 19, 0 },
+	{ ((String)&_str_test_2EsmStruct), 5, 31, 0 },
+	{ ((String)&_str_test_2EsmStruct), 5, 19, 0 },
+	{ ((String)&_str_test_2EsmStruct), 6, 21, 0 },
+	{ ((String)&_str_test_2EsmStruct), 6, 33, 0 },
+	{ ((String)&_str_test_2EsmStruct), 6, 21, 0 },
+	{ ((String)&_str_test_2EsmStruct), 8, 14, 0 },
+	{ ((String)&_str_test_2EsmStruct), 8, 26, 0 },
+	{ ((String)&_str_test_2EsmStruct), 8, 14, 0 },
+	{ ((String)&_str_test_2EsmStruct), 9, 16, 0 },
+	{ ((String)&_str_test_2EsmStruct), 9, 28, 0 },
+	{ ((String)&_str_test_2EsmStruct), 9, 16, 0 },
+	{ ((String)&_str_test_2EsmStruct), 11, 14, 0 },
+	{ ((String)&_str_test_2EsmStruct), 11, 26, 0 },
+	{ ((String)&_str_test_2EsmStruct), 11, 14, 0 },
+	{ ((String)&_str_test_2EsmStruct), 12, 16, 0 },
+	{ ((String)&_str_test_2EsmStruct), 12, 28, 0 },
+	{ ((String)&_str_test_2EsmStruct), 12, 16, 0 },
+	{ ((String)&_str_test_2EsmStruct), 14, 15, 0 },
+	{ ((String)&_str_test_2EsmStruct), 14, 27, 0 },
+	{ ((String)&_str_test_2EsmStruct), 14, 15, 0 },
 	{ ((String)&_str_test_2EsmStruct), 15, 17, 0 },
-	{ ((String)&_str_test_2EsmStruct), 27, 17, 0 },
+	{ ((String)&_str_test_2EsmStruct), 15, 29, 0 },
 	{ ((String)&_str_test_2EsmStruct), 15, 17, 0 },
-	{ ((String)&_str_test_2EsmStruct), 17, 18, 0 },
-	{ ((String)&_str_test_2EsmStruct), 29, 18, 0 },
-	{ ((String)&_str_test_2EsmStruct), 17, 18, 0 },
-	{ ((String)&_str_test_2EsmStruct), 7, 27, 0 },
-	{ ((String)&_str_test_2EsmStruct), 4, 28, 0 },
-	{ ((String)&_str_test_2EsmStruct), 15, 28, 0 },
-	{ ((String)&_str_test_2EsmStruct), 17, 28, 0 },
-	{ ((String)&_str_test_2EsmStruct), 18, 28, 0 },
-	{ ((String)&_str_test_2EsmStruct), 20, 28, 0 },
-	{ ((String)&_str_test_2EsmStruct), 26, 28, 0 },
-	{ ((String)&_str_test_2EsmStruct), 4, 28, 0 },
-	{ ((String)&_str_test_2EsmStruct), 7, 27, 0 },
-	{ ((String)&_str_test_2EsmStruct), 10, 29, 0 },
-	{ ((String)&_str_test_2EsmStruct), 16, 30, 0 },
-	{ ((String)&_str_test_2EsmStruct), 10, 35, 0 },
-	{ ((String)&_str_test_2EsmStruct), 20, 35, 0 },
-	{ ((String)&_str_test_2EsmStruct), 30, 35, 0 },
-	{ ((String)&_str_test_2EsmStruct), 39, 35, 0 },
-	{ ((String)&_str_test_2EsmStruct), 20, 35, 0 },
-	{ ((String)&_str_test_2EsmStruct), 10, 35, 0 },
-	{ ((String)&_str_test_2EsmStruct), 15, 41, 0 },
-	{ ((String)&_str_test_2EsmStruct), 25, 41, 0 },
-	{ ((String)&_str_test_2EsmStruct), 35, 41, 0 },
-	{ ((String)&_str_test_2EsmStruct), 44, 41, 0 },
-	{ ((String)&_str_test_2EsmStruct), 25, 41, 0 },
-	{ ((String)&_str_test_2EsmStruct), 15, 41, 0 },
-	{ ((String)&_str_test_2EsmStruct), 10, 46, 0 },
-	{ ((String)&_str_test_2EsmStruct), 16, 46, 0 },
-	{ ((String)&_str_test_2EsmStruct), 4, 47, 0 },
-	{ ((String)&_str_test_2EsmStruct), 13, 47, 0 },
-	{ ((String)&_str_test_2EsmStruct), 13, 47, 0 },
-	{ ((String)&_str_test_2EsmStruct), 4, 47, 0 },
-	{ ((String)&_str_test_2EsmStruct), 4, 48, 0 },
-	{ ((String)&_str_test_2EsmStruct), 10, 48, 0 },
-	{ ((String)&_str_test_2EsmStruct), 10, 48, 0 },
-	{ ((String)&_str_test_2EsmStruct), 4, 48, 0 },
-	{ ((String)&_str_test_2EsmStruct), 4, 49, 0 },
-	{ ((String)&_str_test_2EsmStruct), 8, 50, 0 },
-	{ ((String)&_str_test_2EsmStruct), 26, 50, 0 },
-	{ ((String)&_str_test_2EsmStruct), 12, 51, 0 },
-	{ ((String)&_str_test_2EsmStruct), 21, 51, 0 },
-	{ ((String)&_str_test_2EsmStruct), 21, 51, 0 },
-	{ ((String)&_str_test_2EsmStruct), 12, 51, 0 },
-	{ ((String)&_str_test_2EsmStruct), 12, 52, 0 },
-	{ ((String)&_str_test_2EsmStruct), 18, 52, 0 },
-	{ ((String)&_str_test_2EsmStruct), 18, 52, 0 },
-	{ ((String)&_str_test_2EsmStruct), 23, 52, 0 },
-	{ ((String)&_str_test_2EsmStruct), 18, 52, 0 },
-	{ ((String)&_str_test_2EsmStruct), 4, 49, 0 },
-	{ ((String)&_str_test_2EsmStruct), 10, 46, 0 },
-	{ ((String)&_str_test_2EsmStruct), 7, 71, 0 },
-	{ ((String)&_str_test_2EsmStruct), 12, 71, 0 },
-	{ ((String)&_str_test_2EsmStruct), 4, 72, 0 },
-	{ ((String)&_str_test_2EsmStruct), 6, 72, 0 },
-	{ ((String)&_str_test_2EsmStruct), 6, 72, 0 },
-	{ ((String)&_str_test_2EsmStruct), 9, 72, 0 },
-	{ ((String)&_str_test_2EsmStruct), 11, 72, 0 },
-	{ ((String)&_str_test_2EsmStruct), 11, 72, 0 },
-	{ ((String)&_str_test_2EsmStruct), 23, 72, 0 },
-	{ ((String)&_str_test_2EsmStruct), 11, 72, 0 },
-	{ ((String)&_str_test_2EsmStruct), 6, 72, 0 },
-	{ ((String)&_str_test_2EsmStruct), 7, 71, 0 },
-	{ ((String)&_str_test_2EsmStruct), 18, 77, 0 },
-	{ ((String)&_str_test_2EsmStruct), 4, 78, 0 },
-	{ ((String)&_str_test_2EsmStruct), 17, 78, 0 },
-	{ ((String)&_str_test_2EsmStruct), 23, 78, 0 },
-	{ ((String)&_str_test_2EsmStruct), 4, 78, 0 },
-	{ ((String)&_str_test_2EsmStruct), 18, 77, 0 },
-	{ ((String)&_str_test_2EsmStruct), 10, 89, 0 },
-	{ ((String)&_str_test_2EsmStruct), 46, 89, 0 },
-	{ ((String)&_str_test_2EsmStruct), 4, 90, 0 },
-	{ ((String)&_str_test_2EsmStruct), 11, 90, 0 },
-	{ ((String)&_str_test_2EsmStruct), 11, 90, 0 },
-	{ ((String)&_str_test_2EsmStruct), 4, 90, 0 },
-	{ ((String)&_str_test_2EsmStruct), 4, 91, 0 },
-	{ ((String)&_str_test_2EsmStruct), 13, 91, 0 },
-	{ ((String)&_str_test_2EsmStruct), 13, 91, 0 },
-	{ ((String)&_str_test_2EsmStruct), 22, 91, 0 },
-	{ ((String)&_str_test_2EsmStruct), 22, 91, 0 },
-	{ ((String)&_str_test_2EsmStruct), 22, 91, 0 },
-	{ ((String)&_str_test_2EsmStruct), 13, 91, 0 },
-	{ ((String)&_str_test_2EsmStruct), 4, 91, 0 },
-	{ ((String)&_str_test_2EsmStruct), 4, 92, 0 },
-	{ ((String)&_str_test_2EsmStruct), 15, 92, 0 },
-	{ ((String)&_str_test_2EsmStruct), 20, 92, 0 },
-	{ ((String)&_str_test_2EsmStruct), 8, 93, 0 },
-	{ ((String)&_str_test_2EsmStruct), 26, 93, 0 },
-	{ ((String)&_str_test_2EsmStruct), 12, 94, 0 },
-	{ ((String)&_str_test_2EsmStruct), 19, 94, 0 },
-	{ ((String)&_str_test_2EsmStruct), 19, 94, 0 },
-	{ ((String)&_str_test_2EsmStruct), 12, 94, 0 },
-	{ ((String)&_str_test_2EsmStruct), 12, 95, 0 },
-	{ ((String)&_str_test_2EsmStruct), 21, 95, 0 },
-	{ ((String)&_str_test_2EsmStruct), 21, 95, 0 },
-	{ ((String)&_str_test_2EsmStruct), 20, 97, 0 },
-	{ ((String)&_str_test_2EsmStruct), 20, 97, 0 },
-	{ ((String)&_str_test_2EsmStruct), 23, 97, 0 },
-	{ ((String)&_str_test_2EsmStruct), 26, 97, 0 },
-	{ ((String)&_str_test_2EsmStruct), 33, 97, 0 },
-	{ ((String)&_str_test_2EsmStruct), 20, 97, 0 },
-	{ ((String)&_str_test_2EsmStruct), 20, 92, 0 },
-	{ ((String)&_str_test_2EsmStruct), 4, 92, 0 },
-	{ ((String)&_str_test_2EsmStruct), 4, 98, 0 },
-	{ ((String)&_str_test_2EsmStruct), 10, 89, 0 },
+	{ ((String)&_str_test_2EsmStruct), 17, 15, 0 },
+	{ ((String)&_str_test_2EsmStruct), 17, 27, 0 },
+	{ ((String)&_str_test_2EsmStruct), 17, 15, 0 },
+	{ ((String)&_str_test_2EsmStruct), 18, 17, 0 },
+	{ ((String)&_str_test_2EsmStruct), 18, 29, 0 },
+	{ ((String)&_str_test_2EsmStruct), 18, 17, 0 },
+	{ ((String)&_str_test_2EsmStruct), 27, 16, 0 },
+	{ ((String)&_str_test_2EsmStruct), 27, 30, 0 },
+	{ ((String)&_str_test_2EsmStruct), 27, 54, 0 },
+	{ ((String)&_str_test_2EsmStruct), 27, 43, 0 },
+	{ ((String)&_str_test_2EsmStruct), 27, 54, 0 },
+	{ ((String)&_str_test_2EsmStruct), 27, 16, 0 },
+	{ ((String)&_str_test_2EsmStruct), 28, 17, 0 },
+	{ ((String)&_str_test_2EsmStruct), 28, 31, 0 },
+	{ ((String)&_str_test_2EsmStruct), 28, 56, 0 },
+	{ ((String)&_str_test_2EsmStruct), 28, 45, 0 },
+	{ ((String)&_str_test_2EsmStruct), 28, 56, 0 },
+	{ ((String)&_str_test_2EsmStruct), 28, 17, 0 },
+	{ ((String)&_str_test_2EsmStruct), 31, 18, 0 },
+	{ ((String)&_str_test_2EsmStruct), 32, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 32, 20, 0 },
+	{ ((String)&_str_test_2EsmStruct), 32, 7, 0 },
+	{ ((String)&_str_test_2EsmStruct), 32, 20, 0 },
+	{ ((String)&_str_test_2EsmStruct), 32, 24, 0 },
+	{ ((String)&_str_test_2EsmStruct), 32, 20, 0 },
+	{ ((String)&_str_test_2EsmStruct), 32, 47, 0 },
+	{ ((String)&_str_test_2EsmStruct), 33, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 33, 14, 0 },
+	{ ((String)&_str_test_2EsmStruct), 33, 14, 0 },
+	{ ((String)&_str_test_2EsmStruct), 33, 22, 0 },
+	{ ((String)&_str_test_2EsmStruct), 33, 14, 0 },
+	{ ((String)&_str_test_2EsmStruct), 33, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 34, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 34, 12, 0 },
+	{ ((String)&_str_test_2EsmStruct), 34, 12, 0 },
+	{ ((String)&_str_test_2EsmStruct), 34, 20, 0 },
+	{ ((String)&_str_test_2EsmStruct), 34, 12, 0 },
+	{ ((String)&_str_test_2EsmStruct), 34, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 35, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 35, 17, 0 },
+	{ ((String)&_str_test_2EsmStruct), 35, 29, 0 },
+	{ ((String)&_str_test_2EsmStruct), 36, 12, 0 },
+	{ ((String)&_str_test_2EsmStruct), 36, 17, 0 },
+	{ ((String)&_str_test_2EsmStruct), 36, 17, 0 },
+	{ ((String)&_str_test_2EsmStruct), 36, 12, 0 },
+	{ ((String)&_str_test_2EsmStruct), 37, 12, 0 },
+	{ ((String)&_str_test_2EsmStruct), 37, 18, 0 },
+	{ ((String)&_str_test_2EsmStruct), 37, 18, 0 },
+	{ ((String)&_str_test_2EsmStruct), 37, 12, 0 },
+	{ ((String)&_str_test_2EsmStruct), 38, 12, 0 },
+	{ ((String)&_str_test_2EsmStruct), 38, 16, 0 },
+	{ ((String)&_str_test_2EsmStruct), 38, 16, 0 },
+	{ ((String)&_str_test_2EsmStruct), 35, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 40, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 40, 17, 0 },
+	{ ((String)&_str_test_2EsmStruct), 40, 27, 0 },
+	{ ((String)&_str_test_2EsmStruct), 41, 12, 0 },
+	{ ((String)&_str_test_2EsmStruct), 41, 19, 0 },
+	{ ((String)&_str_test_2EsmStruct), 41, 28, 0 },
+	{ ((String)&_str_test_2EsmStruct), 41, 12, 0 },
+	{ ((String)&_str_test_2EsmStruct), 42, 12, 0 },
+	{ ((String)&_str_test_2EsmStruct), 42, 18, 0 },
+	{ ((String)&_str_test_2EsmStruct), 42, 18, 0 },
+	{ ((String)&_str_test_2EsmStruct), 40, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 44, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 44, 24, 0 },
+	{ ((String)&_str_test_2EsmStruct), 44, 24, 0 },
+	{ ((String)&_str_test_2EsmStruct), 44, 30, 0 },
+	{ ((String)&_str_test_2EsmStruct), 44, 24, 0 },
+	{ ((String)&_str_test_2EsmStruct), 44, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 45, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 45, 13, 0 },
+	{ ((String)&_str_test_2EsmStruct), 45, 13, 0 },
+	{ ((String)&_str_test_2EsmStruct), 45, 20, 0 },
+	{ ((String)&_str_test_2EsmStruct), 45, 13, 0 },
+	{ ((String)&_str_test_2EsmStruct), 45, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 46, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 46, 11, 0 },
+	{ ((String)&_str_test_2EsmStruct), 46, 25, 0 },
+	{ ((String)&_str_test_2EsmStruct), 46, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 47, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 47, 15, 0 },
+	{ ((String)&_str_test_2EsmStruct), 47, 15, 0 },
+	{ ((String)&_str_test_2EsmStruct), 47, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 48, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 48, 66, 0 },
+	{ ((String)&_str_test_2EsmStruct), 49, 12, 0 },
+	{ ((String)&_str_test_2EsmStruct), 49, 19, 0 },
+	{ ((String)&_str_test_2EsmStruct), 49, 19, 0 },
+	{ ((String)&_str_test_2EsmStruct), 49, 28, 0 },
+	{ ((String)&_str_test_2EsmStruct), 49, 26, 0 },
+	{ ((String)&_str_test_2EsmStruct), 49, 12, 0 },
+	{ ((String)&_str_test_2EsmStruct), 50, 12, 0 },
+	{ ((String)&_str_test_2EsmStruct), 50, 28, 0 },
+	{ ((String)&_str_test_2EsmStruct), 50, 28, 0 },
+	{ ((String)&_str_test_2EsmStruct), 48, 34, 0 },
+	{ ((String)&_str_test_2EsmStruct), 48, 30, 0 },
+	{ ((String)&_str_test_2EsmStruct), 48, 52, 0 },
+	{ ((String)&_str_test_2EsmStruct), 48, 38, 0 },
+	{ ((String)&_str_test_2EsmStruct), 48, 50, 0 },
+	{ ((String)&_str_test_2EsmStruct), 48, 38, 0 },
+	{ ((String)&_str_test_2EsmStruct), 48, 52, 0 },
+	{ ((String)&_str_test_2EsmStruct), 48, 56, 0 },
+	{ ((String)&_str_test_2EsmStruct), 48, 52, 0 },
+	{ ((String)&_str_test_2EsmStruct), 48, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 52, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 54, 9, 0 },
+	{ ((String)&_str_test_2EsmStruct), 54, 25, 0 },
+	{ ((String)&_str_test_2EsmStruct), 54, 12, 0 },
+	{ ((String)&_str_test_2EsmStruct), 54, 25, 0 },
+	{ ((String)&_str_test_2EsmStruct), 54, 29, 0 },
+	{ ((String)&_str_test_2EsmStruct), 54, 25, 0 },
+	{ ((String)&_str_test_2EsmStruct), 54, 46, 0 },
+	{ ((String)&_str_test_2EsmStruct), 55, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 55, 13, 0 },
+	{ ((String)&_str_test_2EsmStruct), 55, 13, 0 },
+	{ ((String)&_str_test_2EsmStruct), 55, 20, 0 },
+	{ ((String)&_str_test_2EsmStruct), 55, 13, 0 },
+	{ ((String)&_str_test_2EsmStruct), 55, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 56, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 56, 11, 0 },
+	{ ((String)&_str_test_2EsmStruct), 56, 25, 0 },
+	{ ((String)&_str_test_2EsmStruct), 56, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 57, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 57, 15, 0 },
+	{ ((String)&_str_test_2EsmStruct), 57, 15, 0 },
+	{ ((String)&_str_test_2EsmStruct), 61, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 31, 18, 0 },
+	{ ((String)&_str_test_2EsmStruct), 72, 7, 0 },
+	{ ((String)&_str_test_2EsmStruct), 73, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 73, 15, 0 },
+	{ ((String)&_str_test_2EsmStruct), 73, 17, 0 },
+	{ ((String)&_str_test_2EsmStruct), 73, 18, 0 },
+	{ ((String)&_str_test_2EsmStruct), 73, 20, 0 },
+	{ ((String)&_str_test_2EsmStruct), 73, 26, 0 },
+	{ ((String)&_str_test_2EsmStruct), 73, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 72, 7, 0 },
+	{ ((String)&_str_test_2EsmStruct), 74, 10, 0 },
+	{ ((String)&_str_test_2EsmStruct), 75, 16, 0 },
+	{ ((String)&_str_test_2EsmStruct), 80, 10, 0 },
+	{ ((String)&_str_test_2EsmStruct), 81, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 81, 14, 0 },
+	{ ((String)&_str_test_2EsmStruct), 81, 23, 0 },
+	{ ((String)&_str_test_2EsmStruct), 81, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 80, 10, 0 },
+	{ ((String)&_str_test_2EsmStruct), 86, 15, 0 },
+	{ ((String)&_str_test_2EsmStruct), 87, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 87, 14, 0 },
+	{ ((String)&_str_test_2EsmStruct), 87, 23, 0 },
+	{ ((String)&_str_test_2EsmStruct), 87, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 86, 15, 0 },
+	{ ((String)&_str_test_2EsmStruct), 93, 15, 0 },
+	{ ((String)&_str_test_2EsmStruct), 94, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 94, 14, 0 },
+	{ ((String)&_str_test_2EsmStruct), 94, 23, 0 },
+	{ ((String)&_str_test_2EsmStruct), 94, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 93, 15, 0 },
+	{ ((String)&_str_test_2EsmStruct), 100, 20, 0 },
+	{ ((String)&_str_test_2EsmStruct), 101, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 101, 14, 0 },
+	{ ((String)&_str_test_2EsmStruct), 101, 23, 0 },
+	{ ((String)&_str_test_2EsmStruct), 101, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 100, 20, 0 },
+	{ ((String)&_str_test_2EsmStruct), 108, 11, 0 },
+	{ ((String)&_str_test_2EsmStruct), 108, 26, 0 },
+	{ ((String)&_str_test_2EsmStruct), 109, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 109, 13, 0 },
+	{ ((String)&_str_test_2EsmStruct), 109, 33, 0 },
+	{ ((String)&_str_test_2EsmStruct), 109, 33, 0 },
+	{ ((String)&_str_test_2EsmStruct), 109, 35, 0 },
+	{ ((String)&_str_test_2EsmStruct), 109, 44, 0 },
+	{ ((String)&_str_test_2EsmStruct), 109, 33, 0 },
+	{ ((String)&_str_test_2EsmStruct), 109, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 110, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 110, 15, 0 },
+	{ ((String)&_str_test_2EsmStruct), 111, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 111, 17, 0 },
+	{ ((String)&_str_test_2EsmStruct), 111, 17, 0 },
+	{ ((String)&_str_test_2EsmStruct), 111, 19, 0 },
+	{ ((String)&_str_test_2EsmStruct), 111, 17, 0 },
+	{ ((String)&_str_test_2EsmStruct), 111, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 112, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 112, 20, 0 },
+	{ ((String)&_str_test_2EsmStruct), 113, 15, 0 },
+	{ ((String)&_str_test_2EsmStruct), 115, 32, 0 },
+	{ ((String)&_str_test_2EsmStruct), 115, 16, 0 },
+	{ ((String)&_str_test_2EsmStruct), 115, 32, 0 },
+	{ ((String)&_str_test_2EsmStruct), 115, 45, 0 },
+	{ ((String)&_str_test_2EsmStruct), 110, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 108, 11, 0 },
+	{ ((String)&_str_test_2EsmStruct), 124, 16, 0 },
+	{ ((String)&_str_test_2EsmStruct), 124, 31, 0 },
+	{ ((String)&_str_test_2EsmStruct), 125, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 125, 13, 0 },
+	{ ((String)&_str_test_2EsmStruct), 125, 33, 0 },
+	{ ((String)&_str_test_2EsmStruct), 125, 33, 0 },
+	{ ((String)&_str_test_2EsmStruct), 125, 35, 0 },
+	{ ((String)&_str_test_2EsmStruct), 125, 44, 0 },
+	{ ((String)&_str_test_2EsmStruct), 125, 33, 0 },
+	{ ((String)&_str_test_2EsmStruct), 125, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 126, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 126, 15, 0 },
+	{ ((String)&_str_test_2EsmStruct), 127, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 127, 17, 0 },
+	{ ((String)&_str_test_2EsmStruct), 127, 17, 0 },
+	{ ((String)&_str_test_2EsmStruct), 127, 19, 0 },
+	{ ((String)&_str_test_2EsmStruct), 127, 17, 0 },
+	{ ((String)&_str_test_2EsmStruct), 127, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 128, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 128, 20, 0 },
+	{ ((String)&_str_test_2EsmStruct), 129, 15, 0 },
+	{ ((String)&_str_test_2EsmStruct), 131, 37, 0 },
+	{ ((String)&_str_test_2EsmStruct), 131, 16, 0 },
+	{ ((String)&_str_test_2EsmStruct), 131, 37, 0 },
+	{ ((String)&_str_test_2EsmStruct), 131, 55, 0 },
+	{ ((String)&_str_test_2EsmStruct), 126, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 124, 16, 0 },
+	{ ((String)&_str_test_2EsmStruct), 138, 10, 0 },
+	{ ((String)&_str_test_2EsmStruct), 138, 16, 0 },
+	{ ((String)&_str_test_2EsmStruct), 139, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 139, 13, 0 },
+	{ ((String)&_str_test_2EsmStruct), 139, 13, 0 },
+	{ ((String)&_str_test_2EsmStruct), 139, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 140, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 140, 10, 0 },
+	{ ((String)&_str_test_2EsmStruct), 140, 10, 0 },
+	{ ((String)&_str_test_2EsmStruct), 140, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 141, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 142, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 142, 26, 0 },
+	{ ((String)&_str_test_2EsmStruct), 143, 12, 0 },
+	{ ((String)&_str_test_2EsmStruct), 143, 21, 0 },
+	{ ((String)&_str_test_2EsmStruct), 143, 21, 0 },
+	{ ((String)&_str_test_2EsmStruct), 143, 12, 0 },
+	{ ((String)&_str_test_2EsmStruct), 144, 12, 0 },
+	{ ((String)&_str_test_2EsmStruct), 144, 18, 0 },
+	{ ((String)&_str_test_2EsmStruct), 144, 18, 0 },
+	{ ((String)&_str_test_2EsmStruct), 144, 23, 0 },
+	{ ((String)&_str_test_2EsmStruct), 144, 18, 0 },
+	{ ((String)&_str_test_2EsmStruct), 141, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 138, 10, 0 },
+	{ ((String)&_str_test_2EsmStruct), 153, 12, 0 },
+	{ ((String)&_str_test_2EsmStruct), 154, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 154, 14, 0 },
+	{ ((String)&_str_test_2EsmStruct), 154, 22, 0 },
+	{ ((String)&_str_test_2EsmStruct), 154, 14, 0 },
+	{ ((String)&_str_test_2EsmStruct), 154, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 153, 12, 0 },
+	{ ((String)&_str_test_2EsmStruct), 158, 18, 0 },
+	{ ((String)&_str_test_2EsmStruct), 159, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 159, 17, 0 },
+	{ ((String)&_str_test_2EsmStruct), 159, 23, 0 },
+	{ ((String)&_str_test_2EsmStruct), 159, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 158, 18, 0 },
+	{ ((String)&_str_test_2EsmStruct), 167, 18, 0 },
+	{ ((String)&_str_test_2EsmStruct), 168, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 168, 17, 0 },
+	{ ((String)&_str_test_2EsmStruct), 168, 30, 0 },
+	{ ((String)&_str_test_2EsmStruct), 168, 34, 0 },
+	{ ((String)&_str_test_2EsmStruct), 168, 46, 0 },
+	{ ((String)&_str_test_2EsmStruct), 168, 34, 0 },
+	{ ((String)&_str_test_2EsmStruct), 168, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 167, 18, 0 },
+	{ ((String)&_str_test_2EsmStruct), 178, 10, 0 },
+	{ ((String)&_str_test_2EsmStruct), 178, 46, 0 },
+	{ ((String)&_str_test_2EsmStruct), 179, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 179, 11, 0 },
+	{ ((String)&_str_test_2EsmStruct), 179, 11, 0 },
+	{ ((String)&_str_test_2EsmStruct), 179, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 180, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 180, 13, 0 },
+	{ ((String)&_str_test_2EsmStruct), 180, 13, 0 },
+	{ ((String)&_str_test_2EsmStruct), 180, 22, 0 },
+	{ ((String)&_str_test_2EsmStruct), 180, 22, 0 },
+	{ ((String)&_str_test_2EsmStruct), 180, 22, 0 },
+	{ ((String)&_str_test_2EsmStruct), 180, 13, 0 },
+	{ ((String)&_str_test_2EsmStruct), 180, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 181, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 181, 15, 0 },
+	{ ((String)&_str_test_2EsmStruct), 181, 20, 0 },
+	{ ((String)&_str_test_2EsmStruct), 182, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 182, 26, 0 },
+	{ ((String)&_str_test_2EsmStruct), 183, 12, 0 },
+	{ ((String)&_str_test_2EsmStruct), 183, 19, 0 },
+	{ ((String)&_str_test_2EsmStruct), 183, 19, 0 },
+	{ ((String)&_str_test_2EsmStruct), 183, 12, 0 },
+	{ ((String)&_str_test_2EsmStruct), 184, 12, 0 },
+	{ ((String)&_str_test_2EsmStruct), 184, 21, 0 },
+	{ ((String)&_str_test_2EsmStruct), 184, 21, 0 },
+	{ ((String)&_str_test_2EsmStruct), 186, 20, 0 },
+	{ ((String)&_str_test_2EsmStruct), 186, 20, 0 },
+	{ ((String)&_str_test_2EsmStruct), 186, 23, 0 },
+	{ ((String)&_str_test_2EsmStruct), 186, 26, 0 },
+	{ ((String)&_str_test_2EsmStruct), 186, 33, 0 },
+	{ ((String)&_str_test_2EsmStruct), 186, 20, 0 },
+	{ ((String)&_str_test_2EsmStruct), 181, 20, 0 },
+	{ ((String)&_str_test_2EsmStruct), 181, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 187, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 178, 10, 0 },
+	{ ((String)&_str_test_2EsmStruct), 192, 14, 0 },
+	{ ((String)&_str_test_2EsmStruct), 192, 25, 0 },
+	{ ((String)&_str_test_2EsmStruct), 193, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 193, 9, 0 },
+	{ ((String)&_str_test_2EsmStruct), 193, 25, 0 },
+	{ ((String)&_str_test_2EsmStruct), 193, 25, 0 },
+	{ ((String)&_str_test_2EsmStruct), 193, 27, 0 },
+	{ ((String)&_str_test_2EsmStruct), 193, 36, 0 },
+	{ ((String)&_str_test_2EsmStruct), 193, 25, 0 },
+	{ ((String)&_str_test_2EsmStruct), 193, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 194, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 195, 11, 0 },
+	{ ((String)&_str_test_2EsmStruct), 195, 23, 0 },
+	{ ((String)&_str_test_2EsmStruct), 194, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 192, 14, 0 },
+	{ ((String)&_str_test_2EsmStruct), 201, 14, 0 },
+	{ ((String)&_str_test_2EsmStruct), 201, 36, 0 },
+	{ ((String)&_str_test_2EsmStruct), 202, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 202, 9, 0 },
+	{ ((String)&_str_test_2EsmStruct), 202, 25, 0 },
+	{ ((String)&_str_test_2EsmStruct), 202, 25, 0 },
+	{ ((String)&_str_test_2EsmStruct), 202, 27, 0 },
+	{ ((String)&_str_test_2EsmStruct), 202, 36, 0 },
+	{ ((String)&_str_test_2EsmStruct), 202, 25, 0 },
+	{ ((String)&_str_test_2EsmStruct), 202, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 203, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 203, 15, 0 },
+	{ ((String)&_str_test_2EsmStruct), 204, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 204, 13, 0 },
+	{ ((String)&_str_test_2EsmStruct), 204, 22, 0 },
+	{ ((String)&_str_test_2EsmStruct), 204, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 205, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 205, 11, 0 },
+	{ ((String)&_str_test_2EsmStruct), 203, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 201, 14, 0 },
+	{ ((String)&_str_test_2EsmStruct), 212, 16, 0 },
+	{ ((String)&_str_test_2EsmStruct), 212, 38, 0 },
+	{ ((String)&_str_test_2EsmStruct), 213, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 213, 9, 0 },
+	{ ((String)&_str_test_2EsmStruct), 213, 25, 0 },
+	{ ((String)&_str_test_2EsmStruct), 213, 25, 0 },
+	{ ((String)&_str_test_2EsmStruct), 213, 27, 0 },
+	{ ((String)&_str_test_2EsmStruct), 213, 36, 0 },
+	{ ((String)&_str_test_2EsmStruct), 213, 25, 0 },
+	{ ((String)&_str_test_2EsmStruct), 213, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 214, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 214, 15, 0 },
+	{ ((String)&_str_test_2EsmStruct), 215, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 215, 28, 0 },
+	{ ((String)&_str_test_2EsmStruct), 215, 13, 0 },
+	{ ((String)&_str_test_2EsmStruct), 215, 28, 0 },
+	{ ((String)&_str_test_2EsmStruct), 215, 37, 0 },
+	{ ((String)&_str_test_2EsmStruct), 215, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 216, 8, 0 },
+	{ ((String)&_str_test_2EsmStruct), 216, 11, 0 },
+	{ ((String)&_str_test_2EsmStruct), 214, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 212, 16, 0 },
+	{ ((String)&_str_test_2EsmStruct), 233, 7, 0 },
+	{ ((String)&_str_test_2EsmStruct), 233, 12, 0 },
+	{ ((String)&_str_test_2EsmStruct), 234, 4, 0 },
+	{ ((String)&_str_test_2EsmStruct), 234, 6, 0 },
+	{ ((String)&_str_test_2EsmStruct), 234, 6, 0 },
+	{ ((String)&_str_test_2EsmStruct), 234, 9, 0 },
+	{ ((String)&_str_test_2EsmStruct), 234, 11, 0 },
+	{ ((String)&_str_test_2EsmStruct), 234, 11, 0 },
+	{ ((String)&_str_test_2EsmStruct), 234, 23, 0 },
+	{ ((String)&_str_test_2EsmStruct), 234, 11, 0 },
+	{ ((String)&_str_test_2EsmStruct), 234, 6, 0 },
+	{ ((String)&_str_test_2EsmStruct), 233, 7, 0 },
 };
-static UserFunctionInfo _compiledTables_Fns[24] = {
+static UserFunctionInfo _compiledTables_Fns[46] = {
 	((UserFunctionInfo)&_ufn_0),
 	((UserFunctionInfo)&_ufn_1),
 	((UserFunctionInfo)&_ufn_2),
@@ -374,19 +833,41 @@ static UserFunctionInfo _compiledTables_Fns[24] = {
 	((UserFunctionInfo)&_ufn_8),
 	((UserFunctionInfo)&_ufn_9),
 	((UserFunctionInfo)&_ufn_10),
-	((UserFunctionInfo)&_ufn_17),
 	((UserFunctionInfo)&_ufn_11),
-	((UserFunctionInfo)&_ufn_18),
 	((UserFunctionInfo)&_ufn_12),
-	((UserFunctionInfo)&_ufn_19),
 	((UserFunctionInfo)&_ufn_13),
-	((UserFunctionInfo)&_ufn_20),
+	((UserFunctionInfo)&_ufn_29),
 	((UserFunctionInfo)&_ufn_14),
-	((UserFunctionInfo)&_ufn_21),
+	((UserFunctionInfo)&_ufn_30),
 	((UserFunctionInfo)&_ufn_15),
-	((UserFunctionInfo)&_ufn_22),
+	((UserFunctionInfo)&_ufn_31),
 	((UserFunctionInfo)&_ufn_16),
+	((UserFunctionInfo)&_ufn_32),
+	((UserFunctionInfo)&_ufn_17),
+	((UserFunctionInfo)&_ufn_33),
+	((UserFunctionInfo)&_ufn_18),
+	((UserFunctionInfo)&_ufn_34),
+	((UserFunctionInfo)&_ufn_19),
+	((UserFunctionInfo)&_ufn_35),
+	((UserFunctionInfo)&_ufn_20),
+	((UserFunctionInfo)&_ufn_36),
+	((UserFunctionInfo)&_ufn_21),
+	((UserFunctionInfo)&_ufn_37),
+	((UserFunctionInfo)&_ufn_22),
+	((UserFunctionInfo)&_ufn_38),
 	((UserFunctionInfo)&_ufn_23),
+	((UserFunctionInfo)&_ufn_39),
+	((UserFunctionInfo)&_ufn_40),
+	((UserFunctionInfo)&_ufn_24),
+	((UserFunctionInfo)&_ufn_41),
+	((UserFunctionInfo)&_ufn_25),
+	((UserFunctionInfo)&_ufn_42),
+	((UserFunctionInfo)&_ufn_26),
+	((UserFunctionInfo)&_ufn_43),
+	((UserFunctionInfo)&_ufn_27),
+	((UserFunctionInfo)&_ufn_44),
+	((UserFunctionInfo)&_ufn_28),
+	((UserFunctionInfo)&_ufn_45),
 };
 static SmileObject _compiledTables_Objs[1] = {
 	NULL,
@@ -397,214 +878,638 @@ static TillContinuationInfo _compiledTables_Tills[1] = {
 static struct CompiledTablesStruct _compiledTables = {
 	NULL, NULL,
 	_compiledTables_Strings, 0, 0, NULL,
-	_compiledTables_Fns, 24, 24,
+	_compiledTables_Fns, 46, 46,
 	_compiledTables_Objs, 0, 0,
 	_compiledTables_Tills, 0, 0,
-	_compiledTables_SrcLocs, 132, 132
+	_compiledTables_SrcLocs, 393, 393
 };
 
 //-----------------------------------------------------------------------------
 // ByteCode segments
 
+
+// test.sm:5
 static struct ByteCodeStruct _bc_0[] = {
-	{ 0x40, { 0 }, 0, { 0x0 } },
-	{ 0x1B, { 0 }, 0, { 0x1 } },
-	{ 0x99, { 0 }, 0, { 0x4B } },
-	{ 0xBB, { 0 }, 0, { 0x0 } },
+	{ 0x40, { 0 }, 2, { .int32 = 0 } },		// LdArg0
+	{ 0x1B, { 0 }, 2, { .int64 = 1LL } },		// Ld64
+	{ 0x99, { 0 }, 2, { 0			 } },		// Binary >>
+	{ 0xBB, { 0 }, 3, { 0			 } },		// Ret
 };
 static struct ByteCodeSegmentStruct _bcs_0 = { &_compiledTables, _bc_0, 4, 4 };
+
+// test.sm:6
 static struct ByteCodeStruct _bc_1[] = {
-	{ 0x40, { 0 }, 0, { 0x0 } },
-	{ 0x1B, { 0 }, 0, { 0x1 } },
-	{ 0x99, { 0 }, 0, { 0x4A } },
-	{ 0xBB, { 0 }, 0, { 0x0 } },
+	{ 0x40, { 0 }, 5, { .int32 = 0 } },		// LdArg0
+	{ 0x1B, { 0 }, 5, { .int64 = 1LL } },		// Ld64
+	{ 0x99, { 0 }, 5, { 0			 } },		// Binary <<
+	{ 0xBB, { 0 }, 6, { 0			 } },		// Ret
 };
 static struct ByteCodeSegmentStruct _bcs_1 = { &_compiledTables, _bc_1, 4, 4 };
+
+// test.sm:8
 static struct ByteCodeStruct _bc_2[] = {
-	{ 0x40, { 0 }, 0, { 0x0 } },
-	{ 0x22, { 0 }, 0, { 0x32000005 } },
-	{ 0x99, { 0 }, 0, { 0x39 } },
-	{ 0xBB, { 0 }, 0, { 0x0 } },
+	{ 0x40, { 0 }, 8, { .int32 = 0 } },		// LdArg0
+	{ 0x22, { 0 }, 8, { .int32 = 0x32000005 } },		// LdR32
+	{ 0x99, { 0 }, 8, { 0			 } },		// Binary *
+	{ 0xBB, { 0 }, 9, { 0			 } },		// Ret
 };
 static struct ByteCodeSegmentStruct _bcs_2 = { &_compiledTables, _bc_2, 4, 4 };
+
+// test.sm:9
 static struct ByteCodeStruct _bc_3[] = {
-	{ 0x40, { 0 }, 0, { 0x0 } },
-	{ 0x22, { 0 }, 0, { 0x32800002 } },
-	{ 0x99, { 0 }, 0, { 0x39 } },
-	{ 0xBB, { 0 }, 0, { 0x0 } },
+	{ 0x40, { 0 }, 11, { .int32 = 0 } },		// LdArg0
+	{ 0x22, { 0 }, 11, { .int32 = 0x32800002 } },		// LdR32
+	{ 0x99, { 0 }, 11, { 0			 } },		// Binary *
+	{ 0xBB, { 0 }, 12, { 0			 } },		// Ret
 };
 static struct ByteCodeSegmentStruct _bcs_3 = { &_compiledTables, _bc_3, 4, 4 };
+
+// test.sm:11
 static struct ByteCodeStruct _bc_4[] = {
-	{ 0x40, { 0 }, 0, { 0x0 } },
-	{ 0x23, { 0 }, 0, { 0x31A0000000000005LLU } },
-	{ 0x99, { 0 }, 0, { 0x39 } },
-	{ 0xBB, { 0 }, 0, { 0x0 } },
+	{ 0x40, { 0 }, 14, { .int32 = 0 } },		// LdArg0
+	{ 0x23, { 0 }, 14, { .int64 = 0x31A0000000000005LLU } },		// LdR64
+	{ 0x99, { 0 }, 14, { 0			 } },		// Binary *
+	{ 0xBB, { 0 }, 15, { 0			 } },		// Ret
 };
 static struct ByteCodeSegmentStruct _bcs_4 = { &_compiledTables, _bc_4, 4, 4 };
+
+// test.sm:12
 static struct ByteCodeStruct _bc_5[] = {
-	{ 0x40, { 0 }, 0, { 0x0 } },
-	{ 0x23, { 0 }, 0, { 0x31C0000000000002LLU } },
-	{ 0x99, { 0 }, 0, { 0x39 } },
-	{ 0xBB, { 0 }, 0, { 0x0 } },
+	{ 0x40, { 0 }, 17, { .int32 = 0 } },		// LdArg0
+	{ 0x23, { 0 }, 17, { .int64 = 0x31C0000000000002LLU } },		// LdR64
+	{ 0x99, { 0 }, 17, { 0			 } },		// Binary *
+	{ 0xBB, { 0 }, 18, { 0			 } },		// Ret
 };
 static struct ByteCodeSegmentStruct _bcs_5 = { &_compiledTables, _bc_5, 4, 4 };
+
+// test.sm:14
 static struct ByteCodeStruct _bc_6[] = {
-	{ 0x40, { 0 }, 0, { 0x0 } },
-	{ 0x2A, { 0 }, 0, { 0x3F000000 } },
-	{ 0x99, { 0 }, 0, { 0x39 } },
-	{ 0xBB, { 0 }, 0, { 0x0 } },
+	{ 0x40, { 0 }, 20, { .int32 = 0 } },		// LdArg0
+	{ 0x2A, { 0 }, 20, { .int32 = 0x3F000000 } },		// LdF32
+	{ 0x99, { 0 }, 20, { 0			 } },		// Binary *
+	{ 0xBB, { 0 }, 21, { 0			 } },		// Ret
 };
 static struct ByteCodeSegmentStruct _bcs_6 = { &_compiledTables, _bc_6, 4, 4 };
+
+// test.sm:15
 static struct ByteCodeStruct _bc_7[] = {
-	{ 0x40, { 0 }, 0, { 0x0 } },
-	{ 0x2A, { 0 }, 0, { 0x40000000 } },
-	{ 0x99, { 0 }, 0, { 0x39 } },
-	{ 0xBB, { 0 }, 0, { 0x0 } },
+	{ 0x40, { 0 }, 23, { .int32 = 0 } },		// LdArg0
+	{ 0x2A, { 0 }, 23, { .int32 = 0x40000000 } },		// LdF32
+	{ 0x99, { 0 }, 23, { 0			 } },		// Binary *
+	{ 0xBB, { 0 }, 24, { 0			 } },		// Ret
 };
 static struct ByteCodeSegmentStruct _bcs_7 = { &_compiledTables, _bc_7, 4, 4 };
+
+// test.sm:17
 static struct ByteCodeStruct _bc_8[] = {
-	{ 0x40, { 0 }, 0, { 0x0 } },
-	{ 0x2B, { 0 }, 0, { 0x3FE0000000000000LLU } },
-	{ 0x99, { 0 }, 0, { 0x39 } },
-	{ 0xBB, { 0 }, 0, { 0x0 } },
+	{ 0x40, { 0 }, 26, { .int32 = 0 } },		// LdArg0
+	{ 0x2B, { 0 }, 26, { .int64 = 0x3FE0000000000000LLU } },		// LdF64
+	{ 0x99, { 0 }, 26, { 0			 } },		// Binary *
+	{ 0xBB, { 0 }, 27, { 0			 } },		// Ret
 };
 static struct ByteCodeSegmentStruct _bcs_8 = { &_compiledTables, _bc_8, 4, 4 };
+
+// test.sm:18
 static struct ByteCodeStruct _bc_9[] = {
-	{ 0x40, { 0 }, 0, { 0x0 } },
-	{ 0x2B, { 0 }, 0, { 0x4000000000000000LLU } },
-	{ 0x99, { 0 }, 0, { 0x39 } },
-	{ 0xBB, { 0 }, 0, { 0x0 } },
+	{ 0x40, { 0 }, 29, { .int32 = 0 } },		// LdArg0
+	{ 0x2B, { 0 }, 29, { .int64 = 0x4000000000000000LLU } },		// LdF64
+	{ 0x99, { 0 }, 29, { 0			 } },		// Binary *
+	{ 0xBB, { 0 }, 30, { 0			 } },		// Ret
 };
 static struct ByteCodeSegmentStruct _bcs_9 = { &_compiledTables, _bc_9, 4, 4 };
+
+// test.sm:27
 static struct ByteCodeStruct _bc_10[] = {
-	{ 0x88, { 0 }, 0, { 0xB } },
-	{ 0xBB, { 0 }, 0, { 0x0 } },
+	{ 0x40, { 0 }, 32, { .int32 = 0 } },		// LdArg0
+	{ 0x40, { 0 }, 34, { .int32 = 0 } },		// LdArg0
+	{ 0x98, { 0 }, 34, { 0			 } },		// Unary count
+	{ 0x40, { 0 }, 35, { .int32 = 1 } },		// LdArg0
+	{ 0x99, { 0 }, 33, { 0			 } },		// Binary -
+	{ 0x99, { 0 }, 32, { 0			 } },		// Binary truncate-to
+	{ 0xBB, { 0 }, 36, { 0			 } },		// Ret
 };
-static struct ByteCodeSegmentStruct _bcs_10 = { &_compiledTables, _bc_10, 2, 2 };
+static struct ByteCodeSegmentStruct _bcs_10 = { &_compiledTables, _bc_10, 7, 7 };
+
+// test.sm:28
 static struct ByteCodeStruct _bc_11[] = {
-	{ 0x88, { 0 }, 0, { 0xD } },
-	{ 0xBB, { 0 }, 0, { 0x0 } },
+	{ 0x40, { 0 }, 38, { .int32 = 0 } },		// LdArg0
+	{ 0x40, { 0 }, 40, { .int32 = 0 } },		// LdArg0
+	{ 0x98, { 0 }, 40, { 0			 } },		// Unary count
+	{ 0x40, { 0 }, 41, { .int32 = 1 } },		// LdArg0
+	{ 0x99, { 0 }, 39, { 0			 } },		// Binary -
+	{ 0x99, { 0 }, 38, { 0			 } },		// Binary truncate-to!
+	{ 0xBB, { 0 }, 42, { 0			 } },		// Ret
 };
-static struct ByteCodeSegmentStruct _bcs_11 = { &_compiledTables, _bc_11, 2, 2 };
+static struct ByteCodeSegmentStruct _bcs_11 = { &_compiledTables, _bc_11, 7, 7 };
+
+// test.sm:32
 static struct ByteCodeStruct _bc_12[] = {
-	{ 0x88, { 0 }, 0, { 0xF } },
-	{ 0xBB, { 0 }, 0, { 0x0 } },
+	{ 0x40, { 0 }, 46, { .int32 = 1 } },		// LdArg0
+	{ 0x8F, { 0 }, 46, { 0			 } },		// TypeOf
+	{ 0x13, { 0 }, 48, { .int32 = 325 } },		// LdSym integer64-range
+	{ 0x8B, { 0 }, 49, { 0			 } },		// SuperEq
+	{ 0xB2, { 0 }, 44, { .index = 76 } },		// Bf
+	{ 0x3C, { 0 }, 50, { .int32 = 0 } },		// NullLoc0
+	{ 0x3C, { 0 }, 50, { .int32 = 1 } },		// NullLoc0
+	{ 0x3C, { 0 }, 50, { .int32 = 2 } },		// NullLoc0
+	{ 0x3C, { 0 }, 50, { .int32 = 3 } },		// NullLoc0
+	{ 0x40, { 0 }, 54, { .int32 = 1 } },		// LdArg0
+	{ 0xEC, { 0 }, 54, { 0			 } },		// LdStart
+	{ 0x68, { 0 }, 55, { .int32 = 0 } },		// StpLoc0
+	{ 0x40, { 0 }, 60, { .int32 = 1 } },		// LdArg0
+	{ 0xED, { 0 }, 60, { 0			 } },		// LdEnd
+	{ 0x68, { 0 }, 61, { .int32 = 1 } },		// StpLoc0
+	{ 0x48, { 0 }, 64, { .int32 = 0 } },		// LdLoc0
+	{ 0x48, { 0 }, 64, { .int32 = 1 } },		// LdLoc0
+	{ 0x99, { 0 }, 64, { 0			 } },		// Binary >
+	{ 0xB2, { 0 }, 63, { .index = 8 } },		// Bf
+	{ 0x3C, { 0 }, 65, { .int32 = 4 } },		// NullLoc0
+	{ 0x48, { 0 }, 68, { .int32 = 0 } },		// LdLoc0
+	{ 0x68, { 0 }, 68, { .int32 = 4 } },		// StpLoc0
+	{ 0x48, { 0 }, 72, { .int32 = 1 } },		// LdLoc0
+	{ 0x68, { 0 }, 72, { .int32 = 0 } },		// StpLoc0
+	{ 0x48, { 0 }, 76, { .int32 = 4 } },		// LdLoc0
+	{ 0x68, { 0 }, 76, { .int32 = 1 } },		// StpLoc0
+	{ 0x48, { 0 }, 79, { .int32 = 0 } },		// LdLoc0
+	{ 0x1B, { 0 }, 79, { .int64 = 0LL } },		// Ld64
+	{ 0x99, { 0 }, 79, { 0			 } },		// Binary <
+	{ 0xB2, { 0 }, 78, { .index = 9 } },		// Bf
+	{ 0x48, { 0 }, 82, { .int32 = 1 } },		// LdLoc0
+	{ 0x1B, { 0 }, 82, { .int64 = 0LL } },		// Ld64
+	{ 0x99, { 0 }, 82, { 0			 } },		// Binary <
+	{ 0xB2, { 0 }, 81, { .index = 3 } },		// Bf
+	{ 0x40, { 0 }, 83, { .int32 = 2 } },		// LdArg0
+	{ 0xBB, { 0 }, 83, { 0			 } },		// Ret
+	{ 0x1B, { 0 }, 87, { .int64 = 0LL } },		// Ld64
+	{ 0x68, { 0 }, 87, { .int32 = 0 } },		// StpLoc0
+	{ 0x48, { 0 }, 92, { .int32 = 1 } },		// LdLoc0
+	{ 0x48, { 0 }, 92, { .int32 = 0 } },		// LdLoc0
+	{ 0x99, { 0 }, 92, { 0			 } },		// Binary -
+	{ 0x68, { 0 }, 93, { .int32 = 2 } },		// StpLoc0
+	{ 0x40, { 0 }, 98, { .int32 = 0 } },		// LdArg0
+	{ 0x48, { 0 }, 98, { .int32 = 0 } },		// LdLoc0
+	{ 0x99, { 0 }, 98, { 0			 } },		// Binary nth-cell
+	{ 0x68, { 0 }, 99, { .int32 = 3 } },		// StpLoc0
+	{ 0x48, { 0 }, 102, { .int32 = 3 } },		// LdLoc0
+	{ 0x8D, { 0 }, 102, { 0			 } },		// Not
+	{ 0xB2, { 0 }, 101, { .index = 3 } },		// Bf
+	{ 0x40, { 0 }, 103, { .int32 = 2 } },		// LdArg0
+	{ 0xBB, { 0 }, 103, { 0			 } },		// Ret
+	{ 0x48, { 0 }, 106, { .int32 = 3 } },		// LdLoc0
+	{ 0x40, { 0 }, 107, { .int32 = 2 } },		// LdArg0
+	{ 0x72, { 0 }, 107, { 0			 } },		// StpProp a
+	{ 0xB0, { 0 }, 109, { .index = 10 } },		// Jmp
+	{ 0x48, { 0 }, 112, { .int32 = 3 } },		// LdLoc0
+	{ 0x48, { 0 }, 115, { .int32 = 3 } },		// LdLoc0
+	{ 0xE9, { 0 }, 115, { 0			 } },		// LdD
+	{ 0xE9, { 0 }, 114, { 0			 } },		// LdD
+	{ 0x72, { 0 }, 113, { 0			 } },		// StpProp d
+	{ 0x48, { 0 }, 118, { .int32 = 2 } },		// LdLoc0
+	{ 0x1B, { 0 }, 119, { .int64 = 1LL } },		// Ld64
+	{ 0x99, { 0 }, 119, { 0			 } },		// Binary -
+	{ 0x68, { 0 }, 119, { .int32 = 2 } },		// StpLoc0
+	{ 0x48, { 0 }, 121, { .int32 = 2 } },		// LdLoc0
+	{ 0x1B, { 0 }, 121, { .int64 = 0LL } },		// Ld64
+	{ 0x99, { 0 }, 121, { 0			 } },		// Binary >
+	{ 0xB2, { 0 }, 120, { .index = 9 } },		// Bf
+	{ 0x48, { 0 }, 124, { .int32 = 3 } },		// LdLoc0
+	{ 0xE9, { 0 }, 124, { 0			 } },		// LdD
+	{ 0x8F, { 0 }, 125, { 0			 } },		// TypeOf
+	{ 0x13, { 0 }, 127, { .int32 = 341 } },		// LdSym list
+	{ 0x8B, { 0 }, 128, { 0			 } },		// SuperEq
+	{ 0xB2, { 0 }, 120, { .index = 3 } },		// Bf
+	{ 0x11, { 0 }, 120, { .boolean = 1 } },		// LdBool
+	{ 0xB0, { 0 }, 120, { .index = 2 } },		// Jmp
+	{ 0x11, { 0 }, 120, { .boolean = 0 } },		// LdBool
+	{ 0xB1, { 0 }, 109, { .index = -22 } },		// Bt
+	{ 0x40, { 0 }, 130, { .int32 = 2 } },		// LdArg0
+	{ 0xB0, { 0 }, 44, { .index = 21 } },		// Jmp
+	{ 0x40, { 0 }, 133, { .int32 = 1 } },		// LdArg0
+	{ 0x8F, { 0 }, 133, { 0			 } },		// TypeOf
+	{ 0x13, { 0 }, 135, { .int32 = 324 } },		// LdSym integer64
+	{ 0x8B, { 0 }, 136, { 0			 } },		// SuperEq
+	{ 0xB2, { 0 }, 131, { .index = 15 } },		// Bf
+	{ 0x3C, { 0 }, 137, { .int32 = 5 } },		// NullLoc0
+	{ 0x40, { 0 }, 141, { .int32 = 0 } },		// LdArg0
+	{ 0x40, { 0 }, 141, { .int32 = 1 } },		// LdArg0
+	{ 0x99, { 0 }, 141, { 0			 } },		// Binary nth-cell
+	{ 0x68, { 0 }, 142, { .int32 = 5 } },		// StpLoc0
+	{ 0x48, { 0 }, 145, { .int32 = 5 } },		// LdLoc0
+	{ 0x8D, { 0 }, 145, { 0			 } },		// Not
+	{ 0xB2, { 0 }, 144, { .index = 3 } },		// Bf
+	{ 0x40, { 0 }, 146, { .int32 = 2 } },		// LdArg0
+	{ 0xBB, { 0 }, 146, { 0			 } },		// Ret
+	{ 0x48, { 0 }, 149, { .int32 = 5 } },		// LdLoc0
+	{ 0x40, { 0 }, 150, { .int32 = 2 } },		// LdArg0
+	{ 0x71, { 0 }, 150, { 0			 } },		// StProp a
+	{ 0xB0, { 0 }, 131, { .index = 2 } },		// Jmp
+	{ 0x13, { 0 }, 151, { .int32 = 751 } },		// LdSym FAIL
+	{ 0xBB, { 0 }, 152, { 0			 } },		// Ret
 };
-static struct ByteCodeSegmentStruct _bcs_12 = { &_compiledTables, _bc_12, 2, 2 };
+static struct ByteCodeSegmentStruct _bcs_12 = { &_compiledTables, _bc_12, 101, 101 };
+
+// test.sm:73
 static struct ByteCodeStruct _bc_13[] = {
-	{ 0x3C, { 0 }, 0, { 0x0 } },
-	{ 0x3C, { 0 }, 0, { 0x1 } },
-	{ 0x11, { 0 }, 0, { 0x1 } },
-	{ 0x68, { 0 }, 0, { 0x0 } },
-	{ 0x10, { 0 }, 0, { 0x0 } },
-	{ 0x68, { 0 }, 0, { 0x1 } },
-	{ 0x88, { 0 }, 0, { 0x11 } },
-	{ 0xBB, { 0 }, 0, { 0x0 } },
+	{ 0x88, { 0 }, 154, { .int32 = 14 } },		// NewFn
+	{ 0xBB, { 0 }, 161, { 0			 } },		// Ret
 };
-static struct ByteCodeSegmentStruct _bcs_13 = { &_compiledTables, _bc_13, 8, 8 };
+static struct ByteCodeSegmentStruct _bcs_13 = { &_compiledTables, _bc_13, 2, 2 };
+
+// test.sm:81
 static struct ByteCodeStruct _bc_14[] = {
-	{ 0x3C, { 0 }, 0, { 0x0 } },
-	{ 0x40, { 0 }, 0, { 0x0 } },
-	{ 0x88, { 0 }, 0, { 0x13 } },
-	{ 0xB6, { 0 }, 0, { 0x1 } },
-	{ 0x58, { 0 }, 0, { 0x0 } },
-	{ 0xBB, { 0 }, 0, { 0x0 } },
+	{ 0x88, { 0 }, 165, { .int32 = 16 } },		// NewFn
+	{ 0xBB, { 0 }, 169, { 0			 } },		// Ret
 };
-static struct ByteCodeSegmentStruct _bcs_14 = { &_compiledTables, _bc_14, 6, 6 };
+static struct ByteCodeSegmentStruct _bcs_14 = { &_compiledTables, _bc_14, 2, 2 };
+
+// test.sm:87
 static struct ByteCodeStruct _bc_15[] = {
-	{ 0x88, { 0 }, 0, { 0x15 } },
-	{ 0xBB, { 0 }, 0, { 0x0 } },
+	{ 0x88, { 0 }, 171, { .int32 = 18 } },		// NewFn
+	{ 0xBB, { 0 }, 175, { 0			 } },		// Ret
 };
 static struct ByteCodeSegmentStruct _bcs_15 = { &_compiledTables, _bc_15, 2, 2 };
+
+// test.sm:94
 static struct ByteCodeStruct _bc_16[] = {
-	{ 0x3C, { 0 }, 0, { 0x0 } },
-	{ 0x3C, { 0 }, 0, { 0x1 } },
-	{ 0x40, { 0 }, 0, { 0x2 } },
-	{ 0x68, { 0 }, 0, { 0x0 } },
-	{ 0x48, { 0 }, 0, { 0x0 } },
-	{ 0x10, { 0 }, 0, { 0x0 } },
-	{ 0x8B, { 0 }, 0, { 0x0 } },
-	{ 0x68, { 0 }, 0, { 0x1 } },
-	{ 0x40, { 0 }, 0, { 0x1 } },
-	{ 0x88, { 0 }, 0, { 0x17 } },
-	{ 0x99, { 0 }, 0, { 0x112 } },
-	{ 0x05, { 0 }, 0, { 0x0 } },
-	{ 0x48, { 0 }, 0, { 0x0 } },
-	{ 0xBB, { 0 }, 0, { 0x0 } },
+	{ 0x88, { 0 }, 177, { .int32 = 20 } },		// NewFn
+	{ 0xBB, { 0 }, 181, { 0			 } },		// Ret
 };
-static struct ByteCodeSegmentStruct _bcs_16 = { &_compiledTables, _bc_16, 14, 14 };
+static struct ByteCodeSegmentStruct _bcs_16 = { &_compiledTables, _bc_16, 2, 2 };
+
+// test.sm:101
 static struct ByteCodeStruct _bc_17[] = {
-	{ 0x41, { 0 }, 0, { 0x0 } },
-	{ 0x41, { 0 }, 0, { 0x1 } },
-	{ 0x40, { 0 }, 0, { 0x0 } },
-	{ 0x99, { 0 }, 0, { 0xC9 } },
-	{ 0xB6, { 0 }, 0, { 0x1 } },
-	{ 0xBB, { 0 }, 0, { 0x0 } },
+	{ 0x88, { 0 }, 183, { .int32 = 22 } },		// NewFn
+	{ 0xBB, { 0 }, 187, { 0			 } },		// Ret
 };
-static struct ByteCodeSegmentStruct _bcs_17 = { &_compiledTables, _bc_17, 6, 6 };
+static struct ByteCodeSegmentStruct _bcs_17 = { &_compiledTables, _bc_17, 2, 2 };
+
+// test.sm:109
 static struct ByteCodeStruct _bc_18[] = {
-	{ 0x41, { 0 }, 0, { 0x0 } },
-	{ 0x41, { 0 }, 0, { 0x1 } },
-	{ 0x40, { 0 }, 0, { 0x0 } },
-	{ 0x99, { 0 }, 0, { 0x27F } },
-	{ 0x99, { 0 }, 0, { 0xC9 } },
-	{ 0xBB, { 0 }, 0, { 0x0 } },
+	{ 0x40, { 0 }, 191, { .int32 = 1 } },		// LdArg0
+	{ 0x10, { 0 }, 191, { 0			 } },		// LdNull
+	{ 0x8B, { 0 }, 191, { 0			 } },		// SuperEq
+	{ 0xB2, { 0 }, 190, { .index = 5 } },		// Bf
+	{ 0x40, { 0 }, 195, { .int32 = 0 } },		// LdArg0
+	{ 0x70, { 0 }, 195, { 0			 } },		// LdProp arguments
+	{ 0x98, { 0 }, 194, { 0			 } },		// Unary count
+	{ 0x60, { 0 }, 196, { .int32 = 1 } },		// StpArg0
+	{ 0x88, { 0 }, 198, { .int32 = 24 } },		// NewFn
+	{ 0xBB, { 0 }, 214, { 0			 } },		// Ret
 };
-static struct ByteCodeSegmentStruct _bcs_18 = { &_compiledTables, _bc_18, 6, 6 };
+static struct ByteCodeSegmentStruct _bcs_18 = { &_compiledTables, _bc_18, 10, 10 };
+
+// test.sm:125
 static struct ByteCodeStruct _bc_19[] = {
-	{ 0x41, { 0 }, 0, { 0x0 } },
-	{ 0x40, { 0 }, 0, { 0x0 } },
-	{ 0x41, { 0 }, 0, { 0x1 } },
-	{ 0x99, { 0 }, 0, { 0x27F } },
-	{ 0x99, { 0 }, 0, { 0xC9 } },
-	{ 0xBB, { 0 }, 0, { 0x0 } },
+	{ 0x40, { 0 }, 218, { .int32 = 1 } },		// LdArg0
+	{ 0x10, { 0 }, 218, { 0			 } },		// LdNull
+	{ 0x8B, { 0 }, 218, { 0			 } },		// SuperEq
+	{ 0xB2, { 0 }, 217, { .index = 5 } },		// Bf
+	{ 0x40, { 0 }, 222, { .int32 = 0 } },		// LdArg0
+	{ 0x70, { 0 }, 222, { 0			 } },		// LdProp arguments
+	{ 0x98, { 0 }, 221, { 0			 } },		// Unary count
+	{ 0x60, { 0 }, 223, { .int32 = 1 } },		// StpArg0
+	{ 0x88, { 0 }, 225, { .int32 = 26 } },		// NewFn
+	{ 0xBB, { 0 }, 241, { 0			 } },		// Ret
 };
-static struct ByteCodeSegmentStruct _bcs_19 = { &_compiledTables, _bc_19, 6, 6 };
+static struct ByteCodeSegmentStruct _bcs_19 = { &_compiledTables, _bc_19, 10, 10 };
+
+// test.sm:138
 static struct ByteCodeStruct _bc_20[] = {
-	{ 0x49, { 0 }, 0, { 0x0 } },
-	{ 0xB2, { 0 }, 0, { 0x8 } },
-	{ 0x11, { 0 }, 0, { 0x0 } },
-	{ 0x69, { 0 }, 0, { 0x0 } },
-	{ 0x41, { 0 }, 0, { 0x0 } },
-	{ 0x40, { 0 }, 0, { 0x0 } },
-	{ 0x99, { 0 }, 0, { 0xC9 } },
-	{ 0x59, { 0 }, 0, { 0x1 } },
-	{ 0xB0, { 0 }, 0, { 0x2 } },
-	{ 0x49, { 0 }, 0, { 0x1 } },
-	{ 0xBB, { 0 }, 0, { 0x0 } },
+	{ 0x3C, { 0 }, 243, { .int32 = 0 } },		// NullLoc0
+	{ 0x3C, { 0 }, 243, { .int32 = 1 } },		// NullLoc0
+	{ 0x11, { 0 }, 246, { .boolean = 1 } },		// LdBool
+	{ 0x68, { 0 }, 246, { .int32 = 0 } },		// StpLoc0
+	{ 0x10, { 0 }, 250, { 0			 } },		// LdNull
+	{ 0x68, { 0 }, 250, { .int32 = 1 } },		// StpLoc0
+	{ 0x88, { 0 }, 252, { .int32 = 28 } },		// NewFn
+	{ 0xBB, { 0 }, 265, { 0			 } },		// Ret
 };
-static struct ByteCodeSegmentStruct _bcs_20 = { &_compiledTables, _bc_20, 11, 11 };
+static struct ByteCodeSegmentStruct _bcs_20 = { &_compiledTables, _bc_20, 8, 8 };
+
+// test.sm:154
 static struct ByteCodeStruct _bc_21[] = {
-	{ 0x49, { 0 }, 0, { 0x0 } },
-	{ 0x40, { 0 }, 0, { 0x0 } },
-	{ 0x99, { 0 }, 0, { 0xC9 } },
-	{ 0xBB, { 0 }, 0, { 0x0 } },
+	{ 0x88, { 0 }, 267, { .int32 = 30 } },		// NewFn
+	{ 0xBB, { 0 }, 272, { 0			 } },		// Ret
 };
-static struct ByteCodeSegmentStruct _bcs_21 = { &_compiledTables, _bc_21, 4, 4 };
+static struct ByteCodeSegmentStruct _bcs_21 = { &_compiledTables, _bc_21, 2, 2 };
+
+// test.sm:159
 static struct ByteCodeStruct _bc_22[] = {
-	{ 0x41, { 0 }, 0, { 0x0 } },
-	{ 0x40, { 0 }, 0, { 0x0 } },
-	{ 0x98, { 0 }, 0, { 0x1B3 } },
-	{ 0x99, { 0 }, 0, { 0xC9 } },
-	{ 0xBB, { 0 }, 0, { 0x0 } },
+	{ 0x88, { 0 }, 274, { .int32 = 32 } },		// NewFn
+	{ 0xBB, { 0 }, 278, { 0			 } },		// Ret
 };
-static struct ByteCodeSegmentStruct _bcs_22 = { &_compiledTables, _bc_22, 5, 5 };
+static struct ByteCodeSegmentStruct _bcs_22 = { &_compiledTables, _bc_22, 2, 2 };
+
+// test.sm:168
 static struct ByteCodeStruct _bc_23[] = {
-	{ 0x49, { 0 }, 0, { 0x1 } },
-	{ 0xB2, { 0 }, 0, { 0x6 } },
-	{ 0x40, { 0 }, 0, { 0x0 } },
-	{ 0x69, { 0 }, 0, { 0x0 } },
-	{ 0x11, { 0 }, 0, { 0x0 } },
-	{ 0x59, { 0 }, 0, { 0x1 } },
-	{ 0xB0, { 0 }, 0, { 0x6 } },
-	{ 0x41, { 0 }, 0, { 0x0 } },
-	{ 0x49, { 0 }, 0, { 0x0 } },
-	{ 0x40, { 0 }, 0, { 0x0 } },
-	{ 0xB6, { 0 }, 0, { 0x2 } },
-	{ 0x59, { 0 }, 0, { 0x0 } },
-	{ 0xBB, { 0 }, 0, { 0x0 } },
+	{ 0x88, { 0 }, 280, { .int32 = 34 } },		// NewFn
+	{ 0xBB, { 0 }, 287, { 0			 } },		// Ret
 };
-static struct ByteCodeSegmentStruct _bcs_23 = { &_compiledTables, _bc_23, 13, 13 };
+static struct ByteCodeSegmentStruct _bcs_23 = { &_compiledTables, _bc_23, 2, 2 };
+
+// test.sm:178
+static struct ByteCodeStruct _bc_24[] = {
+	{ 0x3C, { 0 }, 289, { .int32 = 0 } },		// NullLoc0
+	{ 0x3C, { 0 }, 289, { .int32 = 1 } },		// NullLoc0
+	{ 0x40, { 0 }, 292, { .int32 = 2 } },		// LdArg0
+	{ 0x68, { 0 }, 292, { .int32 = 0 } },		// StpLoc0
+	{ 0x48, { 0 }, 298, { .int32 = 0 } },		// LdLoc0
+	{ 0x10, { 0 }, 298, { 0			 } },		// LdNull
+	{ 0x8B, { 0 }, 299, { 0			 } },		// SuperEq
+	{ 0x68, { 0 }, 300, { .int32 = 1 } },		// StpLoc0
+	{ 0x40, { 0 }, 303, { .int32 = 1 } },		// LdArg0
+	{ 0x88, { 0 }, 304, { .int32 = 37 } },		// NewFn
+	{ 0x99, { 0 }, 303, { 0			 } },		// Binary each
+	{ 0x05, { 0 }, 303, { 0			 } },		// Pop1
+	{ 0x48, { 0 }, 322, { .int32 = 0 } },		// LdLoc0
+	{ 0xBB, { 0 }, 323, { 0			 } },		// Ret
+};
+static struct ByteCodeSegmentStruct _bcs_24 = { &_compiledTables, _bc_24, 14, 14 };
+
+// test.sm:193
+static struct ByteCodeStruct _bc_25[] = {
+	{ 0x40, { 0 }, 327, { .int32 = 1 } },		// LdArg0
+	{ 0x10, { 0 }, 327, { 0			 } },		// LdNull
+	{ 0x8B, { 0 }, 327, { 0			 } },		// SuperEq
+	{ 0xB2, { 0 }, 326, { .index = 5 } },		// Bf
+	{ 0x40, { 0 }, 331, { .int32 = 0 } },		// LdArg0
+	{ 0x70, { 0 }, 331, { 0			 } },		// LdProp arguments
+	{ 0x98, { 0 }, 330, { 0			 } },		// Unary count
+	{ 0x60, { 0 }, 332, { .int32 = 1 } },		// StpArg0
+	{ 0x88, { 0 }, 334, { .int32 = 39 } },		// NewFn
+	{ 0xBB, { 0 }, 338, { 0			 } },		// Ret
+};
+static struct ByteCodeSegmentStruct _bcs_25 = { &_compiledTables, _bc_25, 10, 10 };
+
+// test.sm:202
+static struct ByteCodeStruct _bc_26[] = {
+	{ 0x40, { 0 }, 342, { .int32 = 1 } },		// LdArg0
+	{ 0x10, { 0 }, 342, { 0			 } },		// LdNull
+	{ 0x8B, { 0 }, 342, { 0			 } },		// SuperEq
+	{ 0xB2, { 0 }, 341, { .index = 5 } },		// Bf
+	{ 0x40, { 0 }, 346, { .int32 = 0 } },		// LdArg0
+	{ 0x70, { 0 }, 346, { 0			 } },		// LdProp arguments
+	{ 0x98, { 0 }, 345, { 0			 } },		// Unary count
+	{ 0x60, { 0 }, 347, { .int32 = 1 } },		// StpArg0
+	{ 0x88, { 0 }, 349, { .int32 = 41 } },		// NewFn
+	{ 0xBB, { 0 }, 358, { 0			 } },		// Ret
+};
+static struct ByteCodeSegmentStruct _bcs_26 = { &_compiledTables, _bc_26, 10, 10 };
+
+// test.sm:213
+static struct ByteCodeStruct _bc_27[] = {
+	{ 0x40, { 0 }, 362, { .int32 = 1 } },		// LdArg0
+	{ 0x10, { 0 }, 362, { 0			 } },		// LdNull
+	{ 0x8B, { 0 }, 362, { 0			 } },		// SuperEq
+	{ 0xB2, { 0 }, 361, { .index = 5 } },		// Bf
+	{ 0x40, { 0 }, 366, { .int32 = 0 } },		// LdArg0
+	{ 0x70, { 0 }, 366, { 0			 } },		// LdProp arguments
+	{ 0x98, { 0 }, 365, { 0			 } },		// Unary count
+	{ 0x60, { 0 }, 367, { .int32 = 1 } },		// StpArg0
+	{ 0x88, { 0 }, 369, { .int32 = 43 } },		// NewFn
+	{ 0xBB, { 0 }, 380, { 0			 } },		// Ret
+};
+static struct ByteCodeSegmentStruct _bcs_27 = { &_compiledTables, _bc_27, 10, 10 };
+
+// test.sm:233
+static struct ByteCodeStruct _bc_28[] = {
+	{ 0x3C, { 0 }, 382, { .int32 = 0 } },		// NullLoc0
+	{ 0x40, { 0 }, 386, { .int32 = 0 } },		// LdArg0
+	{ 0x88, { 0 }, 387, { .int32 = 45 } },		// NewFn
+	{ 0xB6, { 0 }, 385, { .index = 1 } },		// Call
+	{ 0x58, { 0 }, 391, { .int32 = 0 } },		// StLoc0
+	{ 0xBB, { 0 }, 392, { 0			 } },		// Ret
+};
+static struct ByteCodeSegmentStruct _bcs_28 = { &_compiledTables, _bc_28, 6, 6 };
+
+// test.sm:73
+static struct ByteCodeStruct _bc_29[] = {
+	{ 0x41, { 0 }, 155, { .int32 = 0 } },		// LdArg1
+	{ 0x41, { 0 }, 158, { .int32 = 1 } },		// LdArg1
+	{ 0x40, { 0 }, 159, { .int32 = 0 } },		// LdArg0
+	{ 0x99, { 0 }, 157, { 0			 } },		// Binary apply
+	{ 0xB6, { 0 }, 154, { .index = 1 } },		// Call
+	{ 0xBB, { 0 }, 160, { 0			 } },		// Ret
+};
+static struct ByteCodeSegmentStruct _bcs_29 = { &_compiledTables, _bc_29, 6, 6 };
+
+// test.sm:81
+static struct ByteCodeStruct _bc_30[] = {
+	{ 0x41, { 0 }, 166, { .int32 = 0 } },		// LdArg1
+	{ 0x41, { 0 }, 167, { .int32 = 1 } },		// LdArg1
+	{ 0x40, { 0 }, 167, { .int32 = 0 } },		// LdArg0
+	{ 0x99, { 0 }, 167, { 0			 } },		// Binary conc-list
+	{ 0x99, { 0 }, 166, { 0			 } },		// Binary apply
+	{ 0xBB, { 0 }, 168, { 0			 } },		// Ret
+};
+static struct ByteCodeSegmentStruct _bcs_30 = { &_compiledTables, _bc_30, 6, 6 };
+
+// test.sm:87
+static struct ByteCodeStruct _bc_31[] = {
+	{ 0x41, { 0 }, 172, { .int32 = 0 } },		// LdArg1
+	{ 0x41, { 0 }, 173, { .int32 = 1 } },		// LdArg1
+	{ 0x40, { 0 }, 173, { .int32 = 0 } },		// LdArg0
+	{ 0x99, { 0 }, 173, { 0			 } },		// Binary conc-list
+	{ 0x99, { 0 }, 172, { 0			 } },		// Binary apply
+	{ 0xBB, { 0 }, 174, { 0			 } },		// Ret
+};
+static struct ByteCodeSegmentStruct _bcs_31 = { &_compiledTables, _bc_31, 6, 6 };
+
+// test.sm:94
+static struct ByteCodeStruct _bc_32[] = {
+	{ 0x41, { 0 }, 178, { .int32 = 0 } },		// LdArg1
+	{ 0x40, { 0 }, 179, { .int32 = 0 } },		// LdArg0
+	{ 0x41, { 0 }, 179, { .int32 = 1 } },		// LdArg1
+	{ 0x99, { 0 }, 179, { 0			 } },		// Binary conc-list
+	{ 0x99, { 0 }, 178, { 0			 } },		// Binary apply
+	{ 0xBB, { 0 }, 180, { 0			 } },		// Ret
+};
+static struct ByteCodeSegmentStruct _bcs_32 = { &_compiledTables, _bc_32, 6, 6 };
+
+// test.sm:101
+static struct ByteCodeStruct _bc_33[] = {
+	{ 0x41, { 0 }, 184, { .int32 = 0 } },		// LdArg1
+	{ 0x40, { 0 }, 185, { .int32 = 0 } },		// LdArg0
+	{ 0x41, { 0 }, 185, { .int32 = 1 } },		// LdArg1
+	{ 0x99, { 0 }, 185, { 0			 } },		// Binary conc-list
+	{ 0x99, { 0 }, 184, { 0			 } },		// Binary apply
+	{ 0xBB, { 0 }, 186, { 0			 } },		// Ret
+};
+static struct ByteCodeSegmentStruct _bcs_33 = { &_compiledTables, _bc_33, 6, 6 };
+
+// test.sm:110
+static struct ByteCodeStruct _bc_34[] = {
+	{ 0x3C, { 0 }, 199, { .int32 = 0 } },		// NullLoc0
+	{ 0x40, { 0 }, 203, { .int32 = 0 } },		// LdArg0
+	{ 0x98, { 0 }, 203, { 0			 } },		// Unary count
+	{ 0x68, { 0 }, 204, { .int32 = 0 } },		// StpLoc0
+	{ 0x48, { 0 }, 207, { .int32 = 0 } },		// LdLoc0
+	{ 0x41, { 0 }, 207, { .int32 = 1 } },		// LdArg1
+	{ 0x99, { 0 }, 207, { 0			 } },		// Binary >=
+	{ 0xB2, { 0 }, 206, { .index = 5 } },		// Bf
+	{ 0x41, { 0 }, 208, { .int32 = 0 } },		// LdArg1
+	{ 0x40, { 0 }, 208, { .int32 = 0 } },		// LdArg0
+	{ 0x99, { 0 }, 208, { 0			 } },		// Binary apply
+	{ 0xB0, { 0 }, 206, { .index = 8 } },		// Jmp
+	{ 0x41, { 0 }, 210, { .int32 = 0 } },		// LdArg1
+	{ 0x40, { 0 }, 210, { .int32 = 0 } },		// LdArg0
+	{ 0x99, { 0 }, 210, { 0			 } },		// Binary bind-list
+	{ 0x41, { 0 }, 212, { .int32 = 1 } },		// LdArg1
+	{ 0x48, { 0 }, 212, { .int32 = 0 } },		// LdLoc0
+	{ 0x99, { 0 }, 212, { 0			 } },		// Binary -
+	{ 0x99, { 0 }, 209, { 0			 } },		// Binary curry
+	{ 0xBB, { 0 }, 213, { 0			 } },		// Ret
+};
+static struct ByteCodeSegmentStruct _bcs_34 = { &_compiledTables, _bc_34, 20, 20 };
+
+// test.sm:126
+static struct ByteCodeStruct _bc_35[] = {
+	{ 0x3C, { 0 }, 226, { .int32 = 0 } },		// NullLoc0
+	{ 0x40, { 0 }, 230, { .int32 = 0 } },		// LdArg0
+	{ 0x98, { 0 }, 230, { 0			 } },		// Unary count
+	{ 0x68, { 0 }, 231, { .int32 = 0 } },		// StpLoc0
+	{ 0x48, { 0 }, 234, { .int32 = 0 } },		// LdLoc0
+	{ 0x41, { 0 }, 234, { .int32 = 1 } },		// LdArg1
+	{ 0x99, { 0 }, 234, { 0			 } },		// Binary >=
+	{ 0xB2, { 0 }, 233, { .index = 5 } },		// Bf
+	{ 0x41, { 0 }, 235, { .int32 = 0 } },		// LdArg1
+	{ 0x40, { 0 }, 235, { .int32 = 0 } },		// LdArg0
+	{ 0x99, { 0 }, 235, { 0			 } },		// Binary apply
+	{ 0xB0, { 0 }, 233, { .index = 8 } },		// Jmp
+	{ 0x41, { 0 }, 237, { .int32 = 0 } },		// LdArg1
+	{ 0x40, { 0 }, 237, { .int32 = 0 } },		// LdArg0
+	{ 0x99, { 0 }, 237, { 0			 } },		// Binary bind-tail-list
+	{ 0x41, { 0 }, 239, { .int32 = 1 } },		// LdArg1
+	{ 0x48, { 0 }, 239, { .int32 = 0 } },		// LdLoc0
+	{ 0x99, { 0 }, 239, { 0			 } },		// Binary -
+	{ 0x99, { 0 }, 236, { 0			 } },		// Binary curry-tail
+	{ 0xBB, { 0 }, 240, { 0			 } },		// Ret
+};
+static struct ByteCodeSegmentStruct _bcs_35 = { &_compiledTables, _bc_35, 20, 20 };
+
+// test.sm:142
+static struct ByteCodeStruct _bc_36[] = {
+	{ 0x49, { 0 }, 253, { .int32 = 0 } },		// LdLoc1
+	{ 0xB2, { 0 }, 253, { .index = 8 } },		// Bf
+	{ 0x11, { 0 }, 257, { .boolean = 0 } },		// LdBool
+	{ 0x69, { 0 }, 257, { .int32 = 0 } },		// StpLoc1
+	{ 0x41, { 0 }, 262, { .int32 = 0 } },		// LdArg1
+	{ 0x40, { 0 }, 262, { .int32 = 0 } },		// LdArg0
+	{ 0x99, { 0 }, 262, { 0			 } },		// Binary apply
+	{ 0x59, { 0 }, 263, { .int32 = 1 } },		// StLoc1
+	{ 0xB0, { 0 }, 253, { .index = 2 } },		// Jmp
+	{ 0x49, { 0 }, 253, { .int32 = 1 } },		// LdLoc1
+	{ 0xBB, { 0 }, 264, { 0			 } },		// Ret
+};
+static struct ByteCodeSegmentStruct _bcs_36 = { &_compiledTables, _bc_36, 11, 11 };
+
+// test.sm:154
+static struct ByteCodeStruct _bc_37[] = {
+	{ 0x41, { 0 }, 269, { .int32 = 0 } },		// LdArg1
+	{ 0x40, { 0 }, 269, { .int32 = 0 } },		// LdArg0
+	{ 0x99, { 0 }, 269, { 0			 } },		// Binary apply
+	{ 0x8D, { 0 }, 270, { 0			 } },		// Not
+	{ 0xBB, { 0 }, 271, { 0			 } },		// Ret
+};
+static struct ByteCodeSegmentStruct _bcs_37 = { &_compiledTables, _bc_37, 5, 5 };
+
+// test.sm:159
+static struct ByteCodeStruct _bc_38[] = {
+	{ 0x41, { 0 }, 275, { .int32 = 0 } },		// LdArg1
+	{ 0x40, { 0 }, 276, { .int32 = 0 } },		// LdArg0
+	{ 0x98, { 0 }, 276, { 0			 } },		// Unary reverse
+	{ 0x99, { 0 }, 275, { 0			 } },		// Binary apply
+	{ 0xBB, { 0 }, 277, { 0			 } },		// Ret
+};
+static struct ByteCodeSegmentStruct _bcs_38 = { &_compiledTables, _bc_38, 5, 5 };
+
+// test.sm:168
+static struct ByteCodeStruct _bc_39[] = {
+	{ 0x41, { 0 }, 281, { .int32 = 0 } },		// LdArg1
+	{ 0x41, { 0 }, 282, { .int32 = 1 } },		// LdArg1
+	{ 0x88, { 0 }, 283, { .int32 = 35 } },		// NewFn
+	{ 0x99, { 0 }, 282, { 0			 } },		// Binary map
+	{ 0x99, { 0 }, 281, { 0			 } },		// Binary apply
+	{ 0xBB, { 0 }, 286, { 0			 } },		// Ret
+};
+static struct ByteCodeSegmentStruct _bcs_39 = { &_compiledTables, _bc_39, 6, 6 };
+
+// test.sm:168
+static struct ByteCodeStruct _bc_40[] = {
+	{ 0x41, { 0 }, 284, { .int32 = 0 } },		// LdArg1
+	{ 0x40, { 0 }, 284, { .int32 = 0 } },		// LdArg0
+	{ 0x74, { 0 }, 284, { 0			 } },		// LdMember
+	{ 0xBB, { 0 }, 285, { 0			 } },		// Ret
+};
+static struct ByteCodeSegmentStruct _bcs_40 = { &_compiledTables, _bc_40, 4, 4 };
+
+// test.sm:182
+static struct ByteCodeStruct _bc_41[] = {
+	{ 0x49, { 0 }, 305, { .int32 = 1 } },		// LdLoc1
+	{ 0xB2, { 0 }, 305, { .index = 6 } },		// Bf
+	{ 0x40, { 0 }, 309, { .int32 = 0 } },		// LdArg0
+	{ 0x69, { 0 }, 309, { .int32 = 0 } },		// StpLoc1
+	{ 0x11, { 0 }, 313, { .boolean = 0 } },		// LdBool
+	{ 0x59, { 0 }, 313, { .int32 = 1 } },		// StLoc1
+	{ 0xB0, { 0 }, 305, { .index = 6 } },		// Jmp
+	{ 0x41, { 0 }, 316, { .int32 = 0 } },		// LdArg1
+	{ 0x49, { 0 }, 317, { .int32 = 0 } },		// LdLoc1
+	{ 0x40, { 0 }, 318, { .int32 = 0 } },		// LdArg0
+	{ 0xB6, { 0 }, 315, { .index = 2 } },		// Call
+	{ 0x59, { 0 }, 319, { .int32 = 0 } },		// StLoc1
+	{ 0xBB, { 0 }, 320, { 0			 } },		// Ret
+};
+static struct ByteCodeSegmentStruct _bcs_41 = { &_compiledTables, _bc_41, 13, 13 };
+
+// test.sm:195
+static struct ByteCodeStruct _bc_42[] = {
+	{ 0x41, { 0 }, 335, { .int32 = 0 } },		// LdArg1
+	{ 0x40, { 0 }, 336, { .int32 = 0 } },		// LdArg0
+	{ 0x41, { 0 }, 336, { .int32 = 1 } },		// LdArg1
+	{ 0x99, { 0 }, 336, { 0			 } },		// Binary truncate-to!
+	{ 0x99, { 0 }, 335, { 0			 } },		// Binary apply
+	{ 0xBB, { 0 }, 337, { 0			 } },		// Ret
+};
+static struct ByteCodeSegmentStruct _bcs_42 = { &_compiledTables, _bc_42, 6, 6 };
+
+// test.sm:204
+static struct ByteCodeStruct _bc_43[] = {
+	{ 0x40, { 0 }, 352, { .int32 = 0 } },		// LdArg0
+	{ 0x41, { 0 }, 352, { .int32 = 1 } },		// LdArg1
+	{ 0x41, { 0 }, 353, { .int32 = 2 } },		// LdArg1
+	{ 0x9A, { 0 }, 352, { 0			 } },		// Met2 pad-to!
+	{ 0x05, { 0 }, 352, { 0			 } },		// Pop1
+	{ 0x41, { 0 }, 356, { .int32 = 0 } },		// LdArg1
+	{ 0x40, { 0 }, 356, { .int32 = 0 } },		// LdArg0
+	{ 0x99, { 0 }, 356, { 0			 } },		// Binary apply
+	{ 0xBB, { 0 }, 357, { 0			 } },		// Ret
+};
+static struct ByteCodeSegmentStruct _bcs_43 = { &_compiledTables, _bc_43, 9, 9 };
+
+// test.sm:215
+static struct ByteCodeStruct _bc_44[] = {
+	{ 0x40, { 0 }, 373, { .int32 = 0 } },		// LdArg0
+	{ 0x41, { 0 }, 373, { .int32 = 1 } },		// LdArg1
+	{ 0x99, { 0 }, 373, { 0			 } },		// Binary truncate-to!
+	{ 0x41, { 0 }, 374, { .int32 = 1 } },		// LdArg1
+	{ 0x41, { 0 }, 375, { .int32 = 2 } },		// LdArg1
+	{ 0x9A, { 0 }, 372, { 0			 } },		// Met2 pad-to!
+	{ 0x05, { 0 }, 372, { 0			 } },		// Pop1
+	{ 0x41, { 0 }, 378, { .int32 = 0 } },		// LdArg1
+	{ 0x40, { 0 }, 378, { .int32 = 0 } },		// LdArg0
+	{ 0x99, { 0 }, 378, { 0			 } },		// Binary apply
+	{ 0xBB, { 0 }, 379, { 0			 } },		// Ret
+};
+static struct ByteCodeSegmentStruct _bcs_44 = { &_compiledTables, _bc_44, 11, 11 };
+
+// test.sm:234
+static struct ByteCodeStruct _bc_45[] = {
+	{ 0x49, { 0 }, 389, { .int32 = 0 } },		// LdLoc1
+	{ 0x40, { 0 }, 389, { .int32 = 0 } },		// LdArg0
+	{ 0x99, { 0 }, 389, { 0			 } },		// Binary apply
+	{ 0xBB, { 0 }, 390, { 0			 } },		// Ret
+};
+static struct ByteCodeSegmentStruct _bcs_45 = { &_compiledTables, _bc_45, 4, 4 };
 
 //-----------------------------------------------------------------------------
 // Symbol registrations
@@ -622,6 +1527,26 @@ static void SetupSymbols(SymbolTable symbolTable)
 	_sym_Real64 = SymbolTable_GetSymbol(symbolTable, ((String)&_str_Real64Struct));
 	_sym_Float32 = SymbolTable_GetSymbol(symbolTable, ((String)&_str_Float32Struct));
 	_sym_Float64 = SymbolTable_GetSymbol(symbolTable, ((String)&_str_Float64Struct));
+	_sym_List = SymbolTable_GetSymbol(symbolTable, ((String)&_str_ListStruct));
+	_sym_truncate = SymbolTable_GetSymbol(symbolTable, ((String)&_str_truncateStruct));
+	_sym_list = SymbolTable_GetSymbol(symbolTable, ((String)&_str_listStruct));
+	_sym_n = SymbolTable_GetSymbol(symbolTable, ((String)&_str_nStruct));
+	_sym_count = SymbolTable_GetSymbol(symbolTable, ((String)&_str_countStruct));
+	_sym__2D = SymbolTable_GetSymbol(symbolTable, ((String)&_str__2DStruct));
+	_sym_truncate_2Dto = SymbolTable_GetSymbol(symbolTable, ((String)&_str_truncate_2DtoStruct));
+	_sym_truncate_21 = SymbolTable_GetSymbol(symbolTable, ((String)&_str_truncate_21Struct));
+	_sym_truncate_2Dto_21 = SymbolTable_GetSymbol(symbolTable, ((String)&_str_truncate_2Dto_21Struct));
+	_sym_set_2Dmember = SymbolTable_GetSymbol(symbolTable, ((String)&_str_set_2DmemberStruct));
+	_sym_index = SymbolTable_GetSymbol(symbolTable, ((String)&_str_indexStruct));
+	_sym_value = SymbolTable_GetSymbol(symbolTable, ((String)&_str_valueStruct));
+	_sym_integer64_2Drange = SymbolTable_GetSymbol(symbolTable, ((String)&_str_integer64_2DrangeStruct));
+	_sym__3E = SymbolTable_GetSymbol(symbolTable, ((String)&_str__3EStruct));
+	_sym__3C = SymbolTable_GetSymbol(symbolTable, ((String)&_str__3CStruct));
+	_sym_nth_2Dcell = SymbolTable_GetSymbol(symbolTable, ((String)&_str_nth_2DcellStruct));
+	_sym_a = SymbolTable_GetSymbol(symbolTable, ((String)&_str_aStruct));
+	_sym_d = SymbolTable_GetSymbol(symbolTable, ((String)&_str_dStruct));
+	_sym_integer64 = SymbolTable_GetSymbol(symbolTable, ((String)&_str_integer64Struct));
+	_sym_FAIL = SymbolTable_GetSymbol(symbolTable, ((String)&_str_FAILStruct));
 	_sym_Fn = SymbolTable_GetSymbol(symbolTable, ((String)&_str_FnStruct));
 	_sym__2B = SymbolTable_GetSymbol(symbolTable, ((String)&_str__2BStruct));
 	_sym_f = SymbolTable_GetSymbol(symbolTable, ((String)&_str_fStruct));
@@ -632,30 +1557,53 @@ static void SetupSymbols(SymbolTable symbolTable)
 	_sym_fn = SymbolTable_GetSymbol(symbolTable, ((String)&_str_fnStruct));
 	_sym_x = SymbolTable_GetSymbol(symbolTable, ((String)&_str_xStruct));
 	_sym_rest = SymbolTable_GetSymbol(symbolTable, ((String)&_str_restStruct));
+	_sym_bind_2Dlist = SymbolTable_GetSymbol(symbolTable, ((String)&_str_bind_2DlistStruct));
 	_sym_bind_2Dtail = SymbolTable_GetSymbol(symbolTable, ((String)&_str_bind_2DtailStruct));
+	_sym_bind_2Dtail_2Dlist = SymbolTable_GetSymbol(symbolTable, ((String)&_str_bind_2Dtail_2DlistStruct));
+	_sym_curry = SymbolTable_GetSymbol(symbolTable, ((String)&_str_curryStruct));
+	_sym_arity = SymbolTable_GetSymbol(symbolTable, ((String)&_str_arityStruct));
+	_sym_default = SymbolTable_GetSymbol(symbolTable, ((String)&_str_defaultStruct));
+	_sym_arguments = SymbolTable_GetSymbol(symbolTable, ((String)&_str_argumentsStruct));
+	_sym_curry_2Dtail = SymbolTable_GetSymbol(symbolTable, ((String)&_str_curry_2DtailStruct));
 	_sym_once = SymbolTable_GetSymbol(symbolTable, ((String)&_str_onceStruct));
-	_sym_Y = SymbolTable_GetSymbol(symbolTable, ((String)&_str_YStruct));
+	_sym_negate = SymbolTable_GetSymbol(symbolTable, ((String)&_str_negateStruct));
 	_sym_reverse_2Dargs = SymbolTable_GetSymbol(symbolTable, ((String)&_str_reverse_2DargsStruct));
+	_sym_reorder_2Dargs = SymbolTable_GetSymbol(symbolTable, ((String)&_str_reorder_2DargsStruct));
+	_sym_order = SymbolTable_GetSymbol(symbolTable, ((String)&_str_orderStruct));
 	_sym_over = SymbolTable_GetSymbol(symbolTable, ((String)&_str_overStruct));
 	_sym_enumerable = SymbolTable_GetSymbol(symbolTable, ((String)&_str_enumerableStruct));
 	_sym_initial_2Dvalue = SymbolTable_GetSymbol(symbolTable, ((String)&_str_initial_2DvalueStruct));
-	_sym_default = SymbolTable_GetSymbol(symbolTable, ((String)&_str_defaultStruct));
 	_sym_each = SymbolTable_GetSymbol(symbolTable, ((String)&_str_eachStruct));
+	_sym_max_2Dargs = SymbolTable_GetSymbol(symbolTable, ((String)&_str_max_2DargsStruct));
+	_sym_min_2Dargs = SymbolTable_GetSymbol(symbolTable, ((String)&_str_min_2DargsStruct));
+	_sym_padding = SymbolTable_GetSymbol(symbolTable, ((String)&_str_paddingStruct));
+	_sym_exact_2Dargs = SymbolTable_GetSymbol(symbolTable, ((String)&_str_exact_2DargsStruct));
+	_sym_Y = SymbolTable_GetSymbol(symbolTable, ((String)&_str_YStruct));
 	_sym_args = SymbolTable_GetSymbol(symbolTable, ((String)&_str_argsStruct));
 	_sym_apply = SymbolTable_GetSymbol(symbolTable, ((String)&_str_applyStruct));
 	_sym_y = SymbolTable_GetSymbol(symbolTable, ((String)&_str_yStruct));
 	_sym_conc_2Dlist = SymbolTable_GetSymbol(symbolTable, ((String)&_str_conc_2DlistStruct));
+	_sym__3E_3D = SymbolTable_GetSymbol(symbolTable, ((String)&_str__3E_3DStruct));
 	_sym_reverse = SymbolTable_GetSymbol(symbolTable, ((String)&_str_reverseStruct));
+	_sym_map = SymbolTable_GetSymbol(symbolTable, ((String)&_str_mapStruct));
+	_sym_pad_2Dto_21 = SymbolTable_GetSymbol(symbolTable, ((String)&_str_pad_2Dto_21Struct));
 
 	SmileSymbol_Init(((SmileSymbol)&_smileSym_self), _sym_self);
+	SmileSymbol_Init(((SmileSymbol)&_smileSym_list), _sym_list);
+	SmileSymbol_Init(((SmileSymbol)&_smileSym_n), _sym_n);
+	SmileSymbol_Init(((SmileSymbol)&_smileSym_index), _sym_index);
+	SmileSymbol_Init(((SmileSymbol)&_smileSym_value), _sym_value);
 	SmileSymbol_Init(((SmileSymbol)&_smileSym_f), _sym_f);
 	SmileSymbol_Init(((SmileSymbol)&_smileSym_g), _sym_g);
 	SmileSymbol_Init(((SmileSymbol)&_smileSym_fn), _sym_fn);
 	SmileSymbol_Init(((SmileSymbol)&_smileSym_x), _sym_x);
 	SmileSymbol_Init(((SmileSymbol)&_smileSym_rest), _sym_rest);
+	SmileSymbol_Init(((SmileSymbol)&_smileSym_arity), _sym_arity);
+	SmileSymbol_Init(((SmileSymbol)&_smileSym_default), _sym_default);
+	SmileSymbol_Init(((SmileSymbol)&_smileSym_order), _sym_order);
 	SmileSymbol_Init(((SmileSymbol)&_smileSym_enumerable), _sym_enumerable);
 	SmileSymbol_Init(((SmileSymbol)&_smileSym_initial_2Dvalue), _sym_initial_2Dvalue);
-	SmileSymbol_Init(((SmileSymbol)&_smileSym_default), _sym_default);
+	SmileSymbol_Init(((SmileSymbol)&_smileSym_padding), _sym_padding);
 	SmileSymbol_Init(((SmileSymbol)&_smileSym_args), _sym_args);
 	SmileSymbol_Init(((SmileSymbol)&_smileSym_y), _sym_y);
 }
@@ -675,16 +1623,73 @@ static void FixupBytecode(void)
 	_bc_7[2].u.symbol = _sym__2A;
 	_bc_8[2].u.symbol = _sym__2A;
 	_bc_9[2].u.symbol = _sym__2A;
-	_bc_16[10].u.symbol = _sym_each;
-	_bc_17[3].u.symbol = _sym_apply;
-	_bc_18[3].u.symbol = _sym_conc_2Dlist;
-	_bc_18[4].u.symbol = _sym_apply;
-	_bc_19[3].u.symbol = _sym_conc_2Dlist;
-	_bc_19[4].u.symbol = _sym_apply;
-	_bc_20[6].u.symbol = _sym_apply;
-	_bc_21[2].u.symbol = _sym_apply;
-	_bc_22[2].u.symbol = _sym_reverse;
-	_bc_22[3].u.symbol = _sym_apply;
+	_bc_10[2].u.symbol = _sym_count;
+	_bc_10[4].u.symbol = _sym__2D;
+	_bc_10[5].u.symbol = _sym_truncate_2Dto;
+	_bc_11[2].u.symbol = _sym_count;
+	_bc_11[4].u.symbol = _sym__2D;
+	_bc_11[5].u.symbol = _sym_truncate_2Dto_21;
+	_bc_12[2].u.symbol = _sym_integer64_2Drange;
+	_bc_12[17].u.symbol = _sym__3E;
+	_bc_12[28].u.symbol = _sym__3C;
+	_bc_12[32].u.symbol = _sym__3C;
+	_bc_12[40].u.symbol = _sym__2D;
+	_bc_12[44].u.symbol = _sym_nth_2Dcell;
+	_bc_12[53].u.symbol = _sym_a;
+	_bc_12[59].u.symbol = _sym_d;
+	_bc_12[62].u.symbol = _sym__2D;
+	_bc_12[66].u.symbol = _sym__3E;
+	_bc_12[71].u.symbol = _sym_list;
+	_bc_12[82].u.symbol = _sym_integer64;
+	_bc_12[88].u.symbol = _sym_nth_2Dcell;
+	_bc_12[97].u.symbol = _sym_a;
+	_bc_12[99].u.symbol = _sym_FAIL;
+	_bc_18[5].u.symbol = _sym_arguments;
+	_bc_18[6].u.symbol = _sym_count;
+	_bc_19[5].u.symbol = _sym_arguments;
+	_bc_19[6].u.symbol = _sym_count;
+	_bc_24[10].u.symbol = _sym_each;
+	_bc_25[5].u.symbol = _sym_arguments;
+	_bc_25[6].u.symbol = _sym_count;
+	_bc_26[5].u.symbol = _sym_arguments;
+	_bc_26[6].u.symbol = _sym_count;
+	_bc_27[5].u.symbol = _sym_arguments;
+	_bc_27[6].u.symbol = _sym_count;
+	_bc_29[3].u.symbol = _sym_apply;
+	_bc_30[3].u.symbol = _sym_conc_2Dlist;
+	_bc_30[4].u.symbol = _sym_apply;
+	_bc_31[3].u.symbol = _sym_conc_2Dlist;
+	_bc_31[4].u.symbol = _sym_apply;
+	_bc_32[3].u.symbol = _sym_conc_2Dlist;
+	_bc_32[4].u.symbol = _sym_apply;
+	_bc_33[3].u.symbol = _sym_conc_2Dlist;
+	_bc_33[4].u.symbol = _sym_apply;
+	_bc_34[2].u.symbol = _sym_count;
+	_bc_34[6].u.symbol = _sym__3E_3D;
+	_bc_34[10].u.symbol = _sym_apply;
+	_bc_34[14].u.symbol = _sym_bind_2Dlist;
+	_bc_34[17].u.symbol = _sym__2D;
+	_bc_34[18].u.symbol = _sym_curry;
+	_bc_35[2].u.symbol = _sym_count;
+	_bc_35[6].u.symbol = _sym__3E_3D;
+	_bc_35[10].u.symbol = _sym_apply;
+	_bc_35[14].u.symbol = _sym_bind_2Dtail_2Dlist;
+	_bc_35[17].u.symbol = _sym__2D;
+	_bc_35[18].u.symbol = _sym_curry_2Dtail;
+	_bc_36[6].u.symbol = _sym_apply;
+	_bc_37[2].u.symbol = _sym_apply;
+	_bc_38[2].u.symbol = _sym_reverse;
+	_bc_38[3].u.symbol = _sym_apply;
+	_bc_39[3].u.symbol = _sym_map;
+	_bc_39[4].u.symbol = _sym_apply;
+	_bc_42[3].u.symbol = _sym_truncate_2Dto_21;
+	_bc_42[4].u.symbol = _sym_apply;
+	_bc_43[3].u.symbol = _sym_pad_2Dto_21;
+	_bc_43[7].u.symbol = _sym_apply;
+	_bc_44[2].u.symbol = _sym_truncate_2Dto_21;
+	_bc_44[5].u.symbol = _sym_pad_2Dto_21;
+	_bc_44[9].u.symbol = _sym_apply;
+	_bc_45[2].u.symbol = _sym_apply;
 }
 
 //-----------------------------------------------------------------------------
@@ -894,9 +1899,9 @@ static void SetupData(Closure globalClosure)
 
 	SmileFunction_InitUserFunction(((SmileFunction)&_fn_9), ((UserFunctionInfo)&_ufn_9), globalClosure);
 
-	SmileList_Init(((SmileList)&_list_11), (SmileObject)((SmileSymbol)&_smileSym_g), (SmileObject)NullObject);
+	SmileList_Init(((SmileList)&_list_11), (SmileObject)((SmileSymbol)&_smileSym_n), (SmileObject)NullObject);
 
-	SmileList_Init(((SmileList)&_list_10), (SmileObject)((SmileSymbol)&_smileSym_f), (SmileObject)((SmileList)&_list_11));
+	SmileList_Init(((SmileList)&_list_10), (SmileObject)((SmileSymbol)&_smileSym_list), (SmileObject)((SmileList)&_list_11));
 
 	_ufn_10.parent = NULL;
 	_ufn_10.argList = ((SmileList)&_list_10);
@@ -909,20 +1914,16 @@ static void SetupData(Closure globalClosure)
 	ci->kind = 1;
 	ci->numVariables = 2;
 	ci->numArgs = 2;
-	ci->tempSize = 1;
+	ci->tempSize = 3;
 	ci->variableDictionary = NULL;
 	ci->variableNames = NULL;
 	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_10), ((SmileList)&_list_10), USER_ARG_BOOTSTRAP, NULL);
 
 	SmileFunction_InitUserFunction(((SmileFunction)&_fn_10), ((UserFunctionInfo)&_ufn_10), globalClosure);
 
-	SmileList_Init(((SmileList)&_list_15), (SmileObject)((SmileSymbol)&_smileSym_rest), (SmileObject)NullObject);
+	SmileList_Init(((SmileList)&_list_13), (SmileObject)((SmileSymbol)&_smileSym_n), (SmileObject)NullObject);
 
-	SmileList_Init(((SmileList)&_list_14), (SmileObject)((SmileSymbol)&_smileSym_x), (SmileObject)((SmileList)&_list_15));
-
-	SmileList_Init(((SmileList)&_list_13), (SmileObject)((SmileList)&_list_14), (SmileObject)NullObject);
-
-	SmileList_Init(((SmileList)&_list_12), (SmileObject)((SmileSymbol)&_smileSym_fn), (SmileObject)((SmileList)&_list_13));
+	SmileList_Init(((SmileList)&_list_12), (SmileObject)((SmileSymbol)&_smileSym_list), (SmileObject)((SmileList)&_list_13));
 
 	_ufn_11.parent = NULL;
 	_ufn_11.argList = ((SmileList)&_list_12);
@@ -935,27 +1936,47 @@ static void SetupData(Closure globalClosure)
 	ci->kind = 1;
 	ci->numVariables = 2;
 	ci->numArgs = 2;
-	ci->tempSize = 1;
+	ci->tempSize = 3;
 	ci->variableDictionary = NULL;
 	ci->variableNames = NULL;
 	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_11), ((SmileList)&_list_12), USER_ARG_BOOTSTRAP, NULL);
 
 	SmileFunction_InitUserFunction(((SmileFunction)&_fn_11), ((UserFunctionInfo)&_ufn_11), globalClosure);
 
-	SmileList_Init(((SmileList)&_list_19), (SmileObject)((SmileSymbol)&_smileSym_rest), (SmileObject)NullObject);
+	SmileList_Init(((SmileList)&_list_16), (SmileObject)((SmileSymbol)&_smileSym_value), (SmileObject)NullObject);
 
-	SmileList_Init(((SmileList)&_list_18), (SmileObject)((SmileSymbol)&_smileSym_x), (SmileObject)((SmileList)&_list_19));
+	SmileList_Init(((SmileList)&_list_15), (SmileObject)((SmileSymbol)&_smileSym_index), (SmileObject)((SmileList)&_list_16));
 
-	SmileList_Init(((SmileList)&_list_17), (SmileObject)((SmileList)&_list_18), (SmileObject)NullObject);
-
-	SmileList_Init(((SmileList)&_list_16), (SmileObject)((SmileSymbol)&_smileSym_fn), (SmileObject)((SmileList)&_list_17));
+	SmileList_Init(((SmileList)&_list_14), (SmileObject)((SmileSymbol)&_smileSym_list), (SmileObject)((SmileList)&_list_15));
 
 	_ufn_12.parent = NULL;
-	_ufn_12.argList = ((SmileList)&_list_16);
+	_ufn_12.argList = ((SmileList)&_list_14);
 	_ufn_12.position = NULL;
 	_ufn_12.body = NullObject;
 	_ufn_12.byteCodeSegment = ((ByteCodeSegment)&_bcs_12);
 	ci = (ClosureInfo)&_ufn_12.closureInfo;
+	ci->parent = NULL;
+	ci->global = NULL;
+	ci->kind = 1;
+	ci->numVariables = 9;
+	ci->numArgs = 3;
+	ci->tempSize = 2;
+	ci->variableDictionary = NULL;
+	ci->variableNames = NULL;
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_12), ((SmileList)&_list_14), USER_ARG_BOOTSTRAP, NULL);
+
+	SmileFunction_InitUserFunction(((SmileFunction)&_fn_12), ((UserFunctionInfo)&_ufn_12), globalClosure);
+
+	SmileList_Init(((SmileList)&_list_18), (SmileObject)((SmileSymbol)&_smileSym_g), (SmileObject)NullObject);
+
+	SmileList_Init(((SmileList)&_list_17), (SmileObject)((SmileSymbol)&_smileSym_f), (SmileObject)((SmileList)&_list_18));
+
+	_ufn_13.parent = NULL;
+	_ufn_13.argList = ((SmileList)&_list_17);
+	_ufn_13.position = NULL;
+	_ufn_13.body = NullObject;
+	_ufn_13.byteCodeSegment = ((ByteCodeSegment)&_bcs_13);
+	ci = (ClosureInfo)&_ufn_13.closureInfo;
 	ci->parent = NULL;
 	ci->global = NULL;
 	ci->kind = 1;
@@ -964,34 +1985,20 @@ static void SetupData(Closure globalClosure)
 	ci->tempSize = 1;
 	ci->variableDictionary = NULL;
 	ci->variableNames = NULL;
-	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_12), ((SmileList)&_list_16), USER_ARG_BOOTSTRAP, NULL);
-
-	SmileFunction_InitUserFunction(((SmileFunction)&_fn_12), ((UserFunctionInfo)&_ufn_12), globalClosure);
-
-	SmileList_Init(((SmileList)&_list_20), (SmileObject)((SmileSymbol)&_smileSym_fn), (SmileObject)NullObject);
-
-	_ufn_13.parent = NULL;
-	_ufn_13.argList = ((SmileList)&_list_20);
-	_ufn_13.position = NULL;
-	_ufn_13.body = NullObject;
-	_ufn_13.byteCodeSegment = ((ByteCodeSegment)&_bcs_13);
-	ci = (ClosureInfo)&_ufn_13.closureInfo;
-	ci->parent = NULL;
-	ci->global = NULL;
-	ci->kind = 1;
-	ci->numVariables = 3;
-	ci->numArgs = 1;
-	ci->tempSize = 1;
-	ci->variableDictionary = NULL;
-	ci->variableNames = NULL;
-	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_13), ((SmileList)&_list_20), USER_ARG_BOOTSTRAP, NULL);
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_13), ((SmileList)&_list_17), USER_ARG_BOOTSTRAP, NULL);
 
 	SmileFunction_InitUserFunction(((SmileFunction)&_fn_13), ((UserFunctionInfo)&_ufn_13), globalClosure);
 
-	SmileList_Init(((SmileList)&_list_21), (SmileObject)((SmileSymbol)&_smileSym_f), (SmileObject)NullObject);
+	SmileList_Init(((SmileList)&_list_22), (SmileObject)((SmileSymbol)&_smileSym_rest), (SmileObject)NullObject);
+
+	SmileList_Init(((SmileList)&_list_21), (SmileObject)((SmileSymbol)&_smileSym_x), (SmileObject)((SmileList)&_list_22));
+
+	SmileList_Init(((SmileList)&_list_20), (SmileObject)((SmileList)&_list_21), (SmileObject)NullObject);
+
+	SmileList_Init(((SmileList)&_list_19), (SmileObject)((SmileSymbol)&_smileSym_fn), (SmileObject)((SmileList)&_list_20));
 
 	_ufn_14.parent = NULL;
-	_ufn_14.argList = ((SmileList)&_list_21);
+	_ufn_14.argList = ((SmileList)&_list_19);
 	_ufn_14.position = NULL;
 	_ufn_14.body = NullObject;
 	_ufn_14.byteCodeSegment = ((ByteCodeSegment)&_bcs_14);
@@ -1000,22 +2007,168 @@ static void SetupData(Closure globalClosure)
 	ci->global = NULL;
 	ci->kind = 1;
 	ci->numVariables = 2;
-	ci->numArgs = 1;
-	ci->tempSize = 2;
+	ci->numArgs = 2;
+	ci->tempSize = 1;
 	ci->variableDictionary = NULL;
 	ci->variableNames = NULL;
-	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_14), ((SmileList)&_list_21), USER_ARG_BOOTSTRAP, NULL);
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_14), ((SmileList)&_list_19), USER_ARG_BOOTSTRAP, NULL);
 
 	SmileFunction_InitUserFunction(((SmileFunction)&_fn_14), ((UserFunctionInfo)&_ufn_14), globalClosure);
 
-	SmileList_Init(((SmileList)&_list_22), (SmileObject)((SmileSymbol)&_smileSym_fn), (SmileObject)NullObject);
+	SmileList_Init(((SmileList)&_list_24), (SmileObject)((SmileSymbol)&_smileSym_x), (SmileObject)NullObject);
+
+	SmileList_Init(((SmileList)&_list_23), (SmileObject)((SmileSymbol)&_smileSym_fn), (SmileObject)((SmileList)&_list_24));
 
 	_ufn_15.parent = NULL;
-	_ufn_15.argList = ((SmileList)&_list_22);
+	_ufn_15.argList = ((SmileList)&_list_23);
 	_ufn_15.position = NULL;
 	_ufn_15.body = NullObject;
 	_ufn_15.byteCodeSegment = ((ByteCodeSegment)&_bcs_15);
 	ci = (ClosureInfo)&_ufn_15.closureInfo;
+	ci->parent = NULL;
+	ci->global = NULL;
+	ci->kind = 1;
+	ci->numVariables = 2;
+	ci->numArgs = 2;
+	ci->tempSize = 1;
+	ci->variableDictionary = NULL;
+	ci->variableNames = NULL;
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_15), ((SmileList)&_list_23), USER_ARG_BOOTSTRAP, NULL);
+
+	SmileFunction_InitUserFunction(((SmileFunction)&_fn_15), ((UserFunctionInfo)&_ufn_15), globalClosure);
+
+	SmileList_Init(((SmileList)&_list_28), (SmileObject)((SmileSymbol)&_smileSym_rest), (SmileObject)NullObject);
+
+	SmileList_Init(((SmileList)&_list_27), (SmileObject)((SmileSymbol)&_smileSym_x), (SmileObject)((SmileList)&_list_28));
+
+	SmileList_Init(((SmileList)&_list_26), (SmileObject)((SmileList)&_list_27), (SmileObject)NullObject);
+
+	SmileList_Init(((SmileList)&_list_25), (SmileObject)((SmileSymbol)&_smileSym_fn), (SmileObject)((SmileList)&_list_26));
+
+	_ufn_16.parent = NULL;
+	_ufn_16.argList = ((SmileList)&_list_25);
+	_ufn_16.position = NULL;
+	_ufn_16.body = NullObject;
+	_ufn_16.byteCodeSegment = ((ByteCodeSegment)&_bcs_16);
+	ci = (ClosureInfo)&_ufn_16.closureInfo;
+	ci->parent = NULL;
+	ci->global = NULL;
+	ci->kind = 1;
+	ci->numVariables = 2;
+	ci->numArgs = 2;
+	ci->tempSize = 1;
+	ci->variableDictionary = NULL;
+	ci->variableNames = NULL;
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_16), ((SmileList)&_list_25), USER_ARG_BOOTSTRAP, NULL);
+
+	SmileFunction_InitUserFunction(((SmileFunction)&_fn_16), ((UserFunctionInfo)&_ufn_16), globalClosure);
+
+	SmileList_Init(((SmileList)&_list_30), (SmileObject)((SmileSymbol)&_smileSym_x), (SmileObject)NullObject);
+
+	SmileList_Init(((SmileList)&_list_29), (SmileObject)((SmileSymbol)&_smileSym_fn), (SmileObject)((SmileList)&_list_30));
+
+	_ufn_17.parent = NULL;
+	_ufn_17.argList = ((SmileList)&_list_29);
+	_ufn_17.position = NULL;
+	_ufn_17.body = NullObject;
+	_ufn_17.byteCodeSegment = ((ByteCodeSegment)&_bcs_17);
+	ci = (ClosureInfo)&_ufn_17.closureInfo;
+	ci->parent = NULL;
+	ci->global = NULL;
+	ci->kind = 1;
+	ci->numVariables = 2;
+	ci->numArgs = 2;
+	ci->tempSize = 1;
+	ci->variableDictionary = NULL;
+	ci->variableNames = NULL;
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_17), ((SmileList)&_list_29), USER_ARG_BOOTSTRAP, NULL);
+
+	SmileFunction_InitUserFunction(((SmileFunction)&_fn_17), ((UserFunctionInfo)&_ufn_17), globalClosure);
+
+	SmileList_Init(((SmileList)&_list_35), (SmileObject)NullObject, (SmileObject)NullObject);
+
+	SmileList_Init(((SmileList)&_list_34), (SmileObject)((SmileSymbol)&_smileSym_default), (SmileObject)((SmileList)&_list_35));
+
+	SmileList_Init(((SmileList)&_list_33), (SmileObject)((SmileSymbol)&_smileSym_arity), (SmileObject)((SmileList)&_list_34));
+
+	SmileList_Init(((SmileList)&_list_32), (SmileObject)((SmileList)&_list_33), (SmileObject)NullObject);
+
+	SmileList_Init(((SmileList)&_list_31), (SmileObject)((SmileSymbol)&_smileSym_fn), (SmileObject)((SmileList)&_list_32));
+
+	_ufn_18.parent = NULL;
+	_ufn_18.argList = ((SmileList)&_list_31);
+	_ufn_18.position = NULL;
+	_ufn_18.body = NullObject;
+	_ufn_18.byteCodeSegment = ((ByteCodeSegment)&_bcs_18);
+	ci = (ClosureInfo)&_ufn_18.closureInfo;
+	ci->parent = NULL;
+	ci->global = NULL;
+	ci->kind = 1;
+	ci->numVariables = 2;
+	ci->numArgs = 2;
+	ci->tempSize = 2;
+	ci->variableDictionary = NULL;
+	ci->variableNames = NULL;
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_18), ((SmileList)&_list_31), USER_ARG_BOOTSTRAP, NULL);
+
+	SmileFunction_InitUserFunction(((SmileFunction)&_fn_18), ((UserFunctionInfo)&_ufn_18), globalClosure);
+
+	SmileList_Init(((SmileList)&_list_40), (SmileObject)NullObject, (SmileObject)NullObject);
+
+	SmileList_Init(((SmileList)&_list_39), (SmileObject)((SmileSymbol)&_smileSym_default), (SmileObject)((SmileList)&_list_40));
+
+	SmileList_Init(((SmileList)&_list_38), (SmileObject)((SmileSymbol)&_smileSym_arity), (SmileObject)((SmileList)&_list_39));
+
+	SmileList_Init(((SmileList)&_list_37), (SmileObject)((SmileList)&_list_38), (SmileObject)NullObject);
+
+	SmileList_Init(((SmileList)&_list_36), (SmileObject)((SmileSymbol)&_smileSym_fn), (SmileObject)((SmileList)&_list_37));
+
+	_ufn_19.parent = NULL;
+	_ufn_19.argList = ((SmileList)&_list_36);
+	_ufn_19.position = NULL;
+	_ufn_19.body = NullObject;
+	_ufn_19.byteCodeSegment = ((ByteCodeSegment)&_bcs_19);
+	ci = (ClosureInfo)&_ufn_19.closureInfo;
+	ci->parent = NULL;
+	ci->global = NULL;
+	ci->kind = 1;
+	ci->numVariables = 2;
+	ci->numArgs = 2;
+	ci->tempSize = 2;
+	ci->variableDictionary = NULL;
+	ci->variableNames = NULL;
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_19), ((SmileList)&_list_36), USER_ARG_BOOTSTRAP, NULL);
+
+	SmileFunction_InitUserFunction(((SmileFunction)&_fn_19), ((UserFunctionInfo)&_ufn_19), globalClosure);
+
+	SmileList_Init(((SmileList)&_list_41), (SmileObject)((SmileSymbol)&_smileSym_fn), (SmileObject)NullObject);
+
+	_ufn_20.parent = NULL;
+	_ufn_20.argList = ((SmileList)&_list_41);
+	_ufn_20.position = NULL;
+	_ufn_20.body = NullObject;
+	_ufn_20.byteCodeSegment = ((ByteCodeSegment)&_bcs_20);
+	ci = (ClosureInfo)&_ufn_20.closureInfo;
+	ci->parent = NULL;
+	ci->global = NULL;
+	ci->kind = 1;
+	ci->numVariables = 3;
+	ci->numArgs = 1;
+	ci->tempSize = 1;
+	ci->variableDictionary = NULL;
+	ci->variableNames = NULL;
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_20), ((SmileList)&_list_41), USER_ARG_BOOTSTRAP, NULL);
+
+	SmileFunction_InitUserFunction(((SmileFunction)&_fn_20), ((UserFunctionInfo)&_ufn_20), globalClosure);
+
+	SmileList_Init(((SmileList)&_list_42), (SmileObject)((SmileSymbol)&_smileSym_fn), (SmileObject)NullObject);
+
+	_ufn_21.parent = NULL;
+	_ufn_21.argList = ((SmileList)&_list_42);
+	_ufn_21.position = NULL;
+	_ufn_21.body = NullObject;
+	_ufn_21.byteCodeSegment = ((ByteCodeSegment)&_bcs_21);
+	ci = (ClosureInfo)&_ufn_21.closureInfo;
 	ci->parent = NULL;
 	ci->global = NULL;
 	ci->kind = 1;
@@ -1024,28 +2177,70 @@ static void SetupData(Closure globalClosure)
 	ci->tempSize = 1;
 	ci->variableDictionary = NULL;
 	ci->variableNames = NULL;
-	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_15), ((SmileList)&_list_22), USER_ARG_BOOTSTRAP, NULL);
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_21), ((SmileList)&_list_42), USER_ARG_BOOTSTRAP, NULL);
 
-	SmileFunction_InitUserFunction(((SmileFunction)&_fn_15), ((UserFunctionInfo)&_ufn_15), globalClosure);
+	SmileFunction_InitUserFunction(((SmileFunction)&_fn_21), ((UserFunctionInfo)&_ufn_21), globalClosure);
 
-	SmileList_Init(((SmileList)&_list_28), (SmileObject)NullObject, (SmileObject)NullObject);
+	SmileList_Init(((SmileList)&_list_43), (SmileObject)((SmileSymbol)&_smileSym_fn), (SmileObject)NullObject);
 
-	SmileList_Init(((SmileList)&_list_27), (SmileObject)((SmileSymbol)&_smileSym_default), (SmileObject)((SmileList)&_list_28));
+	_ufn_22.parent = NULL;
+	_ufn_22.argList = ((SmileList)&_list_43);
+	_ufn_22.position = NULL;
+	_ufn_22.body = NullObject;
+	_ufn_22.byteCodeSegment = ((ByteCodeSegment)&_bcs_22);
+	ci = (ClosureInfo)&_ufn_22.closureInfo;
+	ci->parent = NULL;
+	ci->global = NULL;
+	ci->kind = 1;
+	ci->numVariables = 1;
+	ci->numArgs = 1;
+	ci->tempSize = 1;
+	ci->variableDictionary = NULL;
+	ci->variableNames = NULL;
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_22), ((SmileList)&_list_43), USER_ARG_BOOTSTRAP, NULL);
 
-	SmileList_Init(((SmileList)&_list_26), (SmileObject)((SmileSymbol)&_smileSym_initial_2Dvalue), (SmileObject)((SmileList)&_list_27));
+	SmileFunction_InitUserFunction(((SmileFunction)&_fn_22), ((UserFunctionInfo)&_ufn_22), globalClosure);
 
-	SmileList_Init(((SmileList)&_list_25), (SmileObject)((SmileList)&_list_26), (SmileObject)NullObject);
+	SmileList_Init(((SmileList)&_list_45), (SmileObject)((SmileSymbol)&_smileSym_order), (SmileObject)NullObject);
 
-	SmileList_Init(((SmileList)&_list_24), (SmileObject)((SmileSymbol)&_smileSym_enumerable), (SmileObject)((SmileList)&_list_25));
+	SmileList_Init(((SmileList)&_list_44), (SmileObject)((SmileSymbol)&_smileSym_fn), (SmileObject)((SmileList)&_list_45));
 
-	SmileList_Init(((SmileList)&_list_23), (SmileObject)((SmileSymbol)&_smileSym_fn), (SmileObject)((SmileList)&_list_24));
+	_ufn_23.parent = NULL;
+	_ufn_23.argList = ((SmileList)&_list_44);
+	_ufn_23.position = NULL;
+	_ufn_23.body = NullObject;
+	_ufn_23.byteCodeSegment = ((ByteCodeSegment)&_bcs_23);
+	ci = (ClosureInfo)&_ufn_23.closureInfo;
+	ci->parent = NULL;
+	ci->global = NULL;
+	ci->kind = 1;
+	ci->numVariables = 2;
+	ci->numArgs = 2;
+	ci->tempSize = 1;
+	ci->variableDictionary = NULL;
+	ci->variableNames = NULL;
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_23), ((SmileList)&_list_44), USER_ARG_BOOTSTRAP, NULL);
 
-	_ufn_16.parent = NULL;
-	_ufn_16.argList = ((SmileList)&_list_23);
-	_ufn_16.position = NULL;
-	_ufn_16.body = NullObject;
-	_ufn_16.byteCodeSegment = ((ByteCodeSegment)&_bcs_16);
-	ci = (ClosureInfo)&_ufn_16.closureInfo;
+	SmileFunction_InitUserFunction(((SmileFunction)&_fn_23), ((UserFunctionInfo)&_ufn_23), globalClosure);
+
+	SmileList_Init(((SmileList)&_list_51), (SmileObject)NullObject, (SmileObject)NullObject);
+
+	SmileList_Init(((SmileList)&_list_50), (SmileObject)((SmileSymbol)&_smileSym_default), (SmileObject)((SmileList)&_list_51));
+
+	SmileList_Init(((SmileList)&_list_49), (SmileObject)((SmileSymbol)&_smileSym_initial_2Dvalue), (SmileObject)((SmileList)&_list_50));
+
+	SmileList_Init(((SmileList)&_list_48), (SmileObject)((SmileList)&_list_49), (SmileObject)NullObject);
+
+	SmileList_Init(((SmileList)&_list_47), (SmileObject)((SmileSymbol)&_smileSym_enumerable), (SmileObject)((SmileList)&_list_48));
+
+	SmileList_Init(((SmileList)&_list_46), (SmileObject)((SmileSymbol)&_smileSym_fn), (SmileObject)((SmileList)&_list_47));
+
+	_ufn_24.parent = NULL;
+	_ufn_24.argList = ((SmileList)&_list_46);
+	_ufn_24.position = NULL;
+	_ufn_24.body = NullObject;
+	_ufn_24.byteCodeSegment = ((ByteCodeSegment)&_bcs_24);
+	ci = (ClosureInfo)&_ufn_24.closureInfo;
 	ci->parent = NULL;
 	ci->global = NULL;
 	ci->kind = 1;
@@ -1054,22 +2249,142 @@ static void SetupData(Closure globalClosure)
 	ci->tempSize = 2;
 	ci->variableDictionary = NULL;
 	ci->variableNames = NULL;
-	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_16), ((SmileList)&_list_23), USER_ARG_BOOTSTRAP, NULL);
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_24), ((SmileList)&_list_46), USER_ARG_BOOTSTRAP, NULL);
 
-	SmileFunction_InitUserFunction(((SmileFunction)&_fn_16), ((UserFunctionInfo)&_ufn_16), globalClosure);
+	SmileFunction_InitUserFunction(((SmileFunction)&_fn_24), ((UserFunctionInfo)&_ufn_24), globalClosure);
 
-	SmileList_Init(((SmileList)&_list_31), (SmileObject)((SmileSymbol)&_smileSym_rest), (SmileObject)NullObject);
+	SmileList_Init(((SmileList)&_list_56), (SmileObject)NullObject, (SmileObject)NullObject);
 
-	SmileList_Init(((SmileList)&_list_30), (SmileObject)((SmileSymbol)&_smileSym_args), (SmileObject)((SmileList)&_list_31));
+	SmileList_Init(((SmileList)&_list_55), (SmileObject)((SmileSymbol)&_smileSym_default), (SmileObject)((SmileList)&_list_56));
 
-	SmileList_Init(((SmileList)&_list_29), (SmileObject)((SmileList)&_list_30), (SmileObject)NullObject);
+	SmileList_Init(((SmileList)&_list_54), (SmileObject)((SmileSymbol)&_smileSym_n), (SmileObject)((SmileList)&_list_55));
 
-	_ufn_17.parent = ((UserFunctionInfo)&_ufn_10);
-	_ufn_17.argList = ((SmileList)&_list_29);
-	_ufn_17.position = NULL;
-	_ufn_17.body = NullObject;
-	_ufn_17.byteCodeSegment = ((ByteCodeSegment)&_bcs_17);
-	ci = (ClosureInfo)&_ufn_17.closureInfo;
+	SmileList_Init(((SmileList)&_list_53), (SmileObject)((SmileList)&_list_54), (SmileObject)NullObject);
+
+	SmileList_Init(((SmileList)&_list_52), (SmileObject)((SmileSymbol)&_smileSym_fn), (SmileObject)((SmileList)&_list_53));
+
+	_ufn_25.parent = NULL;
+	_ufn_25.argList = ((SmileList)&_list_52);
+	_ufn_25.position = NULL;
+	_ufn_25.body = NullObject;
+	_ufn_25.byteCodeSegment = ((ByteCodeSegment)&_bcs_25);
+	ci = (ClosureInfo)&_ufn_25.closureInfo;
+	ci->parent = NULL;
+	ci->global = NULL;
+	ci->kind = 1;
+	ci->numVariables = 2;
+	ci->numArgs = 2;
+	ci->tempSize = 2;
+	ci->variableDictionary = NULL;
+	ci->variableNames = NULL;
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_25), ((SmileList)&_list_52), USER_ARG_BOOTSTRAP, NULL);
+
+	SmileFunction_InitUserFunction(((SmileFunction)&_fn_25), ((UserFunctionInfo)&_ufn_25), globalClosure);
+
+	SmileList_Init(((SmileList)&_list_61), (SmileObject)NullObject, (SmileObject)NullObject);
+
+	SmileList_Init(((SmileList)&_list_60), (SmileObject)((SmileSymbol)&_smileSym_default), (SmileObject)((SmileList)&_list_61));
+
+	SmileList_Init(((SmileList)&_list_59), (SmileObject)((SmileSymbol)&_smileSym_n), (SmileObject)((SmileList)&_list_60));
+
+	SmileList_Init(((SmileList)&_list_65), (SmileObject)NullObject, (SmileObject)NullObject);
+
+	SmileList_Init(((SmileList)&_list_64), (SmileObject)((SmileSymbol)&_smileSym_default), (SmileObject)((SmileList)&_list_65));
+
+	SmileList_Init(((SmileList)&_list_63), (SmileObject)((SmileSymbol)&_smileSym_padding), (SmileObject)((SmileList)&_list_64));
+
+	SmileList_Init(((SmileList)&_list_62), (SmileObject)((SmileList)&_list_63), (SmileObject)NullObject);
+
+	SmileList_Init(((SmileList)&_list_58), (SmileObject)((SmileList)&_list_59), (SmileObject)((SmileList)&_list_62));
+
+	SmileList_Init(((SmileList)&_list_57), (SmileObject)((SmileSymbol)&_smileSym_fn), (SmileObject)((SmileList)&_list_58));
+
+	_ufn_26.parent = NULL;
+	_ufn_26.argList = ((SmileList)&_list_57);
+	_ufn_26.position = NULL;
+	_ufn_26.body = NullObject;
+	_ufn_26.byteCodeSegment = ((ByteCodeSegment)&_bcs_26);
+	ci = (ClosureInfo)&_ufn_26.closureInfo;
+	ci->parent = NULL;
+	ci->global = NULL;
+	ci->kind = 1;
+	ci->numVariables = 3;
+	ci->numArgs = 3;
+	ci->tempSize = 2;
+	ci->variableDictionary = NULL;
+	ci->variableNames = NULL;
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_26), ((SmileList)&_list_57), USER_ARG_BOOTSTRAP, NULL);
+
+	SmileFunction_InitUserFunction(((SmileFunction)&_fn_26), ((UserFunctionInfo)&_ufn_26), globalClosure);
+
+	SmileList_Init(((SmileList)&_list_70), (SmileObject)NullObject, (SmileObject)NullObject);
+
+	SmileList_Init(((SmileList)&_list_69), (SmileObject)((SmileSymbol)&_smileSym_default), (SmileObject)((SmileList)&_list_70));
+
+	SmileList_Init(((SmileList)&_list_68), (SmileObject)((SmileSymbol)&_smileSym_n), (SmileObject)((SmileList)&_list_69));
+
+	SmileList_Init(((SmileList)&_list_74), (SmileObject)NullObject, (SmileObject)NullObject);
+
+	SmileList_Init(((SmileList)&_list_73), (SmileObject)((SmileSymbol)&_smileSym_default), (SmileObject)((SmileList)&_list_74));
+
+	SmileList_Init(((SmileList)&_list_72), (SmileObject)((SmileSymbol)&_smileSym_padding), (SmileObject)((SmileList)&_list_73));
+
+	SmileList_Init(((SmileList)&_list_71), (SmileObject)((SmileList)&_list_72), (SmileObject)NullObject);
+
+	SmileList_Init(((SmileList)&_list_67), (SmileObject)((SmileList)&_list_68), (SmileObject)((SmileList)&_list_71));
+
+	SmileList_Init(((SmileList)&_list_66), (SmileObject)((SmileSymbol)&_smileSym_fn), (SmileObject)((SmileList)&_list_67));
+
+	_ufn_27.parent = NULL;
+	_ufn_27.argList = ((SmileList)&_list_66);
+	_ufn_27.position = NULL;
+	_ufn_27.body = NullObject;
+	_ufn_27.byteCodeSegment = ((ByteCodeSegment)&_bcs_27);
+	ci = (ClosureInfo)&_ufn_27.closureInfo;
+	ci->parent = NULL;
+	ci->global = NULL;
+	ci->kind = 1;
+	ci->numVariables = 3;
+	ci->numArgs = 3;
+	ci->tempSize = 2;
+	ci->variableDictionary = NULL;
+	ci->variableNames = NULL;
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_27), ((SmileList)&_list_66), USER_ARG_BOOTSTRAP, NULL);
+
+	SmileFunction_InitUserFunction(((SmileFunction)&_fn_27), ((UserFunctionInfo)&_ufn_27), globalClosure);
+
+	SmileList_Init(((SmileList)&_list_75), (SmileObject)((SmileSymbol)&_smileSym_f), (SmileObject)NullObject);
+
+	_ufn_28.parent = NULL;
+	_ufn_28.argList = ((SmileList)&_list_75);
+	_ufn_28.position = NULL;
+	_ufn_28.body = NullObject;
+	_ufn_28.byteCodeSegment = ((ByteCodeSegment)&_bcs_28);
+	ci = (ClosureInfo)&_ufn_28.closureInfo;
+	ci->parent = NULL;
+	ci->global = NULL;
+	ci->kind = 1;
+	ci->numVariables = 2;
+	ci->numArgs = 1;
+	ci->tempSize = 2;
+	ci->variableDictionary = NULL;
+	ci->variableNames = NULL;
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_28), ((SmileList)&_list_75), USER_ARG_BOOTSTRAP, NULL);
+
+	SmileFunction_InitUserFunction(((SmileFunction)&_fn_28), ((UserFunctionInfo)&_ufn_28), globalClosure);
+
+	SmileList_Init(((SmileList)&_list_78), (SmileObject)((SmileSymbol)&_smileSym_rest), (SmileObject)NullObject);
+
+	SmileList_Init(((SmileList)&_list_77), (SmileObject)((SmileSymbol)&_smileSym_args), (SmileObject)((SmileList)&_list_78));
+
+	SmileList_Init(((SmileList)&_list_76), (SmileObject)((SmileList)&_list_77), (SmileObject)NullObject);
+
+	_ufn_29.parent = ((UserFunctionInfo)&_ufn_13);
+	_ufn_29.argList = ((SmileList)&_list_76);
+	_ufn_29.position = NULL;
+	_ufn_29.body = NullObject;
+	_ufn_29.byteCodeSegment = ((ByteCodeSegment)&_bcs_29);
+	ci = (ClosureInfo)&_ufn_29.closureInfo;
 	((ClosureInfo)&_ci_0)->parent = NULL;
 	((ClosureInfo)&_ci_0)->global = NULL;
 	((ClosureInfo)&_ci_0)->kind = 1;
@@ -1086,20 +2401,20 @@ static void SetupData(Closure globalClosure)
 	ci->tempSize = 3;
 	ci->variableDictionary = NULL;
 	ci->variableNames = NULL;
-	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_17), ((SmileList)&_list_29), USER_ARG_BOOTSTRAP, NULL);
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_29), ((SmileList)&_list_76), USER_ARG_BOOTSTRAP, NULL);
 
-	SmileList_Init(((SmileList)&_list_34), (SmileObject)((SmileSymbol)&_smileSym_rest), (SmileObject)NullObject);
+	SmileList_Init(((SmileList)&_list_81), (SmileObject)((SmileSymbol)&_smileSym_rest), (SmileObject)NullObject);
 
-	SmileList_Init(((SmileList)&_list_33), (SmileObject)((SmileSymbol)&_smileSym_y), (SmileObject)((SmileList)&_list_34));
+	SmileList_Init(((SmileList)&_list_80), (SmileObject)((SmileSymbol)&_smileSym_y), (SmileObject)((SmileList)&_list_81));
 
-	SmileList_Init(((SmileList)&_list_32), (SmileObject)((SmileList)&_list_33), (SmileObject)NullObject);
+	SmileList_Init(((SmileList)&_list_79), (SmileObject)((SmileList)&_list_80), (SmileObject)NullObject);
 
-	_ufn_18.parent = ((UserFunctionInfo)&_ufn_11);
-	_ufn_18.argList = ((SmileList)&_list_32);
-	_ufn_18.position = NULL;
-	_ufn_18.body = NullObject;
-	_ufn_18.byteCodeSegment = ((ByteCodeSegment)&_bcs_18);
-	ci = (ClosureInfo)&_ufn_18.closureInfo;
+	_ufn_30.parent = ((UserFunctionInfo)&_ufn_14);
+	_ufn_30.argList = ((SmileList)&_list_79);
+	_ufn_30.position = NULL;
+	_ufn_30.body = NullObject;
+	_ufn_30.byteCodeSegment = ((ByteCodeSegment)&_bcs_30);
+	ci = (ClosureInfo)&_ufn_30.closureInfo;
 	((ClosureInfo)&_ci_1)->parent = NULL;
 	((ClosureInfo)&_ci_1)->global = NULL;
 	((ClosureInfo)&_ci_1)->kind = 1;
@@ -1116,20 +2431,20 @@ static void SetupData(Closure globalClosure)
 	ci->tempSize = 3;
 	ci->variableDictionary = NULL;
 	ci->variableNames = NULL;
-	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_18), ((SmileList)&_list_32), USER_ARG_BOOTSTRAP, NULL);
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_30), ((SmileList)&_list_79), USER_ARG_BOOTSTRAP, NULL);
 
-	SmileList_Init(((SmileList)&_list_37), (SmileObject)((SmileSymbol)&_smileSym_rest), (SmileObject)NullObject);
+	SmileList_Init(((SmileList)&_list_84), (SmileObject)((SmileSymbol)&_smileSym_rest), (SmileObject)NullObject);
 
-	SmileList_Init(((SmileList)&_list_36), (SmileObject)((SmileSymbol)&_smileSym_y), (SmileObject)((SmileList)&_list_37));
+	SmileList_Init(((SmileList)&_list_83), (SmileObject)((SmileSymbol)&_smileSym_y), (SmileObject)((SmileList)&_list_84));
 
-	SmileList_Init(((SmileList)&_list_35), (SmileObject)((SmileList)&_list_36), (SmileObject)NullObject);
+	SmileList_Init(((SmileList)&_list_82), (SmileObject)((SmileList)&_list_83), (SmileObject)NullObject);
 
-	_ufn_19.parent = ((UserFunctionInfo)&_ufn_12);
-	_ufn_19.argList = ((SmileList)&_list_35);
-	_ufn_19.position = NULL;
-	_ufn_19.body = NullObject;
-	_ufn_19.byteCodeSegment = ((ByteCodeSegment)&_bcs_19);
-	ci = (ClosureInfo)&_ufn_19.closureInfo;
+	_ufn_31.parent = ((UserFunctionInfo)&_ufn_15);
+	_ufn_31.argList = ((SmileList)&_list_82);
+	_ufn_31.position = NULL;
+	_ufn_31.body = NullObject;
+	_ufn_31.byteCodeSegment = ((ByteCodeSegment)&_bcs_31);
+	ci = (ClosureInfo)&_ufn_31.closureInfo;
 	((ClosureInfo)&_ci_2)->parent = NULL;
 	((ClosureInfo)&_ci_2)->global = NULL;
 	((ClosureInfo)&_ci_2)->kind = 1;
@@ -1146,25 +2461,25 @@ static void SetupData(Closure globalClosure)
 	ci->tempSize = 3;
 	ci->variableDictionary = NULL;
 	ci->variableNames = NULL;
-	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_19), ((SmileList)&_list_35), USER_ARG_BOOTSTRAP, NULL);
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_31), ((SmileList)&_list_82), USER_ARG_BOOTSTRAP, NULL);
 
-	SmileList_Init(((SmileList)&_list_40), (SmileObject)((SmileSymbol)&_smileSym_rest), (SmileObject)NullObject);
+	SmileList_Init(((SmileList)&_list_87), (SmileObject)((SmileSymbol)&_smileSym_rest), (SmileObject)NullObject);
 
-	SmileList_Init(((SmileList)&_list_39), (SmileObject)((SmileSymbol)&_smileSym_args), (SmileObject)((SmileList)&_list_40));
+	SmileList_Init(((SmileList)&_list_86), (SmileObject)((SmileSymbol)&_smileSym_y), (SmileObject)((SmileList)&_list_87));
 
-	SmileList_Init(((SmileList)&_list_38), (SmileObject)((SmileList)&_list_39), (SmileObject)NullObject);
+	SmileList_Init(((SmileList)&_list_85), (SmileObject)((SmileList)&_list_86), (SmileObject)NullObject);
 
-	_ufn_20.parent = ((UserFunctionInfo)&_ufn_13);
-	_ufn_20.argList = ((SmileList)&_list_38);
-	_ufn_20.position = NULL;
-	_ufn_20.body = NullObject;
-	_ufn_20.byteCodeSegment = ((ByteCodeSegment)&_bcs_20);
-	ci = (ClosureInfo)&_ufn_20.closureInfo;
+	_ufn_32.parent = ((UserFunctionInfo)&_ufn_16);
+	_ufn_32.argList = ((SmileList)&_list_85);
+	_ufn_32.position = NULL;
+	_ufn_32.body = NullObject;
+	_ufn_32.byteCodeSegment = ((ByteCodeSegment)&_bcs_32);
+	ci = (ClosureInfo)&_ufn_32.closureInfo;
 	((ClosureInfo)&_ci_3)->parent = NULL;
 	((ClosureInfo)&_ci_3)->global = NULL;
 	((ClosureInfo)&_ci_3)->kind = 1;
-	((ClosureInfo)&_ci_3)->numVariables = 3;
-	((ClosureInfo)&_ci_3)->numArgs = 1;
+	((ClosureInfo)&_ci_3)->numVariables = 2;
+	((ClosureInfo)&_ci_3)->numArgs = 2;
 	((ClosureInfo)&_ci_3)->tempSize = 1;
 	((ClosureInfo)&_ci_3)->variableDictionary = NULL;
 	((ClosureInfo)&_ci_3)->variableNames = NULL;
@@ -1173,29 +2488,29 @@ static void SetupData(Closure globalClosure)
 	ci->kind = 1;
 	ci->numVariables = 1;
 	ci->numArgs = 1;
-	ci->tempSize = 2;
+	ci->tempSize = 3;
 	ci->variableDictionary = NULL;
 	ci->variableNames = NULL;
-	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_20), ((SmileList)&_list_38), USER_ARG_BOOTSTRAP, NULL);
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_32), ((SmileList)&_list_85), USER_ARG_BOOTSTRAP, NULL);
 
-	SmileList_Init(((SmileList)&_list_43), (SmileObject)((SmileSymbol)&_smileSym_rest), (SmileObject)NullObject);
+	SmileList_Init(((SmileList)&_list_90), (SmileObject)((SmileSymbol)&_smileSym_rest), (SmileObject)NullObject);
 
-	SmileList_Init(((SmileList)&_list_42), (SmileObject)((SmileSymbol)&_smileSym_args), (SmileObject)((SmileList)&_list_43));
+	SmileList_Init(((SmileList)&_list_89), (SmileObject)((SmileSymbol)&_smileSym_y), (SmileObject)((SmileList)&_list_90));
 
-	SmileList_Init(((SmileList)&_list_41), (SmileObject)((SmileList)&_list_42), (SmileObject)NullObject);
+	SmileList_Init(((SmileList)&_list_88), (SmileObject)((SmileList)&_list_89), (SmileObject)NullObject);
 
-	_ufn_21.parent = ((UserFunctionInfo)&_ufn_14);
-	_ufn_21.argList = ((SmileList)&_list_41);
-	_ufn_21.position = NULL;
-	_ufn_21.body = NullObject;
-	_ufn_21.byteCodeSegment = ((ByteCodeSegment)&_bcs_21);
-	ci = (ClosureInfo)&_ufn_21.closureInfo;
+	_ufn_33.parent = ((UserFunctionInfo)&_ufn_17);
+	_ufn_33.argList = ((SmileList)&_list_88);
+	_ufn_33.position = NULL;
+	_ufn_33.body = NullObject;
+	_ufn_33.byteCodeSegment = ((ByteCodeSegment)&_bcs_33);
+	ci = (ClosureInfo)&_ufn_33.closureInfo;
 	((ClosureInfo)&_ci_4)->parent = NULL;
 	((ClosureInfo)&_ci_4)->global = NULL;
 	((ClosureInfo)&_ci_4)->kind = 1;
 	((ClosureInfo)&_ci_4)->numVariables = 2;
-	((ClosureInfo)&_ci_4)->numArgs = 1;
-	((ClosureInfo)&_ci_4)->tempSize = 2;
+	((ClosureInfo)&_ci_4)->numArgs = 2;
+	((ClosureInfo)&_ci_4)->tempSize = 1;
 	((ClosureInfo)&_ci_4)->variableDictionary = NULL;
 	((ClosureInfo)&_ci_4)->variableNames = NULL;
 	ci->parent = ((ClosureInfo)&_ci_4);
@@ -1203,32 +2518,92 @@ static void SetupData(Closure globalClosure)
 	ci->kind = 1;
 	ci->numVariables = 1;
 	ci->numArgs = 1;
-	ci->tempSize = 2;
+	ci->tempSize = 3;
 	ci->variableDictionary = NULL;
 	ci->variableNames = NULL;
-	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_21), ((SmileList)&_list_41), USER_ARG_BOOTSTRAP, NULL);
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_33), ((SmileList)&_list_88), USER_ARG_BOOTSTRAP, NULL);
 
-	SmileList_Init(((SmileList)&_list_46), (SmileObject)((SmileSymbol)&_smileSym_rest), (SmileObject)NullObject);
+	SmileList_Init(((SmileList)&_list_93), (SmileObject)((SmileSymbol)&_smileSym_rest), (SmileObject)NullObject);
 
-	SmileList_Init(((SmileList)&_list_45), (SmileObject)((SmileSymbol)&_smileSym_args), (SmileObject)((SmileList)&_list_46));
+	SmileList_Init(((SmileList)&_list_92), (SmileObject)((SmileSymbol)&_smileSym_args), (SmileObject)((SmileList)&_list_93));
 
-	SmileList_Init(((SmileList)&_list_44), (SmileObject)((SmileList)&_list_45), (SmileObject)NullObject);
+	SmileList_Init(((SmileList)&_list_91), (SmileObject)((SmileList)&_list_92), (SmileObject)NullObject);
 
-	_ufn_22.parent = ((UserFunctionInfo)&_ufn_15);
-	_ufn_22.argList = ((SmileList)&_list_44);
-	_ufn_22.position = NULL;
-	_ufn_22.body = NullObject;
-	_ufn_22.byteCodeSegment = ((ByteCodeSegment)&_bcs_22);
-	ci = (ClosureInfo)&_ufn_22.closureInfo;
+	_ufn_34.parent = ((UserFunctionInfo)&_ufn_18);
+	_ufn_34.argList = ((SmileList)&_list_91);
+	_ufn_34.position = NULL;
+	_ufn_34.body = NullObject;
+	_ufn_34.byteCodeSegment = ((ByteCodeSegment)&_bcs_34);
+	ci = (ClosureInfo)&_ufn_34.closureInfo;
 	((ClosureInfo)&_ci_5)->parent = NULL;
 	((ClosureInfo)&_ci_5)->global = NULL;
 	((ClosureInfo)&_ci_5)->kind = 1;
-	((ClosureInfo)&_ci_5)->numVariables = 1;
-	((ClosureInfo)&_ci_5)->numArgs = 1;
-	((ClosureInfo)&_ci_5)->tempSize = 1;
+	((ClosureInfo)&_ci_5)->numVariables = 2;
+	((ClosureInfo)&_ci_5)->numArgs = 2;
+	((ClosureInfo)&_ci_5)->tempSize = 2;
 	((ClosureInfo)&_ci_5)->variableDictionary = NULL;
 	((ClosureInfo)&_ci_5)->variableNames = NULL;
 	ci->parent = ((ClosureInfo)&_ci_5);
+	ci->global = NULL;
+	ci->kind = 1;
+	ci->numVariables = 2;
+	ci->numArgs = 1;
+	ci->tempSize = 3;
+	ci->variableDictionary = NULL;
+	ci->variableNames = NULL;
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_34), ((SmileList)&_list_91), USER_ARG_BOOTSTRAP, NULL);
+
+	SmileList_Init(((SmileList)&_list_96), (SmileObject)((SmileSymbol)&_smileSym_rest), (SmileObject)NullObject);
+
+	SmileList_Init(((SmileList)&_list_95), (SmileObject)((SmileSymbol)&_smileSym_args), (SmileObject)((SmileList)&_list_96));
+
+	SmileList_Init(((SmileList)&_list_94), (SmileObject)((SmileList)&_list_95), (SmileObject)NullObject);
+
+	_ufn_35.parent = ((UserFunctionInfo)&_ufn_19);
+	_ufn_35.argList = ((SmileList)&_list_94);
+	_ufn_35.position = NULL;
+	_ufn_35.body = NullObject;
+	_ufn_35.byteCodeSegment = ((ByteCodeSegment)&_bcs_35);
+	ci = (ClosureInfo)&_ufn_35.closureInfo;
+	((ClosureInfo)&_ci_6)->parent = NULL;
+	((ClosureInfo)&_ci_6)->global = NULL;
+	((ClosureInfo)&_ci_6)->kind = 1;
+	((ClosureInfo)&_ci_6)->numVariables = 2;
+	((ClosureInfo)&_ci_6)->numArgs = 2;
+	((ClosureInfo)&_ci_6)->tempSize = 2;
+	((ClosureInfo)&_ci_6)->variableDictionary = NULL;
+	((ClosureInfo)&_ci_6)->variableNames = NULL;
+	ci->parent = ((ClosureInfo)&_ci_6);
+	ci->global = NULL;
+	ci->kind = 1;
+	ci->numVariables = 2;
+	ci->numArgs = 1;
+	ci->tempSize = 3;
+	ci->variableDictionary = NULL;
+	ci->variableNames = NULL;
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_35), ((SmileList)&_list_94), USER_ARG_BOOTSTRAP, NULL);
+
+	SmileList_Init(((SmileList)&_list_99), (SmileObject)((SmileSymbol)&_smileSym_rest), (SmileObject)NullObject);
+
+	SmileList_Init(((SmileList)&_list_98), (SmileObject)((SmileSymbol)&_smileSym_args), (SmileObject)((SmileList)&_list_99));
+
+	SmileList_Init(((SmileList)&_list_97), (SmileObject)((SmileList)&_list_98), (SmileObject)NullObject);
+
+	_ufn_36.parent = ((UserFunctionInfo)&_ufn_20);
+	_ufn_36.argList = ((SmileList)&_list_97);
+	_ufn_36.position = NULL;
+	_ufn_36.body = NullObject;
+	_ufn_36.byteCodeSegment = ((ByteCodeSegment)&_bcs_36);
+	ci = (ClosureInfo)&_ufn_36.closureInfo;
+	((ClosureInfo)&_ci_7)->parent = NULL;
+	((ClosureInfo)&_ci_7)->global = NULL;
+	((ClosureInfo)&_ci_7)->kind = 1;
+	((ClosureInfo)&_ci_7)->numVariables = 3;
+	((ClosureInfo)&_ci_7)->numArgs = 1;
+	((ClosureInfo)&_ci_7)->tempSize = 1;
+	((ClosureInfo)&_ci_7)->variableDictionary = NULL;
+	((ClosureInfo)&_ci_7)->variableNames = NULL;
+	ci->parent = ((ClosureInfo)&_ci_7);
 	ci->global = NULL;
 	ci->kind = 1;
 	ci->numVariables = 1;
@@ -1236,25 +2611,89 @@ static void SetupData(Closure globalClosure)
 	ci->tempSize = 2;
 	ci->variableDictionary = NULL;
 	ci->variableNames = NULL;
-	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_22), ((SmileList)&_list_44), USER_ARG_BOOTSTRAP, NULL);
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_36), ((SmileList)&_list_97), USER_ARG_BOOTSTRAP, NULL);
 
-	SmileList_Init(((SmileList)&_list_47), (SmileObject)((SmileSymbol)&_smileSym_x), (SmileObject)NullObject);
+	SmileList_Init(((SmileList)&_list_102), (SmileObject)((SmileSymbol)&_smileSym_rest), (SmileObject)NullObject);
 
-	_ufn_23.parent = ((UserFunctionInfo)&_ufn_16);
-	_ufn_23.argList = ((SmileList)&_list_47);
-	_ufn_23.position = NULL;
-	_ufn_23.body = NullObject;
-	_ufn_23.byteCodeSegment = ((ByteCodeSegment)&_bcs_23);
-	ci = (ClosureInfo)&_ufn_23.closureInfo;
-	((ClosureInfo)&_ci_6)->parent = NULL;
-	((ClosureInfo)&_ci_6)->global = NULL;
-	((ClosureInfo)&_ci_6)->kind = 1;
-	((ClosureInfo)&_ci_6)->numVariables = 5;
-	((ClosureInfo)&_ci_6)->numArgs = 3;
-	((ClosureInfo)&_ci_6)->tempSize = 2;
-	((ClosureInfo)&_ci_6)->variableDictionary = NULL;
-	((ClosureInfo)&_ci_6)->variableNames = NULL;
-	ci->parent = ((ClosureInfo)&_ci_6);
+	SmileList_Init(((SmileList)&_list_101), (SmileObject)((SmileSymbol)&_smileSym_args), (SmileObject)((SmileList)&_list_102));
+
+	SmileList_Init(((SmileList)&_list_100), (SmileObject)((SmileList)&_list_101), (SmileObject)NullObject);
+
+	_ufn_37.parent = ((UserFunctionInfo)&_ufn_21);
+	_ufn_37.argList = ((SmileList)&_list_100);
+	_ufn_37.position = NULL;
+	_ufn_37.body = NullObject;
+	_ufn_37.byteCodeSegment = ((ByteCodeSegment)&_bcs_37);
+	ci = (ClosureInfo)&_ufn_37.closureInfo;
+	((ClosureInfo)&_ci_8)->parent = NULL;
+	((ClosureInfo)&_ci_8)->global = NULL;
+	((ClosureInfo)&_ci_8)->kind = 1;
+	((ClosureInfo)&_ci_8)->numVariables = 1;
+	((ClosureInfo)&_ci_8)->numArgs = 1;
+	((ClosureInfo)&_ci_8)->tempSize = 1;
+	((ClosureInfo)&_ci_8)->variableDictionary = NULL;
+	((ClosureInfo)&_ci_8)->variableNames = NULL;
+	ci->parent = ((ClosureInfo)&_ci_8);
+	ci->global = NULL;
+	ci->kind = 1;
+	ci->numVariables = 1;
+	ci->numArgs = 1;
+	ci->tempSize = 2;
+	ci->variableDictionary = NULL;
+	ci->variableNames = NULL;
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_37), ((SmileList)&_list_100), USER_ARG_BOOTSTRAP, NULL);
+
+	SmileList_Init(((SmileList)&_list_105), (SmileObject)((SmileSymbol)&_smileSym_rest), (SmileObject)NullObject);
+
+	SmileList_Init(((SmileList)&_list_104), (SmileObject)((SmileSymbol)&_smileSym_args), (SmileObject)((SmileList)&_list_105));
+
+	SmileList_Init(((SmileList)&_list_103), (SmileObject)((SmileList)&_list_104), (SmileObject)NullObject);
+
+	_ufn_38.parent = ((UserFunctionInfo)&_ufn_22);
+	_ufn_38.argList = ((SmileList)&_list_103);
+	_ufn_38.position = NULL;
+	_ufn_38.body = NullObject;
+	_ufn_38.byteCodeSegment = ((ByteCodeSegment)&_bcs_38);
+	ci = (ClosureInfo)&_ufn_38.closureInfo;
+	((ClosureInfo)&_ci_9)->parent = NULL;
+	((ClosureInfo)&_ci_9)->global = NULL;
+	((ClosureInfo)&_ci_9)->kind = 1;
+	((ClosureInfo)&_ci_9)->numVariables = 1;
+	((ClosureInfo)&_ci_9)->numArgs = 1;
+	((ClosureInfo)&_ci_9)->tempSize = 1;
+	((ClosureInfo)&_ci_9)->variableDictionary = NULL;
+	((ClosureInfo)&_ci_9)->variableNames = NULL;
+	ci->parent = ((ClosureInfo)&_ci_9);
+	ci->global = NULL;
+	ci->kind = 1;
+	ci->numVariables = 1;
+	ci->numArgs = 1;
+	ci->tempSize = 2;
+	ci->variableDictionary = NULL;
+	ci->variableNames = NULL;
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_38), ((SmileList)&_list_103), USER_ARG_BOOTSTRAP, NULL);
+
+	SmileList_Init(((SmileList)&_list_108), (SmileObject)((SmileSymbol)&_smileSym_rest), (SmileObject)NullObject);
+
+	SmileList_Init(((SmileList)&_list_107), (SmileObject)((SmileSymbol)&_smileSym_args), (SmileObject)((SmileList)&_list_108));
+
+	SmileList_Init(((SmileList)&_list_106), (SmileObject)((SmileList)&_list_107), (SmileObject)NullObject);
+
+	_ufn_39.parent = ((UserFunctionInfo)&_ufn_23);
+	_ufn_39.argList = ((SmileList)&_list_106);
+	_ufn_39.position = NULL;
+	_ufn_39.body = NullObject;
+	_ufn_39.byteCodeSegment = ((ByteCodeSegment)&_bcs_39);
+	ci = (ClosureInfo)&_ufn_39.closureInfo;
+	((ClosureInfo)&_ci_10)->parent = NULL;
+	((ClosureInfo)&_ci_10)->global = NULL;
+	((ClosureInfo)&_ci_10)->kind = 1;
+	((ClosureInfo)&_ci_10)->numVariables = 2;
+	((ClosureInfo)&_ci_10)->numArgs = 2;
+	((ClosureInfo)&_ci_10)->tempSize = 1;
+	((ClosureInfo)&_ci_10)->variableDictionary = NULL;
+	((ClosureInfo)&_ci_10)->variableNames = NULL;
+	ci->parent = ((ClosureInfo)&_ci_10);
 	ci->global = NULL;
 	ci->kind = 1;
 	ci->numVariables = 1;
@@ -1262,7 +2701,179 @@ static void SetupData(Closure globalClosure)
 	ci->tempSize = 3;
 	ci->variableDictionary = NULL;
 	ci->variableNames = NULL;
-	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_23), ((SmileList)&_list_47), USER_ARG_BOOTSTRAP, NULL);
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_39), ((SmileList)&_list_106), USER_ARG_BOOTSTRAP, NULL);
+
+	SmileList_Init(((SmileList)&_list_109), (SmileObject)((SmileSymbol)&_smileSym_index), (SmileObject)NullObject);
+
+	_ufn_40.parent = ((UserFunctionInfo)&_ufn_39);
+	_ufn_40.argList = ((SmileList)&_list_109);
+	_ufn_40.position = NULL;
+	_ufn_40.body = NullObject;
+	_ufn_40.byteCodeSegment = ((ByteCodeSegment)&_bcs_40);
+	ci = (ClosureInfo)&_ufn_40.closureInfo;
+	((ClosureInfo)&_ci_11)->parent = ((ClosureInfo)&_ci_10);
+	((ClosureInfo)&_ci_11)->global = NULL;
+	((ClosureInfo)&_ci_11)->kind = 1;
+	((ClosureInfo)&_ci_11)->numVariables = 1;
+	((ClosureInfo)&_ci_11)->numArgs = 1;
+	((ClosureInfo)&_ci_11)->tempSize = 3;
+	((ClosureInfo)&_ci_11)->variableDictionary = NULL;
+	((ClosureInfo)&_ci_11)->variableNames = NULL;
+	ci->parent = ((ClosureInfo)&_ci_11);
+	ci->global = NULL;
+	ci->kind = 1;
+	ci->numVariables = 1;
+	ci->numArgs = 1;
+	ci->tempSize = 2;
+	ci->variableDictionary = NULL;
+	ci->variableNames = NULL;
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_40), ((SmileList)&_list_109), USER_ARG_BOOTSTRAP, NULL);
+
+	SmileList_Init(((SmileList)&_list_110), (SmileObject)((SmileSymbol)&_smileSym_x), (SmileObject)NullObject);
+
+	_ufn_41.parent = ((UserFunctionInfo)&_ufn_24);
+	_ufn_41.argList = ((SmileList)&_list_110);
+	_ufn_41.position = NULL;
+	_ufn_41.body = NullObject;
+	_ufn_41.byteCodeSegment = ((ByteCodeSegment)&_bcs_41);
+	ci = (ClosureInfo)&_ufn_41.closureInfo;
+	((ClosureInfo)&_ci_12)->parent = NULL;
+	((ClosureInfo)&_ci_12)->global = NULL;
+	((ClosureInfo)&_ci_12)->kind = 1;
+	((ClosureInfo)&_ci_12)->numVariables = 5;
+	((ClosureInfo)&_ci_12)->numArgs = 3;
+	((ClosureInfo)&_ci_12)->tempSize = 2;
+	((ClosureInfo)&_ci_12)->variableDictionary = NULL;
+	((ClosureInfo)&_ci_12)->variableNames = NULL;
+	ci->parent = ((ClosureInfo)&_ci_12);
+	ci->global = NULL;
+	ci->kind = 1;
+	ci->numVariables = 1;
+	ci->numArgs = 1;
+	ci->tempSize = 3;
+	ci->variableDictionary = NULL;
+	ci->variableNames = NULL;
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_41), ((SmileList)&_list_110), USER_ARG_BOOTSTRAP, NULL);
+
+	SmileList_Init(((SmileList)&_list_113), (SmileObject)((SmileSymbol)&_smileSym_rest), (SmileObject)NullObject);
+
+	SmileList_Init(((SmileList)&_list_112), (SmileObject)((SmileSymbol)&_smileSym_args), (SmileObject)((SmileList)&_list_113));
+
+	SmileList_Init(((SmileList)&_list_111), (SmileObject)((SmileList)&_list_112), (SmileObject)NullObject);
+
+	_ufn_42.parent = ((UserFunctionInfo)&_ufn_25);
+	_ufn_42.argList = ((SmileList)&_list_111);
+	_ufn_42.position = NULL;
+	_ufn_42.body = NullObject;
+	_ufn_42.byteCodeSegment = ((ByteCodeSegment)&_bcs_42);
+	ci = (ClosureInfo)&_ufn_42.closureInfo;
+	((ClosureInfo)&_ci_13)->parent = NULL;
+	((ClosureInfo)&_ci_13)->global = NULL;
+	((ClosureInfo)&_ci_13)->kind = 1;
+	((ClosureInfo)&_ci_13)->numVariables = 2;
+	((ClosureInfo)&_ci_13)->numArgs = 2;
+	((ClosureInfo)&_ci_13)->tempSize = 2;
+	((ClosureInfo)&_ci_13)->variableDictionary = NULL;
+	((ClosureInfo)&_ci_13)->variableNames = NULL;
+	ci->parent = ((ClosureInfo)&_ci_13);
+	ci->global = NULL;
+	ci->kind = 1;
+	ci->numVariables = 1;
+	ci->numArgs = 1;
+	ci->tempSize = 3;
+	ci->variableDictionary = NULL;
+	ci->variableNames = NULL;
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_42), ((SmileList)&_list_111), USER_ARG_BOOTSTRAP, NULL);
+
+	SmileList_Init(((SmileList)&_list_116), (SmileObject)((SmileSymbol)&_smileSym_rest), (SmileObject)NullObject);
+
+	SmileList_Init(((SmileList)&_list_115), (SmileObject)((SmileSymbol)&_smileSym_args), (SmileObject)((SmileList)&_list_116));
+
+	SmileList_Init(((SmileList)&_list_114), (SmileObject)((SmileList)&_list_115), (SmileObject)NullObject);
+
+	_ufn_43.parent = ((UserFunctionInfo)&_ufn_26);
+	_ufn_43.argList = ((SmileList)&_list_114);
+	_ufn_43.position = NULL;
+	_ufn_43.body = NullObject;
+	_ufn_43.byteCodeSegment = ((ByteCodeSegment)&_bcs_43);
+	ci = (ClosureInfo)&_ufn_43.closureInfo;
+	((ClosureInfo)&_ci_14)->parent = NULL;
+	((ClosureInfo)&_ci_14)->global = NULL;
+	((ClosureInfo)&_ci_14)->kind = 1;
+	((ClosureInfo)&_ci_14)->numVariables = 3;
+	((ClosureInfo)&_ci_14)->numArgs = 3;
+	((ClosureInfo)&_ci_14)->tempSize = 2;
+	((ClosureInfo)&_ci_14)->variableDictionary = NULL;
+	((ClosureInfo)&_ci_14)->variableNames = NULL;
+	ci->parent = ((ClosureInfo)&_ci_14);
+	ci->global = NULL;
+	ci->kind = 1;
+	ci->numVariables = 1;
+	ci->numArgs = 1;
+	ci->tempSize = 3;
+	ci->variableDictionary = NULL;
+	ci->variableNames = NULL;
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_43), ((SmileList)&_list_114), USER_ARG_BOOTSTRAP, NULL);
+
+	SmileList_Init(((SmileList)&_list_119), (SmileObject)((SmileSymbol)&_smileSym_rest), (SmileObject)NullObject);
+
+	SmileList_Init(((SmileList)&_list_118), (SmileObject)((SmileSymbol)&_smileSym_args), (SmileObject)((SmileList)&_list_119));
+
+	SmileList_Init(((SmileList)&_list_117), (SmileObject)((SmileList)&_list_118), (SmileObject)NullObject);
+
+	_ufn_44.parent = ((UserFunctionInfo)&_ufn_27);
+	_ufn_44.argList = ((SmileList)&_list_117);
+	_ufn_44.position = NULL;
+	_ufn_44.body = NullObject;
+	_ufn_44.byteCodeSegment = ((ByteCodeSegment)&_bcs_44);
+	ci = (ClosureInfo)&_ufn_44.closureInfo;
+	((ClosureInfo)&_ci_15)->parent = NULL;
+	((ClosureInfo)&_ci_15)->global = NULL;
+	((ClosureInfo)&_ci_15)->kind = 1;
+	((ClosureInfo)&_ci_15)->numVariables = 3;
+	((ClosureInfo)&_ci_15)->numArgs = 3;
+	((ClosureInfo)&_ci_15)->tempSize = 2;
+	((ClosureInfo)&_ci_15)->variableDictionary = NULL;
+	((ClosureInfo)&_ci_15)->variableNames = NULL;
+	ci->parent = ((ClosureInfo)&_ci_15);
+	ci->global = NULL;
+	ci->kind = 1;
+	ci->numVariables = 1;
+	ci->numArgs = 1;
+	ci->tempSize = 3;
+	ci->variableDictionary = NULL;
+	ci->variableNames = NULL;
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_44), ((SmileList)&_list_117), USER_ARG_BOOTSTRAP, NULL);
+
+	SmileList_Init(((SmileList)&_list_122), (SmileObject)((SmileSymbol)&_smileSym_rest), (SmileObject)NullObject);
+
+	SmileList_Init(((SmileList)&_list_121), (SmileObject)((SmileSymbol)&_smileSym_args), (SmileObject)((SmileList)&_list_122));
+
+	SmileList_Init(((SmileList)&_list_120), (SmileObject)((SmileList)&_list_121), (SmileObject)NullObject);
+
+	_ufn_45.parent = ((UserFunctionInfo)&_ufn_28);
+	_ufn_45.argList = ((SmileList)&_list_120);
+	_ufn_45.position = NULL;
+	_ufn_45.body = NullObject;
+	_ufn_45.byteCodeSegment = ((ByteCodeSegment)&_bcs_45);
+	ci = (ClosureInfo)&_ufn_45.closureInfo;
+	((ClosureInfo)&_ci_16)->parent = NULL;
+	((ClosureInfo)&_ci_16)->global = NULL;
+	((ClosureInfo)&_ci_16)->kind = 1;
+	((ClosureInfo)&_ci_16)->numVariables = 2;
+	((ClosureInfo)&_ci_16)->numArgs = 1;
+	((ClosureInfo)&_ci_16)->tempSize = 2;
+	((ClosureInfo)&_ci_16)->variableDictionary = NULL;
+	((ClosureInfo)&_ci_16)->variableNames = NULL;
+	ci->parent = ((ClosureInfo)&_ci_16);
+	ci->global = NULL;
+	ci->kind = 1;
+	ci->numVariables = 1;
+	ci->numArgs = 1;
+	ci->tempSize = 2;
+	ci->variableDictionary = NULL;
+	ci->variableNames = NULL;
+	UserFunctionInfo_ApplyArgs(((UserFunctionInfo)&_ufn_45), ((SmileList)&_list_120), USER_ARG_BOOTSTRAP, NULL);
 
 }
 
@@ -1314,20 +2925,39 @@ static void Setup_Float64(ClosureInfo dest)
 	SMILE_VCALL2(target, setProperty, _sym_double, (SmileObject)(((SmileFunction)&_fn_9)));
 }
 
+static void Setup_List(ClosureInfo dest)
+{
+	Symbol targetSymbol = _sym_List;
+
+	SmileObject target = ClosureInfo_GetGlobalVariable(dest, targetSymbol);
+	SMILE_VCALL2(target, setProperty, _sym_truncate, (SmileObject)(((SmileFunction)&_fn_10)));
+	SMILE_VCALL2(target, setProperty, _sym_truncate_21, (SmileObject)(((SmileFunction)&_fn_11)));
+	SMILE_VCALL2(target, setProperty, _sym_set_2Dmember, (SmileObject)(((SmileFunction)&_fn_12)));
+}
+
 static void Setup_Fn(ClosureInfo dest)
 {
 	Symbol targetSymbol = _sym_Fn;
 
 	SmileObject target = ClosureInfo_GetGlobalVariable(dest, targetSymbol);
-	SMILE_VCALL2(target, setProperty, _sym__2B, (SmileObject)(((SmileFunction)&_fn_10)));
-	SMILE_VCALL2(target, setProperty, _sym_o, (SmileObject)(((SmileFunction)&_fn_10)));
-	SMILE_VCALL2(target, setProperty, _sym_compose, (SmileObject)(((SmileFunction)&_fn_10)));
-	SMILE_VCALL2(target, setProperty, _sym_bind, (SmileObject)(((SmileFunction)&_fn_11)));
-	SMILE_VCALL2(target, setProperty, _sym_bind_2Dtail, (SmileObject)(((SmileFunction)&_fn_12)));
-	SMILE_VCALL2(target, setProperty, _sym_once, (SmileObject)(((SmileFunction)&_fn_13)));
-	SMILE_VCALL2(target, setProperty, _sym_Y, (SmileObject)(((SmileFunction)&_fn_14)));
-	SMILE_VCALL2(target, setProperty, _sym_reverse_2Dargs, (SmileObject)(((SmileFunction)&_fn_15)));
-	SMILE_VCALL2(target, setProperty, _sym_over, (SmileObject)(((SmileFunction)&_fn_16)));
+	SMILE_VCALL2(target, setProperty, _sym__2B, (SmileObject)(((SmileFunction)&_fn_13)));
+	SMILE_VCALL2(target, setProperty, _sym_o, (SmileObject)(((SmileFunction)&_fn_13)));
+	SMILE_VCALL2(target, setProperty, _sym_compose, (SmileObject)(((SmileFunction)&_fn_13)));
+	SMILE_VCALL2(target, setProperty, _sym_bind, (SmileObject)(((SmileFunction)&_fn_14)));
+	SMILE_VCALL2(target, setProperty, _sym_bind_2Dlist, (SmileObject)(((SmileFunction)&_fn_15)));
+	SMILE_VCALL2(target, setProperty, _sym_bind_2Dtail, (SmileObject)(((SmileFunction)&_fn_16)));
+	SMILE_VCALL2(target, setProperty, _sym_bind_2Dtail_2Dlist, (SmileObject)(((SmileFunction)&_fn_17)));
+	SMILE_VCALL2(target, setProperty, _sym_curry, (SmileObject)(((SmileFunction)&_fn_18)));
+	SMILE_VCALL2(target, setProperty, _sym_curry_2Dtail, (SmileObject)(((SmileFunction)&_fn_19)));
+	SMILE_VCALL2(target, setProperty, _sym_once, (SmileObject)(((SmileFunction)&_fn_20)));
+	SMILE_VCALL2(target, setProperty, _sym_negate, (SmileObject)(((SmileFunction)&_fn_21)));
+	SMILE_VCALL2(target, setProperty, _sym_reverse_2Dargs, (SmileObject)(((SmileFunction)&_fn_22)));
+	SMILE_VCALL2(target, setProperty, _sym_reorder_2Dargs, (SmileObject)(((SmileFunction)&_fn_23)));
+	SMILE_VCALL2(target, setProperty, _sym_over, (SmileObject)(((SmileFunction)&_fn_24)));
+	SMILE_VCALL2(target, setProperty, _sym_max_2Dargs, (SmileObject)(((SmileFunction)&_fn_25)));
+	SMILE_VCALL2(target, setProperty, _sym_min_2Dargs, (SmileObject)(((SmileFunction)&_fn_26)));
+	SMILE_VCALL2(target, setProperty, _sym_exact_2Dargs, (SmileObject)(((SmileFunction)&_fn_27)));
+	SMILE_VCALL2(target, setProperty, _sym_Y, (SmileObject)(((SmileFunction)&_fn_28)));
 }
 
 //-----------------------------------------------------------------------------
@@ -1346,6 +2976,7 @@ void InitBootstrap(SymbolTable symbolTable, ClosureInfo dest)
 	Setup_Real64(dest);
 	Setup_Float32(dest);
 	Setup_Float64(dest);
+	Setup_List(dest);
 	Setup_Fn(dest);
 }
 

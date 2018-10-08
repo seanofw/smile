@@ -248,10 +248,17 @@ next:
 			byteCode++;
 			goto next;
 
+		case Op_BrkX:
+			STORE_REGISTERS;
+			SMILE_DEBUGGER_BREAK;
+			LOAD_REGISTERS;
+			byteCode++;
+			goto next;
+
 		case Op_Brk:
 			STORE_REGISTERS;
 			return False;
-		
+
 		//-------------------------------------------------------
 		// 10-17: Special load instructions
 		
@@ -1293,7 +1300,7 @@ next:
 			
 		//-------------------------------------------------------
 		
-		case Op_04: case Op_08: case Op_0C: case Op_0D: case Op_0E:
+		case Op_04: case Op_08: case Op_0C: case Op_0D:
 		case Op_1D: case Op_1E: case Op_1F:
 		case Op_20: case Op_25: case Op_26: case Op_27: case Op_28: case Op_2D: case Op_2E: case Op_2F:
 		case Op_33: case Op_37: case Op_3B: case Op_3F:

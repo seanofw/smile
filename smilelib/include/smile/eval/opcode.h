@@ -30,13 +30,13 @@ enum Opcode {
 	Op_Rep		= 0x0B,		// -n | int32			; Pop the top N+1 items, and then re-push what was previously the topmost item.
 	Op_0C		= 0x0C,		
 	Op_0D		= 0x0D,		
-	Op_0E		= 0x0E,		
-	Op_Brk		= 0x0F,		//  0					; Break into debugger immediately.
+	Op_BrkX		= 0x0E,		//  0					; Break into external (system-level) debugger immediately.
+	Op_Brk		= 0x0F,		//  0					; Break into Smile REPL debugger immediately.
 				
 	Op_LdNull	= 0x10,		// +1					; Push null onto the work stack.
 	Op_LdBool	= 0x11,		// +1 | bool			; Push the given boolean value onto the work stack.
 	Op_LdStr	= 0x12,		// +1 | int32			; Push the given string value onto the work stack (by string table index).
-	Op_LdSym	= 0x13,		// +1 | int32			; Push the given symbol value onto the work stack.
+	Op_LdSym	= 0x13,		// +1 | symbol			; Push the given symbol value onto the work stack.
 	Op_LdObj	= 0x14,		// +1 | int32			; Push the given literal object onto the work stack (by object table index).
 	Op_LdClos	= 0x15,		// +1					; Push the current-closure object onto the work stack.
 	Op_LdChar	= 0x16,		// +1 | char			; Push the given char value onto the work stack.
@@ -54,7 +54,7 @@ enum Opcode {
 	Op_LdR16	= 0x21,		// +1 | real16			; Push the given real16 value onto the work stack.
 	Op_LdR32	= 0x22,		// +1 | real32			; Push the given real32 value onto the work stack.
 	Op_LdR64	= 0x23,		// +1 | real64			; Push the given real64 value onto the work stack.
-	Op_LdR128	= 0x24,		// +1 | int32			; Push the given real128 value onto the work stack (by real128 table).
+	Op_LdR128	= 0x24,		// +1 | index			; Push the given real128 value onto the work stack (by real128 table).
 	Op_25		= 0x25,		
 	Op_26		= 0x26,		
 	Op_27		= 0x27,		
@@ -62,7 +62,7 @@ enum Opcode {
 	Op_LdF16	= 0x29,		// +1 | float16			; Push the given float16 value onto the work stack.
 	Op_LdF32	= 0x2A,		// +1 | float32			; Push the given float32 value onto the work stack.
 	Op_LdF64	= 0x2B,		// +1 | float64			; Push the given float64 value onto the work stack.
-	Op_LdF128	= 0x2C,		// +1 | int32			; Push the given float128 value onto the work stack (by real128 table).
+	Op_LdF128	= 0x2C,		// +1 | index			; Push the given float128 value onto the work stack (by real128 table).
 	Op_2D		= 0x2D,		
 	Op_2E		= 0x2E,		
 	Op_2F		= 0x2F,		
@@ -75,13 +75,13 @@ enum Opcode {
 	Op_StArg	= 0x35,		//  0 | int32, int32	; Store the value of the stack top into the given function's argument.  (function index, arg index)
 	Op_StpArg	= 0x36,		// -1 | int32, int32	; Store and pop the value of the stack top into the given function's argument.  (function index, arg index)
 	Op_37		= 0x37,
-	Op_LdX		= 0x38,		// +1 | int32			; Load the value of the given named variable (global) onto the work stack.
-	Op_StX		= 0x39,		//  0 | int32			; Store the value of the stack top into the given named variable (global).
-	Op_StpX		= 0x3A,		// -1 | int32			; Store and pop the value of the stack top into the given named variable (global).
+	Op_LdX		= 0x38,		// +1 | symbol			; Load the value of the given named variable (global) onto the work stack.
+	Op_StX		= 0x39,		//  0 | symbol			; Store the value of the stack top into the given named variable (global).
+	Op_StpX		= 0x3A,		// -1 | symbol			; Store and pop the value of the stack top into the given named variable (global).
 	Op_3B		= 0x3B,
 	Op_NullLoc0 = 0x3C,		//  0 | int32			; Store a null in the given local variable in scope 0
 	Op_NullArg0 = 0x3D,		//  0 | int32			; Store a null in the given argument in scope 0
-	Op_NullX	= 0x3E,		//  0 | int32			; Store a null in the given global named variable (global).
+	Op_NullX	= 0x3E,		//  0 | symbol			; Store a null in the given global named variable (global).
 	Op_3F		= 0x3F,
 
 	Op_LdArg0	= 0x40,		// +1 | int32			; Load the current function's argument (by index) onto the work stack.
@@ -135,9 +135,9 @@ enum Opcode {
 	Op_StpLoc6	= 0x6E,		//  -1 | int32			; etc.
 	Op_StpLoc7	= 0x6F,		//  -1 | int32			; etc.
 				
-	Op_LdProp	= 0x70,		// -1, +1 | int32		; Retrieve the given property from the object on the stack top, or null if there is no such property.
-	Op_StProp	= 0x71,		// -1 | int32			; Store the stack top into the given property of the given object.  Results in the stack top value.
-	Op_StpProp	= 0x72,		// -2 | int32			; Store and pop the stack top into the given property of the given object.
+	Op_LdProp	= 0x70,		// -1, +1 | symbol		; Retrieve the given property from the object on the stack top, or null if there is no such property.
+	Op_StProp	= 0x71,		// -1 | symbol			; Store the stack top into the given property of the given object.  Results in the stack top value.
+	Op_StpProp	= 0x72,		// -2 | symbol			; Store and pop the stack top into the given property of the given object.
 	Op_73		= 0x73,		
 	Op_LdMember	= 0x74,		// -2, +1				; Call 'get-member', passing member (top-1) and object (top-2).
 	Op_StMember	= 0x75,		// -3, +1				; Call 'set-member', passing value (top-1), member (top-2), and object (top-3).  Results in the stack top value.
@@ -178,14 +178,14 @@ enum Opcode {
 	Op_Call5	= 0x95,		// -6, +1				; Call the given function with 5 arguments.  Function and arguments must be on the stack.
 	Op_Call6	= 0x96,		// -7, +1				; Call the given function with 6 arguments.  Function and arguments must be on the stack.
 	Op_Call7	= 0x97,		// -8, +1				; Call the given function with 7 arguments.  Function and arguments must be on the stack.
-	Op_Met0		= 0x98,		// -1, +1 | int32		; Call the given named method with 0 arguments.  'This' object must be on the stack.
-	Op_Met1		= 0x99,		// -2, +1 | int32		; Call the given named method with 1 argument.  'This' object and arguments must be on the stack.
-	Op_Met2		= 0x9A,		// -3, +1 | int32		; Call the given named method with 2 arguments.  'This' object and arguments must be on the stack.
-	Op_Met3		= 0x9B,		// -4, +1 | int32		; Call the given named method with 3 arguments.  'This' object and arguments must be on the stack.
-	Op_Met4		= 0x9C,		// -5, +1 | int32		; Call the given named method with 4 arguments.  'This' object and arguments must be on the stack.
-	Op_Met5		= 0x9D,		// -6, +1 | int32		; Call the given named method with 5 arguments.  'This' object and arguments must be on the stack.
-	Op_Met6		= 0x9E,		// -7, +1 | int32		; Call the given named method with 6 arguments.  'This' object and arguments must be on the stack.
-	Op_Met7		= 0x9F,		// -8, +1 | int32		; Call the given named method with 7 arguments.  'This' object and arguments must be on the stack.
+	Op_Met0		= 0x98,		// -1, +1 | symbol		; Call the given named method with 0 arguments.  'This' object must be on the stack.
+	Op_Met1		= 0x99,		// -2, +1 | symbol		; Call the given named method with 1 argument.  'This' object and arguments must be on the stack.
+	Op_Met2		= 0x9A,		// -3, +1 | symbol		; Call the given named method with 2 arguments.  'This' object and arguments must be on the stack.
+	Op_Met3		= 0x9B,		// -4, +1 | symbol		; Call the given named method with 3 arguments.  'This' object and arguments must be on the stack.
+	Op_Met4		= 0x9C,		// -5, +1 | symbol		; Call the given named method with 4 arguments.  'This' object and arguments must be on the stack.
+	Op_Met5		= 0x9D,		// -6, +1 | symbol		; Call the given named method with 5 arguments.  'This' object and arguments must be on the stack.
+	Op_Met6		= 0x9E,		// -7, +1 | symbol		; Call the given named method with 6 arguments.  'This' object and arguments must be on the stack.
+	Op_Met7		= 0x9F,		// -8, +1 | symbol		; Call the given named method with 7 arguments.  'This' object and arguments must be on the stack.
 				
 	Op_TCall0	= 0xA0,		// -1, +1				; Jump to the given function with 0 arguments, as a tail-call.  Function must be on the stack.
 	Op_TCall1	= 0xA1,		// -2, +1				; Jump to the given function with 1 argument, as a tail-call.  Function and argument must be on the stack.
@@ -195,14 +195,14 @@ enum Opcode {
 	Op_TCall5	= 0xA5,		// -6, +1				; Jump to the given function with 5 arguments, as a tail-call.  Function and arguments must be on the stack.
 	Op_TCall6	= 0xA6,		// -7, +1				; Jump to the given function with 6 arguments, as a tail-call.  Function and arguments must be on the stack.
 	Op_TCall7	= 0xA7,		// -8, +1				; Jump to the given function with 7 arguments, as a tail-call.  Function and arguments must be on the stack.
-	Op_TMet0	= 0xA8,		// -1, +1 | int32		; Jump to the given named method with 0 arguments, as a tail-call.  'This' object must be on the stack.
-	Op_TMet1	= 0xA9,		// -2, +1 | int32		; Jump to the given named method with 1 argument, as a tail-call.  'This' object and arguments must be on the stack.
-	Op_TMet2	= 0xAA,		// -3, +1 | int32		; Jump to the given named method with 2 arguments, as a tail-call.  'This' object and arguments must be on the stack.
-	Op_TMet3	= 0xAB,		// -4, +1 | int32		; Jump to the given named method with 3 arguments, as a tail-call.  'This' object and arguments must be on the stack.
-	Op_TMet4	= 0xAC,		// -5, +1 | int32		; Jump to the given named method with 4 arguments, as a tail-call.  'This' object and arguments must be on the stack.
-	Op_TMet5	= 0xAD,		// -6, +1 | int32		; Jump to the given named method with 5 arguments, as a tail-call.  'This' object and arguments must be on the stack.
-	Op_TMet6	= 0xAE,		// -7, +1 | int32		; Jump to the given named method with 6 arguments, as a tail-call.  'This' object and arguments must be on the stack.
-	Op_TMet7	= 0xAF,		// -8, +1 | int32		; Jump to the given named method with 7 arguments, as a tail-call.  'This' object and arguments must be on the stack.
+	Op_TMet0	= 0xA8,		// -1, +1 | symbol		; Jump to the given named method with 0 arguments, as a tail-call.  'This' object must be on the stack.
+	Op_TMet1	= 0xA9,		// -2, +1 | symbol		; Jump to the given named method with 1 argument, as a tail-call.  'This' object and arguments must be on the stack.
+	Op_TMet2	= 0xAA,		// -3, +1 | symbol		; Jump to the given named method with 2 arguments, as a tail-call.  'This' object and arguments must be on the stack.
+	Op_TMet3	= 0xAB,		// -4, +1 | symbol		; Jump to the given named method with 3 arguments, as a tail-call.  'This' object and arguments must be on the stack.
+	Op_TMet4	= 0xAC,		// -5, +1 | symbol		; Jump to the given named method with 4 arguments, as a tail-call.  'This' object and arguments must be on the stack.
+	Op_TMet5	= 0xAD,		// -6, +1 | symbol		; Jump to the given named method with 5 arguments, as a tail-call.  'This' object and arguments must be on the stack.
+	Op_TMet6	= 0xAE,		// -7, +1 | symbol		; Jump to the given named method with 6 arguments, as a tail-call.  'This' object and arguments must be on the stack.
+	Op_TMet7	= 0xAF,		// -8, +1 | symbol		; Jump to the given named method with 7 arguments, as a tail-call.  'This' object and arguments must be on the stack.
 				
 	Op_Jmp		= 0xB0,		//  0 | label			; Unconditional jump to the given label.
 	Op_Bt		= 0xB1,		// -1 | label			; Branch to the given label if the stack top is truthy.
