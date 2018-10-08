@@ -325,6 +325,14 @@ ParseError Parser_ParseReturn(Parser parser, SmileObject *expr, Int modeFlags, L
 	ParseError parseError;
 	SmileObject result;
 
+	// Check for an extremely common mistake.
+	Lexer_Next(parser->lexer);
+	if (parser->lexer->token->isFirstContentOnLine) {
+		Parser_AddWarning(parser, lexerPosition,
+			"This 'return' expression returns the content on the next line, which may not be what you intended.");
+	}
+	Lexer_Unget(parser->lexer);
+
 	// Parse the result.
 	parseError = Parser_ParseOpEquals(parser, &result, (modeFlags & ~BINARYLINEBREAKS_MASK) | BINARYLINEBREAKS_ALLOWED);
 	if (parseError != NULL) {
