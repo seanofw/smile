@@ -769,15 +769,15 @@ next:
 		
 		case Op_Not:
 			arg = Closure_Pop(closure);
-			if (SMILE_KIND(arg.obj) == SMILE_KIND_BOOL) {
+			if (SMILE_KIND(arg.obj) == SMILE_KIND_UNBOXED_BOOL) {
+				Closure_PushUnboxedBool(closure, !arg.unboxed.b);
+			}
+			else {
 				Bool b;
 				STORE_REGISTERS;
 				b = !SMILE_VCALL1(arg.obj, toBool, arg.unboxed);
 				LOAD_REGISTERS;
 				Closure_PushUnboxedBool(closure, b);
-			}
-			else {
-				Closure_PushUnboxedBool(closure, !arg.unboxed.b);
 			}
 			byteCode++;
 			goto next;
