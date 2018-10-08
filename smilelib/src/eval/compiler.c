@@ -201,7 +201,7 @@ Int Compiler_AddNewSourceLocation(Compiler compiler, String filename, Int line, 
 		if (newSourceLocations == NULL)
 			Smile_Abort_OutOfMemory();
 		if (compiledTables->numSourceLocations > 0)
-			MemCpy(newSourceLocations, compiledTables->sourcelocations, sizeof(CompiledSourceLocation) * compiledTables->numSourceLocations);
+			MemCpy(newSourceLocations, compiledTables->sourcelocations, sizeof(struct CompiledSourceLocationStruct) * compiledTables->numSourceLocations);
 		compiledTables->sourcelocations = newSourceLocations;
 		compiledTables->maxSourceLocations = newMax;
 	}
