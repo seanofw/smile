@@ -1,0 +1,26 @@
+{
+    "name": "smile-lang",
+    "displayName": "Smile Language Service",
+    "description": "Syntax highlighting for the Smile Programming Language",
+    "version": "0.0.1",
+    "publisher": "seanofw",
+    "engines": {
+        "vscode": "^1.28.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [{
+            "id": "smile",
+            "aliases": ["Smile", "smile"],
+            "extensions": [".sm"],
+            "configuration": "./language-configuration.json"
+        }],
+        "grammars": [{
+            "language": "smile",
+            "scopeName": "source.smile",
+            "path": "./syntaxes/smile.tmLanguage.json"
+        }]
+    }
+}

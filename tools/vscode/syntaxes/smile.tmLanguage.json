@@ -1,0 +1,243 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+
+	"name": "Smile",
+	"scopeName": "source.smile",
+
+	"patterns": [
+        { "include": "#commentLine" },
+		{ "include": "#commentBlock" },
+		{ "include": "#dashComment" },
+		{ "include": "#hashbang" },
+		{ "include": "#keyword" },
+		{ "include": "#assign" },
+		{ "include": "#constant" },
+		{ "include": "#variable" },
+		{ "include": "#loanword" },
+		{ "include": "#function" },
+		{ "include": "#real" },
+		{ "include": "#integer" },
+		{ "include": "#symbol" },
+		{ "include": "#backtick" },
+		{ "include": "#stringDyn5" },
+		{ "include": "#stringDyn4" },
+		{ "include": "#stringDyn3" },
+		{ "include": "#stringEmpty" },
+		{ "include": "#stringDyn1" },
+		{ "include": "#stringRaw5" },
+		{ "include": "#stringRaw4" },
+		{ "include": "#stringRaw3" },
+		{ "include": "#stringRaw2" },
+		{ "include": "#charConstant" }
+	],
+
+	"repository": {
+
+		"commentLine": {
+			"patterns": [{
+				"name": "comment.line.double-slash",
+				"match": "\\/\\/.*"
+			}]
+		},
+		"commentBlock": {
+			"name": "comment.block",
+			"begin": "\\/\\*",
+			"end": "\\*\\/",
+			"patterns": []
+		},
+		"dashComment": {
+			"patterns": [{
+				"name": "comment.dash",
+				"match": "={5,}|-{5,}"
+			}]
+		},
+		"hashbang": {
+			"patterns": [{
+				"name": "comment.hashbang.smile",
+				"match": "#!.*"
+			}]
+		},
+
+		"keyword": {
+			"patterns": [{
+				"name": "keyword.control.smile",
+				"match": "\\b(if|unless|then|else|while|until|do|till|when|return|var|auto|const|try|catch|new|is|typeof|and|or|not)(?![$_!?~'\"-])\\b"
+			}]
+		},
+		
+		"assign": {
+			"patterns": [{
+				"name": "support.equals.smile",
+				"match": "=(?!=)"
+			}]
+		},
+
+		"constant": {
+			"patterns": [{
+				"name": "constant.language",
+				"match": "\\b(true|false|null)\\b"
+			}]
+		},
+
+		"variable": {
+			"patterns": [{
+				"name": "variable.alpha.smile",
+				"match": "\\b[a-z$_]([a-zA-Z0-9$_!?~'\"]|-[a-zA-Z0-9$_!?~'\"]|\\\\.)*"
+			}, {
+				"name": "support.type.smile",
+				"match": "\\b[A-Z]([a-zA-Z0-9$_!?~'\"]|-[a-zA-Z0-9$_!?~'\"]|\\\\.)*"
+			}, {
+				"name": "keyword.operator.smile",
+				"match": "\\b[~!?@%^&*=+<>/-]+"
+			}]
+		},
+
+		"real": {
+			"patterns": [{
+				"name": "constant.numeric.real",
+				"match": "\\b[0-9]*\\.[0-9]+[sStTlLfF]?\\b"
+			}, {
+				"name": "constant.numeric.real",
+				"match": "\\b[0-9]+\\.[0-9]*[sStTlLfF]?\\b"
+			}]		
+		},
+
+		"integer": {
+			"patterns": [{
+				"name": "constant.numeric.integer.decimal",
+				"match": "\\b[1-9][0-9]*[sStTxX]?\\b"
+			}, {
+				"name": "constant.numeric.integer.octal",
+				"match": "\\b0[0-7]*[sStTxX]?\\b"
+			}, {
+				"name": "constant.numeric.integer.hexadecimal",
+				"match": "\\b0[xX][0-9a-fA-F]+[sStTxX]?\\b"
+			}]
+		},
+
+		"function": {
+			"name": "support.function",
+			"begin": "\\|",
+			"end": "\\|",
+			"patterns": []
+		},
+
+		"loanword": {
+			"patterns": [{
+				"name": "keyword.other.loanword.smile",
+				"match": "#[a-zA-Z$_][a-zA-Z0-9_]*"
+			}, {
+				"name": "string.regexp.smile",
+				"match": "#\\/([^/]|\\.)+\\/[a-z]*"
+			}]
+		},
+
+		"symbol": {
+			"patterns": [{
+				"name": "string.symbol.smile",
+				"match": "`[a-zA-Z$_]([a-zA-Z0-9$_!?~'\"]|-[a-zA-Z0-9$_!?~'\"]|\\\\.)*"
+			}]
+		},
+
+		"backtick": {
+			"patterns": [{
+				"name": "keyword.control.backtick.smile",
+				"match": "`"
+			}]
+		},
+
+		"stringDyn5": {
+			"name": "string.interpolated.five.smile",
+			"begin": "\"\"\"\"\"",
+			"end": "\"\"\"\"\"",
+			"patterns": [{
+				"name": "constant.character.escape.smile",
+				"match": "\\\\[abefnrtv]|\\\\[0-9]{1,7}|\\\\u[0-9a-fA-F]{1,5}"
+			}, {
+				"name": "source.smile",
+				"begin": "\\{",
+				"end": "\\}",
+				"patterns": [{ "include": "$self" }]
+			}]
+		},
+		"stringDyn4": {
+			"name": "string.interpolated.four.smile",
+			"begin": "\"\"\"\"",
+			"end": "\"\"\"\"",
+			"patterns": [{
+				"name": "constant.character.escape.smile",
+				"match": "\\\\[abefnrtv]|\\\\[0-9]{1,7}|\\\\u[0-9a-fA-F]{1,5}"
+			}, {
+				"name": "source.smile",
+				"begin": "\\{",
+				"end": "\\}",
+				"patterns": [{ "include": "$self" }]
+			}]
+		},
+		"stringDyn3": {
+			"name": "string.interpolated.three.smile",
+			"begin": "\"\"\"",
+			"end": "\"\"\"",
+			"patterns": [{
+				"name": "constant.character.escape.smile",
+				"match": "\\\\[abefnrtv]|\\\\[0-9]{1,7}|\\\\u[0-9a-fA-F]{1,5}"
+			}, {
+				"name": "source.smile",
+				"begin": "\\{",
+				"end": "\\}",
+				"patterns": [{ "include": "$self" }]
+			}]
+		},
+		"stringEmpty": {
+			"patterns": [{
+				"name": "string.empty.smile",
+				"match": "\"\""
+			}]
+		},
+		"stringDyn1": {
+			"name": "string.interpolated.one.smile",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [{
+				"name": "constant.character.escape.smile",
+				"match": "\\\\[abefnrtv]|\\\\[0-9]{1,7}|\\\\u[0-9a-fA-F]{1,5}"
+			}, {
+				"name": "source.smile",
+				"begin": "\\{",
+				"end": "\\}",
+				"patterns": [{ "include": "$self" }]
+			}]
+		},
+		"stringRaw5": {
+			"name": "string.quoted.single.five.smile",
+			"begin": "'''''",
+			"end": "'''''",
+			"patterns": []
+		},
+		"stringRaw4": {
+			"name": "string.quoted.single.four.smile",
+			"begin": "''''",
+			"end": "''''",
+			"patterns": []
+		},
+		"stringRaw3": {
+			"name": "string.quoted.single.three.smile",
+			"begin": "'''",
+			"end": "'''",
+			"patterns": []
+		},
+		"stringRaw2": {
+			"name": "string.quoted.single.two.smile",
+			"begin": "''",
+			"end": "''",
+			"patterns": []
+		},
+
+		"charConstant": {
+			"patterns": [{
+				"name": "constant.character.escape.smile",
+				"match": "'(.|\\\\[abefnrtv]|\\\\[0-9]{1,7}|\\\\u[0-9a-fA-F]{1,5})'"
+			}]
+		}
+	}
+}
