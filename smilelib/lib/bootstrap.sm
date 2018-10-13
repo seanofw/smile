@@ -1,0 +1,925 @@
+
+-----------------------------------------------------------------------------------------
+// Object extensions
+-----------------------------------------------------------------------------------------
+
+Object.null? = |obj| obj === null
+Object.list? = |obj| obj === null or typeof obj === `list
+
+Object.coalesce = |args...|
+	args first |x| x !== null
+
+Object.number? = |obj| `[integer64 real64 float64 byte integer32 integer16 real32 float32] contains typeof obj
+Object.int? = |obj| `[integer64 byte integer32 integer16] contains typeof obj
+Object.byte? = |obj| typeof obj === `byte
+Object.int16? = |obj| typeof obj === `integer16
+Object.int32? = |obj| typeof obj === `integer32
+Object.int64? = |obj| typeof obj === `integer64
+Object.real? = |obj| typeof obj === `real64 or typeof obj === `real32
+Object.real32? = |obj| typeof obj === `real32
+Object.real64? = |obj| typeof obj === `real64
+Object.float? = |obj| typeof obj === `float64 or typeof obj === `float32
+Object.float32? = |obj| typeof obj === `float32
+Object.float64? = |obj| typeof obj === `float64
+Object.bool? = |obj| typeof obj === `bool
+Object.char? = |obj| typeof obj === `char
+Object.uni? = |obj| typeof obj === `uni
+Object.string? = |obj| typeof obj === `string
+Object.symbol? = |obj| typeof obj === `symbol
+Object.fn? = |obj| typeof obj === `fn
+Object.handle? = |obj| typeof obj === `handle
+
+Object.regex? = |obj| typeof obj === `handle and handle-kind obj === `regex
+
+Object.one? = |obj| false
+Object.zero? = |obj| false
+Object.odd? = |obj| false
+Object.even? = |obj| false
+Object.empty? = |obj| true
+
+Object.true? = |obj| obj === true
+Object.false? = |obj| obj === false
+Object.truthy? = |obj| obj === true or bool obj
+Object.falsy? = |obj| obj === false or not bool obj
+
+// Iterate over each property of the given object, passing it to the given function 'func', which
+// will be called as [func name value index obj] (each parameter is optional).  Returns the object
+// itself.
+Object.each-property = |obj func extra=[]| {
+	if obj === Object then {
+		obj = func
+		func = extra
+	}
+	[Object.property-names obj] each |name index| [func.call~ name [Object.get-property obj name] index]
+	obj
+}
+
+// Iterate over each property of the given object, passing it to the given function 'func', which
+// will be called as [func name value index obj] (each parameter is optional).  The return value
+// of the function will be used to create a new list of values, which will be returned.
+Object.map-properties = |obj func extra=[]| {
+	if obj === Object then {
+		obj = func
+		func = extra
+	}
+	[Object.property-names obj] map |name index| [func.call~ name [Object.get-property obj name] index obj]
+}
+
+// Get a list of the property values of the given object, unordered.
+Object.property-values = |obj extra=[]|
+	[Object.map-properties (if obj === Object then extra else obj) |name value| value]
+	
+// Get each property of the given object as an association list (as [key value] pairs), unordered.
+Object.properties = |obj extra=[]|
+	[Object.map-properties (if obj === Object then extra else obj) |name value| List of name, value]
+
+-----------------------------------------------------------------------------------------
+// Numeric extensions
+-----------------------------------------------------------------------------------------
+
+Real32.nth-root = |x y| x ^ (1.t / y)
+Real64.nth-root = |x y| x ^ (1. / y)
+Float32.nth-root = |x y| x ^ (1.tf / y)
+Float64.nth-root = |x y| x ^ (1.f / y)
+
+-----------------------------------------------------------------------------------------
+// Enumerables: Basic operations that build on 'each'
+-----------------------------------------------------------------------------------------
+
+Enumerable.int = |collection| count collection
+Enumerable.bool = |collection| any? collection
+Enumerable.string = |collection| "Enumerable"
+
+// Transform this enumerable through the given predicate, and return a List.
+// Inheritors (like Array) may choose to return an alternate enumerable type, but
+// by providing this in the base Enumerable, every enumerable object (which must
+// have an 'each' method) can thus support map transformations in some way.
+Enumerable.map = |collection pred replacement=[]| {
+
+	if replacement !== null then {
+		// Replacement provided, so it's a search-and-substitute operation.
+		oldvalue = pred
+		pred = |x| if x == oldvalue then replacement else x
+	}
+
+	head = tail = null
+	index = 0
+
+	collection each |item| {
+		item = [pred.call~ item index collection]
+		index += 1
+		if tail then tail = tail.d = List cons item, null
+		else tail = head = List cons item, null
+	}
+
+	head
+}
+
+Enumerable.replace = Enumerable.map
+
+// This function knows how to aggregate data in a set (like summing, for example).
+Enumerable.reduce = |collection fn accumulator=[]| {
+	index = 0
+	if accumulator === null then {
+		collection each |item| {
+			if index === 0 then accumulator = item
+			else accumulator = [fn.call~ accumulator item index collection]
+			index += 1
+		}
+	}
+	else {
+		collection each |item| {
+			accumulator = [fn.call~ accumulator item index collection]
+			index += 1
+		}
+	}
+	accumulator
+}
+
+// Remove items that do not match the given predicate, and return a List of the rest.
+// Inheritors (like Array) may choose to return an alternate enumerable type, but
+// by providing this in the base Enumerable, every enumerable object can support
+// filtering transformations in some way.
+Enumerable.where = |collection pred| {
+
+	if typeof pred !== `fn then {
+		searchvalue = pred
+		pred = |item| item == searchvalue
+	}
+
+	head = tail = null
+	index = 0
+
+	collection each |item| {
+		if [pred.call~ item index collection] then {
+			if tail then tail = tail.d = List cons item, null
+			else tail = head = List cons item, null
+		}
+		index += 1
+	}
+
+	head
+}
+
+// Compact removes all falsy values from the collection.
+Enumerable.compact = |collection| collection where |x| x
+
+// The opposite of where, this removes items from the collection that match the given
+// predicate (or the given item).
+Enumerable.without = |collection pred| {
+	if typeof pred !== `fn then {
+		searchvalue = pred
+		pred = |item| not (item == searchvalue)
+	}
+	else {
+		user-pred = pred
+		pred = |item index collection| not bool [user-pred.call~ item index collection]
+	}
+	collection where pred
+}
+
+// Count all items, or count those that match a predicate if one is given, or count
+// those that match the given value.
+Enumerable.count = |collection pred=[]| {
+
+	total = 0
+
+	if pred === null then {
+		collection each |item| total += 1
+	}
+	else {
+		if typeof pred !== `fn then {
+			searchvalue = pred
+			pred = |item| item == searchvalue
+		}
+
+		index = 0
+
+		collection each |item| {
+			if [pred.call~ item index collection] then total += 1
+			index += 1
+		}
+	}
+
+	total
+}
+
+// Find the minimum item of a collection, optionally by projecting each item first.
+// If multiple items have identical minimum values, the first item with the minimum
+// value will be the one that is returned.
+Enumerable.min = |collection proj=[]| {
+	if proj then {
+		best-value = null
+		best-item = null
+		first? = true
+		collection each |item| {
+			if first? or (value = [proj item]) < best-value then {
+				best-value = value
+				best-item = item
+			}
+			first? = false
+		}
+		best-item
+	}
+	else {
+		best-value = null
+		first? = true
+		collection each |value| {
+			if first? or value < best-value then
+				best-value = value
+			first? = false
+		}
+		best-value
+	}
+}
+
+// Find the maximum item of a collection, optionally by projecting each item first.
+// If multiple items have identical maximum values, the first item with the maximum
+// value will be the one that is returned.
+Enumerable.max = |collection proj=[]| {
+	if proj then {
+		best-value = null
+		best-item = null
+		first? = true
+		collection each |item| {
+			if first? or (value = [proj item]) > best-value then {
+				best-value = value
+				best-item = item
+			}
+			first? = false
+		}
+		best-item
+	}
+	else {
+		best-value = null
+		first? = true
+		collection each |value| {
+			if first? or value > best-value then
+				best-value = value
+			first? = false
+		}
+		best-value
+	}
+}
+
+// Find the range of a collection, which is simply its maximum and minimum values, optionally projected.
+// This finds the range by taking only one iteration through the collection.
+Enumerable.range = |collection proj=[]| {
+	min-value = null
+	max-value = null
+	first? = true
+	if proj then {
+		collection each |item| {
+			value = [proj item]
+			if first? then {
+				min-value = max-value = value
+				first? = false
+			}
+			else {
+				if value < min-value then min-value = value
+				if value > max-value then max-value = value
+			}
+		}
+	}
+	else {
+		collection each |value| {
+			if first? then {
+				min-value = max-value = value
+				first? = false
+			}
+			else {
+				if value < min-value then min-value = value
+				if value > max-value then max-value = value
+			}
+		}
+	}
+	min-value range-to max-value
+}
+
+// Find the sum of all the values in a collection, optionally projecting each value first.
+Enumerable.sum = |collection proj=[]| {
+	total = null
+	first? = true
+	if proj then {
+		collection each |value| {
+			if first? then {
+				total = [proj value]
+				first? = false
+			}
+			else total += [proj value]
+		}
+	}
+	else {
+		collection each |value| {
+			if first? then {
+				total = value
+				first? = false
+			}
+			else total += value
+		}
+	}
+	total
+}
+
+// Find the product of all the values in a collection.
+Enumerable.product = |collection proj=[]| {
+	total = null
+	first? = true
+	if proj then {
+		collection each |value| {
+			if first? then {
+				total = [proj value]
+				first? = false
+			}
+			else total *= [proj value]
+		}
+	}
+	else {
+		collection each |value| {
+			if first? then {
+				total = value
+				first? = false
+			}
+			else total *= value
+		}
+	}
+	total
+}
+
+-----------------------------------------------------------------------------------------
+// Enumerables: Statistical analysis
+-----------------------------------------------------------------------------------------
+
+// Compute the average (arithmetic mean) of all the data in the given set, optionally
+// projecting it first.  Returns the average as a Real, if the collection is non-empty;
+// if the collection is empty, returns 0.  This iterates over the collection exactly once.
+Enumerable.arithmetic-mean = |collection proj=[]| {
+	total = null
+	first? = true
+	count = 0
+	if proj then {
+		collection each |value| {
+			if first? then {
+				total = real [proj value]
+				first? = false
+			}
+			else total += real [proj value]
+			count += 1
+		}
+	}
+	else {
+		collection each |value| {
+			if first? then {
+				total = real value
+				first? = false
+			}
+			else total += real value
+			count += 1
+		}
+	}
+	total / real count
+}
+Enumerable.average = Enumerable.arithmetic-mean
+Enumerable.avg = Enumerable.arithmetic-mean
+Enumerable.mean = Enumerable.arithmetic-mean
+
+// Compute the geometric mean of all the data in the given set, optionally projecting it
+// through the given projection first.
+Enumerable.geometric-mean = |collection proj=[]|
+	(if proj then collection product proj
+		else product collection) nth-root (real count collection)
+
+// Compute the harmonic mean of all the data in the given set, optionally projecting it
+// through the given projection first.  All values will be computed as Real values.
+Enumerable.harmonic-mean = |collection proj=[]| {
+	real count collection / (
+		if proj then
+			collection sum |x| 1. / real [proj x]
+		else
+			collection sum |x| 1. / real x
+	)
+}
+
+// Compute the count, mean, and variance of all the data in the given set, optionally
+// projecting each item first.  All values be computed as Real values.
+Enumerable.basic-stats = |collection proj=[]| {
+	n = 0.
+	mean = 0.
+	m2 = 0.
+	if proj then {
+		collection each |item| {
+			x = real [proj item]
+			n += 1.
+			delta = x - mean
+			mean += delta / n
+			m2 += delta * (x - mean)
+		}
+	}
+	else {
+		collection each |value| {
+			x = real value
+			n += 1.
+			delta = x - mean
+			mean += delta / n
+			m2 += delta * (x - mean)
+		}
+	}
+	return {
+		count: |stats| n
+		mean: |stats| mean
+		m2: |stats| m2
+		variance: |stats| m2 / (n - 1.)
+		std-dev: |stats| sqrt (m2 / (n - 1.))
+	}
+}
+
+// Compute the variance of all the data in the given set, optionally projecting each
+// item first.  The variance will be computed as a Real.
+Enumerable.variance = |collection proj=[]| variance (collection basic-stats proj)
+
+// Compute the standard deviation of the data in the given set, optionally projecting
+// each value first.  The standard deviation will be computed as a Real.
+Enumerable.std-dev = |collection proj=[]| std-dev (collection basic-stats proj)
+Enumerable.stddev = |collection proj=[]| (collection std-dev proj)
+Enumerable.stdev = |collection proj=[]| (collection std-dev proj)
+
+// Compute the ratio of the standard deviation to the arithmetic mean.  This iterates
+// over the collection only once.
+Enumerable.coefficient-of-variation = |collection proj=[]| {
+	stats = collection basic-stats proj
+	std-dev stats / mean stats
+}
+Enumerable.relative-variance = Enumerable.coefficient-of-variation
+
+-----------------------------------------------------------------------------------------
+// Enuemerables: Predicate tests
+-----------------------------------------------------------------------------------------
+
+// This returns true if there are no elements in the given set.
+Enumerable.empty? = |collection| {
+	till has-content, no-content do {
+		collection each |item|
+			has-content
+		no-content
+	}
+	when has-content
+		false
+	when no-content
+		true
+}
+
+// This returns true if all elements in the set satisfy the given predicate or match
+// the given value using an == test.  This early-outs at the first failed match.
+Enumerable.all = |collection pred| {
+	till match, no-match do {
+		if typeof pred === `fn then {
+			collection each |item|
+				if not [pred item] then no-match
+		}
+		else {
+			collection each |item|
+				if not pred == item then no-match
+		}
+		match
+	}
+	when no-match
+		false
+	when match
+		true
+}
+
+// This returns true if at least one element exists in the set that does not satisfy the
+// predicate or match the given value using a == test.  This early-outs at the first
+// failed match.
+Enumerable.not-all = |args...| not Enumerable.all call args
+
+// This returns true if any element exists in the set that satisfies the given predicate
+// or match the given value using an == test.  This early-outs at the first match.
+// If this is called with the collection as its only argument, it returns true if the
+// collection is non-empty, false if the collection is empty.
+Enumerable.any = |collection args...| {
+	till match, no-match do {
+		if args === null then {
+			collection each |item|
+				match
+		}
+		else {
+			pred = args.a
+			if typeof pred === `fn then {
+				collection each |item|
+					if [pred item] then match
+			}
+			else {
+				collection each |item|
+					if pred == item then match
+			}
+		}
+		no-match
+	}
+	when match
+		true
+	when no-match
+		false
+}
+
+// This returns true if no elements exist in the set that satisfy the given predicate.
+// This early-outs at the first match.
+Enumerable.not-any = |collection args...| not Enumerable.any call args
+
+// Return true if the set contains the given element.  This is very similar to the "any"
+// method above, but allows for a direct search for functions (instead of treating them as
+// predicates).  This early-outs at the first match.
+Enumerable.contains = |collection element| {
+	till match, no-match do {
+		collection each |item|
+			if element == item then match
+		no-match
+	}
+	when match
+		true
+	when no-match
+		false
+}
+
+-----------------------------------------------------------------------------------------
+// Enuemerables: Conversion to other forms
+-----------------------------------------------------------------------------------------
+
+// Convert the data in this enumerable to a List, if it isn't already a List.
+Enumerable.list = |collection| {
+	if typeof collection === `list then collection
+	else list-clone collection
+}
+
+// Convert the data in this enumerable to a List, or if it's already a List, make a (shallow) copy.
+Enumerable.list-clone = |collection| {
+	head = tail = null
+	collection each |item| {
+		if tail then tail = tail.d = List cons item, null
+		else tail = head = List cons item, null
+	}
+	head
+}
+
+-----------------------------------------------------------------------------------------
+// Enuemerables: Subset construction
+-----------------------------------------------------------------------------------------
+
+// Extract the first element that matches a given predicate function.  This early-outs
+// at the first match.  If called in unary form, this returns the first element of the
+// collection.  If the collection is empty, this returns null.
+Enumerable.first = |collection pred=[]| {
+	result = null
+	till match, no-match do {
+		if pred then {
+			collection each |x| {
+				if [pred x] then {
+					result = x
+					match
+				}
+			}
+			no-match
+		}
+		else {
+			collection each |x| {
+				result = x
+				match
+			}
+			no-match
+		}
+	}
+	result
+}
+
+// Extract the last element that matches a given predicate function.  This iterates over
+// the entire collection.  If called in unary form, this returns the last element of the
+// collection.  If the collection is empty, this returns null.
+Enumerable.last = |collection pred=[]| {
+	result = null
+	if pred then {
+		collection each |x|
+			if [pred x] then result = x
+	}
+	else {
+		collection each |x|
+			result = x
+	}
+	result
+}
+
+// Find the index of the first element that matches the given predicate, if a predicate
+// function is provided, or that matches the given value using an == test if a value is provided.
+// If no element matches, this returns -1.  This will early-out at the first match.
+Enumerable.index-of = |collection pred=[]| {
+	index = 0
+	till match, no-match do {
+		if typeof pred === `fn then {
+			collection each |x| {
+				if [pred x] then match
+				index += 1
+			}
+			no-match
+		}
+		else {
+			collection each |x| {
+				if pred == x then match
+				index += 1
+			}
+			no-match
+		}
+	}
+	when match index
+	when no-match -1
+}
+
+// Alternate name for index-of.
+Enumerable.first-index-of = Enumerable.index-of
+
+// Find the index of the last element that matches the given predicate, if a predicate
+// function is provided, or that matches the given value using an == test if a value is provided.
+// If no element matches, this returns -1.  This will iterate through the entire collection.
+Enumerable.last-index-of = |collection pred=[]| {
+	match-index = -1
+	index = 0
+	if typeof pred === `fn then {
+		collection each |x| {
+			if [pred x] then match-index = index
+			index += 1
+		}
+	}
+	else {
+		collection each |x| {
+			if pred == x then match-index = index
+			index += 1
+		}
+	}
+	match-index
+}
+
+// Remove successive duplicates in the given enumerable, and return a list containing
+// the de-duped set of items.  If an equality-comparing function is provided, it will
+// be used to perform the comparison (invoked as [fn a b]); otherwise, a simple test of
+// a == b will be used.
+Enumerable.uniq = |equals=[]| {
+	if not equals then
+		equals = |a b| a == b
+
+	head = tail = null
+	first? = true
+	prev = null
+
+	collection each |item| {
+		if first? then {
+			if tail then tail = tail.d = List cons item, null
+			else tail = head = List cons item, null
+			first? = false
+		}
+		else if not [equals prev item] then {
+			if tail then tail = tail.d = List cons item, null
+			else tail = head = List cons item, null
+		}
+		first? = false
+		prev = item
+	}
+
+	head
+}
+
+// Search this Enumerable for items matching the given pattern.  If the pattern has a 'matches?' method,
+// that will be invoked for each comparison; if it does not, then the pattern's == operator will be
+// invoked for each comparison instead.
+Enumerable.grep = |collection pattern|
+	collection where (if pattern.matches?
+		then |item| pattern matches? item
+		else |item| pattern == item)
+Enumerable.grep-not = |collection pattern|
+	collection where (if pattern.matches?
+		then |item| not pattern matches? item
+		else |item| not pattern == item)
+Enumerable.count-grep = |collection pattern|
+	collection count (if pattern.matches?
+		then |item| pattern matches? item
+		else |item| pattern == item)
+Enumerable.count-grep-not = |collection pattern|
+	collection count (if pattern.matches?
+		then |item| not pattern matches? item
+		else |item| not pattern == item)
+
+-----------------------------------------------------------------------------------------
+// List extensions
+-----------------------------------------------------------------------------------------
+
+// You can't truncate the tail of a singly-linked list by a count without
+// either measuring the list twice or keeping a queue of back-pointers; so
+// we use the simple technique of measuring the list twice.  (Truncating
+// the head can be easily done with the built-in `skip` method.)
+List.truncate = |list n| list truncate-to (count list - n)
+List.truncate! = |list n| list truncate-to! (count list - n)
+
+// This should probably be implemented in C for performance reasons.
+List.set-member = |list index value| {
+    if typeof index === `integer64-range then {
+        start = index.start
+        end = index.end
+        if start > end then {
+            temp = start
+            start = end
+            end = temp
+        }
+        if start < 0 then {
+            if end < 0 then return value
+            start = 0
+        }
+        count-to-remove = end - start
+        cell = list nth-cell start
+        if not cell then return value
+        cell.a = value
+        while count-to-remove > 0 and typeof cell.d === `list do {
+            cell.d = cell.d.d
+            count-to-remove -= 1
+        }
+        value
+    }
+    else if typeof index === `integer64 then {
+        cell = list nth-cell index
+        if not cell then return value
+        cell.a = value
+    }
+    else {
+        // throw exception?
+        `FAIL
+    }
+}
+
+-----------------------------------------------------------------------------------------
+// Function extensions
+-----------------------------------------------------------------------------------------
+
+// Compose functions 'f' and 'g' as a single function, using 'f o g' as in many
+// textbooks, or 'f+g' as a convenient shorthand, or 'f compose g' as the long,
+// spelled-out version.  'g' must take a single argument, the return value of 'f'.
+// The composed function will return a single argument, the return value of 'g'.
+Fn.+ = |f g|
+    |args...| [f [g.apply args]]
+Fn.o = Fn.+
+Fn.compose = Fn.+
+
+// Bind a function to a provided set of initial arguments, creating a new function
+// in which the user can still fill in the trailing arguments.  Works for all multi-
+// parameter functions, deferring all parameter-checking to the bound function itself.
+Fn.bind = |fn x...|
+    |y...| fn apply (x conc-list y)
+
+// Bind a function to a provided list of initial arguments, creating a new function
+// in which the user can still fill in the trailing arguments.  Works for all multi-
+// parameter functions, deferring all parameter-checking to the bound function itself.
+Fn.bind-list = |fn x|
+    |y...| fn apply (x conc-list y)
+
+// Bind the tail of a function's parameters to the given final arguments, creating
+// a new function in which the user can still fill in the initial arguments.  Works
+// for all multi-parameter functions, deferring all parameter-checking to the bound
+// function itself.
+Fn.bind-tail = |fn x...|
+    |y...| fn apply (y conc-list x)
+
+// Bind the tail of a function's parameters to the given list of final arguments, creating
+// a new function in which the user can still fill in the initial arguments.  Works
+// for all multi-parameter functions, deferring all parameter-checking to the bound
+// function itself.
+Fn.bind-tail-list = |fn x|
+    |y...| fn apply (y conc-list x)
+
+// Given a function, `curry` returns a new function that allows you to partially apply
+// some arguments, returning new partial functions until the original function's arity
+// (its argument count, or a provided arity) has been met, at which point the real
+// function is invoked with the collected arguments.  `curry-tail` applies the arguments
+// in sets from last to first; while `curry` applies the arguments from first to last.
+Fn.curry = |fn arity=[]| {
+    if arity === null then arity = count fn.arguments
+    |args...| {
+        num-args = count args
+        if num-args >= arity then
+            fn apply args
+        else
+            (fn bind-list args) curry (arity - num-args)
+    }
+}
+
+// Given a function, `curry-tail` returns a new function that allows you to partially apply
+// some arguments, returning new partial functions until the original function's arity
+// (its argument count, or a provided arity) has been met, at which point the real
+// function is invoked with the collected arguments.  `curry-tail` applies the arguments
+// in sets from last to first; while `curry` applies the arguments from first to last.
+Fn.curry-tail = |fn arity=[]| {
+    if arity === null then arity = count fn.arguments
+    |args...| {
+        num-args = count args
+        if num-args >= arity then
+            fn apply args
+        else
+            (fn bind-tail-list args) curry-tail (arity - num-args)
+    }
+}
+
+// Create a derivative "partially memoized" function in which the first invocation
+// actually invokes the nested function, and all subsequent invocations ignore their
+// arguments, do not invoke the nested function, and simply return the original value.
+Fn.once = |fn| {
+    is-first = true
+    value = null
+    |args...| {
+        if is-first then {
+            is-first = false
+            value = fn apply args
+        }
+        else value
+    }
+}
+
+// Given a predicate function, like `String.ends-with?`, derive a new predicate function
+// that takes the same arguments but returns the opposite result (i.e., the equivalent of
+// `String.doesn't-end-with?`).
+Fn.negate = |fn|
+    |args...| not (fn apply args)
+
+// Create a derived function whose arguments are in the reverse order of those of the
+// provided function.
+Fn.reverse-args = |fn|
+    |args...| fn apply reverse args
+
+// Create a derived function whose arguments are in the given rearranged order.  The
+// order must be an enumerable collection of zero-based Integer indexes, each specifying
+// which caller argument becomes which callee argument.  For example:
+//   f = |x y z| List of x, y, z
+//   g = f reorder-args `[2 0 1]
+//   [g `b `c `a] === `[a b c]
+Fn.reorder-args = |fn order|
+    |args...| fn apply (order map |index| args:index)
+
+// Repeatedly apply the given binary function over the given enumerable, passing the first two
+// values into the function initially (or using an optional initial value), and then passing
+// each successive value into the function along with the previous result.  This is similar to
+// the Enumerable.aggregate or Enumerable.reduce methods, only with its arguments reversed.
+// So, for example:
+//     Integer64.+ over `[1 2 3 4 5]  ===  15
+// while
+//     `[1 2 3 4 5] aggregate Integer64.+  ===  15
+Fn.over = |fn enumerable initial-value = []| {
+    result = initial-value
+    is-first = result === null
+    enumerable each |x|
+        if is-first then {
+            result = x
+            is-first = false
+        }
+        else result = [fn result x]
+    result
+}
+
+// Create a new function that ensures that the given function is passed at most
+// `n` arguments, no matter how many are passed to it, discarding any extras.
+Fn.max-args = |fn n=[]| {
+    if n === null then n = count fn.arguments
+    |args...|
+        fn apply (args truncate-to! n)
+}
+
+// Create a new function that ensures that the given function is passed at least
+// `n` arguments, no matter how many are passed to it.  You may optionally include
+// a "padding" value used to fill out the extra arguments.
+Fn.min-args = |fn n=[] padding=[]| {
+    if n === null then n = count fn.arguments
+    |args...| {
+        args pad-to! n, padding
+        fn apply args
+    }
+}
+
+// Create a new function that ensures that the given function is passed exactly
+// `n` arguments, no matter how many are passed to it.  You may optionally include
+// a "padding" value used to fill out missing arguments.
+Fn.exact-args = |fn n=[] padding=[]| {
+    if n === null then n = count fn.arguments
+    |args...| {
+        args truncate-to! n pad-to! n, padding
+        fn apply args
+    }
+}
+
+// The Y combinator!  This transforms a given non-recursive function 'f' into a recursive
+// function by passing an instance of itself to itself.  A more proper definition looks like
+// the code below, but we use the form involving the local variable 'g' because it runs more
+// efficiently:
+//
+//   Y = |f| [
+//     |x| [x x]
+//     |y| [f |args| [y y] apply args]
+//   ]
+//
+// Usage of the Y combinator looks like this (to implement factorial, as an example):
+//   Y |f| |n| if n > 1 then n * [f n - 1] else 1
+//
+Fn.Y = |f| {
+    g = [f |args...| g apply args]
+}

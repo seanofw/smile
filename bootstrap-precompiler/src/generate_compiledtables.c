@@ -82,7 +82,7 @@ static void GenerateCompiledTableObjs(OutputData outputData, CompiledTables comp
 	);
 	for (i = 0; i < compiledTables->numObjects; i++) {
 		String objReference = GenerateValue(outputData, compiledTables->objects[i]);
-		StringBuilder_AppendFormat(outputData->compiledTablesDecls, "\t%S,\n", objReference);
+		StringBuilder_AppendFormat(outputData->compiledTablesDecls, "\t(SmileObject)%S,\n", objReference);
 	}
 	if (compiledTables->numObjects <= 0)
 		StringBuilder_AppendFormat(outputData->compiledTablesDecls, "\tNULL,\n");

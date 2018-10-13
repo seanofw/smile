@@ -967,6 +967,7 @@
     <ClCompile Include="src\unicode\uppercase.c" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="lib\bootstrap.sm" />
     <None Include="README.md" />
     <None Include="src\eval\eval_fn_ext.template" />
     <None Include="src\eval\eval_fn_user.template" />

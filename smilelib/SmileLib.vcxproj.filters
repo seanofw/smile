@@ -1462,6 +1462,7 @@
     <None Include="src\smiletypes\range\makerangetypes.pl">
       <Filter>src\smiletypes\range</Filter>
     </None>
+    <None Include="lib\bootstrap.sm" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="grammar.txt" />
