@@ -77,6 +77,32 @@ Object.properties = |obj extra=[]|
 // Numeric extensions
 -----------------------------------------------------------------------------------------
 
+// Parse a number, recognizing common type suffixes.
+Number.parse = |str extra=[]| {
+	if str === Number then str = extra
+	
+	if str contains? "." then {
+		if str ends-with~? "tf" then
+			Float32 parse str:0..(str.length - 3)
+		else if str ends-with~? "f" then
+			Float64 parse str:0..(str.length - 2)
+		else if str ends-with~? "t" then
+			Real32 parse str:0..(str.length - 2)
+		else
+			Real64 parse str
+	}
+	else {
+		if str ends-with~? "x" then
+			Byte parse str:0..(str.length - 2)
+		else if str ends-with~? "s" then
+			Integer16 parse str:0..(str.length - 2)
+		else if str ends-with~? "t" then
+			Integer32 parse str:0..(str.length - 2)
+		else
+			Integer64 parse str
+	}
+}
+
 Real32.nth-root = |x y| x ^ (1.t / y)
 Real64.nth-root = |x y| x ^ (1. / y)
 Float32.nth-root = |x y| x ^ (1.tf / y)
@@ -470,7 +496,7 @@ Enumerable.empty? = |collection| {
 
 // This returns true if all elements in the set satisfy the given predicate or match
 // the given value using an == test.  This early-outs at the first failed match.
-Enumerable.all = |collection pred| {
+Enumerable.all? = |collection pred| {
 	till match, no-match do {
 		if typeof pred === `fn then {
 			collection each |item|
@@ -491,13 +517,13 @@ Enumerable.all = |collection pred| {
 // This returns true if at least one element exists in the set that does not satisfy the
 // predicate or match the given value using a == test.  This early-outs at the first
 // failed match.
-Enumerable.not-all = |args...| not Enumerable.all call args
+Enumerable.not-all? = |args...| not Enumerable.all? call args
 
 // This returns true if any element exists in the set that satisfies the given predicate
 // or match the given value using an == test.  This early-outs at the first match.
 // If this is called with the collection as its only argument, it returns true if the
 // collection is non-empty, false if the collection is empty.
-Enumerable.any = |collection args...| {
+Enumerable.any? = |collection args...| {
 	till match, no-match do {
 		if args === null then {
 			collection each |item|
@@ -524,12 +550,12 @@ Enumerable.any = |collection args...| {
 
 // This returns true if no elements exist in the set that satisfy the given predicate.
 // This early-outs at the first match.
-Enumerable.not-any = |collection args...| not Enumerable.any call args
+Enumerable.not-any? = |collection args...| not Enumerable.any? call args
 
 // Return true if the set contains the given element.  This is very similar to the "any"
 // method above, but allows for a direct search for functions (instead of treating them as
 // predicates).  This early-outs at the first match.
-Enumerable.contains = |collection element| {
+Enumerable.contains? = |collection element| {
 	till match, no-match do {
 		collection each |item|
 			if element == item then match
