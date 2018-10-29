@@ -143,7 +143,10 @@ Inline Int ParseIntegerInternal(const Byte *text, Int length, Int *index, Int nu
 			default: digitValue = 99; i++; break;
 		}
 
-		if (digitValue >= numericBase) break;
+		if (digitValue >= numericBase) {
+			i--;
+			break;
+		}
 
 		value *= numericBase;
 		value += digitValue;

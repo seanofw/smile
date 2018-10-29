@@ -22,6 +22,8 @@
 extern String Real_ToFixedString(Byte *buffer, Int32 len, Int32 exp, Int32 kind, Int minIntDigits, Int minFracDigits, Bool forceSign);
 extern String Real_ToExpString(Byte *buffer, Int32 len, Int32 exp, Int32 kind, Int minFracDigits, Bool forceSign);
 
+static Real128 Real128_FromRawCStringWithUnusualBase(const char *text, Int base);
+
 extern SMILE_THREAD_LOCAL UInt32 Real_RoundingMode;
 extern SMILE_THREAD_LOCAL UInt32 Real_Flags;
 
