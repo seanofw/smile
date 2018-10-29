@@ -470,6 +470,14 @@ SMILE_EXTERNAL_FUNCTION(Rem)
 	return SmileUnboxedReal64_From(MathematiciansRemainder(x, y));
 }
 
+SMILE_EXTERNAL_FUNCTION(IsDiv)
+{
+	Real64 x = argv[0].unboxed.r64;
+	Real64 y = argv[1].unboxed.r64;
+
+	return SmileUnboxedBool_From(Real64_IsZero(y) || Real64_IsZero(Real64_Mod(x, y)));
+}
+
 //-------------------------------------------------------------------------------------------------
 // Arithmetic extensions
 
@@ -1156,6 +1164,7 @@ void SmileReal64_Setup(SmileUserObject base)
 	SetupSynonym("negative?", "neg?");
 	SetupFunction("nonnegative?", ValueTest, (void *)NONNEG_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real64Checks);
 	SetupSynonym("nonnegative?", "nonneg?");
+	SetupFunction("div?", IsDiv, NULL, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _real64Checks);
 
 	SetupFunction("==", Eq, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _real64ComparisonChecks);
 	SetupFunction("!=", Ne, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _real64ComparisonChecks);

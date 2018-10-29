@@ -723,6 +723,22 @@ SMILE_EXTERNAL_FUNCTION(Rem)
 	return SmileUnboxedInteger16_From(MathematiciansRemainder(x, y));
 }
 
+SMILE_EXTERNAL_FUNCTION(IsDiv)
+{
+	Int16 x = argv[0].unboxed.i16;
+	Int16 y = argv[1].unboxed.i16;
+
+	return SmileUnboxedBool_From(y == 0 || x % y == 0);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsUDiv)
+{
+	UInt16 x = (UInt16)argv[0].unboxed.i16;
+	UInt16 y = (UInt16)argv[1].unboxed.i16;
+
+	return SmileUnboxedBool_From(y == 0 || x % y == 0);
+}
+
 //-------------------------------------------------------------------------------------------------
 // Arithmetic extensions
 
@@ -1839,6 +1855,8 @@ void SmileInteger16_Setup(SmileUserObject base)
 	SetupFunction("min?", ValueTest, (void *)MIN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer16Checks);
 	SetupFunction("max~?", ValueTest, (void *)UMAX_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer16Checks);
 	SetupFunction("min~?", ValueTest, (void *)UMIN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer16Checks);
+	SetupFunction("div?", IsDiv, NULL, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer16Checks);
+	SetupFunction("div~?", IsUDiv, NULL, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer16Checks);
 
 	SetupFunction("==", Eq, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer16ComparisonChecks);
 	SetupFunction("!=", Ne, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _integer16ComparisonChecks);

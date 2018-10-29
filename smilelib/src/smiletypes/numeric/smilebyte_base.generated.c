@@ -723,6 +723,22 @@ SMILE_EXTERNAL_FUNCTION(Rem)
 	return SmileUnboxedByte_From(MathematiciansRemainder(x, y));
 }
 
+SMILE_EXTERNAL_FUNCTION(IsDiv)
+{
+	Byte x = argv[0].unboxed.i8;
+	Byte y = argv[1].unboxed.i8;
+
+	return SmileUnboxedBool_From(y == 0 || x % y == 0);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsUDiv)
+{
+	Byte x = (Byte)argv[0].unboxed.i8;
+	Byte y = (Byte)argv[1].unboxed.i8;
+
+	return SmileUnboxedBool_From(y == 0 || x % y == 0);
+}
+
 //-------------------------------------------------------------------------------------------------
 // Arithmetic extensions
 
@@ -1839,6 +1855,8 @@ void SmileByte_Setup(SmileUserObject base)
 	SetupFunction("min?", ValueTest, (void *)MIN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
 	SetupFunction("max~?", ValueTest, (void *)UMAX_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
 	SetupFunction("min~?", ValueTest, (void *)UMIN_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("div?", IsDiv, NULL, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _byteChecks);
+	SetupFunction("div~?", IsUDiv, NULL, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _byteChecks);
 
 	SetupFunction("==", Eq, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _byteComparisonChecks);
 	SetupFunction("!=", Ne, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _byteComparisonChecks);

@@ -467,6 +467,14 @@ SMILE_EXTERNAL_FUNCTION(Rem)
 	return SmileUnboxed%Type%_From(MathematiciansRemainder(x, y));
 }
 
+SMILE_EXTERNAL_FUNCTION(IsDiv)
+{
+	%Type% x = argv[0].unboxed.%unboxed%;
+	%Type% y = argv[1].unboxed.%unboxed%;
+
+	return SmileUnboxedBool_From(y == 0 || fmod(x, y) == 0);
+}
+
 //-------------------------------------------------------------------------------------------------
 // Arithmetic extensions
 
@@ -1192,6 +1200,7 @@ void Smile%Type%_Setup(SmileUserObject base)
 	SetupSynonym("negative?", "neg?");
 	SetupFunction("nonnegative?", ValueTest, (void *)NONNEG_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _%type%Checks);
 	SetupSynonym("nonnegative?", "nonneg?");
+	SetupFunction("div?", IsDiv, NULL, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
 
 	SetupFunction("==", Eq, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%ComparisonChecks);
 	SetupFunction("!=", Ne, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%ComparisonChecks);

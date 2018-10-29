@@ -470,6 +470,14 @@ SMILE_EXTERNAL_FUNCTION(Rem)
 	return SmileUnboxedReal32_From(MathematiciansRemainder(x, y));
 }
 
+SMILE_EXTERNAL_FUNCTION(IsDiv)
+{
+	Real32 x = argv[0].unboxed.r32;
+	Real32 y = argv[1].unboxed.r32;
+
+	return SmileUnboxedBool_From(Real32_IsZero(y) || Real32_IsZero(Real32_Mod(x, y)));
+}
+
 //-------------------------------------------------------------------------------------------------
 // Arithmetic extensions
 
@@ -1156,6 +1164,7 @@ void SmileReal32_Setup(SmileUserObject base)
 	SetupSynonym("negative?", "neg?");
 	SetupFunction("nonnegative?", ValueTest, (void *)NONNEG_TEST, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real32Checks);
 	SetupSynonym("nonnegative?", "nonneg?");
+	SetupFunction("div?", IsDiv, NULL, "dividend divisor", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _real32Checks);
 
 	SetupFunction("==", Eq, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _real32ComparisonChecks);
 	SetupFunction("!=", Ne, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _real32ComparisonChecks);
