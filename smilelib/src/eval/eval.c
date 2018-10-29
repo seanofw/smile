@@ -144,19 +144,22 @@ EvalResult Eval_Continue(void)
 	}
 }
 
-static void SMILE_NO_RETURN ThrowUnknownMethodError(Symbol name)
+static void SMILE_NO_RETURN ThrowUnknownMethodError(SmileObject obj, Symbol name)
 {
+	String typeName = SmileKind_GetName(SMILE_KIND(obj));
+	String methodName = SymbolTable_GetName(Smile_SymbolTable, name);
+
 	Smile_ThrowException(Smile_KnownSymbols.property_error,
-		String_Format("Object has no \"%S\" method.", SymbolTable_GetName(Smile_SymbolTable, name)));
+		String_Format("%S has no \"%S\" method.", typeName, methodName));
 }
 
 // Get and then call the named method in the given object, but if the object
 // doesn't have a method with that name, throw an exception.
 #define SMILE_CALL_METHOD(__obj__, __name__, __argc__) \
-	target = SMILE_GET_PROPERTY(__obj__, __name__); \
-	if (SMILE_KIND(target) != SMILE_KIND_FUNCTION) \
-		ThrowUnknownMethodError(__name__); \
-	SMILE_VCALL2(target, call, __argc__, 0);
+	method = SMILE_GET_PROPERTY(__obj__, __name__); \
+	if (SMILE_KIND(method) != SMILE_KIND_FUNCTION) \
+		ThrowUnknownMethodError(__obj__, __name__); \
+	SMILE_VCALL2(method, call, __argc__, 0);
 	
 // Ensure that we've stored any of eval's core registers in the global state, so that they can be
 // safely mutated or recorded by external actors.
@@ -175,7 +178,7 @@ static Bool Eval_RunCore(void)
 
 	// If there are registers leftover, the compiler's welcome to store these values in registers, but
 	// they're primarily used for less-frequent operations, so it's okay if they end up on the stack.
-	SmileObject target, value;
+	SmileObject target, value, method;
 	SmileArg arg, arg2;
 	ModuleInfo moduleInfo;
 

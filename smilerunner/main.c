@@ -525,10 +525,9 @@ static Int ParseAndEval(CommandLineArgs options, String string, String filename,
 					exceptionKind = SymbolTable_GetSymbolC(Smile_SymbolTable, "unknown-error");
 				else exceptionKind = exceptionKindWrapped->symbol;
 
-				displayMessage = String_Format("\033[0;31;1m!Exception thrown (%S)%s\033[0;33;1m%S\033[0m\n",
-					SymbolTable_GetName(Smile_SymbolTable, exceptionKind),
-					!String_IsNullOrEmpty(exceptionMessage) ? ": " : "",
-					exceptionMessage);
+				displayMessage = String_Format("\033[0;31;1m!Exception: \033[0;33;1m%S\033[0m (%S)\n",
+					exceptionMessage,
+					SymbolTable_GetName(Smile_SymbolTable, exceptionKind));
 				fwrite_styled((const char *)String_GetBytes(displayMessage), 1, String_Length(displayMessage), stderr);
 				fflush(stderr);
 

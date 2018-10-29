@@ -116,7 +116,7 @@ static Int ParseAndEval(String string, ParseScope globalScope, ClosureInfo globa
 	SmileObject expr;
 	EvalResult evalResult;
 
-	lexer = Lexer_Create(string, 0, String_Length(string), NULL, 1, 1);
+	lexer = Lexer_Create(string, 0, String_Length(string), String_FromC("<input>"), 1, 1);
 	lexer->symbolTable = Smile_SymbolTable;
 	parser = Parser_Create();
 	parser->lexer = lexer;
@@ -175,10 +175,9 @@ static Int ParseAndEval(String string, ParseScope globalScope, ClosureInfo globa
 					exceptionKind = SymbolTable_GetSymbolC(Smile_SymbolTable, "unknown-error");
 				else exceptionKind = exceptionKindWrapped->symbol;
 
-				displayMessage = String_Format("\033[0;31;1m!Exception thrown (%S)%s\033[0;33;1m%S\033[0m\n",
-					SymbolTable_GetName(Smile_SymbolTable, exceptionKind),
-					!String_IsNullOrEmpty(exceptionMessage) ? ": " : "",
-					exceptionMessage);
+				displayMessage = String_Format("\033[0;31;1m!Exception: \033[0;33;1m%S\033[0m (%S)\n",
+					exceptionMessage,
+					SymbolTable_GetName(Smile_SymbolTable, exceptionKind));
 				fwrite_styled(String_GetBytes(displayMessage), 1, String_Length(displayMessage), stderr);
 				fflush(stderr);
 

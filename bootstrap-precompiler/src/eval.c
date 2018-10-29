@@ -74,10 +74,9 @@ SmileObject EvalExpr(Compiler compiler, SmileObject expr, ClosureInfo closureInf
 					exceptionKind = SymbolTable_GetSymbolC(Smile_SymbolTable, "unknown-error");
 				else exceptionKind = exceptionKindWrapped->symbol;
 
-				displayMessage = String_Format("!Exception thrown (%S)%s%S\n",
-					SymbolTable_GetName(Smile_SymbolTable, exceptionKind),
-					!String_IsNullOrEmpty(exceptionMessage) ? ": " : "",
-					exceptionMessage);
+				displayMessage = String_Format("!Exception: %S (%S)\n",
+					exceptionMessage,
+					SymbolTable_GetName(Smile_SymbolTable, exceptionKind));
 				fwrite((const char *)String_GetBytes(displayMessage), 1, String_Length(displayMessage), stderr);
 				fflush(stderr);
 
