@@ -114,55 +114,44 @@ static void PrintHelp()
 	);
 }
 
-static Bool PrintParseMessages(CommandLineArgs options, Parser parser)
+static Bool PrintParseMessage(CommandLineArgs options, ParseMessage parseMessage)
 {
-	SmileList list;
-	ParseMessage parseMessage;
-	Bool hasErrors;
-	Bool shouldPrint;
-	const char *prefix;
+	Bool hasErrors = False;
+	Bool shouldPrint = False;
+	const char *prefix = "";
 	LexerPosition position;
 	String message;
 
-	hasErrors = False;
-
-	for (list = parser->firstMessage; SMILE_KIND(list) != SMILE_KIND_NULL; list = LIST_REST(list)) {
-		parseMessage = (ParseMessage)LIST_FIRST(list);
-
-		shouldPrint = False;
-		prefix = "";
-
-		switch (parseMessage->messageKind) {
-			case PARSEMESSAGE_INFO:
-				if (options->verbose) {
-					shouldPrint = True;
-					prefix = "";
-				}
-				break;
-
-			case PARSEMESSAGE_WARNING:
-				if (options->warningsAsErrors) {
-					shouldPrint = True;
-					prefix = "warning: ";
-					hasErrors = True;
-				}
-				else if (!options->quiet) {
-					shouldPrint = True;
-					prefix = "warning: ";
-				}
-				break;
-
-			case PARSEMESSAGE_ERROR:
+	switch (parseMessage->messageKind) {
+		case PARSEMESSAGE_INFO:
+			if (options->verbose) {
 				shouldPrint = True;
 				prefix = "";
+			}
+			break;
+
+		case PARSEMESSAGE_WARNING:
+			if (options->warningsAsErrors) {
+				shouldPrint = True;
+				prefix = "warning: ";
 				hasErrors = True;
-				break;
-		}
-	
-		if (!shouldPrint) continue;
-	
+			}
+			else if (!options->quiet) {
+				shouldPrint = True;
+				prefix = "warning: ";
+			}
+			break;
+
+		case PARSEMESSAGE_ERROR:
+			shouldPrint = True;
+			prefix = "";
+			hasErrors = True;
+			break;
+	}
+
+	if (shouldPrint) {
 		position = parseMessage->position;
-		if (position->filename != NULL) {
+		if (position != NULL && position->filename != NULL) {
 			if (position->line > 0) {
 				// Have a filename and a line number.
 				message = String_Format("%S:%d: %s%S\r\n", position->filename, position->line, prefix, parseMessage->message);
@@ -176,8 +165,22 @@ static Bool PrintParseMessages(CommandLineArgs options, Parser parser)
 			// Have no filename.
 			message = String_Format("smile: %s%S\r\n", prefix, parseMessage->message);
 		}
-		
+
 		fwrite(String_GetBytes(message), 1, String_Length(message), stderr);
+	}
+
+	return hasErrors;
+}
+
+static Bool PrintParseMessages(CommandLineArgs options, Parser parser)
+{
+	SmileList list;
+	ParseMessage parseMessage;
+	Bool hasErrors = False;
+
+	for (list = parser->firstMessage; SMILE_KIND(list) != SMILE_KIND_NULL; list = LIST_REST(list)) {
+		parseMessage = (ParseMessage)LIST_FIRST(list);
+		hasErrors |= PrintParseMessage(options, parseMessage);
 	}
 
 	return hasErrors;
@@ -539,7 +542,7 @@ static Int ParseAndEval(CommandLineArgs options, String string, String filename,
 
 				*result = NullObject;
 			}
-			return 1;
+			return EVAL_RESULT_EXCEPTION;
 
 		case EVAL_RESULT_BREAK:
 			{
@@ -563,8 +566,20 @@ static Int ParseAndEval(CommandLineArgs options, String string, String filename,
 				fflush(stderr);
 				*result = NullObject;
 			}
-			return 2;
+			return EVAL_RESULT_BREAK;
 		
+		case EVAL_RESULT_PARSEERRORS:
+			// We can get "parse errors" from the compiler, not just from the parser.
+			{
+				Int i;
+				Bool hasErrors = False;
+				for (i = 0; i < evalResult->numMessages; i++) {
+					hasErrors |= PrintParseMessage(options, evalResult->parseMessages[i]);
+				}
+				if (hasErrors) return 1;
+			}
+			return EVAL_RESULT_PARSEERRORS;
+
 		default:
 			*result = evalResult->value;
 			return 0;
