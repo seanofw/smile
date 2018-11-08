@@ -576,9 +576,8 @@ static Int ParseAndEval(CommandLineArgs options, String string, String filename,
 				for (i = 0; i < evalResult->numMessages; i++) {
 					hasErrors |= PrintParseMessage(options, evalResult->parseMessages[i]);
 				}
-				if (hasErrors) return 1;
+				return hasErrors ? EVAL_RESULT_PARSEERRORS : 0;
 			}
-			return EVAL_RESULT_PARSEERRORS;
 
 		default:
 			*result = evalResult->value;
