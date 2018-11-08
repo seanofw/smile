@@ -95,7 +95,8 @@ static void PrintHelp()
 		"\n"
 		"\033[0;37;1mExecution options:\033[0;37m\n"
 		"  \033[0;1;36m-c --check     \033[0;37mCheck syntax and for warnings/errors, but do not run\n"
-		"  \033[0;1;36m-D\033[0;36mname=value   \033[0;37mDefine a global variable with the given constant value.\n"
+		"  \033[0;1;36m-r --raw       \033[0;37mLike '-c', but print out the resulting 'raw' form of the code\n"
+		"  \033[0;1;36m-D\033[0;36mname=value   \033[0;37mDefine a global variable with the given constant value\n"
 		"  \033[0;1;36m-e \033[0;36m'script'    \033[0;37mOne line of program (several -e's allowed; omit program.sm)\n"
 		"  \033[0;1;36m-n             \033[0;37mWrap script with \"till done { line = get-line Stdin ... }\"\n"
 		"  \033[0;1;36m-o             \033[0;37mPrint program's resulting value to Stdout\n"
@@ -109,7 +110,7 @@ static void PrintHelp()
 		"                 \033[0;37mTreat any warnings found the same as errors, and abort\n"
 		"\n"
 		"\033[0;37;1mControl options:\033[0;37m\n"
-		"  \033[0;1;36m--             \033[0;37mTreat subsequent arguments as program name/args.\n"
+		"  \033[0;1;36m--             \033[0;37mTreat subsequent arguments as program name/args\n"
 		"\n"
 	);
 }
