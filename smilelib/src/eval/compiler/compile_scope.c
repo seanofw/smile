@@ -98,8 +98,6 @@ VarDict Compiler_PrecomputeModuleClosureLayout(SmileObject scope, ParseScope par
 		if (!Compiler_DecodeScopeVariable(NULL, offset, temp->a, &symbol, &declKind))
 			continue;
 
-		symbol = ((SmileSymbol)temp->a)->symbol;
-
 		parseDecl = ParseScope_FindDeclarationHere(parseScope, symbol);
 		declKind = parseDecl != NULL ? parseDecl->declKind : PARSEDECL_INCLUDE;
 
