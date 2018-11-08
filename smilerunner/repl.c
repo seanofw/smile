@@ -102,7 +102,7 @@ static Bool PrintParseMessages(Parser parser)
 			message = String_Format("%s %S\033[0m\n", prefix, parseMessage->message);
 		}
 
-		fwrite_styled(String_GetBytes(message), 1, String_Length(message), stderr);
+		fwrite_styled(String_ToC(message), 1, String_Length(message), stderr);
 	}
 
 	return hasErrors;
@@ -154,7 +154,7 @@ static Int ParseAndEval(String string, ParseScope globalScope, ClosureInfo globa
 				Int i;
 				for (i = 0; i < evalResult->numMessages; i++) {
 					String message = String_Format("\033[0;31;1m?Error: \033[0;33;1m%S\033[0m\n", evalResult->parseMessages[i]->message);
-					fwrite_styled(String_GetBytes(message), 1, String_Length(message), stderr);
+					fwrite_styled(String_ToC(message), 1, String_Length(message), stderr);
 				}
 				fflush(stderr);
 				*result = NullObject;
@@ -179,12 +179,12 @@ static Int ParseAndEval(String string, ParseScope globalScope, ClosureInfo globa
 					SymbolTable_GetName(Smile_SymbolTable, exceptionKind),
 					!String_IsNullOrEmpty(exceptionMessage) ? ": " : "",
 					exceptionMessage);
-				fwrite_styled(String_GetBytes(displayMessage), 1, String_Length(displayMessage), stderr);
+				fwrite_styled(String_ToC(displayMessage), 1, String_Length(displayMessage), stderr);
 				fflush(stderr);
 
 				stackTrace = SMILE_VCALL1(evalResult->exception, getProperty, Smile_KnownSymbols.stack_trace);
 				stackTraceMessage = Smile_FormatStackTrace((SmileList)stackTrace);
-				fwrite_styled(String_GetBytes(stackTraceMessage), 1, String_Length(stackTraceMessage), stderr);
+				fwrite_styled(String_ToC(stackTraceMessage), 1, String_Length(stackTraceMessage), stderr);
 				fflush(stderr);
 
 				*result = NullObject;
@@ -194,7 +194,7 @@ static Int ParseAndEval(String string, ParseScope globalScope, ClosureInfo globa
 		case EVAL_RESULT_BREAK:
 			{
 				String message = String_Format("\033[0;33;1mStopped at breakpoint.\033[0m\n");
-				fwrite_styled(String_GetBytes(message), 1, String_Length(message), stderr);
+				fwrite_styled(String_ToC(message), 1, String_Length(message), stderr);
 				fflush(stderr);
 				*result = NullObject;
 			}

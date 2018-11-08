@@ -533,12 +533,12 @@ static Int ParseAndEval(CommandLineArgs options, String string, String filename,
 					SymbolTable_GetName(Smile_SymbolTable, exceptionKind),
 					!String_IsNullOrEmpty(exceptionMessage) ? ": " : "",
 					exceptionMessage);
-				fwrite_styled((const char *)String_GetBytes(displayMessage), 1, String_Length(displayMessage), stderr);
+				fwrite_styled(String_ToC(displayMessage), 1, String_Length(displayMessage), stderr);
 				fflush(stderr);
 
 				stackTrace = SMILE_VCALL1(evalResult->exception, getProperty, Smile_KnownSymbols.stack_trace);
 				stackTraceMessage = Smile_FormatStackTrace((SmileList)stackTrace);
-				fwrite_styled((const char *)String_GetBytes(stackTraceMessage), 1, String_Length(stackTraceMessage), stderr);
+				fwrite_styled(String_ToC(stackTraceMessage), 1, String_Length(stackTraceMessage), stderr);
 				fflush(stderr);
 
 				*result = NullObject;

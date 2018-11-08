@@ -480,7 +480,7 @@ static void ListFilesMultiColumnMode(FileInfo *files, Int numFiles, Int consoleW
 		line = StringBuilder_ToString(stringBuilder);
 		
 		// Write it to stdout.
-		fwrite_styled(String_GetBytes(line), 1, String_Length(line), stdout);
+		fwrite_styled(String_ToC(line), 1, String_Length(line), stdout);
 	}
 }
 
