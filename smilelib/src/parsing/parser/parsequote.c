@@ -161,7 +161,7 @@ ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Int *temp
 					return NULL;
 				}
 				else if (nextToken == TOKEN_ALPHANAME || nextToken == TOKEN_PUNCTNAME
-					|| nextToken == TOKEN_UNKNOWNALPHANAME || TOKEN_UNKNOWNPUNCTNAME) {
+					|| nextToken == TOKEN_UNKNOWNALPHANAME || nextToken == TOKEN_UNKNOWNPUNCTNAME) {
 					// This is '@symbol', which is a shorthand for writing '(symbol)'.
 					//
 					// (TODO: This form exists primarily to allow '@symbol' and '@@symbol' to be
@@ -183,7 +183,7 @@ ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Int *temp
 			{
 				Int nextToken = Lexer_Next(parser->lexer);
 				if (nextToken == TOKEN_ALPHANAME || nextToken == TOKEN_PUNCTNAME
-					|| nextToken == TOKEN_UNKNOWNALPHANAME || TOKEN_UNKNOWNPUNCTNAME) {
+					|| nextToken == TOKEN_UNKNOWNALPHANAME || nextToken == TOKEN_UNKNOWNPUNCTNAME) {
 					// This is '@@symbol', which is a shorthand for writing '@(symbol)'.
 					//
 					// (TODO: This form exists primarily to allow '@@symbol' to be
