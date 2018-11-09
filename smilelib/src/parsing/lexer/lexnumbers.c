@@ -266,7 +266,7 @@ static Bool ParseOctalInteger(Lexer lexer, UInt64 *result)
 
 			if (value > 0x1FFFFFFFFFFFFFFFULL) {
 				while (src < end) {
-					if ((ch = *src) >= '0' && ch <= '9'
+					if (((ch = *src) >= '0' && ch <= '9')
 						|| ch == '_' || ch == '\'' || ch == '\"') {
 						src++;
 					}

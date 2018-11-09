@@ -132,11 +132,11 @@ Bool LexerPosition_Equals(LexerPosition a, LexerPosition b)
 	else if (b == NULL) return False;
 
 	return (a == b
-		|| a->line == b->line
+		|| (a->line == b->line
 			&& a->column == b->column
 			&& a->lineStart == b->lineStart
 			&& a->length == b->length
-			&& String_Equals(a->filename, b->filename));
+			&& String_Equals(a->filename, b->filename)));
 }
 
 /// <summary>
