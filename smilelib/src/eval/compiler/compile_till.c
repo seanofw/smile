@@ -518,8 +518,8 @@ static void RemoveTillContinuation(CompiledBlock compiledBlock,
 		endTillBlock = instr->p.childBlock;
 		if (instr->opcode != Op_Block
 			|| endTillBlock == NULL
-			|| !(endTillBlock->numInstructions == 0 && endTillBlock->first == NULL
-				|| endTillBlock->numInstructions == 2 && endTillBlock->first->next->opcode == Op_EndTill))
+			|| !((endTillBlock->numInstructions == 0 && endTillBlock->first == NULL)
+				|| (endTillBlock->numInstructions == 2 && endTillBlock->first->next->opcode == Op_EndTill)))
 			Smile_Abort_FatalError("Compiler generated an invalid EndTill block.");
 
 		// We don't know enough to detach the Op_Block instruction itself, but we *can* remove
