@@ -158,5 +158,5 @@ String SymbolTable_GetName(SymbolTable symbolTable, Symbol symbol)
 const char *SymbolTable_GetNameC(SymbolTable symbolTable, Symbol symbol)
 {
 	String string = SymbolTable_GetName(symbolTable, symbol);
-	return (string != NULL ? string->_opaque.text : NULL);
+	return (string != NULL ? (const char *)string->_opaque.text : NULL);
 }
