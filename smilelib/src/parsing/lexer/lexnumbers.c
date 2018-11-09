@@ -473,7 +473,7 @@ Int Lexer_ParseReal(Lexer lexer, Bool isFirstContentOnLine)
 	else if (suffixText[0] == 'F' || suffixText[0] == 'f') {
 		if (suffixText[1] == '\0') {
 			// Float64.
-			float64 = strtod(digits, NULL);
+			float64 = strtod((char *)digits, NULL);
 			token->data.float64 = float64;
 			token->text = digitString;
 			return END_TOKEN(TOKEN_FLOAT64);
@@ -510,7 +510,7 @@ Int Lexer_ParseReal(Lexer lexer, Bool isFirstContentOnLine)
 		}
 		else if ((suffixText[1] == 'F' || suffixText[1] == 'f') && suffixText[2] == '\0') {
 			// Float32.
-			float64 = strtod(digits, NULL);
+			float64 = strtod((char *)digits, NULL);
 			token->data.float32 = (Float32)float64;
 			token->text = digitString;
 			return END_TOKEN(TOKEN_FLOAT32);

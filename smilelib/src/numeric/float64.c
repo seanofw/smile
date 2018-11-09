@@ -203,7 +203,7 @@ String Float64_ToFixedString(Float64 value, Int minIntDigits, Int maxFracDigits,
 	StringBuilder_AppendRepeat(stringBuilder, '0', minIntDigits - (dot - start));
 
 	// Finally, add the rest of the number.
-	StringBuilder_Append(stringBuilder, start, 0, strlen(start));
+	StringBuilder_Append(stringBuilder, (Byte *)start, 0, strlen(start));
 
 	// All done.
 	return StringBuilder_ToString(stringBuilder);
