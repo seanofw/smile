@@ -37,7 +37,7 @@ static void StringIntDictInt_Resize(struct StringIntDictInt *self, Int newLen)
 	oldBuckets = self->buckets;
 
 	// Construct a new heap and buckets twice as large as the old ones.
-	if (newLen >= IntMax || newLen >= IntMax / sizeof(struct StringIntDictNode)) Smile_Abort_OutOfMemory();
+	if ((PtrInt)newLen > PtrIntMax / sizeof(struct StringIntDictNode)) Smile_Abort_OutOfMemory();
 	newBuckets = GC_MALLOC_RAW_ARRAY(Int, newLen);
 	if (newBuckets == NULL) Smile_Abort_OutOfMemory();
 	newHeap = GC_MALLOC_STRUCT_ARRAY(struct StringIntDictNode, newLen);

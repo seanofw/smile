@@ -287,7 +287,7 @@ String Path_GetCurrentDir(void)
 
 		buffer = inline_buffer;
 		for (;;) {
-			dirLength = (Int)GetCurrentDirectoryW(max - 1, buffer);
+			dirLength = (Int)GetCurrentDirectoryW((Int32)(max - 1), buffer);
 			if (dirLength == 0)
 				Smile_Abort_FatalError("Cannot get current working directory.");
 			else if (dirLength > max - 2) {

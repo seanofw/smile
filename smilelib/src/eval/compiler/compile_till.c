@@ -231,7 +231,7 @@ static void DefineVariablesForFlags(Compiler compiler, SmileList flags, Int numF
 	CompiledTillSymbol compiledTillSymbol, *allCompiledTillSymbols;
 	Int index;
 
-	tillInfo->numSymbols = numFlags;
+	tillInfo->numSymbols = (Int32)numFlags;
 
 	// Allocate an array to hold all the flags' metadata, and their branch targets.
 	tillInfo->symbols = allCompiledTillSymbols = GC_MALLOC_STRUCT_ARRAY(CompiledTillSymbol, numFlags);

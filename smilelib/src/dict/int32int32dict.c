@@ -37,7 +37,7 @@ static void Int32Int32DictInt_Resize(struct Int32Int32DictInt *self, Int32 newLe
 	oldBuckets = self->buckets;
 
 	// Construct a new heap and buckets twice as large as the old ones.
-	if (newLen >= IntMax || newLen >= Int32Max / sizeof(struct Int32Int32DictNode)) Smile_Abort_OutOfMemory();
+	if ((PtrInt)newLen > PtrIntMax / sizeof(struct Int32Int32DictNode)) Smile_Abort_OutOfMemory();
 	newBuckets = GC_MALLOC_RAW_ARRAY(Int32, newLen);
 	if (newBuckets == NULL) Smile_Abort_OutOfMemory();
 	newHeap = GC_MALLOC_STRUCT_ARRAY(struct Int32Int32DictNode, newLen);

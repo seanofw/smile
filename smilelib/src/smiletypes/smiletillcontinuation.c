@@ -41,7 +41,7 @@ SmileTillContinuation SmileTillContinuation_Create(SmileObject base, Closure clo
 	smileTillContinuation->vtable = SmileTillContinuation_VTable;
 	smileTillContinuation->closure = closure;
 	smileTillContinuation->segment = segment;
-	smileTillContinuation->stackTop = closure->stackTop - closure->variables;
+	smileTillContinuation->stackTop = (Int32)(closure->stackTop - closure->variables);
 	smileTillContinuation->branchTargetAddresses = branchTargetAddresses;
 	smileTillContinuation->numBranchTargetAddresses = numBranchTargetAddresses;
 
