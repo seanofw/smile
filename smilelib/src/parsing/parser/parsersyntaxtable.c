@@ -87,7 +87,7 @@ static ParserSyntaxNode ParserSyntaxNode_CreateInternal(Symbol name, Symbol vari
 	syntaxNode->repetitionKind = (Int8)repetitionKind;
 	syntaxNode->repetitionSep = (Int8)repetitionSep;
 
-	syntaxNode->nodeID = Atomic_IncrementInt32(&UniqueNodeID);
+	syntaxNode->nodeID = Atomic_IncrementInt32((Int32 *)&UniqueNodeID);
 
 	syntaxNode->position = position;
 
@@ -109,7 +109,7 @@ static ParserSyntaxClass ParserSyntaxClass_CreateNew(void)
 	cls->referenceCount = 1;
 	cls->nextTerminals = NULL;
 	cls->nextNonterminals = NULL;
-	cls->nodeID = Atomic_IncrementInt32(&UniqueNodeID);
+	cls->nodeID = Atomic_IncrementInt32((Int32 *)&UniqueNodeID);
 
 	cls->replacement = NullObject;
 
