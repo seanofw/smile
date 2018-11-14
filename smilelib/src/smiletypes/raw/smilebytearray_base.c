@@ -107,6 +107,42 @@ SMILE_EXTERNAL_FUNCTION(GetMember)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, OutOfRangeError);
 			return SmileUnboxedByte_From((Byte)byteArray->data[(Int)offset]);
 		}
+
+		case SMILE_KIND_INTEGER64RANGE:
+		{
+			SmileByteArray dest;
+			SmileInteger64Range range = (SmileInteger64Range)argv[1].obj;
+			Int64 start = range->start, end = range->end, length;
+			Byte *destPtr;
+			const Byte *srcPtr;
+
+			if (start > end) {
+				start = range->end, end = range->start;
+				if (start < 0) start = 0;
+				if (end > (Int64)byteArray->length - 1) end = (Int64)byteArray->length - 1;
+				length = end - start + 1;
+
+				dest = SmileByteArray_Create((SmileObject)Smile_KnownBases.ByteArray, (Int)length, True);
+
+				// Copy backwards. It's slower than MemCpy, but some compilers may be able to unroll this.
+				for (destPtr = dest->data, srcPtr = byteArray->data + (Int)start + (Int)length; length--; )
+					*destPtr++ = *--srcPtr;
+
+				return SmileArg_From((SmileObject)dest);
+			}
+			else {
+				if (start < 0) start = 0;
+				if (end > (Int64)byteArray->length - 1) end = (Int64)byteArray->length - 1;
+				length = end - start + 1;
+
+				dest = SmileByteArray_Create((SmileObject)Smile_KnownBases.ByteArray, (Int)length, True);
+
+				MemCpy(dest->data, byteArray->data + (Int)start, (Int)length);
+
+				return SmileArg_From((SmileObject)dest);
+			}
+		}
+
 		default:
 			Smile_ThrowException(Smile_KnownSymbols.native_method_error, invalidIndexType);
 	}
@@ -115,7 +151,7 @@ SMILE_EXTERNAL_FUNCTION(GetMember)
 SMILE_EXTERNAL_FUNCTION(SetMember)
 {
 	STATIC_STRING(invalidIndexType, "Index to ByteArray.set-member must be of type Integer64 or IntegerRange64.");
-	STATIC_STRING(invalidValueType, "Value for ByteArray.set-member must be of type Byte or ByteArray.");
+	STATIC_STRING(invalidValueType, "Value for ByteArray.set-member must be of type Byte or ByteArray (for ranges).");
 	STATIC_STRING(readOnlyError, "ByteArray is read-only.");
 	SmileByteArray byteArray = (SmileByteArray)argv[0].obj;
 
@@ -126,10 +162,61 @@ SMILE_EXTERNAL_FUNCTION(SetMember)
 		case SMILE_KIND_UNBOXED_INTEGER64:
 		{
 			Int64 offset;
+
 			offset = argv[1].unboxed.i64;
 			if (offset < 0 || offset >= byteArray->length)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, OutOfRangeError);
+			if (SMILE_KIND(argv[2].obj) != SMILE_KIND_UNBOXED_BYTE)
+				Smile_ThrowException(Smile_KnownSymbols.native_method_error, invalidValueType);
+			byteArray->data[(Int)offset] = argv[2].unboxed.b;
+
+			return argv[2];
 		}
+
+		case SMILE_KIND_INTEGER64RANGE:
+		{
+			SmileInteger64Range range = (SmileInteger64Range)argv[1].obj;
+			Int64 start = range->start, end = range->end, length;
+			SmileByteArray src;
+			Byte *destPtr;
+			const Byte *srcStart, *srcPtr, *srcEnd;
+			Bool reverse = False;
+
+			if (start > end)
+				start = range->end, end = range->start, reverse = True;
+			if (start < 0) start = 0;
+			if (end > (Int64)byteArray->length - 1) end = (Int64)byteArray->length - 1;
+			length = end - start + 1;
+
+			if (SMILE_KIND(argv[2].obj) == SMILE_KIND_UNBOXED_BYTE) {
+				MemSet(byteArray->data + (Int)start, argv[2].unboxed.b, (Int)length);
+			}
+			else if (SMILE_KIND(argv[2].obj) == SMILE_KIND_BYTEARRAY) {
+				src = (SmileByteArray)argv[2].obj;
+				destPtr = byteArray->data + (Int)start;
+				srcStart = src->data;
+				srcEnd = srcStart + src->length;
+				if (src->length <= 0) {
+					MemSet(destPtr, 0, (Int)length);
+				}
+				else if (!reverse) {
+					for (srcPtr = srcStart; length--; ) {
+						*destPtr++ = *srcPtr++;
+						if (srcPtr == srcEnd) srcPtr = srcStart;
+					}
+				}
+				else {
+					for (srcPtr = srcEnd; length--; ) {
+						*destPtr++ = *--srcPtr;
+						if (srcPtr == srcStart) srcPtr = srcEnd;
+					}
+				}
+			}
+			else Smile_ThrowException(Smile_KnownSymbols.native_method_error, invalidValueType);
+
+			return argv[2];
+		}
+
 		default:
 			Smile_ThrowException(Smile_KnownSymbols.native_method_error, invalidIndexType);
 	}
@@ -886,8 +973,8 @@ void SmileByteArray_Setup(SmileUserObject base)
 	SetupFunction("string", ToString, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX, 1, 2, 0, NULL);
 	SetupFunction("hash", Hash, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 
-	SetupFunction("get-member", GetMember, NULL, "byte-array index", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 1, _byteArrayChecks);
-	SetupFunction("set-member", SetMember, NULL, "byte-array index value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 1, _byteArrayChecks);
+	SetupFunction("get-member", GetMember, NULL, "byte-array index", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _byteArrayChecks);
+	SetupFunction("set-member", SetMember, NULL, "byte-array index value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _byteArrayChecks);
 
 	SetupFunction("each", Each, NULL, "byte-array", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
 	SetupFunction("map", Map, NULL, "byte-array", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
