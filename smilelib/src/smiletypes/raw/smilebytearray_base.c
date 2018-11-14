@@ -894,16 +894,16 @@ void SmileByteArray_Setup(SmileUserObject base)
 	SetupFunction("where", Where, NULL, "byte-array", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
 	SetupFunction("count", Count, NULL, "byte-array", ARG_STATE_MACHINE, 0, 0, 0, NULL);
 
-	SetupFunction("crc-32", MakeCrc32, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
+	SetupFunction("crc32", MakeCrc32, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
 	SetupFunction("md5", MakeMd5, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
-	SetupFunction("sha-1", MakeSha1, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
-	SetupFunction("sha-256", MakeSha256, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
-	SetupFunction("sha-384", MakeSha384, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
-	SetupFunction("sha-512", MakeSha512, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
-	SetupFunction("sha3-224", MakeSha3_224, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
-	SetupFunction("sha3-256", MakeSha3_256, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
-	SetupFunction("sha3-384", MakeSha3_384, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
-	SetupFunction("sha3-512", MakeSha3_512, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
+	SetupFunction("sha1", MakeSha1, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
+	SetupFunction("sha256", MakeSha256, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
+	SetupFunction("sha384", MakeSha384, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
+	SetupFunction("sha512", MakeSha512, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
+	SetupFunction("sha3x224", MakeSha3_224, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
+	SetupFunction("sha3x256", MakeSha3_256, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
+	SetupFunction("sha3x384", MakeSha3_384, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
+	SetupFunction("sha3x512", MakeSha3_512, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
 
 	SetupFunction("hex-string", HexString, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
 }
