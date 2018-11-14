@@ -122,6 +122,7 @@
       <Filter>parsing\lexer</Filter>
     </ClCompile>
     <ClCompile Include="string\stringident_tests.c" />
+    <ClCompile Include="dict\hash_tests.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />

@@ -1002,6 +1002,7 @@
     <ClCompile Include="src\eval\compiler\compile_brk.c" />
     <ClCompile Include="src\eval\closure_stringify.c" />
     <ClCompile Include="src\smiletypes\smiletillcontinuation.c" />
+    <ClCompile Include="src\crypto\hash.c" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">

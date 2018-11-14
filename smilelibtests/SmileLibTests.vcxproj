@@ -112,6 +112,7 @@
     <ClInclude Include="testlib.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="dict\hash_tests.c" />
     <ClCompile Include="dict\int32dict_tests.c" />
     <ClCompile Include="dict\pointerset_tests.c" />
     <ClCompile Include="dict\stringdict_tests.c" />

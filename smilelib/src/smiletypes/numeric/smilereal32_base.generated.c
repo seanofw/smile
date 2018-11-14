@@ -98,9 +98,9 @@ SMILE_EXTERNAL_FUNCTION(Hash)
 	SmileReal32 obj = (SmileReal32)argv[0].obj;
 
 	if (SMILE_KIND(obj) == SMILE_KIND_UNBOXED_REAL32)
-		return SmileUnboxedInteger64_From((UInt32)(*(UInt32 *)&obj->value));
+		return SmileUnboxedInteger64_From(Smile_ApplyHashOracle((UInt32)(*(UInt32 *)&obj->value)));
 
-	return SmileUnboxedInteger64_From((UInt32)((PtrInt)obj ^ Smile_HashOracle));
+	return SmileUnboxedInteger64_From(Smile_ApplyHashOracle((PtrInt)obj));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1024,6 +1024,7 @@ void SmileReal32_Setup(SmileUserObject base)
 	SetupFunction("tri", Tri, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real32Checks);
 	SetupFunction("min", Min, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _real32Checks);
 	SetupFunction("max", Max, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 8, _real32Checks);
+
 	SetupFunction("sqrt", Sqrt, &_quietMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real32Checks);
 	SetupFunction("sqrt!", Sqrt, &_loudMath, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real32Checks);
 	SetupFunction("sqr", Sqr, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _real32Checks);

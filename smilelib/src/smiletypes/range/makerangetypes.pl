@@ -86,7 +86,7 @@ EOI
 		UInt64 start = (UInt64)range->start;
 		UInt64 end = (UInt64)range->end;
 		UInt64 stepping = (UInt64)range->stepping;
-		result = (UInt32)(start ^ (start >> 32)) ^ (UInt32)(end ^ (end >> 32)) ^ (UInt32)(stepping ^ (stepping >> 32));
+		result = SMILE_APPLY_HASH_ORACLE((UInt32)(start ^ (start >> 32)) ^ (UInt32)(end ^ (end >> 32)) ^ (UInt32)(stepping ^ (stepping >> 32)));
 EOI
 );
 
@@ -133,7 +133,7 @@ EOI
 		UInt32 start = (UInt32)range->start;
 		UInt32 end = (UInt32)range->end;
 		UInt32 stepping = (UInt32)range->stepping;
-		result = (UInt32)(start ^ end ^ stepping);
+		result = SMILE_APPLY_HASH_ORACLE((UInt32)(start ^ end ^ stepping));
 EOI
 );
 
@@ -180,7 +180,7 @@ EOI
 		UInt16 start = (UInt16)range->start;
 		UInt16 end = (UInt16)range->end;
 		UInt16 stepping = (UInt16)range->stepping;
-		result = (UInt32)((UInt32)start ^ (UInt32)(end << 8) ^ (UInt32)(stepping << 16));
+		result = SMILE_APPLY_HASH_ORACLE((UInt32)((UInt32)start ^ (UInt32)(end << 8) ^ (UInt32)(stepping << 16)));
 EOI
 );
 
@@ -227,7 +227,7 @@ EOI
 		Byte start = range->start;
 		Byte end = range->end;
 		Byte stepping = range->stepping;
-		result = (UInt32)((UInt32)start ^ (UInt32)(end << 8) ^ (UInt32)(stepping << 16));
+		result = SMILE_APPLY_HASH_ORACLE((UInt32)((UInt32)start ^ (UInt32)(end << 8) ^ (UInt32)(stepping << 16)));
 EOI
 );
 

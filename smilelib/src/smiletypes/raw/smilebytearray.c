@@ -213,7 +213,7 @@ Int SmileByteArray_GetSecurity(SmileByteArray self)
 
 UInt32 SmileByteArray_Hash(SmileByteArray self)
 {
-	return ((PtrInt)self & 0xFFFFFFFF) ^ Smile_HashOracle;
+	return Smile_ApplyHashOracle((PtrInt)self);
 }
 
 Bool SmileByteArray_CompareEqual(SmileByteArray self, SmileUnboxedData selfUnboxed, SmileObject other, SmileUnboxedData otherUnboxed)

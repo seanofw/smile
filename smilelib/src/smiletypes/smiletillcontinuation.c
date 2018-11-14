@@ -54,7 +54,7 @@ SMILE_EASY_OBJECT_NO_SOURCE(SmileTillContinuation)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileTillContinuation)
 SMILE_EASY_OBJECT_NO_UNBOX(SmileTillContinuation)
 
-SMILE_EASY_OBJECT_HASH(SmileTillContinuation, (UInt32)(PtrInt)obj ^ Smile_HashOracle)
+SMILE_EASY_OBJECT_HASH(SmileTillContinuation, Smile_ApplyHashOracle((PtrInt)obj))
 SMILE_EASY_OBJECT_TOBOOL(SmileTillContinuation, True)
 SMILE_EASY_OBJECT_TOSTRING(SmileTillContinuation, String_FromC("till-continuation"))
 

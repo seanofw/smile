@@ -69,7 +69,7 @@ static UInt32 SmileByteRange_Hash(SmileByteRange range)
 		Byte start = range->start;
 		Byte end = range->end;
 		Byte stepping = range->stepping;
-		result = (UInt32)((UInt32)start ^ (UInt32)(end << 8) ^ (UInt32)(stepping << 16));
+		result = Smile_ApplyHashOracle((UInt32)((UInt32)start ^ (UInt32)(end << 8) ^ (UInt32)(stepping << 16)));
 
 	return result;
 }

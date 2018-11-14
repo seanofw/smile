@@ -1,4 +1,4 @@
-﻿//---------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
 //  Copyright 2004-2017 Sean Werkema
 //
@@ -85,7 +85,7 @@ SMILE_EXTERNAL_FUNCTION(ToString)
 
 SMILE_EXTERNAL_FUNCTION(Hash)
 {
-	return SmileUnboxedInteger64_From(((PtrInt)argv[0].obj) ^ Smile_HashOracle);
+	return SmileUnboxedInteger64_From(Smile_ApplyHashOracle((PtrInt)argv[0].obj));
 }
 
 //-------------------------------------------------------------------------------------------------

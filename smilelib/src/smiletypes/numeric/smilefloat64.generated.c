@@ -51,7 +51,7 @@ SmileFloat64 SmileFloat64_Create(Float64 value)
 
 static UInt32 SmileFloat64_Hash(SmileFloat64 obj)
 {
-	return (UInt32)(*(UInt64 *)&obj->value ^ (*(UInt64 *)&obj->value >> 32));
+	return Smile_ApplyHashOracle((UInt32)(*(UInt64 *)&obj->value ^ (*(UInt64 *)&obj->value >> 32)));
 }
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileFloat64)

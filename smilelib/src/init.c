@@ -62,8 +62,6 @@ void Smile_Init(void)
 
 	GC_INIT();
 
-	Smile_HashOracle = (UInt32)GetBaselineEntropy();
-
 	Smile_ResetEnvironment();
 }
 
@@ -77,6 +75,10 @@ void Smile_ResetEnvironment(void)
 
 	// Now give the garbage collector a chance to make the world as clean as possible.
 	GC_gcollect();
+
+	// Reset the hash oracle to a new system entropy value, and generate hash tables from it.
+	Smile_HashOracle = (UInt32)GetBaselineEntropy();
+	Smile_InitHashTable(Smile_HashOracle);
 
 	// Make a symbol table for this environment.
 	Smile_SymbolTable = SymbolTable_Create();

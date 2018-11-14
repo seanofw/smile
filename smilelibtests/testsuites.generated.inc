@@ -5,6 +5,7 @@ EXTERN_TEST_SUITE(CompilerTests);
 EXTERN_TEST_SUITE(EvalConstantTests);
 EXTERN_TEST_SUITE(EvalCoreTests);
 EXTERN_TEST_SUITE(EvalTests);
+EXTERN_TEST_SUITE(HashTests);
 EXTERN_TEST_SUITE(Int32DictTests);
 EXTERN_TEST_SUITE(LexerCoreTests);
 EXTERN_TEST_SUITE(LexerIdentifierTests);
@@ -49,6 +50,7 @@ void RunAllTests()
 	RUN_TEST_SUITE(results, EvalConstantTests);
 	RUN_TEST_SUITE(results, EvalCoreTests);
 	RUN_TEST_SUITE(results, EvalTests);
+	RUN_TEST_SUITE(results, HashTests);
 	RUN_TEST_SUITE(results, Int32DictTests);
 	RUN_TEST_SUITE(results, LexerCoreTests);
 	RUN_TEST_SUITE(results, LexerIdentifierTests);
@@ -94,6 +96,7 @@ const char *TestSuiteNames[] = {
 	"EvalConstantTests",
 	"EvalCoreTests",
 	"EvalTests",
+	"HashTests",
 	"Int32DictTests",
 	"LexerCoreTests",
 	"LexerIdentifierTests",
@@ -131,5 +134,5 @@ const char *TestSuiteNames[] = {
 };
 
 
-int NumTestSuites = 39;
+int NumTestSuites = 40;
 

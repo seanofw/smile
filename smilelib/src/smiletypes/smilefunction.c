@@ -436,12 +436,13 @@ Bool SmileExternalFunction_DeepEqual(SmileFunction self, SmileUnboxedData selfDa
 
 UInt32 SmileUserFunction_Hash(SmileFunction self)
 {
-	return (UInt32)(((PtrInt)(self->u.u.userFunctionInfo) & 0xFFFFFFFF) ^ Smile_HashOracle);
+	return Smile_ApplyHashOracle((PtrInt)self->u.u.userFunctionInfo);
 }
 
 UInt32 SmileExternalFunction_Hash(SmileFunction self)
 {
-	return (UInt32)(((PtrInt)(self->u.externalFunctionInfo.externalFunction) ^ (PtrInt)(self->u.externalFunctionInfo.param) & 0xFFFFFFFF) ^ Smile_HashOracle);
+	PtrInt value = (PtrInt)self->u.externalFunctionInfo.externalFunction ^ (PtrInt)self->u.externalFunctionInfo.param;
+	return Smile_ApplyHashOracle(value);
 }
 
 SmileObject SmileUserFunction_GetProperty(SmileFunction self, Symbol propertyName)

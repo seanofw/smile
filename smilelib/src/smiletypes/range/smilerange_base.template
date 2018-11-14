@@ -123,7 +123,7 @@ SMILE_EXTERNAL_FUNCTION(Hash)
 		return SmileUnboxedInteger64_From(result);
 	}
 
-	return SmileUnboxedInteger64_From((PtrInt)argv[0].obj ^ Smile_HashOracle);
+	return SmileUnboxedInteger64_From(SMILE_APPLY_HASH_ORACLE((PtrInt)argv[0].obj));
 }
 
 //-------------------------------------------------------------------------------------------------

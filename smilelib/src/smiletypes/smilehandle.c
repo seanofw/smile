@@ -51,7 +51,7 @@ SMILE_EASY_OBJECT_NO_SOURCE(SmileHandle)
 SMILE_EASY_OBJECT_NO_PROPERTIES(SmileHandle)
 SMILE_EASY_OBJECT_NO_UNBOX(SmileHandle)
 
-SMILE_EASY_OBJECT_HASH(SmileHandle, (UInt32)(PtrInt)obj->ptr ^ Smile_HashOracle)
+SMILE_EASY_OBJECT_HASH(SmileHandle, Smile_ApplyHashOracle((PtrInt)obj->ptr))
 SMILE_EASY_OBJECT_TOBOOL(SmileHandle, True)
 SMILE_EASY_OBJECT_TOSTRING(SmileHandle, SymbolTable_GetName(Smile_SymbolTable, obj->handleKind))
 

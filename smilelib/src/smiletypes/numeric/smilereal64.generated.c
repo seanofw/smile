@@ -50,7 +50,7 @@ SmileReal64 SmileReal64_Create(Real64 value)
 
 static UInt32 SmileReal64_Hash(SmileReal64 obj)
 {
-	return (UInt32)(*(UInt64 *)&obj->value ^ (*(UInt64 *)&obj->value >> 32));
+	return Smile_ApplyHashOracle((UInt32)(*(UInt64 *)&obj->value ^ (*(UInt64 *)&obj->value >> 32)));
 }
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileReal64)

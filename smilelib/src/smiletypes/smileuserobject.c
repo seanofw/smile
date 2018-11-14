@@ -116,7 +116,7 @@ Bool SmileUserObject_DeepEqual(SmileUserObject self, SmileUnboxedData selfData, 
 
 UInt32 SmileUserObject_Hash(SmileUserObject self)
 {
-	return ((PtrInt)self & 0xFFFFFFFF) ^ Smile_HashOracle;
+	return Smile_ApplyHashOracle((PtrInt)self);
 }
 
 void SmileUserObject_SetSecurityKey(SmileUserObject self, SmileObject newSecurityKey, SmileObject oldSecurityKey)

@@ -126,12 +126,12 @@ SMILE_EXTERNAL_FUNCTION(Hash)
 		UInt32 start = (UInt32)range->start;
 		UInt32 end = (UInt32)range->end;
 		UInt32 stepping = (UInt32)range->stepping;
-		result = (UInt32)(start ^ end ^ stepping);
+		result = Smile_ApplyHashOracle((UInt32)(start ^ end ^ stepping));
 
 		return SmileUnboxedInteger64_From(result);
 	}
 
-	return SmileUnboxedInteger64_From((PtrInt)argv[0].obj ^ Smile_HashOracle);
+	return SmileUnboxedInteger64_From(Smile_ApplyHashOracle((PtrInt)argv[0].obj));
 }
 
 //-------------------------------------------------------------------------------------------------

@@ -50,7 +50,7 @@ SmileByte SmileByte_CreateInternal(Byte value)
 
 static UInt32 SmileByte_Hash(SmileByte obj)
 {
-	return (UInt32)obj->value;
+	return Smile_ApplyHashOracle((UInt32)obj->value);
 }
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileByte)
