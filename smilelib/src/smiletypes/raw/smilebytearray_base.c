@@ -788,6 +788,62 @@ SMILE_EXTERNAL_FUNCTION(MakeSha512)
 	return SmileArg_From((SmileObject)result);
 }
 
+SMILE_EXTERNAL_FUNCTION(MakeSha3_224)
+{
+	Int64 start, length;
+	SmileByteArray byteArray = (SmileByteArray)argv[0].obj;
+	SmileByteArray result = SmileByteArray_Create((SmileObject)Smile_KnownBases.ByteArray, 224 / 8, True);
+
+	if (!SetupForHashing(argc, argv, &byteArray, &start, &length))
+		return SmileUnboxedInteger32_From(0);
+
+	Sha3_224(result->data, byteArray->data + (Int)start, (Int)length);
+
+	return SmileArg_From((SmileObject)result);
+}
+
+SMILE_EXTERNAL_FUNCTION(MakeSha3_256)
+{
+	Int64 start, length;
+	SmileByteArray byteArray = (SmileByteArray)argv[0].obj;
+	SmileByteArray result = SmileByteArray_Create((SmileObject)Smile_KnownBases.ByteArray, 256 / 8, True);
+
+	if (!SetupForHashing(argc, argv, &byteArray, &start, &length))
+		return SmileUnboxedInteger32_From(0);
+
+	Sha3_256(result->data, byteArray->data + (Int)start, (Int)length);
+
+	return SmileArg_From((SmileObject)result);
+}
+
+SMILE_EXTERNAL_FUNCTION(MakeSha3_384)
+{
+	Int64 start, length;
+	SmileByteArray byteArray = (SmileByteArray)argv[0].obj;
+	SmileByteArray result = SmileByteArray_Create((SmileObject)Smile_KnownBases.ByteArray, 384 / 8, True);
+
+	if (!SetupForHashing(argc, argv, &byteArray, &start, &length))
+		return SmileUnboxedInteger32_From(0);
+
+	Sha3_384(result->data, byteArray->data + (Int)start, (Int)length);
+
+	return SmileArg_From((SmileObject)result);
+}
+
+SMILE_EXTERNAL_FUNCTION(MakeSha3_512)
+{
+	Int64 start, length;
+	SmileByteArray byteArray = (SmileByteArray)argv[0].obj;
+	SmileByteArray result = SmileByteArray_Create((SmileObject)Smile_KnownBases.ByteArray, 512 / 8, True);
+
+	if (!SetupForHashing(argc, argv, &byteArray, &start, &length))
+		return SmileUnboxedInteger32_From(0);
+
+	Sha3_512(result->data, byteArray->data + (Int)start, (Int)length);
+
+	return SmileArg_From((SmileObject)result);
+}
+
 static const Byte _hexTable[] = {
 	'0', '1', '2', '3', '4', '5', '6', '7',
 	'8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
@@ -844,6 +900,10 @@ void SmileByteArray_Setup(SmileUserObject base)
 	SetupFunction("sha-256", MakeSha256, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
 	SetupFunction("sha-384", MakeSha384, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
 	SetupFunction("sha-512", MakeSha512, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
+	SetupFunction("sha3-224", MakeSha3_224, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
+	SetupFunction("sha3-256", MakeSha3_256, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
+	SetupFunction("sha3-384", MakeSha3_384, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
+	SetupFunction("sha3-512", MakeSha3_512, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
 
 	SetupFunction("hex-string", HexString, NULL, "byte-array range", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hashChecks);
 }

@@ -26,4 +26,8 @@
 #include <smile/crypto/sha2.h>
 #endif
 
+#ifndef __SMILE_CRYPTO_SHA3_H__
+#include <smile/crypto/sha3.h>
+#endif
+
 #endif

@@ -136,6 +136,7 @@
     <ClInclude Include="include\smile\crypto\md5.h" />
     <ClInclude Include="include\smile\crypto\sha1.h" />
     <ClInclude Include="include\smile\crypto\sha2.h" />
+    <ClInclude Include="include\smile\crypto\sha3.h" />
     <ClInclude Include="include\smile\dict\int32int32dict.h" />
     <ClInclude Include="include\smile\dict\pointerset.h" />
     <ClInclude Include="include\smile\dict\vardict.h" />
@@ -790,10 +791,12 @@
     <Text Include="src\atomic\atomic_windows_msvc.inc">
       <FileType>Document</FileType>
     </Text>
+    <ClCompile Include="src\crypto\hash.c" />
     <ClCompile Include="src\crypto\hash\crc32.c" />
     <ClCompile Include="src\crypto\hash\md5.c" />
     <ClCompile Include="src\crypto\hash\sha1.c" />
     <ClCompile Include="src\crypto\hash\sha2.c" />
+    <ClCompile Include="src\crypto\hash\sha3.c" />
     <ClCompile Include="src\dict\dictstats.c" />
     <ClCompile Include="src\dict\int32int32dict.c" />
     <ClCompile Include="src\dict\pointerset.c" />
