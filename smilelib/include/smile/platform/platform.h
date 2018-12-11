@@ -103,4 +103,36 @@
 
 #endif
 
+//------------------------------------------------------------------------------------------------
+// Platform-specific functions for low-level access to OS information.
+
+// Get the current date-and-time, in the current (local) timezone, as a
+// Unix-style timestamp (seconds since midnight Jan 1 1970).
+SMILE_API_FUNC double Os_GetDateTime(void);
+
+// Get the offset of the current (local) timezone, in minutes relative to UTC.
+SMILE_API_FUNC int Os_GetTimeZoneOffset(void);
+
+// Copy the name of the current (local) timezone into 'buffer', up to 'bufSize' characters,
+// including a trailing '\0'.  Returns the number of characters written (not including the
+// trailing nul), or a negative number if the buffer isn't big enough.
+SMILE_API_FUNC int Os_GetTimeZoneName(char *buffer, int bufSize);
+
+// Get the ID of the current process (0 on OSes that don't support multiprocessing).
+SMILE_API_FUNC int Os_GetProcessId(void);
+
+// Get the ID of the currently-logged-in user (0 on single-user OSes).
+SMILE_API_FUNC int Os_GetUserId(void);
+
+// Copy the name of the currently-logged-in user into 'buffer', up to 'bufSize' characters,
+// including a trailing '\0'.  Returns the number of characters written (not including the
+// trailing nul), or a negative number if the buffer isn't big enough.
+SMILE_API_FUNC int Os_GetUserName(char *buffer, int bufSize);
+
+// Copy random bytes from the OS's entropy source/random-data-source into 'buffer',
+// of exactly 'bufSize' bytes.  This should only be called for "small" sizes of buffers,
+// such as 256 bytes or less; "large" requests may fail on some platforms.  This function
+// can be "slow," so you shouldn't call it often.  Returns '1' on success, '0' on failure.
+SMILE_API_FUNC void Os_GetRandomData(void *buffer, int bufSize);
+
 #endif
