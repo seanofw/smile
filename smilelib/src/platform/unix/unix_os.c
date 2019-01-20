@@ -97,9 +97,6 @@ String Os_GetUserName()
 	char *temp;
 	String userName;
 
-	if (bufSize <= 0)
-		return String_Empty;
-
 	temp = (char *)malloc(TEMP_SIZE);
 	if (temp == NULL)
 		return String_Empty;
