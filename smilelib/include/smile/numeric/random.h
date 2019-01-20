@@ -72,7 +72,7 @@ Inline Int32 Random_IntRange32(Random random, Int32 min, Int32 max)
 /// <returns>A 32-bit uniformly-distributed random number in the range of 0 to max, inclusive.</returns>
 Inline Int64 Random_ZeroToInt64(Random random, Int64 max)
 {
-	return max > 0 ? (Int64)Random_UInt64((UInt64)max) : 0;
+	return max > 0 ? (Int64)Random_ZeroToUInt64(random, (UInt64)max) : 0;
 }
 
 /// <summary>
@@ -84,7 +84,7 @@ Inline Int64 Random_ZeroToInt64(Random random, Int64 max)
 /// <returns>A 64-bit uniformly-distributed random number in the range of 0 to max, inclusive.</returns>
 Inline Int32 Random_ZeroToInt32(Random random, Int32 max)
 {
-	return max > 0 ? (Int32)Random_UInt32((UInt32)max) : 0;
+	return max > 0 ? (Int32)Random_ZeroToUInt32(random, (UInt32)max) : 0;
 }
 
 #endif

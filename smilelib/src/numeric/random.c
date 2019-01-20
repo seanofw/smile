@@ -51,6 +51,9 @@ void Random_Init(Random random)
 		| ((Int64)hashResult[7] << 56) ));
 }
 
+#define LCG_MULTIPLIER	6364136223846793005ULL
+#define LCG_INCREMENT	1442695040888963407ULL
+
 /// <summary>
 /// Initialize the given random-number generator with the given seed value.  This uses Melissa O'Neill's
 /// excellent PCG 32-bit random-number generator, which is simple, fast, and proven, with a period of 2^64.
@@ -60,9 +63,9 @@ void Random_Init(Random random)
 void Random_InitWithSeed(Random random, UInt64 seed)
 {
 	random->state = 0U;
-	random->state = random->state * 6364136223846793005ULL + 1442695040888963407ULL;
+	random->state = random->state * LCG_MULTIPLIER + LCG_INCREMENT;
 	random->state += seed;
-	random->state = random->state * 6364136223846793005ULL + 1442695040888963407ULL;
+	random->state = random->state * LCG_MULTIPLIER + LCG_INCREMENT;
 }
 
 /// <summary>
@@ -79,7 +82,7 @@ UInt32 Random_UInt32(Random random)
 	UInt64 state, nextState;
 retry:
 	state = random->state;
-	nextState = state * 6364136223846793005ULL + 1442695040888963407ULL;
+	nextState = state * LCG_MULTIPLIER + LCG_INCREMENT;
 	if (!Atomic_CompareAndSwapInt64((UInt64 *)&random->state, (UInt64)state, (UInt64)nextState))
 		goto retry;
 	return Smile_RotateRight32(((state >> 18) ^ state) >> 27, state >> 59);
