@@ -16,6 +16,7 @@
 //---------------------------------------------------------------------------------------
 
 #include <smile/types.h>
+#include <smile/string.h>
 
 // Shared Unix/Linux/MacOS X support code for OS-specific data sources.
 
@@ -26,6 +27,9 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <malloc.h>
 
 // Get the current date-and-time, in the current (local) timezone, as a
 // Unix-style timestamp (seconds since midnight Jan 1 1970).
@@ -39,8 +43,9 @@ double Os_GetDateTime(void)
 // Get the offset of the current (local) timezone, in minutes relative to UTC.
 int Os_GetTimeZoneOffset(void)
 {
+	struct timeval tv;
 	struct timezone tz;
-	if (gettimeofday(NULL, &tz)) return 0;
+	if (gettimeofday(&tv, &tz)) return 0;
 	return tz.tz_minuteswest;
 }
 
@@ -52,6 +57,7 @@ String Os_GetTimeZoneName()
 	struct tm t;
 	int bufLen;
 	String timeZoneName;
+	char *temp;
 
 	temp = (char *)malloc(TEMP_SIZE);
 	if (temp == NULL)
@@ -63,7 +69,7 @@ String Os_GetTimeZoneName()
 		timeZoneName = String_Empty;
 	else {
 		temp[TEMP_SIZE - 1] = '\0';
-		timeZoneName = String_FromC(buffer);
+		timeZoneName = String_FromC(temp);
 	}
 
 	free(temp);
@@ -91,7 +97,8 @@ String Os_GetUserName()
 	char *temp;
 	String userName;
 
-	if (bufSize <= 0) return -1;
+	if (bufSize <= 0)
+		return String_Empty;
 
 	temp = (char *)malloc(TEMP_SIZE);
 	if (temp == NULL)
