@@ -101,4 +101,27 @@ Inline UInt64 GetBaselineEntropy(void)
 	return ((UInt64)lo) | (((UInt64)hi) << 32);
 }
 
+//------------------------------------------------------------------------------------------------
+//  Optimized bit-search functions.
+
+Inline UInt32 UInt32_CountLeadingZeros(UInt32 value)
+{
+	return value ? (UInt32)__builtin_clz((unsigned int)value) : 32;
+}
+
+Inline UInt32 UInt32_CountTrailingZeros(UInt32 value)
+{
+	return value ? (UInt32)__builtin_ctz((unsigned int)value) : 32;
+}
+
+Inline UInt64 UInt64_CountLeadingZeros(UInt64 value)
+{
+	return value ? (UInt64)__builtin_clzll((unsigned long long)value) : 64;
+}
+
+Inline UInt64 UInt64_CountTrailingZeros(UInt64 value)
+{
+	return value ? (UInt64)__builtin_ctzll((unsigned long long)value) : 64;
+}
+
 #endif

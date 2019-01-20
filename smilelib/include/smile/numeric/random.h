@@ -43,7 +43,7 @@ Inline Int64 Random_IntRange64(Random random, Int64 min, Int64 max)
 	else if (min == Int64Min && max == Int64Max)
 		return (Int64)Random_UInt64(random);
 	else
-		return (Int64)Random_ZeroToUInt64(random, (UInt64)(max - min + 1));
+		return (Int64)Random_ZeroToUInt64(random, (UInt64)(max - min + 1)) - min;
 }
 
 /// <summary>
@@ -60,16 +60,16 @@ Inline Int32 Random_IntRange32(Random random, Int32 min, Int32 max)
 	else if (min == Int32Min && max == Int32Max)
 		return (Int32)Random_UInt64(random);
 	else
-		return (Int32)Random_ZeroToUInt32(random, (UInt32)(max - min + 1));
+		return (Int32)Random_ZeroToUInt32(random, (UInt32)(max - min + 1)) - min;
 }
 
 /// <summary>
 /// Retrieve a 32-bit uniformly-distributed random number from the given random-number generator
-/// in the range of 0 to max, inclusive.  This works hard to ensure the result has a uniform
+/// in the range of [0, max).  This works hard to ensure the result has a uniform
 /// distribution, so it is slower than a simple modulus, but more accurate.
 /// </summary>
 /// <param name="random">The random-number generator providing the random values.</param>
-/// <returns>A 32-bit uniformly-distributed random number in the range of 0 to max, inclusive.</returns>
+/// <returns>A 32-bit uniformly-distributed random number in the range of 0 to max, exclusive of max.</returns>
 Inline Int64 Random_ZeroToInt64(Random random, Int64 max)
 {
 	return max > 0 ? (Int64)Random_ZeroToUInt64(random, (UInt64)max) : 0;
@@ -77,11 +77,11 @@ Inline Int64 Random_ZeroToInt64(Random random, Int64 max)
 
 /// <summary>
 /// Retrieve a 64-bit uniformly-distributed random number from the given random-number generator
-/// in the range of 0 to max, inclusive.  This works hard to ensure the result has a uniform
+/// in the range of [0, max).  This works hard to ensure the result has a uniform
 /// distribution, so it is slower than a simple modulus, but more accurate.
 /// </summary>
 /// <param name="random">The random-number generator providing the random values.</param>
-/// <returns>A 64-bit uniformly-distributed random number in the range of 0 to max, inclusive.</returns>
+/// <returns>A 64-bit uniformly-distributed random number in the range of 0 to max, exclusive of max.</returns>
 Inline Int32 Random_ZeroToInt32(Random random, Int32 max)
 {
 	return max > 0 ? (Int32)Random_ZeroToUInt32(random, (UInt32)max) : 0;

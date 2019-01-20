@@ -99,7 +99,7 @@ retry:
 
 /// <summary>
 /// Retrieve a 64-bit uniformly-distributed random number from the given random-number generator
-/// in the range of 0 to max, inclusive.  This works hard to ensure the result has a uniform
+/// in the range of [0, max).  This works hard to ensure the result has a uniform
 /// distribution, so it is slower than a simple modulus, but more accurate.
 ///
 /// This uses the bitmask-with-rejection method, which is Apple's preferred method, and is
@@ -107,19 +107,14 @@ retry:
 /// bounded random numbers:  http://www.pcg-random.org/posts/bounded-rands.html
 /// </summary>
 /// <param name="random">The random-number generator providing the random values.</param>
-/// <returns>A 64-bit uniformly-distributed random number in the range of 0 to max, inclusive.</returns>
+/// <returns>A 64-bit uniformly-distributed random number in the range of 0 to max, exclusive of max.</returns>
 UInt64 Random_ZeroToUInt64(Random random, UInt64 max)
 {
 	UInt64 x;
-	UInt64 mask = UInt64Max;
-
-#	if SMILE_COMPILER == SMILE_COMPILER_GCC || SMILE_COMPILER == SMILE_COMPILER_CLANG
-		mask >>= __builtin_clzll(max | 1);
-#	else
-		UInt64 temp = max;
-		for (temp |= 1; temp; temp >>= 1)
-			mask >>= 1;
-#	endif
+	UInt64 mask;
+	
+	max--;
+	mask = UInt64Max >> UInt64_CountLeadingZeros(max | 1);
 
 	do {
 		x = Random_UInt64(random) & mask;
@@ -130,7 +125,7 @@ UInt64 Random_ZeroToUInt64(Random random, UInt64 max)
 
 /// <summary>
 /// Retrieve a 32-bit uniformly-distributed random number from the given random-number generator
-/// in the range of 0 to max, inclusive.  This works hard to ensure the result has a uniform
+/// in the range of [0, max).  This works hard to ensure the result has a uniform
 /// distribution, so it is slower than a simple modulus, but more accurate.
 ///
 /// This uses the bitmask-with-rejection method, which is Apple's preferred method, and is
@@ -138,19 +133,14 @@ UInt64 Random_ZeroToUInt64(Random random, UInt64 max)
 /// bounded random numbers:  http://www.pcg-random.org/posts/bounded-rands.html
 /// </summary>
 /// <param name="random">The random-number generator providing the random values.</param>
-/// <returns>A 32-bit uniformly-distributed random number in the range of 0 to max, inclusive.</returns>
+/// <returns>A 32-bit uniformly-distributed random number in the range of 0 to max, exclusive of max.</returns>
 UInt32 Random_ZeroToUInt32(Random random, UInt32 max)
 {
 	UInt32 x;
-	UInt32 mask = UInt32Max;
-
-#	if SMILE_COMPILER == SMILE_COMPILER_GCC || SMILE_COMPILER == SMILE_COMPILER_CLANG
-		mask >>= __builtin_clz(max | 1);
-#	else
-		UInt32 temp = max;
-		for (temp |= 1; temp; temp >>= 1)
-			mask >>= 1;
-#	endif
+	UInt32 mask;
+	
+	max--;
+	mask = UInt32Max >> UInt32_CountLeadingZeros(max | 1);
 
 	do {
 		x = Random_UInt32(random) & mask;
