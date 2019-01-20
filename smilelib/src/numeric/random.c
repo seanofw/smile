@@ -1,8 +1,14 @@
 
+#include <smile/types.h>
 #include <smile/numeric/random.h>
 #include <smile/crypto/sha2.h>
 #include <smile/atomic.h>
-#include <smile/platform/platform.h>
+
+/// <summary>
+/// The shared, global random-number-generator instance.
+/// </summary>
+static struct RandomStruct _randomShared = { 0 };
+Random Random_Shared = &_randomShared;
 
 /// <summary>
 /// Initialize the given random-number generator with entropy provided by the OS.
@@ -62,10 +68,7 @@ void Random_Init(Random random)
 /// <param name="seed">A seed value that will be used to initialize that random-number generator's state.</param>
 void Random_InitWithSeed(Random random, UInt64 seed)
 {
-	random->state = 0U;
-	random->state = random->state * LCG_MULTIPLIER + LCG_INCREMENT;
-	random->state += seed;
-	random->state = random->state * LCG_MULTIPLIER + LCG_INCREMENT;
+	random->state = (LCG_INCREMENT + seed) * LCG_MULTIPLIER + LCG_INCREMENT;
 }
 
 /// <summary>
@@ -80,12 +83,18 @@ void Random_InitWithSeed(Random random, UInt64 seed)
 UInt32 Random_UInt32(Random random)
 {
 	UInt64 state, nextState;
+
+	// Advance the internal state (thread-safe!).
 retry:
 	state = random->state;
 	nextState = state * LCG_MULTIPLIER + LCG_INCREMENT;
 	if (!Atomic_CompareAndSwapInt64((UInt64 *)&random->state, (UInt64)state, (UInt64)nextState))
 		goto retry;
-	return Smile_RotateRight32(((state >> 18) ^ state) >> 27, state >> 59);
+
+	// Calculate the output function.
+	UInt32 xorshifted = (UInt32)(((state >> 18) ^ state) >> 27);
+	UInt32 rot = (UInt32)(state >> 59);
+	return (xorshifted >> rot) | (xorshifted << ((-(Int32)rot) & 31));
 }
 
 /// <summary>

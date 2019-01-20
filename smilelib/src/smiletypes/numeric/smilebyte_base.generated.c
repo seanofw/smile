@@ -36,6 +36,7 @@
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/base.h>
 #include <smile/internal/staticstring.h>
+#include <smile/numeric/random.h>
 
 SMILE_IGNORE_UNUSED_VARIABLES
 
@@ -117,9 +118,9 @@ SMILE_EXTERNAL_FUNCTION(Hash)
 	SmileByte obj = (SmileByte)argv[0].obj;
 
 	if (SMILE_KIND(obj) == SMILE_KIND_UNBOXED_BYTE)
-		return SmileUnboxedInteger64_From(Smile_ApplyHashOracle((UInt32)obj->value));
+		return SmileUnboxedInteger64_From(Smile_ApplyHashOracle(obj->value));
 
-	return SmileUnboxedInteger64_From(Smile_ApplyHashOracle((PtrInt)obj));
+	return SmileUnboxedInteger64_From(Smile_ApplyHashOracle((UInt64)(PtrInt)obj));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -214,6 +215,19 @@ SMILE_EXTERNAL_FUNCTION(RangeTo)
 	step = end >= start ? +1 : -1;
 
 	return SmileArg_From((SmileObject)SmileByteRange_Create(start, end, step));
+}
+
+SMILE_EXTERNAL_FUNCTION(RandomFunc)
+{
+	SmileByte obj = (SmileByte)argv[0].obj;
+
+	if (SMILE_KIND(obj) == SMILE_KIND_UNBOXED_BYTE) {
+		Byte value = argv[0].unboxed.i8;
+		return SmileUnboxedByte_From((Byte)Random_ZeroToUInt32(Random_Shared, value));
+	}
+	else {
+		return SmileUnboxedByte_From((Byte)Random_UInt32(Random_Shared));
+	}
 }
 
 SMILE_EXTERNAL_FUNCTION(ToChar)
@@ -1857,6 +1871,8 @@ void SmileByte_Setup(SmileUserObject base)
 	SetupSynonym("compare~", "cmp~");
 
 	SetupFunction("range-to", RangeTo, NULL, "start end", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _byteChecks);
+
+	SetupFunction("random", RandomFunc, base, "count", 0, 1, 1, 0, NULL);
 
 #if 8 == 8
 	SetupData("max-value", Smile_KnownObjects.Bytes[255]);

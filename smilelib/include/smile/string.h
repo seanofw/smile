@@ -37,7 +37,7 @@ struct SmileObjectInt;
 /// A String, which is an IMMUTABLE array of characters, with many functions to operate on it.
 /// Strings are also real Smile objects, with a virtual table and base pointer.
 /// </summary>
-typedef struct StringStruct {
+struct StringStruct {
 	UInt32 kind;	// What kind of native object this is, from the SMILE_KIND enumeration
 	struct SmileVTableInt *vtable;	// A pointer to this object's virtual table, which must match SMILE_VTABLE_TYPE.
 	struct SmileObjectInt *base;	// A pointer to the String base object.
@@ -46,13 +46,7 @@ typedef struct StringStruct {
 		Int length;	// The length of the text array (in bytes, not Unicode code points).
 		Byte text[65536];	// The actual bytes of the string (nul-terminated).  Not actually an array of 65536 bytes, either.
 	} _opaque;
-} *String;
-
-/// <summary>
-/// A StringBuilder, which is a tool for efficiently constructing strings by repeatedly
-/// appending text to them.  This is an incomplete type, as declared here.
-/// </summary>
-typedef struct StringBuilderStruct *StringBuilder;
+};
 
 /// <summary>
 /// Options for use in String_Split().

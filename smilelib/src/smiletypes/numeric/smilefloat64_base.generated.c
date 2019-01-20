@@ -101,9 +101,9 @@ SMILE_EXTERNAL_FUNCTION(Hash)
 	SmileFloat64 obj = (SmileFloat64)argv[0].obj;
 
 	if (SMILE_KIND(obj) == SMILE_KIND_UNBOXED_FLOAT64)
-		return SmileUnboxedInteger64_From(Smile_ApplyHashOracle((UInt32)(*(UInt64 *)&obj->value ^ (*(UInt64 *)&obj->value >> 32))));
+		return SmileUnboxedInteger64_From(Smile_ApplyHashOracle(*(UInt64 *)&obj->value));
 
-	return SmileUnboxedInteger64_From(Smile_ApplyHashOracle((PtrInt)obj));
+	return SmileUnboxedInteger64_From(Smile_ApplyHashOracle((UInt64)(PtrInt)obj));
 }
 
 //-------------------------------------------------------------------------------------------------

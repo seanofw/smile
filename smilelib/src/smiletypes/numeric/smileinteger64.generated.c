@@ -50,7 +50,7 @@ SmileInteger64 SmileInteger64_CreateInternal(Int64 value)
 
 static UInt32 SmileInteger64_Hash(SmileInteger64 obj)
 {
-	return Smile_ApplyHashOracle((UInt64)obj->value ^ ((UInt64)obj->value >> 32));
+	return Smile_ApplyHashOracle(obj->value);
 }
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileInteger64)

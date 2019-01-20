@@ -116,7 +116,7 @@ SMILE_EXTERNAL_FUNCTION(Hash)
 	if (SMILE_KIND(obj) == SMILE_KIND_UNBOXED_%TYPE%)
 		return SmileUnboxedInteger64_From(%HashAlgorithm%);
 
-	return SmileUnboxedInteger64_From(SMILE_APPLY_HASH_ORACLE((PtrInt)obj));
+	return SmileUnboxedInteger64_From(Smile_ApplyHashOracle((UInt64)(PtrInt)obj));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -213,7 +213,7 @@ SMILE_EXTERNAL_FUNCTION(RangeTo)
 	return SmileArg_From((SmileObject)Smile%Type%Range_Create(start, end, step));
 }
 
-SMILE_EXTERNAL_FUNCTION(Random)
+SMILE_EXTERNAL_FUNCTION(RandomFunc)
 {
 	Smile%Type% obj = (Smile%Type%)argv[0].obj;
 
@@ -1868,7 +1868,7 @@ void Smile%Type%_Setup(SmileUserObject base)
 
 	SetupFunction("range-to", RangeTo, NULL, "start end", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
 
-	SetupFunction("random", Random, base, "range", 0, 1, 1, 0, NULL);
+	SetupFunction("random", RandomFunc, base, "count", 0, 1, 1, 0, NULL);
 
 #if %numbits% == 8
 	SetupData("max-value", Smile_KnownObjects.Bytes[255]);

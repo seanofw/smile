@@ -99,7 +99,7 @@ SMILE_EXTERNAL_FUNCTION(Hash)
 	if (SMILE_KIND(obj) == SMILE_KIND_UNBOXED_%TYPE%)
 		return SmileUnboxedInteger64_From(%HashAlgorithm%);
 
-	return SmileUnboxedInteger64_From(SMILE_APPLY_HASH_ORACLE((PtrInt)obj));
+	return SmileUnboxedInteger64_From(Smile_ApplyHashOracle((UInt64)(PtrInt)obj));
 }
 
 //-------------------------------------------------------------------------------------------------

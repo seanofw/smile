@@ -16,6 +16,7 @@
 //---------------------------------------------------------------------------------------
 
 #include <smile/types.h>
+#include <smile/string.h>
 
 // Shared Win32 support code for OS-specific data sources.
 
@@ -23,6 +24,20 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <lmcons.h>
+#include <NTSecAPI.h>
+
+// Determine the length of the given WCHAR string by scanning it for its trailing NUL word,
+// or stopping at maxLen characters.
+static Int String_Utf16Length(const UInt16 *src, Int maxLen)
+{
+	const UInt16 *start = src;
+	const UInt16 *end = src + maxLen;
+
+	while (src < end && *src) src++;
+
+	return src - start;
+}
 
 // Get the current date-and-time, in the current (local) timezone, as a
 // Unix-style timestamp (seconds since midnight Jan 1 1970).
@@ -51,15 +66,12 @@ int Os_GetTimeZoneOffset(void)
 	return (int)timeZoneInformation.Bias;
 }
 
-// Copy the name of the current (local) timezone into 'buffer', up to 'bufSize' characters,
-// including a trailing '\0'.  Returns the number of characters written (not including the
-// trailing nul), or a negative number if the buffer isn't big enough.
-int Os_GetTimeZoneName(char *buffer, int bufSize)
+// Retrieve the name of the current local timezone.
+String Os_GetTimeZoneName(void)
 {
 	TIME_ZONE_INFORMATION timeZoneInformation;
 	WCHAR *src;
 	DWORD result;
-	char *dest;
 	
 	result = GetTimeZoneInformation(&timeZoneInformation);
 	if (result == TIME_ZONE_ID_UNKNOWN || result == TIME_ZONE_ID_INVALID)
@@ -69,19 +81,10 @@ int Os_GetTimeZoneName(char *buffer, int bufSize)
 		src = timeZoneInformation.StandardName;
 	else if (result == TIME_ZONE_ID_DAYLIGHT)
 		src = timeZoneInformation.DaylightName;
-	else {
-		if (bufSize > 0) *buffer = '\0';
-		return 0;
-	}
+	else
+		return String_Empty;
 
-	for (dest = buffer; bufSize > 0; bufSize--, dest++, src++) {
-		*dest = (char)*src;
-		if (*src == '\0') {
-			return dest - buffer;
-		}
-	}
-	if (bufSize > 0) *buffer = '\0';
-	return -1;
+	return String_FromUtf16(src, String_Utf16Length(src, 32));
 }
 
 // Get the ID of the current process (0 on OSes that don't support multiprocessing).
@@ -97,60 +100,30 @@ int Os_GetUserId(void)
 	return (int)1000;
 }
 
-// Copy the name of the currently-logged-in user into 'buffer', up to 'bufSize' characters,
-// including a trailing '\0'.  Returns the number of characters written (not including the
-// trailing nul), or a negative number if the buffer isn't big enough.
-int Os_GetUserName(char *buffer, int bufSize)
+// Retrieve the name of the currently-logged-in user.
+String Os_GetUserName(void)
 {
-#	define TEMP_SIZE (65536)	// Probably big enough?
+	UInt16 username[UNLEN + 1];
+	UInt32 usernameLen = UNLEN + 1;
 
-	struct passwd pwd;
-	struct passwd *result;
-	uid_t uid;
-	const char *src;
-	char *dest;
-	char *temp;
+	if (!GetUserNameW(username, &usernameLen))
+		return String_Empty;
 
-	if (bufSize <= 0) return -1;
+	if (usernameLen > UNLEN)
+		usernameLen = UNLEN;
 
-	temp = (char *)malloc(TEMP_SIZE);
-
-	uid = geteuid();
-	getpwuid_r(uid, &pwd, temp, TEMP_SIZE, &result);
-	if (result == NULL) {
-		if (bufSize > 0) *buffer = '\0';
-		free(temp);
-		return -1;
-	}
-	else {
-		for (src = pwd.pw_name, dest = buffer; bufSize > 0; bufSize--, dest++, src++) {
-			*dest = *src;
-			if (*src == '\0') {
-				free(temp);
-				return dest - buffer;
-			}
-		}
-		if (bufSize > 0) *buffer = '\0';
-		free(temp);
-		return -1;
-	}
+	return String_FromUtf16(username, (Int)usernameLen);
 }
 
 // Copy random bytes from the OS's entropy source/random-data-source into 'buffer',
 // of exactly 'bufSize' bytes.  This should only be called for "small" sizes of buffers,
 // such as 256 bytes or less; "large" requests may fail on some platforms.  This function
 // can be "slow," so you shouldn't call it often.  Returns '1' on success, '0' on failure.
-int Os_GetRandomData(void *buffer, int bufSize)
+Bool Os_GetRandomData(void *buffer, int bufSize)
 {
 	if (bufSize <= 0) return 0;
 
-	int fd = open("/dev/urandom", O_RDONLY);
-	if (fd < 0) return 0;
-
-	ssize_t result = read(fd, buffer, (size_t)bufSize);
-	if (result < 0) return 0;
-
-	return 1;
+	return RtlGenRandom(buffer, (ULONG)bufSize) != 0;
 }
 
 #endif

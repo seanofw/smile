@@ -44,25 +44,30 @@ int Os_GetTimeZoneOffset(void)
 	return tz.tz_minuteswest;
 }
 
-// Copy the name of the current (local) timezone into 'buffer', up to 'bufSize' characters,
-// including a trailing '\0'.  Returns the number of characters written (not including the
-// trailing nul), or a negative number if the buffer isn't big enough.
-int Os_GetTimeZoneName(char *buffer, int bufSize)
+#define TEMP_SIZE (65536)	// Probably big enough?
+
+// Get the name of the current (local) timezone.
+String Os_GetTimeZoneName()
 {
-	time_t ts = 0;
 	struct tm t;
 	int bufLen;
+	String timeZoneName;
 
-	if (bufSize <= 0) return -1;
+	temp = (char *)malloc(TEMP_SIZE);
+	if (temp == NULL)
+		return String_Empty;
 
-	bufLen = strftime(buffer, bufSize, "%z", &t);
+	bufLen = strftime(temp, TEMP_SIZE - 1, "%z", &t);
 
-	if (bufLen > 0)
-		return bufLen;
+	if (bufLen <= 0)
+		timeZoneName = String_Empty;
 	else {
-		if (bufSize > 0) *buffer = '\0';
-		return -1;
+		temp[TEMP_SIZE - 1] = '\0';
+		timeZoneName = String_FromC(buffer);
 	}
+
+	free(temp);
+	return timeZoneName;
 }
 
 // Get the ID of the current process (0 on OSes that don't support multiprocessing).
@@ -77,50 +82,44 @@ int Os_GetUserId(void)
 	return (int)geteuid();
 }
 
-// Copy the name of the currently-logged-in user into 'buffer', up to 'bufSize' characters,
-// including a trailing '\0'.  Returns the number of characters written (not including the
-// trailing nul), or a negative number if the buffer isn't big enough.
-int Os_GetUserName(char *buffer, int bufSize)
+// Get the name of the currently-logged-in user.
+String Os_GetUserName()
 {
-#	define TEMP_SIZE (65536)	// Probably big enough?
-
 	struct passwd pwd;
 	struct passwd *result;
 	uid_t uid;
-	const char *src;
-	char *dest;
 	char *temp;
+	String userName;
 
 	if (bufSize <= 0) return -1;
 
 	temp = (char *)malloc(TEMP_SIZE);
+	if (temp == NULL)
+		return String_Empty;
+
+	pwd.pw_name = NULL;
 
 	uid = geteuid();
 	getpwuid_r(uid, &pwd, temp, TEMP_SIZE, &result);
 	if (result == NULL) {
-		if (bufSize > 0) *buffer = '\0';
-		free(temp);
-		return -1;
+		userName = String_Empty;
 	}
+	else if (pwd.pw_name == NULL || pwd.pw_name < temp || pwd.pw_name >= temp + TEMP_SIZE)
+		userName = String_Empty;
 	else {
-		for (src = pwd.pw_name, dest = buffer; bufSize > 0; bufSize--, dest++, src++) {
-			*dest = *src;
-			if (*src == '\0') {
-				free(temp);
-				return dest - buffer;
-			}
-		}
-		if (bufSize > 0) *buffer = '\0';
-		free(temp);
-		return -1;
+		temp[TEMP_SIZE - 1] = '\0';
+		userName = String_FromC(pwd.pw_name);
 	}
+
+	free(temp);
+	return userName;
 }
 
 // Copy random bytes from the OS's entropy source/random-data-source into 'buffer',
 // of exactly 'bufSize' bytes.  This should only be called for "small" sizes of buffers,
 // such as 256 bytes or less; "large" requests may fail on some platforms.  This function
 // can be "slow," so you shouldn't call it often.  Returns '1' on success, '0' on failure.
-int Os_GetRandomData(void *buffer, int bufSize)
+Bool Os_GetRandomData(void *buffer, int bufSize)
 {
 	if (bufSize <= 0) return 0;
 
