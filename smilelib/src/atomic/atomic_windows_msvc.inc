@@ -30,9 +30,9 @@ Int32 Atomic_AddInt32(Int32 *value, Int32 delta)
 	return InterlockedAdd((volatile Int32 *)value, delta);
 }
 
-Int32 Atomic_CompareAndSwapInt32(Int32 *value, Int32 comparator, Int32 replacement)
+Bool Atomic_CompareAndSwapInt32(Int32 *value, Int32 comparator, Int32 replacement)
 {
-	return InterlockedCompareExchange((volatile Int32 *)value, replacement, comparator);
+	return InterlockedCompareExchange((volatile Int32 *)value, replacement, comparator) == comparator;
 }
 
 Int32 Atomic_SwapInt32(Int32 *value, Int32 replacement)
@@ -58,9 +58,9 @@ Int64 Atomic_AddInt64(Int64 *value, Int64 delta)
 	return InterlockedAdd64((volatile Int64 *)value, delta);
 }
 
-Int64 Atomic_CompareAndSwapInt64(Int64 *value, Int64 comparator, Int64 replacement)
+Bool Atomic_CompareAndSwapInt64(Int64 *value, Int64 comparator, Int64 replacement)
 {
-	return InterlockedCompareExchange64((volatile Int64 *)value, replacement, comparator);
+	return InterlockedCompareExchange64((volatile Int64 *)value, replacement, comparator) == comparator;
 }
 
 Int64 Atomic_SwapInt64(Int64 *value, Int64 replacement)
@@ -88,9 +88,9 @@ void *Atomic_AddPointer(void **value, Int delta)
 	return (void *)InterlockedAdd((volatile Int32 *)value, (Int32)delta);
 }
 
-void *Atomic_CompareAndSwapPointer(void **value, const void *comparator, const void *replacement)
+Bool Atomic_CompareAndSwapPointer(void **value, const void *comparator, const void *replacement)
 {
-	return (void *)InterlockedCompareExchange((volatile Int32 *)value, (Int32)replacement, (Int32)comparator);
+	return InterlockedCompareExchange((volatile Int32 *)value, (Int32)replacement, (Int32)comparator) == (Int32)comparator;
 }
 
 void *Atomic_SwapPointer(void **value, const void *replacement)
@@ -115,9 +115,9 @@ void *Atomic_AddPointer(void **value, Int delta)
 	return (void *)InterlockedAdd64((volatile Int64 *)value, (Int64)delta);
 }
 
-void *Atomic_CompareAndSwapPointer(void **value, const void *comparator, const void *replacement)
+Bool Atomic_CompareAndSwapPointer(void **value, const void *comparator, const void *replacement)
 {
-	return (void *)InterlockedCompareExchange64((volatile Int64 *)value, (Int64)replacement, (Int64)comparator);
+	return InterlockedCompareExchange64((volatile Int64 *)value, (Int64)replacement, (Int64)comparator) == (Int64)comparator;
 }
 
 void *Atomic_SwapPointer(void **value, const void *replacement)

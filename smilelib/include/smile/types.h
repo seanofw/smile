@@ -64,6 +64,21 @@ typedef unsigned char Bool;
 #define SMILE_DEBUGGER_BREAK_IF_ATTACHED ((void)0)
 
 //------------------------------------------------------------------------------------------------
+// Predeclare String/StringBuilder so platform-level constructs can use them.
+
+/// <summary>
+/// A String, which is an IMMUTABLE array of characters, with many functions to operate on it.
+/// Strings are also real Smile objects, with a virtual table and base pointer.
+/// </summary>
+typedef struct StringStruct *String;
+
+/// <summary>
+/// A StringBuilder, which is a tool for efficiently constructing strings by repeatedly
+/// appending text to them.  This is an incomplete type, as declared here.
+/// </summary>
+typedef struct StringBuilderStruct *StringBuilder;
+
+//------------------------------------------------------------------------------------------------
 //  Platform-specific type declarations and overrides.
 
 #include "platform/platform.h"

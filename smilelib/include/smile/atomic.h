@@ -12,19 +12,19 @@
 SMILE_API_FUNC Int32 Atomic_LoadInt32(const Int32 *src);
 SMILE_API_FUNC void Atomic_StoreInt32(Int32 *dest, Int32 value);
 SMILE_API_FUNC Int32 Atomic_AddInt32(Int32 *value, Int32 delta);
-SMILE_API_FUNC Int32 Atomic_CompareAndSwapInt32(Int32 *value, Int32 comparator, Int32 replacement);
+SMILE_API_FUNC Bool Atomic_CompareAndSwapInt32(Int32 *value, Int32 comparator, Int32 replacement);
 SMILE_API_FUNC Int32 Atomic_SwapInt32(Int32 *value, Int32 replacement);
 
 SMILE_API_FUNC Int64 Atomic_LoadInt64(const Int64 *src);
 SMILE_API_FUNC void Atomic_StoreInt64(Int64 *dest, Int64 value);
 SMILE_API_FUNC Int64 Atomic_AddInt64(Int64 *value, Int64 delta);
-SMILE_API_FUNC Int64 Atomic_CompareAndSwapInt64(Int64 *value, Int64 comparator, Int64 replacement);
+SMILE_API_FUNC Bool Atomic_CompareAndSwapInt64(Int64 *value, Int64 comparator, Int64 replacement);
 SMILE_API_FUNC Int64 Atomic_SwapInt64(Int64 *value, Int64 replacement);
 
 SMILE_API_FUNC void *Atomic_LoadPointer(const void **src);
 SMILE_API_FUNC void Atomic_StorePointer(void **dest, const void *value);
 SMILE_API_FUNC void *Atomic_AddPointer(void **value, Int delta);
-SMILE_API_FUNC void *Atomic_CompareAndSwapPointer(void **value, const void *comparator, const void *replacement);
+SMILE_API_FUNC Bool Atomic_CompareAndSwapPointer(void **value, const void *comparator, const void *replacement);
 SMILE_API_FUNC void *Atomic_SwapPointer(void **value, const void *replacement);
 
 //------------------------------------------------------------------------------------------------

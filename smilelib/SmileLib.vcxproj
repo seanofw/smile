@@ -158,6 +158,7 @@
     <ClInclude Include="include\smile\internal\staticstring.h" />
     <ClInclude Include="include\smile\mem.h" />
     <ClInclude Include="include\smile\numeric\float64.h" />
+    <ClInclude Include="include\smile\numeric\random.h" />
     <ClInclude Include="include\smile\numeric\real.h" />
     <ClInclude Include="include\smile\numeric\real128.h" />
     <ClInclude Include="include\smile\numeric\real32.h" />
@@ -848,6 +849,7 @@
     <ClCompile Include="src\dict\stringdict.c" />
     <ClCompile Include="src\dict\stringintdict.c" />
     <ClCompile Include="src\numeric\float64.c" />
+    <ClCompile Include="src\numeric\random.c" />
     <ClCompile Include="src\numeric\real128.c" />
     <ClCompile Include="src\numeric\real32.c" />
     <ClCompile Include="src\numeric\real64.c" />
@@ -879,6 +881,7 @@
     <ClCompile Include="src\parsing\parser\parsesyntax.c" />
     <ClCompile Include="src\parsing\parser\parseterm.c" />
     <ClCompile Include="src\parsing\parser\parsetill.c" />
+    <ClCompile Include="src\platform\unix\unix_os.c" />
     <ClCompile Include="src\platform\windows\ansi-console.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">TurnOffAllWarnings</WarningLevel>
@@ -886,6 +889,12 @@
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="src\crypto\hash\siphash.c" />
+    <ClCompile Include="src\platform\windows\windows_os.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
     <ClCompile Include="src\smiletypes\kind.c" />
     <ClCompile Include="src\smiletypes\numeric\smilebyte.generated.c" />
     <ClCompile Include="src\smiletypes\numeric\smilebyte_base.generated.c" />

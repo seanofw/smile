@@ -30,6 +30,7 @@
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/stringbuilder.h>
+#include <smile/numeric/random.h>
 
 extern void Smile_InitTicks(void);
 
@@ -76,8 +77,11 @@ void Smile_ResetEnvironment(void)
 	// Now give the garbage collector a chance to make the world as clean as possible.
 	GC_gcollect();
 
-	// Reset the hash oracle to a new system entropy value, and generate hash tables from it.
-	Smile_HashOracle = (UInt32)GetBaselineEntropy();
+	// Make sure the global random-number generator contains "good" data.
+	Random_Init(Random_Shared);
+
+	// Reset the hash oracle to a new random value, and generate hash tables from it.
+	Smile_HashOracle = Random_UInt32(Random_Shared);
 	Smile_InitHashTable(Smile_HashOracle);
 
 	// Make a symbol table for this environment.

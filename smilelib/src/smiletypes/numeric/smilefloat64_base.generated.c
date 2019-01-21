@@ -35,6 +35,7 @@
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/base.h>
 #include <smile/internal/staticstring.h>
+#include <smile/numeric/random.h>
 
 #include <math.h>
 
@@ -101,9 +102,9 @@ SMILE_EXTERNAL_FUNCTION(Hash)
 	SmileFloat64 obj = (SmileFloat64)argv[0].obj;
 
 	if (SMILE_KIND(obj) == SMILE_KIND_UNBOXED_FLOAT64)
-		return SmileUnboxedInteger64_From(Smile_ApplyHashOracle((UInt32)(*(UInt64 *)&obj->value ^ (*(UInt64 *)&obj->value >> 32))));
+		return SmileUnboxedInteger64_From(Smile_ApplyHashOracle(*(UInt64 *)&obj->value));
 
-	return SmileUnboxedInteger64_From(Smile_ApplyHashOracle((PtrInt)obj));
+	return SmileUnboxedInteger64_From(Smile_ApplyHashOracle((UInt64)(PtrInt)obj));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -889,6 +890,19 @@ SMILE_EXTERNAL_FUNCTION(Compare)
 		return SmileUnboxedInteger64_From(0);
 }
 
+SMILE_EXTERNAL_FUNCTION(RandomFunc)
+{
+	SmileFloat64 obj = (SmileFloat64)argv[0].obj;
+
+	if (SMILE_KIND(obj) == SMILE_KIND_UNBOXED_FLOAT64) {
+		Float64 value = argv[0].unboxed.f64;
+		return SmileUnboxedFloat64_From(Random_Float64(Random_Shared) * value);
+	}
+	else {
+		return SmileUnboxedFloat64_From(Random_Float64(Random_Shared));
+	}
+}
+
 //-------------------------------------------------------------------------------------------------
 
 enum {
@@ -1148,6 +1162,8 @@ void SmileFloat64_Setup(SmileUserObject base)
 
 	SetupFunction("compare", Compare, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _float64Checks);
 	SetupSynonym("compare", "cmp");
+
+	SetupFunction("random", RandomFunc, base, "count", 0, 1, 1, 0, NULL);
 
 	SetupData("inf",   SmileFloat64_Create(inf));
 

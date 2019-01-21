@@ -19,11 +19,9 @@ Int32 Atomic_AddInt32(Int32 *value, Int32 delta)
 	return __atomic_add_fetch(value, delta, __ATOMIC_SEQ_CST);
 }
 
-Int32 Atomic_CompareAndSwapInt32(Int32 *value, Int32 comparator, Int32 replacement)
+Bool Atomic_CompareAndSwapInt32(Int32 *value, Int32 comparator, Int32 replacement)
 {
-	if (__atomic_compare_exchange_n(value, &comparator, replacement, 0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST))
-		return comparator;
-	return comparator;
+	return (Bool)__atomic_compare_exchange_n(value, &comparator, replacement, 0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
 }
 
 Int32 Atomic_SwapInt32(Int32 *value, Int32 replacement)
@@ -51,11 +49,9 @@ Int64 Atomic_AddInt64(Int64 *value, Int64 delta)
 	return __atomic_add_fetch(value, delta, __ATOMIC_SEQ_CST);
 }
 
-Int64 Atomic_CompareAndSwapInt64(Int64 *value, Int64 comparator, Int64 replacement)
+Bool Atomic_CompareAndSwapInt64(Int64 *value, Int64 comparator, Int64 replacement)
 {
-	if (__atomic_compare_exchange_n(value, &comparator, replacement, 0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST))
-		return comparator;
-	return comparator;
+	return (Bool)__atomic_compare_exchange_n(value, &comparator, replacement, 0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
 }
 
 Int64 Atomic_SwapInt64(Int64 *value, Int64 replacement)
@@ -83,11 +79,9 @@ void *Atomic_AddPointer(void **value, Int delta)
 	return __atomic_add_fetch(value, delta, __ATOMIC_SEQ_CST);
 }
 
-void *Atomic_CompareAndSwapPointer(void **value, const void *comparator, const void *replacement)
+Bool Atomic_CompareAndSwapPointer(void **value, const void *comparator, const void *replacement)
 {
-	if (__atomic_compare_exchange_n(value, &comparator, replacement, 0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST))
-		return (void *)comparator;
-	return (void *)comparator;
+	return (Bool)__atomic_compare_exchange_n(value, &comparator, replacement, 0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
 }
 
 void *Atomic_SwapPointer(void **value, const void *replacement)

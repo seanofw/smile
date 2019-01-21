@@ -34,6 +34,7 @@
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/base.h>
 #include <smile/internal/staticstring.h>
+#include <smile/numeric/random.h>
 
 SMILE_IGNORE_UNUSED_VARIABLES
 
@@ -98,9 +99,9 @@ SMILE_EXTERNAL_FUNCTION(Hash)
 	SmileReal64 obj = (SmileReal64)argv[0].obj;
 
 	if (SMILE_KIND(obj) == SMILE_KIND_UNBOXED_REAL64)
-		return SmileUnboxedInteger64_From(Smile_ApplyHashOracle((UInt32)(*(UInt64 *)&obj->value ^ (*(UInt64 *)&obj->value >> 32))));
+		return SmileUnboxedInteger64_From(Smile_ApplyHashOracle(*(UInt64 *)&obj->value));
 
-	return SmileUnboxedInteger64_From(Smile_ApplyHashOracle((PtrInt)obj));
+	return SmileUnboxedInteger64_From(Smile_ApplyHashOracle((UInt64)(PtrInt)obj));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -918,6 +919,19 @@ SMILE_EXTERNAL_FUNCTION(Compare)
 		return SmileUnboxedInteger64_From(0);
 }
 
+SMILE_EXTERNAL_FUNCTION(RandomFunc)
+{
+	SmileReal64 obj = (SmileReal64)argv[0].obj;
+
+	if (SMILE_KIND(obj) == SMILE_KIND_UNBOXED_REAL64) {
+		Real64 value = argv[0].unboxed.r64;
+		return SmileUnboxedReal64_From(Real64_Mul(Random_Real64(Random_Shared), value));
+	}
+	else {
+		return SmileUnboxedReal64_From(Random_Real64(Random_Shared));
+	}
+}
+
 //-------------------------------------------------------------------------------------------------
 
 enum {
@@ -1102,6 +1116,8 @@ void SmileReal64_Setup(SmileUserObject base)
 
 	SetupFunction("compare", Compare, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _real64Checks);
 	SetupSynonym("compare", "cmp");
+
+	SetupFunction("random", RandomFunc, base, "count", 0, 1, 1, 0, NULL);
 
 	SetupData("inf",   SmileReal64_Create(Real64_Inf));
 	SetupData("pi",    SmileReal64_Create(Real64_FromFloat64(3.14159265358979323846264338327950288)));

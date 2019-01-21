@@ -1004,6 +1004,9 @@
     <ClCompile Include="src\smiletypes\smiletillcontinuation.c" />
     <ClCompile Include="src\crypto\hash.c" />
     <ClCompile Include="src\crypto\hash\sha3.c" />
+    <ClCompile Include="src\numeric\random.c" />
+    <ClCompile Include="src\platform\unix\unix_os.c" />
+    <ClCompile Include="src\platform\windows\windows_os.c" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">
@@ -1384,6 +1387,7 @@
     <ClInclude Include="include\smile\env\modules.h" />
     <ClInclude Include="include\smile\smiletypes\smiletillcontinuation.h" />
     <ClInclude Include="include\smile\crypto\sha3.h" />
+    <ClInclude Include="include\smile\numeric\random.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\smile\array.h">

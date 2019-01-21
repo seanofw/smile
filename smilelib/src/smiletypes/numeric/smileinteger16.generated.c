@@ -50,7 +50,7 @@ SmileInteger16 SmileInteger16_CreateInternal(Int16 value)
 
 static UInt32 SmileInteger16_Hash(SmileInteger16 obj)
 {
-	return Smile_ApplyHashOracle((UInt32)obj->value);
+	return Smile_ApplyHashOracle(obj->value);
 }
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileInteger16)

@@ -72,7 +72,9 @@ sub OutputTemplate {
 	"ZeroExtend16" => "SmileUnboxedInteger16_From((Int16)argv[0].unboxed.i64)",
 	"ZeroExtend8" => "SmileUnboxedByte_From((Byte)argv[0].unboxed.i64)",
 	"ToStringBase10" => "String_CreateFromInteger(unboxedData.i64, 10, False)",
-	"HashAlgorithm" => "SMILE_APPLY_HASH_ORACLE((UInt64)obj->value ^ ((UInt64)obj->value >> 32))",
+	"HashAlgorithm" => "Smile_ApplyHashOracle(obj->value)",
+	"RandomAlgorithm" => "(Int64)Random_UInt64(Random_Shared)",
+	"RandomZeroToValueAlgorithm" => "(Int64)Random_ZeroToInt64(Random_Shared, value)",
 	"Sign" => "value == 0 ? SmileUnboxedInteger64_From(0) : value > 0 ? SmileUnboxedInteger64_From(1) : SmileUnboxedInteger64_From(-1)",
 	"ToChar" => "SmileUnboxedChar_From((Byte)argv[0].unboxed.i64)",
 	"ToUni" => "SmileUnboxedUni_FromSafeInt64(argv[0].unboxed.i64)"
@@ -106,7 +108,9 @@ OutputTemplate(\@integerBaseTemplate, \%int64Substitutions, "smileinteger64_base
 	"ZeroExtend16" => "SmileUnboxedInteger16_From((Int16)argv[0].unboxed.i32)",
 	"ZeroExtend8" => "SmileUnboxedByte_From((Byte)argv[0].unboxed.i32)",
 	"ToStringBase10" => "String_CreateFromInteger(unboxedData.i32, 10, False)",
-	"HashAlgorithm" => "SMILE_APPLY_HASH_ORACLE((UInt32)obj->value)",
+	"HashAlgorithm" => "Smile_ApplyHashOracle(obj->value)",
+	"RandomAlgorithm" => "(Int32)Random_UInt32(Random_Shared)",
+	"RandomZeroToValueAlgorithm" => "(Int32)Random_ZeroToInt32(Random_Shared, value)",
 	"Sign" => "value == 0 ? SmileUnboxedInteger32_From(0) : value > 0 ? SmileUnboxedInteger32_From(1) : SmileUnboxedInteger32_From(-1)",
 	"ToChar" => "SmileUnboxedChar_From((Byte)argv[0].unboxed.i32)",
 	"ToUni" => "SmileUnboxedUni_FromSafeInt32(argv[0].unboxed.i32)"
@@ -140,7 +144,9 @@ OutputTemplate(\@integerBaseTemplate, \%int32Substitutions, "smileinteger32_base
 	"ZeroExtend16" => "argv[0]",
 	"ZeroExtend8" => "SmileUnboxedByte_From((Byte)argv[0].unboxed.i16)",
 	"ToStringBase10" => "String_CreateFromInteger(unboxedData.i16, 10, False)",
-	"HashAlgorithm" => "SMILE_APPLY_HASH_ORACLE((UInt32)obj->value)",
+	"HashAlgorithm" => "Smile_ApplyHashOracle(obj->value)",
+	"RandomAlgorithm" => "(Int16)Random_UInt32(Random_Shared)",
+	"RandomZeroToValueAlgorithm" => "(Int16)Random_ZeroToInt32(Random_Shared, value)",
 	"Sign" => "value == 0 ? SmileUnboxedInteger16_From(0) : value > 0 ? SmileUnboxedInteger16_From(1) : SmileUnboxedInteger16_From(-1)",
 	"ToChar" => "SmileUnboxedChar_From((Byte)argv[0].unboxed.i16)",
 	"ToUni" => "SmileUnboxedUni_From(argv[0].unboxed.i16)"
@@ -174,7 +180,9 @@ OutputTemplate(\@integerBaseTemplate, \%int16Substitutions, "smileinteger16_base
 	"ZeroExtend16" => "SmileUnboxedInteger16_From((Int16)(UInt16)argv[0].unboxed.i8)",
 	"ZeroExtend8" =>  "argv[0]",
 	"ToStringBase10" => "String_CreateFromInteger(unboxedData.i8, 10, False)",
-	"HashAlgorithm" => "SMILE_APPLY_HASH_ORACLE((UInt32)obj->value)",
+	"HashAlgorithm" => "Smile_ApplyHashOracle(obj->value)",
+	"RandomAlgorithm" => "(Byte)Random_UInt32(Random_Shared)",
+	"RandomZeroToValueAlgorithm" => "(Byte)Random_ZeroToUInt32(Random_Shared, value)",
 	"Sign" => "value == 0 ? SmileUnboxedByte_From(0) : SmileUnboxedByte_From(1)",
 	"ToChar" => "SmileUnboxedChar_From(argv[0].unboxed.i8)",
 	"ToUni" => "SmileUnboxedUni_From(argv[0].unboxed.i8)"

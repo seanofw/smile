@@ -138,4 +138,37 @@ Inline UInt64 GetBaselineEntropy(void)
     return tsc;
 }
 
+//------------------------------------------------------------------------------------------------
+//  Optimized bit-search functions.
+
+Inline UInt32 UInt32_CountLeadingZeros(UInt32 value)
+{
+	unsigned char _BitScanReverse(unsigned long * _Index, unsigned long _Mask);
+
+	unsigned long index;
+	return _BitScanReverse(&index, value) ? 31 - index : 32;
+}
+
+Inline UInt32 UInt32_CountTrailingZeros(UInt32 value)
+{
+	unsigned char _BitScanForward(unsigned long * _Index, unsigned long _Mask);
+
+	unsigned long index;
+	return _BitScanForward(&index, value) ? index : 32;
+}
+
+Inline UInt64 UInt64_CountLeadingZeros(UInt64 value)
+{
+	return (value & 0xFFFFFFFF00000000ULL)
+		? UInt32_CountLeadingZeros((UInt32)(value >> 32)) + 32
+		: UInt32_CountLeadingZeros((UInt32)value);
+}
+
+Inline UInt64 UInt64_CountTrailingZeros(UInt64 value)
+{
+	return (value & 0x00000000FFFFFFFFULL)
+		? UInt32_CountLeadingZeros((UInt32)value)
+		: UInt32_CountLeadingZeros((UInt32)(value >> 32)) + 32;
+}
+
 #endif
