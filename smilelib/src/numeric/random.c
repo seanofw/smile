@@ -3,6 +3,10 @@
 #include <smile/numeric/random.h>
 #include <smile/crypto/sha2.h>
 #include <smile/atomic.h>
+#include <smile/numeric/real32.h>
+#include <smile/numeric/real64.h>
+
+#include <math.h>
 
 /// <summary>
 /// The shared, global random-number-generator instance.
@@ -148,3 +152,66 @@ UInt32 Random_ZeroToUInt32(Random random, UInt32 max)
 
 	return x;
 }
+
+/// <summary>
+/// Generate a random floating-point number in the range of [0, 1), unbiased, using
+/// Taylor R Campbell's infinite-series technique.  (See http://mumble.net/~campbell/tmp/random_real.c
+/// for details on the algorithm.)  The implementation below isn't exactly his code, but it
+/// follows the same basic principles.
+/// </summary>
+Float64 Random_Float64(Random random)
+{
+	Int32 exponent = -64;
+	UInt64 significand;
+	UInt32 shift;
+
+	while ((significand = Random_UInt64(random)) == 0) {
+		exponent -= 64;
+		if (exponent < -1074)
+			return 0;
+	}
+
+	shift = (UInt32)UInt64_CountLeadingZeros(significand);
+	if (shift != 0) {
+		exponent -= shift;
+		significand <<= shift;
+		significand |= (shift >= 32)
+			?         (Random_UInt64(random) >> (64 - shift))
+			: (UInt64)(Random_UInt32(random) >> (32 - shift));
+	}
+
+	significand |= 1;
+
+	return (Float64)ldexp((double)significand, exponent);
+}
+
+/// <summary>
+/// Generate a random floating-point number in the range of [0, 1), unbiased, using
+/// Taylor R Campbell's infinite-series technique.  (See http://mumble.net/~campbell/tmp/random_real.c
+/// for details on the algorithm.)  The implementation below isn't exactly his code, but it
+/// follows the same basic principles.
+/// </summary>
+Float32 Random_Float32(Random random)
+{
+	Int32 exponent = -32;
+	UInt32 significand;
+	UInt32 shift;
+
+	while ((significand = Random_UInt32(random)) == 0) {
+		exponent -= 32;
+		if (exponent < -149)
+			return 0;
+	}
+
+	shift = UInt32_CountLeadingZeros(significand);
+	if (shift != 0) {
+		exponent -= shift;
+		significand <<= shift;
+		significand |= (Random_UInt32(random) >> (32 - shift));
+	}
+
+	significand |= 1;
+
+	return (Float32)ldexpf((float)significand, exponent);
+}
+

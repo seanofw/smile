@@ -4,6 +4,12 @@
 #ifndef __SMILE_TYPES_H__
 #include <smile/types.h>
 #endif
+#ifndef __SMILE_NUMERIC_REAL32_H__
+#include <smile/numeric/real32.h>
+#endif
+#ifndef __SMILE_NUMERIC_REAL64_H__
+#include <smile/numeric/real64.h>
+#endif
 
 typedef struct RandomStruct {
 	UInt64 state;
@@ -14,8 +20,10 @@ SMILE_API_DATA Random Random_Shared;
 SMILE_API_FUNC void Random_Init(Random random);
 SMILE_API_FUNC void Random_InitWithSeed(Random random, UInt64 seed);
 SMILE_API_FUNC UInt32 Random_UInt32(Random random);
-SMILE_API_FUNC UInt64 Random_ZeroToUInt64(Random random, UInt64 max);
 SMILE_API_FUNC UInt32 Random_ZeroToUInt32(Random random, UInt32 max);
+SMILE_API_FUNC UInt64 Random_ZeroToUInt64(Random random, UInt64 max);
+SMILE_API_FUNC Float32 Random_Float32(Random random);
+SMILE_API_FUNC Float64 Random_Float64(Random random);
 
 /// <summary>
 /// Retrieve a 64-bit uniformly-distributed random number from the given random-number generator.
@@ -85,6 +93,22 @@ Inline Int64 Random_ZeroToInt64(Random random, Int64 max)
 Inline Int32 Random_ZeroToInt32(Random random, Int32 max)
 {
 	return max > 0 ? (Int32)Random_ZeroToUInt32(random, (UInt32)max) : 0;
+}
+
+/// <summary>
+/// Generate a random Real32 value in [0, 1).  This is a cheesy implementation, but it works.
+/// </summary>
+Inline Real32 Random_Real32(Random random)
+{
+	return Real32_FromFloat32(Random_Float32(random));
+}
+
+/// <summary>
+/// Generate a random Real64 value in [0, 1).  This is a cheesy implementation, but it works.
+/// </summary>
+Inline Real64 Random_Real64(Random random)
+{
+	return Real64_FromFloat64(Random_Float64(random));
 }
 
 #endif

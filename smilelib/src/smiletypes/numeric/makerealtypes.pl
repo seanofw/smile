@@ -62,7 +62,8 @@ sub OutputTemplate {
 	"ToInt" => "SmileUnboxedInteger64_From(Real64_ToInt64(argv[0].unboxed.r64))",
 	"ToStringBase10" => "Real64_ToStringEx(unboxedData.r64, 0, 0, False)",
 	"ToStringArg" => "Real64_ToStringEx(argv[0].unboxed.r64, 0, 0, False)",
-	"HashAlgorithm" => "Smile_ApplyHashOracle(*(UInt64 *)&obj->value)"
+	"HashAlgorithm" => "Smile_ApplyHashOracle(*(UInt64 *)&obj->value)",
+	"RandomAlgorithm" => "Random_Real64(Random_Shared)"
 );
 
 OutputTemplate(\@realTemplate, \%real64Substitutions, "smilereal64.generated.c");
@@ -83,7 +84,8 @@ OutputTemplate(\@realBaseTemplate, \%real64Substitutions, "smilereal64_base.gene
 	"ToInt" => "SmileUnboxedInteger64_From(Real32_ToInt64(argv[0].unboxed.r32))",
 	"ToStringBase10" => "Real32_ToStringEx(unboxedData.r32, 0, 0, False)",
 	"ToStringArg" => "Real32_ToStringEx(argv[0].unboxed.r32, 0, 0, False)",
-	"HashAlgorithm" => "Smile_ApplyHashOracle(*(UInt32 *)&obj->value)"
+	"HashAlgorithm" => "Smile_ApplyHashOracle(*(UInt32 *)&obj->value)",
+	"RandomAlgorithm" => "Random_Real32(Random_Shared)"
 );
 
 OutputTemplate(\@realTemplate, \%real32Substitutions, "smilereal32.generated.c");
