@@ -454,8 +454,10 @@ String SmileList_Join(SmileList list, String glue)
 
 	if (SMILE_KIND(tortoise->a) == SMILE_KIND_STRING)
 		piece = (String)tortoise->a;
-	else
-		piece = SMILE_VCALL1(tortoise->a, toString, (SmileUnboxedData) { 0 });
+	else {
+		SmileArg arg = SmileArg_Unbox(tortoise->a);
+		piece = SMILE_VCALL1(arg.obj, toString, arg.unboxed);
+	}
 	StringBuilder_AppendString(stringBuilder, piece);
 
 	hare = tortoise = (SmileList)tortoise->d;
