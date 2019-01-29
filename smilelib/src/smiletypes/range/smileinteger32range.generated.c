@@ -20,6 +20,7 @@
 //---------------------------------------------------------------------------------------
 
 #include <smile/numeric/real64.h>
+#include <smile/numeric/float64.h>
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
@@ -38,15 +39,15 @@ SMILE_EASY_OBJECT_NO_SOURCE(SmileInteger32Range)
 SMILE_EASY_OBJECT_NO_UNBOX(SmileInteger32Range)
 
 SMILE_EASY_OBJECT_TOBOOL(SmileInteger32Range, True)
-SMILE_EASY_OBJECT_TOSTRING(SmileInteger32Range, 			((obj->end >= obj->start && obj->stepping != +1
-				|| obj->end < obj->start && obj->stepping != -1)
-				? String_Format("%S..%S step %S",
-					String_CreateFromInteger(obj->start, 10, False),
-					String_CreateFromInteger(obj->end, 10, False),
-					String_CreateFromInteger(obj->stepping, 10, False))
-				: String_Format("%S..%S",
-					String_CreateFromInteger(obj->start, 10, False),
-					String_CreateFromInteger(obj->end, 10, False)))
+SMILE_EASY_OBJECT_TOSTRING(SmileInteger32Range, 		((obj->end >= obj->start && obj->stepping != +1
+			|| obj->end < obj->start && obj->stepping != -1)
+			? String_Format("%S..%S step %S",
+				String_CreateFromInteger(obj->start, 10, False),
+				String_CreateFromInteger(obj->end, 10, False),
+				String_CreateFromInteger(obj->stepping, 10, False))
+			: String_Format("%S..%S",
+				String_CreateFromInteger(obj->start, 10, False),
+				String_CreateFromInteger(obj->end, 10, False)))
 )
 
 SmileInteger32Range SmileInteger32Range_Create(Int32 start, Int32 end, Int32 stepping)

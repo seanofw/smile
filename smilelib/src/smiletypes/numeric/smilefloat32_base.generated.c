@@ -31,6 +31,8 @@
 #include <smile/smiletypes/numeric/smilefloat64.h>
 #include <smile/smiletypes/numeric/smilereal32.h>
 #include <smile/smiletypes/numeric/smilereal64.h>
+#include <smile/smiletypes/range/smilefloat32range.h>
+#include <smile/smiletypes/range/smilefloat64range.h>
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/base.h>
@@ -156,6 +158,17 @@ SMILE_EXTERNAL_FUNCTION(ToReal64)
 SMILE_EXTERNAL_FUNCTION(ToReal32)
 {
 	return SmileUnboxedReal32_From(Real32_FromFloat32(argv[0].unboxed.f32));
+}
+
+SMILE_EXTERNAL_FUNCTION(RangeTo)
+{
+	Float32 start, end, step;
+
+	start = argv[0].unboxed.f32;
+	end = argv[1].unboxed.f32;
+	step = end >= start ? (Float32)+1 : (Float32)-1;
+
+	return SmileArg_From((SmileObject)SmileFloat32Range_Create(start, end, step));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1162,6 +1175,8 @@ void SmileFloat32_Setup(SmileUserObject base)
 
 	SetupFunction("compare", Compare, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _float32Checks);
 	SetupSynonym("compare", "cmp");
+
+	SetupFunction("range-to", RangeTo, NULL, "start end", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _float32Checks);
 
 	SetupFunction("random", RandomFunc, base, "count", 0, 1, 1, 0, NULL);
 

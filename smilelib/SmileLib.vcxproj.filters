@@ -1007,6 +1007,10 @@
     <ClCompile Include="src\numeric\random.c" />
     <ClCompile Include="src\platform\unix\unix_os.c" />
     <ClCompile Include="src\platform\windows\windows_os.c" />
+    <ClCompile Include="src\smiletypes\range\smilefloat32range.generated.c" />
+    <ClCompile Include="src\smiletypes\range\smilefloat32range_base.generated.c" />
+    <ClCompile Include="src\smiletypes\range\smilefloat64range.generated.c" />
+    <ClCompile Include="src\smiletypes\range\smilefloat64range_base.generated.c" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">
@@ -1388,6 +1392,12 @@
     <ClInclude Include="include\smile\smiletypes\smiletillcontinuation.h" />
     <ClInclude Include="include\smile\crypto\sha3.h" />
     <ClInclude Include="include\smile\numeric\random.h" />
+    <ClInclude Include="include\smile\smiletypes\range\smilecharrange.h" />
+    <ClInclude Include="include\smile\smiletypes\range\smilefloat32range.h" />
+    <ClInclude Include="include\smile\smiletypes\range\smilefloat64range.h" />
+    <ClInclude Include="include\smile\smiletypes\range\smilereal32range.h" />
+    <ClInclude Include="include\smile\smiletypes\range\smilereal64range.h" />
+    <ClInclude Include="include\smile\smiletypes\range\smileunirange.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\smile\array.h">

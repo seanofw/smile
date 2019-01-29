@@ -16,6 +16,7 @@
 //---------------------------------------------------------------------------------------
 
 #include <smile/numeric/real64.h>
+#include <smile/numeric/float64.h>
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/numeric/smile%type%.h>

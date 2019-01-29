@@ -170,6 +170,7 @@ String Float64_ToFixedString(Float64 value, Int minIntDigits, Int maxFracDigits,
 	}
 
 	// Use sprintf to actually format the number (safely).
+	if (maxFracDigits < 1) maxFracDigits = 1;
 	snprintf(start, numberBuffer + sizeof(numberBuffer) - start, "%.*f",
 		(Int32)maxFracDigits, value);
 	numberBuffer[sizeof(numberBuffer) - 1] = '\0';
