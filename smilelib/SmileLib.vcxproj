@@ -933,6 +933,10 @@
     <ClCompile Include="src\smiletypes\range\smileinteger32range_base.generated.c" />
     <ClCompile Include="src\smiletypes\range\smileinteger64range.generated.c" />
     <ClCompile Include="src\smiletypes\range\smileinteger64range_base.generated.c" />
+    <ClCompile Include="src\smiletypes\range\smilereal32range.generated.c" />
+    <ClCompile Include="src\smiletypes\range\smilereal32range_base.generated.c" />
+    <ClCompile Include="src\smiletypes\range\smilereal64range.generated.c" />
+    <ClCompile Include="src\smiletypes\range\smilereal64range_base.generated.c" />
     <ClCompile Include="src\smiletypes\range\smileunirange.generated.c" />
     <ClCompile Include="src\smiletypes\range\smileunirange_base.generated.c" />
     <ClCompile Include="src\smiletypes\raw\smilebytearray.c" />

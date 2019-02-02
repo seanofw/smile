@@ -1015,6 +1015,10 @@
     <ClCompile Include="src\smiletypes\range\smilecharrange_base.generated.c" />
     <ClCompile Include="src\smiletypes\range\smileunirange_base.generated.c" />
     <ClCompile Include="src\smiletypes\range\smileunirange.generated.c" />
+    <ClCompile Include="src\smiletypes\range\smilereal64range_base.generated.c" />
+    <ClCompile Include="src\smiletypes\range\smilereal32range.generated.c" />
+    <ClCompile Include="src\smiletypes\range\smilereal32range_base.generated.c" />
+    <ClCompile Include="src\smiletypes\range\smilereal64range.generated.c" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">

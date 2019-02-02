@@ -133,8 +133,8 @@ static void SetupRangeTypes(struct KnownBasesStruct *knownBases)
 {
 	knownBases->Range = SmileUserObject_Create((SmileObject)knownBases->Enumerable, Smile_KnownSymbols.Range_);
 
-	knownBases->UniRange = SmileUserObject_Create((SmileObject)knownBases->Range, Smile_KnownSymbols.CharRange_);
-	knownBases->CharRange = SmileUserObject_Create((SmileObject)knownBases->Range, Smile_KnownSymbols.UniRange_);
+	knownBases->UniRange = SmileUserObject_Create((SmileObject)knownBases->Range, Smile_KnownSymbols.UniRange_);
+	knownBases->CharRange = SmileUserObject_Create((SmileObject)knownBases->Range, Smile_KnownSymbols.CharRange_);
 
 	SetupNumericRangeTypes(knownBases);
 }

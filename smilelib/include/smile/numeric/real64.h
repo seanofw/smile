@@ -110,6 +110,21 @@ Inline Int Real64_IntSign(Real64 x)
 		: +1;
 }
 
+Inline Bool Real64_IsPos(Real64 x)
+{
+	return !Real64_IsZero(x) && !Real64_IsNeg(x);
+}
+
+Inline Bool Real64_IsPosOrZero(Real64 x)
+{
+	return !Real64_IsNeg(x);
+}
+
+Inline Bool Real64_IsNegOrZero(Real64 x)
+{
+	return Real64_IsZero(x) || Real64_IsNeg(x);
+}
+
 Inline Bool Real64_TryParse(String str, Real64 *result)
 {
 	return Real64_TryParseInternal(String_GetBytes(str), String_Length(str), result);
