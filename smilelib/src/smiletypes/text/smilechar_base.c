@@ -121,13 +121,14 @@ SMILE_EXTERNAL_FUNCTION(ToUni)
 
 SMILE_EXTERNAL_FUNCTION(RangeTo)
 {
-	Byte start, end, step;
+	Byte start, end;
+	Int64 stepping;
 
 	start = argv[0].unboxed.ch;
 	end = argv[1].unboxed.ch;
-	step = end >= start ? (Byte)+1 : (Byte)-1;
+	stepping = end >= start ? +1 : -1;
 
-	return SmileArg_From((SmileObject)SmileCharRange_Create(start, end, step));
+	return SmileArg_From((SmileObject)SmileCharRange_Create(start, end, stepping));
 }
 
 //-------------------------------------------------------------------------------------------------
