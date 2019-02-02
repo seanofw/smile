@@ -16,7 +16,7 @@ struct SmileCharRangeInt {
 	DECLARE_BASE_OBJECT_PROPERTIES;
 	Byte start;
 	Byte end;
-	Byte stepping;
+	Int64 stepping;
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -24,6 +24,6 @@ struct SmileCharRangeInt {
 
 SMILE_API_DATA SmileVTable SmileCharRange_VTable;
 
-SMILE_API_FUNC SmileCharRange SmileCharRange_Create(Byte start, Byte end, Byte stepping);
+SMILE_API_FUNC SmileCharRange SmileCharRange_Create(Byte start, Byte end, Int64 stepping);
 
 #endif

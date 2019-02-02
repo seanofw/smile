@@ -133,6 +133,9 @@ static void SetupRangeTypes(struct KnownBasesStruct *knownBases)
 {
 	knownBases->Range = SmileUserObject_Create((SmileObject)knownBases->Enumerable, Smile_KnownSymbols.Range_);
 
+	knownBases->UniRange = SmileUserObject_Create((SmileObject)knownBases->Range, Smile_KnownSymbols.CharRange_);
+	knownBases->CharRange = SmileUserObject_Create((SmileObject)knownBases->Range, Smile_KnownSymbols.UniRange_);
+
 	SetupNumericRangeTypes(knownBases);
 }
 
@@ -208,6 +211,8 @@ extern void SmileReal64_Setup(SmileUserObject base);
 extern void SmileFloat32_Setup(SmileUserObject base);
 extern void SmileFloat64_Setup(SmileUserObject base);
 
+extern void SmileCharRange_Setup(SmileUserObject base);
+extern void SmileUniRange_Setup(SmileUserObject base);
 extern void SmileByteRange_Setup(SmileUserObject base);
 extern void SmileInteger16Range_Setup(SmileUserObject base);
 extern void SmileInteger32Range_Setup(SmileUserObject base);
@@ -240,6 +245,8 @@ void KnownBases_Setup(struct KnownBasesStruct *knownBases)
 	SmileObject_Setup(knownBases->Object);
 	String_Setup(knownBases->String);
 
+	SmileCharRange_Setup(knownBases->CharRange);
+	SmileUniRange_Setup(knownBases->UniRange);
 	SmileByteRange_Setup(knownBases->ByteRange);
 	SmileInteger16Range_Setup(knownBases->Integer16Range);
 	SmileInteger32Range_Setup(knownBases->Integer32Range);

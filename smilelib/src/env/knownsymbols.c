@@ -267,6 +267,7 @@ STATIC_STRING(ArrayBase_, "ArrayBase");
 STATIC_STRING(Bool_, "Bool");
 STATIC_STRING(BoolArray_, "BoolArray");
 STATIC_STRING(Char_, "Char");
+STATIC_STRING(CharRange_, "CharRange");
 STATIC_STRING(Closure_, "Closure");
 STATIC_STRING(Enumerable_, "Enumerable");
 STATIC_STRING(Exception_, "Exception");
@@ -291,6 +292,7 @@ STATIC_STRING(Symbol_, "Symbol");
 STATIC_STRING(SymbolArray_, "SymbolArray");
 STATIC_STRING(SymbolMap_, "SymbolMap");
 STATIC_STRING(Uni_, "Uni");
+STATIC_STRING(UniRange_, "UniRange");
 STATIC_STRING(UserObject_, "UserObject");
 
 STATIC_STRING(Number_, "Number");
@@ -374,6 +376,7 @@ static void KnownSymbolsInt_PreloadTypenames(SymbolTable symbolTable, KnownSymbo
 	knownSymbols->Bool_ = SymbolTableInt_AddFast(symbolTable, Bool_);
 	knownSymbols->BoolArray_ = SymbolTableInt_AddFast(symbolTable, BoolArray_);
 	knownSymbols->Char_ = SymbolTableInt_AddFast(symbolTable, Char_);
+	knownSymbols->CharRange_ = SymbolTableInt_AddFast(symbolTable, CharRange_);
 	knownSymbols->Closure = SymbolTableInt_AddFast(symbolTable, Closure_);
 	knownSymbols->Enumerable_ = SymbolTableInt_AddFast(symbolTable, Enumerable_);
 	knownSymbols->Exception_ = SymbolTableInt_AddFast(symbolTable, Exception_);
@@ -398,6 +401,7 @@ static void KnownSymbolsInt_PreloadTypenames(SymbolTable symbolTable, KnownSymbo
 	knownSymbols->SymbolArray_ = SymbolTableInt_AddFast(symbolTable, SymbolArray_);
 	knownSymbols->SymbolMap_ = SymbolTableInt_AddFast(symbolTable, SymbolMap_);
 	knownSymbols->Uni_ = SymbolTableInt_AddFast(symbolTable, Uni_);
+	knownSymbols->UniRange_ = SymbolTableInt_AddFast(symbolTable, UniRange_);
 	knownSymbols->UserObject_ = SymbolTableInt_AddFast(symbolTable, UserObject_);
 
 	knownSymbols->Number_ = SymbolTableInt_AddFast(symbolTable, Number_);

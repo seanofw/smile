@@ -16,7 +16,7 @@ struct SmileUniRangeInt {
 	DECLARE_BASE_OBJECT_PROPERTIES;
 	UInt32 start;
 	UInt32 end;
-	UInt32 stepping;
+	Int64 stepping;
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -24,6 +24,6 @@ struct SmileUniRangeInt {
 
 SMILE_API_DATA SmileVTable SmileUniRange_VTable;
 
-SMILE_API_FUNC SmileUniRange SmileUniRange_Create(UInt32 start, UInt32 end, UInt32 stepping);
+SMILE_API_FUNC SmileUniRange SmileUniRange_Create(UInt32 start, UInt32 end, Int64 stepping);
 
 #endif

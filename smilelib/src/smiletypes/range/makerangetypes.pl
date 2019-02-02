@@ -80,14 +80,25 @@ EOI
 	"URawType" => "UInt64",
 	"unboxed" => "unboxed.i64",
 	"TypeName" => "An Integer64",
-	"ToInt32" => "(Int32)(obj->end - obj->start)",
-	"ToReal64" => "Real64_FromInt64(obj->end - obj->start)",
-	"ToFloat64" => "(Float64)(obj->end - obj->start)",
+	"ShortType" => "Int64",
+
+	"DeltaType" => "Integer64",
+	"DELTATYPE" => "INTEGER64",
+	"RawDeltaType" => "Int64",
+	"unboxeddelta" => "unboxed.i64",
+	"ShortDeltaType" => "Int64",
+
+	"include" => "<smile/smiletypes/numeric/smileinteger64.h>",
 	"length" => "self->end > self->start ? self->end - self->start + 1 : self->start - self->end + 1",
 	"OtherBases" => "1",
 	"Modulus" => "a % b",
+
+	"ToInt32" => "(Int32)(obj->end - obj->start)",
+	"ToReal64" => "Real64_FromInt64(obj->end - obj->start)",
+	"ToFloat64" => "(Float64)(obj->end - obj->start)",
 	"ToStringBase10" => $intToStringBase10,
 	"ToString" => $intToString,
+
 	"HashAlgorithm" => <<EOI,
 		UInt64 start = (UInt64)range->start;
 		UInt64 end = (UInt64)range->end;
@@ -109,14 +120,25 @@ OutputTemplate(\@rangeBaseTemplate, \%int64Substitutions, "smileinteger64range_b
 	"URawType" => "UInt32",
 	"unboxed" => "unboxed.i32",
 	"TypeName" => "An Integer32",
-	"ToInt32" => "(obj->end - obj->start)",
-	"ToReal64" => "Real64_FromInt64(obj->end - obj->start)",
-	"ToFloat64" => "(Float64)(obj->end - obj->start)",
+	"ShortType" => "Int32",
+
+	"DeltaType" => "Integer32",
+	"RawDeltaType" => "Int32",
+	"DELTATYPE" => "INTEGER32",
+	"unboxeddelta" => "unboxed.i32",
+	"ShortDeltaType" => "Int32",
+
+	"include" => "<smile/smiletypes/numeric/smileinteger32.h>",
 	"length" => "self->end > self->start ? self->end - self->start + 1 : self->start - self->end + 1",
 	"OtherBases" => "1",
 	"Modulus" => "a % b",
+
+	"ToInt32" => "(obj->end - obj->start)",
+	"ToReal64" => "Real64_FromInt64(obj->end - obj->start)",
+	"ToFloat64" => "(Float64)(obj->end - obj->start)",
 	"ToStringBase10" => $intToStringBase10,
 	"ToString" => $intToString,
+
 	"HashAlgorithm" => <<EOI,
 		UInt32 start = (UInt32)range->start;
 		UInt32 end = (UInt32)range->end;
@@ -138,14 +160,25 @@ OutputTemplate(\@rangeBaseTemplate, \%int32Substitutions, "smileinteger32range_b
 	"URawType" => "UInt16",
 	"unboxed" => "unboxed.i16",
 	"TypeName" => "An Integer16",
-	"ToInt32" => "(obj->end - obj->start)",
-	"ToReal64" => "Real64_FromInt64(obj->end - obj->start)",
-	"ToFloat64" => "(Float64)(obj->end - obj->start)",
+	"ShortType" => "Int16",
+
+	"DeltaType" => "Integer16",
+	"RawDeltaType" => "Int16",
+	"DELTATYPE" => "INTEGER16",
+	"unboxeddelta" => "unboxed.i16",
+	"ShortDeltaType" => "Int16",
+
+	"include" => "<smile/smiletypes/numeric/smileinteger16.h>",
 	"length" => "self->end > self->start ? self->end - self->start + 1 : self->start - self->end + 1",
 	"OtherBases" => "1",
 	"Modulus" => "a % b",
+
+	"ToInt32" => "(obj->end - obj->start)",
+	"ToReal64" => "Real64_FromInt64(obj->end - obj->start)",
+	"ToFloat64" => "(Float64)(obj->end - obj->start)",
 	"ToStringBase10" => $intToStringBase10,
 	"ToString" => $intToString,
+
 	"HashAlgorithm" => <<EOI,
 		UInt16 start = (UInt16)range->start;
 		UInt16 end = (UInt16)range->end;
@@ -167,14 +200,25 @@ OutputTemplate(\@rangeBaseTemplate, \%int16Substitutions, "smileinteger16range_b
 	"URawType" => "Byte",
 	"unboxed" => "unboxed.i8",
 	"TypeName" => "A Byte",
-	"ToInt32" => "((Int32)obj->end - (Int32)obj->start)",
-	"ToReal64" => "Real64_FromInt64((Int32)obj->end - (Int32)obj->start)",
-	"ToFloat64" => "(Float64)((Int32)obj->end - (Int32)obj->start)",
+	"ShortType" => "Byte",
+
+	"DeltaType" => "Byte",
+	"RawDeltaType" => "SByte",
+	"DELTATYPE" => "BYTE",
+	"unboxeddelta" => "unboxed.i8",
+	"ShortDeltaType" => "Byte",
+
+	"include" => "<smile/smiletypes/numeric/smilebyte.h>",
 	"length" => "self->end > self->start ? self->end - self->start + 1 : self->start - self->end + 1",
 	"OtherBases" => "1",
 	"Modulus" => "a % b",
+
+	"ToInt32" => "((Int32)obj->end - (Int32)obj->start)",
+	"ToReal64" => "Real64_FromInt64((Int32)obj->end - (Int32)obj->start)",
+	"ToFloat64" => "(Float64)((Int32)obj->end - (Int32)obj->start)",
 	"ToStringBase10" => $intToStringBase10,
 	"ToString" => $intToString,
+
 	"HashAlgorithm" => <<EOI,
 		Byte start = range->start;
 		Byte end = range->end;
@@ -185,6 +229,105 @@ EOI
 
 OutputTemplate(\@rangeTemplate, \%byteSubstitutions, "smilebyterange.generated.c");
 OutputTemplate(\@rangeBaseTemplate, \%byteSubstitutions, "smilebyterange_base.generated.c");
+
+#--------------------------------------------------------------------------------------------
+
+$charToString = <<EOI;
+	((obj->end >= obj->start && obj->stepping != +1
+		|| obj->end < obj->start && obj->stepping != -1)
+		? String_Format("'%S'..'%S' step %ld",
+			String_AddCSlashes(String_CreateRepeat(obj->start, 1)),
+			String_AddCSlashes(String_CreateRepeat(obj->end, 1)),
+			obj->stepping)
+		: String_Format("'%S'..'%S'",
+			String_AddCSlashes(String_CreateRepeat(obj->start, 1)),
+			String_AddCSlashes(String_CreateRepeat(obj->end, 1))))
+EOI
+
+%charSubstitutions = (
+	"type" => "char",
+	"Type" => "Char",
+	"TYPE" => "CHAR",
+	"RawType" => "Byte",
+	"URawType" => "Byte",
+	"unboxed" => "unboxed.ch",
+	"TypeName" => "A Char",
+	"ShortType" => "Char",
+
+	"DeltaType" => "Integer64",
+	"RawDeltaType" => "Int64",
+	"DELTATYPE" => "INTEGER64",
+	"unboxeddelta" => "unboxed.i64",
+	"ShortDeltaType" => "Int64",
+
+	"include" => "<smile/smiletypes/text/smilechar.h>",
+	"length" => "self->end > self->start ? self->end - self->start + 1 : self->start - self->end + 1",
+	"OtherBases" => "0",
+	"Modulus" => "a % b",
+
+	"ToInt32" => "((Int32)obj->end - (Int32)obj->start)",
+	"ToReal64" => "Real64_FromInt64((Int32)obj->end - (Int32)obj->start)",
+	"ToFloat64" => "(Float64)((Int32)obj->end - (Int32)obj->start)",
+	"ToStringBase10" => $charToString,
+	"ToString" => $charToString,
+
+	"HashAlgorithm" => <<EOI,
+		Byte start = range->start;
+		Byte end = range->end;
+		UInt32 stepping = (UInt32)(UInt64)range->stepping;
+		result = Smile_ApplyHashOracle((UInt32)((UInt32)start ^ (UInt32)(end << 8) ^ (UInt32)(stepping << 16)));
+EOI
+);
+
+OutputTemplate(\@rangeTemplate, \%charSubstitutions, "smilecharrange.generated.c");
+OutputTemplate(\@rangeBaseTemplate, \%charSubstitutions, "smilecharrange_base.generated.c");
+
+#--------------------------------------------------------------------------------------------
+
+$uniToString = <<EOI;
+	((obj->end >= obj->start && obj->stepping != +1
+		|| obj->end < obj->start && obj->stepping != -1)
+		? String_Format("'\\\\u%X'..'\\\\u%X' step %ld", obj->start, obj->end, obj->stepping)
+		: String_Format("'\\\\u%X'..'\\\\u%X'", obj->start, obj->end))
+EOI
+
+%uniSubstitutions = (
+	"type" => "uni",
+	"Type" => "Uni",
+	"TYPE" => "UNI",
+	"RawType" => "UInt32",
+	"URawType" => "UInt32",
+	"unboxed" => "unboxed.uni",
+	"TypeName" => "A Uni",
+	"ShortType" => "Uni",
+
+	"DeltaType" => "Integer64",
+	"RawDeltaType" => "Int64",
+	"DELTATYPE" => "INTEGER64",
+	"unboxeddelta" => "unboxed.i64",
+	"ShortDeltaType" => "Int64",
+
+	"include" => "<smile/smiletypes/text/smileuni.h>",
+	"length" => "self->end > self->start ? self->end - self->start + 1 : self->start - self->end + 1",
+	"OtherBases" => "0",
+	"Modulus" => "a % b",
+
+	"ToInt32" => "((Int32)obj->end - (Int32)obj->start)",
+	"ToReal64" => "Real64_FromInt64((Int32)obj->end - (Int32)obj->start)",
+	"ToFloat64" => "(Float64)((Int32)obj->end - (Int32)obj->start)",
+	"ToStringBase10" => $uniToString,
+	"ToString" => $uniToString,
+
+	"HashAlgorithm" => <<EOI,
+		UInt32 start = range->start;
+		UInt32 end = range->end;
+		UInt32 stepping = (UInt32)(UInt64)range->stepping;
+		result = Smile_ApplyHashOracle((UInt32)(start ^ (end << 8) ^ (stepping << 16)));
+EOI
+);
+
+OutputTemplate(\@rangeTemplate, \%uniSubstitutions, "smileunirange.generated.c");
+OutputTemplate(\@rangeBaseTemplate, \%uniSubstitutions, "smileunirange_base.generated.c");
 
 #--------------------------------------------------------------------------------------------
 
@@ -200,35 +343,6 @@ $floatToString = <<EOI;
 		Float64_ToStringEx(obj->end, 0, 0, False)))
 EOI
 
-%float64Substitutions = (
-	"type" => "float64",
-	"Type" => "Float64",
-	"TYPE" => "FLOAT64",
-	"RawType" => "Float64",
-	"URawType" => "Float64",
-	"unboxed" => "unboxed.f64",
-	"TypeName" => "A Float64",
-	"ToInt32" => "(Int32)(obj->end - obj->start)",
-	"ToReal64" => "Real64_FromFloat64(obj->end - obj->start)",
-	"ToFloat64" => "(Float64)(obj->end - obj->start)",
-	"length" => "self->end > self->start ? self->end - self->start + 1 : self->start - self->end + 1",
-	"OtherBases" => "0",
-	"Modulus" => "fmod(a, b)",
-	"ToStringBase10" => $floatToString,
-	"ToString" => $floatToString,
-	"HashAlgorithm" => <<EOI,
-		UInt64 start = *(UInt64 *)&range->start;
-		UInt64 end = *(UInt64 *)&range->end;
-		UInt64 stepping = *(UInt64 *)&range->stepping;
-		result = Smile_ApplyHashOracle((UInt32)(start ^ (start >> 32)) ^ (UInt32)(end ^ (end >> 32)) ^ (UInt32)(stepping ^ (stepping >> 32)));
-EOI
-);
-
-OutputTemplate(\@rangeTemplate, \%float64Substitutions, "smilefloat64range.generated.c");
-OutputTemplate(\@rangeBaseTemplate, \%float64Substitutions, "smilefloat64range_base.generated.c");
-
-#--------------------------------------------------------------------------------------------
-
 %float32Substitutions = (
 	"type" => "float32",
 	"Type" => "Float32",
@@ -237,14 +351,25 @@ OutputTemplate(\@rangeBaseTemplate, \%float64Substitutions, "smilefloat64range_b
 	"URawType" => "Float32",
 	"unboxed" => "unboxed.f32",
 	"TypeName" => "A Float32",
-	"ToInt32" => "(Int32)(obj->end - obj->start)",
-	"ToReal64" => "Real64_FromFloat32(obj->end - obj->start)",
-	"ToFloat64" => "(Float64)(obj->end - obj->start)",
+	"ShortType" => "Float32",
+
+	"DeltaType" => "Float32",
+	"RawDeltaType" => "Float32",
+	"DELTATYPE" => "FLOAT32",
+	"unboxeddelta" => "unboxed.f32",
+	"ShortDeltaType" => "Float32",
+
+	"include" => "<smile/smiletypes/numeric/smilefloat32.h>",
 	"length" => "self->end > self->start ? self->end - self->start + 1 : self->start - self->end + 1",
 	"OtherBases" => "0",
 	"Modulus" => "fmodf(a, b)",
+
+	"ToInt32" => "(Int32)(obj->end - obj->start)",
+	"ToReal64" => "Real64_FromFloat32(obj->end - obj->start)",
+	"ToFloat64" => "(Float64)(obj->end - obj->start)",
 	"ToStringBase10" => $floatToString,
 	"ToString" => $floatToString,
+
 	"HashAlgorithm" => <<EOI,
 		UInt32 start = *(UInt32 *)&range->start;
 		UInt32 end = *(UInt32 *)&range->end;
@@ -255,5 +380,45 @@ EOI
 
 OutputTemplate(\@rangeTemplate, \%float32Substitutions, "smilefloat32range.generated.c");
 OutputTemplate(\@rangeBaseTemplate, \%float32Substitutions, "smilefloat32range_base.generated.c");
+
+#--------------------------------------------------------------------------------------------
+
+%float64Substitutions = (
+	"type" => "float64",
+	"Type" => "Float64",
+	"TYPE" => "FLOAT64",
+	"RawType" => "Float64",
+	"URawType" => "Float64",
+	"unboxed" => "unboxed.f64",
+	"TypeName" => "A Float64",
+	"ShortType" => "Float64",
+
+	"DeltaType" => "Float64",
+	"RawDeltaType" => "Float64",
+	"DELTATYPE" => "FLOAT64",
+	"unboxeddelta" => "unboxed.f64",
+	"ShortDeltaType" => "Float64",
+
+	"include" => "<smile/smiletypes/numeric/smilefloat64.h>",
+	"length" => "self->end > self->start ? self->end - self->start + 1 : self->start - self->end + 1",
+	"OtherBases" => "0",
+	"Modulus" => "fmod(a, b)",
+
+	"ToInt32" => "(Int32)(obj->end - obj->start)",
+	"ToReal64" => "Real64_FromFloat64(obj->end - obj->start)",
+	"ToFloat64" => "(Float64)(obj->end - obj->start)",
+	"ToStringBase10" => $floatToString,
+	"ToString" => $floatToString,
+
+	"HashAlgorithm" => <<EOI,
+		UInt64 start = *(UInt64 *)&range->start;
+		UInt64 end = *(UInt64 *)&range->end;
+		UInt64 stepping = *(UInt64 *)&range->stepping;
+		result = Smile_ApplyHashOracle((UInt32)(start ^ (start >> 32)) ^ (UInt32)(end ^ (end >> 32)) ^ (UInt32)(stepping ^ (stepping >> 32)));
+EOI
+);
+
+OutputTemplate(\@rangeTemplate, \%float64Substitutions, "smilefloat64range.generated.c");
+OutputTemplate(\@rangeBaseTemplate, \%float64Substitutions, "smilefloat64range_base.generated.c");
 
 #--------------------------------------------------------------------------------------------

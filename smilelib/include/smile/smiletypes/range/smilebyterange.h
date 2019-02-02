@@ -16,7 +16,7 @@ struct SmileByteRangeInt {
 	DECLARE_BASE_OBJECT_PROPERTIES;
 	Byte start;
 	Byte end;
-	Byte stepping;
+	SByte stepping;
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -24,6 +24,6 @@ struct SmileByteRangeInt {
 
 SMILE_API_DATA SmileVTable SmileByteRange_VTable;
 
-SMILE_API_FUNC SmileByteRange SmileByteRange_Create(Byte start, Byte end, Byte stepping);
+SMILE_API_FUNC SmileByteRange SmileByteRange_Create(Byte start, Byte end, SByte stepping);
 
 #endif

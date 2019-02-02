@@ -23,11 +23,12 @@
 #include <smile/numeric/float64.h>
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
-#include <smile/smiletypes/numeric/smilefloat64.h>
-#include <smile/smiletypes/range/smilefloat64range.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/easyobject.h>
+
+#include <smile/smiletypes/numeric/smilefloat64.h>
+#include <smile/smiletypes/range/smilefloat64range.h>
 
 SMILE_IGNORE_UNUSED_VARIABLES
 

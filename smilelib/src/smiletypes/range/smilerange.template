@@ -19,11 +19,12 @@
 #include <smile/numeric/float64.h>
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
-#include <smile/smiletypes/numeric/smile%type%.h>
-#include <smile/smiletypes/range/smile%type%range.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/easyobject.h>
+
+#include %include%
+#include <smile/smiletypes/range/smile%type%range.h>
 
 SMILE_IGNORE_UNUSED_VARIABLES
 
@@ -37,7 +38,7 @@ SMILE_EASY_OBJECT_NO_UNBOX(Smile%Type%Range)
 SMILE_EASY_OBJECT_TOBOOL(Smile%Type%Range, True)
 SMILE_EASY_OBJECT_TOSTRING(Smile%Type%Range, %ToStringBase10%)
 
-Smile%Type%Range Smile%Type%Range_Create(%RawType% start, %RawType% end, %RawType% stepping)
+Smile%Type%Range Smile%Type%Range_Create(%RawType% start, %RawType% end, %RawDeltaType% stepping)
 {
 	// We MALLOC_ATOMIC here because the base is a known pointer that will never be collected.
 	Smile%Type%Range smileRange = (Smile%Type%Range)GC_MALLOC_ATOMIC(sizeof(struct Smile%Type%RangeInt));
@@ -65,7 +66,7 @@ static SmileObject Smile%Type%Range_GetProperty(Smile%Type%Range self, Symbol pr
 	else if (propertyName == Smile_KnownSymbols.end)
 		return (SmileObject)Smile%Type%_Create(self->end);
 	else if (propertyName == Smile_KnownSymbols.stepping)
-		return (SmileObject)Smile%Type%_Create(self->stepping);
+		return (SmileObject)Smile%DeltaType%_Create(self->stepping);
 	else if (propertyName == Smile_KnownSymbols.length)
 		return (SmileObject)Smile%Type%_Create(%length%);
 	else
