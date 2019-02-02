@@ -1,0 +1,133 @@
+//---------------------------------------------------------------------------------------
+//  Smile Programming Language Interpreter
+//  Copyright 2004-2017 Sean Werkema
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//---------------------------------------------------------------------------------------
+
+#include <smile/numeric/real64.h>
+#include <smile/numeric/float64.h>
+#include <smile/smiletypes/smileobject.h>
+#include <smile/smiletypes/numeric/smileinteger64.h>
+#include <smile/smiletypes/text/smilesymbol.h>
+#include <smile/smiletypes/smilelist.h>
+#include <smile/smiletypes/easyobject.h>
+
+#include %include%
+#include <smile/smiletypes/range/smile%type%range.h>
+
+SMILE_IGNORE_UNUSED_VARIABLES
+
+SMILE_EASY_OBJECT_VTABLE(Smile%Type%Range);
+
+SMILE_EASY_OBJECT_READONLY_SECURITY(Smile%Type%Range)
+SMILE_EASY_OBJECT_NO_CALL(Smile%Type%Range, "%TypeName%Range object")
+SMILE_EASY_OBJECT_NO_SOURCE(Smile%Type%Range)
+SMILE_EASY_OBJECT_NO_UNBOX(Smile%Type%Range)
+
+SMILE_EASY_OBJECT_TOBOOL(Smile%Type%Range, True)
+SMILE_EASY_OBJECT_TOSTRING(Smile%Type%Range, %ToString%)
+
+Smile%Type%Range Smile%Type%Range_Create(%RawType% start, %RawType% end, %RawType% stepping)
+{
+	// We MALLOC_ATOMIC here because the base is a known pointer that will never be collected.
+	Smile%Type%Range smileRange = (Smile%Type%Range)GC_MALLOC_ATOMIC(sizeof(struct Smile%Type%RangeInt));
+	if (smileRange == NULL) Smile_Abort_OutOfMemory();
+	smileRange->base = (SmileObject)Smile_KnownBases.%Type%Range;
+	smileRange->kind = SMILE_KIND_%TYPE%RANGE;
+	smileRange->vtable = Smile%Type%Range_VTable;
+	smileRange->start = start;
+	smileRange->end = end;
+	smileRange->stepping = stepping;
+	return smileRange;
+}
+
+static UInt32 Smile%Type%Range_Hash(Smile%Type%Range range)
+{
+	UInt32 result;
+%HashAlgorithm%
+	return result;
+}
+
+static SmileObject Smile%Type%Range_GetProperty(Smile%Type%Range self, Symbol propertyName)
+{
+	if (propertyName == Smile_KnownSymbols.start)
+		return (SmileObject)Smile%Type%_Create(self->start);
+	else if (propertyName == Smile_KnownSymbols.end)
+		return (SmileObject)Smile%Type%_Create(self->end);
+	else if (propertyName == Smile_KnownSymbols.stepping)
+		return (SmileObject)Smile%Type%_Create(self->stepping);
+	else if (propertyName == Smile_KnownSymbols.length)
+		return (SmileObject)Smile%Type%_Create(%length%);
+	else
+		return self->base->vtable->getProperty(self->base, propertyName);
+}
+
+static void Smile%Type%Range_SetProperty(Smile%Type%Range self, Symbol propertyName, SmileObject value)
+{
+	if (propertyName == Smile_KnownSymbols.start || propertyName == Smile_KnownSymbols.end
+		|| propertyName == Smile_KnownSymbols.stepping || propertyName == Smile_KnownSymbols.length) {
+		Smile_ThrowException(Smile_KnownSymbols.property_error,
+			String_Format("Cannot set property \"%S\" on %Type%Range: Ranges are read-only objects.",
+				SymbolTable_GetName(Smile_SymbolTable, propertyName)));
+	}
+	else {
+		Smile_ThrowException(Smile_KnownSymbols.property_error,
+			String_Format("Cannot set property \"%S\" on %Type%Range: This property does not exist, and ranges are not appendable objects.",
+				SymbolTable_GetName(Smile_SymbolTable, propertyName)));
+	}
+}
+
+static Bool Smile%Type%Range_HasProperty(Smile%Type%Range self, Symbol propertyName)
+{
+	UNUSED(self);
+	return (propertyName == Smile_KnownSymbols.start || propertyName == Smile_KnownSymbols.end
+		|| propertyName == Smile_KnownSymbols.stepping || propertyName == Smile_KnownSymbols.length);
+}
+
+static SmileList Smile%Type%Range_GetPropertyNames(Smile%Type%Range self)
+{
+	SmileList head, tail;
+
+	UNUSED(self);
+
+	LIST_INIT(head, tail);
+	LIST_APPEND(head, tail, SmileSymbol_Create(Smile_KnownSymbols.start));
+	LIST_APPEND(head, tail, SmileSymbol_Create(Smile_KnownSymbols.end));
+	LIST_APPEND(head, tail, SmileSymbol_Create(Smile_KnownSymbols.stepping));
+	LIST_APPEND(head, tail, SmileSymbol_Create(Smile_KnownSymbols.length));
+
+	return head;
+}
+
+static Bool Smile%Type%Range_CompareEqual(Smile%Type%Range a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
+{
+	if (SMILE_KIND(b) == SMILE_KIND_%TYPE%RANGE) {
+		return %Type%_Eq(((Smile%Type%Range)a)->start, ((Smile%Type%Range)b)->start)
+			&& %Type%_Eq(((Smile%Type%Range)a)->end, ((Smile%Type%Range)b)->end)
+			&& %Type%_Eq(((Smile%Type%Range)a)->stepping, ((Smile%Type%Range)b)->stepping);
+	}
+	else return False;
+}
+
+static Bool Smile%Type%Range_DeepEqual(Smile%Type%Range a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData, PointerSet visitedPointers)
+{
+	UNUSED(visitedPointers);
+
+	if (SMILE_KIND(b) == SMILE_KIND_%TYPE%RANGE) {
+		return %Type%_Eq(((Smile%Type%Range)a)->start, ((Smile%Type%Range)b)->start)
+			&& %Type%_Eq(((Smile%Type%Range)a)->end, ((Smile%Type%Range)b)->end)
+			&& %Type%_Eq(((Smile%Type%Range)a)->stepping, ((Smile%Type%Range)b)->stepping);
+	}
+	else return False;
+}
