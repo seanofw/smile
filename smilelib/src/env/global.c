@@ -75,6 +75,8 @@ void Smile_InitCommonGlobals(ClosureInfo globalClosureInfo)
 	DeclareCommonGlobal(Smile_KnownSymbols.Exception_,			Smile_KnownBases.Exception);
 
 	DeclareCommonGlobal(Smile_KnownSymbols.Range_,				Smile_KnownBases.Range);
+	DeclareCommonGlobal(Smile_KnownSymbols.CharRange_,			Smile_KnownBases.CharRange);
+	DeclareCommonGlobal(Smile_KnownSymbols.UniRange_,			Smile_KnownBases.UniRange);
 	DeclareCommonGlobal(Smile_KnownSymbols.NumericRange_,		Smile_KnownBases.NumericRange);
 	DeclareCommonGlobal(Smile_KnownSymbols.IntegerRangeBase_,	Smile_KnownBases.IntegerRangeBase);
 	DeclareCommonGlobal(Smile_KnownSymbols.ByteRange_,			Smile_KnownBases.ByteRange);
@@ -82,6 +84,12 @@ void Smile_InitCommonGlobals(ClosureInfo globalClosureInfo)
 	DeclareCommonGlobal(Smile_KnownSymbols.Integer32Range_,		Smile_KnownBases.Integer32Range);
 	DeclareCommonGlobal(Smile_KnownSymbols.Integer64Range_,		Smile_KnownBases.Integer64Range);
 	DeclareCommonGlobal(Smile_KnownSymbols.IntegerRange_,		Smile_KnownBases.Integer64Range);
+	DeclareCommonGlobal(Smile_KnownSymbols.Real32Range_,		Smile_KnownBases.Real32Range);
+	DeclareCommonGlobal(Smile_KnownSymbols.Real64Range_,		Smile_KnownBases.Real64Range);
+	DeclareCommonGlobal(Smile_KnownSymbols.RealRangeBase_,		Smile_KnownBases.RealRangeBase);
+	DeclareCommonGlobal(Smile_KnownSymbols.Float32Range_,		Smile_KnownBases.Float32Range);
+	DeclareCommonGlobal(Smile_KnownSymbols.Float64Range_,		Smile_KnownBases.Float64Range);
+	DeclareCommonGlobal(Smile_KnownSymbols.FloatRangeBase_,		Smile_KnownBases.FloatRangeBase);
 
 	DeclareCommonGlobal(Smile_KnownSymbols.ByteArray_,			Smile_KnownBases.ByteArray);
 

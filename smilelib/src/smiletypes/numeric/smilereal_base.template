@@ -31,6 +31,7 @@
 #include <smile/smiletypes/base.h>
 #include <smile/internal/staticstring.h>
 #include <smile/numeric/random.h>
+#include <smile/smiletypes/range/smile%type%range.h>
 
 SMILE_IGNORE_UNUSED_VARIABLES
 
@@ -149,6 +150,17 @@ SMILE_EXTERNAL_FUNCTION(ToFloat64)
 SMILE_EXTERNAL_FUNCTION(ToFloat32)
 {
 	return SmileUnboxedFloat32_From(%Type%_ToFloat32(argv[0].unboxed.%unboxed%));
+}
+
+SMILE_EXTERNAL_FUNCTION(RangeTo)
+{
+	%RawType% start, end, step;
+
+	start = argv[0].unboxed.%unboxed%;
+	end = argv[1].unboxed.%unboxed%;
+	step = %Type%_Ge(end, start) ? %Type%_One : %Type%_NegOne;
+
+	return SmileArg_From((SmileObject)Smile%Type%Range_Create(start, end, step));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1112,6 +1124,8 @@ void Smile%Type%_Setup(SmileUserObject base)
 
 	SetupFunction("compare", Compare, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
 	SetupSynonym("compare", "cmp");
+
+	SetupFunction("range-to", RangeTo, NULL, "start end", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _%type%Checks);
 
 	SetupFunction("random", RandomFunc, base, "count", 0, 1, 1, 0, NULL);
 

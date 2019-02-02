@@ -109,6 +109,21 @@ Inline Int Real32_IntSign(Real32 x)
 		: +1;
 }
 
+Inline Bool Real32_IsPos(Real32 x)
+{
+	return !Real32_IsZero(x) && !Real32_IsNeg(x);
+}
+
+Inline Bool Real32_IsPosOrZero(Real32 x)
+{
+	return !Real32_IsNeg(x);
+}
+
+Inline Bool Real32_IsNegOrZero(Real32 x)
+{
+	return Real32_IsZero(x) || Real32_IsNeg(x);
+}
+
 Inline Bool Real32_TryParse(String str, Real32 *result)
 {
 	return Real32_TryParseInternal(String_GetBytes(str), String_Length(str), result);

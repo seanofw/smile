@@ -23,6 +23,7 @@ struct KnownBasesStruct {
 	SmileUserObject       String;
 	SmileUserObject       Range;
 	SmileUserObject         NumericRange;
+	SmileUserObject           CharRange, UniRange;
 	SmileUserObject           IntegerRangeBase;
 	SmileUserObject             ByteRange, Integer16Range, Integer32Range, Integer64Range, Integer128Range;
 	SmileUserObject           RealRangeBase;

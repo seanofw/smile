@@ -1,5 +1,5 @@
-#ifndef __SMILE_SMILETYPES_RANGE_SMILEBYTERANGE_H__
-#define __SMILE_SMILETYPES_RANGE_SMILEBYTERANGE_H__
+#ifndef __SMILE_SMILETYPES_RANGE_SMILEFLOAT32RANGE_H__
+#define __SMILE_SMILETYPES_RANGE_SMILEFLOAT32RANGE_H__
 
 #ifndef __SMILE_SMILETYPES_PREDECL_H__
 #include <smile/smiletypes/predecl.h>
@@ -12,18 +12,18 @@
 //-------------------------------------------------------------------------------------------------
 //  Type declarations
 
-struct SmileByteRangeInt {
+struct SmileFloat32RangeInt {
 	DECLARE_BASE_OBJECT_PROPERTIES;
-	Byte start;
-	Byte end;
-	SByte stepping;
+	Float32 start;
+	Float32 end;
+	Float32 stepping;
 };
 
 //-------------------------------------------------------------------------------------------------
 //  Public interface
 
-SMILE_API_DATA SmileVTable SmileByteRange_VTable;
+SMILE_API_DATA SmileVTable SmileFloat32Range_VTable;
 
-SMILE_API_FUNC SmileByteRange SmileByteRange_Create(Byte start, Byte end, SByte stepping);
+SMILE_API_FUNC SmileFloat32Range SmileFloat32Range_Create(Float32 start, Float32 end, Float32 stepping);
 
 #endif

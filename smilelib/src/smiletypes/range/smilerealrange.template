@@ -36,9 +36,9 @@ SMILE_EASY_OBJECT_NO_SOURCE(Smile%Type%Range)
 SMILE_EASY_OBJECT_NO_UNBOX(Smile%Type%Range)
 
 SMILE_EASY_OBJECT_TOBOOL(Smile%Type%Range, True)
-SMILE_EASY_OBJECT_TOSTRING(Smile%Type%Range, %ToStringBase10%)
+SMILE_EASY_OBJECT_TOSTRING(Smile%Type%Range, %ToString%)
 
-Smile%Type%Range Smile%Type%Range_Create(%RawType% start, %RawType% end, %RawDeltaType% stepping)
+Smile%Type%Range Smile%Type%Range_Create(%RawType% start, %RawType% end, %RawType% stepping)
 {
 	// We MALLOC_ATOMIC here because the base is a known pointer that will never be collected.
 	Smile%Type%Range smileRange = (Smile%Type%Range)GC_MALLOC_ATOMIC(sizeof(struct Smile%Type%RangeInt));
@@ -66,7 +66,7 @@ static SmileObject Smile%Type%Range_GetProperty(Smile%Type%Range self, Symbol pr
 	else if (propertyName == Smile_KnownSymbols.end)
 		return (SmileObject)Smile%Type%_Create(self->end);
 	else if (propertyName == Smile_KnownSymbols.stepping)
-		return (SmileObject)Smile%DeltaType%_Create(self->stepping);
+		return (SmileObject)Smile%Type%_Create(self->stepping);
 	else if (propertyName == Smile_KnownSymbols.length)
 		return (SmileObject)Smile%Type%_Create(%length%);
 	else
@@ -113,9 +113,9 @@ static SmileList Smile%Type%Range_GetPropertyNames(Smile%Type%Range self)
 static Bool Smile%Type%Range_CompareEqual(Smile%Type%Range a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
 {
 	if (SMILE_KIND(b) == SMILE_KIND_%TYPE%RANGE) {
-		return ((Smile%Type%Range)a)->start == ((Smile%Type%Range)b)->start
-			&& ((Smile%Type%Range)a)->end == ((Smile%Type%Range)b)->end
-			&& ((Smile%Type%Range)a)->stepping == ((Smile%Type%Range)b)->stepping;
+		return %Type%_Eq(((Smile%Type%Range)a)->start, ((Smile%Type%Range)b)->start)
+			&& %Type%_Eq(((Smile%Type%Range)a)->end, ((Smile%Type%Range)b)->end)
+			&& %Type%_Eq(((Smile%Type%Range)a)->stepping, ((Smile%Type%Range)b)->stepping);
 	}
 	else return False;
 }
@@ -125,9 +125,9 @@ static Bool Smile%Type%Range_DeepEqual(Smile%Type%Range a, SmileUnboxedData aDat
 	UNUSED(visitedPointers);
 
 	if (SMILE_KIND(b) == SMILE_KIND_%TYPE%RANGE) {
-		return ((Smile%Type%Range)a)->start == ((Smile%Type%Range)b)->start
-			&& ((Smile%Type%Range)a)->end == ((Smile%Type%Range)b)->end
-			&& ((Smile%Type%Range)a)->stepping == ((Smile%Type%Range)b)->stepping;
+		return %Type%_Eq(((Smile%Type%Range)a)->start, ((Smile%Type%Range)b)->start)
+			&& %Type%_Eq(((Smile%Type%Range)a)->end, ((Smile%Type%Range)b)->end)
+			&& %Type%_Eq(((Smile%Type%Range)a)->stepping, ((Smile%Type%Range)b)->stepping);
 	}
 	else return False;
 }

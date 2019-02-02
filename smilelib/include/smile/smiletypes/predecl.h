@@ -54,6 +54,12 @@ typedef struct SmileByteRangeInt *SmileByteRange;
 typedef struct SmileInteger16RangeInt *SmileInteger16Range;
 typedef struct SmileInteger32RangeInt *SmileInteger32Range;
 typedef struct SmileInteger64RangeInt *SmileInteger64Range;
+typedef struct SmileReal32RangeInt *SmileReal32Range;
+typedef struct SmileReal64RangeInt *SmileReal64Range;
+typedef struct SmileFloat32RangeInt *SmileFloat32Range;
+typedef struct SmileFloat64RangeInt *SmileFloat64Range;
+typedef struct SmileCharRangeInt *SmileCharRange;
+typedef struct SmileUniRangeInt *SmileUniRange;
 
 typedef struct SmileSyntaxInt *SmileSyntax;
 typedef struct SmileNonterminalInt *SmileNonterminal;

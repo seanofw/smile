@@ -30,12 +30,10 @@
 #include <smile/internal/staticstring.h>
 #include <smile/eval/eval.h>
 
-#include <smile/smiletypes/numeric/smileinteger32.h>
-#include <smile/smiletypes/range/smileinteger32range.h>
+#include <smile/smiletypes/numeric/smilereal32.h>
+#include <smile/smiletypes/range/smilereal32range.h>
 
 SMILE_IGNORE_UNUSED_VARIABLES
-
-#define Modulus(a, b) (a % b)
 
 typedef enum {
 	FindMode_First,
@@ -46,31 +44,28 @@ typedef enum {
 	FindMode_All,
 } FindMode;
 
-STATIC_STRING(_stringTypeError, "Second argument to 'string' must be of type 'Integer32'");
-#if 1
-STATIC_STRING(_numericBaseError, "Valid numeric base must be in the range of 2..36");
-#endif
-STATIC_STRING(_integer32TypeError, "%s argument to '%s' must be of type 'Integer32'");
-STATIC_STRING(_argCountError, "Too many arguments to 'Integer32Range.%s'");
+STATIC_STRING(_stringTypeError, "Second argument to 'string' must be of type 'Real32'");
+STATIC_STRING(_real32TypeError, "%s argument to '%s' must be of type 'Real32'");
+STATIC_STRING(_argCountError, "Too many arguments to 'Real32Range.%s'");
 
 static Byte _eachChecks[] = {
-	SMILE_KIND_MASK, SMILE_KIND_INTEGER32RANGE,
+	SMILE_KIND_MASK, SMILE_KIND_REAL32RANGE,
 	SMILE_KIND_MASK, SMILE_KIND_FUNCTION,
 };
 
 static Byte _findChecks[] = {
-	SMILE_KIND_MASK, SMILE_KIND_INTEGER32RANGE,
+	SMILE_KIND_MASK, SMILE_KIND_REAL32RANGE,
 	0, 0,
 };
 
-static Byte _integer32Checks[] = {
-	SMILE_KIND_MASK, SMILE_KIND_INTEGER32RANGE,
-	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER32,
+static Byte _real32Checks[] = {
+	SMILE_KIND_MASK, SMILE_KIND_REAL32RANGE,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_REAL32,
 };
 
 static Byte _stepChecks[] = {
-	SMILE_KIND_MASK, SMILE_KIND_INTEGER32RANGE,
-	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER32,
+	SMILE_KIND_MASK, SMILE_KIND_REAL32RANGE,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_REAL32,
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -78,7 +73,7 @@ static Byte _stepChecks[] = {
 
 SMILE_EXTERNAL_FUNCTION(ToBool)
 {
-	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_INTEGER32RANGE)
+	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_REAL32RANGE)
 		return SmileUnboxedBool_From(True);
 
 	return SmileUnboxedBool_From(True);
@@ -86,9 +81,9 @@ SMILE_EXTERNAL_FUNCTION(ToBool)
 
 SMILE_EXTERNAL_FUNCTION(ToInt)
 {
-	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_INTEGER32RANGE) {
-		SmileInteger32Range obj = (SmileInteger32Range)argv[0].obj;
-		return SmileUnboxedInteger64_From((Int64)((Int32)obj->end - (Int32)obj->start));
+	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_REAL32RANGE) {
+		SmileReal32Range obj = (SmileReal32Range)argv[0].obj;
+		return SmileUnboxedInteger64_From(Real32_ToInt64(Real32_Sub(obj->end, obj->start)));
 	}
 
 	return SmileUnboxedInteger64_From(0);
@@ -96,51 +91,38 @@ SMILE_EXTERNAL_FUNCTION(ToInt)
 
 SMILE_EXTERNAL_FUNCTION(ToString)
 {
-	STATIC_STRING(integer32range, "Integer32Range");
+	STATIC_STRING(real32range, "Real32Range");
 
-	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_INTEGER32RANGE) {
+	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_REAL32RANGE) {
 		String string;
-		SmileInteger32Range obj = (SmileInteger32Range)argv[0].obj;
+		SmileReal32Range obj = (SmileReal32Range)argv[0].obj;
 
-#if 1
-		Int32 numericBase;
-
-		if (argc == 2) {
-			if (SMILE_KIND(argv[1].obj) != SMILE_KIND_INTEGER32)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _stringTypeError);
-			numericBase = (Int)argv[1].unboxed.i32;
-			if (numericBase < 2 || numericBase > 36)
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _numericBaseError);
-		}
-		else numericBase = 10;
-#endif
-
-		string = 		((obj->end >= obj->start && obj->stepping != +1
-			|| obj->end < obj->start && obj->stepping != -1)
-			? String_Format("%S..%S step %S",
-				String_CreateFromInteger(obj->start, (Int)numericBase, False),
-				String_CreateFromInteger(obj->end, (Int)numericBase, False),
-				String_CreateFromInteger(obj->stepping, (Int)numericBase, False))
-			: String_Format("%S..%S",
-				String_CreateFromInteger(obj->start, (Int)numericBase, False),
-				String_CreateFromInteger(obj->end, (Int)numericBase, False)))
+		string = ((Real32_Ge(obj->end, obj->start) && Real32_Ne(obj->stepping, Real32_One)
+	|| Real32_Lt(obj->end, obj->start) && Real32_Ne(obj->stepping, Real32_One))
+	? String_Format("(%S)..(%S) step %S",
+		Real32_ToStringEx(obj->start, 0, 0, False),
+		Real32_ToStringEx(obj->end, 0, 0, False),
+		Real32_ToStringEx(obj->stepping, 0, 0, False))
+	: String_Format("(%S)..(%S)",
+		Real32_ToStringEx(obj->start, 0, 0, False),
+		Real32_ToStringEx(obj->end, 0, 0, False)))
 ;
 
 		return SmileArg_From((SmileObject)string);
 	}
 
-	return SmileArg_From((SmileObject)integer32range);
+	return SmileArg_From((SmileObject)real32range);
 }
 
 SMILE_EXTERNAL_FUNCTION(Hash)
 {
-	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_INTEGER32RANGE) {
-		SmileInteger32Range range = (SmileInteger32Range)argv[0].obj;
+	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_REAL32RANGE) {
+		SmileReal32Range range = (SmileReal32Range)argv[0].obj;
 		UInt32 result;
-		UInt32 start = (UInt32)range->start;
-		UInt32 end = (UInt32)range->end;
-		UInt32 stepping = (UInt32)range->stepping;
-		result = Smile_ApplyHashOracle((UInt32)(start ^ end ^ stepping));
+		UInt32 start = *(UInt32 *)&range->start;
+		UInt32 end = *(UInt32 *)&range->end;
+		UInt32 stepping = *(UInt32 *)&range->stepping;
+		result = Smile_ApplyHashOracle(start ^ end ^ stepping);
 
 		return SmileUnboxedInteger64_From(result);
 	}
@@ -154,116 +136,116 @@ SMILE_EXTERNAL_FUNCTION(Hash)
 SMILE_EXTERNAL_FUNCTION(Of)
 {
 	Int i = 0;
-	Int32 start, end;
-	Int32 stepping;
+	Real32 start, end;
+	Real32 stepping;
 
 	if (argv[i].obj == (SmileObject)param)
 		i++;
 
-	if (SMILE_KIND(argv[i].obj) != SMILE_KIND_UNBOXED_INTEGER32)
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FormatString(_integer32TypeError, "First", "of"));
-	start = argv[i++].unboxed.i32;
+	if (SMILE_KIND(argv[i].obj) != SMILE_KIND_UNBOXED_REAL32)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FormatString(_real32TypeError, "First", "of"));
+	start = argv[i++].unboxed.r32;
 
-	if (i >= argc || SMILE_KIND(argv[i].obj) != SMILE_KIND_UNBOXED_INTEGER32)
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FormatString(_integer32TypeError, "Second", "of"));
-	end = argv[i++].unboxed.i32;
+	if (i >= argc || SMILE_KIND(argv[i].obj) != SMILE_KIND_UNBOXED_REAL32)
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FormatString(_real32TypeError, "Second", "of"));
+	end = argv[i++].unboxed.r32;
 
 	if (i < argc) {
-		if (SMILE_KIND(argv[i].obj) != SMILE_KIND_UNBOXED_INTEGER32)
-			Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FormatString(_integer32TypeError, "Third", "of"));
-		stepping = argv[i++].unboxed.i32;
+		if (SMILE_KIND(argv[i].obj) != SMILE_KIND_UNBOXED_REAL32)
+			Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FormatString(_real32TypeError, "Third", "of"));
+		stepping = argv[i++].unboxed.r32;
 	}
-	else stepping = end >= start ? (Int32)+1 : (Int32)-1;
+	else stepping = Real32_Ge(end, start) ? Real32_One : Real32_NegOne;
 
 	if (i != argc)
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FormatString(_argCountError, "of"));
 
-	return SmileArg_From((SmileObject)SmileInteger32Range_Create(start, end, stepping));
+	return SmileArg_From((SmileObject)SmileReal32Range_Create(start, end, stepping));
 }
 
 SMILE_EXTERNAL_FUNCTION(Step)
 {
-	Int32 stepping = (Int32)argv[1].unboxed.i32;
-	Int32 start = ((SmileInteger32Range)argv[0].obj)->start;
-	Int32 end = ((SmileInteger32Range)argv[0].obj)->end;
+	Real32 stepping = argv[1].unboxed.r32;
+	Real32 start = ((SmileReal32Range)argv[0].obj)->start;
+	Real32 end = ((SmileReal32Range)argv[0].obj)->end;
 
-	if (stepping == 0)
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FromC("Argument to 'Integer32Range.step' cannot be zero."));
-	if (start < end && stepping < 0)
+	if (Real32_IsZero(stepping))
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FromC("Argument to 'Real32Range.step' cannot be zero."));
+	if (Real32_Lt(start, end) && Real32_IsNeg(stepping))
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FromC("Cannot apply a negative step to a forward range."));
-	if (end < start && stepping > 0)
+	if (Real32_Lt(end, start) && Real32_IsPos(stepping))
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FromC("Cannot apply a positive step to a reverse range."));
 
-	return SmileArg_From((SmileObject)SmileInteger32Range_Create(start, end, stepping));
+	return SmileArg_From((SmileObject)SmileReal32Range_Create(start, end, stepping));
 }
 
 SMILE_EXTERNAL_FUNCTION(Reverse)
 {
-	return SmileArg_From((SmileObject)SmileInteger32Range_Create(
-		((SmileInteger32Range)argv[0].obj)->end,
-		((SmileInteger32Range)argv[0].obj)->start,
-		-((SmileInteger32Range)argv[0].obj)->stepping)
-	);
+	return SmileArg_From((SmileObject)SmileReal32Range_Create(
+		((SmileReal32Range)argv[0].obj)->end,
+		((SmileReal32Range)argv[0].obj)->start,
+		Real32_Neg(((SmileReal32Range)argv[0].obj)->stepping)
+	));
 }
 
 //-------------------------------------------------------------------------------------------------
 
-static SmileArg FindFixedValue(SmileInteger32Range range, SmileArg valueArg, FindMode fixedMode)
+static SmileArg FindFixedValue(SmileReal32Range range, SmileArg valueArg, FindMode fixedMode)
 {
-	Int32 current = range->start;
-	Int32 step = range->stepping;
-	Int32 end = range->end;
-	Bool up = range->end > range->start;
-	Int32 value;
+	Real32 current = range->start;
+	Real32 step = range->stepping;
+	Real32 end = range->end;
+	Bool up = Real32_Gt(range->end, range->start);
+	Real32 value;
 
 	if (!up) {
 		// Handle the downward case by swapping endpoints and directions.
-		Int32 temp;
-		step = -step;
+		Real32 temp;
+		step = Real32_Neg(step);
 		temp = current;
 		current = end;
 		end = temp;
 	}
 
-	// An Integer32 range cannot contain non-Integer32 values, so only test if the input value was of a sane type.
-	if (SMILE_KIND(valueArg.obj) == SMILE_KIND_UNBOXED_INTEGER32) {
-		value = valueArg.unboxed.i32;
+	// An Real32 range cannot contain non-Real32 values, so only test if the input value was of a sane type.
+	if (SMILE_KIND(valueArg.obj) == SMILE_KIND_UNBOXED_REAL32) {
+		value = valueArg.unboxed.r32;
 
 		// Use a shortcut for a step of +1 on a forward range.
-		if (step == 1) {
-			if (value <= end) {
+		if (Real32_Eq(step, Real32_One)) {
+			if (Real32_Le(value, end)) {
 				// Found it.
 				switch (fixedMode) {
 					case FindMode_IndexOf:
-						return SmileUnboxedInteger64_From((Int64)(value - current));
+						return SmileUnboxedInteger64_From((Int64)Real32_ToInt64(Real32_Sub(value, current)));
 					case FindMode_First:
 					case FindMode_Where:
-						return SmileUnboxedInteger32_From(value);
+						return SmileUnboxedReal32_From(value);
 					case FindMode_Count:
 						return SmileUnboxedInteger64_From(1);
 					case FindMode_Any:
 						return SmileUnboxedBool_From(True);
 					case FindMode_All:
-						return SmileUnboxedBool_From(current == end);	// 'All' can only be true if there's one value total.
+						return SmileUnboxedBool_From(Real32_Eq(current, end));	// 'All' can only be true if there's one value total.
 				}
 			}
 		}
 		else {
 			// General case:  Do some math and see if the target is something we'd hit by iterating.
-			UInt32 delta = (UInt32)(value - current);
-			if (Modulus(delta, (UInt32)step) == 0) {
+			Real32 delta = Real32_Sub(value, current);
+			if (Real32_IsZero(Real32_Mod(delta, step))) {
 				switch (fixedMode) {
 					case FindMode_IndexOf:
-						return SmileUnboxedInteger64_From((Int64)(delta / (UInt32)step));
+						return SmileUnboxedInteger64_From(Real32_ToInt64(Real32_Div(delta, step)));
 					case FindMode_First:
 					case FindMode_Where:
-						return SmileUnboxedInteger32_From(value);
+						return SmileUnboxedReal32_From(value);
 					case FindMode_Count:
 						return SmileUnboxedInteger64_From(1);
 					case FindMode_Any:
 						return SmileUnboxedBool_From(True);
 					case FindMode_All:
-						return SmileUnboxedBool_From(current == end);	// 'All' can only be true if there's one value total.
+						return SmileUnboxedBool_From(Real32_Eq(current, end));	// 'All' can only be true if there's one value total.
 				}
 			}
 		}
@@ -283,21 +265,21 @@ static SmileArg FindFixedValue(SmileInteger32Range range, SmileArg valueArg, Fin
 
 //-------------------------------------------------------------------------------------------------
 
-typedef struct EachInfoInteger32Struct {
-	SmileInteger32Range range;
+typedef struct EachInfoReal32Struct {
+	SmileReal32Range range;
 	SmileFunction function;
-	Int32 current;
-	Int32 step;
-	Int32 end;
+	Real32 current;
+	Real32 step;
+	Real32 end;
 	Int64 index;
 	Byte numArgs;
 	Bool done;
 	Bool up;
-} *EachInfoInteger32;
+} *EachInfoReal32;
 
 static Int EachStateMachine(ClosureStateMachine closure)
 {
-	EachInfoInteger32 eachInfo = (EachInfoInteger32)closure->state;
+	EachInfoReal32 eachInfo = (EachInfoReal32)closure->state;
 
 	// If we've run out of values, we're done.
 	if (eachInfo->done) {
@@ -310,20 +292,20 @@ static Int EachStateMachine(ClosureStateMachine closure)
 	Closure_Pop(closure);
 	Closure_PushBoxed(closure, eachInfo->function);
 	if (eachInfo->numArgs > 0) {
-		Closure_PushUnboxedInt32(closure, eachInfo->current);
+		Closure_PushUnboxedReal32(closure, eachInfo->current);
 		if (eachInfo->numArgs > 1)
 			Closure_PushUnboxedInt64(closure, eachInfo->index);
 	}
 
 	// Move to the next spot.
 	if (eachInfo->up) {
-		if ((Int32)eachInfo->end - eachInfo->step >= (Int32)eachInfo->current)
-			eachInfo->current = (Int32)((Int32)eachInfo->current + eachInfo->step);
+		if (Real32_Ge(Real32_Sub(eachInfo->end, eachInfo->step), eachInfo->current))
+			eachInfo->current = Real32_Add(eachInfo->current, eachInfo->step);
 		else eachInfo->done = True;
 	}
 	else {
-		if ((Int32)eachInfo->end - eachInfo->step <= (Int32)eachInfo->current)
-			eachInfo->current = (Int32)((Int32)eachInfo->current + eachInfo->step);
+		if (Real32_Le(Real32_Sub(eachInfo->end, eachInfo->step), eachInfo->current))
+			eachInfo->current = Real32_Add(eachInfo->current, eachInfo->step);
 		else eachInfo->done = True;
 	}
 	eachInfo->index++;
@@ -334,25 +316,25 @@ static Int EachStateMachine(ClosureStateMachine closure)
 SMILE_EXTERNAL_FUNCTION(Each)
 {
 	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
-	SmileInteger32Range range = (SmileInteger32Range)argv[0].obj;
+	SmileReal32Range range = (SmileReal32Range)argv[0].obj;
 	SmileFunction function = (SmileFunction)argv[1].obj;
 	Int minArgs, maxArgs;
-	EachInfoInteger32 eachInfo;
+	EachInfoReal32 eachInfo;
 	ClosureStateMachine closure;
 
 	SmileFunction_GetArgCounts(function, &minArgs, &maxArgs);
 
 	closure = Eval_BeginStateMachine(EachStateMachine, EachStateMachine);
 
-	eachInfo = (EachInfoInteger32)closure->state;
+	eachInfo = (EachInfoReal32)closure->state;
 	eachInfo->range = range;
 	eachInfo->function = function;
 	eachInfo->index = 0;
 	eachInfo->current = range->start;
 	eachInfo->step = range->stepping;
 	eachInfo->end = range->end;
-	eachInfo->up = range->end >= range->start;
-	eachInfo->done = range->end >= range->start ? range->stepping <= 0 : range->stepping >= 0;
+	eachInfo->up = Real32_Ge(range->end, range->start);
+	eachInfo->done = eachInfo->up ? Real32_IsNegOrZero(range->stepping) : Real32_IsPosOrZero(range->stepping);
 	eachInfo->numArgs = (Byte)(maxArgs <= 2 ? maxArgs : 2);
 
 	Closure_PushBoxed(closure, NullObject);	// Initial "return" value from 'each'.
@@ -362,21 +344,21 @@ SMILE_EXTERNAL_FUNCTION(Each)
 
 //-------------------------------------------------------------------------------------------------
 
-typedef struct MapInfoInteger32Struct {
+typedef struct MapInfoReal32Struct {
 	SmileFunction function;
 	SmileList resultHead, resultTail;
-	Int32 current;
-	Int32 step;
-	Int32 end;
+	Real32 current;
+	Real32 step;
+	Real32 end;
 	Int64 index;
 	Byte numArgs;
 	Bool done;
 	Bool up;
-} *MapInfoInteger32;
+} *MapInfoReal32;
 
 static Int MapStart(ClosureStateMachine closure)
 {
-	register MapInfoInteger32 loopInfo = (MapInfoInteger32)closure->state;
+	register MapInfoReal32 loopInfo = (MapInfoReal32)closure->state;
 
 	//---------- begin first for-loop iteration ----------
 
@@ -388,7 +370,7 @@ static Int MapStart(ClosureStateMachine closure)
 
 	// Body: Set up to call the user's function with the first value.
 	Closure_PushBoxed(closure, loopInfo->function);
-	Closure_PushUnboxedInt32(closure, loopInfo->current);
+	Closure_PushUnboxedReal32(closure, loopInfo->current);
 	if (loopInfo->numArgs > 1)
 		Closure_PushUnboxedInt64(closure, loopInfo->index);
 
@@ -397,7 +379,7 @@ static Int MapStart(ClosureStateMachine closure)
 
 static Int MapBody(ClosureStateMachine closure)
 {
-	register MapInfoInteger32 loopInfo = (MapInfoInteger32)closure->state;
+	register MapInfoReal32 loopInfo = (MapInfoReal32)closure->state;
 
 	// Body: Append the user function's most recent result to the output list.
 	SmileArg fnResult = Closure_Pop(closure);
@@ -405,13 +387,13 @@ static Int MapBody(ClosureStateMachine closure)
 
 	// Next: Move the iterator to the next item.
 	if (loopInfo->up) {
-		if ((Int32)loopInfo->end - loopInfo->step >= (Int32)loopInfo->current)
-			loopInfo->current = (Int32)((Int32)loopInfo->current + loopInfo->step);
+		if (Real32_Ge(Real32_Sub(loopInfo->end, loopInfo->step), loopInfo->current))
+			loopInfo->current = Real32_Add(loopInfo->current, loopInfo->step);
 		else loopInfo->done = True;
 	}
 	else {
-		if ((Int32)loopInfo->end - loopInfo->step <= (Int32)loopInfo->current)
-			loopInfo->current = (Int32)((Int32)loopInfo->current + loopInfo->step);
+		if (Real32_Le(Real32_Sub(loopInfo->end, loopInfo->step), loopInfo->current))
+			loopInfo->current = Real32_Add(loopInfo->current, loopInfo->step);
 		else loopInfo->done = True;
 	}
 	loopInfo->index++;
@@ -424,25 +406,25 @@ static Int MapBody(ClosureStateMachine closure)
 SMILE_EXTERNAL_FUNCTION(Map)
 {
 	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
-	SmileInteger32Range range = (SmileInteger32Range)argv[0].obj;
+	SmileReal32Range range = (SmileReal32Range)argv[0].obj;
 	SmileFunction function = (SmileFunction)argv[1].obj;
 	Int minArgs, maxArgs;
-	MapInfoInteger32 loopInfo;
+	MapInfoReal32 loopInfo;
 	ClosureStateMachine closure;
 
 	SmileFunction_GetArgCounts(function, &minArgs, &maxArgs);
 
 	closure = Eval_BeginStateMachine(MapStart, MapBody);
 
-	loopInfo = (MapInfoInteger32)closure->state;
+	loopInfo = (MapInfoReal32)closure->state;
 	loopInfo->resultHead = loopInfo->resultTail = NullList;
 	loopInfo->function = function;
 	loopInfo->index = 0;
 	loopInfo->current = range->start;
 	loopInfo->step = range->stepping;
 	loopInfo->end = range->end;
-	loopInfo->up = range->end >= range->start;
-	loopInfo->done = range->end >= range->start ? range->stepping <= 0 : range->stepping >= 0;
+	loopInfo->up = Real32_Ge(range->end, range->start);
+	loopInfo->done = loopInfo->up ? Real32_IsNegOrZero(range->stepping) : Real32_IsPosOrZero(range->stepping);
 	loopInfo->numArgs = (Byte)(maxArgs <= 2 ? maxArgs : 2);
 
 	return (SmileArg) { NULL };	// We have to return something, but this value will be ignored.
@@ -453,9 +435,9 @@ SMILE_EXTERNAL_FUNCTION(Map)
 typedef struct WhereInfoStruct {
 	SmileFunction function;
 	SmileList resultHead, resultTail;
-	Int32 current;
-	Int32 step;
-	Int32 end;
+	Real32 current;
+	Real32 step;
+	Real32 end;
 	Int64 index;
 	Byte numArgs;
 	Bool done;
@@ -476,7 +458,7 @@ static Int WhereStart(ClosureStateMachine closure)
 
 	// Body: Set up to call the user's function with the first value.
 	Closure_PushBoxed(closure, loopInfo->function);
-	Closure_PushUnboxedInt32(closure, loopInfo->current);
+	Closure_PushUnboxedReal32(closure, loopInfo->current);
 	if (loopInfo->numArgs > 1)
 		Closure_PushUnboxedInt64(closure, loopInfo->index);
 
@@ -493,18 +475,18 @@ static Int WhereBody(ClosureStateMachine closure)
 
 	// If it's truthy, keep this list element.
 	if (booleanResult) {
-		LIST_APPEND(loopInfo->resultHead, loopInfo->resultTail, SmileInteger32_Create(loopInfo->current));
+		LIST_APPEND(loopInfo->resultHead, loopInfo->resultTail, SmileReal32_Create(loopInfo->current));
 	}
 
 	// Next: Move the iterator to the next item.
 	if (loopInfo->up) {
-		if ((Int32)loopInfo->end - loopInfo->step >= (Int32)loopInfo->current)
-			loopInfo->current = (Int32)((Int32)loopInfo->current + loopInfo->step);
+		if (Real32_Ge(Real32_Sub(loopInfo->end, loopInfo->step), loopInfo->current))
+			loopInfo->current = Real32_Add(loopInfo->current, loopInfo->step);
 		else loopInfo->done = True;
 	}
 	else {
-		if ((Int32)loopInfo->end - loopInfo->step <= (Int32)loopInfo->current)
-			loopInfo->current = (Int32)((Int32)loopInfo->current + loopInfo->step);
+		if (Real32_Le(Real32_Sub(loopInfo->end, loopInfo->step), loopInfo->current))
+			loopInfo->current = Real32_Add(loopInfo->current, loopInfo->step);
 		else loopInfo->done = True;
 	}
 	loopInfo->index++;
@@ -517,7 +499,7 @@ static Int WhereBody(ClosureStateMachine closure)
 SMILE_EXTERNAL_FUNCTION(Where)
 {
 	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
-	SmileInteger32Range range = (SmileInteger32Range)argv[0].obj;
+	SmileReal32Range range = (SmileReal32Range)argv[0].obj;
 	SmileFunction function = (SmileFunction)argv[1].obj;
 	Int minArgs, maxArgs;
 	WhereInfo loopInfo;
@@ -537,8 +519,8 @@ SMILE_EXTERNAL_FUNCTION(Where)
 	loopInfo->current = range->start;
 	loopInfo->step = range->stepping;
 	loopInfo->end = range->end;
-	loopInfo->up = range->end >= range->start;
-	loopInfo->done = range->end >= range->start ? range->stepping <= 0 : range->stepping >= 0;
+	loopInfo->up = Real32_Ge(range->end, range->start);
+	loopInfo->done = loopInfo->up ? Real32_IsNegOrZero(range->stepping) : Real32_IsPosOrZero(range->stepping);
 	loopInfo->numArgs = (Byte)(maxArgs <= 2 ? maxArgs : 2);
 
 	return (SmileArg) { NULL };	// We have to return something, but this value will be ignored.
@@ -550,9 +532,9 @@ typedef struct CountInfoStruct {
 	SmileFunction function;
 	Int64 index;
 	Int64 count;
-	Int32 current;
-	Int32 end;
-	Int32 step;
+	Real32 current;
+	Real32 end;
+	Real32 step;
 	Byte numArgs;
 	Bool done;
 	Bool up;
@@ -572,7 +554,7 @@ static Int CountStart(ClosureStateMachine closure)
 
 	// Body: Set up to call the user's function with the first value.
 	Closure_PushBoxed(closure, loopInfo->function);
-	Closure_PushUnboxedInt32(closure, loopInfo->current);
+	Closure_PushUnboxedReal32(closure, loopInfo->current);
 	if (loopInfo->numArgs > 1)
 		Closure_PushUnboxedInt64(closure, loopInfo->index);
 
@@ -593,13 +575,13 @@ static Int CountBody(ClosureStateMachine closure)
 
 	// Next: Move the iterator to the next item.
 	if (loopInfo->up) {
-		if ((Int32)loopInfo->end - loopInfo->step >= (Int32)loopInfo->current)
-			loopInfo->current = (Int32)((Int32)loopInfo->current + loopInfo->step);
+		if (Real32_Ge(Real32_Sub(loopInfo->end, loopInfo->step), loopInfo->current))
+			loopInfo->current = Real32_Add(loopInfo->current, loopInfo->step);
 		else loopInfo->done = True;
 	}
 	else {
-		if ((Int32)loopInfo->end - loopInfo->step <= (Int32)loopInfo->current)
-			loopInfo->current = (Int32)((Int32)loopInfo->current + loopInfo->step);
+		if (Real32_Le(Real32_Sub(loopInfo->end, loopInfo->step), loopInfo->current))
+			loopInfo->current = Real32_Add(loopInfo->current, loopInfo->step);
 		else loopInfo->done = True;
 	}
 	loopInfo->index++;
@@ -612,7 +594,7 @@ static Int CountBody(ClosureStateMachine closure)
 SMILE_EXTERNAL_FUNCTION(Count)
 {
 	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
-	SmileInteger32Range range = (SmileInteger32Range)argv[0].obj;
+	SmileReal32Range range = (SmileReal32Range)argv[0].obj;
 	SmileFunction function;
 	Int minArgs, maxArgs;
 	CountInfo loopInfo;
@@ -620,13 +602,19 @@ SMILE_EXTERNAL_FUNCTION(Count)
 
 	// With no predicate, they just want to find out how many values this range describes.
 	if (argc == 1) {
-		if (range->end >= range->start) {
-			if (range->stepping <= 0) return SmileUnboxedInteger32_From(0);
-			return SmileUnboxedInteger32_From((Int32)(range->end - range->start) / range->stepping + 1);
+		if (Real32_Ge(range->end, range->start)) {
+			if (Real32_IsNegOrZero(range->stepping)) return SmileUnboxedReal32_From(Real32_Zero);
+			return SmileUnboxedReal32_From(Real32_Div(
+				Real32_Sub(range->end, range->start),
+				Real32_Add(range->stepping, Real32_One))
+			);
 		}
 		else {
-			if (range->stepping >= 0) return SmileUnboxedInteger32_From(0);
-			return SmileUnboxedInteger32_From((Int32)(range->start - range->end) / -range->stepping + 1);
+			if (Real32_IsPosOrZero(range->stepping)) return SmileUnboxedReal32_From(Real32_Zero);
+			return SmileUnboxedReal32_From(Real32_Div(
+				Real32_Sub(range->start, range->end),
+				Real32_Add(Real32_Neg(range->stepping), Real32_One))
+			);
 		}
 	}
 
@@ -646,8 +634,8 @@ SMILE_EXTERNAL_FUNCTION(Count)
 	loopInfo->current = range->start;
 	loopInfo->step = range->stepping;
 	loopInfo->end = range->end;
-	loopInfo->up = range->end >= range->start;
-	loopInfo->done = range->end >= range->start ? range->stepping <= 0 : range->stepping >= 0;
+	loopInfo->up = Real32_Ge(range->end, range->start);
+	loopInfo->done = loopInfo->up ? Real32_IsNegOrZero(range->stepping) : Real32_IsPosOrZero(range->stepping);
 	loopInfo->numArgs = (Byte)(maxArgs <= 2 ? maxArgs : 2);
 
 	return (SmileArg) { NULL };	// We have to return something, but this value will be ignored.
@@ -657,9 +645,9 @@ SMILE_EXTERNAL_FUNCTION(Count)
 
 typedef struct FindInfoStruct {
 	SmileFunction function;
-	Int32 current;
-	Int32 step;
-	Int32 end;
+	Real32 current;
+	Real32 step;
+	Real32 end;
 	Int64 index;
 	Byte numArgs;
 	Bool done;
@@ -691,7 +679,7 @@ static Int FindStart(ClosureStateMachine closure)
 
 	// Body: Set up to call the user's function with the first value.
 	Closure_PushBoxed(closure, loopInfo->function);
-	Closure_PushUnboxedInt32(closure, loopInfo->current);
+	Closure_PushUnboxedReal32(closure, loopInfo->current);
 	if (loopInfo->numArgs > 1)
 		Closure_PushUnboxedInt64(closure, loopInfo->index);
 
@@ -710,7 +698,7 @@ static Int FindBody(ClosureStateMachine closure)
 	if (booleanResult) {
 		switch (loopInfo->findMode) {
 			case FindMode_First:
-				Closure_PushUnboxedInt32(closure, loopInfo->current);
+				Closure_PushUnboxedReal32(closure, loopInfo->current);
 				break;
 			case FindMode_IndexOf:
 				Closure_PushUnboxedInt64(closure, loopInfo->index);
@@ -730,13 +718,13 @@ static Int FindBody(ClosureStateMachine closure)
 
 	// Next: Move the iterator to the next item.
 	if (loopInfo->up) {
-		if ((Int32)loopInfo->end - loopInfo->step >= (Int32)loopInfo->current)
-			loopInfo->current = (Int32)((Int32)loopInfo->current + loopInfo->step);
+		if (Real32_Ge(Real32_Sub(loopInfo->end, loopInfo->step), loopInfo->current))
+			loopInfo->current = Real32_Add(loopInfo->current, loopInfo->step);
 		else loopInfo->done = True;
 	}
 	else {
-		if ((Int32)loopInfo->end - loopInfo->step <= (Int32)loopInfo->current)
-			loopInfo->current = (Int32)((Int32)loopInfo->current + loopInfo->step);
+		if (Real32_Le(Real32_Sub(loopInfo->end, loopInfo->step), loopInfo->current))
+			loopInfo->current = Real32_Add(loopInfo->current, loopInfo->step);
 		else loopInfo->done = True;
 	}
 	loopInfo->index++;
@@ -749,7 +737,7 @@ static Int FindBody(ClosureStateMachine closure)
 SMILE_EXTERNAL_FUNCTION(First)
 {
 	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
-	SmileInteger32Range range = (SmileInteger32Range)argv[0].obj;
+	SmileReal32Range range = (SmileReal32Range)argv[0].obj;
 	SmileFunction function;
 	Int minArgs, maxArgs;
 	FindInfo loopInfo;
@@ -757,7 +745,7 @@ SMILE_EXTERNAL_FUNCTION(First)
 
 	// With no predicate, this is just a synonym for the 'start' property.
 	if (argc == 1)
-		return SmileUnboxedInteger32_From(range->start);
+		return SmileUnboxedReal32_From(range->start);
 
 	function = (SmileFunction)argv[1].obj;
 
@@ -774,8 +762,8 @@ SMILE_EXTERNAL_FUNCTION(First)
 	loopInfo->current = range->start;
 	loopInfo->step = range->stepping;
 	loopInfo->end = range->end;
-	loopInfo->up = range->end >= range->start;
-	loopInfo->done = range->end >= range->start ? range->stepping <= 0 : range->stepping >= 0;
+	loopInfo->up = Real32_Ge(range->end, range->start);
+	loopInfo->done = loopInfo->up ? Real32_IsNegOrZero(range->stepping) : Real32_IsPosOrZero(range->stepping);
 	loopInfo->findMode = FindMode_First;
 	loopInfo->numArgs = (Byte)(maxArgs <= 2 ? maxArgs : 2);
 
@@ -785,7 +773,7 @@ SMILE_EXTERNAL_FUNCTION(First)
 SMILE_EXTERNAL_FUNCTION(IndexOf)
 {
 	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
-	SmileInteger32Range range = (SmileInteger32Range)argv[0].obj;
+	SmileReal32Range range = (SmileReal32Range)argv[0].obj;
 	SmileFunction function;
 	Int minArgs, maxArgs;
 	FindInfo loopInfo;
@@ -806,8 +794,8 @@ SMILE_EXTERNAL_FUNCTION(IndexOf)
 	loopInfo->current = range->start;
 	loopInfo->step = range->stepping;
 	loopInfo->end = range->end;
-	loopInfo->up = range->end >= range->start;
-	loopInfo->done = range->end >= range->start ? range->stepping <= 0 : range->stepping >= 0;
+	loopInfo->up = Real32_Ge(range->end, range->start);
+	loopInfo->done = loopInfo->up ? Real32_IsNegOrZero(range->stepping) : Real32_IsPosOrZero(range->stepping);
 	loopInfo->findMode = FindMode_IndexOf;
 	loopInfo->numArgs = (Byte)(maxArgs <= 2 ? maxArgs : 2);
 
@@ -817,7 +805,7 @@ SMILE_EXTERNAL_FUNCTION(IndexOf)
 SMILE_EXTERNAL_FUNCTION(Any)
 {
 	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
-	SmileInteger32Range range = (SmileInteger32Range)argv[0].obj;
+	SmileReal32Range range = (SmileReal32Range)argv[0].obj;
 	SmileFunction function;
 	Int minArgs, maxArgs;
 	FindInfo loopInfo;
@@ -838,8 +826,8 @@ SMILE_EXTERNAL_FUNCTION(Any)
 	loopInfo->current = range->start;
 	loopInfo->step = range->stepping;
 	loopInfo->end = range->end;
-	loopInfo->up = range->end >= range->start;
-	loopInfo->done = range->end >= range->start ? range->stepping <= 0 : range->stepping >= 0;
+	loopInfo->up = Real32_Ge(range->end, range->start);
+	loopInfo->done = loopInfo->up ? Real32_IsNegOrZero(range->stepping) : Real32_IsPosOrZero(range->stepping);
 	loopInfo->findMode = FindMode_Any;
 	loopInfo->numArgs = (Byte)(maxArgs <= 2 ? maxArgs : 2);
 
@@ -850,9 +838,9 @@ SMILE_EXTERNAL_FUNCTION(Any)
 
 typedef struct AllInfoStruct {
 	SmileFunction function;
-	Int32 current;
-	Int32 step;
-	Int32 end;
+	Real32 current;
+	Real32 step;
+	Real32 end;
 	Int64 index;
 	Byte numArgs;
 	Bool done;
@@ -873,7 +861,7 @@ static Int AllStart(ClosureStateMachine closure)
 
 	// Body: Set up to call the user's function with the first value.
 	Closure_PushBoxed(closure, loopInfo->function);
-	Closure_PushUnboxedInt32(closure, loopInfo->current);
+	Closure_PushUnboxedReal32(closure, loopInfo->current);
 	if (loopInfo->numArgs > 1)
 		Closure_PushUnboxedInt64(closure, loopInfo->index);
 
@@ -896,13 +884,13 @@ static Int AllBody(ClosureStateMachine closure)
 
 	// Next: Move the iterator to the next item.
 	if (loopInfo->up) {
-		if ((Int32)loopInfo->end - loopInfo->step >= (Int32)loopInfo->current)
-			loopInfo->current = (Int32)((Int32)loopInfo->current + loopInfo->step);
+		if (Real32_Ge(Real32_Sub(loopInfo->end, loopInfo->step), loopInfo->current))
+			loopInfo->current = Real32_Add(loopInfo->current, loopInfo->step);
 		else loopInfo->done = True;
 	}
 	else {
-		if ((Int32)loopInfo->end - loopInfo->step <= (Int32)loopInfo->current)
-			loopInfo->current = (Int32)((Int32)loopInfo->current + loopInfo->step);
+		if (Real32_Le(Real32_Sub(loopInfo->end, loopInfo->step), loopInfo->current))
+			loopInfo->current = Real32_Add(loopInfo->current, loopInfo->step);
 		else loopInfo->done = True;
 	}
 	loopInfo->index++;
@@ -915,7 +903,7 @@ static Int AllBody(ClosureStateMachine closure)
 SMILE_EXTERNAL_FUNCTION(All)
 {
 	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
-	SmileInteger32Range range = (SmileInteger32Range)argv[0].obj;
+	SmileReal32Range range = (SmileReal32Range)argv[0].obj;
 	SmileFunction function;
 	Int minArgs, maxArgs;
 	AllInfo loopInfo;
@@ -936,8 +924,8 @@ SMILE_EXTERNAL_FUNCTION(All)
 	loopInfo->current = range->start;
 	loopInfo->step = range->stepping;
 	loopInfo->end = range->end;
-	loopInfo->up = range->end >= range->start;
-	loopInfo->done = range->end >= range->start ? range->stepping <= 0 : range->stepping >= 0;
+	loopInfo->up = Real32_Ge(range->end, range->start);
+	loopInfo->done = loopInfo->up ? Real32_IsNegOrZero(range->stepping) : Real32_IsPosOrZero(range->stepping);
 	loopInfo->numArgs = (Byte)(maxArgs <= 2 ? maxArgs : 2);
 
 	return (SmileArg) { NULL };	// We have to return something, but this value will be ignored.
@@ -945,21 +933,17 @@ SMILE_EXTERNAL_FUNCTION(All)
 
 //-------------------------------------------------------------------------------------------------
 
-void SmileInteger32Range_Setup(SmileUserObject base)
+void SmileReal32Range_Setup(SmileUserObject base)
 {
 	SetupFunction("bool", ToBool, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 	SetupFunction("int", ToInt, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
-#if 1
-	SetupFunction("string", ToString, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX, 1, 2, 0, NULL);
-#else
 	SetupFunction("string", ToString, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
-#endif
 	SetupFunction("hash", Hash, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 
 	SetupFunction("of", Of, (void *)base, "range start end", ARG_CHECK_MIN | ARG_CHECK_MAX, 3, 4, 0, NULL);
 
 	SetupFunction("step", Step, (void *)base, "range stepping", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stepChecks);
-	SetupFunction("reverse", Reverse, NULL, "range", ARG_CHECK_EXACT, 1, 1, 1, _integer32Checks);
+	SetupFunction("reverse", Reverse, NULL, "range", ARG_CHECK_EXACT, 1, 1, 1, _real32Checks);
 
 	SetupFunction("each", Each, NULL, "range fn", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);
 	SetupFunction("map", Map, NULL, "range fn", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);

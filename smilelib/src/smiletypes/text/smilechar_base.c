@@ -28,6 +28,7 @@
 #include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
+#include <smile/smiletypes/range/smilecharrange.h>
 #include <smile/internal/staticstring.h>
 
 SMILE_IGNORE_UNUSED_VARIABLES
@@ -116,6 +117,18 @@ SMILE_EXTERNAL_FUNCTION(ToChar)
 SMILE_EXTERNAL_FUNCTION(ToUni)
 {
 	return SmileUnboxedUni_From(argv[0].unboxed.ch);
+}
+
+SMILE_EXTERNAL_FUNCTION(RangeTo)
+{
+	Byte start, end;
+	Int64 stepping;
+
+	start = argv[0].unboxed.ch;
+	end = argv[1].unboxed.ch;
+	stepping = end >= start ? +1 : -1;
+
+	return SmileArg_From((SmileObject)SmileCharRange_Create(start, end, stepping));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -247,4 +260,6 @@ void SmileChar_Setup(SmileUserObject base)
 
 	SetupFunction("compare", Compare, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _charChecks);
 	SetupSynonym("compare", "cmp");
+
+	SetupFunction("range-to", RangeTo, NULL, "start end", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _charChecks);
 }

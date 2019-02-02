@@ -19,18 +19,23 @@
 //  limitations under the License.
 //---------------------------------------------------------------------------------------
 
+#include <math.h>
+#include <smile/numeric/float64.h>
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/smileuserobject.h>
 #include <smile/smiletypes/smilebool.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
-#include <smile/smiletypes/numeric/smilebyte.h>
-#include <smile/smiletypes/range/smilebyterange.h>
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/base.h>
 #include <smile/internal/staticstring.h>
 #include <smile/eval/eval.h>
 
+#include <smile/smiletypes/numeric/smilebyte.h>
+#include <smile/smiletypes/range/smilebyterange.h>
+
 SMILE_IGNORE_UNUSED_VARIABLES
+
+#define Modulus(a, b) (a % b)
 
 typedef enum {
 	FindMode_First,
@@ -42,7 +47,9 @@ typedef enum {
 } FindMode;
 
 STATIC_STRING(_stringTypeError, "Second argument to 'string' must be of type 'Byte'");
+#if 1
 STATIC_STRING(_numericBaseError, "Valid numeric base must be in the range of 2..36");
+#endif
 STATIC_STRING(_byteTypeError, "%s argument to '%s' must be of type 'Byte'");
 STATIC_STRING(_argCountError, "Too many arguments to 'ByteRange.%s'");
 
@@ -57,6 +64,11 @@ static Byte _findChecks[] = {
 };
 
 static Byte _byteChecks[] = {
+	SMILE_KIND_MASK, SMILE_KIND_BYTERANGE,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_BYTE,
+};
+
+static Byte _stepChecks[] = {
 	SMILE_KIND_MASK, SMILE_KIND_BYTERANGE,
 	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_BYTE,
 };
@@ -76,20 +88,22 @@ SMILE_EXTERNAL_FUNCTION(ToInt)
 {
 	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_BYTERANGE) {
 		SmileByteRange obj = (SmileByteRange)argv[0].obj;
-		return SmileUnboxedByte_From(obj->end - obj->start);
+		return SmileUnboxedInteger64_From((Int64)((SByte)obj->end - (SByte)obj->start));
 	}
 
-	return SmileUnboxedByte_From(0);
+	return SmileUnboxedInteger64_From(0);
 }
 
 SMILE_EXTERNAL_FUNCTION(ToString)
 {
-	Byte numericBase;
 	STATIC_STRING(byterange, "ByteRange");
 
 	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_BYTERANGE) {
 		String string;
-		SmileByteRange range = (SmileByteRange)argv[0].obj;
+		SmileByteRange obj = (SmileByteRange)argv[0].obj;
+
+#if 1
+		Byte numericBase;
 
 		if (argc == 2) {
 			if (SMILE_KIND(argv[1].obj) != SMILE_KIND_BYTE)
@@ -99,19 +113,19 @@ SMILE_EXTERNAL_FUNCTION(ToString)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _numericBaseError);
 		}
 		else numericBase = 10;
+#endif
 
-		if (range->end >= range->start && range->stepping != +1
-			|| range->end < range->start && range->stepping != -1) {
-			string = String_Format("%S..%S step %S",
-				String_CreateFromInteger(range->start, (Int)numericBase, False),
-				String_CreateFromInteger(range->end, (Int)numericBase, False),
-				String_CreateFromInteger(range->stepping, (Int)numericBase, False));
-		}
-		else {
-			string = String_Format("%S..%S",
-				String_CreateFromInteger(range->start, (Int)numericBase, False),
-				String_CreateFromInteger(range->end, (Int)numericBase, False));
-		}
+		string = 		((obj->end >= obj->start && obj->stepping != +1
+			|| obj->end < obj->start && obj->stepping != -1)
+			? String_Format("%S..%S step %S",
+				String_CreateFromInteger(obj->start, (Int)numericBase, False),
+				String_CreateFromInteger(obj->end, (Int)numericBase, False),
+				String_CreateFromInteger(obj->stepping, (Int)numericBase, False))
+			: String_Format("%S..%S",
+				String_CreateFromInteger(obj->start, (Int)numericBase, False),
+				String_CreateFromInteger(obj->end, (Int)numericBase, False)))
+;
+
 		return SmileArg_From((SmileObject)string);
 	}
 
@@ -140,7 +154,8 @@ SMILE_EXTERNAL_FUNCTION(Hash)
 SMILE_EXTERNAL_FUNCTION(Of)
 {
 	Int i = 0;
-	Byte start, end, stepping;
+	Byte start, end;
+	SByte stepping;
 
 	if (argv[i].obj == (SmileObject)param)
 		i++;
@@ -158,7 +173,7 @@ SMILE_EXTERNAL_FUNCTION(Of)
 			Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FormatString(_byteTypeError, "Third", "of"));
 		stepping = argv[i++].unboxed.i8;
 	}
-	else stepping = end >= start ? +1 : -1;
+	else stepping = end >= start ? (Byte)+1 : (Byte)-1;
 
 	if (i != argc)
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error, String_FormatString(_argCountError, "of"));
@@ -168,7 +183,7 @@ SMILE_EXTERNAL_FUNCTION(Of)
 
 SMILE_EXTERNAL_FUNCTION(Step)
 {
-	Byte stepping = argv[1].unboxed.i8;
+	SByte stepping = (SByte)argv[1].unboxed.i8;
 	Byte start = ((SmileByteRange)argv[0].obj)->start;
 	Byte end = ((SmileByteRange)argv[0].obj)->end;
 
@@ -196,7 +211,7 @@ SMILE_EXTERNAL_FUNCTION(Reverse)
 static SmileArg FindFixedValue(SmileByteRange range, SmileArg valueArg, FindMode fixedMode)
 {
 	Byte current = range->start;
-	Byte step = range->stepping;
+	SByte step = range->stepping;
 	Byte end = range->end;
 	Bool up = range->end > range->start;
 	Byte value;
@@ -220,12 +235,12 @@ static SmileArg FindFixedValue(SmileByteRange range, SmileArg valueArg, FindMode
 				// Found it.
 				switch (fixedMode) {
 					case FindMode_IndexOf:
-						return SmileUnboxedByte_From(value - current);
+						return SmileUnboxedInteger64_From((Int64)(value - current));
 					case FindMode_First:
 					case FindMode_Where:
 						return SmileUnboxedByte_From(value);
 					case FindMode_Count:
-						return SmileUnboxedByte_From(1);
+						return SmileUnboxedInteger64_From(1);
 					case FindMode_Any:
 						return SmileUnboxedBool_From(True);
 					case FindMode_All:
@@ -236,15 +251,15 @@ static SmileArg FindFixedValue(SmileByteRange range, SmileArg valueArg, FindMode
 		else {
 			// General case:  Do some math and see if the target is something we'd hit by iterating.
 			Byte delta = (Byte)(value - current);
-			if (delta % (Byte)step == 0) {
+			if (Modulus(delta, (Byte)step) == 0) {
 				switch (fixedMode) {
 					case FindMode_IndexOf:
-						return SmileUnboxedByte_From((Byte)(delta / (Byte)step));
+						return SmileUnboxedInteger64_From((Int64)(delta / (Byte)step));
 					case FindMode_First:
 					case FindMode_Where:
 						return SmileUnboxedByte_From(value);
 					case FindMode_Count:
-						return SmileUnboxedByte_From(1);
+						return SmileUnboxedInteger64_From(1);
 					case FindMode_Any:
 						return SmileUnboxedBool_From(True);
 					case FindMode_All:
@@ -257,7 +272,7 @@ static SmileArg FindFixedValue(SmileByteRange range, SmileArg valueArg, FindMode
 	// Didn't find it.
 	switch (fixedMode) {
 		case FindMode_Count:
-			return SmileUnboxedByte_From(0);
+			return SmileUnboxedInteger64_From(0);
 		case FindMode_Any:
 		case FindMode_All:
 			return SmileUnboxedBool_From(False);
@@ -268,21 +283,21 @@ static SmileArg FindFixedValue(SmileByteRange range, SmileArg valueArg, FindMode
 
 //-------------------------------------------------------------------------------------------------
 
-typedef struct EachInfoStruct {
+typedef struct EachInfoByteStruct {
 	SmileByteRange range;
 	SmileFunction function;
 	Byte current;
-	Byte step;
+	SByte step;
 	Byte end;
-	Byte index;
+	Int64 index;
 	Byte numArgs;
 	Bool done;
 	Bool up;
-} *EachInfo;
+} *EachInfoByte;
 
 static Int EachStateMachine(ClosureStateMachine closure)
 {
-	EachInfo eachInfo = (EachInfo)closure->state;
+	EachInfoByte eachInfo = (EachInfoByte)closure->state;
 
 	// If we've run out of values, we're done.
 	if (eachInfo->done) {
@@ -297,18 +312,18 @@ static Int EachStateMachine(ClosureStateMachine closure)
 	if (eachInfo->numArgs > 0) {
 		Closure_PushUnboxedByte(closure, eachInfo->current);
 		if (eachInfo->numArgs > 1)
-			Closure_PushUnboxedByte(closure, eachInfo->index);
+			Closure_PushUnboxedInt64(closure, eachInfo->index);
 	}
 
 	// Move to the next spot.
 	if (eachInfo->up) {
-		if (eachInfo->end - eachInfo->step >= eachInfo->current)
-			eachInfo->current += eachInfo->step;
+		if ((SByte)eachInfo->end - eachInfo->step >= (SByte)eachInfo->current)
+			eachInfo->current = (Byte)((SByte)eachInfo->current + eachInfo->step);
 		else eachInfo->done = True;
 	}
 	else {
-		if (eachInfo->end - eachInfo->step <= eachInfo->current)
-			eachInfo->current += eachInfo->step;
+		if ((SByte)eachInfo->end - eachInfo->step <= (SByte)eachInfo->current)
+			eachInfo->current = (Byte)((SByte)eachInfo->current + eachInfo->step);
 		else eachInfo->done = True;
 	}
 	eachInfo->index++;
@@ -322,14 +337,14 @@ SMILE_EXTERNAL_FUNCTION(Each)
 	SmileByteRange range = (SmileByteRange)argv[0].obj;
 	SmileFunction function = (SmileFunction)argv[1].obj;
 	Int minArgs, maxArgs;
-	EachInfo eachInfo;
+	EachInfoByte eachInfo;
 	ClosureStateMachine closure;
 
 	SmileFunction_GetArgCounts(function, &minArgs, &maxArgs);
 
 	closure = Eval_BeginStateMachine(EachStateMachine, EachStateMachine);
 
-	eachInfo = (EachInfo)closure->state;
+	eachInfo = (EachInfoByte)closure->state;
 	eachInfo->range = range;
 	eachInfo->function = function;
 	eachInfo->index = 0;
@@ -347,21 +362,21 @@ SMILE_EXTERNAL_FUNCTION(Each)
 
 //-------------------------------------------------------------------------------------------------
 
-typedef struct MapInfoStruct {
+typedef struct MapInfoByteStruct {
 	SmileFunction function;
 	SmileList resultHead, resultTail;
 	Byte current;
-	Byte step;
+	SByte step;
 	Byte end;
-	Byte index;
+	Int64 index;
 	Byte numArgs;
 	Bool done;
 	Bool up;
-} *MapInfo;
+} *MapInfoByte;
 
 static Int MapStart(ClosureStateMachine closure)
 {
-	register MapInfo loopInfo = (MapInfo)closure->state;
+	register MapInfoByte loopInfo = (MapInfoByte)closure->state;
 
 	//---------- begin first for-loop iteration ----------
 
@@ -375,14 +390,14 @@ static Int MapStart(ClosureStateMachine closure)
 	Closure_PushBoxed(closure, loopInfo->function);
 	Closure_PushUnboxedByte(closure, loopInfo->current);
 	if (loopInfo->numArgs > 1)
-		Closure_PushUnboxedByte(closure, loopInfo->index);
+		Closure_PushUnboxedInt64(closure, loopInfo->index);
 
 	return loopInfo->numArgs;
 }
 
 static Int MapBody(ClosureStateMachine closure)
 {
-	register MapInfo loopInfo = (MapInfo)closure->state;
+	register MapInfoByte loopInfo = (MapInfoByte)closure->state;
 
 	// Body: Append the user function's most recent result to the output list.
 	SmileArg fnResult = Closure_Pop(closure);
@@ -390,13 +405,13 @@ static Int MapBody(ClosureStateMachine closure)
 
 	// Next: Move the iterator to the next item.
 	if (loopInfo->up) {
-		if (loopInfo->end - loopInfo->step >= loopInfo->current)
-			loopInfo->current += loopInfo->step;
+		if ((SByte)loopInfo->end - loopInfo->step >= (SByte)loopInfo->current)
+			loopInfo->current = (Byte)((SByte)loopInfo->current + loopInfo->step);
 		else loopInfo->done = True;
 	}
 	else {
-		if (loopInfo->end - loopInfo->step <= loopInfo->current)
-			loopInfo->current += loopInfo->step;
+		if ((SByte)loopInfo->end - loopInfo->step <= (SByte)loopInfo->current)
+			loopInfo->current = (Byte)((SByte)loopInfo->current + loopInfo->step);
 		else loopInfo->done = True;
 	}
 	loopInfo->index++;
@@ -412,14 +427,14 @@ SMILE_EXTERNAL_FUNCTION(Map)
 	SmileByteRange range = (SmileByteRange)argv[0].obj;
 	SmileFunction function = (SmileFunction)argv[1].obj;
 	Int minArgs, maxArgs;
-	MapInfo loopInfo;
+	MapInfoByte loopInfo;
 	ClosureStateMachine closure;
 
 	SmileFunction_GetArgCounts(function, &minArgs, &maxArgs);
 
 	closure = Eval_BeginStateMachine(MapStart, MapBody);
 
-	loopInfo = (MapInfo)closure->state;
+	loopInfo = (MapInfoByte)closure->state;
 	loopInfo->resultHead = loopInfo->resultTail = NullList;
 	loopInfo->function = function;
 	loopInfo->index = 0;
@@ -439,9 +454,9 @@ typedef struct WhereInfoStruct {
 	SmileFunction function;
 	SmileList resultHead, resultTail;
 	Byte current;
-	Byte step;
+	SByte step;
 	Byte end;
-	Byte index;
+	Int64 index;
 	Byte numArgs;
 	Bool done;
 	Bool up;
@@ -463,7 +478,7 @@ static Int WhereStart(ClosureStateMachine closure)
 	Closure_PushBoxed(closure, loopInfo->function);
 	Closure_PushUnboxedByte(closure, loopInfo->current);
 	if (loopInfo->numArgs > 1)
-		Closure_PushUnboxedByte(closure, loopInfo->index);
+		Closure_PushUnboxedInt64(closure, loopInfo->index);
 
 	return loopInfo->numArgs;
 }
@@ -483,13 +498,13 @@ static Int WhereBody(ClosureStateMachine closure)
 
 	// Next: Move the iterator to the next item.
 	if (loopInfo->up) {
-		if (loopInfo->end - loopInfo->step >= loopInfo->current)
-			loopInfo->current += loopInfo->step;
+		if ((SByte)loopInfo->end - loopInfo->step >= (SByte)loopInfo->current)
+			loopInfo->current = (Byte)((SByte)loopInfo->current + loopInfo->step);
 		else loopInfo->done = True;
 	}
 	else {
-		if (loopInfo->end - loopInfo->step <= loopInfo->current)
-			loopInfo->current += loopInfo->step;
+		if ((SByte)loopInfo->end - loopInfo->step <= (SByte)loopInfo->current)
+			loopInfo->current = (Byte)((SByte)loopInfo->current + loopInfo->step);
 		else loopInfo->done = True;
 	}
 	loopInfo->index++;
@@ -533,11 +548,11 @@ SMILE_EXTERNAL_FUNCTION(Where)
 
 typedef struct CountInfoStruct {
 	SmileFunction function;
-	Byte count;
+	Int64 index;
+	Int64 count;
 	Byte current;
-	Byte step;
 	Byte end;
-	Byte index;
+	SByte step;
 	Byte numArgs;
 	Bool done;
 	Bool up;
@@ -551,7 +566,7 @@ static Int CountStart(ClosureStateMachine closure)
 
 	// Condition: If we've run out of values, we're done.
 	if (loopInfo->done) {
-		Closure_PushUnboxedByte(closure, loopInfo->count);	// Push 'count' as the output.
+		Closure_PushUnboxedInt64(closure, loopInfo->count);	// Push 'count' as the output.
 		return -1;
 	}
 
@@ -559,7 +574,7 @@ static Int CountStart(ClosureStateMachine closure)
 	Closure_PushBoxed(closure, loopInfo->function);
 	Closure_PushUnboxedByte(closure, loopInfo->current);
 	if (loopInfo->numArgs > 1)
-		Closure_PushUnboxedByte(closure, loopInfo->index);
+		Closure_PushUnboxedInt64(closure, loopInfo->index);
 
 	return loopInfo->numArgs;
 }
@@ -578,13 +593,13 @@ static Int CountBody(ClosureStateMachine closure)
 
 	// Next: Move the iterator to the next item.
 	if (loopInfo->up) {
-		if (loopInfo->end - loopInfo->step >= loopInfo->current)
-			loopInfo->current += loopInfo->step;
+		if ((SByte)loopInfo->end - loopInfo->step >= (SByte)loopInfo->current)
+			loopInfo->current = (Byte)((SByte)loopInfo->current + loopInfo->step);
 		else loopInfo->done = True;
 	}
 	else {
-		if (loopInfo->end - loopInfo->step <= loopInfo->current)
-			loopInfo->current += loopInfo->step;
+		if ((SByte)loopInfo->end - loopInfo->step <= (SByte)loopInfo->current)
+			loopInfo->current = (Byte)((SByte)loopInfo->current + loopInfo->step);
 		else loopInfo->done = True;
 	}
 	loopInfo->index++;
@@ -607,11 +622,11 @@ SMILE_EXTERNAL_FUNCTION(Count)
 	if (argc == 1) {
 		if (range->end >= range->start) {
 			if (range->stepping <= 0) return SmileUnboxedByte_From(0);
-			return SmileUnboxedByte_From((range->end - range->start) / range->stepping + 1);
+			return SmileUnboxedByte_From((SByte)(range->end - range->start) / range->stepping + 1);
 		}
 		else {
 			if (range->stepping >= 0) return SmileUnboxedByte_From(0);
-			return SmileUnboxedByte_From((range->start - range->end) / -range->stepping + 1);
+			return SmileUnboxedByte_From((SByte)(range->start - range->end) / -range->stepping + 1);
 		}
 	}
 
@@ -643,9 +658,9 @@ SMILE_EXTERNAL_FUNCTION(Count)
 typedef struct FindInfoStruct {
 	SmileFunction function;
 	Byte current;
-	Byte step;
+	SByte step;
 	Byte end;
-	Byte index;
+	Int64 index;
 	Byte numArgs;
 	Bool done;
 	Bool up;
@@ -662,7 +677,7 @@ static Int FindStart(ClosureStateMachine closure)
 	if (loopInfo->done) {
 		switch (loopInfo->findMode) {
 			case FindMode_Count:
-				Closure_PushUnboxedByte(closure, 0);
+				Closure_PushUnboxedInt64(closure, 0);
 				break;
 			case FindMode_Any:
 				Closure_PushUnboxedBool(closure, False);
@@ -678,7 +693,7 @@ static Int FindStart(ClosureStateMachine closure)
 	Closure_PushBoxed(closure, loopInfo->function);
 	Closure_PushUnboxedByte(closure, loopInfo->current);
 	if (loopInfo->numArgs > 1)
-		Closure_PushUnboxedByte(closure, loopInfo->index);
+		Closure_PushUnboxedInt64(closure, loopInfo->index);
 
 	return loopInfo->numArgs;
 }
@@ -698,10 +713,10 @@ static Int FindBody(ClosureStateMachine closure)
 				Closure_PushUnboxedByte(closure, loopInfo->current);
 				break;
 			case FindMode_IndexOf:
-				Closure_PushUnboxedByte(closure, loopInfo->index);
+				Closure_PushUnboxedInt64(closure, loopInfo->index);
 				break;
 			case FindMode_Count:
-				Closure_PushUnboxedByte(closure, 1);
+				Closure_PushUnboxedInt64(closure, 1);
 				break;
 			case FindMode_Any:
 				Closure_PushUnboxedBool(closure, True);
@@ -715,13 +730,13 @@ static Int FindBody(ClosureStateMachine closure)
 
 	// Next: Move the iterator to the next item.
 	if (loopInfo->up) {
-		if (loopInfo->end - loopInfo->step >= loopInfo->current)
-			loopInfo->current += loopInfo->step;
+		if ((SByte)loopInfo->end - loopInfo->step >= (SByte)loopInfo->current)
+			loopInfo->current = (Byte)((SByte)loopInfo->current + loopInfo->step);
 		else loopInfo->done = True;
 	}
 	else {
-		if (loopInfo->end - loopInfo->step <= loopInfo->current)
-			loopInfo->current += loopInfo->step;
+		if ((SByte)loopInfo->end - loopInfo->step <= (SByte)loopInfo->current)
+			loopInfo->current = (Byte)((SByte)loopInfo->current + loopInfo->step);
 		else loopInfo->done = True;
 	}
 	loopInfo->index++;
@@ -836,9 +851,9 @@ SMILE_EXTERNAL_FUNCTION(Any)
 typedef struct AllInfoStruct {
 	SmileFunction function;
 	Byte current;
-	Byte step;
+	SByte step;
 	Byte end;
-	Byte index;
+	Int64 index;
 	Byte numArgs;
 	Bool done;
 	Bool up;
@@ -860,7 +875,7 @@ static Int AllStart(ClosureStateMachine closure)
 	Closure_PushBoxed(closure, loopInfo->function);
 	Closure_PushUnboxedByte(closure, loopInfo->current);
 	if (loopInfo->numArgs > 1)
-		Closure_PushUnboxedByte(closure, loopInfo->index);
+		Closure_PushUnboxedInt64(closure, loopInfo->index);
 
 	return loopInfo->numArgs;
 }
@@ -881,13 +896,13 @@ static Int AllBody(ClosureStateMachine closure)
 
 	// Next: Move the iterator to the next item.
 	if (loopInfo->up) {
-		if (loopInfo->end - loopInfo->step >= loopInfo->current)
-			loopInfo->current += loopInfo->step;
+		if ((SByte)loopInfo->end - loopInfo->step >= (SByte)loopInfo->current)
+			loopInfo->current = (Byte)((SByte)loopInfo->current + loopInfo->step);
 		else loopInfo->done = True;
 	}
 	else {
-		if (loopInfo->end - loopInfo->step <= loopInfo->current)
-			loopInfo->current += loopInfo->step;
+		if ((SByte)loopInfo->end - loopInfo->step <= (SByte)loopInfo->current)
+			loopInfo->current = (Byte)((SByte)loopInfo->current + loopInfo->step);
 		else loopInfo->done = True;
 	}
 	loopInfo->index++;
@@ -934,12 +949,16 @@ void SmileByteRange_Setup(SmileUserObject base)
 {
 	SetupFunction("bool", ToBool, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 	SetupFunction("int", ToInt, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+#if 1
+	SetupFunction("string", ToString, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX, 1, 2, 0, NULL);
+#else
 	SetupFunction("string", ToString, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+#endif
 	SetupFunction("hash", Hash, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 
 	SetupFunction("of", Of, (void *)base, "range start end", ARG_CHECK_MIN | ARG_CHECK_MAX, 3, 4, 0, NULL);
 
-	SetupFunction("step", Step, (void *)base, "range stepping", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _byteChecks);
+	SetupFunction("step", Step, (void *)base, "range stepping", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stepChecks);
 	SetupFunction("reverse", Reverse, NULL, "range", ARG_CHECK_EXACT, 1, 1, 1, _byteChecks);
 
 	SetupFunction("each", Each, NULL, "range fn", ARG_CHECK_EXACT | ARG_CHECK_TYPES | ARG_STATE_MACHINE, 2, 2, 2, _eachChecks);

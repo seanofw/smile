@@ -27,92 +27,92 @@
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/easyobject.h>
 
-#include <smile/smiletypes/numeric/smilebyte.h>
-#include <smile/smiletypes/range/smilebyterange.h>
+#include <smile/smiletypes/text/smilechar.h>
+#include <smile/smiletypes/range/smilecharrange.h>
 
 SMILE_IGNORE_UNUSED_VARIABLES
 
-SMILE_EASY_OBJECT_VTABLE(SmileByteRange);
+SMILE_EASY_OBJECT_VTABLE(SmileCharRange);
 
-SMILE_EASY_OBJECT_READONLY_SECURITY(SmileByteRange)
-SMILE_EASY_OBJECT_NO_CALL(SmileByteRange, "A ByteRange object")
-SMILE_EASY_OBJECT_NO_SOURCE(SmileByteRange)
-SMILE_EASY_OBJECT_NO_UNBOX(SmileByteRange)
+SMILE_EASY_OBJECT_READONLY_SECURITY(SmileCharRange)
+SMILE_EASY_OBJECT_NO_CALL(SmileCharRange, "A CharRange object")
+SMILE_EASY_OBJECT_NO_SOURCE(SmileCharRange)
+SMILE_EASY_OBJECT_NO_UNBOX(SmileCharRange)
 
-SMILE_EASY_OBJECT_TOBOOL(SmileByteRange, True)
-SMILE_EASY_OBJECT_TOSTRING(SmileByteRange, 		((obj->end >= obj->start && obj->stepping != +1
-			|| obj->end < obj->start && obj->stepping != -1)
-			? String_Format("%S..%S step %S",
-				String_CreateFromInteger(obj->start, 10, False),
-				String_CreateFromInteger(obj->end, 10, False),
-				String_CreateFromInteger(obj->stepping, 10, False))
-			: String_Format("%S..%S",
-				String_CreateFromInteger(obj->start, 10, False),
-				String_CreateFromInteger(obj->end, 10, False)))
+SMILE_EASY_OBJECT_TOBOOL(SmileCharRange, True)
+SMILE_EASY_OBJECT_TOSTRING(SmileCharRange, 	((obj->end >= obj->start && obj->stepping != +1
+		|| obj->end < obj->start && obj->stepping != -1)
+		? String_Format("'%S'..'%S' step %ld",
+			String_AddCSlashes(String_CreateRepeat(obj->start, 1)),
+			String_AddCSlashes(String_CreateRepeat(obj->end, 1)),
+			obj->stepping)
+		: String_Format("'%S'..'%S'",
+			String_AddCSlashes(String_CreateRepeat(obj->start, 1)),
+			String_AddCSlashes(String_CreateRepeat(obj->end, 1))))
 )
 
-SmileByteRange SmileByteRange_Create(Byte start, Byte end, SByte stepping)
+SmileCharRange SmileCharRange_Create(Byte start, Byte end, Int64 stepping)
 {
 	// We MALLOC_ATOMIC here because the base is a known pointer that will never be collected.
-	SmileByteRange smileRange = (SmileByteRange)GC_MALLOC_ATOMIC(sizeof(struct SmileByteRangeInt));
+	SmileCharRange smileRange = (SmileCharRange)GC_MALLOC_ATOMIC(sizeof(struct SmileCharRangeInt));
 	if (smileRange == NULL) Smile_Abort_OutOfMemory();
-	smileRange->base = (SmileObject)Smile_KnownBases.ByteRange;
-	smileRange->kind = SMILE_KIND_BYTERANGE;
-	smileRange->vtable = SmileByteRange_VTable;
+	smileRange->base = (SmileObject)Smile_KnownBases.CharRange;
+	smileRange->kind = SMILE_KIND_CHARRANGE;
+	smileRange->vtable = SmileCharRange_VTable;
 	smileRange->start = start;
 	smileRange->end = end;
 	smileRange->stepping = stepping;
 	return smileRange;
 }
 
-static UInt32 SmileByteRange_Hash(SmileByteRange range)
+static UInt32 SmileCharRange_Hash(SmileCharRange range)
 {
 	UInt32 result;
 		Byte start = range->start;
 		Byte end = range->end;
-		Byte stepping = range->stepping;
+		UInt32 stepping = (UInt32)(UInt64)range->stepping;
 		result = Smile_ApplyHashOracle((UInt32)((UInt32)start ^ (UInt32)(end << 8) ^ (UInt32)(stepping << 16)));
 
 	return result;
 }
 
-static SmileObject SmileByteRange_GetProperty(SmileByteRange self, Symbol propertyName)
+static SmileObject SmileCharRange_GetProperty(SmileCharRange self, Symbol propertyName)
 {
 	if (propertyName == Smile_KnownSymbols.start)
-		return (SmileObject)SmileByte_Create(self->start);
+		return (SmileObject)SmileChar_Create(self->start);
 	else if (propertyName == Smile_KnownSymbols.end)
-		return (SmileObject)SmileByte_Create(self->end);
+		return (SmileObject)SmileChar_Create(self->end);
 	else if (propertyName == Smile_KnownSymbols.stepping)
-		return (SmileObject)SmileByte_Create(self->stepping);
+		return (SmileObject)SmileInteger64_Create(self->stepping);
 	else if (propertyName == Smile_KnownSymbols.length)
-		return (SmileObject)SmileByte_Create(self->end > self->start ? self->end - self->start + 1 : self->start - self->end + 1);
+		return (SmileObject)SmileChar_Create(self->end > self->start ? self->end - self->start + 1 : self->start - self->end + 1);
 	else
 		return self->base->vtable->getProperty(self->base, propertyName);
 }
 
-static void SmileByteRange_SetProperty(SmileByteRange self, Symbol propertyName, SmileObject value)
+static void SmileCharRange_SetProperty(SmileCharRange self, Symbol propertyName, SmileObject value)
 {
 	if (propertyName == Smile_KnownSymbols.start || propertyName == Smile_KnownSymbols.end
 		|| propertyName == Smile_KnownSymbols.stepping || propertyName == Smile_KnownSymbols.length) {
 		Smile_ThrowException(Smile_KnownSymbols.property_error,
-			String_Format("Cannot set property \"%S\" on ByteRange: Ranges are read-only objects.",
+			String_Format("Cannot set property \"%S\" on CharRange: Ranges are read-only objects.",
 				SymbolTable_GetName(Smile_SymbolTable, propertyName)));
 	}
 	else {
 		Smile_ThrowException(Smile_KnownSymbols.property_error,
-			String_Format("Cannot set property \"%S\" on ByteRange: This property does not exist, and ranges are not appendable objects.",
+			String_Format("Cannot set property \"%S\" on CharRange: This property does not exist, and ranges are not appendable objects.",
 				SymbolTable_GetName(Smile_SymbolTable, propertyName)));
 	}
 }
 
-static Bool SmileByteRange_HasProperty(SmileByteRange self, Symbol propertyName)
+static Bool SmileCharRange_HasProperty(SmileCharRange self, Symbol propertyName)
 {
 	UNUSED(self);
 	return (propertyName == Smile_KnownSymbols.start || propertyName == Smile_KnownSymbols.end
 		|| propertyName == Smile_KnownSymbols.stepping || propertyName == Smile_KnownSymbols.length);
 }
 
-static SmileList SmileByteRange_GetPropertyNames(SmileByteRange self)
+static SmileList SmileCharRange_GetPropertyNames(SmileCharRange self)
 {
 	SmileList head, tail;
 
@@ -127,24 +127,24 @@ static SmileList SmileByteRange_GetPropertyNames(SmileByteRange self)
 	return head;
 }
 
-static Bool SmileByteRange_CompareEqual(SmileByteRange a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
+static Bool SmileCharRange_CompareEqual(SmileCharRange a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
 {
-	if (SMILE_KIND(b) == SMILE_KIND_BYTERANGE) {
-		return ((SmileByteRange)a)->start == ((SmileByteRange)b)->start
-			&& ((SmileByteRange)a)->end == ((SmileByteRange)b)->end
-			&& ((SmileByteRange)a)->stepping == ((SmileByteRange)b)->stepping;
+	if (SMILE_KIND(b) == SMILE_KIND_CHARRANGE) {
+		return ((SmileCharRange)a)->start == ((SmileCharRange)b)->start
+			&& ((SmileCharRange)a)->end == ((SmileCharRange)b)->end
+			&& ((SmileCharRange)a)->stepping == ((SmileCharRange)b)->stepping;
 	}
 	else return False;
 }
 
-static Bool SmileByteRange_DeepEqual(SmileByteRange a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData, PointerSet visitedPointers)
+static Bool SmileCharRange_DeepEqual(SmileCharRange a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData, PointerSet visitedPointers)
 {
 	UNUSED(visitedPointers);
 
-	if (SMILE_KIND(b) == SMILE_KIND_BYTERANGE) {
-		return ((SmileByteRange)a)->start == ((SmileByteRange)b)->start
-			&& ((SmileByteRange)a)->end == ((SmileByteRange)b)->end
-			&& ((SmileByteRange)a)->stepping == ((SmileByteRange)b)->stepping;
+	if (SMILE_KIND(b) == SMILE_KIND_CHARRANGE) {
+		return ((SmileCharRange)a)->start == ((SmileCharRange)b)->start
+			&& ((SmileCharRange)a)->end == ((SmileCharRange)b)->end
+			&& ((SmileCharRange)a)->stepping == ((SmileCharRange)b)->stepping;
 	}
 	else return False;
 }
