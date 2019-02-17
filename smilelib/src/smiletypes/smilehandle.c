@@ -24,25 +24,39 @@
 #include <smile/stringbuilder.h>
 #include <smile/internal/staticstring.h>
 #include <smile/smiletypes/easyobject.h>
+#include <smile/env/knownbases.h>
 
 SMILE_IGNORE_UNUSED_VARIABLES
 
 SMILE_EASY_OBJECT_VTABLE(SmileHandle);
 
-SmileHandle SmileHandle_Create(SmileObject base, SmileHandleEnd end, Symbol handleKind, Int32 costEstimate, void *ptr)
+static void SmileHandle_Finalize(SmileHandle handle, void *param)
 {
-	SmileHandle smileHandleInt = GC_MALLOC_STRUCT(struct SmileHandleInt);
-	if (smileHandleInt == NULL) Smile_Abort_OutOfMemory();
+	if (handle->end != NULL) {
+		handle->end(handle, False);
+	}
 
-	smileHandleInt->base = base;
-	smileHandleInt->kind = SMILE_KIND_HANDLE;
-	smileHandleInt->vtable = SmileHandle_VTable;
-	smileHandleInt->end = end;
-	smileHandleInt->handleKind = handleKind;
-	smileHandleInt->costEstimate = costEstimate;
-	smileHandleInt->ptr = ptr;
+	handle->ptr = NULL;
+	handle->end = NULL;
+	handle->base = (SmileObject)Smile_KnownBases.Object;
+	handle->kind = 0;
+}
 
-	return smileHandleInt;
+SmileHandle SmileHandle_Create(SmileObject base, SmileHandleEnd end, Symbol handleKind, void *ptr)
+{
+	SmileHandle smileHandle = GC_MALLOC_STRUCT(struct SmileHandleInt);
+	if (smileHandle == NULL) Smile_Abort_OutOfMemory();
+
+	smileHandle->base = base;
+	smileHandle->kind = SMILE_KIND_HANDLE;
+	smileHandle->vtable = SmileHandle_VTable;
+	smileHandle->end = end;
+	smileHandle->handleKind = handleKind;
+	smileHandle->ptr = ptr;
+
+	GC_REGISTER_FINALIZER(smileHandle, SmileHandle_Finalize, NULL, NULL, NULL);
+
+	return smileHandle;
 }
 
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileHandle)

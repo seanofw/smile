@@ -30,10 +30,9 @@ typedef Bool (*SmileHandleEnd)(SmileHandle handle, Bool userInvoked);
 
 struct SmileHandleInt {
 	DECLARE_BASE_OBJECT_PROPERTIES;
-	SmileHandleEnd end;	// Clean up the handle, implicitly or explicitly
-	Symbol handleKind;	// What kind of handle this is (unique a "class" name, like 'file')
-	Int32 costEstimate;	// How "expensive" this handle is, relative to a one-byte memory allocation.
-	void *ptr;	// A pointer to the handle's actual data.
+	SmileHandleEnd end;		// Clean up the handle, implicitly or explicitly
+	Symbol handleKind;		// What kind of handle this is (unique a "class" name, like 'file')
+	void *ptr;				// A pointer to the handle's actual data.
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -41,6 +40,6 @@ struct SmileHandleInt {
 
 SMILE_API_DATA SmileVTable SmileHandle_VTable;
 
-SMILE_API_FUNC SmileHandle SmileHandle_Create(SmileObject base, SmileHandleEnd end, Symbol handleKind, Int32 costEstimate, void *ptr);
+SMILE_API_FUNC SmileHandle SmileHandle_Create(SmileObject base, SmileHandleEnd end, Symbol handleKind, void *ptr);
 
 #endif

@@ -33,6 +33,8 @@
 #include <smile/numeric/random.h>
 
 extern void Smile_InitTicks(void);
+extern void Regex_Init(void);
+extern void Regex_End(void);
 
 /// <summary>
 /// Whether or not the Smile runtime has been initialized yet.
@@ -64,6 +66,8 @@ void Smile_Init(void)
 	GC_INIT();
 
 	Smile_ResetEnvironment();
+
+	Regex_Init();
 }
 
 void Smile_ResetEnvironment(void)
@@ -107,6 +111,8 @@ void Smile_ResetEnvironment(void)
 /// </summary>
 void Smile_End(void)
 {
+	GC_gcollect();
+	Regex_End();
 }
 
 /// <summary>
