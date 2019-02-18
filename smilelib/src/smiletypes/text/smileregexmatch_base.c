@@ -21,9 +21,14 @@
 #include <smile/smiletypes/smilebool.h>
 #include <smile/smiletypes/smileuserobject.h>
 #include <smile/smiletypes/smilehandle.h>
+#include <smile/smiletypes/smilelist.h>
+#include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
+#include <smile/smiletypes/range/smileinteger64range.h>
+#include <smile/dict/stringintdict.h>
 #include <smile/regex.h>
 #include <smile/internal/staticstring.h>
+#include <smile/smiletypes/smileuserobject.h>
 
 SMILE_IGNORE_UNUSED_VARIABLES
 
@@ -168,52 +173,209 @@ SMILE_EXTERNAL_FUNCTION(Ne)
 
 STATIC_STRING(_handleException, "First argument to 'RegexMatch.%s' must be a RegexMatch handle, not a '%S' handle.");
 
-SMILE_EXTERNAL_FUNCTION(GetMember)
+static RegexMatch GetRegexMatchObject(SmileObject obj, const char *methodName)
 {
-	SmileHandle handle;
-	RegexMatch regexMatch;
-	String stringKey;
-	Int64 index;
-	RegexMatchRange range;
-	String matchedSubstring;
-
-	handle = (SmileHandle)argv[0].obj;
+	SmileHandle handle = (SmileHandle)obj;
 	if (handle->handleKind != Smile_KnownSymbols.RegexMatch_) {
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error,
-			String_FormatString(_handleException, "get-member",
+			String_FormatString(_handleException, methodName,
 				SymbolTable_GetName(Smile_SymbolTable, handle->handleKind)));
 	}
 
-	regexMatch = (RegexMatch)handle->ptr;
+	return (RegexMatch)handle->ptr;
+}
 
-	switch (argv[1].obj->kind) {
+static RegexMatchRange ParseIndex(SmileArg arg, RegexMatch regexMatch, const char *methodName)
+{
+	Int64 index;
+	String stringKey;
+
+	switch (arg.obj->kind) {
 		case SMILE_KIND_UNBOXED_INTEGER64:
 			// Integer key means to retrieve one of the indexed captures (0 == whole match).
-			index = argv[1].unboxed.i64;
+			index = arg.unboxed.i64;
 			if (index < 0 || index >= regexMatch->numIndexedCaptures)
-				return SmileArg_From(NullObject);
-			range = regexMatch->indexedCaptures + (Int)index;
-			break;
+				return NULL;
+			return regexMatch->indexedCaptures + (Int)index;
 
 		case SMILE_KIND_UNBOXED_SYMBOL:
-			stringKey = SymbolTable_GetName(Smile_SymbolTable, argv[1].unboxed.symbol);
+			stringKey = SymbolTable_GetName(Smile_SymbolTable, arg.unboxed.symbol);
 			goto stringCommon;
 		case SMILE_KIND_STRING:
-			stringKey = (String)argv[1].obj;
+			stringKey = (String)arg.obj;
 		stringCommon:
 			if (regexMatch->namedCaptures == NULL)
-				return SmileArg_From(NullObject);
+				return NULL;
 			index = StringIntDict_GetValue(regexMatch->namedCaptures, stringKey);
-			range = regexMatch->indexedCaptures + index;
-			break;
+			return regexMatch->indexedCaptures + index;
 
 		default:
 			Smile_ThrowException(Smile_KnownSymbols.native_method_error,
-				String_FromC("Second argument to 'RegexMatch.get-member' must be an Integer64, a String, or a Symbol."));
+				String_Format("Second argument to 'RegexMatch.%s' must be an Integer64, a String, or a Symbol.", methodName));
+	}
+}
+
+SMILE_EXTERNAL_FUNCTION(GetMember)
+{
+	RegexMatch regexMatch = GetRegexMatchObject(argv[0].obj, "get-member");
+	RegexMatchRange range = ParseIndex(argv[1], regexMatch, "get-member");
+	String matchedSubstring = String_Substring(regexMatch->input, range->start, range->length);
+	return SmileArg_From((SmileObject)matchedSubstring);
+}
+
+SMILE_EXTERNAL_FUNCTION(List)
+{
+	RegexMatch regexMatch;
+	RegexMatchRange range;
+	String capture;
+	SmileList head, tail;
+	Int i;
+
+	regexMatch = GetRegexMatchObject(argv[0].obj, "list");
+
+	if (!regexMatch->isMatch)
+		return SmileArg_From(NullObject);
+
+	head = tail = NullList;
+	for (i = 0; i < regexMatch->numIndexedCaptures; i++) {
+		range = regexMatch->indexedCaptures + i;
+		capture = String_Substring(regexMatch->input, range->start, range->length);
+		LIST_APPEND(head, tail, capture);
 	}
 
-	matchedSubstring = String_Substring(regexMatch->input, range->start, range->length);
-	return SmileArg_From((SmileObject)matchedSubstring);
+	return SmileArg_From((SmileObject)head);
+}
+
+SMILE_EXTERNAL_FUNCTION(Count)
+{
+	RegexMatch regexMatch = GetRegexMatchObject(argv[0].obj, "count");
+
+	if (!regexMatch->isMatch)
+		return SmileUnboxedInteger64_From(0);
+
+	return SmileUnboxedInteger64_From(regexMatch->numIndexedCaptures);
+}
+
+SMILE_EXTERNAL_FUNCTION(CountNames)
+{
+	RegexMatch regexMatch = GetRegexMatchObject(argv[0].obj, "count-names");
+
+	if (!regexMatch->isMatch)
+		return SmileUnboxedInteger64_From(0);
+
+	return SmileUnboxedInteger64_From(regexMatch->namedCaptures != NULL ? StringIntDict_Count(regexMatch->namedCaptures) : 0);
+}
+
+SMILE_EXTERNAL_FUNCTION(Names)
+{
+	RegexMatch regexMatch;
+	SmileList head, tail;
+	Int i, count;
+	String *keys;
+
+	regexMatch = GetRegexMatchObject(argv[0].obj, "names");
+
+	if (!regexMatch->isMatch)
+		return SmileArg_From(NullObject);
+
+	head = tail = NullList;
+	if (regexMatch->namedCaptures != NULL) {
+		keys = StringIntDict_GetKeys(regexMatch->namedCaptures);
+		count = StringIntDict_Count(regexMatch->namedCaptures);
+		for (i = 0; i < count; i++) {
+			LIST_APPEND(head, tail, keys[i]);
+		}
+	}
+
+	return SmileArg_From((SmileObject)head);
+}
+
+SMILE_EXTERNAL_FUNCTION(NamedMatches)
+{
+	RegexMatch regexMatch;
+	RegexMatchRange range;
+	SmileList head, tail;
+	Int i, count, index;
+	String *keys;
+	String key, value;
+	SmileList tuple;
+
+	regexMatch = GetRegexMatchObject(argv[0].obj, "named-matches");
+
+	if (!regexMatch->isMatch)
+		return SmileArg_From(NullObject);
+
+	head = tail = NullList;
+
+	if (regexMatch->namedCaptures != NULL) {
+		keys = StringIntDict_GetKeys(regexMatch->namedCaptures);
+		count = StringIntDict_Count(regexMatch->namedCaptures);
+		for (i = 0; i < count; i++) {
+			key = keys[i];
+			index = StringIntDict_GetValue(regexMatch->namedCaptures, key);
+			range = regexMatch->indexedCaptures + index;
+			value = String_Substring(regexMatch->input, range->start, range->length);
+			tuple = SmileList_Cons((SmileObject)key,
+				(SmileObject)SmileList_Cons((SmileObject)value,
+					NullObject));
+			LIST_APPEND(head, tail, tuple);
+		}
+	}
+
+	return SmileArg_From((SmileObject)head);
+}
+
+SMILE_EXTERNAL_FUNCTION(Range)
+{
+	RegexMatch regexMatch;
+	SmileInteger64Range range;
+	RegexMatchRange matchRange;
+
+	regexMatch = GetRegexMatchObject(argv[0].obj, "range");
+
+	if (!regexMatch->isMatch)
+		return SmileArg_From(NullObject);
+
+	if (argc > 1) {
+		matchRange = ParseIndex(argv[1], regexMatch, "range");
+	}
+	else {
+		matchRange = regexMatch->indexedCaptures;
+	}
+
+	range = SmileInteger64Range_Create(matchRange->start, matchRange->start + matchRange->length - 1, 1);
+	return SmileArg_From((SmileObject)range);
+}
+
+SMILE_EXTERNAL_FUNCTION(Object)
+{
+	RegexMatch regexMatch;
+	RegexMatchRange range;
+	Int i, count, index;
+	String *keys;
+	String key, value;
+	SmileUserObject obj;
+
+	regexMatch = GetRegexMatchObject(argv[0].obj, "object");
+
+	if (!regexMatch->isMatch)
+		return SmileArg_From(NullObject);
+
+	obj = SmileUserObject_Create((SmileObject)Smile_KnownBases.Object, 0);
+
+	if (regexMatch->namedCaptures != NULL) {
+		keys = StringIntDict_GetKeys(regexMatch->namedCaptures);
+		count = StringIntDict_Count(regexMatch->namedCaptures);
+		for (i = 0; i < count; i++) {
+			key = keys[i];
+			index = StringIntDict_GetValue(regexMatch->namedCaptures, key);
+			range = regexMatch->indexedCaptures + index;
+			value = String_Substring(regexMatch->input, range->start, range->length);
+			SmileUserObject_Set(obj, SymbolTable_GetSymbol(Smile_SymbolTable, key), value);
+		}
+	}
+
+	return SmileArg_From((SmileObject)obj);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -229,4 +391,13 @@ void SmileRegexMatch_Setup(SmileUserObject base)
 	SetupFunction("!=", Ne, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _handleComparisonChecks);
 
 	SetupFunction("get-member", GetMember, NULL, "regex-match item", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _getMemberChecks);
+	SetupFunction("range", Range, NULL, "regex-match", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _getMemberChecks);
+
+	SetupFunction("list", List, NULL, "regex-match", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _handleComparisonChecks);
+	SetupFunction("count", Count, NULL, "regex-match", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _handleComparisonChecks);
+
+	SetupFunction("count-names", CountNames, NULL, "regex-match", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _handleComparisonChecks);
+	SetupFunction("names", Names, NULL, "regex-match", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _handleComparisonChecks);
+	SetupFunction("named-matches", NamedMatches, NULL, "regex-match", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _handleComparisonChecks);
+	SetupFunction("object", Object, NULL, "regex-match", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _handleComparisonChecks);
 }

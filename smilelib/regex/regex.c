@@ -299,6 +299,29 @@ Bool Regex_Test(Regex regex, String input)
 	return matchLength >= 0;
 }
 
+typedef struct NameCallbackInfoStruct {
+	OnigRegion *region;
+	RegexMatch match;
+} *NameCallbackInfo;
+
+static int Regex_NameCallback(const UChar *name, const UChar *nameEnd, int nGroupNum, int *groupNums, regex_t *regex, void *arg)
+{
+	NameCallbackInfo info = (NameCallbackInfo)arg;
+	RegexMatch match = info->match;
+	OnigRegion *region = info->region;
+	String nameString;
+	int ref;
+
+	UNUSED(nGroupNum);
+	UNUSED(groupNums);
+
+	ref = onig_name_to_backref_number(regex, name, nameEnd, region);
+	nameString = String_Create((const Byte *)name, nameEnd - name);
+	StringIntDict_Add(match->namedCaptures, nameString, (Int)ref);
+
+	return 0;  // 0: Continue iterating through names
+}
+
 RegexMatch Regex_Match(Regex regex, String input)
 {
 	const Byte *start;
@@ -344,21 +367,28 @@ RegexMatch Regex_Match(Regex regex, String input)
 	else {
 		int i, rangeStart, rangeEnd;
 		RegexMatchRange range;
+		struct NameCallbackInfoStruct nameCallbackInfo;
 
 		match->isMatch = True;
 		match->input = input;
 		match->indexedCaptures = GC_MALLOC_STRUCT_ARRAY(struct RegexMatchRangeStruct, region->num_regs);
 		match->numIndexedCaptures = region->num_regs;
 		match->maxIndexedCaptures = region->num_regs;
-		match->namedCaptures = NULL;
+		match->namedCaptures = StringIntDict_Create();
 		match->errorMessage = NULL;
 
+		// Populate the indexed captures array.
 		for (range = match->indexedCaptures, i = 0; i < region->num_regs; i++, range++) {
 			rangeStart = region->beg[i];
 			rangeEnd = region->end[i];
 			range->start = rangeStart;
 			range->length = rangeEnd - rangeStart;
 		}
+
+		// Populate the named captures dictionary.
+		nameCallbackInfo.match = match;
+		nameCallbackInfo.region = region;
+		onig_foreach_name(node->onigRegex, Regex_NameCallback, &nameCallbackInfo);
 	}
 
 	onig_region_free(region, 1);
