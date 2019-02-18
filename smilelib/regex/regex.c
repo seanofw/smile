@@ -263,19 +263,27 @@ void Regex_Init(void)
 	encodings[0] = ONIG_ENCODING_UTF8;
 
 	onig_initialize(encodings, 1);
+
+	_keyToIdLookup = StringIntDict_Create();
+	_idToCacheNodeLookup = Int32Dict_Create();
 }
 
 void Regex_End(void)
 {
+	_idToCacheNodeLookup = NULL;
+	_keyToIdLookup = NULL;
+
 	onig_end();
 }
 
 //-------------------------------------------------------------------------------------------------
 //  Public interface.
 
-Regex Regex_Create(String pattern, String flags)
+Regex Regex_Create(String pattern, String flags, String *errorMessage)
 {
 	RegexCacheNode node = RegexCache_FindOrAdd(0, pattern, flags);
+	if (errorMessage != NULL)
+		*errorMessage = node->errorMessage;
 	return node->regex;
 }
 

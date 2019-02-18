@@ -1035,6 +1035,7 @@
     <ClCompile Include="src\parsing\lexer\lexnames.c" />
     <ClCompile Include="src\parsing\lexer\lexnumbers.c" />
     <ClCompile Include="src\parsing\lexer\lexpunct.c" />
+    <ClCompile Include="src\parsing\lexer\lexregex.c" />
     <ClCompile Include="src\parsing\lexer\lexstrings.c" />
     <ClCompile Include="src\parsing\lexer\tokenkind.c" />
     <ClCompile Include="src\parsing\parser\applysyntax.c" />
@@ -1125,6 +1126,7 @@
     <ClCompile Include="src\smiletypes\smileuserobject.c" />
     <ClCompile Include="src\smiletypes\text\smilechar.c" />
     <ClCompile Include="src\smiletypes\text\smilechar_base.c" />
+    <ClCompile Include="src\smiletypes\text\smileregex_base.c" />
     <ClCompile Include="src\smiletypes\text\smilestring.c" />
     <ClCompile Include="src\smiletypes\text\smilestring_base.c" />
     <ClCompile Include="src\smiletypes\text\smilesymbol.c" />

@@ -60,6 +60,7 @@ struct KnownBasesStruct {
 	SmileUserObject     Symbol;
 	SmileUserObject     Exception;
 	SmileUserObject     Handle;
+	SmileUserObject       Regex;
 };
 
 extern void KnownBases_Preload(struct KnownBasesStruct *knownBases);

@@ -28,7 +28,7 @@ STATIC_STRING(IllegalNameMessage, "Names must not mix characters from different 
 //---------------------------------------------------------------------------
 //  Alphabetic name parsing.
 
-static Bool IsValidRestartCharacter(const Byte *src, const Byte *end)
+Bool Lexer_IsValidRestartCharacter(const Byte *src, const Byte *end)
 {
 	Int code, identifierCharacterKind;
 	Byte ch;
@@ -124,7 +124,7 @@ readMoreName:
 
 			case '-':
 				src++;
-				if (src < end && IsValidRestartCharacter(src, end))
+				if (src < end && Lexer_IsValidRestartCharacter(src, end))
 					goto readMoreName;
 				src--;
 				break;

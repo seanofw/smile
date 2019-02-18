@@ -24,7 +24,6 @@
 //---------------------------------------------------------------------------
 //  Loanwords (regex, XML, JSON, etc.)
 
-STATIC_STRING(UnterminatedRegexMessage, "Regular expression that was started on line %d has no ending /");
 STATIC_STRING(UnknownLoanwordMessage, "Loanword \"%S\" is unknown.");
 STATIC_STRING(UnsupportedLoanwordMessage, "Loanword \"%S\" is unsupported in this version of the Smile interpreter.");
 STATIC_STRING(IllegalLoanwordMessage, "Loanword \"%S\" must be followed by whitespace.");
@@ -64,9 +63,15 @@ Int Lexer_ParseLoanword(Lexer lexer, Bool isFirstContentOnLine)
 		case '/':
 			// A regex.  Consume everything up to and including the next slash, using \ as an escape,
 			// and then consume any trailing alphanumeric characters as flags.
+			if (src < end && *src == '/') {
+				// It's a '#//', which is illegal.  So unconsume the '/', which means we'll lex it as
+				// a broken '#' followed by a '//' line comment.
+				lexer->src = src - 1;
+				lexer->token->text = String_FormatString(UnknownLoanwordMessage, String_PoundSign);
+				return END_TOKEN(TOKEN_ERROR);
+			}
 			lexer->src = src;
-			lexer->token->text = String_FormatString(UnsupportedLoanwordMessage, String_FromC("#/"));
-			return END_TOKEN(TOKEN_ERROR);
+			return Lexer_ParseRegex(lexer, isFirstContentOnLine);
 
 		case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h':
 		case 'i': case 'j': case 'k': case 'l': case 'm': case 'n': case 'o': case 'p':

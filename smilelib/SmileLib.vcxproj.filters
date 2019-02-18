@@ -1036,6 +1036,8 @@
     <ClCompile Include="regex\src\unicode_fold3_key.c" />
     <ClCompile Include="regex\src\unicode_unfold_key.c" />
     <ClCompile Include="regex\regex.c" />
+    <ClCompile Include="src\parsing\lexer\lexregex.c" />
+    <ClCompile Include="src\smiletypes\text\smileregex_base.c" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">

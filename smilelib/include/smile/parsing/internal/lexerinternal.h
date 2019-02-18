@@ -21,10 +21,13 @@ SMILE_INTERNAL_FUNC Int Lexer_ParseDigit(Lexer lexer, Bool isFirstContentOnLine)
 SMILE_INTERNAL_FUNC Int Lexer_ParseReal(Lexer lexer, Bool isFirstContentOnLine);
 
 SMILE_INTERNAL_FUNC Int Lexer_ParseLoanword(Lexer lexer, Bool isFirstContentOnLine);
+SMILE_INTERNAL_FUNC Int Lexer_ParseRegex(Lexer lexer, Bool isFirstContentOnLine);
 
 SMILE_INTERNAL_FUNC Int Lexer_ParseSlash(Lexer lexer, Bool isFirstContentOnLine);
 SMILE_INTERNAL_FUNC Int Lexer_ParseDot(Lexer lexer, Bool isFirstContentOnLine);
 SMILE_INTERNAL_FUNC Int Lexer_ParseHyphenOrEquals(Lexer lexer, Int initialChar, Bool isFirstContentOnLine, Bool hasPrecedingWhitespace);
+
+SMILE_INTERNAL_FUNC Bool Lexer_IsValidRestartCharacter(const Byte *src, const Byte *end);
 
 //---------------------------------------------------------------------------
 //  Tokenization macros.

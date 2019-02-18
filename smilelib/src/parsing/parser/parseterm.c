@@ -51,6 +51,8 @@ static Bool Parser_TryParseSpecialForm(Parser parser, LexerPosition startPositio
 //         | . INTEGER
 //         | . FLOAT
 //         | . REAL
+//         | . LOANWORD_SYNTAX
+//         | . LOANWORD_REGEX
 ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, Token firstUnaryTokenForErrorReporting)
 {
 	ParseDecl parseDecl;
@@ -169,6 +171,12 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, T
 			*result = NullObject;
 		}
 		ParseScope_AddSyntax(parser->currentScope, (SmileSyntax)*result);
+		return NULL;
+
+	case TOKEN_LOANWORD_REGEX:
+		// The Lexer already constructed [Regex.of pattern-string options-string] for us,
+		// so there's nothing we need to do except return it.
+		*result = (SmileObject)token->data.ptr;
 		return NULL;
 
 	default:

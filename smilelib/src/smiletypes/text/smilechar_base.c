@@ -59,7 +59,7 @@ SMILE_EXTERNAL_FUNCTION(ToBool)
 
 SMILE_EXTERNAL_FUNCTION(ToInt)
 {
-	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_UNBOXED_BYTE)
+	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_UNBOXED_CHAR)
 		return SmileUnboxedInteger64_From((Int64)(UInt64)argv[0].unboxed.ch);
 
 	return SmileUnboxedInteger64_From(0);
