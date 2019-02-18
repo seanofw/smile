@@ -1126,6 +1126,7 @@
     <ClCompile Include="src\smiletypes\smileuserobject.c" />
     <ClCompile Include="src\smiletypes\text\smilechar.c" />
     <ClCompile Include="src\smiletypes\text\smilechar_base.c" />
+    <ClCompile Include="src\smiletypes\text\smileregexmatch_base.c" />
     <ClCompile Include="src\smiletypes\text\smileregex_base.c" />
     <ClCompile Include="src\smiletypes\text\smilestring.c" />
     <ClCompile Include="src\smiletypes\text\smilestring_base.c" />

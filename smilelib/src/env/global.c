@@ -74,6 +74,7 @@ void Smile_InitCommonGlobals(ClosureInfo globalClosureInfo)
 	DeclareCommonGlobal(Smile_KnownSymbols.Symbol_,				Smile_KnownBases.Symbol);
 	DeclareCommonGlobal(Smile_KnownSymbols.Exception_,			Smile_KnownBases.Exception);
 	DeclareCommonGlobal(Smile_KnownSymbols.Regex_,				Smile_KnownBases.Regex);
+	DeclareCommonGlobal(Smile_KnownSymbols.RegexMatch_,			Smile_KnownBases.RegexMatch);
 
 	DeclareCommonGlobal(Smile_KnownSymbols.Range_,				Smile_KnownBases.Range);
 	DeclareCommonGlobal(Smile_KnownSymbols.CharRange_,			Smile_KnownBases.CharRange);

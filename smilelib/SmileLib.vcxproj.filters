@@ -1038,6 +1038,7 @@
     <ClCompile Include="regex\regex.c" />
     <ClCompile Include="src\parsing\lexer\lexregex.c" />
     <ClCompile Include="src\smiletypes\text\smileregex_base.c" />
+    <ClCompile Include="src\smiletypes\text\smileregexmatch_base.c" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">

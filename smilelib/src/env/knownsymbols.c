@@ -285,6 +285,7 @@ STATIC_STRING(Program_, "Program");
 STATIC_STRING(Random_, "Random");
 STATIC_STRING(Range_, "Range");
 STATIC_STRING(Regex_, "Regex");
+STATIC_STRING(RegexMatch_, "RegexMatch");
 STATIC_STRING(String_, "String");
 STATIC_STRING(StringArray_, "StringArray");
 STATIC_STRING(StringMap_, "StringMap");
@@ -394,6 +395,7 @@ static void KnownSymbolsInt_PreloadTypenames(SymbolTable symbolTable, KnownSymbo
 	knownSymbols->Random_ = SymbolTableInt_AddFast(symbolTable, Random_);
 	knownSymbols->Range_ = SymbolTableInt_AddFast(symbolTable, Range_);
 	knownSymbols->Regex_ = SymbolTableInt_AddFast(symbolTable, Regex_);
+	knownSymbols->RegexMatch_ = SymbolTableInt_AddFast(symbolTable, RegexMatch_);
 	knownSymbols->String_ = SymbolTableInt_AddFast(symbolTable, String_);
 	knownSymbols->StringArray_ = SymbolTableInt_AddFast(symbolTable, StringArray_);
 	knownSymbols->StringMap_ = SymbolTableInt_AddFast(symbolTable, StringMap_);

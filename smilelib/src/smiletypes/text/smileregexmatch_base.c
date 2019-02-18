@@ -27,36 +27,14 @@
 
 SMILE_IGNORE_UNUSED_VARIABLES
 
-static Byte _handleChecks[] = {
-	SMILE_KIND_MASK, SMILE_KIND_HANDLE,
-	SMILE_KIND_MASK, SMILE_KIND_HANDLE,
-	SMILE_KIND_MASK, SMILE_KIND_HANDLE,
-	SMILE_KIND_MASK, SMILE_KIND_HANDLE,
-	SMILE_KIND_MASK, SMILE_KIND_HANDLE,
-	SMILE_KIND_MASK, SMILE_KIND_HANDLE,
-	SMILE_KIND_MASK, SMILE_KIND_HANDLE,
-	SMILE_KIND_MASK, SMILE_KIND_HANDLE,
-};
-
 static Byte _handleComparisonChecks[] = {
 	SMILE_KIND_MASK, SMILE_KIND_HANDLE,
 	0, 0,
 };
 
-static Byte _stringChecks[] = {
-	SMILE_KIND_MASK, SMILE_KIND_STRING,
-	SMILE_KIND_MASK, SMILE_KIND_STRING,
-	SMILE_KIND_MASK, SMILE_KIND_STRING,
-	SMILE_KIND_MASK, SMILE_KIND_STRING,
-	SMILE_KIND_MASK, SMILE_KIND_STRING,
-	SMILE_KIND_MASK, SMILE_KIND_STRING,
-	SMILE_KIND_MASK, SMILE_KIND_STRING,
-	SMILE_KIND_MASK, SMILE_KIND_STRING,
-};
-
-static Byte _matchChecks[] = {
+static Byte _getMemberChecks[] = {
 	SMILE_KIND_MASK, SMILE_KIND_HANDLE,
-	SMILE_KIND_MASK, SMILE_KIND_STRING,
+	0, 0,
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -98,9 +76,9 @@ SMILE_EXTERNAL_FUNCTION(ToBool)
 	SmileHandle handle;
 	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_HANDLE) {
 		handle = (SmileHandle)argv[0].obj;
-		if (handle->handleKind == Smile_KnownSymbols.Regex_) {
-			Regex regex = (Regex)handle->ptr;
-			return SmileUnboxedBool_From(Regex_IsValid(regex));
+		if (handle->handleKind == Smile_KnownSymbols.RegexMatch_) {
+			RegexMatch regexMatch = (RegexMatch)handle->ptr;
+			return SmileUnboxedBool_From(regexMatch->isMatch);
 		}
 	}
 
@@ -109,6 +87,17 @@ SMILE_EXTERNAL_FUNCTION(ToBool)
 
 SMILE_EXTERNAL_FUNCTION(ToInt)
 {
+	SmileHandle handle;
+	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_HANDLE) {
+		handle = (SmileHandle)argv[0].obj;
+		if (handle->handleKind == Smile_KnownSymbols.RegexMatch_) {
+			RegexMatch regexMatch = (RegexMatch)handle->ptr;
+			return SmileUnboxedInteger64_From(regexMatch->isMatch
+				? regexMatch->numIndexedCaptures + StringIntDict_Count(regexMatch->namedCaptures)
+				: 0);
+		}
+	}
+
 	return SmileUnboxedInteger64_From(0);
 }
 
@@ -117,14 +106,19 @@ SMILE_EXTERNAL_FUNCTION(ToString)
 	SmileHandle handle;
 	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_HANDLE) {
 		handle = (SmileHandle)argv[0].obj;
-		if (handle->handleKind == Smile_KnownSymbols.Regex_) {
-			Regex regex = (Regex)handle->ptr;
-			String string = Regex_ToString(regex);
-			return SmileArg_From((SmileObject)string);
+		if (handle->handleKind == Smile_KnownSymbols.RegexMatch_) {
+			RegexMatch regexMatch = (RegexMatch)handle->ptr;
+			RegexMatchRange range;
+
+			if (!regexMatch->isMatch || regexMatch->numIndexedCaptures <= 0)
+				return SmileArg_From((SmileObject)String_Empty);
+
+			range = regexMatch->indexedCaptures;
+			return SmileArg_From((SmileObject)String_Substring(regexMatch->input, range->start, range->length));
 		}
 	}
 
-	return SmileArg_From((SmileObject)SymbolTable_GetName(Smile_SymbolTable, Smile_KnownSymbols.Regex_));
+	return SmileArg_From((SmileObject)SymbolTable_GetName(Smile_SymbolTable, Smile_KnownSymbols.RegexMatch_));
 }
 
 SMILE_EXTERNAL_FUNCTION(Hash)
@@ -132,9 +126,11 @@ SMILE_EXTERNAL_FUNCTION(Hash)
 	SmileHandle handle;
 	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_HANDLE) {
 		handle = (SmileHandle)argv[0].obj;
-		if (handle->handleKind == Smile_KnownSymbols.Regex_) {
-			Regex regex = (Regex)handle->ptr;
-			return SmileUnboxedInteger64_From(Smile_ApplyHashOracle(String_Hash(regex->pattern) + String_Hash(regex->flags)));
+		if (handle->handleKind == Smile_KnownSymbols.RegexMatch_) {
+			RegexMatch regexMatch = (RegexMatch)handle->ptr;
+			return SmileUnboxedInteger64_From(Smile_ApplyHashOracle(regexMatch->isMatch
+				? regexMatch->numIndexedCaptures + StringIntDict_Count(regexMatch->namedCaptures)
+				: 0));
 		}
 	}
 
@@ -152,9 +148,9 @@ static Bool Equals(SmileObject obj1, SmileObject obj2)
 
 	return (
 		SMILE_KIND(obj1) == SMILE_KIND_HANDLE
-		&& a->handleKind == Smile_KnownSymbols.Regex_
-		&& (b = (SmileHandle)obj2)->handleKind == Smile_KnownSymbols.Regex_
-		&& Regex_Equal((Regex)a->ptr, (Regex)b->ptr)
+		&& a->handleKind == Smile_KnownSymbols.RegexMatch_
+		&& (b = (SmileHandle)obj2)->handleKind == Smile_KnownSymbols.RegexMatch_
+		&& a->ptr == b->ptr
 	);
 }
 
@@ -170,62 +166,67 @@ SMILE_EXTERNAL_FUNCTION(Ne)
 
 //-------------------------------------------------------------------------------------------------
 
-STATIC_STRING(_handleException, "First argument to 'Regex.%s' must be a Regex handle, not a '%S' handle.");
+STATIC_STRING(_handleException, "First argument to 'RegexMatch.%s' must be a RegexMatch handle, not a '%S' handle.");
 
-SMILE_EXTERNAL_FUNCTION(Matches)
+SMILE_EXTERNAL_FUNCTION(GetMember)
 {
-	SmileHandle handle = (SmileHandle)argv[0].obj;
-	String input = (String)argv[1].obj;
-	Regex regex;
-	Bool result;
+	SmileHandle handle;
+	RegexMatch regexMatch;
+	String stringKey;
+	Int64 index;
+	RegexMatchRange range;
+	String matchedSubstring;
 
-	if (handle->handleKind != Smile_KnownSymbols.Regex_) {
+	handle = (SmileHandle)argv[0].obj;
+	if (handle->handleKind != Smile_KnownSymbols.RegexMatch_) {
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error,
-			String_FormatString(_handleException, "matches?",
+			String_FormatString(_handleException, "get-member",
 				SymbolTable_GetName(Smile_SymbolTable, handle->handleKind)));
 	}
 
-	regex = (Regex)handle->ptr;
-	result = Regex_Test(regex, input);
+	regexMatch = (RegexMatch)handle->ptr;
 
-	return SmileUnboxedBool_From(result);
-}
+	switch (argv[1].obj->kind) {
+		case SMILE_KIND_UNBOXED_INTEGER64:
+			// Integer key means to retrieve one of the indexed captures (0 == whole match).
+			index = argv[1].unboxed.i64;
+			if (index < 0 || index >= regexMatch->numIndexedCaptures)
+				return SmileArg_From(NullObject);
+			range = regexMatch->indexedCaptures + (Int)index;
+			break;
 
-SMILE_EXTERNAL_FUNCTION(Match)
-{
-	SmileHandle handle = (SmileHandle)argv[0].obj;
-	String input = (String)argv[1].obj;
-	Regex regex;
-	RegexMatch result;
-	SmileHandle matchHandle;
+		case SMILE_KIND_UNBOXED_SYMBOL:
+			stringKey = SymbolTable_GetName(Smile_SymbolTable, argv[1].unboxed.symbol);
+			goto stringCommon;
+		case SMILE_KIND_STRING:
+			stringKey = (String)argv[1].obj;
+		stringCommon:
+			if (regexMatch->namedCaptures == NULL)
+				return SmileArg_From(NullObject);
+			index = StringIntDict_GetValue(regexMatch->namedCaptures, stringKey);
+			range = regexMatch->indexedCaptures + index;
+			break;
 
-	if (handle->handleKind != Smile_KnownSymbols.Regex_) {
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error,
-			String_FormatString(_handleException, "match",
-				SymbolTable_GetName(Smile_SymbolTable, handle->handleKind)));
+		default:
+			Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+				String_FromC("Second argument to 'RegexMatch.get-member' must be an Integer64, a String, or a Symbol."));
 	}
 
-	regex = (Regex)handle->ptr;
-	result = Regex_Match(regex, input);
-
-	matchHandle = SmileHandle_Create((SmileObject)Smile_KnownBases.RegexMatch, NULL, Smile_KnownSymbols.RegexMatch_, result);
-	return SmileArg_From((SmileObject)matchHandle);
+	matchedSubstring = String_Substring(regexMatch->input, range->start, range->length);
+	return SmileArg_From((SmileObject)matchedSubstring);
 }
 
 //-------------------------------------------------------------------------------------------------
 
-void SmileRegex_Setup(SmileUserObject base)
+void SmileRegexMatch_Setup(SmileUserObject base)
 {
-	SetupFunction("of", Of, base, "pattern options", ARG_CHECK_MAX, 1, 3, 0, NULL);
-
-	SetupFunction("bool", ToBool, NULL, "regex", ARG_CHECK_EXACT, 1, 1, 0, NULL);
-	SetupFunction("int", ToInt, NULL, "regex", ARG_CHECK_EXACT, 1, 1, 0, NULL);
-	SetupFunction("string", ToString, NULL, "regex", ARG_CHECK_EXACT, 1, 1, 0, NULL);
-	SetupFunction("hash", Hash, NULL, "regex", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("bool", ToBool, NULL, "regex-match", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("int", ToInt, NULL, "regex-match", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("string", ToString, NULL, "regex-match", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("hash", Hash, NULL, "regex-match", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 
 	SetupFunction("==", Eq, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _handleComparisonChecks);
 	SetupFunction("!=", Ne, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _handleComparisonChecks);
 
-	SetupFunction("matches?", Matches, NULL, "regex string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _matchChecks);
-	SetupFunction("match", Match, NULL, "regex string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _matchChecks);
+	SetupFunction("get-member", GetMember, NULL, "regex-match item", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _getMemberChecks);
 }

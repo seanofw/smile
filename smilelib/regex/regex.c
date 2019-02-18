@@ -326,11 +326,11 @@ RegexMatch Regex_Match(Regex regex, String input)
 
 	if (matchOffset < 0) {
 		match->isMatch = False;
+		match->input = input;
 		match->indexedCaptures = NULL;
 		match->numIndexedCaptures = 0;
-		match->namedCaptures = StringDict_Create();
-		match->matchStart = 0;
-		match->matchEnd = 0;
+		match->maxIndexedCaptures = 0;
+		match->namedCaptures = NULL;
 
 		if (matchOffset != ONIG_MISMATCH) {
 			OnigUChar errorBuf[ONIG_MAX_ERROR_MESSAGE_LEN + 1];
@@ -342,12 +342,23 @@ RegexMatch Regex_Match(Regex regex, String input)
 		}
 	}
 	else {
+		int i, rangeStart, rangeEnd;
+		RegexMatchRange range;
+
 		match->isMatch = True;
-		match->matchStart = matchOffset;
-		match->matchEnd = matchOffset;
-		match->indexedCaptures = NULL;
-		match->numIndexedCaptures = 0;
-		match->namedCaptures = StringDict_Create();
+		match->input = input;
+		match->indexedCaptures = GC_MALLOC_STRUCT_ARRAY(struct RegexMatchRangeStruct, region->num_regs);
+		match->numIndexedCaptures = region->num_regs;
+		match->maxIndexedCaptures = region->num_regs;
+		match->namedCaptures = NULL;
+		match->errorMessage = NULL;
+
+		for (range = match->indexedCaptures, i = 0; i < region->num_regs; i++, range++) {
+			rangeStart = region->beg[i];
+			rangeEnd = region->end[i];
+			range->start = rangeStart;
+			range->length = rangeEnd - rangeStart;
+		}
 	}
 
 	onig_region_free(region, 1);
