@@ -31,6 +31,8 @@
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/base.h>
 #include <smile/smiletypes/raw/smilebytearray.h>
+#include <smile/smiletypes/smilehandle.h>
+#include <smile/regex.h>
 #include <smile/internal/staticstring.h>
 
 SMILE_IGNORE_UNUSED_VARIABLES
@@ -71,7 +73,7 @@ static Byte _padChecks[] = {
 
 static Byte _indexOfChecks[] = {
 	SMILE_KIND_MASK, SMILE_KIND_STRING,
-	SMILE_KIND_MASK, SMILE_KIND_STRING,
+	0, 0,
 	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER64,
 };
 
@@ -485,56 +487,6 @@ SMILE_EXTERNAL_FUNCTION(CompareI)
 
 //-------------------------------------------------------------------------------------------------
 
-SMILE_EXTERNAL_FUNCTION(StartsWith)
-{
-	String x = (String)argv[0].obj;
-	String y = (String)argv[1].obj;
-	Bool result = String_StartsWith(x, y);
-	return SmileUnboxedBool_From(result);
-}
-
-SMILE_EXTERNAL_FUNCTION(StartsWithI)
-{
-	String x = (String)argv[0].obj;
-	String y = (String)argv[1].obj;
-	Bool result = String_StartsWithI(x, y);
-	return SmileUnboxedBool_From(result);
-}
-
-SMILE_EXTERNAL_FUNCTION(EndsWith)
-{
-	String x = (String)argv[0].obj;
-	String y = (String)argv[1].obj;
-	Bool result = String_EndsWith(x, y);
-	return SmileUnboxedBool_From(result);
-}
-
-SMILE_EXTERNAL_FUNCTION(EndsWithI)
-{
-	String x = (String)argv[0].obj;
-	String y = (String)argv[1].obj;
-	Bool result = String_EndsWithI(x, y);
-	return SmileUnboxedBool_From(result);
-}
-
-SMILE_EXTERNAL_FUNCTION(Contains)
-{
-	String x = (String)argv[0].obj;
-	String y = (String)argv[1].obj;
-	Bool result = String_Contains(x, y);
-	return SmileUnboxedBool_From(result);
-}
-
-SMILE_EXTERNAL_FUNCTION(ContainsI)
-{
-	String x = (String)argv[0].obj;
-	String y = (String)argv[1].obj;
-	Bool result = String_ContainsI(x, y);
-	return SmileUnboxedBool_From(result);
-}
-
-//-------------------------------------------------------------------------------------------------
-
 SMILE_EXTERNAL_FUNCTION(IsEmpty)
 {
 	String str = (String)argv[0].obj;
@@ -794,46 +746,233 @@ SMILE_EXTERNAL_FUNCTION(IsPunctIdent)
 
 //-------------------------------------------------------------------------------------------------
 
+Inline void DecodePattern(SmileArg arg, String *pattern, Regex *regexPattern, const char *methodName, const char *paramName)
+{
+	Int patternKind = SMILE_KIND(arg.obj);
+
+	*pattern = NULL;
+	*regexPattern = NULL;
+
+	// Decode the pattern.
+	if (patternKind == SMILE_KIND_STRING)
+		*pattern = (String)arg.obj;
+	else if (patternKind == SMILE_KIND_CHAR)
+		*pattern = String_CreateRepeat(arg.unboxed.i8, 1);
+	else if (patternKind == SMILE_KIND_UNI)
+		*pattern = String_CreateFromUnicode(arg.unboxed.uni);
+	else if (patternKind == SMILE_KIND_HANDLE && ((SmileHandle)arg.obj)->handleKind == Smile_KnownSymbols.Regex_)
+		*regexPattern = (Regex)((SmileHandle)arg.obj)->ptr;
+	else {
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+			String_Format("The %s to 'String.%s' must be a String, Char, Uni, or Regex.", paramName, methodName));
+	}
+}
+
+Inline String DecodePatternWithoutRegex(SmileArg arg, const char *methodName, const char *paramName)
+{
+	Int patternKind = SMILE_KIND(arg.obj);
+
+	// Decode the pattern.
+	if (patternKind == SMILE_KIND_STRING)
+		return (String)arg.obj;
+	else if (patternKind == SMILE_KIND_CHAR)
+		return String_CreateRepeat(arg.unboxed.i8, 1);
+	else if (patternKind == SMILE_KIND_UNI)
+		return String_CreateFromUnicode(arg.unboxed.uni);
+	else {
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+			String_Format("The %s to 'String.%s' must be a String, Char, or Uni.", paramName, methodName));
+	}
+}
+
+SMILE_EXTERNAL_FUNCTION(StartsWith)
+{
+	String str = (String)argv[0].obj;
+	String pattern;
+	Regex regexPattern;
+	Bool result;
+
+	DecodePattern(argv[1], &pattern, &regexPattern, "starts-with", "pattern");
+
+	if (pattern != NULL) {
+		result = String_StartsWith(str, pattern);
+	}
+	else if (regexPattern != NULL) {
+		result = Regex_Test(Regex_WithStartAnchor(regexPattern), str, 0);
+	}
+	else result = False;
+
+	return SmileUnboxedBool_From(result);
+}
+
+SMILE_EXTERNAL_FUNCTION(StartsWithI)
+{
+	String str = (String)argv[0].obj;
+	String pattern;
+	Regex regexPattern;
+	Bool result;
+
+	DecodePattern(argv[1], &pattern, &regexPattern, "starts-with~", "pattern");
+
+	if (pattern != NULL) {
+		result = String_StartsWithI(str, pattern);
+	}
+	else if (regexPattern != NULL) {
+		result = Regex_Test(Regex_AsCaseInsensitive(Regex_WithStartAnchor(regexPattern)), str, 0);
+	}
+	else result = False;
+
+	return SmileUnboxedBool_From(result);
+}
+
+SMILE_EXTERNAL_FUNCTION(EndsWith)
+{
+	String str = (String)argv[0].obj;
+	String pattern;
+	Regex regexPattern;
+	Bool result;
+
+	DecodePattern(argv[1], &pattern, &regexPattern, "ends-with", "pattern");
+
+	if (pattern != NULL) {
+		result = String_EndsWith(str, pattern);
+	}
+	else if (regexPattern != NULL) {
+		result = Regex_Test(Regex_WithEndAnchor(regexPattern), str, 0);
+	}
+	else result = False;
+
+	return SmileUnboxedBool_From(result);
+}
+
+SMILE_EXTERNAL_FUNCTION(EndsWithI)
+{
+	String str = (String)argv[0].obj;
+	String pattern;
+	Regex regexPattern;
+	Bool result;
+
+	DecodePattern(argv[1], &pattern, &regexPattern, "ends-with~", "pattern");
+
+	if (pattern != NULL) {
+		result = String_EndsWithI(str, pattern);
+	}
+	else if (regexPattern != NULL) {
+		result = Regex_Test(Regex_AsCaseInsensitive(Regex_WithEndAnchor(regexPattern)), str, 0);
+	}
+	else result = False;
+
+	return SmileUnboxedBool_From(result);
+}
+
+SMILE_EXTERNAL_FUNCTION(Contains)
+{
+	String str = (String)argv[0].obj;
+	String pattern;
+	Regex regexPattern;
+	Bool result;
+
+	DecodePattern(argv[1], &pattern, &regexPattern, "contains", "pattern");
+
+	if (pattern != NULL) {
+		result = String_Contains(str, pattern);
+	}
+	else if (regexPattern != NULL) {
+		result = Regex_Test(regexPattern, str, 0);
+	}
+	else result = False;
+
+	return SmileUnboxedBool_From(result);
+}
+
+SMILE_EXTERNAL_FUNCTION(ContainsI)
+{
+	String str = (String)argv[0].obj;
+	String pattern;
+	Regex regexPattern;
+	Bool result;
+
+	DecodePattern(argv[1], &pattern, &regexPattern, "contains~", "pattern");
+
+	if (pattern != NULL) {
+		result = String_ContainsI(str, pattern);
+	}
+	else if (regexPattern != NULL) {
+		result = Regex_Test(Regex_AsCaseInsensitive(regexPattern), str, 0);
+	}
+	else result = False;
+
+	return SmileUnboxedBool_From(result);
+}
+
 SMILE_EXTERNAL_FUNCTION(IndexOf)
 {
-	String x = (String)argv[0].obj;
-	String y = (String)argv[1].obj;
+	String str = (String)argv[0].obj;
+	String pattern = NULL;
+	Regex regexPattern = NULL;
 
 	Int64 startIndex = argc > 2 ? argv[2].unboxed.i64 : 0;
-	Int stringLength = String_Length(x);
+	Int stringLength = String_Length(str);
 	Int result;
 
-	result = startIndex < stringLength ? String_IndexOf(x, y, (Int)startIndex) : -1;
-	if (result < 0) return SmileArg_From(NullObject);
+	DecodePattern(argv[1], &pattern, &regexPattern, "index-of", "pattern");
+
+	if (startIndex < 0 || startIndex >= stringLength)
+		return SmileArg_From(NullObject);
+
+	if (pattern != NULL) {
+		result = String_IndexOf(str, pattern, (Int)startIndex);
+		if (result < 0) return SmileArg_From(NullObject);
+	}
+	else {
+		RegexMatch match = Regex_Match(regexPattern, str, 0);
+		if (!match->isMatch) return SmileArg_From(NullObject);
+		result = match->indexedCaptures[0].start;
+	}
 
 	return SmileUnboxedInteger64_From(result);
 }
 
 SMILE_EXTERNAL_FUNCTION(IndexOfI)
 {
-	String x = (String)argv[0].obj;
-	String y = (String)argv[1].obj;
+	String str = (String)argv[0].obj;
+	String pattern = NULL;
+	Regex regexPattern = NULL;
 
 	Int64 startIndex = argc > 2 ? argv[2].unboxed.i64 : 0;
-	Int stringLength = String_Length(x);
+	Int stringLength = String_Length(str);
 	Int result;
 
-	result = startIndex < stringLength ? String_IndexOfI(x, y, (Int)startIndex) : -1;
-	if (result < 0) return SmileArg_From(NullObject);
+	DecodePattern(argv[1], &pattern, &regexPattern, "index-of~", "pattern");
+
+	if (startIndex < 0 || startIndex >= stringLength)
+		return SmileArg_From(NullObject);
+
+	if (pattern != NULL) {
+		result = String_IndexOfI(str, pattern, (Int)startIndex);
+		if (result < 0) return SmileArg_From(NullObject);
+	}
+	else {
+		RegexMatch match = Regex_Match(Regex_AsCaseInsensitive(regexPattern), str, 0);
+		if (!match->isMatch) return SmileArg_From(NullObject);
+		result = match->indexedCaptures[0].start;
+	}
 
 	return SmileUnboxedInteger64_From(result);
 }
 
 SMILE_EXTERNAL_FUNCTION(LastIndexOf)
 {
-	String x = (String)argv[0].obj;
-	String y = (String)argv[1].obj;
+	String str = (String)argv[0].obj;
+	String pattern;
 
-	Int64 startIndex = argc > 2 ? argv[2].unboxed.i64 : String_Length(x) - 1;
-	Int stringLength = String_Length(x);
+	Int64 startIndex = argc > 2 ? argv[2].unboxed.i64 : String_Length(str) - 1;
+	Int stringLength = String_Length(str);
 	Int result;
 
-	result = startIndex < stringLength ? String_LastIndexOf(x, y, (Int)startIndex) : -1;
+	pattern = DecodePatternWithoutRegex(argv[1], "last-index-of", "pattern");
+
+	result = startIndex < stringLength ? String_LastIndexOf(str, pattern, (Int)startIndex) : -1;
 	if (result < 0) return SmileArg_From(NullObject);
 
 	return SmileUnboxedInteger64_From(result);
@@ -841,14 +980,16 @@ SMILE_EXTERNAL_FUNCTION(LastIndexOf)
 
 SMILE_EXTERNAL_FUNCTION(LastIndexOfI)
 {
-	String x = (String)argv[0].obj;
-	String y = (String)argv[1].obj;
+	String str = (String)argv[0].obj;
+	String pattern;
 
-	Int64 startIndex = argc > 2 ? argv[2].unboxed.i64 : String_Length(x) - 1;
-	Int stringLength = String_Length(x);
+	Int64 startIndex = argc > 2 ? argv[2].unboxed.i64 : String_Length(str) - 1;
+	Int stringLength = String_Length(str);
 	Int result;
 
-	result = startIndex < stringLength ? String_LastIndexOfI(x, y, (Int)startIndex) : -1;
+	pattern = DecodePatternWithoutRegex(argv[1], "last-index-of~", "pattern");
+
+	result = startIndex < stringLength ? String_LastIndexOfI(str, pattern, (Int)startIndex) : -1;
 	if (result < 0) return SmileArg_From(NullObject);
 
 	return SmileUnboxedInteger64_From(result);
@@ -857,8 +998,24 @@ SMILE_EXTERNAL_FUNCTION(LastIndexOfI)
 SMILE_EXTERNAL_FUNCTION(CountOf)
 {
 	String str = (String)argv[0].obj;
-	String pattern = (String)argv[1].obj;
-	Int result = String_CountOf(str, pattern);
+	String pattern = NULL;
+	Regex regexPattern = NULL;
+
+	Int64 startIndex = argc > 2 ? argv[2].unboxed.i64 : 0;
+	Int stringLength = String_Length(str);
+	Int result;
+
+	DecodePattern(argv[1], &pattern, &regexPattern, "count-of", "pattern");
+
+	if (startIndex < 0 || startIndex >= stringLength)
+		return SmileArg_From(NullObject);
+
+	if (pattern != NULL) {
+		result = String_CountOf(str, pattern, (Int)startIndex);
+	}
+	else {
+		result = Regex_Count(regexPattern, str, startIndex, 0);
+	}
 
 	return SmileUnboxedInteger64_From(result);
 }
@@ -866,8 +1023,24 @@ SMILE_EXTERNAL_FUNCTION(CountOf)
 SMILE_EXTERNAL_FUNCTION(CountOfI)
 {
 	String str = (String)argv[0].obj;
-	String pattern = (String)argv[1].obj;
-	Int result = String_CountOfI(str, pattern);
+	String pattern = NULL;
+	Regex regexPattern = NULL;
+
+	Int64 startIndex = argc > 2 ? argv[2].unboxed.i64 : 0;
+	Int stringLength = String_Length(str);
+	Int result;
+
+	DecodePattern(argv[1], &pattern, &regexPattern, "count-of~", "pattern");
+
+	if (startIndex < 0 || startIndex >= stringLength)
+		return SmileArg_From(NullObject);
+
+	if (pattern != NULL) {
+		result = String_CountOf(str, pattern, (Int)startIndex);
+	}
+	else {
+		result = Regex_Count(Regex_AsCaseInsensitive(regexPattern), str, startIndex, 0);
+	}
 
 	return SmileUnboxedInteger64_From(result);
 }
@@ -876,9 +1049,11 @@ SMILE_EXTERNAL_FUNCTION(Replace)
 {
 	String str = (String)argv[0].obj;
 	String pattern, replacement;
+	Regex regexPattern;
 	Int patternKind = SMILE_KIND(argv[1].obj);
 	Int replacementKind = SMILE_KIND(argv[2].obj);
 
+	// Special efficient case: If they're replacing a char with a char, use an optimized routine.
 	if (patternKind == SMILE_KIND_UNBOXED_CHAR && replacementKind == SMILE_KIND_UNBOXED_CHAR) {
 		if (argc > 3) {
 			Int64 limit = argv[3].unboxed.i64;
@@ -891,42 +1066,30 @@ SMILE_EXTERNAL_FUNCTION(Replace)
 		return SmileArg_From((SmileObject)str);
 	}
 
-	if (patternKind == SMILE_KIND_STRING) {
-		pattern = (String)argv[1].obj;
-	}
-	else if (patternKind == SMILE_KIND_UNBOXED_CHAR) {
-		pattern = String_CreateRepeat(argv[1].unboxed.i8, 1);
-	}
-	else if (patternKind == SMILE_KIND_UNBOXED_UNI) {
-		pattern = String_CreateFromUnicode(argv[1].unboxed.uni);
-	}
-	else {
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error,
-			String_FromC("Expected the pattern for 'String.replace' to be a String, a Char, or a Uni."));
-	}
+	DecodePattern(argv[1], &pattern, &regexPattern, "replace", "pattern");
+	replacement = DecodePatternWithoutRegex(argv[2], "replace", "replacement");
 
-	if (replacementKind == SMILE_KIND_STRING) {
-		replacement = (String)argv[2].obj;
+	if (pattern != NULL) {
+		if (argc > 3) {
+			Int64 limit = argv[3].unboxed.i64;
+			if (limit < 0) limit = 0;
+			if (limit > String_Length(str)) limit = String_Length(str);
+			str = String_ReplaceWithLimit(str, pattern, replacement, (Int)limit);
+		}
+		else {
+			str = String_Replace(str, pattern, replacement);
+		}
 	}
-	else if (replacementKind == SMILE_KIND_UNBOXED_CHAR) {
-		replacement = String_CreateRepeat(argv[2].unboxed.i8, 1);
+	else if (regexPattern != NULL) {
+		Int64 limit;
+		if (argc > 3) {
+			limit = argv[3].unboxed.i64;
+			if (limit < 0) limit = 0;
+			if (limit > String_Length(str)) limit = String_Length(str);
+		}
+		else limit = 0;
+		str = Regex_Replace(regexPattern, str, replacement, 0, limit);
 	}
-	else if (replacementKind == SMILE_KIND_UNBOXED_UNI) {
-		replacement = String_CreateFromUnicode(argv[2].unboxed.uni);
-	}
-	else {
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error,
-			String_FromC("Expected the replacement for 'String.replace' to be a String, a Char, or a Uni."));
-	}
-
-	if (argc > 3) {
-		Int64 limit = argv[3].unboxed.i64;
-		if (limit < 0) limit = 0;
-		if (limit > String_Length(str)) limit = String_Length(str);
-		str = String_ReplaceWithLimit(str, pattern, replacement, (Int)limit);
-	}
-	else
-		str = String_Replace(str, pattern, replacement);
 
 	return SmileArg_From((SmileObject)str);
 }
@@ -935,45 +1098,32 @@ SMILE_EXTERNAL_FUNCTION(ReplaceI)
 {
 	String str = (String)argv[0].obj;
 	String pattern, replacement;
-	Int patternKind = SMILE_KIND(argv[1].obj);
-	Int replacementKind = SMILE_KIND(argv[2].obj);
+	Regex regexPattern;
 
-	if (patternKind == SMILE_KIND_STRING) {
-		pattern = (String)argv[1].obj;
-	}
-	else if (patternKind == SMILE_KIND_UNBOXED_CHAR) {
-		pattern = String_CreateRepeat(argv[1].unboxed.i8, 1);
-	}
-	else if (patternKind == SMILE_KIND_UNBOXED_UNI) {
-		pattern = String_CreateFromUnicode(argv[1].unboxed.uni);
-	}
-	else {
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error,
-			String_FromC("Expected the pattern for 'String.replace~' to be a String, a Char, or a Uni."));
-	}
+	DecodePattern(argv[1], &pattern, &regexPattern, "replace~", "pattern");
+	replacement = DecodePatternWithoutRegex(argv[2], "replace~", "replacement");
 
-	if (replacementKind == SMILE_KIND_STRING) {
-		replacement = (String)argv[2].obj;
+	if (pattern != NULL) {
+		if (argc > 3) {
+			Int64 limit = argv[3].unboxed.i64;
+			if (limit < 0) limit = 0;
+			if (limit > String_Length(str)) limit = String_Length(str);
+			str = String_ReplaceWithLimitI(str, pattern, replacement, (Int)limit);
+		}
+		else {
+			str = String_ReplaceI(str, pattern, replacement);
+		}
 	}
-	else if (replacementKind == SMILE_KIND_UNBOXED_CHAR) {
-		replacement = String_CreateRepeat(argv[2].unboxed.i8, 1);
+	else if (regexPattern != NULL) {
+		Int64 limit;
+		if (argc > 3) {
+			limit = argv[3].unboxed.i64;
+			if (limit < 0) limit = 0;
+			if (limit > String_Length(str)) limit = String_Length(str);
+		}
+		else limit = 0;
+		str = Regex_Replace(Regex_AsCaseInsensitive(regexPattern), str, replacement, 0, limit);
 	}
-	else if (replacementKind == SMILE_KIND_UNBOXED_UNI) {
-		replacement = String_CreateFromUnicode(argv[2].unboxed.uni);
-	}
-	else {
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error,
-			String_FromC("Expected the replacement for 'String.replace~' to be a String, a Char, or a Uni."));
-	}
-
-	if (argc > 3) {
-		Int64 limit = argv[3].unboxed.i64;
-		if (limit < 0) limit = 0;
-		if (limit > String_Length(str)) limit = String_Length(str);
-		str = String_ReplaceWithLimitI(str, pattern, replacement, (Int)limit);
-	}
-	else
-		str = String_ReplaceI(str, pattern, replacement);
 
 	return SmileArg_From((SmileObject)str);
 }
@@ -981,25 +1131,16 @@ SMILE_EXTERNAL_FUNCTION(ReplaceI)
 SMILE_EXTERNAL_FUNCTION(Split)
 {
 	String str = (String)argv[0].obj;
-	String pattern;
-	Int patternKind = SMILE_KIND(argv[1].obj);
 	Int limit;
 	Int numPieces;
 	Int i;
 	String *pieces;
 	SmileList head, tail;
+	String pattern = NULL;
+	Regex regexPattern = NULL;
 
 	// Decode the pattern.
-	if (patternKind == SMILE_KIND_STRING)
-		pattern = (String)argv[1].obj;
-	else if (patternKind == SMILE_KIND_CHAR)
-		pattern = String_CreateRepeat(argv[1].unboxed.i8, 1);
-	else if (patternKind == SMILE_KIND_UNI)
-		pattern = String_CreateFromUnicode(argv[1].unboxed.uni);
-	else {
-		Smile_ThrowException(Smile_KnownSymbols.native_method_error,
-			String_FromC("The second argument to 'String.split' must be a String, Char, Uni, or Regex."));
-	}
+	DecodePattern(argv[1], &pattern, &regexPattern, "split", "pattern");
 
 	// If there's a limit, get the limit.
 	if (argc > 2) {
@@ -1013,7 +1154,16 @@ SMILE_EXTERNAL_FUNCTION(Split)
 	}
 
 	// Do the actual splitting.
-	numPieces = String_SplitWithOptions(str, pattern, limit, StringSplitOptions_None, &pieces);
+	if (pattern != NULL) {
+		numPieces = String_SplitWithOptions(str, pattern, limit, StringSplitOptions_None, &pieces);
+	}
+	else if (regexPattern != NULL) {
+		numPieces = Regex_Split(regexPattern, str, &pieces, False, limit);
+	}
+	else {
+		numPieces = 0;
+		pieces = NULL;
+	}
 
 	// Make a list of the resulting pieces.
 	head = tail = NullList;
@@ -1847,17 +1997,25 @@ void String_Setup(SmileUserObject base)
 	SetupFunction("chip", Chip, NULL, "str count", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _stringNumberChecks);
 	SetupFunction("chop", Chop, NULL, "str count", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _stringNumberChecks);
 
-	SetupFunction("index-of", IndexOf, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _indexOfChecks);
-	SetupFunction("index-of~", IndexOfI, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _indexOfChecks);
-	SetupFunction("last-index-of", LastIndexOf, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _indexOfChecks);
-	SetupFunction("last-index-of~", LastIndexOfI, NULL, "x y", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _indexOfChecks);
-	SetupFunction("count-of", CountOf, NULL, "str pattern", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringChecks);
-	SetupFunction("count-of~", CountOfI, NULL, "str pattern", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringChecks);
+	SetupFunction("starts-with?", StartsWith, NULL, "str pattern", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _indexOfChecks);
+	SetupFunction("starts-with~?", StartsWithI, NULL, "str pattern", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _indexOfChecks);
+	SetupFunction("ends-with?", EndsWith, NULL, "str pattern", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _indexOfChecks);
+	SetupFunction("ends-with~?", EndsWithI, NULL, "str pattern", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _indexOfChecks);
+	SetupFunction("contains?", Contains, NULL, "str pattern", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _indexOfChecks);
+	SetupFunction("contains~?", ContainsI, NULL, "str pattern", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _indexOfChecks);
+	SetupFunction("index-of", IndexOf, NULL, "str pattern", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _indexOfChecks);
+	SetupFunction("index-of~", IndexOfI, NULL, "str pattern", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _indexOfChecks);
+	SetupFunction("last-index-of", LastIndexOf, NULL, "str pattern", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _indexOfChecks);
+	SetupFunction("last-index-of~", LastIndexOfI, NULL, "str pattern", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _indexOfChecks);
+	SetupFunction("count-of", CountOf, NULL, "str pattern", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _indexOfChecks);
+	SetupFunction("count-of~", CountOfI, NULL, "str pattern", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _indexOfChecks);
+
+	SetupFunction("split", Split, NULL, "str pattern limit", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _indexOfChecks);
+
 	SetupFunction("replace", Replace, NULL, "str pattern replacement", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _stringReplaceChecks);
 	SetupFunction("replace~", ReplaceI, NULL, "str pattern replacement", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 3, 3, 3, _stringReplaceChecks);
 	SetupSynonym("replace", "subst");
 	SetupSynonym("replace~", "subst~");
-	SetupFunction("split", Split, NULL, "str pattern limit", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _indexOfChecks);
 
 	SetupFunction("trim", Trim, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupFunction("trim-start", TrimStart, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
@@ -1891,13 +2049,6 @@ void String_Setup(SmileUserObject base)
 	SetupFunction("CamelCase-acronyms", CamelCase, (void *)3, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupFunction("hyphenize", Hyphenize, (void *)'-', "string", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hyphenizeChecks);
 	SetupFunction("underscorize", Hyphenize, (void *)'_', "string", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 1, 2, 2, _hyphenizeChecks);
-
-	SetupFunction("starts-with?", StartsWith, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringChecks);
-	SetupFunction("starts-with~?", StartsWithI, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringChecks);
-	SetupFunction("ends-with?", EndsWith, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringChecks);
-	SetupFunction("ends-with~?", EndsWithI, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringChecks);
-	SetupFunction("contains?", Contains, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringChecks);
-	SetupFunction("contains~?", ContainsI, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringChecks);
 
 	SetupFunction("empty?", IsEmpty, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupFunction("whitespace?", IsWhitespace, NULL, "string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);

@@ -64,6 +64,14 @@ static Byte _matchChecks[] = {
 	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER64,
 };
 
+static Byte _replaceChecks[] = {
+	SMILE_KIND_MASK, SMILE_KIND_HANDLE,
+	SMILE_KIND_MASK, SMILE_KIND_STRING,
+	SMILE_KIND_MASK, SMILE_KIND_STRING,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER64,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER64,
+};
+
 //-------------------------------------------------------------------------------------------------
 // Virtual method overrides
 
@@ -297,6 +305,28 @@ SMILE_EXTERNAL_FUNCTION(Split)
 	return SmileArg_From((SmileObject)head);
 }
 
+SMILE_EXTERNAL_FUNCTION(Replace)
+{
+	SmileHandle handle = (SmileHandle)argv[0].obj;
+	String input = (String)argv[1].obj;
+	String replacement = (String)argv[2].obj;
+	Int64 startOffset = argc > 3 ? argv[3].unboxed.i64 : 0;
+	Int64 limit = argc > 4 ? argv[4].unboxed.i64 : 0;
+	Regex regex;
+	String result;
+
+	if (handle->handleKind != Smile_KnownSymbols.Regex_) {
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+			String_FormatString(_handleException, "replace",
+				SymbolTable_GetName(Smile_SymbolTable, handle->handleKind)));
+	}
+
+	regex = (Regex)handle->ptr;
+	result = Regex_Replace(regex, input, replacement, startOffset, limit);
+
+	return SmileArg_From((SmileObject)result);
+}
+
 //-------------------------------------------------------------------------------------------------
 
 void SmileRegex_Setup(SmileUserObject base)
@@ -311,9 +341,11 @@ void SmileRegex_Setup(SmileUserObject base)
 	SetupFunction("==", Eq, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _handleComparisonChecks);
 	SetupFunction("!=", Ne, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _handleComparisonChecks);
 
-	SetupFunction("matches?", Matches, NULL, "regex string", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _matchChecks);
-	SetupFunction("match", Match, NULL, "regex string", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _matchChecks);
+	SetupFunction("matches?", Matches, NULL, "regex string offset", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _matchChecks);
+	SetupFunction("match", Match, NULL, "regex string offset", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _matchChecks);
 
 	SetupFunction("split", Split, &_splitWithoutEmpty, "regex string limit", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _matchChecks);
 	SetupFunction("split-with-empty", Split, &_splitWithEmpty, "regex string limit", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _matchChecks);
+
+	SetupFunction("replace", Replace, NULL, "regex string replacement offset limit", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 3, 5, 5, _replaceChecks);
 }
