@@ -172,7 +172,7 @@ SMILE_EXTERNAL_FUNCTION(ToInt)
 		if (handle->handleKind == Smile_KnownSymbols.RegexMatch_) {
 			RegexMatch regexMatch = (RegexMatch)handle->ptr;
 			return SmileUnboxedInteger64_From(regexMatch->isMatch
-				? regexMatch->numIndexedCaptures + StringIntDict_Count(regexMatch->namedCaptures)
+				? regexMatch->numIndexedCaptures + StringIntDict_Count(&regexMatch->namedCaptures)
 				: 0);
 		}
 	}
@@ -208,7 +208,7 @@ SMILE_EXTERNAL_FUNCTION(Hash)
 		if (handle->handleKind == Smile_KnownSymbols.RegexMatch_) {
 			RegexMatch regexMatch = (RegexMatch)handle->ptr;
 			return SmileUnboxedInteger64_From(Smile_ApplyHashOracle(regexMatch->isMatch
-				? regexMatch->numIndexedCaptures + StringIntDict_Count(regexMatch->namedCaptures)
+				? regexMatch->numIndexedCaptures + StringIntDict_Count(&regexMatch->namedCaptures)
 				: 0));
 		}
 	}
@@ -278,9 +278,9 @@ static RegexMatchRange ParseIndex(SmileArg arg, RegexMatch regexMatch, const cha
 		case SMILE_KIND_STRING:
 			stringKey = (String)arg.obj;
 		stringCommon:
-			if (regexMatch->namedCaptures == NULL)
+			if (StringIntDict_Count(&regexMatch->namedCaptures) == 0)
 				return NULL;
-			index = StringIntDict_GetValue(regexMatch->namedCaptures, stringKey);
+			index = StringIntDict_GetValue(&regexMatch->namedCaptures, stringKey);
 			return regexMatch->indexedCaptures + index;
 
 		default:
@@ -345,7 +345,7 @@ SMILE_EXTERNAL_FUNCTION(CountNames)
 	if (!regexMatch->isMatch)
 		return SmileUnboxedInteger64_From(0);
 
-	return SmileUnboxedInteger64_From(regexMatch->namedCaptures != NULL ? StringIntDict_Count(regexMatch->namedCaptures) : 0);
+	return SmileUnboxedInteger64_From(StringIntDict_Count(&regexMatch->namedCaptures));
 }
 
 SMILE_EXTERNAL_FUNCTION(Names)
@@ -361,9 +361,8 @@ SMILE_EXTERNAL_FUNCTION(Names)
 		return SmileArg_From(NullObject);
 
 	head = tail = NullList;
-	if (regexMatch->namedCaptures != NULL) {
-		keys = StringIntDict_GetKeys(regexMatch->namedCaptures);
-		count = StringIntDict_Count(regexMatch->namedCaptures);
+	if ((count = StringIntDict_Count(&regexMatch->namedCaptures)) > 0) {
+		keys = StringIntDict_GetKeys(&regexMatch->namedCaptures);
 		for (i = 0; i < count; i++) {
 			LIST_APPEND(head, tail, keys[i]);
 		}
@@ -389,12 +388,11 @@ SMILE_EXTERNAL_FUNCTION(NamedMatches)
 
 	head = tail = NullList;
 
-	if (regexMatch->namedCaptures != NULL) {
-		keys = StringIntDict_GetKeys(regexMatch->namedCaptures);
-		count = StringIntDict_Count(regexMatch->namedCaptures);
+	if ((count = StringIntDict_Count(&regexMatch->namedCaptures)) > 0) {
+		keys = StringIntDict_GetKeys(&regexMatch->namedCaptures);
 		for (i = 0; i < count; i++) {
 			key = keys[i];
-			index = StringIntDict_GetValue(regexMatch->namedCaptures, key);
+			index = StringIntDict_GetValue(&regexMatch->namedCaptures, key);
 			range = regexMatch->indexedCaptures + index;
 			value = String_Substring(regexMatch->input, range->start, range->length);
 			tuple = SmileList_Cons((SmileObject)key,
@@ -447,12 +445,11 @@ SMILE_EXTERNAL_FUNCTION(Object)
 
 	obj = SmileUserObject_Create((SmileObject)Smile_KnownBases.Object, 0);
 
-	if (regexMatch->namedCaptures != NULL) {
-		keys = StringIntDict_GetKeys(regexMatch->namedCaptures);
-		count = StringIntDict_Count(regexMatch->namedCaptures);
+	if ((count = StringIntDict_Count(&regexMatch->namedCaptures)) > 0) {
+		keys = StringIntDict_GetKeys(&regexMatch->namedCaptures);
 		for (i = 0; i < count; i++) {
 			key = keys[i];
-			index = StringIntDict_GetValue(regexMatch->namedCaptures, key);
+			index = StringIntDict_GetValue(&regexMatch->namedCaptures, key);
 			range = regexMatch->indexedCaptures + index;
 			value = String_Substring(regexMatch->input, range->start, range->length);
 			SmileUserObject_Set(obj, SymbolTable_GetSymbol(Smile_SymbolTable, key), value);

@@ -20,7 +20,7 @@
 /// <summary>
 /// The implementation of a "managed" array, which is a bit smarter than just a pointer to data.
 /// </summary>
-typedef struct ArrayInt
+typedef struct ArrayStruct
 {
 	void *data;	// The buffer that actually stores each item.
 	UInt16 itemSize;	// The uniform size of each item in the data[] buffer.
@@ -43,7 +43,7 @@ Inline void Array_Init(Array array, UInt16 itemSize, Int max, Bool isAtomic)
 
 Inline Array Array_Create(UInt16 itemSize, Int max, Bool isAtomic)
 {
-	Array array = (Array)GC_MALLOC_STRUCT(struct ArrayInt);
+	Array array = (Array)GC_MALLOC_STRUCT(struct ArrayStruct);
 	if (array == NULL) Smile_Abort_OutOfMemory();
 	Array_Init(array, itemSize, max, isAtomic);
 	return array;

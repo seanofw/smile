@@ -38,13 +38,13 @@ typedef struct RegexMatchRangeStruct {
 /// captures from the last match.
 /// </summary>
 struct RegexMatchStruct {
-	Bool isMatch;						// Matched or not
-	String input;						// The matched input string
-	Int numIndexedCaptures;				// Number of captures in the indexedCaptures array
-	Int maxIndexedCaptures;				// Maximum size of the indexedCaptures array
-	RegexMatchRange indexedCaptures;	// 0 is the whole match; 1..n are (capture groups)
-	StringIntDict namedCaptures;		// Named captures using (?<name>...) syntax; 'name' --> indexedCapture
-	String errorMessage;				// Any error message resulting from a failed match
+	Bool isMatch;								// Matched or not
+	String input;								// The matched input string
+	String errorMessage;						// Any error message resulting from a failed match
+	Int numIndexedCaptures;						// Number of captures in the indexedCaptures array
+	Int maxIndexedCaptures;						// Maximum size of the indexedCaptures array
+	struct StringIntDictStruct namedCaptures;	// Named captures using (?<name>...) syntax; 'name' --> indexedCapture
+	struct RegexMatchRangeStruct indexedCaptures[1];	// 0 is the whole match; 1..n are (capture groups)
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -54,7 +54,7 @@ SMILE_API_FUNC Regex Regex_Create(String pattern, String flags, String *errorMes
 SMILE_API_FUNC Bool Regex_Test(Regex regex, String input, Int startOffset);
 SMILE_API_FUNC RegexMatch Regex_Match(Regex regex, String input, Int startOffset);
 SMILE_API_FUNC Int Regex_Replace(Regex regex, String input, String replacement, Int startOffset, Int limit);
-SMILE_API_FUNC Int Regex_Split(Regex regex, String input, String **pieces);
+SMILE_API_FUNC Int Regex_Split(Regex regex, String input, String **pieces, Bool includeEmpty, Int limit);
 SMILE_API_FUNC String Regex_ToString(Regex regex);
 
 //-------------------------------------------------------------------------------------------------

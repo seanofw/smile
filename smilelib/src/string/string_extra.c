@@ -35,7 +35,7 @@ STATIC_STRING(CommaSpace, ", ");
 /// <returns>The number of strings resulting from the split (i.e., the number of strings returned in the 'pieces' array).</returns>
 Int String_SplitWithOptions(const String str, const String pattern, Int limit, Int options, String **pieces)
 {
-	struct ArrayInt a;
+	struct ArrayStruct a;
 	Array array = &a;
 	Int startIndex, splitIndex, len;
 

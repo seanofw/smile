@@ -266,6 +266,37 @@ SMILE_EXTERNAL_FUNCTION(Match)
 	return SmileArg_From((SmileObject)matchHandle);
 }
 
+static Bool _splitWithEmpty = True;
+static Bool _splitWithoutEmpty = False;
+
+SMILE_EXTERNAL_FUNCTION(Split)
+{
+	SmileHandle handle = (SmileHandle)argv[0].obj;
+	String input = (String)argv[1].obj;
+	Int64 limit = argc > 2 ? argv[2].unboxed.i64 : 0;
+	Regex regex;
+	String *pieces;
+	Int numPieces, i;
+	SmileList head, tail;
+	Bool withEmpty = *(Bool *)param;
+
+	if (handle->handleKind != Smile_KnownSymbols.Regex_) {
+		Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+			String_FormatString(_handleException, "split",
+				SymbolTable_GetName(Smile_SymbolTable, handle->handleKind)));
+	}
+
+	regex = (Regex)handle->ptr;
+	numPieces = Regex_Split(regex, input, &pieces, withEmpty, limit);
+
+	head = tail = NullList;
+	for (i = 0; i < numPieces; i++) {
+		LIST_APPEND(head, tail, pieces[i]);
+	}
+
+	return SmileArg_From((SmileObject)head);
+}
+
 //-------------------------------------------------------------------------------------------------
 
 void SmileRegex_Setup(SmileUserObject base)
@@ -282,4 +313,7 @@ void SmileRegex_Setup(SmileUserObject base)
 
 	SetupFunction("matches?", Matches, NULL, "regex string", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _matchChecks);
 	SetupFunction("match", Match, NULL, "regex string", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _matchChecks);
+
+	SetupFunction("split", Split, &_splitWithoutEmpty, "regex string limit", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _matchChecks);
+	SetupFunction("split-with-empty", Split, &_splitWithEmpty, "regex string limit", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _matchChecks);
 }
