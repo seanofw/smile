@@ -30,19 +30,24 @@ SMILE_IGNORE_UNUSED_VARIABLES
 
 SMILE_EASY_OBJECT_VTABLE(SmileHandle);
 
+static struct SmileHandleMethodsStruct SmileHandle_DefaultMethods = { 0 };
+
+//-------------------------------------------------------------------------------------------------
+// Construction/destruction
+
 static void SmileHandle_Finalize(SmileHandle handle, void *param)
 {
-	if (handle->end != NULL) {
-		handle->end(handle, False);
+	if (handle->methods->end != NULL) {
+		handle->methods->end(handle, False);
 	}
 
 	handle->ptr = NULL;
-	handle->end = NULL;
+	handle->methods = NULL;
 	handle->base = (SmileObject)Smile_KnownBases.Object;
 	handle->kind = 0;
 }
 
-SmileHandle SmileHandle_Create(SmileObject base, SmileHandleEnd end, Symbol handleKind, void *ptr)
+SmileHandle SmileHandle_Create(SmileObject base, SmileHandleMethods methods, Symbol handleKind, void *ptr)
 {
 	SmileHandle smileHandle = GC_MALLOC_STRUCT(struct SmileHandleInt);
 	if (smileHandle == NULL) Smile_Abort_OutOfMemory();
@@ -50,7 +55,7 @@ SmileHandle SmileHandle_Create(SmileObject base, SmileHandleEnd end, Symbol hand
 	smileHandle->base = base;
 	smileHandle->kind = SMILE_KIND_HANDLE;
 	smileHandle->vtable = SmileHandle_VTable;
-	smileHandle->end = end;
+	smileHandle->methods = methods != NULL ? methods : &SmileHandle_DefaultMethods;
 	smileHandle->handleKind = handleKind;
 	smileHandle->ptr = ptr;
 
@@ -59,15 +64,67 @@ SmileHandle SmileHandle_Create(SmileObject base, SmileHandleEnd end, Symbol hand
 	return smileHandle;
 }
 
+//-------------------------------------------------------------------------------------------------
+// Predefined virtual methods
+
 SMILE_EASY_OBJECT_READONLY_SECURITY(SmileHandle)
 SMILE_EASY_OBJECT_NO_CALL(SmileHandle, "A Handle object")
 SMILE_EASY_OBJECT_NO_SOURCE(SmileHandle)
-SMILE_EASY_OBJECT_NO_PROPERTIES(SmileHandle)
 SMILE_EASY_OBJECT_NO_UNBOX(SmileHandle)
 
 SMILE_EASY_OBJECT_HASH(SmileHandle, Smile_ApplyHashOracle((PtrInt)obj->ptr))
-SMILE_EASY_OBJECT_TOBOOL(SmileHandle, True)
-SMILE_EASY_OBJECT_TOSTRING(SmileHandle, SymbolTable_GetName(Smile_SymbolTable, obj->handleKind))
+
+//-------------------------------------------------------------------------------------------------
+// Proxy virtual methods, with default implementations
+
+static Bool SmileHandle_ToBool(SmileHandle obj, SmileUnboxedData unboxedData)
+{
+	return obj->methods->toBool != NULL
+		? obj->methods->toBool(obj, unboxedData)
+		: True;
+}
+
+static String SmileHandle_ToString(SmileHandle obj, SmileUnboxedData unboxedData)
+{
+	return obj->methods->toString != NULL
+		? obj->methods->toString(obj, unboxedData)
+		: SymbolTable_GetName(Smile_SymbolTable, obj->handleKind);
+}
+
+static SmileObject SmileHandle_GetProperty(SmileHandle obj, Symbol symbol)
+{
+	return obj->methods->getProperty != NULL
+		? obj->methods->getProperty(obj, symbol)
+		: obj->base->vtable->getProperty(obj->base, symbol);
+}
+
+static Bool SmileHandle_HasProperty(SmileHandle obj, Symbol symbol)
+{
+	return obj->methods->hasProperty != NULL
+		? obj->methods->hasProperty(obj, symbol)
+		: False;
+}
+
+static void SmileHandle_SetProperty(SmileHandle obj, Symbol symbol, SmileObject value)
+{
+	if (obj->methods->setProperty != NULL)
+		obj->methods->setProperty(obj, symbol, value);
+	else {
+		Smile_ThrowException(Smile_KnownSymbols.object_security_error,
+			String_Format("Cannot set property \"%S\" on a Handle, which is read-only.",
+				SymbolTable_GetName(Smile_SymbolTable, symbol)));
+	}
+}
+
+static SmileList SmileHandle_GetPropertyNames(SmileHandle obj)
+{
+	return obj->methods->getPropertyNames != NULL
+		? obj->methods->getPropertyNames(obj)
+		: NullList;
+}
+
+//-------------------------------------------------------------------------------------------------
+// Actually-implemented-here virtual methods
 
 static Bool SmileHandle_CompareEqual(SmileHandle a, SmileUnboxedData aData, SmileObject b, SmileUnboxedData bData)
 {

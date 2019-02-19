@@ -578,6 +578,7 @@ STATIC_STRING(false_, "false");
 STATIC_STRING(filename, "filename");
 STATIC_STRING(filename_mode, "filename-mode");
 STATIC_STRING(first, "first");
+STATIC_STRING(flags, "flags");
 STATIC_STRING(float32_, "float32");
 STATIC_STRING(float32_range, "float64-range");
 STATIC_STRING(float64_, "float64");
@@ -892,6 +893,7 @@ static void KnownSymbolsInt_PreloadGeneralSymbols(SymbolTable symbolTable, Known
 	knownSymbols->filename = SymbolTableInt_AddFast(symbolTable, filename);
 	knownSymbols->filename_mode = SymbolTableInt_AddFast(symbolTable, filename_mode);
 	knownSymbols->first = SymbolTableInt_AddFast(symbolTable, first);
+	knownSymbols->flags = SymbolTableInt_AddFast(symbolTable, flags);
 	knownSymbols->floor = SymbolTableInt_AddFast(symbolTable, floor_);
 	knownSymbols->float32_ = SymbolTableInt_AddFast(symbolTable, float32_);
 	knownSymbols->float32_range = SymbolTableInt_AddFast(symbolTable, float32_range);

@@ -422,8 +422,10 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 		return;
 
 	case SMILE_KIND_HANDLE:
+		StringBuilder_AppendByte(stringBuilder, '<');
 		StringBuilder_AppendString(stringBuilder,
 			SymbolTable_GetName(Smile_SymbolTable, ((SmileHandle)obj)->handleKind));
+		StringBuilder_AppendByte(stringBuilder, '>');
 		return;
 
 	case SMILE_KIND_TILL_CONTINUATION:

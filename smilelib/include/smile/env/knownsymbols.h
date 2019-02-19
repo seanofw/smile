@@ -206,7 +206,7 @@ typedef struct KnownSymbolsStruct {
 	Symbol count_left_ones, count_left_zeros, count_of, count_of_i, count_ones, count_right_ones, count_right_zeros, count_zeros, crc32, create, create_child_closure;
 	Symbol d, decompose, default_, diacritic_q, digit_q, div, divide_by_zero, does_not_understand;
 	Symbol each, end, ends_with, ends_with_i, escape, eval, even_q, exit, exp, extend_object, extend_where_new;
-	Symbol facade, false_, filename, filename_mode, first;
+	Symbol facade, false_, filename, filename_mode, first, flags;
 	Symbol float32_, float32_range, float64_, float64_range, float128_;
 	Symbol floor, fn, fold, from_seed;
 	Symbol get_object_security, get_property;

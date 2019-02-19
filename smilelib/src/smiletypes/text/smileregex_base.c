@@ -22,10 +22,14 @@
 #include <smile/smiletypes/smileuserobject.h>
 #include <smile/smiletypes/smilehandle.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
+#include <smile/smiletypes/smilelist.h>
+#include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/regex.h>
 #include <smile/internal/staticstring.h>
 
 SMILE_IGNORE_UNUSED_VARIABLES
+
+extern struct SmileHandleMethodsStruct RegexMatchMethods;
 
 static Byte _handleChecks[] = {
 	SMILE_KIND_MASK, SMILE_KIND_HANDLE,
@@ -57,6 +61,54 @@ static Byte _stringChecks[] = {
 static Byte _matchChecks[] = {
 	SMILE_KIND_MASK, SMILE_KIND_HANDLE,
 	SMILE_KIND_MASK, SMILE_KIND_STRING,
+	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER64,
+};
+
+//-------------------------------------------------------------------------------------------------
+// Virtual method overrides
+
+static Bool Regex_ToBool(SmileHandle handle, SmileUnboxedData unboxedData)
+{
+	return ((Regex)handle->ptr)->cacheId > 0;
+}
+
+static String Regex_ToStringWrapper(SmileHandle handle, SmileUnboxedData unboxedData)
+{
+	return Regex_ToString((Regex)handle->ptr);
+}
+
+static SmileObject Regex_GetProperty(SmileHandle handle, Symbol propertyName)
+{
+	Regex regex = (Regex)handle->ptr;
+
+	if (propertyName == Smile_KnownSymbols.pattern)
+		return (SmileObject)regex->pattern;
+	else if (propertyName == Smile_KnownSymbols.flags)
+		return (SmileObject)regex->flags;
+	else
+		return handle->base->vtable->getProperty(handle->base, propertyName);
+}
+
+static Bool Regex_HasProperty(SmileHandle handle, Symbol propertyName)
+{
+	return (propertyName == Smile_KnownSymbols.pattern
+		|| propertyName == Smile_KnownSymbols.flags);
+}
+
+static SmileList Regex_GetPropertyNames(SmileHandle handle)
+{
+	return SmileList_CreateTwo(
+		SmileSymbol_Create(Smile_KnownSymbols.pattern),
+		SmileSymbol_Create(Smile_KnownSymbols.flags)
+	);
+}
+
+static struct SmileHandleMethodsStruct RegexMethods = {
+	.toBool = Regex_ToBool,
+	.toString = Regex_ToStringWrapper,
+	.getProperty = Regex_GetProperty,
+	.hasProperty = Regex_HasProperty,
+	.getPropertyNames = Regex_GetPropertyNames,
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -86,7 +138,7 @@ SMILE_EXTERNAL_FUNCTION(Of)
 	options = argi < argc ? (String)argv[argi++].obj : String_Empty;
 
 	regex = Regex_Create(pattern, options, NULL);
-	handle = SmileHandle_Create((SmileObject)Smile_KnownBases.Regex, NULL, Smile_KnownSymbols.Regex_, regex);
+	handle = SmileHandle_Create((SmileObject)Smile_KnownBases.Regex, &RegexMethods, Smile_KnownSymbols.Regex_, regex);
 	return SmileArg_From((SmileObject)handle);
 }
 
@@ -176,6 +228,7 @@ SMILE_EXTERNAL_FUNCTION(Matches)
 {
 	SmileHandle handle = (SmileHandle)argv[0].obj;
 	String input = (String)argv[1].obj;
+	Int64 offset = argc > 2 ? argv[2].unboxed.i64 : 0;
 	Regex regex;
 	Bool result;
 
@@ -186,7 +239,7 @@ SMILE_EXTERNAL_FUNCTION(Matches)
 	}
 
 	regex = (Regex)handle->ptr;
-	result = Regex_Test(regex, input);
+	result = Regex_Test(regex, input, offset);
 
 	return SmileUnboxedBool_From(result);
 }
@@ -195,6 +248,7 @@ SMILE_EXTERNAL_FUNCTION(Match)
 {
 	SmileHandle handle = (SmileHandle)argv[0].obj;
 	String input = (String)argv[1].obj;
+	Int64 offset = argc > 2 ? argv[2].unboxed.i64 : 0;
 	Regex regex;
 	RegexMatch result;
 	SmileHandle matchHandle;
@@ -206,9 +260,9 @@ SMILE_EXTERNAL_FUNCTION(Match)
 	}
 
 	regex = (Regex)handle->ptr;
-	result = Regex_Match(regex, input);
+	result = Regex_Match(regex, input, offset);
 
-	matchHandle = SmileHandle_Create((SmileObject)Smile_KnownBases.RegexMatch, NULL, Smile_KnownSymbols.RegexMatch_, result);
+	matchHandle = SmileHandle_Create((SmileObject)Smile_KnownBases.RegexMatch, &RegexMatchMethods, Smile_KnownSymbols.RegexMatch_, result);
 	return SmileArg_From((SmileObject)matchHandle);
 }
 
@@ -226,6 +280,6 @@ void SmileRegex_Setup(SmileUserObject base)
 	SetupFunction("==", Eq, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _handleComparisonChecks);
 	SetupFunction("!=", Ne, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _handleComparisonChecks);
 
-	SetupFunction("matches?", Matches, NULL, "regex string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _matchChecks);
-	SetupFunction("match", Match, NULL, "regex string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _matchChecks);
+	SetupFunction("matches?", Matches, NULL, "regex string", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _matchChecks);
+	SetupFunction("match", Match, NULL, "regex string", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 3, 3, _matchChecks);
 }

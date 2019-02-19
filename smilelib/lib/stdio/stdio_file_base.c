@@ -241,7 +241,7 @@ SMILE_EXTERNAL_FUNCTION(Close)
 	FileInfo fileInfo = (FileInfo)param;
 	Stdio_File file = GetFileFromHandle(handle, (FileInfo)param, "File.close");
 
-	if (!handle->end(handle, True)) {
+	if (!handle->methods->end(handle, True)) {
 		file->lastErrorCode = 0;
 		file->lastErrorMessage = String_FromC("Cannot close a special file handle.");
 		return SmileUnboxedSymbol_From(fileInfo->error);

@@ -50,7 +50,7 @@ static Bool Regex_Compile(String pattern, String flags, RegexCacheNode node)
 	Byte *actualFlagsDest;
 	String actualFlagsString;
 
-	OnigOptionType options = ONIG_OPTION_NONE | ONIG_OPTION_SINGLELINE;
+	OnigOptionType options = ONIG_OPTION_NONE | ONIG_OPTION_CAPTURE_GROUP;
 	OnigEncoding encoding;
 	OnigErrorInfo errorInfo;
 	int onigResult;
@@ -64,18 +64,28 @@ static Bool Regex_Compile(String pattern, String flags, RegexCacheNode node)
 
 	for (flagsPtr = flagsText; flagsPtr < flagsEnd; flagsPtr++) {
 		switch (*flagsPtr) {
-			case 'i':
-				options |= ONIG_OPTION_IGNORECASE;
-				break;
-			case 'm':
-				options |= ONIG_OPTION_MULTILINE | ONIG_OPTION_NEGATE_SINGLELINE;
-				break;
 			case 'a':
 				options |= ONIG_OPTION_WORD_IS_ASCII
 					| ONIG_OPTION_DIGIT_IS_ASCII
 					| ONIG_OPTION_POSIX_IS_ASCII
 					| ONIG_OPTION_SPACE_IS_ASCII;
 				encoding = ONIG_ENCODING_ASCII;
+				break;
+			case 'i':
+				options |= ONIG_OPTION_IGNORECASE;
+				break;
+			case 'm':
+				options |= ONIG_OPTION_MULTILINE;
+				break;
+			case 's':
+				options |= ONIG_OPTION_SINGLELINE;
+				break;
+			case 'n':
+				options &= ~ONIG_OPTION_CAPTURE_GROUP;
+				options |= ONIG_OPTION_DONT_CAPTURE_GROUP;
+				break;
+			case 'x':
+				options |= ONIG_OPTION_EXTEND;
 				break;
 			default:
 				node->pattern = pattern;
@@ -95,6 +105,12 @@ static Bool Regex_Compile(String pattern, String flags, RegexCacheNode node)
 		*actualFlagsDest++ = 'i';
 	if (options & ONIG_OPTION_MULTILINE)
 		*actualFlagsDest++ = 'm';
+	if (options & ONIG_OPTION_DONT_CAPTURE_GROUP)
+		*actualFlagsDest++ = 'n';
+	if (options & ONIG_OPTION_SINGLELINE)
+		*actualFlagsDest++ = 's';
+	if (options & ONIG_OPTION_EXTEND)
+		*actualFlagsDest++ = 'x';
 	actualFlagsString = String_Create(actualFlags, actualFlagsDest - actualFlags);
 
 	onigResult = onig_new(&result, (const OnigUChar *)patternText, (const OnigUChar *)patternEnd,
@@ -287,15 +303,19 @@ Regex Regex_Create(String pattern, String flags, String *errorMessage)
 	return node->regex;
 }
 
-Bool Regex_Test(Regex regex, String input)
+Bool Regex_Test(Regex regex, String input, Int startOffset)
 {
 	const Byte *start = String_GetBytes(input);
-	const Byte *end = start + String_Length(input);
+	Int length = String_Length(input);
+	const Byte *end = start + length;
 
 	RegexCacheNode node = RegexCache_FindOrAdd(regex->cacheId, regex->pattern, regex->flags);
 
+	if (startOffset < 0 || startOffset >= length)
+		return False;
+
 	int matchLength = onig_match(node->onigRegex, (const OnigUChar *)start, (const OnigUChar *)end,
-		(const OnigUChar *)start, NULL, ONIG_OPTION_NONE);
+		(const OnigUChar *)(start + startOffset), NULL, ONIG_OPTION_NONE);
 	return matchLength >= 0;
 }
 
@@ -322,7 +342,7 @@ static int Regex_NameCallback(const UChar *name, const UChar *nameEnd, int nGrou
 	return 0;  // 0: Continue iterating through names
 }
 
-RegexMatch Regex_Match(Regex regex, String input)
+RegexMatch Regex_Match(Regex regex, String input, Int startOffset)
 {
 	const Byte *start;
 	const Byte *end;
@@ -330,22 +350,35 @@ RegexMatch Regex_Match(Regex regex, String input)
 	RegexCacheNode node;
 	int matchOffset;
 	RegexMatch match;
+	Int length;
 
 	start = String_GetBytes(input);
-	end = start + String_Length(input);
+	length = String_Length(input);
+	end = start + length;
 
 	node = RegexCache_FindOrAdd(regex->cacheId, regex->pattern, regex->flags);
+
+	match = GC_MALLOC_STRUCT(struct RegexMatchStruct);
+	if (match == NULL)
+		Smile_Abort_OutOfMemory();
+
+	if (startOffset < 0 || startOffset >= length) {
+		match->isMatch = False;
+		match->input = input;
+		match->indexedCaptures = NULL;
+		match->numIndexedCaptures = 0;
+		match->maxIndexedCaptures = 0;
+		match->namedCaptures = NULL;
+		match->errorMessage = String_Format("Start offset at %ld for 'Regex.match' is outside string.", (Int64)startOffset);
+		return match;
+	}
 
 	region = onig_region_new();
 	if (region == NULL)
 		Smile_Abort_OutOfMemory();
 
 	matchOffset = onig_search(node->onigRegex, (const OnigUChar *)start, (const OnigUChar *)end,
-		(const OnigUChar *)start, (const OnigUChar *)end, region, ONIG_OPTION_NONE);
-
-	match = GC_MALLOC_STRUCT(struct RegexMatchStruct);
-	if (match == NULL)
-		Smile_Abort_OutOfMemory();
+		(const OnigUChar *)(start + startOffset), (const OnigUChar *)end, region, ONIG_OPTION_NONE);
 
 	if (matchOffset < 0) {
 		match->isMatch = False;
@@ -396,11 +429,12 @@ RegexMatch Regex_Match(Regex regex, String input)
 	return match;
 }
 
-Int Regex_Replace(Regex regex, String input, String replacement, Int limit)
+Int Regex_Replace(Regex regex, String input, String replacement, Int startOffset, Int limit)
 {
 	UNUSED(regex);
 	UNUSED(input);
 	UNUSED(replacement);
+	UNUSED(startOffset);
 	UNUSED(limit);
 
 	return 0;

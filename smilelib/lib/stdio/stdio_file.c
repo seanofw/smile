@@ -28,6 +28,15 @@ STATIC_STRING(_stdinName, "<stdin>");
 STATIC_STRING(_stdoutName, "<stdout>");
 STATIC_STRING(_stderrName, "<stderr>");
 
+static Bool Stdio_File_ToBool(SmileHandle handle, SmileUnboxedData unboxedData)
+{
+	Stdio_File file = (Stdio_File)handle->ptr;
+
+	UNUSED(unboxedData);
+
+	return file->isOpen;
+}
+
 #if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
 
 	static Bool Stdio_File_Win32End(SmileHandle handle, Bool userInvoked)
@@ -45,6 +54,11 @@ STATIC_STRING(_stderrName, "<stderr>");
 
 		return True;
 	}
+
+	static struct SmileHandleMethodsStruct Stdio_File_Methods = {
+		.end = Stdio_File_Win32End,
+		.toBool = Stdio_File_ToBool,
+	};
 
 	/// <summary>
 	/// Construct a real C FILE* for the given Win32 HANDLE and the mode in which it was opened.
@@ -78,7 +92,7 @@ STATIC_STRING(_stderrName, "<stderr>");
 			Smile_Abort_OutOfMemory();
 
 		// Make a SmileHandle that wraps the Stdio_File.
-		handle = SmileHandle_Create(base, Stdio_File_Win32End, SymbolTable_GetSymbolC(Smile_SymbolTable, "File"), file);
+		handle = SmileHandle_Create(base, &Stdio_File_Methods, SymbolTable_GetSymbolC(Smile_SymbolTable, "File"), file);
 
 		// Fill in the Stdio_File with real data.
 		file->path = name;
@@ -201,6 +215,11 @@ STATIC_STRING(_stderrName, "<stderr>");
 		return True;
 	}
 
+	static struct SmileHandleMethodsStruct Stdio_File_Methods = {
+		.end = Stdio_File_UnixEnd,
+		.toBool = Stdio_File_ToBool,
+	};
+
 	SMILE_INTERNAL_FUNC SmileHandle Stdio_File_CreateFromUnixFD(SmileObject base, String name, Int32 fd, UInt32 mode)
 	{
 		SmileHandle handle;
@@ -211,7 +230,7 @@ STATIC_STRING(_stderrName, "<stderr>");
 		if (file == NULL)
 			Smile_Abort_OutOfMemory();
 
-		handle = SmileHandle_Create(base, Stdio_File_UnixEnd, SymbolTable_GetSymbolC(Smile_SymbolTable, "File"), file);
+		handle = SmileHandle_Create(base, &Stdio_File_Methods, SymbolTable_GetSymbolC(Smile_SymbolTable, "File"), file);
 
 		// Fill in the Stdio_File with real data.
 		file->path = name;

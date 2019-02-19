@@ -51,9 +51,9 @@ struct RegexMatchStruct {
 //  Object declarations
 
 SMILE_API_FUNC Regex Regex_Create(String pattern, String flags, String *errorMessage);
-SMILE_API_FUNC Bool Regex_Test(Regex regex, String input);
-SMILE_API_FUNC RegexMatch Regex_Match(Regex regex, String input);
-SMILE_API_FUNC Int Regex_Replace(Regex regex, String input, String replacement, Int limit);
+SMILE_API_FUNC Bool Regex_Test(Regex regex, String input, Int startOffset);
+SMILE_API_FUNC RegexMatch Regex_Match(Regex regex, String input, Int startOffset);
+SMILE_API_FUNC Int Regex_Replace(Regex regex, String input, String replacement, Int startOffset, Int limit);
 SMILE_API_FUNC Int Regex_Split(Regex regex, String input, String **pieces);
 SMILE_API_FUNC String Regex_ToString(Regex regex);
 
