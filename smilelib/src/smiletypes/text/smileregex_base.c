@@ -25,9 +25,12 @@
 #include <smile/smiletypes/smilelist.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/regex.h>
+#include <smile/eval/eval.h>
 #include <smile/internal/staticstring.h>
 
 SMILE_IGNORE_UNUSED_VARIABLES
+
+SmileArg RegexReplaceStateMachine_Start(Regex regex, String input, SmileFunction function, Int startOffset, Int limit, Bool demoteMatchToString);
 
 extern struct SmileHandleMethodsStruct RegexMatchMethods;
 
@@ -67,7 +70,7 @@ static Byte _matchChecks[] = {
 static Byte _replaceChecks[] = {
 	SMILE_KIND_MASK, SMILE_KIND_HANDLE,
 	SMILE_KIND_MASK, SMILE_KIND_STRING,
-	SMILE_KIND_MASK, SMILE_KIND_STRING,
+	0, 0,
 	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER64,
 	SMILE_KIND_MASK, SMILE_KIND_UNBOXED_INTEGER64,
 };
@@ -309,7 +312,7 @@ SMILE_EXTERNAL_FUNCTION(Replace)
 {
 	SmileHandle handle = (SmileHandle)argv[0].obj;
 	String input = (String)argv[1].obj;
-	String replacement = (String)argv[2].obj;
+	String replacement;
 	Int64 startOffset = argc > 3 ? argv[3].unboxed.i64 : 0;
 	Int64 limit = argc > 4 ? argv[4].unboxed.i64 : 0;
 	Regex regex;
@@ -322,9 +325,95 @@ SMILE_EXTERNAL_FUNCTION(Replace)
 	}
 
 	regex = (Regex)handle->ptr;
-	result = Regex_Replace(regex, input, replacement, startOffset, limit);
 
-	return SmileArg_From((SmileObject)result);
+	switch (SMILE_KIND(argv[2].obj)) {
+		case SMILE_KIND_STRING:
+			replacement = (String)argv[2].obj;
+			goto stringCase;
+
+		case SMILE_KIND_CHAR:
+			replacement = String_CreateRepeat(argv[2].unboxed.ch, 1);
+			goto stringCase;
+
+		case SMILE_KIND_UNI:
+			replacement = String_CreateFromUnicode(argv[2].unboxed.uni);
+			goto stringCase;
+
+		stringCase:
+			result = Regex_Replace(regex, input, replacement, startOffset, limit);
+			return SmileArg_From((SmileObject)result);
+
+		case SMILE_KIND_FUNCTION:
+			return RegexReplaceStateMachine_Start(regex, input, (SmileFunction)argv[2].obj, startOffset, limit, False);
+
+		default:
+			Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+				String_Format("Third argument to 'Regex.replace' must be a replacement String, Char, Uni, or Function."));
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+
+typedef struct ReplaceInfoStruct {
+	RegexReplaceState state;
+	SmileFunction function;
+	Bool demoteMatchToString;
+} *ReplaceInfo;
+
+static Int RegexReplaceStateMachine_StartLoop(ClosureStateMachine closure)
+{
+	ReplaceInfo replaceInfo = (ReplaceInfo)closure->state;
+
+	if (Regex_ReplaceLoopTop(replaceInfo->state)) {
+		Closure_PushBoxed(closure, replaceInfo->function);
+		if (replaceInfo->demoteMatchToString) {
+			RegexMatch match = replaceInfo->state->match;
+			String capture = String_Substring(match->input, match->indexedCaptures[0].start, match->indexedCaptures[0].length);
+			Closure_PushBoxed(closure, capture);
+		}
+		else {
+			SmileHandle matchHandle = SmileHandle_Create((SmileObject)Smile_KnownBases.RegexMatch, &RegexMatchMethods,
+				Smile_KnownSymbols.RegexMatch_, replaceInfo->state->match);
+			Closure_PushBoxed(closure, matchHandle);
+		}
+		return 1;
+	}
+	else {
+		String result = Regex_EndReplace(replaceInfo->state);
+		Closure_PushBoxed(closure, result);
+		return -1;
+	}
+}
+
+static Int RegexReplaceStateMachine_Body(ClosureStateMachine closure)
+{
+	ReplaceInfo replaceInfo = (ReplaceInfo)closure->state;
+
+	SmileArg returnValue = Closure_Pop(closure);
+
+	String replacement = (SMILE_KIND(returnValue.obj) == SMILE_KIND_STRING
+		? (String)returnValue.obj
+		: SMILE_VCALL1(returnValue.obj, toString, returnValue.unboxed));
+
+	Regex_ReplaceLoopBottom(replaceInfo->state, replacement);
+
+	return RegexReplaceStateMachine_StartLoop(closure);
+}
+
+SmileArg RegexReplaceStateMachine_Start(Regex regex, String input, SmileFunction function, Int startOffset, Int limit, Bool demoteMatchToString)
+{
+	// We use Eval's state-machine construct to avoid recursing deeper on the C stack.
+	ReplaceInfo replaceInfo;
+	ClosureStateMachine closure;
+
+	closure = Eval_BeginStateMachine(RegexReplaceStateMachine_StartLoop, RegexReplaceStateMachine_Body);
+
+	replaceInfo = (ReplaceInfo)closure->state;
+	replaceInfo->function = function;
+	replaceInfo->state = Regex_BeginReplace(regex, input, startOffset, limit);
+	replaceInfo->demoteMatchToString = demoteMatchToString;
+
+	return (SmileArg) { NULL };	// We have to return something, but this value will be ignored.
 }
 
 //-------------------------------------------------------------------------------------------------

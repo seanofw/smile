@@ -16,17 +16,18 @@
 
 #define REGEX_CACHE_SIZE 256
 
-typedef struct RegexCacheNodeStruct {
-	OnigRegex onigRegex;
+struct RegexCacheNodeStruct {
 	Int32 id;
 	String pattern;
 	String flags;
 	String key;
 	Bool isValid;
 	String errorMessage;
+	OnigRegex onigRegex;
 	Regex regex;
+
 	struct RegexCacheNodeStruct *next, *prev;
-} *RegexCacheNode;
+};
 
 //-------------------------------------------------------------------------------------------------
 //  Static data for the regex cache.
@@ -917,8 +918,6 @@ String Regex_Replace(Regex regex, String input, String replacement, Int startOff
 	node = RegexCache_FindOrAdd(regex->cacheId, regex->pattern, regex->flags);
 
 	while (startOffset < length && limit--) {
-		match = Regex_Match(regex, input, startOffset);
-
 		region = onig_region_new();
 		if (region == NULL)
 			Smile_Abort_OutOfMemory();
@@ -951,6 +950,89 @@ String Regex_Replace(Regex regex, String input, String replacement, Int startOff
 	}
 
 	return StringBuilder_ToString(stringBuilder);
+}
+
+RegexReplaceState Regex_BeginReplace(Regex regex, String input, Int startOffset, Int limit)
+{
+	RegexReplaceState state = GC_MALLOC_STRUCT(struct RegexReplaceStateStruct);
+
+	state->regex = regex;
+	state->input = input;
+	state->startOffset = startOffset;
+	state->limit = limit;
+
+	state->start = String_GetBytes(state->input);
+	state->length = String_Length(state->input);
+	state->end = state->start + state->length;
+
+	state->stringBuilder = StringBuilder_Create();
+
+	if (state->startOffset < 0 || state->startOffset >= state->length) {
+		state->startOffset = 0;
+		state->limit = 0;
+		state->node = NULL;
+		return state;
+	}
+
+	if (state->startOffset > 0) {
+		StringBuilder_AppendSubstring(state->stringBuilder, state->input, 0, state->startOffset);
+	}
+
+	if (state->limit <= 0) state->limit = -1;
+
+	// Go make the real Oniguruma regex instance, if we need to, or find a suitable one
+	// that exists in the cache.
+	state->node = RegexCache_FindOrAdd(state->regex->cacheId, state->regex->pattern, state->regex->flags);
+
+	return state;
+}
+
+Bool Regex_ReplaceLoopTop(RegexReplaceState state)
+{
+	OnigRegion *region;
+
+	if (state->startOffset >= state->length || !(state->limit--))
+		return False;
+
+	region = onig_region_new();
+	if (region == NULL)
+		Smile_Abort_OutOfMemory();
+
+	state->matchOffset = onig_search(state->node->onigRegex, (const OnigUChar *)state->start, (const OnigUChar *)state->end,
+		(const OnigUChar *)(state->start + state->startOffset), (const OnigUChar *)state->end, region, ONIG_OPTION_NONE);
+
+	if (state->matchOffset < 0) {
+		onig_region_free(region, 1);
+		return False;
+	}
+
+	state->match = Regex_CreateMatchFromRegion(state->input, state->node->onigRegex, region);
+	onig_region_free(region, 1);
+
+	state->matchStart = state->match->indexedCaptures[0].start;
+	state->matchLength = state->match->indexedCaptures[0].length;
+
+	if (state->matchStart > state->startOffset) {
+		StringBuilder_AppendSubstring(state->stringBuilder, state->input, state->startOffset, state->matchStart - state->startOffset);
+	}
+
+	return True;
+}
+
+void Regex_ReplaceLoopBottom(RegexReplaceState state, String replacement)
+{
+	StringBuilder_AppendString(state->stringBuilder, replacement);
+
+	state->startOffset = state->matchStart + state->matchLength;
+}
+
+String Regex_EndReplace(RegexReplaceState state)
+{
+	if (state->startOffset < state->length) {
+		StringBuilder_AppendSubstring(state->stringBuilder, state->input, state->startOffset, state->length - state->startOffset);
+	}
+
+	return StringBuilder_ToString(state->stringBuilder);
 }
 
 String Regex_ToString(Regex regex)

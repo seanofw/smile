@@ -16,6 +16,8 @@
 //-------------------------------------------------------------------------------------------------
 //  Object declarations
 
+typedef struct RegexCacheNodeStruct *RegexCacheNode;
+
 /// <summary>
 /// This represents a (possibly-)compiled regular expression.
 /// </summary>
@@ -47,6 +49,25 @@ struct RegexMatchStruct {
 	struct RegexMatchRangeStruct indexedCaptures[1];	// 0 is the whole match; 1..n are (capture groups)
 };
 
+/// <summary>
+/// This struct holds the state for an interruptible regex-replace state machine.
+/// </summary>
+typedef struct RegexReplaceStateStruct {
+	Regex regex;
+	String input;
+	Int startOffset;
+	Int limit;
+
+	RegexMatch match;
+	Int length;
+	const Byte *start, *end;
+	struct RegexCacheNodeStruct *node;
+	int matchOffset;
+	Int matchStart, matchLength;
+
+	StringBuilder stringBuilder;
+} *RegexReplaceState;
+
 //-------------------------------------------------------------------------------------------------
 //  Object declarations
 
@@ -57,9 +78,15 @@ SMILE_API_FUNC Int Regex_Count(Regex regex, String input, Int startOffset, Int l
 SMILE_API_FUNC String Regex_Replace(Regex regex, String input, String replacement, Int startOffset, Int limit);
 SMILE_API_FUNC Int Regex_Split(Regex regex, String input, String **pieces, Bool includeEmpty, Int limit);
 SMILE_API_FUNC String Regex_ToString(Regex regex);
+
 SMILE_API_FUNC Regex Regex_WithEndAnchor(Regex regex);
 SMILE_API_FUNC Regex Regex_WithStartAnchor(Regex regex);
 SMILE_API_FUNC Regex Regex_AsCaseInsensitive(Regex regex);
+
+SMILE_API_FUNC RegexReplaceState Regex_BeginReplace(Regex regex, String input, Int startOffset, Int limit);
+SMILE_API_FUNC Bool Regex_ReplaceLoopTop(RegexReplaceState state);
+SMILE_API_FUNC void Regex_ReplaceLoopBottom(RegexReplaceState state, String replacement);
+SMILE_API_FUNC String Regex_EndReplace(RegexReplaceState state);
 
 //-------------------------------------------------------------------------------------------------
 //  Object declarations

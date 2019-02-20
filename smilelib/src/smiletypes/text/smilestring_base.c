@@ -37,6 +37,8 @@
 
 SMILE_IGNORE_UNUSED_VARIABLES
 
+extern SmileArg RegexReplaceStateMachine_Start(Regex regex, String input, SmileFunction function, Int startOffset, Int limit, Bool demoteMatchToString);
+
 static Byte _stringChecks[] = {
 	SMILE_KIND_MASK, SMILE_KIND_STRING,
 	SMILE_KIND_MASK, SMILE_KIND_STRING,
@@ -1067,6 +1069,20 @@ SMILE_EXTERNAL_FUNCTION(Replace)
 	}
 
 	DecodePattern(argv[1], &pattern, &regexPattern, "replace", "pattern");
+
+	if (SMILE_KIND(argv[2].obj) == SMILE_KIND_FUNCTION) {
+		Int64 limit;
+		if (argc > 3) {
+			limit = argv[3].unboxed.i64;
+			if (limit < 0) limit = 0;
+			if (limit > String_Length(str)) limit = String_Length(str);
+		}
+		else limit = 0;
+		if (regexPattern == NULL)
+			regexPattern = Regex_Create(String_RegexEscape(pattern), String_Empty, NULL);
+		return RegexReplaceStateMachine_Start(regexPattern, str, (SmileFunction)argv[2].obj, 0, limit, pattern != NULL);
+	}
+
 	replacement = DecodePatternWithoutRegex(argv[2], "replace", "replacement");
 
 	if (pattern != NULL) {
@@ -1099,8 +1115,24 @@ SMILE_EXTERNAL_FUNCTION(ReplaceI)
 	String str = (String)argv[0].obj;
 	String pattern, replacement;
 	Regex regexPattern;
+	STATIC_STRING(i, "i");
 
 	DecodePattern(argv[1], &pattern, &regexPattern, "replace~", "pattern");
+
+	if (SMILE_KIND(argv[2].obj) == SMILE_KIND_FUNCTION) {
+		Int64 limit;
+		if (argc > 3) {
+			limit = argv[3].unboxed.i64;
+			if (limit < 0) limit = 0;
+			if (limit > String_Length(str)) limit = String_Length(str);
+		}
+		else limit = 0;
+		regexPattern = (regexPattern != NULL
+			? Regex_AsCaseInsensitive(regexPattern)
+			: Regex_Create(String_RegexEscape(pattern), i, NULL));
+		return RegexReplaceStateMachine_Start(regexPattern, str, (SmileFunction)argv[2].obj, 0, limit, pattern != NULL);
+	}
+
 	replacement = DecodePatternWithoutRegex(argv[2], "replace~", "replacement");
 
 	if (pattern != NULL) {
