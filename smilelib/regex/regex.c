@@ -11,136 +11,183 @@
 #define ONIG_EXTERN extern
 #include "src/oniguruma.h"
 
+static OnigSyntaxType OnigSyntaxSmile;
+
 //-------------------------------------------------------------------------------------------------
 //  Type declarations and definitions
 
+// The cache will hold up to 256 recently-used regexes.
 #define REGEX_CACHE_SIZE 256
 
+/// <summary>
+/// Every node in the regex cache will be of this form.
+/// </summary>
 struct RegexCacheNodeStruct {
-	Int32 id;
-	String pattern;
-	String flags;
-	String key;
-	Bool isValid;
-	String errorMessage;
-	OnigRegex onigRegex;
-	Regex regex;
+	Int32 id;				// Unique non-repeating ID
+	String pattern;			// The original regex pattern string
+	String flags;			// Flags/options, like 'i' for case-insensitive
+	String key;				// The cache key, which is exactly equal to "{flags}/{pattern}"
+	Bool isValid;			// Whether this regex was compiled without errors
+	String errorMessage;	// If this was compiled with errors, this is the error message
+	OnigRegex onigRegex;	// The Oniguruma regex_t object itself
+	Regex regex;			// A Smile Regex object that references this cache node
 
-	struct RegexCacheNodeStruct *next, *prev;
+	struct RegexCacheNodeStruct *next, *prev;	// Next/previous in the LRU cache
 };
 
 //-------------------------------------------------------------------------------------------------
 //  Static data for the regex cache.
 
+// The next unique ID to use for a new regex cache entry.
 static Int32 _regexNextId = 1;
 
+// A dictionary that maps known keys ("{flags}/{pattern}") to non-deleted unique cache IDs.
+// We keep this around because some Smile Regex objects may coincidentally match each other,
+// so this will (should) cause their IDs (and thus cache nodes) to collapse into single
+// instances.
 static StringIntDict _keyToIdLookup;
+
+// A dictionary that maps cache IDs to non-deleted RegexCacheNode instances.  Smile Regex
+// objects reference cache entries by ID, which is a weak reference:  Cached entries may be
+// evicted while Smile Regex objects still reference them, and the cached entries will be
+// recreated the next time the Smile Regex object is used for pattern-matching.
 static Int32Dict _idToCacheNodeLookup;
 
+// A doubly-linked list that represents all non-deleted RegexCacheNodes.
 static RegexCacheNode _regexCacheHead = NULL, _regexCacheTail = NULL;
 static Int _regexCacheSize = 0;
 
 //-------------------------------------------------------------------------------------------------
 //  Internal mechanics.
 
-static Bool Regex_Compile(String pattern, String flags, RegexCacheNode node)
+Inline String Regex_ParseFlags(String flags, String *actualFlagsString, OnigEncoding *encoding, OnigOptionType *options)
 {
-	OnigRegex result = NULL;
-	const Byte *patternText, *patternEnd;
 	const Byte *flagsText, *flagsEnd, *flagsPtr;
 	Byte actualFlags[16];
 	Byte *actualFlagsDest;
-	String actualFlagsString;
+	
+	*options = ONIG_OPTION_NONE | ONIG_OPTION_CAPTURE_GROUP;
+	*encoding = ONIG_ENCODING_UTF8;
 
-	OnigOptionType options = ONIG_OPTION_NONE | ONIG_OPTION_CAPTURE_GROUP;
-	OnigEncoding encoding;
-	OnigErrorInfo errorInfo;
-	int onigResult;
-
-	encoding = ONIG_ENCODING_UTF8;
-
-	patternText = String_GetBytes(pattern);
-	patternEnd = patternText + String_Length(pattern);
 	flagsText = String_GetBytes(flags);
 	flagsEnd = flagsText + String_Length(flags);
 
 	for (flagsPtr = flagsText; flagsPtr < flagsEnd; flagsPtr++) {
 		switch (*flagsPtr) {
 			case 'a':
-				options |= ONIG_OPTION_WORD_IS_ASCII
+				*options |= ONIG_OPTION_WORD_IS_ASCII
 					| ONIG_OPTION_DIGIT_IS_ASCII
 					| ONIG_OPTION_POSIX_IS_ASCII
 					| ONIG_OPTION_SPACE_IS_ASCII;
-				encoding = ONIG_ENCODING_ASCII;
+				*encoding = ONIG_ENCODING_ASCII;
 				break;
 			case 'i':
-				options |= ONIG_OPTION_IGNORECASE;
+				*options |= ONIG_OPTION_IGNORECASE;
 				break;
 			case 'm':
-				options |= ONIG_OPTION_MULTILINE;
-				break;
-			case 's':
-				options |= ONIG_OPTION_SINGLELINE;
+				*options |= ONIG_OPTION_MULTILINE;
 				break;
 			case 'n':
-				options &= ~ONIG_OPTION_CAPTURE_GROUP;
-				options |= ONIG_OPTION_DONT_CAPTURE_GROUP;
+				*options &= ~ONIG_OPTION_CAPTURE_GROUP;
+				*options |= ONIG_OPTION_DONT_CAPTURE_GROUP;
+				break;
+			case 's':
+				*options |= ONIG_OPTION_SINGLELINE;
 				break;
 			case 'x':
-				options |= ONIG_OPTION_EXTEND;
+				*options |= ONIG_OPTION_EXTEND;
 				break;
+
 			default:
-				node->pattern = pattern;
-				node->flags = String_Empty;
-				node->isValid = False;
-				node->errorMessage = String_Format("Unknown/unsupported Regex option '%c'", *flagsPtr);
-				node->onigRegex = NULL;
-				return False;
+				*actualFlagsString = NULL;
+				*options = ONIG_OPTION_NONE | ONIG_OPTION_CAPTURE_GROUP;
+				*encoding = ONIG_ENCODING_UTF8;
+				return String_Format("Unknown/unsupported Regex option '%c'", *flagsPtr);
 		}
 	}
 
-	// Rebuild the actual flags string.
+	// Rebuild the actual flags string, with the flags in canonical (alphabetic) order.
 	actualFlagsDest = actualFlags;
-	if (encoding == ONIG_ENCODING_ASCII)
+	if (*encoding == ONIG_ENCODING_ASCII)
 		*actualFlagsDest++ = 'a';
-	if (options & ONIG_OPTION_IGNORECASE)
+	if (*options & ONIG_OPTION_IGNORECASE)
 		*actualFlagsDest++ = 'i';
-	if (options & ONIG_OPTION_MULTILINE)
+	if (*options & ONIG_OPTION_MULTILINE)
 		*actualFlagsDest++ = 'm';
-	if (options & ONIG_OPTION_DONT_CAPTURE_GROUP)
+	if (*options & ONIG_OPTION_DONT_CAPTURE_GROUP)
 		*actualFlagsDest++ = 'n';
-	if (options & ONIG_OPTION_SINGLELINE)
+	if (*options & ONIG_OPTION_SINGLELINE)
 		*actualFlagsDest++ = 's';
-	if (options & ONIG_OPTION_EXTEND)
+	if (*options & ONIG_OPTION_EXTEND)
 		*actualFlagsDest++ = 'x';
-	actualFlagsString = String_Create(actualFlags, actualFlagsDest - actualFlags);
+	*actualFlagsString = String_Create(actualFlags, actualFlagsDest - actualFlags);
 
-	onigResult = onig_new(&result, (const OnigUChar *)patternText, (const OnigUChar *)patternEnd,
-		options, encoding, ONIG_SYNTAX_PERL_NG, &errorInfo);
+	return NULL;
+}
 
-	if (onigResult == ONIG_NORMAL) {
-		node->pattern = pattern;
-		node->flags = actualFlagsString;
-		node->isValid = True;
-		node->errorMessage = NULL;
-		node->onigRegex = result;
+/// <summary>
+/// Compile the given regular expression pattern, using the given flags/options, and save the
+/// resulting compiled form (along with any errors or warnings) inside the given cache node.
+/// </summary>
+/// <param name="pattern">The regular expression pattern to compile.</param>
+/// <param name="flags">Flags for the pattern, which must match /^[aimnsx]*$/.  The options are:
+///   <ul>
+///     <li>a - "ASCII."  Match pattern and input as literal bytes, not as UTF-8-encoded Unicode code points.</li>
+///     <li>i - "Insensitive."  Match the pattern to the text using case-insensitive comparisons.</li>
+///     <li>m - "Multiline."  Like Perl, `^` and `$` match at newlines, not just at the beginning/end of the string.</li>
+///     <li>n - "No numeric captures."  `(...)` is just for grouping; if you want to capture, use `(?&lt;name&gt;...)`.</li>
+///     <li>s - "Single line."  Like Perl, `.` matches a newline with this flag enabled.</li>
+///     <li>x - "eXtended."  Allow free-formatting and whitespace inside the regex pattern.</li>
+///   </ul>
+/// </param>
+/// <returns>True if the regex was successfully compiled, false if there were errors in it.</returns>
+static Bool Regex_Compile(String pattern, String flags, RegexCacheNode node)
+{
+	OnigRegex result = NULL;
+	const Byte *patternText, *patternEnd;
+	String actualFlagsString, errorMessage;
+	OnigOptionType options;
+	OnigEncoding encoding;
+	OnigErrorInfo errorInfo;
+	int onigResult;
+	OnigUChar errorBuf[ONIG_MAX_ERROR_MESSAGE_LEN + 1];
+
+	patternText = String_GetBytes(pattern);
+	patternEnd = patternText + String_Length(pattern);
+
+	if ((errorMessage = Regex_ParseFlags(flags, &actualFlagsString, &encoding, &options)) != NULL) {
+		goto fail;		// Heck yeah I wrote 'goto fail' in new code.  Wanna make something of it?
 	}
-	else {
-		OnigUChar errorBuf[ONIG_MAX_ERROR_MESSAGE_LEN + 1];
+
+	if ((onigResult = onig_new(&result, (const OnigUChar *)patternText, (const OnigUChar *)patternEnd,
+		options, encoding, &OnigSyntaxSmile, &errorInfo)) != ONIG_NORMAL) {
 
 		onig_error_code_to_str(errorBuf, onigResult, &errorInfo);
 		errorBuf[ONIG_MAX_ERROR_MESSAGE_LEN] = '\0';
-
-		node->pattern = pattern;
-		node->flags = actualFlagsString;
-		node->isValid = False;
-		node->errorMessage = String_FromC(errorBuf);
-		node->onigRegex = NULL;
+		errorMessage = String_FromC(errorBuf);
+		goto fail;
 	}
 
-	return node->isValid;
+	node->pattern = pattern;
+	node->flags = actualFlagsString;
+	node->isValid = True;
+	node->errorMessage = NULL;
+	node->onigRegex = result;
+	return True;
+
+fail:
+	node->pattern = pattern;
+	node->flags = actualFlagsString;
+	node->isValid = False;
+	node->errorMessage = errorMessage;
+	node->onigRegex = NULL;
+	return False;
 }
 
+/// <summary>
+/// Detach the given node from the LRU cache list.
+/// </summary>
+/// <param name="node">The node to detach.</param>
 static void RegexCache_Detach(RegexCacheNode node)
 {
 	if (node->next != NULL)
@@ -156,6 +203,10 @@ static void RegexCache_Detach(RegexCacheNode node)
 	_regexCacheSize--;
 }
 
+/// <summary>
+/// Attach the given node to the LRU cache list at its head.
+/// </summary>
+/// <param name="node">The node to attach.</param>
 static void RegexCache_AttachAtHead(RegexCacheNode node)
 {
 	node->next = _regexCacheHead;
@@ -171,6 +222,10 @@ static void RegexCache_AttachAtHead(RegexCacheNode node)
 	_regexCacheSize++;
 }
 
+/// <summary>
+/// Bump the given node from its current position in the LRU cache list to the head of the cache.
+/// </summary>
+/// <param name="node">The node to bump.</param>
 static void RegexCache_BumpNode(RegexCacheNode node)
 {
 	if (node == _regexCacheHead) return;
@@ -179,18 +234,34 @@ static void RegexCache_BumpNode(RegexCacheNode node)
 	RegexCache_AttachAtHead(node);
 }
 
+/// <summary>
+/// Find a node in the cache by its unique ID.
+/// </summary>
+/// <param name="id">The ID to search for.</param>
+/// <returns>The matching cache node, if any, or NULL if none matches.</returns>
 static RegexCacheNode RegexCache_GetCacheNodeById(Int32 id)
 {
 	RegexCacheNode node = (RegexCacheNode)Int32Dict_GetValue(_idToCacheNodeLookup, id);
 	return node;
 }
 
+/// <summary>
+/// Find the ID of the a suitable cache node for this cache key, if any.
+/// </summary>
+/// <param name="id">The cache key to search for.</param>
+/// <returns>The matching ID, if any, or 0 if none matches.</returns>
 static Int32 RegexCache_GetIdByKey(String key)
 {
 	Int32 id = (Int32)StringIntDict_GetValue(_keyToIdLookup, key);
 	return id;
 }
 
+/// <summary>
+/// Add a new cache node for the given key, which must not already exist in the cache.
+/// </summary>
+/// <param name="key">The cache key to add a node for.</param>
+/// <returns>A newly-created cache node, which will also be added to the various lookup
+/// tables and cache LRU list.</returns>
 static RegexCacheNode RegexCache_AddCacheNode(String key)
 {
 	Int32 newId;
@@ -213,24 +284,61 @@ static RegexCacheNode RegexCache_AddCacheNode(String key)
 	node->regex = NULL;
 
 	Int32Dict_Add(_idToCacheNodeLookup, newId, node);
-	StringIntDict_Add(_keyToIdLookup, key, newId);
+	StringIntDict_SetValue(_keyToIdLookup, key, newId);
 	RegexCache_AttachAtHead(node);
 
 	return node;
 }
 
+/// <summary>
+/// Delete a cache node, removing it from the LRU cache list and both the key and ID lookup tables.
+/// </summary>
+/// <param name="node">The cache node to delete.</param>
+static void RegexCache_DestroyCacheNode(RegexCacheNode node)
+{
+	RegexCache_Detach(node);
+
+	StringIntDict_Remove(_keyToIdLookup, node->key);
+	Int32Dict_Remove(_idToCacheNodeLookup, node->id);
+
+	if (node->onigRegex != NULL) {
+		onig_free(node->onigRegex);
+	}
+
+	// Zorch the node's data to avoid the possibility of false sharing (which may help the GC).
+	node->flags = NULL;
+	node->pattern = NULL;
+	node->key = NULL;
+	node->id = 0;
+	node->next = NULL;
+	node->prev = NULL;
+	node->onigRegex = NULL;
+	node->isValid = False;
+	node->errorMessage = NULL;
+	node->regex = NULL;
+}
+
+/// <summary>
+/// Use the LRU list to evict old compiled regexes from the cache until we have at most `limit` regexes in it.
+/// </summary>
+/// <param name="limit">The maximum number of regexes that may exist within the cache.</param>
 static void RegexCache_EvictOldest(Int limit)
 {
 	while (_regexCacheSize > limit) {
-		RegexCacheNode deletableNode = _regexCacheTail;
-		RegexCache_Detach(deletableNode);
-
-		if (deletableNode->onigRegex != NULL) {
-			onig_free(deletableNode->onigRegex);
-		}
+		RegexCache_DestroyCacheNode(_regexCacheTail);
 	}
 }
 
+/// <summary>
+/// Given a unique regex node ID, or a regex pattern+flags, go find or create a matching regex node,
+/// evicting any old nodes that are likely to no longer be used.
+/// </summary>
+/// <param name="id">The ID to search for.  If this matches a node, that node will be returned,
+/// regardless of whether pattern/flags match that node (they are presumed to match).</param>
+/// <param name="pattern">The regex pattern to add to the cache.</param>
+/// <param name="flags">The compile flags to use for that regex pattern.</param>
+/// <returns>A regex cache node containing a compiled regex within it that matches the given ID and
+/// pattern and flags.</returns>
 static RegexCacheNode RegexCache_FindOrAdd(Int32 id, String pattern, String flags)
 {
 	Regex regex;
@@ -279,11 +387,21 @@ static RegexCacheNode RegexCache_FindOrAdd(Int32 id, String pattern, String flag
 	return node;
 }
 
+/// <summary>
+/// This struct is passed as 'arg' to the Regex_NameCallback() function during
+/// a successful pattern match; it holds the 'region' that contains the captures from Oniguruma,
+/// and a RegexMatch object into which those captures will be copied.
+/// </summary>
 typedef struct NameCallbackInfoStruct {
 	OnigRegion *region;
 	RegexMatch match;
 } *NameCallbackInfo;
 
+/// <summary>
+/// During enumeration of the regex's matched names, this is invoked for each name to generate
+/// the match data.  It uses a provided OnigRegion to locate the match data for each name, and
+/// then adds the result into a provided RegexMatch dictionary.
+/// </summary>
 static int Regex_NameCallback(const UChar *name, const UChar *nameEnd, int nGroupNum, int *groupNums, regex_t *regex, void *arg)
 {
 	NameCallbackInfo info = (NameCallbackInfo)arg;
@@ -321,6 +439,10 @@ static int Regex_NameCallback(const UChar *name, const UChar *nameEnd, int nGrou
 //-------------------------------------------------------------------------------------------------
 //  Semi-public interface.
 
+/// <summary>
+/// Initialize the regex subsystem.  This must be called before using any of the regex
+/// functions, but it is called automatically by Smile_Init().
+/// </summary>
 void Regex_Init(void)
 {
 	OnigEncoding encodings[1];
@@ -332,6 +454,10 @@ void Regex_Init(void)
 	_idToCacheNodeLookup = Int32Dict_Create();
 }
 
+/// <summary>
+/// End the regex subsystem.  This must be called to free any resources the regex subsystem
+/// is still using.  It is called automatically by Smile_End().
+/// </summary>
 void Regex_End(void)
 {
 	_idToCacheNodeLookup = NULL;
@@ -341,8 +467,14 @@ void Regex_End(void)
 }
 
 //-------------------------------------------------------------------------------------------------
-//  Public interface.
+//  Public interface for Regex creation.
 
+/// <summary>
+/// Construct a new regex that matches the old one, but that includes a start-anchor before it,
+/// so that this regex is guaranteed to match only at the start of a string.
+/// </summary>
+/// <param name="regex">The original regex.</param>
+/// <returns>A similar regex that is anchored to the start of the string.</returns>
 Regex Regex_WithStartAnchor(Regex regex)
 {
 	RegexCacheNode node;
@@ -361,6 +493,12 @@ Regex Regex_WithStartAnchor(Regex regex)
 	return node->regex;
 }
 
+/// <summary>
+/// Construct a new regex that matches the old one, but that includes an end-anchor after it,
+/// so that this regex is guaranteed to match only at the end of a string.
+/// </summary>
+/// <param name="regex">The original regex.</param>
+/// <returns>A similar regex that is anchored to the end of the string.</returns>
 Regex Regex_WithEndAnchor(Regex regex)
 {
 	RegexCacheNode node;
@@ -379,6 +517,12 @@ Regex Regex_WithEndAnchor(Regex regex)
 	return node->regex;
 }
 
+/// <summary>
+/// Construct a new regex that matches the old one, but that always performs a
+/// case-insensitive match.
+/// </summary>
+/// <param name="regex">The original regex.</param>
+/// <returns>A similar regex that is case-insensitive.</returns>
 Regex Regex_AsCaseInsensitive(Regex regex)
 {
 	RegexCacheNode node;
@@ -391,6 +535,13 @@ Regex Regex_AsCaseInsensitive(Regex regex)
 	return node->regex;
 }
 
+/// <summary>
+/// Construct a new Regex object from a pattern and its compile flags.
+/// <summary>
+/// <param name="pattern">The regex pattern to compile.</param>
+/// <param name="flags">The flags or options associated with that pattern, like "i" for a case-insensitive match.</param>
+/// <param name="errorMessage">If non-NULL, this will be set to any error message generated by compiling the regex.</param>
+/// <returns>The compiled, cached Regex object.</returns>
 Regex Regex_Create(String pattern, String flags, String *errorMessage)
 {
 	RegexCacheNode node = RegexCache_FindOrAdd(0, pattern, flags);
@@ -399,6 +550,17 @@ Regex Regex_Create(String pattern, String flags, String *errorMessage)
 	return node->regex;
 }
 
+//-------------------------------------------------------------------------------------------------
+//  Basic regex testing.
+
+/// <summary>
+/// Test an input string against a regex to see if they match.
+/// <summary>
+/// <param name="regex">A compiled regex pattern.</param>
+/// <param name="input">The input string to test against the regex.</param>
+/// <param name="startOffset">An optional starting character position within the string where the
+/// search for a match will begin (typically 0).</param>
+/// <returns>True if the string at or after the startOffset matches the regex; false if it does not.</returns>
 Bool Regex_Test(Regex regex, String input, Int startOffset)
 {
 	const Byte *start = String_GetBytes(input);
@@ -415,6 +577,14 @@ Bool Regex_Test(Regex regex, String input, Int startOffset)
 	return matchOffset >= 0;
 }
 
+//-------------------------------------------------------------------------------------------------
+//  Standard regex matching.
+
+/// <summary>
+/// Convert an Oniguruma error code to an error message.
+/// <summary>
+/// <param name="errorCode">An Oniguruma error code.</param>
+/// <returns>A matching String for that error code.</returns>
 static String Regex_OnigErrorToString(int errorCode)
 {
 	OnigUChar errorBuf[ONIG_MAX_ERROR_MESSAGE_LEN + 1];
@@ -425,6 +595,13 @@ static String Regex_OnigErrorToString(int errorCode)
 	return String_FromC(errorBuf);
 }
 
+/// <summary>
+/// When a regex pattern match fails, possibly because of an error, this function generates a
+/// RegexMatch object in a 'failed' state.
+/// </summary>
+/// <param name="input">The input text that failed to match the regex.</param>
+/// <param name="errorMessage">An optional error message explaining why the input text failed to match.</param>
+/// <returns>An otherwise-empty RegexMatch object in a 'failed' state, with the input text and error message inside it.</returns>
 static RegexMatch Regex_CreateErrorMatch(String input, String errorMessage)
 {
 	RegexMatch match = GC_MALLOC_STRUCT(struct RegexMatchStruct);
@@ -440,6 +617,15 @@ static RegexMatch Regex_CreateErrorMatch(String input, String errorMessage)
 	return match;
 }
 
+/// <summary>
+/// When a regex pattern match succeeds, this function generates a RegexMatch object that contains
+/// all of the captures from the match.
+/// </summary>
+/// <param name="input">The input text that successfully matched the regex.</param>
+/// <param name="onigRegex">The Oniguruma regex that matched.</param>
+/// <param name="onigRegion">An Oniguruma region object that contains all of the captures.</param>
+/// <returns>A populated RegexMatch object in a 'succeeded' state, with the input text, capture array,
+/// and capture dictionary inside it.</returns>
 static RegexMatch Regex_CreateMatchFromRegion(String input, OnigRegex onigRegex, OnigRegion *onigRegion)
 {
 	RegexMatch match;
@@ -534,6 +720,9 @@ RegexMatch Regex_Match(Regex regex, String input, Int startOffset)
 	onig_region_free(region, 1);
 	return match;
 }
+
+//-------------------------------------------------------------------------------------------------
+//  Repeated regex application: String-splitting and match-counting.
 
 /// <summary>
 /// Split the given input string by the given regex, putting the split pieces into 'pieces',
@@ -705,19 +894,37 @@ Int Regex_Count(Regex regex, String input, Int startOffset, Int limit)
 	return count;
 }
 
+//-------------------------------------------------------------------------------------------------
+//  Regex replacement.
+
+/// <summary>
+/// These are the kinds of tokens that can be generated by the replacement-string parser.
+/// </summary>
+enum {
+	REPLACE_TOKEN_LITERAL,			// Literal, plain, verbatim text.
+	REPLACE_TOKEN_NUMERIC_CAPTURE,	// A numeric capture like '$0' or '$3' or '$*'.
+	REPLACE_TOKEN_NAMED_CAPTURE,	// A named capture like '${foo}'.
+	REPLACE_TOKEN_LAST_CAPTURE,		// The special "last" capture, like '$+'.
+};
+
+/// <summary>
+/// Each token in the replacement string will be extracted as one of these objects, which
+/// represents either literal text or a named/numbered capture group.
+/// </summary>
 typedef struct ReplacementTokenStruct {
-	Int tokenKind;
+	Int tokenKind;		// What kind of token this is, from the REPLACE_TOKEN_* enum above.
 	String text;
 	Int number;
 } *ReplacementToken;
 
-enum {
-	REPLACE_TOKEN_LITERAL,
-	REPLACE_TOKEN_NUMERIC_CAPTURE,
-	REPLACE_TOKEN_NAMED_CAPTURE,
-	REPLACE_TOKEN_LAST_CAPTURE,
-};
-
+/// <summary>
+/// Given a regex match, iterate through the parsed replacement array and substitute in
+/// the match's captures, outputting the replaced text to the given StringBuilder.
+/// </summary>
+/// <param name="stringBuilder">The StringBuilder that will receive the replacement content.</param>
+/// <param name="match">The result of the successful pattern match.</param>
+/// <param name="replacementTokens">The sequence of replacement tokens generated by parsing the replacement text.</param>
+/// <param name="numReplacementTokens">How many replacement tokens are in the replacementTokens sequence.</param>
 static void ApplyReplacement(StringBuilder stringBuilder, RegexMatch match,
 	ReplacementToken replacementTokens, Int numReplacementTokens)
 {
@@ -757,6 +964,10 @@ static void ApplyReplacement(StringBuilder stringBuilder, RegexMatch match,
 	}
 }
 
+/// <summary>
+/// Determine if the given character is a known C identifier character.  Used when determining
+/// the extent of a bare named-capture replacement like '$foo'.
+/// </summary>
 Inline Bool IsCIdentChar(Byte ch)
 {
 	return ch >= 'a' && ch <= 'z'
@@ -765,6 +976,18 @@ Inline Bool IsCIdentChar(Byte ch)
 		|| ch == '_';
 }
 
+/// <summary>
+/// Parse the given replacement string into a series of "replacement tokens," each describing
+/// whether to emit literal text or a specific named or numeric capture group to the output.
+/// </summary>
+/// <param name="replacement">The replacement string to parse, which may include "replacement
+/// substitutions" that start with a '$' or '\' and are followed by either a capture-group
+/// number, a capture-group name, or the special '+' (last capture) or '&' (whole capture)
+/// forms.  "\$" and "$$" can be used to emit a literal dollar-sign, and "\\" and "$\" can be
+/// used to emit a literal backslash.</param>
+/// <param name="replacementTokens">This will be assigned to an array of ReplacementToken
+/// structs (inline in the array, not pointers to the structs).</param>
+/// <returns>The number of ReplacementToken structs generated.</returns>
 static Int ParseReplacement(String replacement, ReplacementToken *replacementTokens)
 {
 	struct ArrayStruct array;
@@ -884,6 +1107,18 @@ static Int ParseReplacement(String replacement, ReplacementToken *replacementTok
 	return array.length;
 }
 
+/// <summary>
+/// Search through the 'input' string starting at 'startOffset' for matches of the given 'regex',
+/// up to 'limit' matches, and replace each match found with the given replacement string, which
+/// may contain capture-group substitutions like '$3' and '$foo', generating a new string that
+/// contains all of the replaced text.
+/// </summary>
+/// <param name="regex">The compiled and cached regex to match against the input.</param>
+/// <param name="input">The input string to search through.</param>
+/// <param name="replacement">What content to use to replace the input text each time the regex matches.</param>
+/// <param name="startOffset">A starting character position in the input at which to begin the search.</param>
+/// <param name="limit">The maximum number of replacements to perform.  If limit <= 0, there will be no maximum.</param>
+/// <returns>The string, with all regex matches within it replaced with the given replacement text.</returns>
 String Regex_Replace(Regex regex, String input, String replacement, Int startOffset, Int limit)
 {
 	RegexMatch match;
@@ -952,6 +1187,19 @@ String Regex_Replace(Regex regex, String input, String replacement, Int startOff
 	return StringBuilder_ToString(stringBuilder);
 }
 
+//-------------------------------------------------------------------------------------------------
+//  Regex replacement as an interruptible state-machine.
+
+/// <summary>
+/// Begin searching through the 'input' string starting at 'startOffset' for matches of the given
+/// 'regex', up to 'limit' matches, and replace each match found with whatever string is provided
+/// by a user function.
+/// </summary>
+/// <param name="regex">The compiled and cached regex to match against the input.</param>
+/// <param name="input">The input string to search through.</param>
+/// <param name="startOffset">A starting character position in the input at which to begin the search.</param>
+/// <param name="limit">The maximum number of replacements to perform.  If limit <= 0, there will be no maximum.</param>
+/// <returns>An object that holds the replacement machine's state for the rest of the replacement process.</returns>
 RegexReplaceState Regex_BeginReplace(Regex regex, String input, Int startOffset, Int limit)
 {
 	RegexReplaceState state = GC_MALLOC_STRUCT(struct RegexReplaceStateStruct);
@@ -987,6 +1235,12 @@ RegexReplaceState Regex_BeginReplace(Regex regex, String input, Int startOffset,
 	return state;
 }
 
+/// <summary>
+/// Run the top part of the replacement loop, before the user's replacement function is to be invoked.
+/// This must leave each successive regex match in 'state->match'.
+/// </summary>
+/// <param name="state">The replacement machine's current state.</param>
+/// <returns>True if the matching process should continue, or false if it should abort.</returns>
 Bool Regex_ReplaceLoopTop(RegexReplaceState state)
 {
 	OnigRegion *region;
@@ -1019,6 +1273,13 @@ Bool Regex_ReplaceLoopTop(RegexReplaceState state)
 	return True;
 }
 
+/// <summary>
+/// Run the bottom part of the replacement loop, after the user function's has been
+/// invoked, which will append the user function's output to the internal StringBuilder
+/// and then set up the machine for testing the next match.
+/// </summary>
+/// <param name="state">The replacement machine's current state.</param>
+/// <param name="replacement">The text to substitute into the string (likely generated by a user function).</param>
 void Regex_ReplaceLoopBottom(RegexReplaceState state, String replacement)
 {
 	StringBuilder_AppendString(state->stringBuilder, replacement);
@@ -1026,6 +1287,13 @@ void Regex_ReplaceLoopBottom(RegexReplaceState state, String replacement)
 	state->startOffset = state->matchStart + state->matchLength;
 }
 
+/// <summary>
+/// When the machine is done, this completes the replacement process by finishing
+/// the string being constructed in the StringBuilder, and then returns the whole
+/// generated string.
+/// </summary>
+/// <param name="state">The replacement machine's final state.</param>
+/// <returns>The fully-replaced string.</returns>
 String Regex_EndReplace(RegexReplaceState state)
 {
 	if (state->startOffset < state->length) {
@@ -1035,6 +1303,14 @@ String Regex_EndReplace(RegexReplaceState state)
 	return StringBuilder_ToString(state->stringBuilder);
 }
 
+//-------------------------------------------------------------------------------------------------
+//  Regex miscellaneous.
+
+/// <summary>
+/// Convert the given regex to its Smile loanword representation, including the initial '#' mark.
+/// </summary>
+/// <param name="regex">The Regex to convert to a string.</param>
+/// <returns>The string-ified Regex.</returns>
 String Regex_ToString(Regex regex)
 {
 	STATIC_STRING(hashSlash, "#/");
@@ -1049,3 +1325,69 @@ String Regex_ToString(Regex regex)
 
 	return String_ConcatMany(pieces, 4);
 }
+
+//-------------------------------------------------------------------------------------------------
+//  Syntax configuration.
+
+/// <summary>
+/// Oniguruma regex syntax configuration for Smile.  This attempts to mix the best of all the various
+/// regex flavors, including features that are common (or should be), and excluding those that are
+/// nonstandard (or rarely available, or weird hacks).  The result is similar to a fusion of Ruby's
+/// and Perl 5's syntaxes, but with obscure forms and old backward-compatibility forms removed.
+/// Notably, this leaves out the POSIX character forms like [[:alpha:]] and \p{alpha}, which are
+/// just ridiculous and ugly and should not still exist.
+/// </summary>
+static OnigSyntaxType OnigSyntaxSmile = {
+	(ONIG_SYN_OP_DOT_ANYCHAR
+		| ONIG_SYN_OP_ASTERISK_ZERO_INF
+		| ONIG_SYN_OP_PLUS_ONE_INF
+		| ONIG_SYN_OP_QMARK_ZERO_ONE
+		| ONIG_SYN_OP_BRACE_INTERVAL
+		| ONIG_SYN_OP_VBAR_ALT
+		| ONIG_SYN_OP_LPAREN_SUBEXP
+		| ONIG_SYN_OP_ESC_AZ_BUF_ANCHOR
+		| ONIG_SYN_OP_DECIMAL_BACKREF
+		| ONIG_SYN_OP_BRACKET_CC
+		| ONIG_SYN_OP_ESC_W_WORD
+		| ONIG_SYN_OP_ESC_B_WORD_BOUND
+		| ONIG_SYN_OP_ESC_S_WHITE_SPACE
+		| ONIG_SYN_OP_ESC_D_DIGIT
+		| ONIG_SYN_OP_LINE_ANCHOR
+		| ONIG_SYN_OP_QMARK_NON_GREEDY
+		| ONIG_SYN_OP_ESC_CONTROL_CHARS
+		| ONIG_SYN_OP_ESC_C_CONTROL
+		| ONIG_SYN_OP_ESC_OCTAL3
+		| ONIG_SYN_OP_ESC_X_HEX2),
+	(ONIG_SYN_OP2_QMARK_GROUP_EFFECT
+		| ONIG_SYN_OP2_PLUS_POSSESSIVE_REPEAT
+		| ONIG_SYN_OP2_PLUS_POSSESSIVE_INTERVAL
+		| ONIG_SYN_OP2_QMARK_LT_NAMED_GROUP
+		| ONIG_SYN_OP2_ESC_K_NAMED_BACKREF
+		| ONIG_SYN_OP2_ESC_V_VTAB
+		| ONIG_SYN_OP2_ESC_U_HEX4
+		| ONIG_SYN_OP2_QMARK_LPAREN_IF_ELSE
+		| ONIG_SYN_OP2_ESC_CAPITAL_R_GENERAL_NEWLINE
+		| ONIG_SYN_OP2_ESC_CAPITAL_N_O_SUPER_DOT
+		| ONIG_SYN_OP2_QMARK_TILDE_ABSENT_GROUP
+		| ONIG_SYN_OP2_ESC_X_Y_GRAPHEME_CLUSTER),
+	(ONIG_SYN_CONTEXT_INDEP_REPEAT_OPS
+		| ONIG_SYN_CONTEXT_INVALID_REPEAT_OPS
+		| ONIG_SYN_ALLOW_INVALID_INTERVAL
+		| ONIG_SYN_ALLOW_INTERVAL_LOW_ABBREV
+		| ONIG_SYN_DIFFERENT_LEN_ALT_LOOK_BEHIND
+		| ONIG_SYN_ALLOW_MULTIPLEX_DEFINITION_NAME
+		| ONIG_SYN_BACKSLASH_ESCAPE_IN_CC
+		| ONIG_SYN_ALLOW_DOUBLE_RANGE_OP_IN_CC
+		| ONIG_SYN_WARN_CC_OP_NOT_ESCAPED
+		| ONIG_SYN_WARN_REDUNDANT_NESTED_REPEAT
+		| ONIG_SYN_CONTEXT_INDEP_ANCHORS),
+	(ONIG_OPTION_NONE),
+	{
+		(OnigCodePoint)'\\',						// escape
+		(OnigCodePoint)ONIG_INEFFECTIVE_META_CHAR,	// anychar '.'
+		(OnigCodePoint)ONIG_INEFFECTIVE_META_CHAR,	// anytime '*'
+		(OnigCodePoint)ONIG_INEFFECTIVE_META_CHAR,	// zero or one time '?'
+		(OnigCodePoint)ONIG_INEFFECTIVE_META_CHAR,	// one or more time '+'
+		(OnigCodePoint)ONIG_INEFFECTIVE_META_CHAR,	// anychar anytime
+	}
+};
