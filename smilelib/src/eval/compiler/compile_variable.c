@@ -243,7 +243,14 @@ CompiledBlock Compiler_CompileLoadVariable(Compiler compiler, Symbol symbol, Com
 {
 	CompiledLocalSymbol localSymbol = CompileScope_FindSymbol(compiler->currentScope, symbol);
 
-	if (localSymbol == NULL || localSymbol->kind == PARSEDECL_GLOBAL || localSymbol->kind == PARSEDECL_PRIMITIVE) {
+	if (localSymbol == NULL) {
+		Compiler_AddMessage(compiler, ParseMessage_Create(PARSEMESSAGE_ERROR, NULL,
+			String_Format("\"%S\" is an unknown variable (are you missing a [$scope] or [$fn] form?).",
+				SymbolTable_GetName(Smile_SymbolTable, symbol))));
+		return CompiledBlock_CreateError();
+	}
+
+	if (localSymbol->kind == PARSEDECL_GLOBAL || localSymbol->kind == PARSEDECL_PRIMITIVE) {
 		return Compiler_CompileLoadGlobalVariable(compiler, symbol, localSymbol, compileFlags);
 	}
 

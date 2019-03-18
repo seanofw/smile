@@ -81,4 +81,7 @@ typedef struct SmileTillContinuationInt *SmileTillContinuation;
 
 typedef struct ModuleInfoStruct *ModuleInfo;
 
+typedef struct RegexStruct *Regex;
+typedef struct RegexMatchStruct *RegexMatch;
+
 #endif

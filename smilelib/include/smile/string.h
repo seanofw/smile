@@ -170,7 +170,7 @@ SMILE_API_FUNC String String_ReplaceWithLimit(const String str, const String pat
 SMILE_API_FUNC String String_ReplaceCharWithLimit(const String str, Byte pattern, Byte replacement, Int limit);
 SMILE_API_FUNC String String_Replace(const String str, const String pattern, const String replacement);
 SMILE_API_FUNC String String_ReplaceChar(const String str, Byte pattern, Byte replacement);
-SMILE_API_FUNC Int String_CountOf(const String str, const String pattern);
+SMILE_API_FUNC Int String_CountOf(const String str, const String pattern, Int start);
 
 SMILE_API_FUNC String String_Format(const char *format, ...);
 SMILE_API_FUNC String String_FormatV(const char *format, va_list v);
@@ -246,7 +246,7 @@ SMILE_API_FUNC Int String_LastIndexOfI(const String str, const String pattern, I
 SMILE_API_FUNC Bool String_ContainsI(const String str, const String pattern);
 SMILE_API_FUNC Bool String_StartsWithI(const String str, const String pattern);
 SMILE_API_FUNC Bool String_EndsWithI(const String str, const String pattern);
-SMILE_API_FUNC Int String_CountOfI(const String str, const String pattern);
+SMILE_API_FUNC Int String_CountOfI(const String str, const String pattern, Int start);
 SMILE_API_FUNC String String_ReplaceI(const String str, const String pattern, const String replacement);
 SMILE_API_FUNC String String_ReplaceWithLimitI(const String str, const String pattern, const String replacement, Int limit);
 

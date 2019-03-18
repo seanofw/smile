@@ -89,6 +89,7 @@ void KnownObjects_Setup(struct KnownObjectsStruct *knownObjects, struct KnownSym
 
 	knownObjects->ObjectSymbol = SmileSymbol_Create(knownSymbols->Object_);
 	knownObjects->ListSymbol = SmileSymbol_Create(knownSymbols->List_);
+	knownObjects->RegexSymbol = SmileSymbol_Create(knownSymbols->Regex_);
 
 	knownObjects->_setSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__SET);
 	knownObjects->_opsetSymbol = SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__OPSET);

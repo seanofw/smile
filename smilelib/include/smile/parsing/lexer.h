@@ -32,10 +32,10 @@
 /// </summary>
 struct LexerPositionStruct {
 	String filename;	// Which source file this position is in.
-	Int32 line;	// On which line this position begins.
-	Int32 column;	// The column within that line (note: tabs count as 1 char)
+	Int32 line;			// On which line this position begins.
+	Int32 column;		// The column within that line (note: tabs count as 1 char)
 	Int32 lineStart;	// The offset of the start of this line from the start of the file.
-	Int32 length;	// The length of the span of content, in characters.
+	Int32 length;		// The length of the span of content, in characters.
 };
 
 /// <summary>
@@ -43,30 +43,30 @@ struct LexerPositionStruct {
 /// </summary>
 struct TokenStruct {
 
-	enum TokenKind kind;	// What kind of token this is (see tokenkind.h)
+	enum TokenKind kind;					// What kind of token this is (see tokenkind.h)
 		
 	struct LexerPositionStruct _position;	// The position where the start of this token was found.
-	Bool isFirstContentOnLine;	// Whether this token is the first content on the line.
-	Bool hasEscapes;	// Whether this token's text used escape codes (mainly needed for symbols).
+	Bool isFirstContentOnLine;				// Whether this token is the first content on the line.
+	Bool hasEscapes;						// Whether this token's text used escape codes (mainly needed for symbols).
 		
-	String text;	// The text of this token (for strings/numbers/#loanwords).
+	String text;							// The text of this token (for strings/numbers/#loanwords).
 
 	// The various kinds of data this token can represent ('kind' determines which of these is valid).
 	union {
-		Symbol symbol;	// The symbol for this token (for identifiers).
-		Byte byte;	// A 8-bit (unsigned) byte value for this token.
-		Int16 int16;	// A 16-bit integer value for this token.
-		Int32 int32;	// A 32-bit integer value for this token.
-		Int64 int64;	// A 64-bit integer value for this token.
+		Symbol symbol;		// The symbol for this token (for identifiers).
+		Byte byte;			// A 8-bit (unsigned) byte value for this token.
+		Int16 int16;		// A 16-bit integer value for this token.
+		Int32 int32;		// A 32-bit integer value for this token.
+		Int64 int64;		// A 64-bit integer value for this token.
 		Float32 float32;	// A 32-bit float value for this token.
 		Float64 float64;	// A 64-bit float value for this token.
-		Real32 real32;	// A 32-bit real value for this token.
-		Real64 real64;	// A 64-bit real value for this token.
+		Real32 real32;		// A 32-bit real value for this token.
+		Real64 real64;		// A 64-bit real value for this token.
 		Real128 real128;	// A 128-bit real value for this token.
-		Byte ch;	// An 8-bit character value for this token.
-		UInt32 uni;	// A 32-bit Unicode code point for this token.
+		Byte ch;			// An 8-bit character value for this token.
+		UInt32 uni;			// A 32-bit Unicode code point for this token.
+		void *ptr;			// Pointer to nontrivial/complex/compound #loanwords.
 	} data;
-
 };
 
 /// <summary>
@@ -93,7 +93,6 @@ struct LexerStruct {
 
 	// External helper constructs.
 	SymbolTable symbolTable;	// The symbol table, for resolving identifiers.
-
 };
 
 //-------------------------------------------------------------------------------------------------

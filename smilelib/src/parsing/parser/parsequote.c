@@ -73,6 +73,7 @@ SmileObject Parser_WrapTemplateForSplicing(SmileObject obj)
 //    | . CHAR | . RAWSTRING
 //    | . BYTE | . INT16 | . INT32 | . INT64 | . REAL32 | . REAL64 | . REAL128 | . FLOAT32 | . FLOAT64
 //    | . BACKTICK raw_list_term
+//    | . LOANWORD_REGEX
 //    | . nonraw_term
 // nonraw_term :: = . LPAREN expr RPAREN
 //    | . scope
@@ -261,6 +262,13 @@ ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Int *temp
 
 		case TOKEN_FLOAT64:
 			*result = (SmileObject)SmileFloat64_Create(token->data.float64);
+			*templateKind = TemplateKind_None;
+			return NULL;
+
+		case TOKEN_LOANWORD_REGEX:
+			// The Lexer already constructed [Regex.of pattern-string options-string] for us,
+			// so there's nothing we need to do except return it.
+			*result = (SmileObject)token->data.ptr;
 			*templateKind = TemplateKind_None;
 			return NULL;
 

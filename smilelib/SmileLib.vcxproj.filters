@@ -1019,6 +1019,26 @@
     <ClCompile Include="src\smiletypes\range\smilereal32range.generated.c" />
     <ClCompile Include="src\smiletypes\range\smilereal32range_base.generated.c" />
     <ClCompile Include="src\smiletypes\range\smilereal64range.generated.c" />
+    <ClCompile Include="regex\src\regcomp.c" />
+    <ClCompile Include="regex\src\regenc.c" />
+    <ClCompile Include="regex\src\regerror.c" />
+    <ClCompile Include="regex\src\regexec.c" />
+    <ClCompile Include="regex\src\regparse.c" />
+    <ClCompile Include="regex\src\regsyntax.c" />
+    <ClCompile Include="regex\src\regtrav.c" />
+    <ClCompile Include="regex\src\regversion.c" />
+    <ClCompile Include="regex\src\st.c" />
+    <ClCompile Include="regex\src\ascii.c" />
+    <ClCompile Include="regex\src\utf8.c" />
+    <ClCompile Include="regex\src\unicode.c" />
+    <ClCompile Include="regex\src\unicode_fold1_key.c" />
+    <ClCompile Include="regex\src\unicode_fold2_key.c" />
+    <ClCompile Include="regex\src\unicode_fold3_key.c" />
+    <ClCompile Include="regex\src\unicode_unfold_key.c" />
+    <ClCompile Include="regex\regex.c" />
+    <ClCompile Include="src\parsing\lexer\lexregex.c" />
+    <ClCompile Include="src\smiletypes\text\smileregex_base.c" />
+    <ClCompile Include="src\smiletypes\text\smileregexmatch_base.c" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">
@@ -1406,6 +1426,13 @@
     <ClInclude Include="include\smile\smiletypes\range\smilereal32range.h" />
     <ClInclude Include="include\smile\smiletypes\range\smilereal64range.h" />
     <ClInclude Include="include\smile\smiletypes\range\smileunirange.h" />
+    <ClInclude Include="regex\src\oniguruma.h" />
+    <ClInclude Include="regex\src\regenc.h" />
+    <ClInclude Include="regex\src\regint.h" />
+    <ClInclude Include="regex\src\regparse.h" />
+    <ClInclude Include="regex\src\st.h" />
+    <ClInclude Include="regex\src\config.h" />
+    <ClInclude Include="include\smile\regex.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\smile\array.h">

@@ -44,6 +44,7 @@ struct KnownObjectsStruct {
 
 	SmileSymbol ObjectSymbol;
 	SmileSymbol ListSymbol;
+	SmileSymbol RegexSymbol;
 
 	// The twenty-three core special forms.
 	SmileSymbol _setSymbol, _opsetSymbol, _includeSymbol;

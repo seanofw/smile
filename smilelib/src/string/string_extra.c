@@ -35,7 +35,7 @@ STATIC_STRING(CommaSpace, ", ");
 /// <returns>The number of strings resulting from the split (i.e., the number of strings returned in the 'pieces' array).</returns>
 Int String_SplitWithOptions(const String str, const String pattern, Int limit, Int options, String **pieces)
 {
-	struct ArrayInt a;
+	struct ArrayStruct a;
 	Array array = &a;
 	Int startIndex, splitIndex, len;
 
@@ -96,10 +96,11 @@ Int String_SplitWithOptions(const String str, const String pattern, Int limit, I
 /// </summary>
 /// <param name="str">The string to search in.</param>
 /// <param name="pattern">The pattern to search for in the string.</param>
+/// <param name="start">The offset within the text to start comparing (usually zero).</param>
 /// <returns>The number of times the pattern can be found within the string,
 /// using a non-overlapping forward linear search.  If the pattern is null
 /// or the empty string, this will return zero.</returns>
-Int String_CountOf(const String str, const String pattern)
+Int String_CountOf(const String str, const String pattern, Int start)
 {
 	Int index, patternLength;
 	Int count;
@@ -109,7 +110,7 @@ Int String_CountOf(const String str, const String pattern)
 
 	patternLength = String_Length(pattern);
 	count = 0;
-	index = 0;
+	index = start;
 
 	while ((index = String_IndexOf(str, pattern, index)) >= 0) {
 		count++;

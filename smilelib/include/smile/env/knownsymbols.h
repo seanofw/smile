@@ -173,7 +173,7 @@ typedef struct KnownSymbolsStruct {
 	// Typename symbols.
 	Symbol Actor_, Array_, ArrayBase_, Bool_, BoolArray_, Char_, CharRange_, Closure, Enumerable_, Exception_, Facade_, FacadeProper_, Fn_, Handle_;
 	Symbol List_, Map_, MapBase_, MathException, Null_, Object_, Program_, Random_, Range_;
-	Symbol Regex_, String_, StringArray_, StringMap_, Symbol_, SymbolArray_, SymbolMap_, Uni_, UniRange_, UserObject_;
+	Symbol Regex_, RegexMatch_, String_, StringArray_, StringMap_, Symbol_, SymbolArray_, SymbolMap_, Uni_, UniRange_, UserObject_;
 
 	// Numeric typename symbols.
 	Symbol Number_, NumericArray_, NumericRange_, NumericMap_;
@@ -206,7 +206,7 @@ typedef struct KnownSymbolsStruct {
 	Symbol count_left_ones, count_left_zeros, count_of, count_of_i, count_ones, count_right_ones, count_right_zeros, count_zeros, crc32, create, create_child_closure;
 	Symbol d, decompose, default_, diacritic_q, digit_q, div, divide_by_zero, does_not_understand;
 	Symbol each, end, ends_with, ends_with_i, escape, eval, even_q, exit, exp, extend_object, extend_where_new;
-	Symbol facade, false_, filename, filename_mode, first;
+	Symbol facade, false_, filename, filename_mode, first, flags;
 	Symbol float32_, float32_range, float64_, float64_range, float128_;
 	Symbol floor, fn, fold, from_seed;
 	Symbol get_object_security, get_property;

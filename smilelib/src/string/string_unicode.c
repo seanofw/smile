@@ -1159,10 +1159,11 @@ Int String_LastIndexOfI(const String str, const String pattern, Int start)
 /// </summary>
 /// <param name="str">The string to search in.</param>
 /// <param name="pattern">The pattern to search for in the string.</param>
+/// <param name="start">The start character index within the string where the search should begin (usually zero).</param>
 /// <returns>The number of times the pattern can be found within the string,
 /// using a non-overlapping forward linear search.  If the pattern is null
 /// or the empty string, this will return zero.</returns>
-Int String_CountOfI(const String str, const String pattern)
+Int String_CountOfI(const String str, const String pattern, Int start)
 {
 	Int index, patternLength;
 	Int count;
@@ -1172,7 +1173,7 @@ Int String_CountOfI(const String str, const String pattern)
 
 	patternLength = String_Length(pattern);
 	count = 0;
-	index = 0;
+	index = start;
 
 	while ((index = String_IndexOfI(str, pattern, index)) >= 0) {
 		count++;
