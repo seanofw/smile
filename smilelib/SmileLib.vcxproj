@@ -124,7 +124,9 @@
     <ClInclude Include="gc\include\private\gc_locks.h" />
     <ClInclude Include="gc\include\private\gc_pmark.h" />
     <ClInclude Include="gc\include\private\gc_priv.h" />
+    <ClInclude Include="include\smile\parsing\internal\parseloanword.h" />
     <ClInclude Include="include\smile\regex.h" />
+    <ClInclude Include="include\smile\smiletypes\smileloanword.h" />
     <ClInclude Include="regex\src\config.h" />
     <ClInclude Include="regex\src\oniguruma.h" />
     <ClInclude Include="regex\src\regenc.h" />
@@ -1043,6 +1045,7 @@
     <ClCompile Include="src\parsing\parser\parseexpr.c" />
     <ClCompile Include="src\parsing\parser\parsefunc.c" />
     <ClCompile Include="src\parsing\parser\parseinclude.c" />
+    <ClCompile Include="src\parsing\parser\parseloanword.c" />
     <ClCompile Include="src\parsing\parser\parsemessage.c" />
     <ClCompile Include="src\parsing\parser\parsenew.c" />
     <ClCompile Include="src\parsing\parser\parsequote.c" />
@@ -1056,6 +1059,7 @@
     <ClCompile Include="src\parsing\parser\parsesyntax.c" />
     <ClCompile Include="src\parsing\parser\parseterm.c" />
     <ClCompile Include="src\parsing\parser\parsetill.c" />
+    <ClCompile Include="src\parsing\parser\parserloanwordtable.c" />
     <ClCompile Include="src\platform\unix\unix_os.c" />
     <ClCompile Include="src\platform\windows\ansi-console.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
@@ -1116,6 +1120,7 @@
     <ClCompile Include="src\smiletypes\smilefunction.c" />
     <ClCompile Include="src\smiletypes\smilelist.c" />
     <ClCompile Include="src\smiletypes\smilelist_class.c" />
+    <ClCompile Include="src\smiletypes\smileloanword.c" />
     <ClCompile Include="src\smiletypes\smilenonterminal.c" />
     <ClCompile Include="src\smiletypes\smilenull.c" />
     <ClCompile Include="src\smiletypes\smileobject.c" />

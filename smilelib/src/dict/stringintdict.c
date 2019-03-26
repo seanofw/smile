@@ -380,3 +380,28 @@ SMILE_API_FUNC DictStats StringIntDict_ComputeStats(StringIntDict stringDict)
 
 	return stats;
 }
+
+Bool StringIntDict_ForEach(StringIntDict stringIntDict, Bool(*func)(String key, Int value, void *param), void *param)
+{
+	struct StringIntDictInt *self;
+	Int bucket, nodeIndex;
+	Int *buckets;
+	struct StringIntDictNode *heap, *node;
+
+	self = (struct StringIntDictInt *)stringIntDict;
+
+	buckets = self->buckets;
+	heap = self->heap;
+
+	for (bucket = 0; bucket <= self->mask; bucket++) {
+		nodeIndex = buckets[bucket];
+		while (nodeIndex >= 0) {
+			node = heap + nodeIndex;
+			if (!func(node->key, node->value, param))
+				return False;
+			nodeIndex = node->next;
+		}
+	}
+
+	return True;
+}

@@ -146,6 +146,7 @@ CompiledBlock Compiler_CompileExpr(Compiler compiler, SmileObject expr, CompileF
 
 		// Syntax objects resolve to themselves, like most other special user data does.
 		case SMILE_KIND_SYNTAX:
+		case SMILE_KIND_LOANWORD:
 			compiledBlock = CompiledBlock_Create();
 			if (!(compileFlags & COMPILE_FLAG_NORESULT)) {
 				index = Compiler_AddObject(compiler, expr);

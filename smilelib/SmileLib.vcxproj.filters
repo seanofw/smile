@@ -1039,6 +1039,9 @@
     <ClCompile Include="src\parsing\lexer\lexregex.c" />
     <ClCompile Include="src\smiletypes\text\smileregex_base.c" />
     <ClCompile Include="src\smiletypes\text\smileregexmatch_base.c" />
+    <ClCompile Include="src\parsing\parser\parseloanword.c" />
+    <ClCompile Include="src\parsing\parser\parserloanwordtable.c" />
+    <ClCompile Include="src\smiletypes\smileloanword.c" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\init.c">
@@ -1433,6 +1436,8 @@
     <ClInclude Include="regex\src\st.h" />
     <ClInclude Include="regex\src\config.h" />
     <ClInclude Include="include\smile\regex.h" />
+    <ClInclude Include="include\smile\smiletypes\smileloanword.h" />
+    <ClInclude Include="include\smile\parsing\internal\parseloanword.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\smile\array.h">

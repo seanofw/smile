@@ -59,6 +59,7 @@ Lexer Lexer_Create(String input, Int start, Int length, String filename, Int fir
 		return NULL;
 
 	// Set up the read pointers.
+	lexer->stringInput = input;
 	lexer->input = String_GetBytes(input);
 	lexer->src = lexer->input + start;
 	lexer->end = lexer->src + length;

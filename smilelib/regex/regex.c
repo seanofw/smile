@@ -387,55 +387,6 @@ static RegexCacheNode RegexCache_FindOrAdd(Int32 id, String pattern, String flag
 	return node;
 }
 
-/// <summary>
-/// This struct is passed as 'arg' to the Regex_NameCallback() function during
-/// a successful pattern match; it holds the 'region' that contains the captures from Oniguruma,
-/// and a RegexMatch object into which those captures will be copied.
-/// </summary>
-typedef struct NameCallbackInfoStruct {
-	OnigRegion *region;
-	RegexMatch match;
-} *NameCallbackInfo;
-
-/// <summary>
-/// During enumeration of the regex's matched names, this is invoked for each name to generate
-/// the match data.  It uses a provided OnigRegion to locate the match data for each name, and
-/// then adds the result into a provided RegexMatch dictionary.
-/// </summary>
-static int Regex_NameCallback(const UChar *name, const UChar *nameEnd, int nGroupNum, int *groupNums, regex_t *regex, void *arg)
-{
-	NameCallbackInfo info = (NameCallbackInfo)arg;
-	RegexMatch match = info->match;
-	OnigRegion *region = info->region;
-	String nameString;
-	Int ref;
-
-	UNUSED(nGroupNum);
-	UNUSED(groupNums);
-
-	ref = (Int)onig_name_to_backref_number(regex, name, nameEnd, region);
-	nameString = String_Create((const Byte *)name, nameEnd - name);
-
-	// Apply proper "multi-match" semantics:  We keep the first instance of each name
-	// that actually matched something; if a name didn't match anything, we don't keep
-	// the empty match, but we also ensure that each name in the regex always maps to a key
-	// in the output dictionary (empty string if nothing else matched).
-	if (!StringIntDict_Add(&match->namedCaptures, nameString, ref)) {
-
-		// Something already exists.  Was it meaningful?
-		Int lastRef = StringIntDict_GetValue(&match->namedCaptures, nameString);
-		Bool lastHadContent = (region->beg[lastRef] != region->end[lastRef]);
-		Bool thisHasContent = (region->beg[ref] != region->end[ref]);
-
-		// If it didn't have meaningful content before, but we have meaningful content now,
-		// replace the old answer with a better one.
-		if (!lastHadContent && thisHasContent)
-			StringIntDict_SetValue(&match->namedCaptures, nameString, ref);
-	}
-
-	return 0;  // 0: Continue iterating through names
-}
-
 //-------------------------------------------------------------------------------------------------
 //  Semi-public interface.
 
@@ -581,6 +532,55 @@ Bool Regex_Test(Regex regex, String input, Int startOffset)
 //  Standard regex matching.
 
 /// <summary>
+/// This struct is passed as 'arg' to the Regex_NameCallback() function during
+/// a successful pattern match; it holds the 'region' that contains the captures from Oniguruma,
+/// and a RegexMatch object into which those captures will be copied.
+/// </summary>
+typedef struct NameCallbackInfoStruct {
+	OnigRegion *region;
+	RegexMatch match;
+} *NameCallbackInfo;
+
+/// <summary>
+/// During enumeration of the regex's matched names, this is invoked for each name to generate
+/// the match data.  It uses a provided OnigRegion to locate the match data for each name, and
+/// then adds the result into a provided RegexMatch dictionary.
+/// </summary>
+static int Regex_NameCallback(const UChar *name, const UChar *nameEnd, int nGroupNum, int *groupNums, regex_t *regex, void *arg)
+{
+	NameCallbackInfo info = (NameCallbackInfo)arg;
+	RegexMatch match = info->match;
+	OnigRegion *region = info->region;
+	String nameString;
+	Int ref;
+
+	UNUSED(nGroupNum);
+	UNUSED(groupNums);
+
+	ref = (Int)onig_name_to_backref_number(regex, name, nameEnd, region);
+	nameString = String_Create((const Byte *)name, nameEnd - name);
+
+	// Apply proper "multi-match" semantics:  We keep the first instance of each name
+	// that actually matched something; if a name didn't match anything, we don't keep
+	// the empty match, but we also ensure that each name in the regex always maps to a key
+	// in the output dictionary (empty string if nothing else matched).
+	if (!StringIntDict_Add(&match->namedCaptures, nameString, ref)) {
+
+		// Something already exists.  Was it meaningful?
+		Int lastRef = StringIntDict_GetValue(&match->namedCaptures, nameString);
+		Bool lastHadContent = (region->beg[lastRef] != region->end[lastRef]);
+		Bool thisHasContent = (region->beg[ref] != region->end[ref]);
+
+		// If it didn't have meaningful content before, but we have meaningful content now,
+		// replace the old answer with a better one.
+		if (!lastHadContent && thisHasContent)
+			StringIntDict_SetValue(&match->namedCaptures, nameString, ref);
+	}
+
+	return 0;  // 0: Continue iterating through names
+}
+
+/// <summary>
 /// Convert an Oniguruma error code to an error message.
 /// <summary>
 /// <param name="errorCode">An Oniguruma error code.</param>
@@ -631,6 +631,7 @@ static RegexMatch Regex_CreateMatchFromRegion(String input, OnigRegex onigRegex,
 	RegexMatch match;
 	struct NameCallbackInfoStruct nameCallbackInfo;
 	int i, rangeStart, rangeEnd;
+	int numberOfNames;
 	RegexMatchRange range;
 
 	// Allocate enough room for the match information, including its capture ranges, all at once.
@@ -657,11 +658,9 @@ static RegexMatch Regex_CreateMatchFromRegion(String input, OnigRegex onigRegex,
 	}
 
 	// Populate the named captures dictionary, if there are named captures.
-	if (onig_number_of_names(onigRegex) > 0) {
-
-		// Make the dictionary for real, since we haven't done that yet.
-		StringIntDict_ClearWithSize(&match->namedCaptures, 16);
-
+	numberOfNames = onig_number_of_names(onigRegex);
+	StringIntDict_ClearWithSize(&match->namedCaptures, numberOfNames);
+	if (numberOfNames > 0) {
 		// Spin over the names and collect their data.
 		nameCallbackInfo.match = match;
 		nameCallbackInfo.region = onigRegion;
@@ -679,7 +678,7 @@ static RegexMatch Regex_CreateMatchFromRegion(String input, OnigRegex onigRegex,
 /// <param name="input">The input string to match against.</param>
 /// <param name="startOffset">Where in the string to start the match (useful for repeated matches).</param>
 /// <returns>A RegexMatch object that describes where the match occurred (if it matched), and what
-///   content was captured (if anything).</param>
+///   content was captured (if anything).</returns>
 RegexMatch Regex_Match(Regex regex, String input, Int startOffset)
 {
 	const Byte *start, *end;
@@ -719,6 +718,133 @@ RegexMatch Regex_Match(Regex regex, String input, Int startOffset)
 
 	onig_region_free(region, 1);
 	return match;
+}
+
+/// <summary>
+/// Match the given regex against the given string, at the given match offset (or not at all).
+/// </summary>
+/// <param name="regex">The regular expression to match, which may include explicit captures.</param>
+/// <param name="input">The input string to match against.</param>
+/// <param name="startOffset">Where in the string to try the match.</param>
+/// <returns>A RegexMatch object that describes if the match occurred (if it matched), and what
+///   content was captured (if anything).</returns>
+RegexMatch Regex_MatchHere(Regex regex, String input, Int startOffset)
+{
+	const Byte *start, *end;
+	OnigRegion *region;
+	RegexCacheNode node;
+	int matchLength;
+	Int length;
+	RegexMatch match;
+
+	// First, get actual pointers to the string content.
+	start = String_GetBytes(input);
+	length = String_Length(input);
+	end = start + length;
+
+	// Go make the real Oniguruma regex instance, if we need to, or find a suitable one
+	// that exists in the cache.
+	node = RegexCache_FindOrAdd(regex->cacheId, regex->pattern, regex->flags);
+
+	// Make sure the start offset is sane.
+	if (startOffset < 0 || startOffset >= length)
+		return Regex_CreateErrorMatch(input,
+			String_Format("Start offset at %ld for 'Regex.match' is outside string.", (Int64)startOffset));
+
+	// Oniguruma needs somewhere to put its match information, so allocate that (off the malloc heap, not GC).
+	region = onig_region_new();
+	if (region == NULL)
+		Smile_Abort_OutOfMemory();
+
+	// Oniguruma.Go!();
+	matchLength = onig_match(node->onigRegex, (const OnigUChar *)start, (const OnigUChar *)end,
+		(const OnigUChar *)(start + startOffset), region, ONIG_OPTION_NONE);
+
+	// Generate the resulting match object, which might be an error if things didn't work.
+	match = (matchLength < 0
+		? Regex_CreateErrorMatch(input, matchLength != ONIG_MISMATCH ? Regex_OnigErrorToString(matchLength) : NULL)
+		: Regex_CreateMatchFromRegion(input, node->onigRegex, region));
+
+	onig_region_free(region, 1);
+	return match;
+}
+
+//-------------------------------------------------------------------------------------------------
+
+/// <summary>
+/// This struct is passed as 'arg' to the Regex_GetNamesCallback() function during
+/// a successful pattern match; it holds the target pointer to write to in the string array.
+/// </summary>
+typedef struct GetNamesCallbackInfoStruct {
+	String *dest;
+} *GetNamesCallbackInfo;
+
+/// <summary>
+/// During enumeration of the regex's matched names, this is invoked for each name.
+/// </summary>
+static int Regex_GetNamesCallback(const UChar *name, const UChar *nameEnd, int nGroupNum, int *groupNums, regex_t *regex, void *arg)
+{
+	GetNamesCallbackInfo info = (GetNamesCallbackInfo)arg;
+	String nameString;
+
+	UNUSED(nGroupNum);
+	UNUSED(groupNums);
+	UNUSED(regex);
+
+	nameString = String_Create((const Byte *)name, nameEnd - name);
+	*info->dest++ = nameString;
+
+	return 0;  // 0: Continue iterating through names
+}
+
+/// <summary>
+/// Query a regex to obtain an array of all its capture names.  Note that the returned
+/// array is not a *minimal* set:  If a name is repeated in the regex, it may be repeated
+/// in the returned array.
+/// </summary>
+/// <param name="regex">The regex to query.</param>
+/// <param name="names">An array of the names used in any named captures in the regex.</param>
+/// <returns>The number of capture names in the regex.</returns>
+Int Regex_GetCaptureNames(Regex regex, String **names)
+{
+	RegexCacheNode node;
+	Int numNames;
+	struct GetNamesCallbackInfoStruct getNamesCallbackInfo;
+	OnigRegex onigRegex;
+
+	// Go make the real Oniguruma regex instance, if we need to, or find a suitable one
+	// that exists in the cache.
+	node = RegexCache_FindOrAdd(regex->cacheId, regex->pattern, regex->flags);
+	onigRegex = node->onigRegex;
+
+	// Populate the named captures dictionary, if there are named captures.
+	if ((numNames = onig_number_of_names(onigRegex)) > 0) {
+
+		*names = GC_MALLOC_STRUCT_ARRAY(String, numNames);
+
+		// Spin over the names and collect them as strings.
+		getNamesCallbackInfo.dest = *names;
+		onig_foreach_name(onigRegex, Regex_GetNamesCallback, &getNamesCallbackInfo);
+	}
+	else *names = NULL;
+
+	return numNames;
+}
+
+/// <summary>
+/// Query a regex to determine how many captures it will produce.
+/// </summary>
+/// <param name="regex">The regex to query.</param>
+/// <returns>The number of captures in the regex.</returns>
+Int Regex_GetCaptureCount(Regex regex)
+{
+	RegexCacheNode node;
+	OnigRegex onigRegex;
+
+	node = RegexCache_FindOrAdd(regex->cacheId, regex->pattern, regex->flags);
+	onigRegex = node->onigRegex;
+
+	return (Int)onig_number_of_captures(onigRegex);
 }
 
 //-------------------------------------------------------------------------------------------------

@@ -141,8 +141,6 @@ Int Lexer_ParseRegex(Lexer lexer, Bool isFirstContentOnLine)
 	String pattern, flags;
 	Int startLine = lexer->line;
 	const Byte *src;
-	SmileList creationCall;
-	LexerPosition position;
 	Regex regex;
 	String errorMessage;
 
@@ -166,45 +164,120 @@ Int Lexer_ParseRegex(Lexer lexer, Bool isFirstContentOnLine)
 	token->isFirstContentOnLine = isFirstContentOnLine;
 	END_TOKEN(TOKEN_LOANWORD_REGEX);
 
-	// Now, create — and then discard! — the regex.  This may seem odd, but it fulfills two purposes:
-	// First, it validates the correctness of the regex:  It parses it fully at lexical-analysis time,
-	// so we can be certain it's correct before letting the program run.  Second, even though we've
-	// discarded it, the compiled copy of the regex is still sitting in the global regex cache, so when
-	// the program runs, it won't need to compile the regex again; it'll just locate the correct
-	// compiled regex object by matching strings to a known cache entry.  (The compiler may be able to
-	// even optimize this further, by recognizing patterns of the form [Regex.of pattern options], and
-	// simply transforming those into a load of a known handle.  But that work doesn't belong here,
-	// since #/.../ is only a shorthand for writing [Regex.of pattern options].)
+	// Now create the regex, and validate its syntax.
 	regex = Regex_Create(pattern, flags, &errorMessage);
 	if (errorMessage != NULL) {
 		lexer->token->text = errorMessage;
 		return END_TOKEN(TOKEN_ERROR);
 	}
 
-	// The constructed lists will have the whole regex position as their position.  This isn't perfect,
-	// but it's close enough that any error-reporting will be more-or-less in the right place.
-	position = Token_GetPosition(lexer->token);
-
-	// We got it, so return it as a pre-built list of the form [Regex.of pattern-string options-string].
-	creationCall =
-		SmileList_ConsWithSource(
-			(SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects._dotSymbol,
-				(SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects.RegexSymbol,
-					(SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects.ofSymbol,
-						NullObject,
-						position),
-					position),
-				position),
-			(SmileObject)SmileList_ConsWithSource((SmileObject)pattern,
-				(SmileObject)SmileList_ConsWithSource((SmileObject)flags,
-					NullObject,
-					position),
-				position),
-			position);
-
-	// Attach the list to the token, so it really can be returned.
-	token->data.ptr = creationCall;
+	// Save the regex as the thing we're actually returning.
+	token->data.ptr = regex;
 
 	// And we're done.
 	return token->kind;
+}
+
+/// <summary>
+/// Consume all whitespace characters in the range of 0-32, stopping at the first instance of '\r' or '\n'.
+/// If a '\r' is reached, and a '\n' follows it, consume the '\n'; likewise, if a '\n' is reached and a '\r'
+/// follows it, consume the '\r'.
+/// </summary>
+/// <param name="lexer">The lexer to advance past the whitespace on this line.</param>
+/// <returns>True if more content exists in the input; false if we reached EOI.</returns>
+Bool Lexer_ConsumeWhitespaceOnThisLine(Lexer lexer)
+{
+	const Byte *src;
+	const Byte *end;
+	Byte ch;
+	
+	end = lexer->end;
+	src = lexer->src;
+retryAtSrc:
+	if (src >= end) {
+		lexer->src = src;
+		return False;
+	}
+
+	switch (ch = *src++) {
+
+		//--------------------------------------------------------------------------
+		//  Whitespace and newlines.
+
+		case '\x00': case '\x01': case '\x02': case '\x03':
+		case '\x04': case '\x05': case '\x06': case '\x07':
+		case '\x08': case '\x09':              case '\x0B':
+		case '\x0C':              case '\x0E': case '\x0F':
+		case '\x10': case '\x11': case '\x12': case '\x13':
+		case '\x14': case '\x15': case '\x16': case '\x17':
+		case '\x18': case '\x19': case '\x1A': case '\x1B':
+		case '\x1C': case '\x1D': case '\x1E': case '\x1F':
+		case ' ':
+			// Simple whitespace characters.  We consume as much whitespace as possible for better
+			// performance, since whitespace tends to come in clumps in code.
+			while (src < end && (ch = *src) <= '\x20' && ch != '\n' && ch != '\r') src++;
+			goto retryAtSrc;
+
+		case '\n':
+			// Unix-style newlines, and inverted Windows newlines.
+			if (src < end && (ch = *src) == '\r')
+				src++;
+			lexer->line++;
+			lexer->lineStart = src;
+			goto retryAtSrc;
+
+		case '\r':
+			// Windows-style newlines, and old Mac newlines.
+			if (src < end && (ch = *src) == '\n')
+				src++;
+			lexer->line++;
+			lexer->lineStart = src;
+			goto retryAtSrc;
+	}
+
+	lexer->src = src - 1;
+	return True;
+}
+
+RegexMatch Lexer_ConsumeRegex(Lexer lexer, Regex regex)
+{
+	Int matchLength;
+	const Byte *src;
+	const Byte *end, *matchEnd;
+	Byte ch;
+
+	src = lexer->src;
+	end = lexer->end;
+
+	// Match the regex.  The regex engine does all the hard work here; we just call it.
+	RegexMatch match = Regex_MatchHere(regex, lexer->stringInput, src - lexer->input);
+	if (match == NULL)
+		return NULL;
+
+	// Advance the input.  We have to do this character-by-character, because
+	// we need to make sure that we're correctly tracking line numbers and column offsets.
+	matchLength = match->indexedCaptures[0].length;
+	matchEnd = src + matchLength;
+	if (matchEnd > end) matchEnd = end;		// Should never happen, but don't trust your inputs.
+
+	// Spin fast over the input, collecting line numbers as we find them.
+	while (src < matchEnd) {
+		if ((ch = *src++) == '\n') {
+			// Unix-style newlines, and inverted Windows newlines.
+			if (src < end && (ch = *src) == '\r')
+				src++;
+			lexer->line++;
+			lexer->lineStart = src;
+		}
+		else if (ch == '\r') {
+			// Windows-style newlines, and old Mac newlines.
+			if (src < end && (ch = *src) == '\n')
+				src++;
+			lexer->line++;
+			lexer->lineStart = src;
+		}
+	}
+
+	lexer->src = src;
+	return match;
 }

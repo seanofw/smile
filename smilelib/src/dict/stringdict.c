@@ -137,6 +137,79 @@ Int StringDictInt_Append(struct StringDictInt *self, String key, Int32 keyHash, 
 //  Public interface
 
 /// <summary>
+/// Make a perfect clone of this dictionary.
+/// </summary>
+/// <param name="intDict">The dictionary to make a clone of.</param>
+/// <param name="valueCloner">An optional "cloner" function that can correctly duplicate each value.
+/// This method will be passed the key, the original value, and a custom parameter, and should
+/// return the new value for that key.  If this function is a NULL pointer, the value will be shallow-copied as-is.</param>
+/// <param name="param">A custom parameter to pass to the "cloner" function.  If the "cloner" function
+/// is NULL, this should also be NULL.</param>
+/// <returns>The cloned dictionary.</returns>
+StringDict StringDict_Clone(StringDict stringDict, StringDict_ValueCloner valueCloner, void *param)
+{
+	struct StringDictInt *newStringDict;
+	struct StringDictInt *oldStringDict = (struct StringDictInt *)stringDict;
+	Int newSize, bucket, nodeIndex, nextNodeIndex;
+	Int *buckets;
+	struct StringDictNode *oldHeap, *newHeap;
+	String key;
+
+	newStringDict = GC_MALLOC_STRUCT(struct StringDictInt);
+	if (newStringDict == NULL) Smile_Abort_OutOfMemory();
+
+	newSize = oldStringDict->mask + 1;
+
+	newStringDict->count = oldStringDict->count;
+	newStringDict->firstFree = oldStringDict->firstFree;
+	newStringDict->mask = oldStringDict->mask;
+
+	newStringDict->buckets = buckets = (Int *)GC_MALLOC_ATOMIC(sizeof(Int) * newSize);
+	if (buckets == NULL) Smile_Abort_OutOfMemory();
+
+	MemCpy(buckets, oldStringDict->buckets, sizeof(Int) * newSize);
+
+	newStringDict->heap = newHeap = GC_MALLOC_STRUCT_ARRAY(struct StringDictNode, newSize);
+	if (newHeap == NULL) Smile_Abort_OutOfMemory();
+
+	oldHeap = oldStringDict->heap;
+
+	if (valueCloner != NULL) {
+		for (bucket = 0; bucket <= oldStringDict->mask; bucket++) {
+			nodeIndex = buckets[bucket];
+			while (nodeIndex >= 0) {
+				newHeap[nodeIndex].key = key = oldHeap[nodeIndex].key;
+				newHeap[nodeIndex].value = valueCloner(key, oldHeap[nodeIndex].value, param);
+				newHeap[nodeIndex].next = nextNodeIndex = oldHeap[nodeIndex].next;
+				nodeIndex = nextNodeIndex;
+			}
+		}
+	}
+	else {
+		for (bucket = 0; bucket <= oldStringDict->mask; bucket++) {
+			nodeIndex = buckets[bucket];
+			while (nodeIndex >= 0) {
+				newHeap[nodeIndex].key = oldHeap[nodeIndex].key;
+				newHeap[nodeIndex].value = oldHeap[nodeIndex].value;
+				newHeap[nodeIndex].next = nextNodeIndex = oldHeap[nodeIndex].next;
+				nodeIndex = nextNodeIndex;
+			}
+		}
+	}
+
+	nodeIndex = oldStringDict->firstFree;
+
+	while (nodeIndex >= 0) {
+		newHeap[nodeIndex].key = oldHeap[nodeIndex].key;
+		newHeap[nodeIndex].value = oldHeap[nodeIndex].value;
+		newHeap[nodeIndex].next = nextNodeIndex = oldHeap[nodeIndex].next;
+		nodeIndex = nextNodeIndex;
+	}
+
+	return (StringDict)newStringDict;
+}
+
+/// <summary>
 /// Get all key/value pairs from the dictionary.
 /// </summary>
 /// <param name="stringDict">A pointer to the dictionary.</param>
@@ -379,4 +452,29 @@ SMILE_API_FUNC DictStats StringDict_ComputeStats(StringDict stringDict)
 	}
 
 	return stats;
+}
+
+Bool StringDict_ForEach(StringDict stringDict, Bool(*func)(String key, void *value, void *param), void *param)
+{
+	struct StringDictInt *self;
+	Int bucket, nodeIndex;
+	Int *buckets;
+	struct StringDictNode *heap, *node;
+
+	self = (struct StringDictInt *)stringDict;
+
+	buckets = self->buckets;
+	heap = self->heap;
+
+	for (bucket = 0; bucket <= self->mask; bucket++) {
+		nodeIndex = buckets[bucket];
+		while (nodeIndex >= 0) {
+			node = heap + nodeIndex;
+			if (!func(node->key, node->value, param))
+				return False;
+			nodeIndex = node->next;
+		}
+	}
+
+	return True;
 }

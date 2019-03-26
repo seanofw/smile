@@ -74,10 +74,13 @@ typedef struct RegexReplaceStateStruct {
 SMILE_API_FUNC Regex Regex_Create(String pattern, String flags, String *errorMessage);
 SMILE_API_FUNC Bool Regex_Test(Regex regex, String input, Int startOffset);
 SMILE_API_FUNC RegexMatch Regex_Match(Regex regex, String input, Int startOffset);
+SMILE_API_FUNC RegexMatch Regex_MatchHere(Regex regex, String input, Int startOffset);
 SMILE_API_FUNC Int Regex_Count(Regex regex, String input, Int startOffset, Int limit);
 SMILE_API_FUNC String Regex_Replace(Regex regex, String input, String replacement, Int startOffset, Int limit);
 SMILE_API_FUNC Int Regex_Split(Regex regex, String input, String **pieces, Bool includeEmpty, Int limit);
 SMILE_API_FUNC String Regex_ToString(Regex regex);
+SMILE_API_FUNC Int Regex_GetCaptureNames(Regex regex, String **names);
+SMILE_API_FUNC Int Regex_GetCaptureCount(Regex regex);
 
 SMILE_API_FUNC Regex Regex_WithEndAnchor(Regex regex);
 SMILE_API_FUNC Regex Regex_WithStartAnchor(Regex regex);
@@ -101,11 +104,41 @@ Inline Bool Regex_Equal(Regex a, Regex b)
 }
 
 /// <summary>
+/// Calculate a reasonable hash code for this regex so it can be used in lookup tables.
+/// </summary>
+Inline UInt32 Regex_Hash(Regex regex)
+{
+	return (String_Hash(regex->pattern) * 29) + String_Hash(regex->flags);
+}
+
+/// <summary>
 /// Determine if this is a valid regex, or if it's broken/not-compile-able.
 /// </summary>
 Inline Bool Regex_IsValid(Regex regex)
 {
 	return regex->cacheId != 0;
+}
+
+/// <summary>
+/// Get the text of a numbered capture.
+/// </summary>
+Inline String RegexMatch_GetCapture(RegexMatch match, Int index)
+{
+	RegexMatchRange range;
+	return index >= 0 && index < match->numIndexedCaptures
+		? String_Substring(match->input, (range = &match->indexedCaptures[index])->start, range->length)
+		: NULL;
+}
+
+/// <summary>
+/// Get the text of a named capture.
+/// </summary>
+Inline String RegexMatch_GetNamedCapture(RegexMatch match, String name)
+{
+	Int index;
+	return StringIntDict_TryGetValue(&match->namedCaptures, name, &index)
+		? RegexMatch_GetCapture(match, index)
+		: NULL;
 }
 
 #endif

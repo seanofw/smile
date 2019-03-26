@@ -28,7 +28,7 @@ Tokens:
 	EQ NE LE GE GT LT SUPEREQ SUPERNE
 	PLUS MINUS STAR SLASH
 	CHAR STRING BYTE INT32 INT64 REAL32 REAL64
-	LOANWORD_INCLUDE LOANWORD_BRK LOANWORD_SYNTAX LOANWORD_ALL
+	LOANWORD_INCLUDE LOANWORD_BRK LOANWORD_SYNTAX LOANWORD_LOANWORD LOANWORD_ALL
 	LOANWORD_JSON LOANWORD_XML LOANWORD_HTML LOANWORD_REGEX
 
 ---------------------------------------------------------------------------------------------------
@@ -60,6 +60,7 @@ include_expr ::= STRING
 include_names ::= anyname
 		| anyname AS anyname
 		| LOANWORD_SYNTAX
+		| LOANWORD_LOANWORD
 		| LOANWORD_ALL
 		| include_names COMMA anyname
 
@@ -166,10 +167,11 @@ term ::= LPAREN expr RPAREN							// See note above about binary operators (brea
        | CHAR
        | BYTE | INT16 | INT32 | INT64 | REAL32 | REAL64 | REAL128 | FLOAT32 | FLOAT64
        | LOANWORD_JSON
-	   | LOANWORD_XML
-	   | LOANWORD_HTML
-	   | LOANWORD_REGEX
+       | LOANWORD_XML
+       | LOANWORD_HTML
+       | LOANWORD_REGEX
        | LOANWORD_SYNTAX syntax_expr
+       | LOANWORD_LOANWORD loanword_expr
 
 call_args_opt: call_args |
 call_args: orexpr call_args | orexpr
@@ -217,3 +219,5 @@ syntax_nonterm ::= LBRACKET syntax_with_opt any_name any_name syntax_sep_opt RBR
 syntax_with_opt ::= WITH syntax_with_names COLON |
 syntax_with_names ::= syntax_with_names COMMA any_name | syntax_with_names any_name | any_name
 syntax_sep_opt ::= COMMA | SEMICOLON |
+
+loanword_expr ::= any_name COLON LOANWORD_REGEX IMPLIES raw_list_term

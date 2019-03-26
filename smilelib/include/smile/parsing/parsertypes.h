@@ -10,6 +10,8 @@ typedef struct ParserSyntaxNodeStruct *ParserSyntaxNode;
 typedef struct ParserSyntaxClassStruct *ParserSyntaxClass;
 typedef struct ParserSyntaxTableStruct *ParserSyntaxTable;
 
+typedef struct ParserLoanwordTableStruct *ParserLoanwordTable;
+
 // Alternate name for a ParseMessage, which is a useful alternate name when talking about errors.
 typedef struct ParseMessageStruct *ParseError;
 

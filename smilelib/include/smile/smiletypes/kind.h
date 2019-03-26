@@ -79,7 +79,8 @@ typedef enum {
 	// Types used for parsing.	
 	SMILE_KIND_SYNTAX				= 0xF0,
 	SMILE_KIND_NONTERMINAL			= 0xF1,
-		
+	SMILE_KIND_LOANWORD				= 0xF2,
+
 	// Internal types used during parsing.	
 	SMILE_KIND_PARSEDECL			= 0xFE,
 	SMILE_KIND_PARSEMESSAGE			= 0xFF,

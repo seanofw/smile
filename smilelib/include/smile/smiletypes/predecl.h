@@ -63,6 +63,7 @@ typedef struct SmileUniRangeInt *SmileUniRange;
 
 typedef struct SmileSyntaxInt *SmileSyntax;
 typedef struct SmileNonterminalInt *SmileNonterminal;
+typedef struct SmileLoanwordInt *SmileLoanword;
 
 typedef struct SmileByteArrayInt *SmileByteArray;
 
