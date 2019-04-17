@@ -140,7 +140,7 @@ Bool ParserLoanwordTable_AddRule(Parser parser, ParserLoanwordTable *resultTable
 			String_Format("Cannot declare \"#%S\"; this loanword name is reserved.", loanword->name)));
 		return False;
 	}
-	else if (Int32Dict_TryGetValue(table->definitions, loanword->name, &previousLoanword)) {
+	else if (Int32Dict_TryGetValue(table->definitions, loanword->name, (void **)&previousLoanword)) {
 
 		// Couldn't add it because it already existed.  This may or may not be an error, depending
 		// on why it already exists.

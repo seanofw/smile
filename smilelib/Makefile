@@ -21,6 +21,7 @@ INCLUDES := -Iinclude
 
 DECIMAL_OBJS := $(addprefix obj/$(PLATFORM_NAME)/decimal/,$(notdir $(DECIMAL_SRCS:.c=.o)))
 GC_OBJS := $(addprefix obj/$(PLATFORM_NAME)/gc/,$(notdir $(GC_SRCS:.c=.o)))
+REGEX_OBJS := $(addprefix obj/$(PLATFORM_NAME)/regex/,$(notdir $(REGEX_SRCS:.c=.o)))
 SMILE_OBJS := $(subst src/,obj/$(PLATFORM_NAME)/smile/,$(SMILE_SRCS:.c=.o))
 LIB_OBJS := $(subst lib/,obj/$(PLATFORM_NAME)/lib/,$(LIB_SRCS:.c=.o))
 
@@ -29,6 +30,7 @@ ALL_SRCS := $(DECIMAL_SRCS) $(GC_SRCS) $(LIB_SRCS) $(SMILE_SRCS)
 ALL_OBJS := $(DECIMAL_OBJS) $(GC_OBJS) $(LIB_OBJS) $(SMILE_OBJS)
 
 GC_DEFS := -DGC_BUILD -DGC_DLL -DSMILELIB_BUILD
+REGEX_DEFS := -DGC_BUILD -DSMILELIB_BUILD
 DECIMAL_DEFS := -DSMILELIB_BUILD
 SMILE_DEFS := -DGC_BUILD -DSMILELIB_BUILD
 LIB_DEFS := -DGC_BUILD -DSMILELIB_BUILD
@@ -62,6 +64,10 @@ obj/$(PLATFORM_NAME)/gc/%.o : gc/src/%.c
 	@$(MKDIR_P) $(dir $@)
 	$(CC) $(ALL_CFLAGS) $(GC_DEFS) $(INCLUDES) -Igc/include -c $< -o $@
 
+obj/$(PLATFORM_NAME)/regex/%.o : regex/src/%.c
+	@$(MKDIR_P) $(dir $@)
+	$(CC) $(ALL_CFLAGS) $(REGEX_DEFS) $(INCLUDES) -Iregex/include -c $< -o $@
+
 obj/$(PLATFORM_NAME)/lib/%.o : lib/%.c
 	@$(MKDIR_P) $(dir $@)
 	$(CC) $(ALL_CFLAGS) $(LIB_DEFS) $(INCLUDES) -c $< -o $@
@@ -88,6 +94,8 @@ dep2:
 		$(CC) $(ALL_CFLAGS) $(DECIMAL_DEFS) $(INCLUDES) $(DEPFLAGS) $(SRC) -MT 'obj/$(PLATFORM_NAME)/decimal/$(basename $(notdir $(SRC))).o' >> Makefile.dep; $(PRINTF) '\n' >> Makefile.dep;)
 	$(foreach SRC,$(GC_SRCS), \
 		$(CC) $(ALL_CFLAGS) $(GC_DEFS) $(INCLUDES) -Igc/include $(DEPFLAGS) $(SRC) -MT 'obj/$(PLATFORM_NAME)/gc/$(basename $(notdir $(SRC))).o'  >> Makefile.dep; $(PRINTF) '\n' >> Makefile.dep;)
+	$(foreach SRC,$(REGEX_SRCS), \
+		$(CC) $(ALL_CFLAGS) $(REGEX_DEFS) $(INCLUDES) -Igc/include $(DEPFLAGS) $(SRC) -MT 'obj/$(PLATFORM_NAME)/regex/$(basename $(notdir $(SRC))).o'  >> Makefile.dep; $(PRINTF) '\n' >> Makefile.dep;)
 	$(foreach SRC,$(LIB_SRCS), \
 		$(CC) $(ALL_CFLAGS) $(LIB_DEFS) $(INCLUDES) $(DEPFLAGS) $(SRC) -MT 'obj/$(PLATFORM_NAME)/lib/$(basename $(subst lib/,,$(SRC))).o' >> Makefile.dep; $(PRINTF) '\n' >> Makefile.dep;)
 	$(foreach SRC,$(SMILE_SRCS), \

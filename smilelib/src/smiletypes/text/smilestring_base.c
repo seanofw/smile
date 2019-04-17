@@ -1016,7 +1016,7 @@ SMILE_EXTERNAL_FUNCTION(CountOf)
 		result = String_CountOf(str, pattern, (Int)startIndex);
 	}
 	else {
-		result = Regex_Count(regexPattern, str, startIndex, 0);
+		result = Regex_Count(regexPattern, str, (Int)startIndex, 0);
 	}
 
 	return SmileUnboxedInteger64_From(result);
@@ -1041,7 +1041,7 @@ SMILE_EXTERNAL_FUNCTION(CountOfI)
 		result = String_CountOf(str, pattern, (Int)startIndex);
 	}
 	else {
-		result = Regex_Count(Regex_AsCaseInsensitive(regexPattern), str, startIndex, 0);
+		result = Regex_Count(Regex_AsCaseInsensitive(regexPattern), str, (Int)startIndex, 0);
 	}
 
 	return SmileUnboxedInteger64_From(result);
@@ -1080,7 +1080,7 @@ SMILE_EXTERNAL_FUNCTION(Replace)
 		else limit = 0;
 		if (regexPattern == NULL)
 			regexPattern = Regex_Create(String_RegexEscape(pattern), String_Empty, NULL);
-		return RegexReplaceStateMachine_Start(regexPattern, str, (SmileFunction)argv[2].obj, 0, limit, pattern != NULL);
+		return RegexReplaceStateMachine_Start(regexPattern, str, (SmileFunction)argv[2].obj, 0, (Int)limit, pattern != NULL);
 	}
 
 	replacement = DecodePatternWithoutRegex(argv[2], "replace", "replacement");
@@ -1104,7 +1104,7 @@ SMILE_EXTERNAL_FUNCTION(Replace)
 			if (limit > String_Length(str)) limit = String_Length(str);
 		}
 		else limit = 0;
-		str = Regex_Replace(regexPattern, str, replacement, 0, limit);
+		str = Regex_Replace(regexPattern, str, replacement, 0, (Int)limit);
 	}
 
 	return SmileArg_From((SmileObject)str);
@@ -1130,7 +1130,7 @@ SMILE_EXTERNAL_FUNCTION(ReplaceI)
 		regexPattern = (regexPattern != NULL
 			? Regex_AsCaseInsensitive(regexPattern)
 			: Regex_Create(String_RegexEscape(pattern), i, NULL));
-		return RegexReplaceStateMachine_Start(regexPattern, str, (SmileFunction)argv[2].obj, 0, limit, pattern != NULL);
+		return RegexReplaceStateMachine_Start(regexPattern, str, (SmileFunction)argv[2].obj, 0, (Int)limit, pattern != NULL);
 	}
 
 	replacement = DecodePatternWithoutRegex(argv[2], "replace~", "replacement");
@@ -1154,7 +1154,7 @@ SMILE_EXTERNAL_FUNCTION(ReplaceI)
 			if (limit > String_Length(str)) limit = String_Length(str);
 		}
 		else limit = 0;
-		str = Regex_Replace(Regex_AsCaseInsensitive(regexPattern), str, replacement, 0, limit);
+		str = Regex_Replace(Regex_AsCaseInsensitive(regexPattern), str, replacement, 0, (Int)limit);
 	}
 
 	return SmileArg_From((SmileObject)str);

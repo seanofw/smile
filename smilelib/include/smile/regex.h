@@ -125,9 +125,10 @@ Inline Bool Regex_IsValid(Regex regex)
 Inline String RegexMatch_GetCapture(RegexMatch match, Int index)
 {
 	RegexMatchRange range;
-	return index >= 0 && index < match->numIndexedCaptures
-		? String_Substring(match->input, (range = &match->indexedCaptures[index])->start, range->length)
-		: NULL;
+	if (index < 0 || index >= match->numIndexedCaptures)
+		return NULL;
+	range = &match->indexedCaptures[index];
+	return String_Substring(match->input, range->start, range->length);
 }
 
 /// <summary>

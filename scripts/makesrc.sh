@@ -29,6 +29,11 @@ printf '\nGC_SRCS = \\\n'
 egrep '^gc\/' $ALLSRC \
 	| $SED -e 's/^(.*)$/    \1 \\/; $s/\\//;'
 
+printf '\nREGEX_SRCS = \\\n'
+
+egrep '^regex\/' $ALLSRC \
+	| $SED -e 's/^(.*)$/    \1 \\/; $s/\\//;'
+
 printf '\nLIB_SRCS = \\\n'
 
 egrep '^lib\/' $ALLSRC \

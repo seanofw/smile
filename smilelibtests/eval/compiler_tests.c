@@ -73,7 +73,7 @@ START_TEST(CanCompileNull)
 	SmileObject expr = Parse("[]");
 
 	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
 	String result;
 
 	const char *expectedResult =
@@ -90,7 +90,7 @@ START_TEST(CanCompileByte)
 	SmileObject expr = Parse("123x");
 
 	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
 	String result;
 
 	const char *expectedResult =
@@ -107,7 +107,7 @@ START_TEST(CanCompileInt16)
 	SmileObject expr = Parse("123s");
 
 	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
 	String result;
 
 	const char *expectedResult =
@@ -124,7 +124,7 @@ START_TEST(CanCompileInt32)
 	SmileObject expr = Parse("123t");
 
 	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
 	String result;
 
 	const char *expectedResult =
@@ -141,7 +141,7 @@ START_TEST(CanCompileInt64)
 	SmileObject expr = Parse("123");
 
 	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
 	String result;
 
 	const char *expectedResult =
@@ -158,7 +158,7 @@ START_TEST(CanCompileBasicArithmetic)
 	SmileObject expr = Parse("123 + 456");
 
 	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -179,7 +179,7 @@ START_TEST(CanCompileMildlyInterestingArithmetic)
 	SmileObject expr = Parse("(123 + -456) * 50");
 
 	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -205,13 +205,21 @@ END_TEST
 
 START_TEST(CanCompileGlobalReadsAndWrites)
 {
-	SmileObject expr = Parse("ga = gb");
+	SmileObject expr;
+	Compiler compiler;
+	CompileScope compileScope;
+	UserFunctionInfo globalFunction;
+	String result, expectedResult;
 
-	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
-	String result;
+	expr = Parse("ga = gb");
 
-	String expectedResult = String_Format(
+	compiler = Compiler_Create();
+	compileScope = Compiler_BeginScope(compiler, PARSESCOPE_OUTERMOST);
+	CompileScope_DefineSymbol(compileScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "ga"), PARSEDECL_GLOBAL, 0);
+	CompileScope_DefineSymbol(compileScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "gb"), PARSEDECL_GLOBAL, 0);
+	globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
+
+	expectedResult = String_Format(
 		"0: \tLdX     `gb (%hd)\t; test.sm:1\n"
 		"1: \tStX     `ga (%hd)\t; test.sm:1\n"
 		"2: \tRet\n",
@@ -226,13 +234,21 @@ END_TEST
 
 START_TEST(CanCompileReadsFromProperties)
 {
-	SmileObject expr = Parse("ga = gb.foo");
+	SmileObject expr;
+	Compiler compiler;
+	CompileScope compileScope;
+	UserFunctionInfo globalFunction;
+	String result, expectedResult;
 
-	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
-	String result;
+	expr = Parse("ga = gb.foo");
 
-	String expectedResult = String_Format(
+	compiler = Compiler_Create();
+	compileScope = Compiler_BeginScope(compiler, PARSESCOPE_OUTERMOST);
+	CompileScope_DefineSymbol(compileScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "ga"), PARSEDECL_GLOBAL, 0);
+	CompileScope_DefineSymbol(compileScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "gb"), PARSEDECL_GLOBAL, 0);
+	globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
+
+	expectedResult = String_Format(
 		"0: \tLdX     `gb (%hd)\t; test.sm:1\n"
 		"1: \tLdProp  `foo (%hd)\t; test.sm:1\n"
 		"2: \tStX     `ga (%hd)\t; test.sm:1\n"
@@ -249,13 +265,21 @@ END_TEST
 
 START_TEST(CanCompileWritesToProperties)
 {
-	SmileObject expr = Parse("ga.foo = gb");
+	SmileObject expr;
+	Compiler compiler;
+	CompileScope compileScope;
+	UserFunctionInfo globalFunction;
+	String result, expectedResult;
 
-	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
-	String result;
+	expr = Parse("ga.foo = gb");
 
-	String expectedResult = String_Format(
+	compiler = Compiler_Create();
+	compileScope = Compiler_BeginScope(compiler, PARSESCOPE_OUTERMOST);
+	CompileScope_DefineSymbol(compileScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "ga"), PARSEDECL_GLOBAL, 0);
+	CompileScope_DefineSymbol(compileScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "gb"), PARSEDECL_GLOBAL, 0);
+	globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
+
+	expectedResult = String_Format(
 		"0: \tLdX     `ga (%hd)\t; test.sm:1\n"
 		"1: \tLdX     `gb (%hd)\t; test.sm:1\n"
 		"2: \tStProp  `foo (%hd)\t; test.sm:1\n"
@@ -272,13 +296,21 @@ END_TEST
 
 START_TEST(CanCompileReadsFromMembers)
 {
-	SmileObject expr = Parse("ga = gb:10");
+	SmileObject expr;
+	Compiler compiler;
+	CompileScope compileScope;
+	UserFunctionInfo globalFunction;
+	String result, expectedResult;
 
-	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
-	String result;
+	expr = Parse("ga = gb:10");
 
-	String expectedResult = String_Format(
+	compiler = Compiler_Create();
+	compileScope = Compiler_BeginScope(compiler, PARSESCOPE_OUTERMOST);
+	CompileScope_DefineSymbol(compileScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "ga"), PARSEDECL_GLOBAL, 0);
+	CompileScope_DefineSymbol(compileScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "gb"), PARSEDECL_GLOBAL, 0);
+	globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
+
+	expectedResult = String_Format(
 		"0: \tLdX     `gb (%hd)\t; test.sm:1\n"
 		"1: \tLd64    10\t; test.sm:1\n"
 		"2: \tLdMember\t; test.sm:1\n"
@@ -295,13 +327,21 @@ END_TEST
 
 START_TEST(CanCompileWritesToMembers)
 {
-	SmileObject expr = Parse("ga:10 = gb");
+	SmileObject expr;
+	Compiler compiler;
+	CompileScope compileScope;
+	UserFunctionInfo globalFunction;
+	String result, expectedResult;
 
-	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
-	String result;
+	expr = Parse("ga:10 = gb");
 
-	String expectedResult = String_Format(
+	compiler = Compiler_Create();
+	compileScope = Compiler_BeginScope(compiler, PARSESCOPE_OUTERMOST);
+	CompileScope_DefineSymbol(compileScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "ga"), PARSEDECL_GLOBAL, 0);
+	CompileScope_DefineSymbol(compileScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "gb"), PARSEDECL_GLOBAL, 0);
+	globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
+
+	expectedResult = String_Format(
 		"0: \tLdX     `ga (%hd)\t; test.sm:1\n"
 		"1: \tLd64    10\t; test.sm:1\n"
 		"2: \tLdX     `gb (%hd)\t; test.sm:1\n"
@@ -322,13 +362,21 @@ END_TEST
 
 START_TEST(CanCompileGlobalMutations)
 {
-	SmileObject expr = Parse("ga += gb");
+	SmileObject expr;
+	Compiler compiler;
+	CompileScope compileScope;
+	UserFunctionInfo globalFunction;
+	String result, expectedResult;
 
-	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
-	String result;
+	expr = Parse("ga += gb");
 
-	String expectedResult = String_Format(
+	compiler = Compiler_Create();
+	compileScope = Compiler_BeginScope(compiler, PARSESCOPE_OUTERMOST);
+	CompileScope_DefineSymbol(compileScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "ga"), PARSEDECL_GLOBAL, 0);
+	CompileScope_DefineSymbol(compileScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "gb"), PARSEDECL_GLOBAL, 0);
+	globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
+
+	expectedResult = String_Format(
 		"0: \tLdX     `ga (%hd)\t; test.sm:1\n"
 		"1: \tLdX     `gb (%hd)\t; test.sm:1\n"
 		"2: \tBinary  `+ (%hd)\t; test.sm:1\n"
@@ -347,13 +395,21 @@ END_TEST
 
 START_TEST(CanCompileMutationsOfProperties)
 {
-	SmileObject expr = Parse("ga.foo += gb");
+	SmileObject expr;
+	Compiler compiler;
+	CompileScope compileScope;
+	UserFunctionInfo globalFunction;
+	String result, expectedResult;
 
-	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
-	String result;
+	expr = Parse("ga.foo += gb");
 
-	String expectedResult = String_Format(
+	compiler = Compiler_Create();
+	compileScope = Compiler_BeginScope(compiler, PARSESCOPE_OUTERMOST);
+	CompileScope_DefineSymbol(compileScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "ga"), PARSEDECL_GLOBAL, 0);
+	CompileScope_DefineSymbol(compileScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "gb"), PARSEDECL_GLOBAL, 0);
+	globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
+
+	expectedResult = String_Format(
 		"0: \tLdX     `ga (%hd)\t; test.sm:1\n"
 		"1: \tDup1\t; test.sm:1\n"
 		"2: \tLdProp  `foo (%hd)\t; test.sm:1\n"
@@ -375,13 +431,21 @@ END_TEST
 
 START_TEST(CanCompileMutationsOfMembers)
 {
-	SmileObject expr = Parse("ga:10 += gb");
+	SmileObject expr;
+	Compiler compiler;
+	CompileScope compileScope;
+	UserFunctionInfo globalFunction;
+	String result, expectedResult;
 
-	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
-	String result;
+	expr = Parse("ga:10 += gb");
 
-	String expectedResult = String_Format(
+	compiler = Compiler_Create();
+	compileScope = Compiler_BeginScope(compiler, PARSESCOPE_OUTERMOST);
+	CompileScope_DefineSymbol(compileScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "ga"), PARSEDECL_GLOBAL, 0);
+	CompileScope_DefineSymbol(compileScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "gb"), PARSEDECL_GLOBAL, 0);
+	globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
+
+	expectedResult = String_Format(
 		"0: \tLdX     `ga (%hd)\t; test.sm:1\n"
 		"1: \tLd64    10\t; test.sm:1\n"
 		"2: \tDup2\t; test.sm:1\n"
@@ -407,13 +471,20 @@ END_TEST
 
 START_TEST(CanCompileScopeVariableReads)
 {
-	SmileObject expr = Parse("{ a = gb }");
+	SmileObject expr;
+	Compiler compiler;
+	CompileScope compileScope;
+	UserFunctionInfo globalFunction;
+	String result, expectedResult;
 
-	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
-	String result;
+	expr = Parse("{ a = gb }");
 
-	String expectedResult = String_Format(
+	compiler = Compiler_Create();
+	compileScope = Compiler_BeginScope(compiler, PARSESCOPE_OUTERMOST);
+	CompileScope_DefineSymbol(compileScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "gb"), PARSEDECL_GLOBAL, 0);
+	globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
+
+	expectedResult = String_Format(
 		"0: \tNullLoc0 `a (0)\t; test.sm:1\n"
 		"1: \tLdX     `gb (%hd)\t; test.sm:1\n"
 		"2: \tStLoc0  `a (0)\t; test.sm:1\n"
@@ -434,7 +505,7 @@ START_TEST(CanCompileNestedScopeVariableReads)
 	SmileObject expr = Parse("{ var b = 10 { var a = b, c = a + b } }");
 
 	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -466,7 +537,7 @@ START_TEST(NestedScopesVariablesDontOverlap)
 	SmileObject expr = Parse("{ var b = 10 { var a = b, c = a + b } { var d = b * 20 } }");
 
 	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -506,7 +577,7 @@ START_TEST(CanCompileSimpleConditionals)
 	SmileObject expr = Parse("[$if 1 < 10 `then-side `else-side]");
 
 	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -535,7 +606,7 @@ START_TEST(CanCompileConditionalsWithNullThenSide)
 	SmileObject expr = Parse("{ var a, b [$if 10 < 1 [] ({ a = 20 })] `done }");
 
 	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -566,7 +637,7 @@ START_TEST(CanCompileConditionalsWithNullElseSide)
 	SmileObject expr = Parse("{ var a, b [$if 1 < 10 ({ a = 20 }) []] `done }");
 
 	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -597,7 +668,7 @@ START_TEST(CanCompileConditionalsWithAMeaninglessThenSide)
 	SmileObject expr = Parse("{ var a, b [$if 10 < 1 `bar ({ a = 20 })] `done }");
 
 	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -628,7 +699,7 @@ START_TEST(CanCompileConditionalsWithMeaninglessElseSide)
 	SmileObject expr = Parse("{ var a, b [$if 1 < 10 ({ a = 20 }) `bar] `done }");
 
 	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -667,7 +738,7 @@ START_TEST(CanCompileConditionalsAllTheWay)
 	);
 
 	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -700,7 +771,7 @@ START_TEST(CanCompileAPreCondPostWhileLoop)
 	);
 
 	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -751,7 +822,7 @@ START_TEST(CanCompileAPreCondWhileLoop)
 	);
 
 	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -793,7 +864,7 @@ START_TEST(CanCompileANullCondPostWhileLoop)
 	);
 
 	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -836,7 +907,7 @@ START_TEST(CanCompileACondPostWhileLoop)
 	);
 
 	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -879,7 +950,7 @@ START_TEST(CanCompileACondOnlyWhileLoop)
 	);
 
 	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -923,7 +994,7 @@ START_TEST(CanCompileAWhileLoopThatComputesLogarithms)
 	);
 
 	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -974,7 +1045,7 @@ START_TEST(CanCompileASimpleTillLoop)
 	);
 
 	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
 	String result;
 
 	String expectedResult = String_FromC(
@@ -1008,7 +1079,7 @@ START_TEST(CanCompileATillLoopThatActuallyDoesSomething)
 	);
 
 	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -1048,7 +1119,7 @@ START_TEST(CanCompileASimpleTillLoopUsingBuiltInSyntax)
 	);
 
 	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -1089,7 +1160,7 @@ START_TEST(CanCompileASimpleTillLoopUsingBuiltInSyntaxAndNoResultingValue)
 	);
 
 	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -1137,7 +1208,7 @@ START_TEST(CanCompileATillLoopWithWhenClauses)
 	);
 
 	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -1204,7 +1275,7 @@ START_TEST(CanCompileATillLoopWithWhenClausesAndNoResultingValue)
 	);
 
 	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
 	String result;
 
 	String expectedResult = String_Format(
@@ -1265,7 +1336,7 @@ START_TEST(CanCompileATillLoopToEscapeNestedFunctions)
 	);
 
 	Compiler compiler = Compiler_Create();
-	UserFunctionInfo globalFunction = Compiler_CompileGlobal(compiler, expr);
+	UserFunctionInfo globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expr);
 
 	String outerExpectedResult = String_Format(
 		"0: \tNullLoc0 `list (0)\t; test.sm:1\n"

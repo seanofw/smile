@@ -87,16 +87,16 @@ START_TEST(ShouldRecognizeInclude)
 }
 END_TEST
 
-START_TEST(ShouldNotRecognizeNonIncludes)
+START_TEST(ShouldNotRecognizeNonIncludesAsIncludes)
 {
 	Lexer lexer = Setup("  \t  #includex  \r\n");
-	ASSERT(Lexer_Next(lexer) == TOKEN_ERROR);
+	ASSERT(Lexer_Next(lexer) == TOKEN_LOANWORD_CUSTOM);
 
 	lexer = Setup("  \t  #Include  \r\n");
-	ASSERT(Lexer_Next(lexer) == TOKEN_ERROR);
+	ASSERT(Lexer_Next(lexer) == TOKEN_LOANWORD_CUSTOM);
 
 	lexer = Setup("  \t  #INCLUDE  \r\n");
-	ASSERT(Lexer_Next(lexer) == TOKEN_ERROR);
+	ASSERT(Lexer_Next(lexer) == TOKEN_LOANWORD_CUSTOM);
 }
 END_TEST
 
@@ -117,16 +117,16 @@ START_TEST(ShouldRecognizeSyntax)
 }
 END_TEST
 
-START_TEST(ShouldNotRecognizeNonSyntaxes)
+START_TEST(ShouldNotRecognizeNonSyntaxesAsSyntax)
 {
 	Lexer lexer = Setup("  \t  #syntaxx  \r\n");
-	ASSERT(Lexer_Next(lexer) == TOKEN_ERROR);
+	ASSERT(Lexer_Next(lexer) == TOKEN_LOANWORD_CUSTOM);
 
 	lexer = Setup("  \t  #Syntax  \r\n");
-	ASSERT(Lexer_Next(lexer) == TOKEN_ERROR);
+	ASSERT(Lexer_Next(lexer) == TOKEN_LOANWORD_CUSTOM);
 
 	lexer = Setup("  \t  #SYNTAX  \r\n");
-	ASSERT(Lexer_Next(lexer) == TOKEN_ERROR);
+	ASSERT(Lexer_Next(lexer) == TOKEN_LOANWORD_CUSTOM);
 }
 END_TEST
 
@@ -145,16 +145,16 @@ START_TEST(ShouldRecognizeBreak)
 }
 END_TEST
 
-START_TEST(ShouldNotRecognizeNonBreaks)
+START_TEST(ShouldNotRecognizeNonBreaksAsBreaks)
 {
 	Lexer lexer = Setup("  \t  #brkk  \r\n");
-	ASSERT(Lexer_Next(lexer) == TOKEN_ERROR);
+	ASSERT(Lexer_Next(lexer) == TOKEN_LOANWORD_CUSTOM);
 
 	lexer = Setup("  \t  #Brk  \r\n");
-	ASSERT(Lexer_Next(lexer) == TOKEN_ERROR);
+	ASSERT(Lexer_Next(lexer) == TOKEN_LOANWORD_CUSTOM);
 
 	lexer = Setup("  \t  #BRK  \r\n");
-	ASSERT(Lexer_Next(lexer) == TOKEN_ERROR);
+	ASSERT(Lexer_Next(lexer) == TOKEN_LOANWORD_CUSTOM);
 }
 END_TEST
 

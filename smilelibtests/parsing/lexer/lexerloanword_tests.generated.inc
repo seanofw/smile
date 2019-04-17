@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: d4dd8600ee513e60f367c978ba59248e
+// SourceHash: da70cbb1d1f1789b86f66272692efefa
 
 START_TEST_SUITE(LexerLoanwordTests)
 {
@@ -8,11 +8,11 @@ START_TEST_SUITE(LexerLoanwordTests)
 	ShouldNotRecognizeSingleOrTripleHash,
 	ShouldTreatHashBangsAsLineComments,
 	ShouldRecognizeInclude,
-	ShouldNotRecognizeNonIncludes,
+	ShouldNotRecognizeNonIncludesAsIncludes,
 	ShouldRecognizeSyntax,
-	ShouldNotRecognizeNonSyntaxes,
+	ShouldNotRecognizeNonSyntaxesAsSyntax,
 	ShouldRecognizeBreak,
-	ShouldNotRecognizeNonBreaks,
+	ShouldNotRecognizeNonBreaksAsBreaks,
 }
 END_TEST_SUITE(LexerLoanwordTests)
 

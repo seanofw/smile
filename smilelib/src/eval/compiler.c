@@ -484,13 +484,55 @@ Int Compiler_AddObject(Compiler compiler, SmileObject obj)
 	return index;
 }
 
+// Helper function for Compiler_BeginGlobalScope().
+static Bool DeclareVariableForCompiler(VarInfo varInfo, void* param)
+{
+	CompileScope_DefineSymbol((CompileScope)param, varInfo->symbol, PARSEDECL_GLOBAL, 0);
+	return True;
+}
+
 /// <summary>
-/// Compile expressions in the global scope, creating a new global function for them.
+/// Go through the given global closure and declare all of its contents in a new global scope.
+/// This is so that the compiler can unambiguously tell the difference between whether it should
+/// use LdX/StX on a variable name, or whether it should bail for an unknown variable.
+/// </summary>
+/// <param name="compiler">The compiler to which a new lexical scope should be added.</param>
+/// <param name="globalClosureInfo">A ClosureInfo object that contains a dictionary of variables
+/// that need to be declared in the new global closure.</param>
+/// <returns>The newly-created CompileScope, which will also be set as the current top-level scope in the compiler.</return>
+CompileScope Compiler_BeginGlobalScope(Compiler compiler, ClosureInfo globalClosureInfo)
+{
+	CompileScope compileScope = Compiler_BeginScope(compiler, PARSESCOPE_OUTERMOST);
+	VarDict_ForEach(globalClosureInfo->variableDictionary, DeclareVariableForCompiler, compileScope);
+	return compileScope;
+}
+
+/// <summary>
+/// Compile the given expression in the given global scope.  This does *not* change the compiler's
+/// definition of the global scope (i.e., it does not call Compiler_SetGlobalClosureInfo, which
+/// must have taken place before this).
+/// </summary>
+/// <param name="compiler">The compiler that will compile this expression.</param>
+/// <param name="expression">The global expression to compile in the compiler's defined global scope.</param>
+/// <returns>The new user function resulting from the compile.</returns>
+UserFunctionInfo Compiler_CompileGlobalExpressionInGlobalScope(Compiler compiler, SmileObject expression)
+{
+	UserFunctionInfo globalFunction;
+
+	Compiler_BeginGlobalScope(compiler, Compiler_GetGlobalClosureInfo(compiler));
+	globalFunction = Compiler_CompileGlobalExpressionInCurrentScope(compiler, expression);
+	Compiler_EndScope(compiler);
+
+	return globalFunction;
+}
+
+/// <summary>
+/// Compile a global expression in the current scope, creating a new function for it.
 /// </summary>
 /// <param name="compiler">The compiler that will be compiling these expressions.</param>
 /// <param name="expr">The expression to compile.</param>
 /// <returns>The resulting compiled function.</returns>
-UserFunctionInfo Compiler_CompileGlobal(Compiler compiler, SmileObject expr)
+UserFunctionInfo Compiler_CompileGlobalExpressionInCurrentScope(Compiler compiler, SmileObject expr)
 {
 	CompilerFunction compilerFunction;
 	UserFunctionInfo userFunctionInfo;
