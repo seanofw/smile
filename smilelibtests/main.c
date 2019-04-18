@@ -17,7 +17,7 @@
 
 #include "stdafx.h"
 
-extern void RunAllTests();
+extern TestSuiteResults *RunAllTests();
 
 extern const char *TestSuiteNames[];
 extern int NumTestSuites;
@@ -158,6 +158,8 @@ void SegFaultHandler(int sig_num, siginfo_t * info, void * ucontext)
 
 int main(int argc, const char **argv)
 {
+	TestSuiteResults *results;
+
 #	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY) && (SMILE_COMPILER == SMILE_COMPILER_GCC)
 	{
 		struct sigaction sigact;
@@ -183,7 +185,7 @@ int main(int argc, const char **argv)
 	if (!QuietMode)
 		printf(" Running all unit tests...\n\n");
 
-	RunAllTests();
+	results = RunAllTests();
 
 	if (InteractiveMode) {
 		printf(" Press any key to exit the test runner. ");
@@ -193,7 +195,7 @@ int main(int argc, const char **argv)
 
 	Smile_End();
 
-	return 0;
+	return (results->numFailures > 0);
 }
 
 #include "testsuites.generated.inc"

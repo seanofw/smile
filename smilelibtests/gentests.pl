@@ -124,7 +124,7 @@ if ($updated > 0) {
 	}
 
 	print DEST "\r\n"
-		. "void RunAllTests()\r\n"
+		. "TestSuiteResults *RunAllTests()\r\n"
 		. "{\r\n"
 		. "\tTestSuiteResults *results = CreateEmptyTestSuiteResults();\r\n"
 		. "\r\n";
@@ -135,6 +135,8 @@ if ($updated > 0) {
 
 	print DEST "\r\n"
 		. "\tDisplayTestSuiteResults(results);\r\n"
+		. "\r\n"
+		. "\treturn results;\r\n"
 		. "}\r\n"
 		. "\r\n";
 
