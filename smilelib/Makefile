@@ -25,11 +25,11 @@ REGEX_OBJS := $(addprefix obj/$(PLATFORM_NAME)/regex/,$(notdir $(REGEX_SRCS:.c=.
 SMILE_OBJS := $(subst src/,obj/$(PLATFORM_NAME)/smile/,$(SMILE_SRCS:.c=.o))
 LIB_OBJS := $(subst lib/,obj/$(PLATFORM_NAME)/lib/,$(LIB_SRCS:.c=.o))
 
-ALL_SRCS := $(DECIMAL_SRCS) $(GC_SRCS) $(LIB_SRCS) $(SMILE_SRCS)
+ALL_SRCS := $(DECIMAL_SRCS) $(GC_SRCS) $(REGEX_SRCS) $(LIB_SRCS) $(SMILE_SRCS)
 
-ALL_OBJS := $(DECIMAL_OBJS) $(GC_OBJS) $(LIB_OBJS) $(SMILE_OBJS)
+ALL_OBJS := $(DECIMAL_OBJS) $(GC_OBJS) $(REGEX_OBJS) $(LIB_OBJS) $(SMILE_OBJS)
 
-GC_DEFS := -DGC_BUILD -DGC_DLL -DSMILELIB_BUILD
+GC_DEFS := -DGC_BUILD -DGC_DLL -DSMILELIB_BUILD -DUSE_LIBC_PRIVATES
 REGEX_DEFS := -DGC_BUILD -DSMILELIB_BUILD
 DECIMAL_DEFS := -DSMILELIB_BUILD
 SMILE_DEFS := -DGC_BUILD -DSMILELIB_BUILD
@@ -45,8 +45,8 @@ LIBS := -lm
 all: $(SMILELIB)
 
 flarg:
-	echo $(LIB_SRCS)
-	echo $(LIB_OBJS)
+	echo $(REGEX_SRCS)
+	echo $(REGEX_OBJS)
 
 $(SMILELIB): $(ALL_OBJS)
 	@$(MKDIR_P) $(dir $@)
@@ -65,6 +65,10 @@ obj/$(PLATFORM_NAME)/gc/%.o : gc/src/%.c
 	$(CC) $(ALL_CFLAGS) $(GC_DEFS) $(INCLUDES) -Igc/include -c $< -o $@
 
 obj/$(PLATFORM_NAME)/regex/%.o : regex/src/%.c
+	@$(MKDIR_P) $(dir $@)
+	$(CC) $(ALL_CFLAGS) $(REGEX_DEFS) $(INCLUDES) -Iregex/include -c $< -o $@
+
+obj/$(PLATFORM_NAME)/regex/%.o : regex/%.c
 	@$(MKDIR_P) $(dir $@)
 	$(CC) $(ALL_CFLAGS) $(REGEX_DEFS) $(INCLUDES) -Iregex/include -c $< -o $@
 
