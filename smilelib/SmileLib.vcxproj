@@ -1054,7 +1054,9 @@
     <ClCompile Include="src\smiletypes\text\smilechar.c" />
     <ClCompile Include="src\smiletypes\text\smilechar_base.c" />
     <ClCompile Include="src\smiletypes\text\smileregexmatch_base.c" />
-    <ClCompile Include="src\smiletypes\text\smileregex_base.c" />
+    <ClCompile Include="src\smiletypes\text\smileregex_base.c">
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4820;4057;4211;4710;4711;4324;5045;4668;4127;26451</DisableSpecificWarnings>
+    </ClCompile>
     <ClCompile Include="src\smiletypes\text\smilestring.c" />
     <ClCompile Include="src\smiletypes\text\smilestring_base.c" />
     <ClCompile Include="src\smiletypes\text\smilesymbol.c" />

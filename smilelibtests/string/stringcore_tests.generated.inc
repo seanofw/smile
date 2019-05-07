@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: d9dbb1aba7836758e54860735efd14c6
+// SourceHash: 04802a3b8af84ba59e55fe683176a02e
 
 START_TEST_SUITE(StringCoreTests)
 {

@@ -197,7 +197,8 @@ SMILE_EXTERNAL_FUNCTION(Hash)
 		handle = (SmileHandle)argv[0].obj;
 		if (handle->handleKind == Smile_KnownSymbols.Regex_) {
 			Regex regex = (Regex)handle->ptr;
-			return SmileUnboxedInteger64_From(Smile_ApplyHashOracle(String_Hash(regex->pattern) + String_Hash(regex->flags)));
+			UInt32 hash = String_Hash(regex->pattern) + String_Hash(regex->flags);
+			return SmileUnboxedInteger64_From(Smile_ApplyHashOracle(hash));
 		}
 	}
 
