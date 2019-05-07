@@ -10,6 +10,9 @@
 #ifndef __SMILE_STRING_H__
 #include <smile/string.h>
 #endif
+#ifndef __SMILE_REGEX_H__
+#include <smile/regex.h>
+#endif
 #ifndef __SMILE_ENV_SYMBOLTABLE_H__
 #include <smile/env/symboltable.h>
 #endif
@@ -75,6 +78,7 @@ struct TokenStruct {
 struct LexerStruct {
 
 	// The actual input, and current position within it.
+	String stringInput;			// The original input, as an immutable string.
 	const Byte *input;			// The input (source file) itself.
 	const Byte *src;			// The current read pointer within the input.
 	const Byte *end;			// The end of the input (one past the last valid byte).
@@ -101,6 +105,8 @@ struct LexerStruct {
 SMILE_API_FUNC Lexer Lexer_Create(String input, Int start, Int length, String filename, Int firstLine, Int firstColumn);
 SMILE_API_FUNC Int Lexer_Next(Lexer lexer);
 SMILE_API_FUNC Int Lexer_DecodeEscapeCode(const Byte **input, const Byte *end, Bool allowUnknowns);
+SMILE_API_FUNC Bool Lexer_ConsumeWhitespaceOnThisLine(Lexer lexer);
+SMILE_API_FUNC RegexMatch Lexer_ConsumeRegex(Lexer lexer, Regex regex);
 SMILE_API_FUNC LexerPosition Lexer_GetPosition(Lexer lexer);
 SMILE_API_FUNC LexerPosition LexerPosition_Clone(LexerPosition position);
 SMILE_API_FUNC Token Token_Clone(Token token);

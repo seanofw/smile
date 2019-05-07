@@ -176,7 +176,9 @@ SMILE_API_FUNC Compiler Compiler_Create(void);
 SMILE_API_FUNC CompilerFunction Compiler_BeginFunction(Compiler compiler, SmileList args, SmileObject body);
 SMILE_API_FUNC void Compiler_EndFunction(Compiler compiler);
 SMILE_API_FUNC CompiledBlock Compiler_CompileExpr(Compiler compiler, SmileObject expr, CompileFlags compileFlags);
-SMILE_API_FUNC UserFunctionInfo Compiler_CompileGlobal(Compiler compiler, SmileObject expr);
+SMILE_API_FUNC UserFunctionInfo Compiler_CompileGlobalExpressionInCurrentScope(Compiler compiler, SmileObject expr);
+SMILE_API_FUNC CompileScope Compiler_BeginGlobalScope(Compiler compiler, ClosureInfo globalClosureInfo);
+SMILE_API_FUNC UserFunctionInfo Compiler_CompileGlobalExpressionInGlobalScope(Compiler compiler, SmileObject expression);
 SMILE_API_FUNC Int Compiler_AddString(Compiler compiler, String string);
 SMILE_API_FUNC Int Compiler_AddObject(Compiler compiler, SmileObject obj);
 SMILE_API_FUNC Int Compiler_AddUserFunctionInfo(Compiler compiler, UserFunctionInfo userFunctionInfo);
@@ -195,6 +197,11 @@ SMILE_API_FUNC void Compiler_ResolveTillBranchTargets(TillContinuationInfo *till
 Inline void Compiler_SetGlobalClosureInfo(Compiler compiler, ClosureInfo globalClosureInfo)
 {
 	compiler->compiledTables->globalClosureInfo = globalClosureInfo;
+}
+
+Inline ClosureInfo Compiler_GetGlobalClosureInfo(Compiler compiler)
+{
+	return compiler->compiledTables->globalClosureInfo;
 }
 
 Inline void Compiler_EndScope(Compiler compiler)

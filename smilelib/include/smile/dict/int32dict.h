@@ -77,6 +77,7 @@ SMILE_API_FUNC Bool Int32Dict_Remove(Int32Dict intDict, Int32 key);
 SMILE_API_FUNC Int32Dict Int32Dict_Clone(Int32Dict intDict, Int32Dict_ValueCloner valueCloner, void *param);
 
 SMILE_API_FUNC DictStats Int32Dict_ComputeStats(Int32Dict intDict);
+SMILE_API_FUNC Bool Int32Dict_ForEach(Int32Dict intDict, Bool(*func)(Int32 key, void *value, void *param), void *param);
 
 //-------------------------------------------------------------------------------------------------
 //  Inline parts of the implementation

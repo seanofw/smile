@@ -102,9 +102,11 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseParam(Parser parser, SmileObject *par
 SMILE_INTERNAL_FUNC ParseError Parser_ParseParamType(Parser parser, SmileObject *type);
 
 SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *expr, Int modeFlags);
-
+SMILE_INTERNAL_FUNC ParseError Parser_ParseLoanword(Parser parser, SmileObject *expr, Int modeFlags);
 SMILE_INTERNAL_FUNC CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, Int modeFlags, Symbol syntaxClassSymbol,
 	Int syntaxRootMode, Symbol rootSkipSymbol, ParseError *parseError);
+SMILE_INTERNAL_FUNC ParseError Parser_ApplyCustomLoanword(Parser parser, Token token, SmileObject *result);
+SMILE_INTERNAL_FUNC SmileObject Parser_RecursivelyApplyTemplate(Parser parser, SmileObject expr, Int32Dict replacements, LexerPosition lexerPosition);
 
 SMILE_INTERNAL_FUNC ParseError Parser_ParseClassicFn(Parser parser, SmileObject *result, LexerPosition startPosition);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseQuoteBody(Parser parser, SmileObject *result, Int modeFlags, LexerPosition startPosition);
@@ -115,6 +117,8 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseClassicNew(Parser parser, SmileObject
 SMILE_INTERNAL_FUNC ParseError Parser_ParseClassicSet(Parser parser, SmileObject *result, LexerPosition startPosition);
 
 SMILE_INTERNAL_FUNC SmileObject Parser_WrapTemplateForSplicing(SmileObject obj);
+SMILE_INTERNAL_FUNC SmileObject Parser_ConvertItemToTemplateIfNeeded(SmileObject expr, Int itemTemplateKind, LexerPosition lexerPosition);
+SMILE_INTERNAL_FUNC Bool Parser_VerifySyntaxTemplateIsEvaluableAtParseTime(Parser parser, SmileObject expr);
 
 SMILE_INTERNAL_FUNC Token Parser_Recover(Parser parser, Int *tokenKinds, Int numTokenKinds);
 SMILE_INTERNAL_FUNC Bool Parser_IsLValue(SmileObject obj);

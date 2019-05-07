@@ -69,6 +69,7 @@ SMILE_API_FUNC void StringIntDict_ClearWithSize(StringIntDict stringDict, Int ne
 SMILE_API_FUNC Bool StringIntDict_Remove(StringIntDict stringDict, String key);
 
 SMILE_API_FUNC DictStats StringIntDict_ComputeStats(StringIntDict stringDict);
+SMILE_API_FUNC Bool StringIntDict_ForEach(StringIntDict stringDict, Bool(*func)(String key, Int value, void *param), void *param);
 
 //-------------------------------------------------------------------------------------------------
 //  Inline parts of the implementation

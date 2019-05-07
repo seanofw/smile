@@ -141,11 +141,24 @@ Bool Parser_HasLookahead(Parser parser, Int tokenKind)
 /// <returns>True if the next two tokens are the named token kinds, False if they're anything else or nonexistent.</returns>
 Bool Parser_Has2Lookahead(Parser parser, Int tokenKind1, Int tokenKind2)
 {
-	Token token1 = Parser_NextToken(parser);
-	Token token2 = Parser_NextToken(parser);
+	Token token1, token2;
+
+	token1 = Parser_NextToken(parser);
+	if (token1->kind != tokenKind1) {
+		Lexer_Unget(parser->lexer);
+		return False;
+	}
+
+	token2 = Parser_NextToken(parser);
+	if (token2->kind != tokenKind2) {
+		Lexer_Unget(parser->lexer);
+		Lexer_Unget(parser->lexer);
+		return False;
+	}
+
 	Lexer_Unget(parser->lexer);
 	Lexer_Unget(parser->lexer);
-	return (token1->kind == tokenKind1 && token2->kind == tokenKind2);
+	return True;
 }
 
 /// <summary>
@@ -161,13 +174,15 @@ Bool Parser_Peek2(Parser parser, Token *token1, Token *token2)
 	Token token;
 
 	*token1 = token = Parser_NextToken(parser);
-	if (token->kind == TOKEN_EOI || token->kind == TOKEN_ERROR) {
+	if (token->kind == TOKEN_EOI || token->kind == TOKEN_ERROR
+		|| (token->kind >= TOKEN_LOANWORD__FIRST && token->kind <= TOKEN_LOANWORD__LAST)) {
 		Lexer_Unget(parser->lexer);
 		return False;
 	}
 
 	*token2 = token = Parser_NextToken(parser);
-	if (token->kind == TOKEN_EOI || token->kind == TOKEN_ERROR) {
+	if (token->kind == TOKEN_EOI || token->kind == TOKEN_ERROR
+		|| (token->kind >= TOKEN_LOANWORD__FIRST && token->kind <= TOKEN_LOANWORD__LAST)) {
 		Lexer_Unget(parser->lexer);
 		Lexer_Unget(parser->lexer);
 		return False;

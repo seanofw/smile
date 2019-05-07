@@ -56,6 +56,16 @@ typedef struct {
 	void *value;				// The value for this pair.
 } StringDictKeyValuePair;
 
+/// <summary>
+/// A "cloner" function for values in a StringDict, that is, a function that can make a perfect
+/// deep copy of a value in the dictionary.
+/// </summary>
+/// <param name="key">The key for the value that is to be cloned.</param>
+/// <param name="value">The value that is to be cloned.</param>
+/// <param name="param">A custom user-provided parameter that may help with the cloning.</param>
+/// <returns>The cloned value.</returns>
+typedef void *(*StringDict_ValueCloner)(String key, void *value, void *param);
+
 //-------------------------------------------------------------------------------------------------
 //  External parts of the implementation
 
@@ -67,6 +77,7 @@ SMILE_API_FUNC StringDictKeyValuePair *StringDict_GetAll(StringDict stringDict);
 
 SMILE_API_FUNC void StringDict_ClearWithSize(StringDict stringDict, Int newSize);
 SMILE_API_FUNC Bool StringDict_Remove(StringDict stringDict, String key);
+SMILE_API_FUNC StringDict StringDict_Clone(StringDict stringDict, StringDict_ValueCloner valueCloner, void *param);
 
 SMILE_API_FUNC DictStats StringDict_ComputeStats(StringDict stringDict);
 

@@ -90,7 +90,7 @@ typedef struct StringBuilderStruct *StringBuilder;
 #define Int16Min ((Int16)(UInt16)0x8000)
 #define Int32Min ((Int32)(UInt32)0x80000000U)
 #define Int64Min ((Int64)(UInt64)0x8000000000000000ULL)
-#define IntMin ((Int)(((UInt)1) << (sizeof(UInt) * 8 - 1)))
+#define IntMin ((Int)(~(UInt)0))				// This only works in 2's complement.
 #define ByteMin ((UInt8)0)
 
 // Maxima for the signed integer types.
@@ -98,7 +98,7 @@ typedef struct StringBuilderStruct *StringBuilder;
 #define Int16Max ((Int16)(UInt16)0x7FFF)
 #define Int32Max ((Int32)(UInt32)0x7FFFFFFFU)
 #define Int64Max ((Int64)(UInt64)0x7FFFFFFFFFFFFFFFULL)
-#define IntMax ((Int)((((UInt)1) << (sizeof(UInt) * 8 - 1)) - 1))
+#define IntMax ((Int)((~(UInt)0) >> 1))			// This only works on sane compilers and in 2's complement.
 #define ByteMax ((UInt8)0xFF)
 
 // Maxima for the unsigned integer types.

@@ -197,7 +197,8 @@ SMILE_EXTERNAL_FUNCTION(Hash)
 		handle = (SmileHandle)argv[0].obj;
 		if (handle->handleKind == Smile_KnownSymbols.Regex_) {
 			Regex regex = (Regex)handle->ptr;
-			return SmileUnboxedInteger64_From(Smile_ApplyHashOracle(String_Hash(regex->pattern) + String_Hash(regex->flags)));
+			UInt32 hash = String_Hash(regex->pattern) + String_Hash(regex->flags);
+			return SmileUnboxedInteger64_From(Smile_ApplyHashOracle(hash));
 		}
 	}
 
@@ -240,6 +241,7 @@ SMILE_EXTERNAL_FUNCTION(Matches)
 	SmileHandle handle = (SmileHandle)argv[0].obj;
 	String input = (String)argv[1].obj;
 	Int64 offset = argc > 2 ? argv[2].unboxed.i64 : 0;
+	Int length;
 	Regex regex;
 	Bool result;
 
@@ -249,8 +251,12 @@ SMILE_EXTERNAL_FUNCTION(Matches)
 				SymbolTable_GetName(Smile_SymbolTable, handle->handleKind)));
 	}
 
+	length = String_Length(input);
+	if (offset > length) offset = length;
+	if (offset < 0) offset = 0;
+
 	regex = (Regex)handle->ptr;
-	result = Regex_Test(regex, input, offset);
+	result = Regex_Test(regex, input, (Int)offset);
 
 	return SmileUnboxedBool_From(result);
 }
@@ -260,6 +266,7 @@ SMILE_EXTERNAL_FUNCTION(Match)
 	SmileHandle handle = (SmileHandle)argv[0].obj;
 	String input = (String)argv[1].obj;
 	Int64 offset = argc > 2 ? argv[2].unboxed.i64 : 0;
+	Int length;
 	Regex regex;
 	RegexMatch result;
 	SmileHandle matchHandle;
@@ -270,8 +277,12 @@ SMILE_EXTERNAL_FUNCTION(Match)
 				SymbolTable_GetName(Smile_SymbolTable, handle->handleKind)));
 	}
 
+	length = String_Length(input);
+	if (offset > length) offset = length;
+	if (offset < 0) offset = 0;
+
 	regex = (Regex)handle->ptr;
-	result = Regex_Match(regex, input, offset);
+	result = Regex_Match(regex, input, (Int)offset);
 
 	matchHandle = SmileHandle_Create((SmileObject)Smile_KnownBases.RegexMatch, &RegexMatchMethods, Smile_KnownSymbols.RegexMatch_, result);
 	return SmileArg_From((SmileObject)matchHandle);
@@ -298,7 +309,8 @@ SMILE_EXTERNAL_FUNCTION(Split)
 	}
 
 	regex = (Regex)handle->ptr;
-	numPieces = Regex_Split(regex, input, &pieces, withEmpty, limit);
+	if (IntMax < Int64Max && limit > IntMax) limit = IntMax;
+	numPieces = Regex_Split(regex, input, &pieces, withEmpty, (Int)limit);
 
 	head = tail = NullList;
 	for (i = 0; i < numPieces; i++) {
@@ -315,6 +327,7 @@ SMILE_EXTERNAL_FUNCTION(Replace)
 	String replacement;
 	Int64 startOffset = argc > 3 ? argv[3].unboxed.i64 : 0;
 	Int64 limit = argc > 4 ? argv[4].unboxed.i64 : 0;
+	Int length = String_Length(input);
 	Regex regex;
 	String result;
 
@@ -325,6 +338,10 @@ SMILE_EXTERNAL_FUNCTION(Replace)
 	}
 
 	regex = (Regex)handle->ptr;
+
+	if (IntMax < Int64Max && limit > IntMax) limit = IntMax;
+	if (startOffset < 0) startOffset = 0;
+	if (startOffset > length) startOffset = length;
 
 	switch (SMILE_KIND(argv[2].obj)) {
 		case SMILE_KIND_STRING:
@@ -340,11 +357,11 @@ SMILE_EXTERNAL_FUNCTION(Replace)
 			goto stringCase;
 
 		stringCase:
-			result = Regex_Replace(regex, input, replacement, startOffset, limit);
+			result = Regex_Replace(regex, input, replacement, (Int)startOffset, (Int)limit);
 			return SmileArg_From((SmileObject)result);
 
 		case SMILE_KIND_FUNCTION:
-			return RegexReplaceStateMachine_Start(regex, input, (SmileFunction)argv[2].obj, startOffset, limit, False);
+			return RegexReplaceStateMachine_Start(regex, input, (SmileFunction)argv[2].obj, (Int)startOffset, (Int)limit, False);
 
 		default:
 			Smile_ThrowException(Smile_KnownSymbols.native_method_error,

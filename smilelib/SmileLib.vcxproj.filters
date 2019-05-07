@@ -1,152 +1,545 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="include">
-      <UniqueIdentifier>{594086cf-6724-45db-9aa8-ba1d15cbf904}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="include\dict">
-      <UniqueIdentifier>{e30025e3-eb4f-4eeb-a02e-950b070e6bc6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="include\internal">
-      <UniqueIdentifier>{3d9e424e-18ef-4a2b-b76c-58d8ee1d1c5e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="gc">
-      <UniqueIdentifier>{73d337d5-bf5c-409a-95ab-f7d63e835768}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="gc\src">
-      <UniqueIdentifier>{48f84ca9-4c2e-4159-8043-1aec11285ff0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="gc\include">
-      <UniqueIdentifier>{08b88397-0183-442b-8275-504f2cab8042}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="gc\include\private">
-      <UniqueIdentifier>{2e02d5ff-0720-4c9a-9ed9-52663ada462d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src">
-      <UniqueIdentifier>{0D5279D7-0CEC-415B-91E3-B65BF01557C4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\dict">
-      <UniqueIdentifier>{3C6DBC6A-E344-4101-B5EF-C94B4CFC8D91}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\string">
-      <UniqueIdentifier>{3E621436-3588-4F4E-810F-7F47F3260C93}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\unicode">
-      <UniqueIdentifier>{99FCEC4D-4000-4396-9913-10FBB0AB85BF}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="include\env">
-      <UniqueIdentifier>{c5ad549b-7e33-4ded-ab69-ec18668f12d3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\env">
-      <UniqueIdentifier>{b619632b-cc52-4af0-aed0-078c08f9ccff}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="include\smiletypes">
-      <UniqueIdentifier>{c2dd38c6-013e-41d3-b1e4-0c5e3d4fe239}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\smiletypes">
-      <UniqueIdentifier>{4a49031e-64f2-4023-8219-541f9146dd10}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="include\smiletypes\text">
-      <UniqueIdentifier>{d67a4da6-d556-4aa7-96a7-01d4c824bd56}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\smiletypes\text">
-      <UniqueIdentifier>{651e6438-1254-4d63-bead-dc5bc7adb7b2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="include\smiletypes\numeric">
-      <UniqueIdentifier>{589a36fe-cd7d-406f-94ef-42dd76c5bcea}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\smiletypes\numeric">
-      <UniqueIdentifier>{8c6e1978-7f52-4fe1-a8f3-26af8155531b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="include\parsing">
-      <UniqueIdentifier>{ddb1360e-0b50-4f9a-8d2f-2351f65c3883}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\parsing">
-      <UniqueIdentifier>{dc14bcee-a907-46ac-8a70-2eaadb51cdbd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\parsing\lexer">
-      <UniqueIdentifier>{0be9818e-d87b-4b2f-ae8a-47c21eb21bb7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\parsing\parser">
-      <UniqueIdentifier>{8d663628-0696-4708-9ab5-a0a75a2a0c7c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="include\parsing\internal">
-      <UniqueIdentifier>{ae3ee69a-d231-4987-afd7-b7115541ee6c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="decimal">
-      <UniqueIdentifier>{4f4ef5be-6330-4f9a-b2cb-4843b9e7838b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="decimal\include">
-      <UniqueIdentifier>{bcacae55-31dc-4af7-871f-11d11145d654}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="decimal\src">
-      <UniqueIdentifier>{09ba4d11-9a85-4cf2-ac67-d2ecdf706088}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="include\numeric">
-      <UniqueIdentifier>{2414b5eb-acf2-4146-8fe3-0bf020473621}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\numeric">
-      <UniqueIdentifier>{a28b1148-a1be-460f-887d-00f394800e9d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="include\platform">
-      <UniqueIdentifier>{663406b8-6935-47e0-84d9-9c824b9ae239}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="include\platform\windows-msvc-x86">
-      <UniqueIdentifier>{3ce43d55-e2ab-4615-93ae-2fc63625891a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="include\platform\windows-msvc-x64">
-      <UniqueIdentifier>{e55aca09-f8c7-40a8-9185-66f64a8d43e0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="include\platform\linux-gcc-x64">
-      <UniqueIdentifier>{b52c2675-b164-4087-871d-cb52b354345b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="include\platform\cygwin-gcc-x64">
-      <UniqueIdentifier>{d921a597-2ceb-4465-9eec-b608ce012fd9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="include\platform\cygwin-gcc-x86">
-      <UniqueIdentifier>{090809d9-d818-4a01-864f-517c69f93dd3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="include\platform\linux-gcc-x86">
-      <UniqueIdentifier>{15fff788-ea95-4fbf-88eb-18d91f95f79d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\atomic">
-      <UniqueIdentifier>{181c8843-3e72-4133-a6c2-9471742f60b6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="include\platform\macosx-clang-x64">
-      <UniqueIdentifier>{f599b67f-d855-4844-8cf4-f507589c4daf}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="include\eval">
-      <UniqueIdentifier>{aad6dea8-92ef-42c4-8c01-5100cc8972f5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\eval">
-      <UniqueIdentifier>{d77d3997-33db-446e-95b7-8b6fc918574e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\eval\compiler">
-      <UniqueIdentifier>{e0e7fac1-228e-44a1-a77e-62e668efbe6e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="include\smiletypes\raw">
-      <UniqueIdentifier>{7e3ca066-7df7-4dcc-865f-1327d90bb8bb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\smiletypes\raw">
-      <UniqueIdentifier>{b3a528c1-668a-4f81-8dda-6e17097b6c2f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="lib">
-      <UniqueIdentifier>{57bbb8bd-78da-45fd-96fe-1c5b996a427f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="lib\stdio">
-      <UniqueIdentifier>{458c38ee-26b7-4db6-8d32-0d6f31026828}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="bootstrap">
-      <UniqueIdentifier>{55eef49e-d533-49db-a7e6-cc75ae10e7a8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\smiletypes\range">
-      <UniqueIdentifier>{3e925b7d-293e-4af5-98a1-f8a89084a198}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="include\smiletypes\range">
-      <UniqueIdentifier>{5925a055-a186-40fe-8961-7e27b7ddfcc0}</UniqueIdentifier>
-    </Filter>
+    <Filter Include="decimal" />
+    <Filter Include="gc" />
+    <Filter Include="gc\include" />
+    <Filter Include="gc\include\private" />
+    <Filter Include="gc\src" />
+    <Filter Include="include" />
+    <Filter Include="include\crypto" />
+    <Filter Include="include\dict" />
+    <Filter Include="include\env" />
+    <Filter Include="include\eval" />
+    <Filter Include="include\internal" />
+    <Filter Include="include\numeric" />
+    <Filter Include="include\parsing" />
+    <Filter Include="include\parsing\internal" />
+    <Filter Include="include\platform" />
+    <Filter Include="include\platform\cygwin-gcc-x64" />
+    <Filter Include="include\platform\cygwin-gcc-x86" />
+    <Filter Include="include\platform\linux-gcc-x64" />
+    <Filter Include="include\platform\linux-gcc-x86" />
+    <Filter Include="include\platform\macosx-clang-x64" />
+    <Filter Include="include\platform\windows" />
+    <Filter Include="include\platform\windows-msvc-x64" />
+    <Filter Include="include\platform\windows-msvc-x86" />
+    <Filter Include="include\smiletypes" />
+    <Filter Include="include\smiletypes\numeric" />
+    <Filter Include="include\smiletypes\range" />
+    <Filter Include="include\smiletypes\raw" />
+    <Filter Include="include\smiletypes\text" />
+    <Filter Include="lib" />
+    <Filter Include="lib\stdio" />
+    <Filter Include="regex" />
+    <Filter Include="regex\src" />
+    <Filter Include="src" />
+    <Filter Include="src\atomic" />
+    <Filter Include="src\crypto" />
+    <Filter Include="src\crypto\hash" />
+    <Filter Include="src\dict" />
+    <Filter Include="src\env" />
+    <Filter Include="src\eval" />
+    <Filter Include="src\eval\compiler" />
+    <Filter Include="src\numeric" />
+    <Filter Include="src\parsing" />
+    <Filter Include="src\parsing\lexer" />
+    <Filter Include="src\parsing\parser" />
+    <Filter Include="src\platform" />
+    <Filter Include="src\platform\unix" />
+    <Filter Include="src\platform\windows" />
+    <Filter Include="src\smiletypes" />
+    <Filter Include="src\smiletypes\numeric" />
+    <Filter Include="src\smiletypes\range" />
+    <Filter Include="src\smiletypes\raw" />
+    <Filter Include="src\smiletypes\text" />
+    <Filter Include="src\string" />
+    <Filter Include="src\time" />
+    <Filter Include="src\unicode" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="README.md" />
+    <Natvis Include="SmileLib.natvis" />
+    <ClCompile Include="decimal\bid128.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClInclude Include="decimal\bid128_2_str.h">
+      <Filter>decimal</Filter>
+    </ClInclude>
+    <ClInclude Include="decimal\bid128_2_str_macros.h">
+      <Filter>decimal</Filter>
+    </ClInclude>
+    <ClCompile Include="decimal\bid128_2_str_tables.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_add.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_compare.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_div.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_fdimd.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_fma.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_fmod.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_frexp.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_ldexp.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_llrintd.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_lrintd.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_lround.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_minmax.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_modf.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_mul.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_nearbyintd.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_next.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_nexttowardd.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_noncomp.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_quantexpd.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_quantize.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_rem.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_round_integral.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_scalb.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_scalbl.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_sqrt.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_string.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_to_int16.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_to_int32.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_to_int64.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_to_int8.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_to_uint16.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_to_uint32.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_to_uint64.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid128_to_uint8.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_add.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_compare.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_div.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_fdimd.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_fma.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_fmod.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_frexp.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_ldexp.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_llrintd.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_lrintd.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_lround.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_minmax.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_modf.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_mul.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_nearbyintd.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_next.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_nexttowardd.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_noncomp.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_quantexpd.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_quantize.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_rem.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_round_integral.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_scalb.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_scalbl.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_sqrt.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_string.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_sub.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_to_bid128.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_to_bid64.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_to_int16.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_to_int32.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_to_int64.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_to_int8.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_to_uint16.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_to_uint32.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_to_uint64.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid32_to_uint8.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_add.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_compare.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_div.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_fdimd.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_fma.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_fmod.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_frexp.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_ldexp.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_llrintd.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_lrintd.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_lround.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_minmax.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_modf.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_mul.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_nearbyintd.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_next.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_nexttowardd.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_noncomp.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_quantexpd.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_quantize.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_rem.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_round_integral.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_scalb.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_scalbl.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_sqrt.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_string.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_to_bid128.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_to_int16.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_to_int32.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_to_int64.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_to_int8.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_to_uint16.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_to_uint32.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_to_uint64.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid64_to_uint8.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClInclude Include="decimal\bid_b2d.h">
+      <Filter>decimal</Filter>
+    </ClInclude>
+    <ClCompile Include="decimal\bid_binarydecimal.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClInclude Include="decimal\bid_conf.h">
+      <Filter>decimal</Filter>
+    </ClInclude>
+    <ClCompile Include="decimal\bid_convert_data.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid_decimal_data.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid_decimal_globals.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClInclude Include="decimal\bid_div_macros.h">
+      <Filter>decimal</Filter>
+    </ClInclude>
+    <ClCompile Include="decimal\bid_dpd.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid_feclearexcept.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid_fegetexceptflag.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid_feraiseexcept.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid_fesetexceptflag.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid_fetestexcept.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid_flag_operations.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\bid_from_int.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClInclude Include="decimal\bid_functions.h">
+      <Filter>decimal</Filter>
+    </ClInclude>
+    <ClInclude Include="decimal\bid_gcc_intrinsics.h">
+      <Filter>decimal</Filter>
+    </ClInclude>
+    <ClInclude Include="decimal\bid_inline_add.h">
+      <Filter>decimal</Filter>
+    </ClInclude>
+    <ClInclude Include="decimal\bid_internal.h">
+      <Filter>decimal</Filter>
+    </ClInclude>
+    <ClCompile Include="decimal\bid_round.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClInclude Include="decimal\bid_sqrt_macros.h">
+      <Filter>decimal</Filter>
+    </ClInclude>
+    <ClCompile Include="decimal\bid_string_decompose.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClInclude Include="decimal\bid_strtod.h">
+      <Filter>decimal</Filter>
+    </ClInclude>
+    <ClInclude Include="decimal\bid_trans.h">
+      <Filter>decimal</Filter>
+    </ClInclude>
+    <ClInclude Include="decimal\bid_wrap_names.h">
+      <Filter>decimal</Filter>
+    </ClInclude>
+    <ClInclude Include="decimal\dfp754.h">
+      <Filter>decimal</Filter>
+    </ClInclude>
+    <ClCompile Include="decimal\strtod128.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\strtod32.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\strtod64.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\wcstod128.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\wcstod32.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClCompile Include="decimal\wcstod64.c">
+      <Filter>decimal</Filter>
+    </ClCompile>
+    <ClInclude Include="gc\include\atomic_ops.h">
+      <Filter>gc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\gc.h">
+      <Filter>gc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\gc_allocator.h">
+      <Filter>gc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\gc_amiga_redirects.h">
+      <Filter>gc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\gc_backptr.h">
+      <Filter>gc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\gc_config_macros.h">
+      <Filter>gc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\gc_cpp.h">
+      <Filter>gc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\gc_gcj.h">
+      <Filter>gc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\gc_inline.h">
+      <Filter>gc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\gc_mark.h">
+      <Filter>gc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\gc_pthread_redirects.h">
+      <Filter>gc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\gc_tiny_fl.h">
+      <Filter>gc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\gc_typed.h">
+      <Filter>gc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\gc_version.h">
+      <Filter>gc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\private\gc_hdrs.h">
+      <Filter>gc\include\private</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\private\gc_locks.h">
+      <Filter>gc\include\private</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\private\gc_pmark.h">
+      <Filter>gc\include\private</Filter>
+    </ClInclude>
+    <ClInclude Include="gc\include\private\gc_priv.h">
+      <Filter>gc\include\private</Filter>
+    </ClInclude>
     <ClCompile Include="gc\src\allchblk.c">
       <Filter>gc\src</Filter>
     </ClCompile>
@@ -216,473 +609,630 @@
     <ClCompile Include="gc\src\win32_threads.c">
       <Filter>gc\src</Filter>
     </ClCompile>
-    <ClCompile Include="src\string\html_entitytable.c">
-      <Filter>src\string</Filter>
+    <Text Include="grammar.txt" />
+    <ClInclude Include="include\smile.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\array.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\atomic.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\bittwiddling.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\crypto\crc32.h">
+      <Filter>include\crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\crypto\dicthash.h">
+      <Filter>include\crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\crypto\hash.h">
+      <Filter>include\crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\crypto\md5.h">
+      <Filter>include\crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\crypto\sha1.h">
+      <Filter>include\crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\crypto\sha2.h">
+      <Filter>include\crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\crypto\sha3.h">
+      <Filter>include\crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\dict\int32dict.h">
+      <Filter>include\dict</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\dict\int32int32dict.h">
+      <Filter>include\dict</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\dict\pointerset.h">
+      <Filter>include\dict</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\dict\shared.h">
+      <Filter>include\dict</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\dict\stringdict.h">
+      <Filter>include\dict</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\dict\stringintdict.h">
+      <Filter>include\dict</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\dict\vardict.h">
+      <Filter>include\dict</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\env\env.h">
+      <Filter>include\env</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\env\knownbases.h">
+      <Filter>include\env</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\env\knownobjects.h">
+      <Filter>include\env</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\env\knownstrings.h">
+      <Filter>include\env</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\env\knownsymbols.h">
+      <Filter>include\env</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\env\modules.h">
+      <Filter>include\env</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\env\symboltable.h">
+      <Filter>include\env</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\eval\bytecode.h">
+      <Filter>include\eval</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\eval\closure.h">
+      <Filter>include\eval</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\eval\compiledblock.h">
+      <Filter>include\eval</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\eval\compiler.h">
+      <Filter>include\eval</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\eval\compiler_internal.h">
+      <Filter>include\eval</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\eval\eval.h">
+      <Filter>include\eval</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\eval\opcode.h">
+      <Filter>include\eval</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\gc.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\internal\html.h">
+      <Filter>include\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\internal\sprintf.h">
+      <Filter>include\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\internal\staticstring.h">
+      <Filter>include\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\internal\types.h">
+      <Filter>include\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\internal\unicode.h">
+      <Filter>include\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\mem.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\numeric\float64.h">
+      <Filter>include\numeric</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\numeric\random.h">
+      <Filter>include\numeric</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\numeric\real.h">
+      <Filter>include\numeric</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\numeric\real128.h">
+      <Filter>include\numeric</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\numeric\real32.h">
+      <Filter>include\numeric</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\numeric\real64.h">
+      <Filter>include\numeric</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\numeric\realshared.h">
+      <Filter>include\numeric</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\parsing\identkind.h">
+      <Filter>include\parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\parsing\internal\lexerinternal.h">
+      <Filter>include\parsing\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\parsing\internal\parsedecl.h">
+      <Filter>include\parsing\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\parsing\internal\parseloanword.h">
+      <Filter>include\parsing\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\parsing\internal\parserinternal.h">
+      <Filter>include\parsing\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\parsing\internal\parsescope.h">
+      <Filter>include\parsing\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\parsing\internal\parsesyntax.h">
+      <Filter>include\parsing\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\parsing\lexer.h">
+      <Filter>include\parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\parsing\parseinclude.h">
+      <Filter>include\parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\parsing\parsemessage.h">
+      <Filter>include\parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\parsing\parser.h">
+      <Filter>include\parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\parsing\parsertypes.h">
+      <Filter>include\parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\parsing\tokenkind.h">
+      <Filter>include\parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\platform\cygwin-gcc-x64\platform.h">
+      <Filter>include\platform\cygwin-gcc-x64</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\platform\cygwin-gcc-x86\platform.h">
+      <Filter>include\platform\cygwin-gcc-x86</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\platform\linux-gcc-x64\platform.h">
+      <Filter>include\platform\linux-gcc-x64</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\platform\linux-gcc-x86\platform.h">
+      <Filter>include\platform\linux-gcc-x86</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\platform\macosx-clang-x64\platform.h">
+      <Filter>include\platform\macosx-clang-x64</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\platform\platform.h">
+      <Filter>include\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\platform\windows-msvc-x64\platform.h">
+      <Filter>include\platform\windows-msvc-x64</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\platform\windows-msvc-x86\platform.h">
+      <Filter>include\platform\windows-msvc-x86</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\platform\windows\ansi-console.h">
+      <Filter>include\platform\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\regex.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\simplestats.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\base.h">
+      <Filter>include\smiletypes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\easyobject.h">
+      <Filter>include\smiletypes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\kind.h">
+      <Filter>include\smiletypes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\numeric\smilebyte.h">
+      <Filter>include\smiletypes\numeric</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\numeric\smilefloat32.h">
+      <Filter>include\smiletypes\numeric</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\numeric\smilefloat64.h">
+      <Filter>include\smiletypes\numeric</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\numeric\smileinteger128.h">
+      <Filter>include\smiletypes\numeric</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\numeric\smileinteger16.h">
+      <Filter>include\smiletypes\numeric</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\numeric\smileinteger32.h">
+      <Filter>include\smiletypes\numeric</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\numeric\smileinteger64.h">
+      <Filter>include\smiletypes\numeric</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\numeric\smilereal32.h">
+      <Filter>include\smiletypes\numeric</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\numeric\smilereal64.h">
+      <Filter>include\smiletypes\numeric</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\predecl.h">
+      <Filter>include\smiletypes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\range\smilebyterange.h">
+      <Filter>include\smiletypes\range</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\range\smilecharrange.h">
+      <Filter>include\smiletypes\range</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\range\smilefloat32range.h">
+      <Filter>include\smiletypes\range</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\range\smilefloat64range.h">
+      <Filter>include\smiletypes\range</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\range\smileinteger16range.h">
+      <Filter>include\smiletypes\range</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\range\smileinteger32range.h">
+      <Filter>include\smiletypes\range</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\range\smileinteger64range.h">
+      <Filter>include\smiletypes\range</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\range\smilereal32range.h">
+      <Filter>include\smiletypes\range</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\range\smilereal64range.h">
+      <Filter>include\smiletypes\range</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\range\smileunirange.h">
+      <Filter>include\smiletypes\range</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\raw\smilebytearray.h">
+      <Filter>include\smiletypes\raw</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\smilebool.h">
+      <Filter>include\smiletypes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\smilefunction.h">
+      <Filter>include\smiletypes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\smilehandle.h">
+      <Filter>include\smiletypes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\smilelist.h">
+      <Filter>include\smiletypes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\smileloanword.h">
+      <Filter>include\smiletypes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\smilemacro.h">
+      <Filter>include\smiletypes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\smilenull.h">
+      <Filter>include\smiletypes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\smileobject.h">
+      <Filter>include\smiletypes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\smilesyntax.h">
+      <Filter>include\smiletypes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\smiletillcontinuation.h">
+      <Filter>include\smiletypes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\smileuserobject.h">
+      <Filter>include\smiletypes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\text\smilechar.h">
+      <Filter>include\smiletypes\text</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\text\smilesymbol.h">
+      <Filter>include\smiletypes\text</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\smiletypes\text\smileuni.h">
+      <Filter>include\smiletypes\text</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\string.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\stringbuilder.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\types.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\version.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClCompile Include="lib\stdio\stdio_dir.c">
+      <Filter>lib\stdio</Filter>
     </ClCompile>
-    <ClCompile Include="src\string\html_entitytovalue.c">
-      <Filter>src\string</Filter>
+    <ClCompile Include="lib\stdio\stdio_dir_base.c">
+      <Filter>lib\stdio</Filter>
     </ClCompile>
-    <ClCompile Include="src\string\html_valuetoentity.c">
-      <Filter>src\string</Filter>
+    <ClCompile Include="lib\stdio\stdio_file.c">
+      <Filter>lib\stdio</Filter>
     </ClCompile>
-    <ClCompile Include="src\unicode\codepages_cpx.c">
-      <Filter>src\unicode</Filter>
+    <ClCompile Include="lib\stdio\stdio_file_base.c">
+      <Filter>lib\stdio</Filter>
     </ClCompile>
-    <ClCompile Include="src\unicode\codepages_iso8859.c">
-      <Filter>src\unicode</Filter>
+    <ClInclude Include="lib\stdio\stdio_internal.h">
+      <Filter>lib\stdio</Filter>
+    </ClInclude>
+    <ClCompile Include="lib\stdio\stdio_main.c">
+      <Filter>lib\stdio</Filter>
     </ClCompile>
-    <ClCompile Include="src\unicode\codepages_win125x.c">
-      <Filter>src\unicode</Filter>
+    <ClCompile Include="lib\stdio\stdio_path_base.c">
+      <Filter>lib\stdio</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\regex.c">
+      <Filter>regex</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\src\ascii.c">
+      <Filter>regex\src</Filter>
+    </ClCompile>
+    <ClInclude Include="regex\src\config.h">
+      <Filter>regex\src</Filter>
+    </ClInclude>
+    <ClInclude Include="regex\src\oniguruma.h">
+      <Filter>regex\src</Filter>
+    </ClInclude>
+    <ClCompile Include="regex\src\regcomp.c">
+      <Filter>regex\src</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\src\regenc.c">
+      <Filter>regex\src</Filter>
+    </ClCompile>
+    <ClInclude Include="regex\src\regenc.h">
+      <Filter>regex\src</Filter>
+    </ClInclude>
+    <ClCompile Include="regex\src\regerror.c">
+      <Filter>regex\src</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\src\regexec.c">
+      <Filter>regex\src</Filter>
+    </ClCompile>
+    <ClInclude Include="regex\src\regint.h">
+      <Filter>regex\src</Filter>
+    </ClInclude>
+    <ClCompile Include="regex\src\regparse.c">
+      <Filter>regex\src</Filter>
+    </ClCompile>
+    <ClInclude Include="regex\src\regparse.h">
+      <Filter>regex\src</Filter>
+    </ClInclude>
+    <ClCompile Include="regex\src\regsyntax.c">
+      <Filter>regex\src</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\src\regtrav.c">
+      <Filter>regex\src</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\src\regversion.c">
+      <Filter>regex\src</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\src\st.c">
+      <Filter>regex\src</Filter>
+    </ClCompile>
+    <ClInclude Include="regex\src\st.h">
+      <Filter>regex\src</Filter>
+    </ClInclude>
+    <ClCompile Include="regex\src\unicode.c">
+      <Filter>regex\src</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\src\unicode_fold1_key.c">
+      <Filter>regex\src</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\src\unicode_fold2_key.c">
+      <Filter>regex\src</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\src\unicode_fold3_key.c">
+      <Filter>regex\src</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\src\unicode_unfold_key.c">
+      <Filter>regex\src</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\src\utf8.c">
+      <Filter>regex\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\atomic\atomic.c">
+      <Filter>src\atomic</Filter>
+    </ClCompile>
+    <Text Include="src\atomic\atomic_windows_msvc.inc">
+      <Filter>src\atomic</Filter>
+    </Text>
+    <ClCompile Include="src\crypto\hash.c">
+      <Filter>src\crypto</Filter>
+    </ClCompile>
+    <ClCompile Include="src\crypto\hash\crc32.c">
+      <Filter>src\crypto\hash</Filter>
+    </ClCompile>
+    <ClCompile Include="src\crypto\hash\fnvhash.c">
+      <Filter>src\crypto\hash</Filter>
+    </ClCompile>
+    <ClCompile Include="src\crypto\hash\md5.c">
+      <Filter>src\crypto\hash</Filter>
+    </ClCompile>
+    <ClCompile Include="src\crypto\hash\sha1.c">
+      <Filter>src\crypto\hash</Filter>
+    </ClCompile>
+    <ClCompile Include="src\crypto\hash\sha2.c">
+      <Filter>src\crypto\hash</Filter>
+    </ClCompile>
+    <ClCompile Include="src\crypto\hash\sha3.c">
+      <Filter>src\crypto\hash</Filter>
+    </ClCompile>
+    <ClCompile Include="src\crypto\hash\siphash.c">
+      <Filter>src\crypto\hash</Filter>
     </ClCompile>
     <ClCompile Include="src\dict\dictstats.c">
       <Filter>src\dict</Filter>
     </ClCompile>
-    <ClCompile Include="src\env\symboltable.c">
+    <ClCompile Include="src\dict\int32dict.c">
+      <Filter>src\dict</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dict\int32int32dict.c">
+      <Filter>src\dict</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dict\pointerset.c">
+      <Filter>src\dict</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dict\stringdict.c">
+      <Filter>src\dict</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dict\stringintdict.c">
+      <Filter>src\dict</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dict\vardict.c">
+      <Filter>src\dict</Filter>
+    </ClCompile>
+    <ClCompile Include="src\env\global.c">
       <Filter>src\env</Filter>
     </ClCompile>
-    <ClCompile Include="src\env\knownsymbols.c">
+    <ClCompile Include="src\env\knownbases.c">
+      <Filter>src\env</Filter>
+    </ClCompile>
+    <ClCompile Include="src\env\knownobjects.c">
       <Filter>src\env</Filter>
     </ClCompile>
     <ClCompile Include="src\env\knownstrings.c">
       <Filter>src\env</Filter>
     </ClCompile>
-    <ClCompile Include="src\smiletypes\text\smilestring.c">
-      <Filter>src\smiletypes\text</Filter>
-    </ClCompile>
-    <ClCompile Include="src\smiletypes\smileobject.c">
-      <Filter>src\smiletypes</Filter>
-    </ClCompile>
-    <ClCompile Include="src\smiletypes\numeric\smileinteger32.generated.c">
-      <Filter>src\smiletypes\numeric</Filter>
-    </ClCompile>
-    <ClCompile Include="src\smiletypes\text\smilesymbol.c">
-      <Filter>src\smiletypes\text</Filter>
-    </ClCompile>
-    <ClCompile Include="src\env\knownobjects.c">
+    <ClCompile Include="src\env\knownsymbols.c">
       <Filter>src\env</Filter>
     </ClCompile>
-    <ClCompile Include="src\smiletypes\numeric\smileinteger64.generated.c">
-      <Filter>src\smiletypes\numeric</Filter>
-    </ClCompile>
-    <ClCompile Include="src\smiletypes\smilebool.c">
-      <Filter>src\smiletypes</Filter>
-    </ClCompile>
-    <ClCompile Include="src\smiletypes\smilelist.c">
-      <Filter>src\smiletypes</Filter>
-    </ClCompile>
-    <ClCompile Include="src\smiletypes\smilenull.c">
-      <Filter>src\smiletypes</Filter>
-    </ClCompile>
-    <ClCompile Include="src\smiletypes\smileuserobject.c">
-      <Filter>src\smiletypes</Filter>
-    </ClCompile>
-    <ClCompile Include="src\env\knownbases.c">
+    <ClCompile Include="src\env\modules.c">
       <Filter>src\env</Filter>
     </ClCompile>
-    <ClCompile Include="src\parsing\lexer\identtable.c">
-      <Filter>src\parsing\lexer</Filter>
+    <ClCompile Include="src\env\parsedecl.c">
+      <Filter>src\env</Filter>
     </ClCompile>
-    <ClCompile Include="src\parsing\lexer\lexer.c">
-      <Filter>src\parsing\lexer</Filter>
+    <ClCompile Include="src\env\symboltable.c">
+      <Filter>src\env</Filter>
     </ClCompile>
-    <ClCompile Include="src\parsing\lexer\lexnames.c">
-      <Filter>src\parsing\lexer</Filter>
+    <ClCompile Include="src\eval\bytecode.c">
+      <Filter>src\eval</Filter>
     </ClCompile>
-    <ClCompile Include="src\parsing\lexer\lexerextra.c">
-      <Filter>src\parsing\lexer</Filter>
+    <ClCompile Include="src\eval\closure.c">
+      <Filter>src\eval</Filter>
     </ClCompile>
-    <ClCompile Include="src\parsing\lexer\lexstrings.c">
-      <Filter>src\parsing\lexer</Filter>
+    <ClCompile Include="src\eval\closure_stringify.c">
+      <Filter>src\eval</Filter>
     </ClCompile>
-    <ClCompile Include="src\parsing\lexer\lexnumbers.c">
-      <Filter>src\parsing\lexer</Filter>
+    <ClCompile Include="src\eval\compiler.c">
+      <Filter>src\eval</Filter>
     </ClCompile>
-    <ClCompile Include="src\parsing\lexer\lexloanword.c">
-      <Filter>src\parsing\lexer</Filter>
+    <ClCompile Include="src\eval\compiler\compile_and.c">
+      <Filter>src\eval\compiler</Filter>
     </ClCompile>
-    <ClCompile Include="src\parsing\lexer\lexpunct.c">
-      <Filter>src\parsing\lexer</Filter>
+    <ClCompile Include="src\eval\compiler\compile_brk.c">
+      <Filter>src\eval\compiler</Filter>
     </ClCompile>
-    <ClCompile Include="decimal\bid_binarydecimal.c">
-      <Filter>decimal\src</Filter>
+    <ClCompile Include="src\eval\compiler\compile_catch.c">
+      <Filter>src\eval\compiler</Filter>
     </ClCompile>
-    <ClCompile Include="decimal\bid_convert_data.c">
-      <Filter>decimal\src</Filter>
+    <ClCompile Include="src\eval\compiler\compile_dot.c">
+      <Filter>src\eval\compiler</Filter>
     </ClCompile>
-    <ClCompile Include="decimal\bid_decimal_data.c">
-      <Filter>decimal\src</Filter>
+    <ClCompile Include="src\eval\compiler\compile_expr.c">
+      <Filter>src\eval\compiler</Filter>
     </ClCompile>
-    <ClCompile Include="decimal\bid_decimal_globals.c">
-      <Filter>decimal\src</Filter>
+    <ClCompile Include="src\eval\compiler\compile_fn.c">
+      <Filter>src\eval\compiler</Filter>
     </ClCompile>
-    <ClCompile Include="decimal\bid_dpd.c">
-      <Filter>decimal\src</Filter>
+    <ClCompile Include="src\eval\compiler\compile_if.c">
+      <Filter>src\eval\compiler</Filter>
     </ClCompile>
-    <ClCompile Include="decimal\bid_feclearexcept.c">
-      <Filter>decimal\src</Filter>
+    <ClCompile Include="src\eval\compiler\compile_include.c">
+      <Filter>src\eval\compiler</Filter>
     </ClCompile>
-    <ClCompile Include="decimal\bid_fegetexceptflag.c">
-      <Filter>decimal\src</Filter>
+    <ClCompile Include="src\eval\compiler\compile_methodcall.c">
+      <Filter>src\eval\compiler</Filter>
     </ClCompile>
-    <ClCompile Include="decimal\bid_feraiseexcept.c">
-      <Filter>decimal\src</Filter>
+    <ClCompile Include="src\eval\compiler\compile_new.c">
+      <Filter>src\eval\compiler</Filter>
     </ClCompile>
-    <ClCompile Include="decimal\bid_fesetexceptflag.c">
-      <Filter>decimal\src</Filter>
+    <ClCompile Include="src\eval\compiler\compile_opequals.c">
+      <Filter>src\eval\compiler</Filter>
     </ClCompile>
-    <ClCompile Include="decimal\bid_fetestexcept.c">
-      <Filter>decimal\src</Filter>
+    <ClCompile Include="src\eval\compiler\compile_or.c">
+      <Filter>src\eval\compiler</Filter>
     </ClCompile>
-    <ClCompile Include="decimal\bid_flag_operations.c">
-      <Filter>decimal\src</Filter>
+    <ClCompile Include="src\eval\compiler\compile_prog1.c">
+      <Filter>src\eval\compiler</Filter>
     </ClCompile>
-    <ClCompile Include="decimal\bid_from_int.c">
-      <Filter>decimal\src</Filter>
+    <ClCompile Include="src\eval\compiler\compile_progn.c">
+      <Filter>src\eval\compiler</Filter>
     </ClCompile>
-    <ClCompile Include="decimal\bid_round.c">
-      <Filter>decimal\src</Filter>
+    <ClCompile Include="src\eval\compiler\compile_property.c">
+      <Filter>src\eval\compiler</Filter>
     </ClCompile>
-    <ClCompile Include="decimal\bid32_add.c">
-      <Filter>decimal\src</Filter>
+    <ClCompile Include="src\eval\compiler\compile_quote.c">
+      <Filter>src\eval\compiler</Filter>
     </ClCompile>
-    <ClCompile Include="decimal\bid32_compare.c">
-      <Filter>decimal\src</Filter>
+    <ClCompile Include="src\eval\compiler\compile_return.c">
+      <Filter>src\eval\compiler</Filter>
     </ClCompile>
-    <ClCompile Include="decimal\bid32_div.c">
-      <Filter>decimal\src</Filter>
+    <ClCompile Include="src\eval\compiler\compile_scope.c">
+      <Filter>src\eval\compiler</Filter>
     </ClCompile>
-    <ClCompile Include="decimal\bid32_fdimd.c">
-      <Filter>decimal\src</Filter>
+    <ClCompile Include="src\eval\compiler\compile_setf.c">
+      <Filter>src\eval\compiler</Filter>
     </ClCompile>
-    <ClCompile Include="decimal\bid32_fma.c">
-      <Filter>decimal\src</Filter>
+    <ClCompile Include="src\eval\compiler\compile_standardform.c">
+      <Filter>src\eval\compiler</Filter>
     </ClCompile>
-    <ClCompile Include="decimal\bid32_fmod.c">
-      <Filter>decimal\src</Filter>
+    <ClCompile Include="src\eval\compiler\compile_till.c">
+      <Filter>src\eval\compiler</Filter>
     </ClCompile>
-    <ClCompile Include="decimal\bid32_frexp.c">
-      <Filter>decimal\src</Filter>
+    <ClCompile Include="src\eval\compiler\compile_variable.c">
+      <Filter>src\eval\compiler</Filter>
     </ClCompile>
-    <ClCompile Include="decimal\bid32_ldexp.c">
-      <Filter>decimal\src</Filter>
+    <ClCompile Include="src\eval\compiler\compile_while.c">
+      <Filter>src\eval\compiler</Filter>
     </ClCompile>
-    <ClCompile Include="decimal\bid32_llrintd.c">
-      <Filter>decimal\src</Filter>
+    <ClCompile Include="src\eval\compiler\compiledblock.c">
+      <Filter>src\eval\compiler</Filter>
     </ClCompile>
-    <ClCompile Include="decimal\bid32_lrintd.c">
-      <Filter>decimal\src</Filter>
+    <ClCompile Include="src\eval\eval.c">
+      <Filter>src\eval</Filter>
     </ClCompile>
-    <ClCompile Include="decimal\bid32_lround.c">
-      <Filter>decimal\src</Filter>
+    <ClCompile Include="src\eval\eval_fn_ext.generated.c">
+      <Filter>src\eval</Filter>
     </ClCompile>
-    <ClCompile Include="decimal\bid32_minmax.c">
-      <Filter>decimal\src</Filter>
+    <ClCompile Include="src\eval\eval_fn_ext.generated.c">
+      <Filter>src\eval</Filter>
     </ClCompile>
-    <ClCompile Include="decimal\bid32_modf.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid32_mul.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid32_nearbyintd.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid32_next.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid32_nexttowardd.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid32_noncomp.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid32_quantexpd.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid32_quantize.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid32_rem.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid32_round_integral.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid32_scalb.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid32_scalbl.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid32_string.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid32_sub.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid32_to_bid64.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid32_to_bid128.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid32_to_int8.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid32_to_int16.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid32_to_int32.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid32_to_int64.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid32_to_uint8.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid32_to_uint16.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid32_to_uint32.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid32_to_uint64.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_add.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_compare.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_div.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_fdimd.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_fma.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_fmod.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_frexp.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_llrintd.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_lrintd.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_lround.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_minmax.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_modf.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_mul.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_nearbyintd.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_next.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_nexttowardd.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_noncomp.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_quantexpd.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_quantize.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_rem.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_round_integral.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_scalb.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_scalbl.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_string.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_to_bid128.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_to_int8.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_to_int16.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_to_int32.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_to_int64.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_to_uint8.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_to_uint16.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_to_uint32.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_to_uint64.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_2_str_tables.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_add.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_compare.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_div.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_fdimd.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_fma.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_fmod.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_frexp.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_ldexp.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_llrintd.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_lrintd.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_lround.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_minmax.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_modf.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_mul.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_nearbyintd.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_next.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_nexttowardd.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_noncomp.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_quantexpd.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_quantize.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_rem.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_round_integral.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_scalb.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_scalbl.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_string.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_to_int8.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_to_int16.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_to_int32.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_to_int64.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_to_uint8.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_to_uint16.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_to_uint32.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_to_uint64.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\strtod32.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\strtod64.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\strtod128.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\wcstod32.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\wcstod64.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\wcstod128.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_ldexp.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid32_sqrt.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid64_sqrt.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid128_sqrt.c">
-      <Filter>decimal\src</Filter>
+    <None Include="src\eval\eval_fn_ext.template">
+      <Filter>src\eval</Filter>
+    </None>
+    <ClCompile Include="src\eval\eval_fn_user.generated.c">
+      <Filter>src\eval</Filter>
+    </ClCompile>
+    <ClCompile Include="src\eval\eval_fn_user.generated.c">
+      <Filter>src\eval</Filter>
+    </ClCompile>
+    <None Include="src\eval\eval_fn_user.template">
+      <Filter>src\eval</Filter>
+    </None>
+    <None Include="src\eval\makefn.pl">
+      <Filter>src\eval</Filter>
+    </None>
+    <None Include="src\eval\opnames.inc">
+      <Filter>src\eval</Filter>
+    </None>
+    <ClCompile Include="src\init.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\numeric\float64.c">
+      <Filter>src\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\numeric\random.c">
+      <Filter>src\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\numeric\real128.c">
+      <Filter>src\numeric</Filter>
     </ClCompile>
     <ClCompile Include="src\numeric\real32.c">
       <Filter>src\numeric</Filter>
@@ -690,38 +1240,68 @@
     <ClCompile Include="src\numeric\real64.c">
       <Filter>src\numeric</Filter>
     </ClCompile>
-    <ClCompile Include="src\numeric\real128.c">
-      <Filter>src\numeric</Filter>
-    </ClCompile>
-    <ClCompile Include="src\string\string_parsefloat.c">
-      <Filter>src\string</Filter>
-    </ClCompile>
-    <ClCompile Include="src\string\string_parsereal.c">
-      <Filter>src\string</Filter>
-    </ClCompile>
-    <ClCompile Include="decimal\bid_string_decompose.c">
-      <Filter>decimal\src</Filter>
-    </ClCompile>
     <ClCompile Include="src\numeric\realshared.c">
       <Filter>src\numeric</Filter>
     </ClCompile>
-    <ClCompile Include="src\parsing\parser\parsercore.c">
+    <ClCompile Include="src\parsing\lexer\identtable.c">
+      <Filter>src\parsing\lexer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parsing\lexer\lexer.c">
+      <Filter>src\parsing\lexer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parsing\lexer\lexerextra.c">
+      <Filter>src\parsing\lexer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parsing\lexer\lexloanword.c">
+      <Filter>src\parsing\lexer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parsing\lexer\lexnames.c">
+      <Filter>src\parsing\lexer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parsing\lexer\lexnumbers.c">
+      <Filter>src\parsing\lexer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parsing\lexer\lexpunct.c">
+      <Filter>src\parsing\lexer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parsing\lexer\lexregex.c">
+      <Filter>src\parsing\lexer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parsing\lexer\lexstrings.c">
+      <Filter>src\parsing\lexer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parsing\lexer\tokenkind.c">
+      <Filter>src\parsing\lexer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parsing\parser\applysyntax.c">
       <Filter>src\parsing\parser</Filter>
     </ClCompile>
-    <ClCompile Include="src\parsing\parser\parsescope.c">
+    <ClCompile Include="src\parsing\parser\parseassign.c">
       <Filter>src\parsing\parser</Filter>
     </ClCompile>
-    <ClCompile Include="src\dict\int32int32dict.c">
-      <Filter>src\dict</Filter>
+    <ClCompile Include="src\parsing\parser\parseexpr.c">
+      <Filter>src\parsing\parser</Filter>
     </ClCompile>
-    <ClCompile Include="src\env\parsedecl.c">
+    <ClCompile Include="src\parsing\parser\parsefunc.c">
+      <Filter>src\parsing\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parsing\parser\parseinclude.c">
+      <Filter>src\parsing\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parsing\parser\parseloanword.c">
       <Filter>src\parsing\parser</Filter>
     </ClCompile>
     <ClCompile Include="src\parsing\parser\parsemessage.c">
       <Filter>src\parsing\parser</Filter>
     </ClCompile>
-    <ClCompile Include="src\parsing\lexer\tokenkind.c">
-      <Filter>src\parsing\lexer</Filter>
+    <ClCompile Include="src\parsing\parser\parsenew.c">
+      <Filter>src\parsing\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parsing\parser\parsequote.c">
+      <Filter>src\parsing\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parsing\parser\parsercore.c">
+      <Filter>src\parsing\parser</Filter>
     </ClCompile>
     <ClCompile Include="src\parsing\parser\parserdynstrings.c">
       <Filter>src\parsing\parser</Filter>
@@ -732,190 +1312,115 @@
     <ClCompile Include="src\parsing\parser\parserhelpers.c">
       <Filter>src\parsing\parser</Filter>
     </ClCompile>
-    <ClCompile Include="src\parsing\parser\parseterm.c">
+    <ClCompile Include="src\parsing\parser\parserloanwordtable.c">
+      <Filter>src\parsing\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parsing\parser\parsersyntaxtable.c">
+      <Filter>src\parsing\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parsing\parser\parsescope.c">
       <Filter>src\parsing\parser</Filter>
     </ClCompile>
     <ClCompile Include="src\parsing\parser\parsestmt.c">
       <Filter>src\parsing\parser</Filter>
     </ClCompile>
-    <ClCompile Include="src\parsing\parser\parseexpr.c">
-      <Filter>src\parsing\parser</Filter>
-    </ClCompile>
-    <ClCompile Include="src\parsing\parser\parseassign.c">
-      <Filter>src\parsing\parser</Filter>
-    </ClCompile>
     <ClCompile Include="src\parsing\parser\parsesyntax.c">
       <Filter>src\parsing\parser</Filter>
     </ClCompile>
-    <ClCompile Include="src\smiletypes\smilesyntax.c">
-      <Filter>src\smiletypes</Filter>
-    </ClCompile>
-    <ClCompile Include="src\smiletypes\smilenonterminal.c">
-      <Filter>src\smiletypes</Filter>
-    </ClCompile>
-    <ClCompile Include="src\parsing\parser\parsersyntaxtable.c">
-      <Filter>src\parsing\parser</Filter>
-    </ClCompile>
-    <ClCompile Include="src\smiletypes\numeric\smilebyte.generated.c">
-      <Filter>src\smiletypes\numeric</Filter>
-    </ClCompile>
-    <ClCompile Include="src\smiletypes\numeric\smileinteger16.generated.c">
-      <Filter>src\smiletypes\numeric</Filter>
-    </ClCompile>
-    <ClCompile Include="src\parsing\parser\parsefunc.c">
-      <Filter>src\parsing\parser</Filter>
-    </ClCompile>
-    <ClCompile Include="src\parsing\parser\parsequote.c">
-      <Filter>src\parsing\parser</Filter>
-    </ClCompile>
-    <ClCompile Include="src\parsing\parser\applysyntax.c">
-      <Filter>src\parsing\parser</Filter>
-    </ClCompile>
-    <ClCompile Include="src\atomic\atomic.c">
-      <Filter>src\atomic</Filter>
-    </ClCompile>
-    <ClCompile Include="src\smiletypes\smileobject_stringify.c">
-      <Filter>src\smiletypes</Filter>
-    </ClCompile>
-    <ClCompile Include="src\eval\eval.c">
-      <Filter>src\eval</Filter>
-    </ClCompile>
-    <ClCompile Include="src\eval\bytecode.c">
-      <Filter>src\eval</Filter>
-    </ClCompile>
-    <ClCompile Include="src\eval\compiler.c">
-      <Filter>src\eval</Filter>
-    </ClCompile>
-    <ClCompile Include="src\smiletypes\numeric\smileinteger128.c">
-      <Filter>src\smiletypes\numeric</Filter>
-    </ClCompile>
-    <ClCompile Include="src\dict\vardict.c">
-      <Filter>src\dict</Filter>
-    </ClCompile>
-    <ClCompile Include="src\eval\closure.c">
-      <Filter>src\eval</Filter>
-    </ClCompile>
-    <ClCompile Include="src\smiletypes\numeric\smileinteger32_base.generated.c">
-      <Filter>src\smiletypes\numeric</Filter>
-    </ClCompile>
-    <ClCompile Include="src\smiletypes\smilefunction.c">
-      <Filter>src\smiletypes</Filter>
-    </ClCompile>
-    <ClCompile Include="src\smiletypes\numeric\smileinteger64_base.generated.c">
-      <Filter>src\smiletypes\numeric</Filter>
-    </ClCompile>
-    <ClCompile Include="src\string\string_createfromint.c">
-      <Filter>src\string</Filter>
-    </ClCompile>
-    <ClCompile Include="src\smiletypes\numeric\smileinteger16_base.generated.c">
-      <Filter>src\smiletypes\numeric</Filter>
-    </ClCompile>
-    <ClCompile Include="src\env\global.c">
-      <Filter>src\env</Filter>
-    </ClCompile>
-    <ClCompile Include="src\smiletypes\smilelist_class.c">
-      <Filter>src\smiletypes</Filter>
-    </ClCompile>
-    <ClCompile Include="src\eval\eval_fn_ext.generated.c">
-      <Filter>src\eval</Filter>
-    </ClCompile>
-    <ClCompile Include="src\eval\eval_fn_user.generated.c">
-      <Filter>src\eval</Filter>
-    </ClCompile>
-    <ClCompile Include="src\smiletypes\text\smilestring_base.c">
-      <Filter>src\smiletypes\text</Filter>
-    </ClCompile>
-    <ClCompile Include="src\eval\compiler\compile_setf.c">
-      <Filter>src\eval\compiler</Filter>
-    </ClCompile>
-    <ClCompile Include="src\eval\compiler\compile_opequals.c">
-      <Filter>src\eval\compiler</Filter>
-    </ClCompile>
-    <ClCompile Include="src\eval\compiler\compile_property.c">
-      <Filter>src\eval\compiler</Filter>
-    </ClCompile>
-    <ClCompile Include="src\eval\compiler\compile_variable.c">
-      <Filter>src\eval\compiler</Filter>
-    </ClCompile>
-    <ClCompile Include="src\eval\compiler\compile_methodcall.c">
-      <Filter>src\eval\compiler</Filter>
-    </ClCompile>
-    <ClCompile Include="src\eval\compiler\compile_expr.c">
-      <Filter>src\eval\compiler</Filter>
-    </ClCompile>
-    <ClCompile Include="src\eval\compiler\compile_standardform.c">
-      <Filter>src\eval\compiler</Filter>
-    </ClCompile>
-    <ClCompile Include="src\eval\compiler\compile_if.c">
-      <Filter>src\eval\compiler</Filter>
-    </ClCompile>
-    <ClCompile Include="src\eval\compiler\compile_till.c">
-      <Filter>src\eval\compiler</Filter>
-    </ClCompile>
-    <ClCompile Include="src\eval\compiler\compile_while.c">
-      <Filter>src\eval\compiler</Filter>
-    </ClCompile>
-    <ClCompile Include="src\eval\compiler\compile_catch.c">
-      <Filter>src\eval\compiler</Filter>
-    </ClCompile>
-    <ClCompile Include="src\eval\compiler\compile_fn.c">
-      <Filter>src\eval\compiler</Filter>
-    </ClCompile>
-    <ClCompile Include="src\eval\compiler\compile_quote.c">
-      <Filter>src\eval\compiler</Filter>
-    </ClCompile>
-    <ClCompile Include="src\eval\compiler\compile_return.c">
-      <Filter>src\eval\compiler</Filter>
-    </ClCompile>
-    <ClCompile Include="src\eval\compiler\compile_prog1.c">
-      <Filter>src\eval\compiler</Filter>
-    </ClCompile>
-    <ClCompile Include="src\eval\compiler\compile_progn.c">
-      <Filter>src\eval\compiler</Filter>
-    </ClCompile>
-    <ClCompile Include="src\eval\compiler\compile_scope.c">
-      <Filter>src\eval\compiler</Filter>
-    </ClCompile>
-    <ClCompile Include="src\eval\compiler\compile_and.c">
-      <Filter>src\eval\compiler</Filter>
-    </ClCompile>
-    <ClCompile Include="src\eval\compiler\compile_new.c">
-      <Filter>src\eval\compiler</Filter>
-    </ClCompile>
-    <ClCompile Include="src\eval\compiler\compile_or.c">
-      <Filter>src\eval\compiler</Filter>
-    </ClCompile>
-    <ClCompile Include="src\parsing\parser\parsenew.c">
+    <ClCompile Include="src\parsing\parser\parseterm.c">
       <Filter>src\parsing\parser</Filter>
     </ClCompile>
     <ClCompile Include="src\parsing\parser\parsetill.c">
       <Filter>src\parsing\parser</Filter>
     </ClCompile>
-    <ClCompile Include="src\dict\pointerset.c">
-      <Filter>src\dict</Filter>
+    <ClCompile Include="src\platform\unix\unix_os.c">
+      <Filter>src\platform\unix</Filter>
     </ClCompile>
-    <ClCompile Include="src\string\string_static.c">
-      <Filter>src\string</Filter>
+    <ClCompile Include="src\platform\windows\ansi-console.c">
+      <Filter>src\platform\windows</Filter>
     </ClCompile>
-    <ClCompile Include="src\eval\compiler\compiledblock.c">
-      <Filter>src\eval\compiler</Filter>
+    <ClCompile Include="src\platform\windows\windows_os.c">
+      <Filter>src\platform\windows</Filter>
     </ClCompile>
-    <ClCompile Include="src\smiletypes\raw\smilebytearray.c">
-      <Filter>src\smiletypes\raw</Filter>
+    <ClCompile Include="src\smiletypes\kind.c">
+      <Filter>src\smiletypes</Filter>
     </ClCompile>
-    <ClCompile Include="src\smiletypes\raw\smilebytearray_base.c">
-      <Filter>src\smiletypes\raw</Filter>
+    <ClCompile Include="src\smiletypes\numeric\smilebyte.generated.c">
+      <Filter>src\smiletypes\numeric</Filter>
     </ClCompile>
-    <ClCompile Include="src\platform\windows\ansi-console.c" />
-    <ClCompile Include="src\eval\eval_fn_ext.generated.c" />
-    <ClCompile Include="src\eval\eval_fn_user.generated.c" />
-    <ClCompile Include="src\parsing\parser\parseinclude.c">
-      <Filter>src\parsing\parser</Filter>
+    <ClCompile Include="src\smiletypes\numeric\smilebyte_base.generated.c">
+      <Filter>src\smiletypes\numeric</Filter>
     </ClCompile>
+    <ClCompile Include="src\smiletypes\numeric\smilefloat32.generated.c">
+      <Filter>src\smiletypes\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\numeric\smilefloat32_base.generated.c">
+      <Filter>src\smiletypes\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\numeric\smilefloat64.generated.c">
+      <Filter>src\smiletypes\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\numeric\smilefloat64_base.generated.c">
+      <Filter>src\smiletypes\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\numeric\smileinteger128.c">
+      <Filter>src\smiletypes\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\numeric\smileinteger16.generated.c">
+      <Filter>src\smiletypes\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\numeric\smileinteger16_base.generated.c">
+      <Filter>src\smiletypes\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\numeric\smileinteger32.generated.c">
+      <Filter>src\smiletypes\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\numeric\smileinteger32_base.generated.c">
+      <Filter>src\smiletypes\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\numeric\smileinteger64.generated.c">
+      <Filter>src\smiletypes\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\numeric\smileinteger64_base.generated.c">
+      <Filter>src\smiletypes\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\numeric\smilereal32.generated.c">
+      <Filter>src\smiletypes\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\numeric\smilereal32_base.generated.c">
+      <Filter>src\smiletypes\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\numeric\smilereal64.generated.c">
+      <Filter>src\smiletypes\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\numeric\smilereal64_base.generated.c">
+      <Filter>src\smiletypes\numeric</Filter>
+    </ClCompile>
+    <None Include="src\smiletypes\range\makerangetypes.pl">
+      <Filter>src\smiletypes\range</Filter>
+    </None>
     <ClCompile Include="src\smiletypes\range\smilebyterange.generated.c">
       <Filter>src\smiletypes\range</Filter>
     </ClCompile>
     <ClCompile Include="src\smiletypes\range\smilebyterange_base.generated.c">
+      <Filter>src\smiletypes\range</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\range\smilecharrange.generated.c">
+      <Filter>src\smiletypes\range</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\range\smilecharrange_base.generated.c">
+      <Filter>src\smiletypes\range</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\range\smilefloat32range.generated.c">
+      <Filter>src\smiletypes\range</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\range\smilefloat32range_base.generated.c">
+      <Filter>src\smiletypes\range</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\range\smilefloat64range.generated.c">
+      <Filter>src\smiletypes\range</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\range\smilefloat64range_base.generated.c">
       <Filter>src\smiletypes\range</Filter>
     </ClCompile>
     <ClCompile Include="src\smiletypes\range\smileinteger16range.generated.c">
@@ -936,130 +1441,121 @@
     <ClCompile Include="src\smiletypes\range\smileinteger64range_base.generated.c">
       <Filter>src\smiletypes\range</Filter>
     </ClCompile>
+    <None Include="src\smiletypes\range\smilerange.template">
+      <Filter>src\smiletypes\range</Filter>
+    </None>
+    <None Include="src\smiletypes\range\smilerange_base.template">
+      <Filter>src\smiletypes\range</Filter>
+    </None>
+    <ClCompile Include="src\smiletypes\range\smilereal32range.generated.c">
+      <Filter>src\smiletypes\range</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\range\smilereal32range_base.generated.c">
+      <Filter>src\smiletypes\range</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\range\smilereal64range.generated.c">
+      <Filter>src\smiletypes\range</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\range\smilereal64range_base.generated.c">
+      <Filter>src\smiletypes\range</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\range\smileunirange.generated.c">
+      <Filter>src\smiletypes\range</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\range\smileunirange_base.generated.c">
+      <Filter>src\smiletypes\range</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\raw\smilebytearray.c">
+      <Filter>src\smiletypes\raw</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\raw\smilebytearray_base.c">
+      <Filter>src\smiletypes\raw</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\smilebool.c">
+      <Filter>src\smiletypes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\smilefunction.c">
+      <Filter>src\smiletypes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\smilefunction_base.c">
+      <Filter>src\smiletypes</Filter>
+    </ClCompile>
     <ClCompile Include="src\smiletypes\smilehandle.c">
+      <Filter>src\smiletypes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\smilelist.c">
+      <Filter>src\smiletypes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\smilelist_class.c">
+      <Filter>src\smiletypes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\smileloanword.c">
+      <Filter>src\smiletypes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\smilenonterminal.c">
+      <Filter>src\smiletypes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\smilenull.c">
+      <Filter>src\smiletypes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\smileobject.c">
       <Filter>src\smiletypes</Filter>
     </ClCompile>
     <ClCompile Include="src\smiletypes\smileobject_class.c">
       <Filter>src\smiletypes</Filter>
     </ClCompile>
-    <ClCompile Include="src\string\string_utf16.c">
-      <Filter>src\string</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\stdio\stdio_path_base.c">
-      <Filter>lib\stdio</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\stdio\stdio_dir.c">
-      <Filter>lib\stdio</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\stdio\stdio_dir_base.c">
-      <Filter>lib\stdio</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\stdio\stdio_file.c">
-      <Filter>lib\stdio</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\stdio\stdio_file_base.c">
-      <Filter>lib\stdio</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\stdio\stdio_main.c">
-      <Filter>lib\stdio</Filter>
-    </ClCompile>
-    <ClCompile Include="src\smiletypes\kind.c">
+    <ClCompile Include="src\smiletypes\smileobject_stringify.c">
       <Filter>src\smiletypes</Filter>
     </ClCompile>
-    <ClCompile Include="src\smiletypes\smilefunction_base.c" />
-    <ClCompile Include="src\smiletypes\numeric\smilebyte_base.generated.c" />
-    <ClCompile Include="src\smiletypes\numeric\smilereal64.generated.c" />
-    <ClCompile Include="src\smiletypes\numeric\smilereal64_base.generated.c" />
-    <ClCompile Include="src\string\string_ident.c" />
-    <ClCompile Include="src\smiletypes\numeric\smilereal32_base.generated.c" />
-    <ClCompile Include="src\smiletypes\numeric\smilereal32.generated.c" />
-    <ClCompile Include="src\smiletypes\numeric\smilefloat64_base.generated.c" />
-    <ClCompile Include="src\smiletypes\numeric\smilefloat32.generated.c" />
-    <ClCompile Include="src\smiletypes\numeric\smilefloat32_base.generated.c" />
-    <ClCompile Include="src\smiletypes\numeric\smilefloat64.generated.c" />
-    <ClCompile Include="src\numeric\float64.c" />
-    <ClCompile Include="src\string\string_path.c" />
-    <ClCompile Include="src\smiletypes\text\smilechar.c" />
-    <ClCompile Include="src\smiletypes\text\smileuni.c" />
-    <ClCompile Include="src\smiletypes\text\smilechar_base.c" />
-    <ClCompile Include="src\smiletypes\text\smileuni_base.c" />
-    <ClCompile Include="src\crypto\hash\fnvhash.c">
-      <Filter>src</Filter>
+    <ClCompile Include="src\smiletypes\smilesyntax.c">
+      <Filter>src\smiletypes</Filter>
     </ClCompile>
-    <ClCompile Include="src\crypto\hash\siphash.c">
-      <Filter>src</Filter>
+    <ClCompile Include="src\smiletypes\smiletillcontinuation.c">
+      <Filter>src\smiletypes</Filter>
     </ClCompile>
-    <ClCompile Include="src\time\ticks.c">
-      <Filter>src</Filter>
+    <ClCompile Include="src\smiletypes\smileuserobject.c">
+      <Filter>src\smiletypes</Filter>
     </ClCompile>
-    <ClCompile Include="src\crypto\hash\crc32.c" />
-    <ClCompile Include="src\crypto\hash\md5.c" />
-    <ClCompile Include="src\crypto\hash\sha1.c" />
-    <ClCompile Include="src\crypto\hash\sha2.c" />
-    <ClCompile Include="src\eval\compiler\compile_dot.c" />
-    <ClCompile Include="src\env\modules.c" />
-    <ClCompile Include="src\eval\compiler\compile_include.c" />
-    <ClCompile Include="src\eval\compiler\compile_brk.c" />
-    <ClCompile Include="src\eval\closure_stringify.c" />
-    <ClCompile Include="src\smiletypes\smiletillcontinuation.c" />
-    <ClCompile Include="src\crypto\hash.c" />
-    <ClCompile Include="src\crypto\hash\sha3.c" />
-    <ClCompile Include="src\numeric\random.c" />
-    <ClCompile Include="src\platform\unix\unix_os.c" />
-    <ClCompile Include="src\platform\windows\windows_os.c" />
-    <ClCompile Include="src\smiletypes\range\smilefloat32range.generated.c" />
-    <ClCompile Include="src\smiletypes\range\smilefloat32range_base.generated.c" />
-    <ClCompile Include="src\smiletypes\range\smilefloat64range.generated.c" />
-    <ClCompile Include="src\smiletypes\range\smilefloat64range_base.generated.c" />
-    <ClCompile Include="src\smiletypes\range\smilecharrange.generated.c" />
-    <ClCompile Include="src\smiletypes\range\smilecharrange_base.generated.c" />
-    <ClCompile Include="src\smiletypes\range\smileunirange_base.generated.c" />
-    <ClCompile Include="src\smiletypes\range\smileunirange.generated.c" />
-    <ClCompile Include="src\smiletypes\range\smilereal64range_base.generated.c" />
-    <ClCompile Include="src\smiletypes\range\smilereal32range.generated.c" />
-    <ClCompile Include="src\smiletypes\range\smilereal32range_base.generated.c" />
-    <ClCompile Include="src\smiletypes\range\smilereal64range.generated.c" />
-    <ClCompile Include="regex\src\regcomp.c" />
-    <ClCompile Include="regex\src\regenc.c" />
-    <ClCompile Include="regex\src\regerror.c" />
-    <ClCompile Include="regex\src\regexec.c" />
-    <ClCompile Include="regex\src\regparse.c" />
-    <ClCompile Include="regex\src\regsyntax.c" />
-    <ClCompile Include="regex\src\regtrav.c" />
-    <ClCompile Include="regex\src\regversion.c" />
-    <ClCompile Include="regex\src\st.c" />
-    <ClCompile Include="regex\src\ascii.c" />
-    <ClCompile Include="regex\src\utf8.c" />
-    <ClCompile Include="regex\src\unicode.c" />
-    <ClCompile Include="regex\src\unicode_fold1_key.c" />
-    <ClCompile Include="regex\src\unicode_fold2_key.c" />
-    <ClCompile Include="regex\src\unicode_fold3_key.c" />
-    <ClCompile Include="regex\src\unicode_unfold_key.c" />
-    <ClCompile Include="regex\regex.c" />
-    <ClCompile Include="src\parsing\lexer\lexregex.c" />
-    <ClCompile Include="src\smiletypes\text\smileregex_base.c" />
-    <ClCompile Include="src\smiletypes\text\smileregexmatch_base.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="src\init.c">
-      <Filter>src</Filter>
+    <ClCompile Include="src\smiletypes\text\smilechar.c">
+      <Filter>src\smiletypes\text</Filter>
     </ClCompile>
-    <ClCompile Include="src\dict\int32dict.c">
-      <Filter>src\dict</Filter>
+    <ClCompile Include="src\smiletypes\text\smilechar_base.c">
+      <Filter>src\smiletypes\text</Filter>
     </ClCompile>
-    <ClCompile Include="src\dict\stringdict.c">
-      <Filter>src\dict</Filter>
+    <ClCompile Include="src\smiletypes\text\smileregex_base.c">
+      <Filter>src\smiletypes\text</Filter>
     </ClCompile>
-    <ClCompile Include="src\dict\stringintdict.c">
-      <Filter>src\dict</Filter>
+    <ClCompile Include="src\smiletypes\text\smileregexmatch_base.c">
+      <Filter>src\smiletypes\text</Filter>
     </ClCompile>
-    <ClCompile Include="src\string\stringbuilder.c">
+    <ClCompile Include="src\smiletypes\text\smilestring.c">
+      <Filter>src\smiletypes\text</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\text\smilestring_base.c">
+      <Filter>src\smiletypes\text</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\text\smilesymbol.c">
+      <Filter>src\smiletypes\text</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\text\smileuni.c">
+      <Filter>src\smiletypes\text</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\text\smileuni_base.c">
+      <Filter>src\smiletypes\text</Filter>
+    </ClCompile>
+    <ClCompile Include="src\string\html_entitytable.c">
       <Filter>src\string</Filter>
     </ClCompile>
-    <ClCompile Include="src\string\stringbuilder_format.c">
+    <ClCompile Include="src\string\html_entitytovalue.c">
+      <Filter>src\string</Filter>
+    </ClCompile>
+    <ClCompile Include="src\string\html_valuetoentity.c">
       <Filter>src\string</Filter>
     </ClCompile>
     <ClCompile Include="src\string\string_core.c">
+      <Filter>src\string</Filter>
+    </ClCompile>
+    <ClCompile Include="src\string\string_createfromint.c">
       <Filter>src\string</Filter>
     </ClCompile>
     <ClCompile Include="src\string\string_extra.c">
@@ -1068,13 +1564,52 @@
     <ClCompile Include="src\string\string_html.c">
       <Filter>src\string</Filter>
     </ClCompile>
+    <ClCompile Include="src\string\string_ident.c">
+      <Filter>src\string</Filter>
+    </ClCompile>
     <ClCompile Include="src\string\string_parse.c">
+      <Filter>src\string</Filter>
+    </ClCompile>
+    <ClCompile Include="src\string\string_parsefloat.c">
+      <Filter>src\string</Filter>
+    </ClCompile>
+    <None Include="src\string\string_parsefloat.generated.inc">
+      <Filter>src\string</Filter>
+    </None>
+    <ClCompile Include="src\string\string_parsereal.c">
+      <Filter>src\string</Filter>
+    </ClCompile>
+    <ClCompile Include="src\string\string_path.c">
+      <Filter>src\string</Filter>
+    </ClCompile>
+    <ClCompile Include="src\string\string_static.c">
       <Filter>src\string</Filter>
     </ClCompile>
     <ClCompile Include="src\string\string_unicode.c">
       <Filter>src\string</Filter>
     </ClCompile>
+    <ClCompile Include="src\string\string_utf16.c">
+      <Filter>src\string</Filter>
+    </ClCompile>
+    <ClCompile Include="src\string\stringbuilder.c">
+      <Filter>src\string</Filter>
+    </ClCompile>
+    <ClCompile Include="src\string\stringbuilder_format.c">
+      <Filter>src\string</Filter>
+    </ClCompile>
+    <ClCompile Include="src\time\ticks.c">
+      <Filter>src\time</Filter>
+    </ClCompile>
     <ClCompile Include="src\unicode\casefolding.c">
+      <Filter>src\unicode</Filter>
+    </ClCompile>
+    <ClCompile Include="src\unicode\codepages_cpx.c">
+      <Filter>src\unicode</Filter>
+    </ClCompile>
+    <ClCompile Include="src\unicode\codepages_iso8859.c">
+      <Filter>src\unicode</Filter>
+    </ClCompile>
+    <ClCompile Include="src\unicode\codepages_win125x.c">
       <Filter>src\unicode</Filter>
     </ClCompile>
     <ClCompile Include="src\unicode\combiningclass.c">
@@ -1095,426 +1630,5 @@
     <ClCompile Include="src\unicode\uppercase.c">
       <Filter>src\unicode</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="gc\include\atomic_ops.h">
-      <Filter>gc\include</Filter>
-    </ClInclude>
-    <ClInclude Include="gc\include\gc.h">
-      <Filter>gc\include</Filter>
-    </ClInclude>
-    <ClInclude Include="gc\include\gc_allocator.h">
-      <Filter>gc\include</Filter>
-    </ClInclude>
-    <ClInclude Include="gc\include\gc_amiga_redirects.h">
-      <Filter>gc\include</Filter>
-    </ClInclude>
-    <ClInclude Include="gc\include\gc_backptr.h">
-      <Filter>gc\include</Filter>
-    </ClInclude>
-    <ClInclude Include="gc\include\gc_config_macros.h">
-      <Filter>gc\include</Filter>
-    </ClInclude>
-    <ClInclude Include="gc\include\gc_cpp.h">
-      <Filter>gc\include</Filter>
-    </ClInclude>
-    <ClInclude Include="gc\include\gc_gcj.h">
-      <Filter>gc\include</Filter>
-    </ClInclude>
-    <ClInclude Include="gc\include\gc_inline.h">
-      <Filter>gc\include</Filter>
-    </ClInclude>
-    <ClInclude Include="gc\include\gc_mark.h">
-      <Filter>gc\include</Filter>
-    </ClInclude>
-    <ClInclude Include="gc\include\gc_pthread_redirects.h">
-      <Filter>gc\include</Filter>
-    </ClInclude>
-    <ClInclude Include="gc\include\gc_tiny_fl.h">
-      <Filter>gc\include</Filter>
-    </ClInclude>
-    <ClInclude Include="gc\include\gc_typed.h">
-      <Filter>gc\include</Filter>
-    </ClInclude>
-    <ClInclude Include="gc\include\gc_version.h">
-      <Filter>gc\include</Filter>
-    </ClInclude>
-    <ClInclude Include="gc\include\private\gc_hdrs.h">
-      <Filter>gc\include\private</Filter>
-    </ClInclude>
-    <ClInclude Include="gc\include\private\gc_locks.h">
-      <Filter>gc\include\private</Filter>
-    </ClInclude>
-    <ClInclude Include="gc\include\private\gc_pmark.h">
-      <Filter>gc\include\private</Filter>
-    </ClInclude>
-    <ClInclude Include="gc\include\private\gc_priv.h">
-      <Filter>gc\include\private</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile.h" />
-    <ClInclude Include="include\smile\simplestats.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\env\env.h">
-      <Filter>include\env</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\env\symboltable.h">
-      <Filter>include\env</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\env\knownsymbols.h">
-      <Filter>include\env</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\env\knownobjects.h">
-      <Filter>include\env</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\env\knownstrings.h">
-      <Filter>include\env</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\smiletypes\predecl.h">
-      <Filter>include\smiletypes</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\smiletypes\text\smilesymbol.h">
-      <Filter>include\smiletypes\text</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\smiletypes\smilelist.h">
-      <Filter>include\smiletypes</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\smiletypes\smilenull.h">
-      <Filter>include\smiletypes</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\smiletypes\smileobject.h">
-      <Filter>include\smiletypes</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\smiletypes\smileuserobject.h">
-      <Filter>include\smiletypes</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\smiletypes\kind.h">
-      <Filter>include\smiletypes</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\smiletypes\numeric\smilebyte.h">
-      <Filter>include\smiletypes\numeric</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\smiletypes\numeric\smileinteger16.h">
-      <Filter>include\smiletypes\numeric</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\smiletypes\numeric\smileinteger32.h">
-      <Filter>include\smiletypes\numeric</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\smiletypes\numeric\smileinteger64.h">
-      <Filter>include\smiletypes\numeric</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\smiletypes\numeric\smileinteger128.h">
-      <Filter>include\smiletypes\numeric</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\smiletypes\smilebool.h">
-      <Filter>include\smiletypes</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\env\knownbases.h">
-      <Filter>include\env</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\parsing\lexer.h">
-      <Filter>include\parsing</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\parsing\tokenkind.h">
-      <Filter>include\parsing</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\parsing\identkind.h">
-      <Filter>include\parsing</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\parsing\internal\lexerinternal.h">
-      <Filter>include\parsing\internal</Filter>
-    </ClInclude>
-    <ClInclude Include="decimal\bid_b2d.h">
-      <Filter>decimal\include</Filter>
-    </ClInclude>
-    <ClInclude Include="decimal\bid_conf.h">
-      <Filter>decimal\include</Filter>
-    </ClInclude>
-    <ClInclude Include="decimal\bid_div_macros.h">
-      <Filter>decimal\include</Filter>
-    </ClInclude>
-    <ClInclude Include="decimal\bid_functions.h">
-      <Filter>decimal\include</Filter>
-    </ClInclude>
-    <ClInclude Include="decimal\bid_gcc_intrinsics.h">
-      <Filter>decimal\include</Filter>
-    </ClInclude>
-    <ClInclude Include="decimal\bid_inline_add.h">
-      <Filter>decimal\include</Filter>
-    </ClInclude>
-    <ClInclude Include="decimal\bid_internal.h">
-      <Filter>decimal\include</Filter>
-    </ClInclude>
-    <ClInclude Include="decimal\bid_sqrt_macros.h">
-      <Filter>decimal\include</Filter>
-    </ClInclude>
-    <ClInclude Include="decimal\bid_strtod.h">
-      <Filter>decimal\include</Filter>
-    </ClInclude>
-    <ClInclude Include="decimal\bid_trans.h">
-      <Filter>decimal\include</Filter>
-    </ClInclude>
-    <ClInclude Include="decimal\bid_wrap_names.h">
-      <Filter>decimal\include</Filter>
-    </ClInclude>
-    <ClInclude Include="decimal\bid128_2_str.h">
-      <Filter>decimal\include</Filter>
-    </ClInclude>
-    <ClInclude Include="decimal\bid128_2_str_macros.h">
-      <Filter>decimal\include</Filter>
-    </ClInclude>
-    <ClInclude Include="decimal\dfp754.h">
-      <Filter>decimal\include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\numeric\real32.h">
-      <Filter>include\numeric</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\numeric\real64.h">
-      <Filter>include\numeric</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\numeric\real128.h">
-      <Filter>include\numeric</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\numeric\real.h">
-      <Filter>include\numeric</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\numeric\realshared.h">
-      <Filter>include\numeric</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\platform\cygwin-gcc-x86\platform.h">
-      <Filter>include\platform\cygwin-gcc-x86</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\platform\linux-gcc-x64\platform.h">
-      <Filter>include\platform\linux-gcc-x64</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\platform\windows-msvc-x64\platform.h">
-      <Filter>include\platform\windows-msvc-x64</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\platform\windows-msvc-x86\platform.h">
-      <Filter>include\platform\windows-msvc-x86</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\platform\platform.h">
-      <Filter>include\platform</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\platform\linux-gcc-x86\platform.h">
-      <Filter>include\platform\linux-gcc-x86</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\platform\cygwin-gcc-x64\platform.h">
-      <Filter>include\platform\cygwin-gcc-x64</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\parsing\parser.h">
-      <Filter>include\parsing</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\parsing\internal\parserinternal.h">
-      <Filter>include\parsing\internal</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\parsing\internal\parsescope.h">
-      <Filter>include\parsing\internal</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\parsing\internal\parsedecl.h">
-      <Filter>include\parsing\internal</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\dict\int32int32dict.h">
-      <Filter>include\dict</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\smiletypes\easyobject.h">
-      <Filter>include\smiletypes</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\parsing\parsemessage.h">
-      <Filter>include\parsing</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\smiletypes\smilemacro.h">
-      <Filter>include\smiletypes</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\smiletypes\smilesyntax.h">
-      <Filter>include\smiletypes</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\parsing\internal\parsesyntax.h">
-      <Filter>include\parsing\internal</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\parsing\parsertypes.h">
-      <Filter>include\parsing</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\atomic.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\platform\macosx-clang-x64\platform.h">
-      <Filter>include\platform\macosx-clang-x64</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\eval\eval.h">
-      <Filter>include\eval</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\eval\opcode.h">
-      <Filter>include\eval</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\eval\compiler.h">
-      <Filter>include\eval</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\eval\bytecode.h">
-      <Filter>include\eval</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\dict\vardict.h">
-      <Filter>include\dict</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\eval\closure.h">
-      <Filter>include\eval</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\smiletypes\smilefunction.h">
-      <Filter>include\smiletypes</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\smiletypes\base.h">
-      <Filter>include\smiletypes</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\eval\compiler_internal.h">
-      <Filter>include\eval</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\dict\pointerset.h">
-      <Filter>include\dict</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\internal\staticstring.h">
-      <Filter>include\internal</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\eval\compiledblock.h">
-      <Filter>include\eval</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\smiletypes\raw\smilebytearray.h">
-      <Filter>include\smiletypes\raw</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\platform\windows\ansi-console.h" />
-    <ClInclude Include="include\smile\version.h" />
-    <ClInclude Include="include\smile\parsing\parseinclude.h">
-      <Filter>src\parsing\parser</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\smiletypes\range\smilebyterange.h">
-      <Filter>include\smiletypes\range</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\smiletypes\range\smileinteger16range.h">
-      <Filter>include\smiletypes\range</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\smiletypes\range\smileinteger32range.h">
-      <Filter>include\smiletypes\range</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\smiletypes\range\smileinteger64range.h">
-      <Filter>include\smiletypes\range</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\smiletypes\smilehandle.h">
-      <Filter>include\smiletypes</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\stdio\stdio_internal.h">
-      <Filter>lib\stdio</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\smiletypes\numeric\smilereal64.h" />
-    <ClInclude Include="include\smile\smiletypes\numeric\smilereal32.h" />
-    <ClInclude Include="include\smile\smiletypes\numeric\smilefloat64.h" />
-    <ClInclude Include="include\smile\smiletypes\numeric\smilefloat32.h" />
-    <ClInclude Include="include\smile\numeric\float64.h" />
-    <ClInclude Include="include\smile\smiletypes\text\smilechar.h" />
-    <ClInclude Include="include\smile\smiletypes\text\smileuni.h" />
-    <ClInclude Include="include\smile\crypto\hash.h" />
-    <ClInclude Include="include\smile\crypto\dicthash.h" />
-    <ClInclude Include="include\smile\crypto\crc32.h" />
-    <ClInclude Include="include\smile\crypto\md5.h" />
-    <ClInclude Include="include\smile\crypto\sha1.h" />
-    <ClInclude Include="include\smile\crypto\sha2.h" />
-    <ClInclude Include="include\smile\env\modules.h" />
-    <ClInclude Include="include\smile\smiletypes\smiletillcontinuation.h" />
-    <ClInclude Include="include\smile\crypto\sha3.h" />
-    <ClInclude Include="include\smile\numeric\random.h" />
-    <ClInclude Include="include\smile\smiletypes\range\smilecharrange.h" />
-    <ClInclude Include="include\smile\smiletypes\range\smilefloat32range.h" />
-    <ClInclude Include="include\smile\smiletypes\range\smilefloat64range.h" />
-    <ClInclude Include="include\smile\smiletypes\range\smilereal32range.h" />
-    <ClInclude Include="include\smile\smiletypes\range\smilereal64range.h" />
-    <ClInclude Include="include\smile\smiletypes\range\smileunirange.h" />
-    <ClInclude Include="regex\src\oniguruma.h" />
-    <ClInclude Include="regex\src\regenc.h" />
-    <ClInclude Include="regex\src\regint.h" />
-    <ClInclude Include="regex\src\regparse.h" />
-    <ClInclude Include="regex\src\st.h" />
-    <ClInclude Include="regex\src\config.h" />
-    <ClInclude Include="include\smile\regex.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="include\smile\array.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\bittwiddling.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\gc.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\mem.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\string.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\stringbuilder.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\types.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\dict\int32dict.h">
-      <Filter>include\dict</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\dict\shared.h">
-      <Filter>include\dict</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\dict\stringdict.h">
-      <Filter>include\dict</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\dict\stringintdict.h">
-      <Filter>include\dict</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\internal\html.h">
-      <Filter>include\internal</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\internal\sprintf.h">
-      <Filter>include\internal</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\internal\types.h">
-      <Filter>include\internal</Filter>
-    </ClInclude>
-    <ClInclude Include="include\smile\internal\unicode.h">
-      <Filter>include\internal</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="src\string\string_parsefloat.generated.inc">
-      <Filter>src\string</Filter>
-    </None>
-    <None Include="src\eval\opnames.inc">
-      <Filter>src\eval</Filter>
-    </None>
-    <None Include="README.md" />
-    <None Include="src\eval\eval_fn_user.template">
-      <Filter>src\eval</Filter>
-    </None>
-    <None Include="src\eval\eval_fn_ext.template">
-      <Filter>src\eval</Filter>
-    </None>
-    <None Include="src\eval\makefn.pl">
-      <Filter>src\eval</Filter>
-    </None>
-    <None Include="src\smiletypes\range\smilerange_base.template">
-      <Filter>src\smiletypes\range</Filter>
-    </None>
-    <None Include="src\smiletypes\range\smilerange.template">
-      <Filter>src\smiletypes\range</Filter>
-    </None>
-    <None Include="src\smiletypes\range\makerangetypes.pl">
-      <Filter>src\smiletypes\range</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="grammar.txt" />
-    <Text Include="src\atomic\atomic_windows_msvc.inc">
-      <Filter>src\atomic</Filter>
-    </Text>
-  </ItemGroup>
-  <ItemGroup>
-    <Natvis Include="SmileLib.natvis" />
   </ItemGroup>
 </Project>

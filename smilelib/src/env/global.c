@@ -276,13 +276,6 @@ SmileObject Smile_ParseInScope(String text, String filename,
 	return result;
 }
 
-// Helper function for Smile_EvalInScope().
-static Bool DeclareVariableForCompiler(VarInfo varInfo, void *param)
-{
-	CompileScope_DefineSymbol((CompileScope)param, varInfo->symbol, PARSEDECL_GLOBAL, 0);
-	return True;
-}
-
 /// <summary>
 /// Evaluate the given expression in the given scope.
 /// </summary>
@@ -292,7 +285,6 @@ static Bool DeclareVariableForCompiler(VarInfo varInfo, void *param)
 EvalResult Smile_EvalInScope(ClosureInfo globalClosureInfo, SmileObject expression)
 {
 	Compiler compiler;
-	CompileScope compileScope;
 	UserFunctionInfo globalFunction;
 	EvalResult result;
 
@@ -300,13 +292,8 @@ EvalResult Smile_EvalInScope(ClosureInfo globalClosureInfo, SmileObject expressi
 	compiler = Compiler_Create();
 	Compiler_SetGlobalClosureInfo(compiler, globalClosureInfo);
 
-	// Now go through the global closure and declare all of its contents in a new global scope.
-	// This is so that the compiler can unambiguously tell the difference between whether it should
-	// use LdX/StX on a variable name, or whether it should bail for an unknown variable.
-	compileScope = Compiler_BeginScope(compiler, PARSESCOPE_OUTERMOST);
-	VarDict_ForEach(globalClosureInfo->variableDictionary, DeclareVariableForCompiler, compileScope);
-	globalFunction = Compiler_CompileGlobal(compiler, expression);
-	Compiler_EndScope(compiler);
+	// Compile the expression.
+	globalFunction = Compiler_CompileGlobalExpressionInGlobalScope(compiler, expression);
 
 	// If the compile failed, stop now.
 	if (compiler->firstMessage != NullList) {

@@ -175,8 +175,6 @@ static SmileObject Parser_RecursivelyClone(SmileObject expr)
 	}
 }
 
-static SmileObject Parser_RecursivelyApplyTemplate(Parser parser, SmileObject expr, Int32Dict replacements, LexerPosition lexerPosition);
-
 Inline SmileObject Parser_ApplyListOf(Parser parser, SmileList list, Int32Dict replacements)
 {
 	SmileList head = NullList, tail = NullList;
@@ -243,7 +241,7 @@ Inline SmileObject Parser_ApplyListCons(Parser parser, SmileList list, Int32Dict
 		: (SmileObject)SmileList_Cons(newA, newD);
 }
 
-static SmileObject Parser_RecursivelyApplyTemplate(Parser parser, SmileObject expr, Int32Dict replacements, LexerPosition lexerPosition)
+SmileObject Parser_RecursivelyApplyTemplate(Parser parser, SmileObject expr, Int32Dict replacements, LexerPosition lexerPosition)
 {
 	SmileList list;
 
@@ -311,20 +309,6 @@ static SmileObject Parser_RecursivelyApplyTemplate(Parser parser, SmileObject ex
 							return NullObject;
 						}
 					}
-					/*else if (objSymbol->symbol == Smile_KnownSymbols.Pair_) {
-						if (methodSymbol->symbol == Smile_KnownSymbols.of) {
-							if (SmileList_SafeLength((SmileList)list->d) != 2) {
-								Parser_AddFatalError(parser, lexerPosition, "RecursivelyApplyTemplate encountered unsupported [$dot] form. (parser bug?)");
-								return NullObject;
-							}
-							// Evaluate arguments and then construct a Pair.
-							return Parser_ApplyPairOf(parser, (SmileList)list->d, replacements);
-						}
-						else {
-							Parser_AddFatalError(parser, lexerPosition, "RecursivelyApplyTemplate encountered unsupported [$dot] form. (parser bug?)");
-							return NullObject;
-						}
-					}*/
 				}
 			}
 

@@ -26,6 +26,9 @@
 #ifndef __SMILE_PARSING_INTERNAL_PARSESYNTAX_H__
 #include <smile/parsing/internal/parsesyntax.h>
 #endif
+#ifndef __SMILE_PARSING_INTERNAL_PARSELOANWORD_H__
+#include <smile/parsing/internal/parseloanword.h>
+#endif
 #ifndef __SMILE_PARSING_PARSEMESSAGE_H__
 #include <smile/parsing/parsemessage.h>
 #endif
@@ -76,10 +79,20 @@ struct ParseScopeStruct {
 
 	// The list of included syntax rules in this scope, in declaration order.
 	SmileList syntaxIncludeListHead, syntaxIncludeListTail;
-	Bool reexport;
 
 	// The syntax table for this scope, which describes the current effective set of syntax rules.
 	ParserSyntaxTable syntaxTable;
+
+	// The list of actual loanword declarations in this scope, in declaration order.
+	SmileList loanwordListHead, loanwordListTail;
+
+	// The list of included loanword rules in this scope, in declaration order.
+	SmileList loanwordIncludeListHead, loanwordIncludeListTail;
+
+	// The loanword table for this scope, which describes the current effective set of loanword rules.
+	ParserLoanwordTable loanwordTable;
+
+	Bool reexport;
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -219,6 +232,22 @@ Inline void ParseScope_AddSyntax(ParseScope scope, SmileSyntax syntax)
 Inline void ParseScope_AddIncludeSyntax(ParseScope scope, SmileSyntax syntax)
 {
 	LIST_APPEND(scope->syntaxIncludeListHead, scope->syntaxIncludeListTail, syntax);
+}
+
+/// <summary>
+/// Add a SmileLoanword object to this scope's collection of declared loanword rules.
+/// </summary>
+Inline void ParseScope_AddLoanword(ParseScope scope, SmileLoanword loanword)
+{
+	LIST_APPEND(scope->loanwordListHead, scope->loanwordListTail, loanword);
+}
+
+/// <summary>
+/// Add a SmileLoanword object to this scope's collection of included loanword rules.
+/// </summary>
+Inline void ParseScope_AddIncludeLoanword(ParseScope scope, SmileLoanword loanword)
+{
+	LIST_APPEND(scope->loanwordIncludeListHead, scope->loanwordIncludeListTail, loanword);
 }
 
 #endif

@@ -41,7 +41,7 @@ EXTERN_TEST_SUITE(StringParseTests);
 EXTERN_TEST_SUITE(StringUnicodeTests);
 EXTERN_TEST_SUITE(SymbolTableTests);
 
-void RunAllTests()
+TestSuiteResults *RunAllTests()
 {
 	TestSuiteResults *results = CreateEmptyTestSuiteResults();
 
@@ -87,6 +87,8 @@ void RunAllTests()
 	RUN_TEST_SUITE(results, SymbolTableTests);
 
 	DisplayTestSuiteResults(results);
+
+	return results;
 }
 
 

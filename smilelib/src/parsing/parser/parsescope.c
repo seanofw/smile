@@ -57,10 +57,17 @@ ParseScope ParseScope_CreateRoot(void)
 	parseScope->kind = PARSESCOPE_OUTERMOST;
 	parseScope->parentScope = NULL;
 	parseScope->symbolDict = Int32Int32Dict_Create();
+
 	parseScope->syntaxTable = ParserSyntaxTable_CreateNew();
 	parseScope->syntaxListHead = parseScope->syntaxListTail = NullList;
 	parseScope->syntaxIncludeListHead = parseScope->syntaxIncludeListTail = NullList;
+
+	parseScope->loanwordTable = ParserLoanwordTable_CreateNew();
+	parseScope->loanwordListHead = parseScope->loanwordListTail = NullList;
+	parseScope->loanwordIncludeListHead = parseScope->loanwordIncludeListTail = NullList;
+
 	parseScope->reexport = False;
+
 	parseScope->decls = GC_MALLOC_STRUCT_ARRAY(ParseDecl, 16);
 	if (parseScope->decls == NULL)
 		Smile_Abort_OutOfMemory();
@@ -206,9 +213,15 @@ ParseScope ParseScope_CreateChild(ParseScope parentScope, Int kind)
 		Smile_Abort_OutOfMemory();
 	parseScope->numDecls = 0;
 	parseScope->maxDecls = 16;
+
 	ParserSyntaxTable_AddRef(parseScope->syntaxTable = parentScope->syntaxTable);
 	parseScope->syntaxListHead = parseScope->syntaxListTail = NullList;
 	parseScope->syntaxIncludeListHead = parseScope->syntaxIncludeListTail = NullList;
+
+	ParserLoanwordTable_AddRef(parseScope->loanwordTable = parentScope->loanwordTable);
+	parseScope->loanwordListHead = parseScope->loanwordListTail = NullList;
+	parseScope->loanwordIncludeListHead = parseScope->loanwordIncludeListTail = NullList;
+
 	parseScope->reexport = False;
 
 	return parseScope;
@@ -224,6 +237,7 @@ void ParseScope_Finish(ParseScope parseScope)
 
 	// Allow GC to reclaim the attached objects, if this was the last reference.
 	parseScope->syntaxTable = NULL;
+	parseScope->loanwordTable = NULL;
 	parseScope->symbolDict = NULL;
 	parseScope->decls = NULL;
 	parseScope->numDecls = 0;

@@ -152,6 +152,13 @@ Int Lexer_ParseLoanword(Lexer lexer, Bool isFirstContentOnLine)
 					}
 					goto unknown_loanword;
 
+				case 'l':
+					if (nameLength == 8 && !MemCmp((const char *)nameText, "loanword", 8)) {
+						lexer->src = src;
+						return END_TOKEN(TOKEN_LOANWORD_LOANWORD);
+					}
+					goto unknown_loanword;
+
 				case 'b':
 					if (nameLength == 3 && !MemCmp((const char *)nameText, "brk", 3)) {
 						lexer->src = src;
@@ -162,8 +169,7 @@ Int Lexer_ParseLoanword(Lexer lexer, Bool isFirstContentOnLine)
 				default:
 				unknown_loanword:
 					lexer->src = src;
-					lexer->token->text = String_FormatString(UnknownLoanwordMessage, String_Concat(String_PoundSign, lexer->token->text));
-					return END_TOKEN(TOKEN_ERROR);
+					return END_TOKEN(TOKEN_LOANWORD_CUSTOM);
 			}
 
 		default:

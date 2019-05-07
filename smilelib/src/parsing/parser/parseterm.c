@@ -32,6 +32,7 @@
 #include <smile/parsing/internal/parserinternal.h>
 #include <smile/parsing/internal/parsedecl.h>
 #include <smile/parsing/internal/parsescope.h>
+#include <smile/regex.h>
 
 static Bool Parser_TryParseSpecialForm(Parser parser, LexerPosition startPosition, SmileObject *result, ParseError *error);
 
@@ -159,7 +160,44 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, T
 			firstUnaryTokenForErrorReporting != NULL ? Token_GetPosition(firstUnaryTokenForErrorReporting) : Token_GetPosition(token),
 			String_Format("\"%S\" is not a known variable name", token->text));
 		return error;
-	
+
+	case TOKEN_LOANWORD_REGEX:
+		{
+			LexerPosition position = Token_GetPosition(token);
+		
+			// Get the regex itself.
+			Regex regex = (Regex)token->data.ptr;
+
+			// Return it as a pre-built list of the form [Regex.of pattern-string options-string].
+			// We'll actually end up discarding this regex and creating a new one, but that's okay, because
+			// it still validates the correctness of the regex:  It parses it fully at lexical-analysis time,
+			// so we can be certain it's correct before letting the program run.  Second, even though we've
+			// discarded it, the compiled copy of the regex is still sitting in the global regex cache, so when
+			// the program runs, it won't need to compile the regex again; it'll just locate the correct
+			// compiled regex object by matching strings to a known cache entry.  (The compiler may be able to
+			// even optimize this further, by recognizing patterns of the form [Regex.of pattern options], and
+			// simply transforming those into a load of a known handle.  But that work doesn't belong here,
+			// since #/.../ is only a shorthand for writing [Regex.of pattern options].)
+			SmileList creationCall =
+				SmileList_ConsWithSource(
+					(SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects._dotSymbol,
+						(SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects.RegexSymbol,
+							(SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects.ofSymbol,
+								NullObject,
+								position),
+							position),
+						position),
+					(SmileObject)SmileList_ConsWithSource((SmileObject)regex->pattern,
+						(SmileObject)SmileList_ConsWithSource((SmileObject)regex->flags,
+							NullObject,
+							position),
+						position),
+					position);
+
+			*result = (SmileObject)creationCall;
+		}
+		return NULL;
+
 	case TOKEN_LOANWORD_SYNTAX:
 		// Parse the new syntax rule.
 		error = Parser_ParseSyntax(parser, result, modeFlags);
@@ -173,11 +211,23 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, T
 		ParseScope_AddSyntax(parser->currentScope, (SmileSyntax)*result);
 		return NULL;
 
-	case TOKEN_LOANWORD_REGEX:
-		// The Lexer already constructed [Regex.of pattern-string options-string] for us,
-		// so there's nothing we need to do except return it.
-		*result = (SmileObject)token->data.ptr;
+	case TOKEN_LOANWORD_LOANWORD:
+		error = Parser_ParseLoanword(parser, result, modeFlags);
+		if (error != NULL)
+			return error;
+
+		// Add the loanword rule to the table of loanword rules for the current scope.
+		if (!ParserLoanwordTable_AddRule(parser, &parser->currentScope->loanwordTable, (SmileLoanword)*result)) {
+			*result = NullObject;
+		}
+		ParseScope_AddLoanword(parser->currentScope, (SmileLoanword)*result);
 		return NULL;
+
+	case TOKEN_LOANWORD_CUSTOM:
+		// Lexer doesn't know this loanword, so we have to see if it's in the current loanword table.
+		// If so, we use its regex to consume any subsequent characters it requires, and then transform
+		// the regex match into a template substitution.
+		return Parser_ApplyCustomLoanword(parser, token, result);
 
 	default:
 		// We got an unknown token that can't be turned into a term.  So we're going to generate

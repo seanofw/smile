@@ -13,5 +13,5 @@ SCRIPTS := detect-os.sh detect-proc.sh getsrc.sh makesrc.sh
 
 all dep check clean distclean install install-strip uninstall generated:
 	@chmod 755 $(addprefix scripts/,$(SCRIPTS))
-	@for package in $(PACKAGES); do $(MAKE) -C $$package $@; done
+	@for package in $(PACKAGES); do $(MAKE) -C $$package $@ || exit 1; done
 

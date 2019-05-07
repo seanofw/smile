@@ -59,7 +59,7 @@ SmileHandle SmileHandle_Create(SmileObject base, SmileHandleMethods methods, Sym
 	smileHandle->handleKind = handleKind;
 	smileHandle->ptr = ptr;
 
-	GC_REGISTER_FINALIZER(smileHandle, SmileHandle_Finalize, NULL, NULL, NULL);
+	GC_REGISTER_FINALIZER(smileHandle, (GC_finalization_proc)SmileHandle_Finalize, NULL, NULL, NULL);
 
 	return smileHandle;
 }

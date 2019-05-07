@@ -63,7 +63,7 @@ static UserFunctionInfo Compile(const char *text)
 
 	compiler = Compiler_Create();
 	Compiler_SetGlobalClosureInfo(compiler, globalClosureInfo);
-	globalFunction = Compiler_CompileGlobal(compiler, expr);
+	globalFunction = Compiler_CompileGlobalExpressionInGlobalScope(compiler, expr);
 
 	return globalFunction;
 }

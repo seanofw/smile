@@ -102,8 +102,6 @@ static ParseError Parser_ParseSyntaxTerminal(Parser parser, SmileList **tailRef)
 static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailRef);
 static ParseError Parser_ParseSyntaxNonterminalWithDeclarations(Parser parser, Int *numWithSymbols, Symbol **withSymbols);
 static void Parser_DeclareNonterminals(SmileList pattern, ParseScope scope, LexerPosition position);
-static SmileObject Parser_ConvertItemToTemplateIfNeeded(SmileObject expr, Int itemTemplateKind, LexerPosition lexerPosition);
-static Bool Parser_VerifySyntaxTemplateIsEvaluableAtParseTime(Parser parser, SmileObject expr);
 
 // syntax_expr :: = . syntax_level COLON LBRACKET syntax_pattern RBRACKET IMPLIES raw_list_term
 SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *expr, Int modeFlags)
@@ -245,7 +243,7 @@ static Int Parser_VerifyArgumentsAreEvaluableAtParseTime(Parser parser, SmileLis
 ///
 /// All other computation is expressly prohibited and must be implemented using macros.
 /// </summary>
-static Bool Parser_VerifySyntaxTemplateIsEvaluableAtParseTime(Parser parser, SmileObject expr)
+Bool Parser_VerifySyntaxTemplateIsEvaluableAtParseTime(Parser parser, SmileObject expr)
 {
 	SmileList list;
 
@@ -320,7 +318,7 @@ static Bool Parser_VerifySyntaxTemplateIsEvaluableAtParseTime(Parser parser, Smi
 /// Transform the provided expression, which may be any of the three different kinds of
 /// template forms, into a spliced-template form so that it may be acted on uniformly.
 /// </summary>
-static SmileObject Parser_ConvertItemToTemplateIfNeeded(SmileObject expr, Int itemTemplateKind, LexerPosition lexerPosition)
+SmileObject Parser_ConvertItemToTemplateIfNeeded(SmileObject expr, Int itemTemplateKind, LexerPosition lexerPosition)
 {
 	// This is a templated list, but not a templated item (or not templated enough).
 	// So we need to wrap/quote it before adding it to the list.

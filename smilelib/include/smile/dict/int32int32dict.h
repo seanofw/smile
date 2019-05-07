@@ -65,6 +65,7 @@ SMILE_API_FUNC void Int32Int32Dict_ClearWithSize(Int32Int32Dict intDict, Int32 n
 SMILE_API_FUNC Bool Int32Int32Dict_Remove(Int32Int32Dict intDict, Int32 key);
 
 SMILE_API_FUNC DictStats Int32Int32Dict_ComputeStats(Int32Int32Dict intDict);
+SMILE_API_FUNC Bool Int32Int32Dict_ForEach(Int32Int32Dict intDict, Bool (*func)(Int32 key, Int32 value, void *param), void *param);
 
 //-------------------------------------------------------------------------------------------------
 //  Inline parts of the implementation
