@@ -31,16 +31,42 @@
 #define SYNTAXROOT_RECURSE				3			// Parse the custom syntax rule, recursing from a parent custom syntax rule.
 
 typedef enum {
-	CustomSyntaxResult_PartialApplicationWithError = -1,
-	CustomSyntaxResult_NotMatchedAndNoTokensConsumed = 0,
-	CustomSyntaxResult_SuccessfullyParsed = 1,
-} CustomSyntaxResult;
-
-typedef enum {
 	TemplateKind_None = 0,
 	TemplateKind_Template = 1,
 	TemplateKind_TemplateWithSplicing = 2,
 } TemplateKind;
+
+// Helpers for generating the ParseResult structures returned by each parse function.
+
+// Return a parse result that contains an error.
+Inline ParseResult ERROR_RESULT(ParseMessage error)
+{
+	ParseResult parseResult;
+	parseResult.status = ParseStatus_PartialParseWithError;
+	parseResult.expr = NULL;
+	parseResult.error = error;
+	return parseResult;
+};
+
+// Return a parse result that contains a successfully-parsed expression.
+Inline ParseResult SUCCESS_RESULT(SmileObject expr)
+{
+	ParseResult parseResult;
+	parseResult.status = ParseStatus_SuccessfullyParsed;
+	parseResult.expr = expr;
+	parseResult.error = NULL;
+	return parseResult;
+}
+
+// Return a parse result that indicates nothing was consumed and nothing resulted from it.
+Inline ParseResult NOMATCH_RESULT(void)
+{
+	ParseResult parseResult;
+	parseResult.status = ParseStatus_NotMatchedAndNoTokensConsumed;
+	parseResult.expr = NULL;
+	parseResult.error = NULL;
+	return parseResult;
+}
 
 //-------------------------------------------------------------------------------------------------
 // Parser-internal methods
@@ -103,8 +129,8 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseParamType(Parser parser, SmileObject 
 
 SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *expr, Int modeFlags);
 SMILE_INTERNAL_FUNC ParseError Parser_ParseLoanword(Parser parser, SmileObject *expr, Int modeFlags);
-SMILE_INTERNAL_FUNC CustomSyntaxResult Parser_ApplyCustomSyntax(Parser parser, SmileObject *expr, Int modeFlags, Symbol syntaxClassSymbol,
-	Int syntaxRootMode, Symbol rootSkipSymbol, ParseError *parseError);
+SMILE_INTERNAL_FUNC ParseResult Parser_ApplyCustomSyntax(Parser parser, Int modeFlags, Symbol syntaxClassSymbol,
+	Int syntaxRootMode, Symbol rootSkipSymbol);
 SMILE_INTERNAL_FUNC ParseError Parser_ApplyCustomLoanword(Parser parser, Token token, SmileObject *result);
 SMILE_INTERNAL_FUNC SmileObject Parser_RecursivelyApplyTemplate(Parser parser, SmileObject expr, Int32Dict replacements, LexerPosition lexerPosition);
 

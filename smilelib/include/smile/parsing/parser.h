@@ -36,6 +36,31 @@
 //  Public type declarations
 
 /// <summary>
+/// Return flags from the parser's various parse functions.
+/// </summary>
+typedef enum {
+
+	// At least one token has been consumed, but an error was generated.  Error-recovery may be required.
+	ParseStatus_PartialParseWithError = -1,
+
+	// Zero tokens have been consumed, and no errors have been generated.
+	ParseStatus_NotMatchedAndNoTokensConsumed = 0,
+
+	// At least one token has been consumed, and no errors have been generated.
+	ParseStatus_SuccessfullyParsed = 1,
+
+} ParseStatus;
+
+/// <summary>
+/// The shape returned by each parse function (on the stack or in registers, not dynamically-allocated).
+/// </summary>
+typedef struct {
+	ParseStatus status;
+	SmileObject expr;
+	ParseMessage error;
+} ParseResult;
+
+/// <summary>
 /// A function that can load "include files" from disk (or wherever).
 /// </summary>
 typedef ParseError (*ParserIncludeLoader)(const String path, const LexerPosition position, String *result);
