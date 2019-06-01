@@ -51,38 +51,35 @@ static Int _loanwordRecover[] = {
 static Int _loanwordRecoverCount = sizeof(_loanwordRecover) / sizeof(Int);
 
 // loanword_expr :: = . anyname COLON LOANWORD_REGEX IMPLIES raw_list_term
-SMILE_INTERNAL_FUNC ParseError Parser_ParseLoanword(Parser parser, SmileObject *expr, Int modeFlags)
+ParseResult Parser_ParseLoanword(Parser parser, Int modeFlags)
 {
 	Token token;
 	Symbol name;
 	SmileObject replacement;
-	ParseError parseError;
 	LexerPosition rulePosition, impliesPosition;
 	Int templateKind;
 	SmileLoanword loanword;
 	Regex regex;
+	TemplateResult templateResult;
 
 	// First, read the loanword's name.
 	token = Parser_NextToken(parser);
 	rulePosition = Token_GetPosition(token);
 	if (token->kind != TOKEN_ALPHANAME && token->kind != TOKEN_UNKNOWNALPHANAME) {
-		*expr = NullObject;
-		return ParseMessage_Create(PARSEMESSAGE_ERROR, rulePosition, MissingLoanwordName);
+		return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, rulePosition, MissingLoanwordName));
 	}
 	name = token->data.symbol;
 
 	// There must be a colon next.
 	token = Parser_NextToken(parser);
 	if (token->kind != TOKEN_COLON) {
-		*expr = NullObject;
-		return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), MissingLoanwordColon);
+		return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), MissingLoanwordColon));
 	}
 
 	// There must be a regex pattern that follows.
 	token = Parser_NextToken(parser);
 	if (token->kind != TOKEN_LOANWORD_REGEX) {
-		*expr = NullObject;
-		return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), MissingLoanwordRegex);
+		return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), MissingLoanwordRegex));
 	}
 	regex = (Regex)token->data.ptr;
 
@@ -90,8 +87,7 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseLoanword(Parser parser, SmileObject *
 	token = Parser_NextToken(parser);
 	if (!(token->kind == TOKEN_PUNCTNAME || token->kind == TOKEN_UNKNOWNPUNCTNAME)
 		|| token->data.symbol != Smile_KnownSymbols.implies) {
-		*expr = NullObject;
-		return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), MissingLoanwordImpliesSymbol);
+		return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), MissingLoanwordImpliesSymbol));
 	}
 	impliesPosition = Token_GetPosition(token);
 
@@ -102,12 +98,12 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseLoanword(Parser parser, SmileObject *
 	Parser_DeclareCaptures(parser, regex, parser->currentScope, rulePosition);
 
 	// Parse the substitution expression in the syntax rule's scope.
-	parseError = Parser_ParseRawListTerm(parser, &replacement, &templateKind, modeFlags);
+	templateResult = Parser_ParseRawListTerm(parser, modeFlags);
 	Parser_EndScope(parser, False);
-	if (parseError != NULL) {
-		*expr = NullObject;
-		return parseError;
-	}
+	if (IS_PARSE_ERROR(templateResult.parseResult))
+		RETURN_PARSE_ERROR(templateResult.parseResult);
+	replacement = templateResult.parseResult.expr;
+	templateKind = templateResult.templateKind;
 
 	// Make sure the template is an evaluable expression form, not just a raw term.
 	replacement = Parser_ConvertItemToTemplateIfNeeded(replacement, templateKind, impliesPosition);
@@ -129,8 +125,7 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseLoanword(Parser parser, SmileObject *
 	loanword = SmileLoanword_Create(name, regex, replacement, rulePosition);
 
 	// Everything is all set up, so return the finished loanword object.
-	*expr = (SmileObject)loanword;
-	return NULL;
+	return EXPR_RESULT(loanword);
 }
 
 Inline String GetDollarNameString(Int index)
@@ -234,7 +229,7 @@ static Int32Dict Parser_CreateLoanwordReplacementValuesFromMatch(RegexMatch matc
 	return replacements;
 }
 
-ParseError Parser_ApplyCustomLoanword(Parser parser, Token token, SmileObject *result)
+ParseResult Parser_ApplyCustomLoanword(Parser parser, Token token)
 {
 	SmileLoanword loanword;
 	Symbol symbol;
@@ -248,8 +243,8 @@ ParseError Parser_ApplyCustomLoanword(Parser parser, Token token, SmileObject *r
 	symbol = SymbolTable_GetSymbolNoCreate(Smile_SymbolTable, token->text);
 	if (!symbol
 		|| !Int32Dict_TryGetValue(parser->currentScope->loanwordTable->definitions, symbol, (void **)&loanword)) {
-		return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
-			String_Format("Unknown loanword '#%S'.", token->text));
+		return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
+			String_Format("Unknown loanword '#%S'.", token->text)));
 	}
 
 	// We have a valid loanword, and we're going to lex it using its regex.
@@ -261,8 +256,8 @@ ParseError Parser_ApplyCustomLoanword(Parser parser, Token token, SmileObject *r
 
 	// If the regex match failed, this loanword was parsed as an error.
 	if (match == NULL) {
-		return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
-			String_Format("After loanword '#%S', the source code does not match the loanword's regex pattern.", loanword->name));
+		return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
+			String_Format("After loanword '#%S', the source code does not match the loanword's regex pattern.", loanword->name)));
 	}
 
 	// The regex match succeeded, and we have its data stored in the 'match' dictionary and array.
@@ -270,7 +265,5 @@ ParseError Parser_ApplyCustomLoanword(Parser parser, Token token, SmileObject *r
 	replacements = Parser_CreateLoanwordReplacementValuesFromMatch(match);
 
 	// Now use the captures against the template to generate the actual result.
-	*result = Parser_RecursivelyApplyTemplate(parser, loanword->replacement, replacements, position);
-
-	return NULL;
+	return EXPR_RESULT(Parser_RecursivelyApplyTemplate(parser, loanword->replacement, replacements, position));
 }

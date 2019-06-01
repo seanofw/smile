@@ -25,13 +25,12 @@
 // 	| . NEW dotexpr LBRACE members_opt RBRACE
 //	| . LBRACE members_opt RBRACE
 // 	| . consexpr
-ParseError Parser_ParseNewExpr(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting)
+ParseResult Parser_ParseNewExpr(Parser parser, Int modeFlags, Token firstUnaryTokenForErrorReporting)
 {
 	Token token, newToken;
-	SmileObject base, body;
-	ParseError parseError;
+	SmileObject base, body, expr;
+	ParseResult parseResult;
 	LexerPosition newTokenPosition;
-	Bool membersHaveErrors;
 
 	// Peek at the next token.
 	token = Parser_NextToken(parser);
@@ -47,7 +46,7 @@ ParseError Parser_ParseNewExpr(Parser parser, SmileObject *expr, Int modeFlags, 
 		&& token->data.symbol == Smile_KnownSymbols.new_)) {
 		// Didn't the keyword 'new', so just recurse deeper.
 		Lexer_Unget(parser->lexer);
-		return Parser_ParsePostfixExpr(parser, expr, modeFlags, firstUnaryTokenForErrorReporting);
+		return Parser_ParsePostfixExpr(parser, modeFlags, firstUnaryTokenForErrorReporting);
 	}
 
 	// Got the keyword 'new', so parse an object construction after it.
@@ -59,44 +58,41 @@ ParseError Parser_ParseNewExpr(Parser parser, SmileObject *expr, Int modeFlags, 
 		base = (SmileObject)Smile_KnownObjects.ObjectSymbol;
 	}
 	else {
-		parseError = Parser_ParseDotExpr(parser, &base, modeFlags, newToken);
-		if (parseError != NULL) {
+		parseResult = Parser_ParseDotExpr(parser, modeFlags, newToken);
+		if (IS_PARSE_ERROR(parseResult)) {
+			HANDLE_PARSE_ERROR(parser, parseResult);
 			token = Parser_Recover(parser, Parser_RightBracesBracketsParentheses_Recovery, Parser_RightBracesBracketsParentheses_Count);
-			if (token->kind != TOKEN_LEFTBRACE) {
-				*expr = NullObject;
-				return parseError;
-			}
-			Parser_AddMessage(parser, parseError);
+			if (token->kind != TOKEN_LEFTBRACE)
+				return RECOVERY_RESULT();
+			base = NullObject;
 		}
+		else base = parseResult.expr;
 	}
 
 	// If we didn't get a '{' at this point to start the object's members, that's an error.
 	if (Lexer_Next(parser->lexer) != TOKEN_LEFTBRACE) {
-		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
-			String_FromC("Missing a '{' after 'new'."));
-		*expr = NullObject;
-		return parseError;
+		return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
+			String_FromC("Missing a '{' after 'new'.")));
 	}
 
 shorthandForm:
 	// Collect the member-declarations in the object.
-	membersHaveErrors = Parser_ParseMembers(parser, &body);
+	parseResult = Parser_ParseMembers(parser);
 
 	// Make sure there's a succeeding closing '}'.
-	if (membersHaveErrors || Lexer_Peek(parser->lexer) != TOKEN_RIGHTBRACE) {
-		*expr = NullObject;
+	if (IS_PARSE_ERROR(parseResult) || Lexer_Peek(parser->lexer) != TOKEN_RIGHTBRACE) {
 		Parser_Recover(parser, Parser_RightBracesBracketsParentheses_Recovery, Parser_RightBracesBracketsParentheses_Count);
-		if (!membersHaveErrors) {
-			parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
-				String_Format("Missing a '}' to end the members in the 'new' block starting on line %d.", newTokenPosition->line));
-			return parseError;
+		if (!IS_PARSE_ERROR(parseResult)) {
+			return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
+				String_Format("Missing a '}' to end the members in the 'new' block starting on line %d.", newTokenPosition->line)));
 		}
-		return NULL;
+		return RECOVERY_RESULT();
 	}
+	else body = parseResult.expr;
 	Lexer_Next(parser->lexer);
 
 	// Finally, build the resulting object-construction.
-	*expr = (SmileObject)SmileList_ConsWithSource(
+	expr = (SmileObject)SmileList_ConsWithSource(
 		(SmileObject)Smile_KnownObjects._newSymbol,
 		(SmileObject)SmileList_ConsWithSource(
 			base,
@@ -110,7 +106,7 @@ shorthandForm:
 		newTokenPosition
 	);
 
-	return NULL;
+	return EXPR_RESULT(expr);
 }
 
 static Int Parser_RightBracesColons_Recovery[] = {
@@ -121,11 +117,12 @@ static Int Parser_RightBracesColons_Count = sizeof(Parser_RightBracesColons_Reco
 // members_opt :: = . members | .
 // members :: = . members member | . member
 // member :: = . name COLON orexpr
-Bool Parser_ParseMembers(Parser parser, SmileObject *expr)
+ParseResult Parser_ParseMembers(Parser parser)
 {
 	SmileList head = NullList, tail = NullList;
 	Token token;
 	ParseError parseError;
+	ParseResult parseResult;
 	Symbol symbol;
 	SmileObject valueExpr;
 	SmileObject memberExpr;
@@ -140,19 +137,21 @@ Bool Parser_ParseMembers(Parser parser, SmileObject *expr)
 		if (Lexer_Next(parser->lexer) != TOKEN_COLON) {
 			parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
 				String_Format("Missing ':' after '%S' member.", SymbolTable_GetName(Smile_SymbolTable, symbol)));
-			Parser_AddMessage(parser, parseError);
 			if (Parser_Recover(parser, Parser_RightBracesColons_Recovery, Parser_RightBracesColons_Count)->kind != TOKEN_COLON) {
 				Lexer_Unget(parser->lexer);
-				*expr = NullObject;
-				return False;
+				return ERROR_RESULT(parseError);
+			}
+			else {
+				Parser_AddMessage(parser, parseError);
 			}
 		}
 	
-		parseError = Parser_ParseOrExpr(parser, &valueExpr, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERDECL);
-		if (parseError != NULL) {
-			Parser_AddMessage(parser, parseError);
+		parseResult = Parser_ParseOrExpr(parser, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERDECL);
+		if (IS_PARSE_ERROR(parseResult)) {
+			HANDLE_PARSE_ERROR(parser, parseResult);
 			hasErrors = True;
 		}
+		valueExpr = parseResult.expr;
 
 		memberExpr = (SmileObject)SmileList_ConsWithSource(
 			(SmileObject)SmileSymbol_Create(symbol),
@@ -165,19 +164,18 @@ Bool Parser_ParseMembers(Parser parser, SmileObject *expr)
 
 	Lexer_Unget(parser->lexer);
 
-	*expr = (SmileObject)head;
-	return hasErrors;
+	return hasErrors ? RECOVERY_RESULT() : EXPR_RESULT(head);
 }
 
 //-------------------------------------------------------------------------------------------------
 
 // member ::= . '[' name expr ']'
-static ParseError Parser_ParseClassicNewMember(Parser parser, SmileObject *result)
+static ParseResult Parser_ParseClassicNewMember(Parser parser)
 {
 	LexerPosition position;
 	Token token;
-	SmileObject body;
-	ParseError error;
+	SmileObject body, expr;
+	ParseResult parseResult;
 	Symbol name;
 
 	// Consume the '['.
@@ -188,90 +186,94 @@ static ParseError Parser_ParseClassicNewMember(Parser parser, SmileObject *resul
 	token = Parser_NextToken(parser);
 	if (token->kind != TOKEN_ALPHANAME && token->kind != TOKEN_UNKNOWNALPHANAME
 		&& token->kind != TOKEN_PUNCTNAME && token->kind != TOKEN_UNKNOWNPUNCTNAME) {
-		*result = NullObject;
-		error = ParseMessage_Create(PARSEMESSAGE_ERROR, position, String_FromC("Missing name for member of [$new] form."));
-		return error;
+		return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, position,
+			String_FromC("Missing name for member of [$new] form.")));
 	}
 	name = token->data.symbol;
 
 	// Now consume the expression that forms the body.
-	error = Parser_ParseExpr(parser, &body, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
-	if (error != NULL) {
-		*result = NullObject;
-		return error;
-	}
-	if (body == Parser_IgnorableObject) body = NullObject;
+	parseResult = Parser_ParseExpr(parser, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
+	if (IS_PARSE_ERROR(parseResult))
+		return parseResult;
+	body = parseResult.expr;
 
 	// Make sure there's a trailing ']' to end the member.
-	if ((error = Parser_ExpectRightBracket(parser, result, NULL, "$new member", position)) != NULL)
-		return error;
+	parseResult = Parser_ExpectRightBracket(parser, NULL, "$new member", position);
+	if (IS_PARSE_ERROR(parseResult))
+		return parseResult;
 
-	*result =
+	expr =
 		(SmileObject)SmileList_ConsWithSource((SmileObject)SmileSymbol_Create(name),
 			(SmileObject)SmileList_ConsWithSource(body, NullObject, position),
 		position);
-	return NULL;
+	return EXPR_RESULT(expr);
 }
 
 // member-list-opt ::= . member-list | .
 // member-list ::= . member-list member | . member
-static ParseError Parser_ParseClassicNewMembers(Parser parser, SmileList *result)
+static ParseResult Parser_ParseClassicNewMembers(Parser parser)
 {
 	SmileList head = NullList, tail = NullList;
 	SmileObject member;
-	ParseError error;
+	ParseResult parseResult;
 	LexerPosition position;
 
 	while (Parser_HasLookahead(parser, TOKEN_LEFTBRACKET)) {
 		position = Lexer_GetPosition(parser->lexer);
 
-		if ((error = Parser_ParseClassicNewMember(parser, &member)) != NULL) {
-			Parser_AddMessage(parser, error);
+		parseResult = Parser_ParseClassicNewMember(parser);
+		if (IS_PARSE_ERROR(parseResult)) {
+			HANDLE_PARSE_ERROR(parser, parseResult);
 			Parser_Recover(parser, Parser_BracesBracketsParenthesesBar_Recovery, Parser_BracesBracketsParenthesesBar_Count);
 			continue;
 		}
+		else member = parseResult.expr;
 
 		LIST_APPEND_WITH_SOURCE(head, tail, member, position);
 	}
 
-	*result = head;
-	return NULL;
+	return EXPR_RESULT(head);
 }
 
 // term ::= '[' '$new' . expr '[' member-list-opt ']' ']'
-ParseError Parser_ParseClassicNew(Parser parser, SmileObject *result, LexerPosition startPosition)
+ParseResult Parser_ParseClassicNew(Parser parser, LexerPosition startPosition)
 {
-	SmileObject base;
+	SmileObject base, expr;
 	SmileList members;
-	ParseError error;
+	ParseResult parseResult;
 
 	// Parse the base expression, whatever it may be.
-	if ((error = Parser_ParseExpr(parser, &base, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS)) != NULL) {
-		Parser_AddMessage(parser, error);
+	parseResult = Parser_ParseExpr(parser, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
+	if (IS_PARSE_ERROR(parseResult)) {
+		HANDLE_PARSE_ERROR(parser, parseResult);
 		base = NullObject;
 	}
-	if (base == Parser_IgnorableObject) base = NullObject;
+	else base = parseResult.expr;
 
 	// Make sure there is a '[' to start the member list.
-	if ((error = Parser_ExpectLeftBracket(parser, result, NULL, "$new member list", startPosition)) != NULL)
-		return error;
+	parseResult = Parser_ExpectLeftBracket(parser, NULL, "$new member list", startPosition);
+	if (IS_PARSE_ERROR(parseResult))
+		return parseResult;
 
 	// Parse the members, however many there may be.
-	if ((error = Parser_ParseClassicNewMembers(parser, &members)) != NULL) {
-		Parser_AddMessage(parser, error);
+	parseResult = Parser_ParseClassicNewMembers(parser);
+	if (IS_PARSE_ERROR(parseResult)) {
+		HANDLE_PARSE_ERROR(parser, parseResult);
 		members = NullList;
 	}
+	else members = (SmileList)parseResult.expr;
 
 	// Make sure there is a ']' to end the member list.
-	if ((error = Parser_ExpectRightBracket(parser, result, NULL, "$new member list", startPosition)) != NULL)
-		return error;
+	parseResult = Parser_ExpectRightBracket(parser, NULL, "$new member list", startPosition);
+	if (IS_PARSE_ERROR(parseResult))
+		return parseResult;
 
 	// Construct the resulting [$new base members] form.
-	*result =
+	expr =
 		(SmileObject)SmileList_ConsWithSource((SmileObject)SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__NEW),
 			(SmileObject)SmileList_ConsWithSource(base,
 				(SmileObject)SmileList_ConsWithSource((SmileObject)members, NullObject, startPosition),
 			startPosition),
 		startPosition);
-	return NULL;
+	return EXPR_RESULT(expr);
 }

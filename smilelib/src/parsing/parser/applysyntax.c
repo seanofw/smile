@@ -334,52 +334,20 @@ static SmileObject Parser_Accept(Parser parser, SmileObject replacement, Symbol 
 
 static ParseResult Parser_RecursivelyApplyCustomSyntax(Parser parser, Int modeFlags, Symbol syntaxClassSymbol)
 {
-	SmileObject expr;
-	ParseError parseError;
-
 	switch (syntaxClassSymbol) {
-
-		case SMILE_SPECIAL_SYMBOL_STMT:
-			parseError = Parser_ParseStmt(parser, &expr, modeFlags);
-			break;
-
-		case SMILE_SPECIAL_SYMBOL_EXPR:
-			parseError = Parser_ParseEquals(parser, &expr, modeFlags);
-			break;
-
-		case SMILE_SPECIAL_SYMBOL_CMPEXPR:
-			parseError = Parser_ParseCmpExpr(parser, &expr, modeFlags);
-			break;
-
-		case SMILE_SPECIAL_SYMBOL_ADDEXPR:
-			parseError = Parser_ParseAddExpr(parser, &expr, modeFlags);
-			break;
-
-		case SMILE_SPECIAL_SYMBOL_MULEXPR:
-			parseError = Parser_ParseMulExpr(parser, &expr, modeFlags);
-			break;
-
-		case SMILE_SPECIAL_SYMBOL_BINARYEXPR:
-			parseError = Parser_ParseBinaryExpr(parser, &expr, modeFlags);
-			break;
-
-		case SMILE_SPECIAL_SYMBOL_PREFIXEXPR:
-			parseError = Parser_ParsePrefixExpr(parser, &expr, modeFlags);
-			break;
-
-		case SMILE_SPECIAL_SYMBOL_TERM:
-			parseError = Parser_ParseTerm(parser, &expr, modeFlags, NULL);
-			break;
-
-		case SMILE_SPECIAL_SYMBOL_NAME:
-			parseError = Parser_ParseAnyName(parser, &expr);
-			break;
+		case SMILE_SPECIAL_SYMBOL_STMT:			return Parser_ParseStmt(parser, modeFlags);
+		case SMILE_SPECIAL_SYMBOL_EXPR:			return Parser_ParseEquals(parser, modeFlags);
+		case SMILE_SPECIAL_SYMBOL_CMPEXPR:		return Parser_ParseCmpExpr(parser, modeFlags);
+		case SMILE_SPECIAL_SYMBOL_ADDEXPR:		return Parser_ParseAddExpr(parser, modeFlags);
+		case SMILE_SPECIAL_SYMBOL_MULEXPR:		return Parser_ParseMulExpr(parser, modeFlags);
+		case SMILE_SPECIAL_SYMBOL_BINARYEXPR:	return Parser_ParseBinaryExpr(parser, modeFlags);
+		case SMILE_SPECIAL_SYMBOL_PREFIXEXPR:	return Parser_ParsePrefixExpr(parser, modeFlags);
+		case SMILE_SPECIAL_SYMBOL_TERM:			return Parser_ParseTerm(parser, modeFlags, NULL);
+		case SMILE_SPECIAL_SYMBOL_NAME:			return Parser_ParseAnyName(parser);
 
 		default:
 			return Parser_ApplyCustomSyntax(parser, modeFlags, syntaxClassSymbol, SYNTAXROOT_RECURSE, 0);
 	}
-
-	return parseError != NULL ? ERROR_RESULT(parseError) : SUCCESS_RESULT(expr);
 }
 
 Inline Symbol GetSymbolForToken(Token token)
@@ -458,55 +426,67 @@ static ParseResult Parser_ParseNonterminalList(Parser parser, ParserSyntaxNode n
 		// Parse the next element of the set.
 		nestedSyntaxResult = Parser_RecursivelyApplyCustomSyntax(parser, modeFlags, node->name);
 
-		// Deal with it if we didn't get a result.
-		if (nestedSyntaxResult.status == ParseStatus_NotMatchedAndNoTokensConsumed) {
-			if (isFirstInSet && node->repetitionKind == '*') {
-				// OK; you can safely have zero of these.
-			}
-			else if (node->repetitionSep == 0) {
-				// OK; it's acceptable for the last one to just be missing when there's no separator.
-			}
-			else {
-				// Not OK: We were definitely expecting this nonterminal at this point, so churn out an error message.
-				nestedSyntaxResult = ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, position,
-					String_Format("Syntax error: Missing a '%S' in '%S'",
-						SymbolTable_GetName(Smile_SymbolTable, node->name),
-						SymbolTable_GetName(Smile_SymbolTable, syntaxClassSymbol))));
-				innerHead = NullList;
-			}
-			break;
-		}
-		else if (nestedSyntaxResult.status == ParseStatus_PartialParseWithError) {
-			// Inner parser errored, so we're done.
-			innerHead = NullList;
-			break;
-		}
+		switch (nestedSyntaxResult.status) {
 
-		// Add the result to the set.
-		LIST_APPEND(innerHead, innerTail, nestedSyntaxResult.expr);
+			// Deal with it if we didn't get a result.
+			case ParseStatus_NotMatchedAndNoTokensConsumed:
+				if (isFirstInSet && node->repetitionKind == '*') {
+					// OK; you can safely have zero of these.
+					return nestedSyntaxResult;
+				}
+				else if (node->repetitionSep == 0) {
+					// OK; it's acceptable for the last one to just be missing when there's no separator.
+					return nestedSyntaxResult;
+				}
+				else {
+					// Not OK: We were definitely expecting this nonterminal at this point, so churn out an error message.
+					return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, position,
+						String_Format("Syntax error: Missing a '%S' in '%S'",
+							SymbolTable_GetName(Smile_SymbolTable, node->name),
+							SymbolTable_GetName(Smile_SymbolTable, syntaxClassSymbol))));
+				}
 
-		// Decide if we need to continue, hopefully based on the next token.
-		if (node->repetitionSep == ',') {
-			// Check for a comma lookhead to decide whether to continue.
-			if (Lexer_Next(parser->lexer) != TOKEN_COMMA) {
-				Lexer_Unget(parser->lexer);
+			case ParseStatus_PartialParseWithError:
+				// Inner parser errored, so we're done.
+				return nestedSyntaxResult;
+
+			case ParseStatus_ErroredButRecovered:
+				// Inner parser errored, but it recovered, so we should try to keep going.
+				goto continue_parse;
+
+			case ParseStatus_SuccessfulWithNoResult:
+				// This may be an error, but since we can't predict what the inner grammar will
+				// do for certain, the best thing to do is to just keep going.
+				goto continue_parse;
+
+			case ParseStatus_SuccessfulWithResult:
+				// Add the result to the set.
+				LIST_APPEND(innerHead, innerTail, nestedSyntaxResult.expr);
+
+			continue_parse:
+				// Decide if we need to continue, hopefully based on the next token.
+				if (node->repetitionSep == ',') {
+					// Check for a comma lookhead to decide whether to continue.
+					if (Lexer_Next(parser->lexer) != TOKEN_COMMA) {
+						Lexer_Unget(parser->lexer);
+						return EXPR_RESULT(innerHead);
+					}
+				}
+				else if (node->repetitionSep == ';') {
+					// Check for a semicolon lookhead to decide whether to continue.
+					if (Lexer_Next(parser->lexer) != TOKEN_SEMICOLON) {
+						Lexer_Unget(parser->lexer);
+						return EXPR_RESULT(innerHead);
+					}
+				}
+
+				isFirstInSet = False;
 				break;
-			}
-		}
-		else if (node->repetitionSep == ';') {
-			// Check for a semicolon lookhead to decide whether to continue.
-			if (Lexer_Next(parser->lexer) != TOKEN_SEMICOLON) {
-				Lexer_Unget(parser->lexer);
-				break;
-			}
-		}
 
-		isFirstInSet = False;
+			default:
+				Smile_Abort_FatalError("Unhandled ParseStatus in Parser_ParseNonterminalList().");
+		}
 	}
-
-	return nestedSyntaxResult.status == ParseStatus_SuccessfullyParsed
-		? SUCCESS_RESULT((SmileObject)innerHead)
-		: nestedSyntaxResult;
 }
 
 ParseResult Parser_ApplyCustomSyntax(Parser parser, Int modeFlags, Symbol syntaxClassSymbol,
@@ -635,9 +615,15 @@ ParseResult Parser_ApplyCustomSyntax(Parser parser, Int modeFlags, Symbol syntax
 				case ParseStatus_PartialParseWithError:
 					return nestedSyntaxResult;
 
-				case ParseStatus_SuccessfullyParsed:
-				default:
+				case ParseStatus_ErroredButRecovered:
+				case ParseStatus_SuccessfulWithNoResult:
+					continue;
+
+				case ParseStatus_SuccessfulWithResult:
 					break;
+
+				default:
+					Smile_Abort_FatalError("Unhandled ParseStatus in Parser_ApplyCustomSyntax().");
 			}
 
 			// Append localExpr to the list of expressions generated by this syntax pattern.
@@ -655,7 +641,7 @@ ParseResult Parser_ApplyCustomSyntax(Parser parser, Int modeFlags, Symbol syntax
 		// We're done, and have valid expressions for each of the nonterminals.  We now need
 		// to use the expressions and the replacement form and generate the parsed output.
 		SmileObject expr = Parser_Accept(parser, node->replacement, node->replacementVariables, node->numReplacementVariables, localHead, node->position);
-		return SUCCESS_RESULT(expr);
+		return EXPR_RESULT(expr);
 	}
 	else if (isFirst) {
 		// No match, but we haven't consumed anything, so maybe we don't need to match.

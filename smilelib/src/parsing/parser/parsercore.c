@@ -161,9 +161,8 @@ SmileObject Parser_ParseConstant(Parser parser, Lexer lexer, ParseScope scope)
 {
 	ParseScope parentScope;
 	Lexer oldLexer;
+	TemplateResult templateResult;
 	SmileObject result;
-	Int templateKind;
-	ParseError parseError;
 
 	parentScope = parser->currentScope;
 	oldLexer = parser->lexer;
@@ -171,16 +170,17 @@ SmileObject Parser_ParseConstant(Parser parser, Lexer lexer, ParseScope scope)
 	parser->currentScope = scope;
 	parser->lexer = lexer;
 
-	parseError = Parser_ParseRawListTerm(parser, &result, &templateKind, 0);
+	templateResult = Parser_ParseRawListTerm(parser, 0);
 
-	if (parseError != NULL) {
-		Parser_AddMessage(parser, parseError);
+	if (IS_PARSE_ERROR(templateResult.parseResult)) {
+		HANDLE_PARSE_ERROR(parser, templateResult.parseResult);
 		result = NullObject;
 	}
-	else if (templateKind != TemplateKind_None) {
+	else if (templateResult.templateKind != TemplateKind_None) {
 		Parser_AddError(parser, Token_GetPosition(parser->lexer->token), "Template and variable data is not allowed in constant values.");
 		result = NullObject;
 	}
+	else result = templateResult.parseResult.expr;
 
 	parser->currentScope = parentScope;
 	parser->lexer = oldLexer;
@@ -189,31 +189,27 @@ SmileObject Parser_ParseConstant(Parser parser, Lexer lexer, ParseScope scope)
 }
 
 //  scope ::= . LBRACE exprs_opt RBRACE
-ParseError Parser_ParseScope(Parser parser, SmileObject *expr)
+ParseResult Parser_ParseScope(Parser parser)
 {
-	ParseError parseError;
 	Token endToken, startToken;
 	LexerPosition startPosition;
+	SmileObject body;
 
 	STATIC_STRING(expectedOpenBraceError, "Expected { ... to begin a scope");
 	STATIC_STRING(expectedCloseBraceError, "Expected ... } to end the scope starting on line %d");
 
-	if ((startToken = Parser_NextToken(parser))->kind != TOKEN_LEFTBRACE) {
-		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(startToken), expectedOpenBraceError);
-		return parseError;
-	}
+	if ((startToken = Parser_NextToken(parser))->kind != TOKEN_LEFTBRACE)
+		return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(startToken), expectedOpenBraceError));
+
 	startPosition = Token_GetPosition(startToken);
 
-	*expr = Parser_ParseScopeBody(parser, NULL);
+	body = Parser_ParseScopeBody(parser, NULL);
 
-	if ((endToken = Parser_NextToken(parser))->kind != TOKEN_RIGHTBRACE) {
-		*expr = NULL;
-		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(endToken),
-			String_FormatString(expectedCloseBraceError, startPosition->line));
-		return parseError;
-	}
+	if ((endToken = Parser_NextToken(parser))->kind != TOKEN_RIGHTBRACE)
+		return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(endToken),
+			String_FormatString(expectedCloseBraceError, startPosition->line)));
 
-	return NULL;
+	return EXPR_RESULT(body);
 }
 
 //  scope ::= LBRACE . exprs_opt RBRACE
@@ -321,8 +317,7 @@ void Parser_ParseExprsOpt(Parser parser, SmileList *head, SmileList *tail, Int m
 {
 	Token token;
 	LexerPosition lexerPosition;
-	SmileObject expr;
-	ParseError error;
+	ParseResult parseResult;
 
 	// Consume expressions until the lookahead reaches a terminating '}' or ']' or ')'.
 	while ((token = Parser_NextToken(parser))->kind != TOKEN_EOI
@@ -332,26 +327,24 @@ void Parser_ParseExprsOpt(Parser parser, SmileList *head, SmileList *tail, Int m
 		Lexer_Unget(parser->lexer);
 
 		// Parse the next expression.
-		error = Parser_ParseExpr(parser, &expr, modeFlags);
-		if (error == NULL) {
-			if (expr != Parser_IgnorableObject) {
-				// Add the successfully-parsed expression to the output, if it's worth keeping.
-				LIST_APPEND_WITH_SOURCE(*head, *tail, expr, lexerPosition);
-			}
-		}
-		else {
-			// Record the error message.
-			Parser_AddMessage(parser, error);
+		parseResult = Parser_ParseExpr(parser, modeFlags);
+		if (IS_PARSE_ERROR(parseResult)) {
+			HANDLE_PARSE_ERROR(parser, parseResult);
 
-			// If that expression was garbage, perform simple error-recovery by skipping to the
-			// next '{' '}' '[' ']' '(' ')' or '|'.
+			// Perform simple error-recovery by skipping to the next '{' '}' '[' ']' '(' ')' or '|'.
 			token = Parser_Recover(parser, Parser_BracesBracketsParenthesesBar_Recovery, Parser_BracesBracketsParenthesesBar_Count);
 
 			// Reached a terminating '}' or ']' or ')', so presume we're done consuming expressions for now.
 			if (token->kind == TOKEN_RIGHTBRACE || token->kind == TOKEN_RIGHTBRACKET || token->kind == TOKEN_RIGHTPARENTHESIS)
 				return;
 
-			expr = NullObject;
+			// Go back and try again.
+			continue;
+		}
+
+		// Add the successfully-parsed expression to the output, if it's worth keeping.
+		if (parseResult.status == ParseStatus_SuccessfulWithResult) {
+			LIST_APPEND_WITH_SOURCE(*head, *tail, parseResult.expr, lexerPosition);
 		}
 	}
 
@@ -364,8 +357,7 @@ void Parser_ParseCallArgsOpt(Parser parser, SmileList *head, SmileList *tail, In
 {
 	Token token;
 	LexerPosition lexerPosition;
-	SmileObject expr;
-	ParseError error;
+	ParseResult parseResult;
 
 	// Consume expressions until the lookahead reaches a terminating '}' or ']' or ')'.
 	while ((token = Parser_NextToken(parser))->kind != TOKEN_EOI
@@ -375,26 +367,24 @@ void Parser_ParseCallArgsOpt(Parser parser, SmileList *head, SmileList *tail, In
 		Lexer_Unget(parser->lexer);
 
 		// Parse the next expression.
-		error = Parser_ParseOrExpr(parser, &expr, modeFlags);
-		if (error == NULL) {
-			if (expr != Parser_IgnorableObject) {
-				// Add the successfully-parsed expression to the output, if it's worth keeping.
-				LIST_APPEND_WITH_SOURCE(*head, *tail, expr, lexerPosition);
-			}
-		}
-		else {
-			// Record the error message.
-			Parser_AddMessage(parser, error);
+		parseResult = Parser_ParseOrExpr(parser, modeFlags);
+		if (!IS_PARSE_ERROR(parseResult)) {
+			HANDLE_PARSE_ERROR(parser, parseResult);
 
-			// If that expression was garbage, perform simple error-recovery by skipping to the
-			// next '{' '}' '[' ']' '(' ')' or '|'.
+			// Perform simple error-recovery by skipping to the next '{' '}' '[' ']' '(' ')' or '|'.
 			token = Parser_Recover(parser, Parser_BracesBracketsParenthesesBar_Recovery, Parser_BracesBracketsParenthesesBar_Count);
 
 			// Reached a terminating '}' or ']' or ')', so presume we're done consuming expressions for now.
 			if (token->kind == TOKEN_RIGHTBRACE || token->kind == TOKEN_RIGHTBRACKET || token->kind == TOKEN_RIGHTPARENTHESIS)
 				return;
 
-			expr = NullObject;
+			// Go back and try again.
+			continue;
+		}
+
+		// Add the successfully-parsed expression to the output, if it's worth keeping.
+		if (parseResult.status == ParseStatus_SuccessfulWithResult) {
+			LIST_APPEND_WITH_SOURCE(*head, *tail, parseResult.expr, lexerPosition);
 		}
 	}
 
@@ -404,31 +394,123 @@ void Parser_ParseCallArgsOpt(Parser parser, SmileList *head, SmileList *tail, In
 //-------------------------------------------------------------------------------------------------
 // Includes and sub-parsing
 
-ParseError Parser_ParseOneExpressionFromText(Parser parser, SmileObject *expr, String string, LexerPosition startPosition)
+ParseResult Parser_ParseOneExpressionFromText(Parser parser, String string, LexerPosition startPosition)
 {
 	Lexer oldLexer;
-	ParseError parseError;
 	Token token;
+	ParseResult parseResult;
 
 	oldLexer = parser->lexer;
 	parser->lexer = Lexer_Create(string, 0, String_Length(string), startPosition->filename, startPosition->line, startPosition->column);
 
-	parseError = Parser_ParseExpr(parser, expr, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
-	if (parseError != NULL) {
+	parseResult = Parser_ParseExpr(parser, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
+	if (IS_PARSE_ERROR(parseResult)) {
 		parser->lexer = oldLexer;
-		*expr = NULL;
-		return parseError;
+		RETURN_PARSE_ERROR(parseResult);
 	}
-	if (*expr == Parser_IgnorableObject) *expr = NullObject;
 
 	if ((token = Parser_NextToken(parser))->kind != TOKEN_EOI) {
-		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
-			String_Format("Unexpected \"%S\" at end of dynamic string expression.", TokenKind_ToString(token->kind)));
 		parser->lexer = oldLexer;
-		*expr = NULL;
-		return parseError;
+		return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
+			String_Format("Unexpected \"%S\" at end of dynamic string expression.", TokenKind_ToString(token->kind))));
 	}
 
 	parser->lexer = oldLexer;
-	return NULL;
+	return parseResult;
+}
+
+/// <summary>
+/// Read the next token from the input stream.  If the token is an identifier, correctly map
+/// it to its declaration (or lack thereof) in the current scope.
+/// </summary>
+/// <param name="parser">The parser instance.</param>
+/// <returns>The next token in the input stream.</returns>
+Token Parser_NextToken(Parser parser)
+{
+	Token token;
+	Int tokenKind;
+	Symbol symbol;
+
+	tokenKind = Lexer_Next(parser->lexer);
+	token = parser->lexer->token;
+
+	switch (tokenKind) {
+
+		case TOKEN_ALPHANAME:
+		case TOKEN_UNKNOWNALPHANAME:
+			if (token->data.symbol == 0) {
+				token->data.symbol = symbol = SymbolTable_GetSymbol(Smile_SymbolTable, token->text);
+			}
+			else {
+				symbol = token->data.symbol;
+			}
+			token->kind = ParseScope_IsDeclared(parser->currentScope, token->data.symbol) ? TOKEN_ALPHANAME : TOKEN_UNKNOWNALPHANAME;
+			break;
+
+		case TOKEN_PUNCTNAME:
+		case TOKEN_UNKNOWNPUNCTNAME:
+			if (token->data.symbol == 0) {
+				token->data.symbol = symbol = SymbolTable_GetSymbol(Smile_SymbolTable, token->text);
+			}
+			else {
+				symbol = token->data.symbol;
+			}
+			token->kind = ParseScope_IsDeclared(parser->currentScope, token->data.symbol) ? TOKEN_PUNCTNAME : TOKEN_UNKNOWNPUNCTNAME;
+			break;
+	}
+
+	return token;
+}
+
+/// <summary>
+/// Read the next token from the input stream.  If the token is an identifier, correctly map
+/// it to its declaration (or lack thereof) in the current scope.
+/// </summary>
+/// <param name="parser">The parser instance.</param>
+/// <param name="parseDecl">The declaration for this token, if it is a declared token.</param>
+/// <returns>The next token in the input stream.</returns>
+Token Parser_NextTokenWithDeclaration(Parser parser, ParseDecl* parseDecl)
+{
+	Token token;
+	Int tokenKind;
+	Symbol symbol;
+	ParseDecl decl;
+
+	tokenKind = Lexer_Next(parser->lexer);
+	token = parser->lexer->token;
+
+	switch (tokenKind) {
+
+		case TOKEN_ALPHANAME:
+		case TOKEN_UNKNOWNALPHANAME:
+			if (token->data.symbol == 0) {
+				token->data.symbol = symbol = SymbolTable_GetSymbol(Smile_SymbolTable, token->text);
+			}
+			else {
+				symbol = token->data.symbol;
+			}
+			decl = ParseScope_FindDeclaration(parser->currentScope, token->data.symbol);
+			token->kind = decl != NULL ? TOKEN_ALPHANAME : TOKEN_UNKNOWNALPHANAME;
+			*parseDecl = decl;
+			break;
+
+		case TOKEN_PUNCTNAME:
+		case TOKEN_UNKNOWNPUNCTNAME:
+			if (token->data.symbol == 0) {
+				token->data.symbol = symbol = SymbolTable_GetSymbol(Smile_SymbolTable, token->text);
+			}
+			else {
+				symbol = token->data.symbol;
+			}
+			decl = ParseScope_FindDeclaration(parser->currentScope, token->data.symbol);
+			token->kind = decl != NULL ? TOKEN_PUNCTNAME : TOKEN_UNKNOWNPUNCTNAME;
+			*parseDecl = decl;
+			break;
+
+		default:
+			*parseDecl = NULL;
+			break;
+	}
+
+	return token;
 }

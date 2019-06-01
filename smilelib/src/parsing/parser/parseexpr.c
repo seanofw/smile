@@ -27,12 +27,25 @@ static struct SmileListInt _parser_ignorableObject = { 0 };
 // This object is used to identify constructs that may safely be elided from the parser's output.
 SmileObject Parser_IgnorableObject = (SmileObject)&_parser_ignorableObject;
 
-#define FORWARD_PARSE_RESULT(result) do { \
-		if ((result).status == ParseStatus_SuccessfullyParsed) { \
-			*expr = (result).expr; \
-			return NULL; \
+#define FORWARD_CUSTOM_SYNTAX_RESULT(result) do { \
+		if ((result).status != ParseStatus_NotMatchedAndNoTokensConsumed) { \
+			return (result); \
 		} \
-		else return (result).error; \
+	} while (0)
+
+#define FORWARD_CHAINED_CUSTOM_SYNTAX_RESULT(result) do { \
+		if ((result).status != ParseStatus_NotMatchedAndNoTokensConsumed) { \
+			switch ((result).status) { \
+				case ParseStatus_SuccessfulWithResult: \
+				case ParseStatus_SuccessfulWithNoResult: \
+				case ParseStatus_ErroredButRecovered: \
+					goto parseNextOperator; \
+				case ParseStatus_PartialParseWithError: \
+					return (result); \
+				default: \
+					Smile_Abort_FatalError("Unhandled ParseStatus in forwarding logic."); \
+			} \
+		} \
 	} while (0)
 
 //-------------------------------------------------------------------------------------------------
@@ -45,9 +58,9 @@ SmileObject Parser_IgnorableObject = (SmileObject)&_parser_ignorableObject;
 //									expr/arith of an if_then or a do-while.
 //
 //  expr ::= . base_expr
-ParseError Parser_ParseExpr(Parser parser, SmileObject *expr, Int modeFlags)
+ParseResult Parser_ParseExpr(Parser parser, Int modeFlags)
 {
-	return Parser_ParseStmt(parser, expr, modeFlags);
+	return Parser_ParseStmt(parser, modeFlags);
 }
 
 //  base_expr ::= . arith
@@ -56,7 +69,7 @@ ParseError Parser_ParseExpr(Parser parser, SmileObject *expr, Int modeFlags)
 //         | . return
 //         | . LOANWORD_INCLUDE string
 //         | . LOANWORD_BRK base_expr
-ParseError Parser_ParseStmt(Parser parser, SmileObject *expr, Int modeFlags)
+ParseResult Parser_ParseStmt(Parser parser, Int modeFlags)
 {
 	Token token;
 	ParseResult parseResult;
@@ -65,57 +78,55 @@ ParseError Parser_ParseStmt(Parser parser, SmileObject *expr, Int modeFlags)
 
 		case TOKEN_LEFTBRACE:
 			Lexer_Unget(parser->lexer);
-			return Parser_ParseScope(parser, expr);
+			return Parser_ParseScope(parser);
 
 		case TOKEN_LOANWORD_INCLUDE:
-			return Parser_ParseInclude(parser, expr);
+			return Parser_ParseInclude(parser);
 
 		case TOKEN_LOANWORD_BRK:
-			*expr = (SmileObject)SmileList_ConsWithSource(
+			return EXPR_RESULT((SmileObject)SmileList_ConsWithSource(
 				(SmileObject)SmileSymbol_Create(Smile_KnownSymbols._brk),
 				NullObject,
 				Token_GetPosition(token)
-			);
-			return NULL;
+			));
 
 		case TOKEN_ALPHANAME:
 		case TOKEN_UNKNOWNALPHANAME:
 			switch (token->data.symbol) {
 				case SMILE_SPECIAL_SYMBOL_VAR:
-					return Parser_ParseVarDecls(parser, expr, modeFlags, PARSEDECL_VARIABLE);
+					return Parser_ParseVarDecls(parser, modeFlags, PARSEDECL_VARIABLE);
 				case SMILE_SPECIAL_SYMBOL_CONST:
-					return Parser_ParseVarDecls(parser, expr, modeFlags, PARSEDECL_CONST);
+					return Parser_ParseVarDecls(parser, modeFlags, PARSEDECL_CONST);
 				case SMILE_SPECIAL_SYMBOL_AUTO:
-					return Parser_ParseVarDecls(parser, expr, modeFlags, PARSEDECL_AUTO);
+					return Parser_ParseVarDecls(parser, modeFlags, PARSEDECL_AUTO);
 				case SMILE_SPECIAL_SYMBOL_KEYWORD:
-					return Parser_ParseKeywordList(parser, expr);
+					return Parser_ParseKeywordList(parser);
 				case SMILE_SPECIAL_SYMBOL_IF:
-					return Parser_ParseIfUnless(parser, expr, modeFlags, False, Token_GetPosition(token));
+					return Parser_ParseIfUnless(parser, modeFlags, False, Token_GetPosition(token));
 				case SMILE_SPECIAL_SYMBOL_UNLESS:
-					return Parser_ParseIfUnless(parser, expr, modeFlags, True, Token_GetPosition(token));
+					return Parser_ParseIfUnless(parser, modeFlags, True, Token_GetPosition(token));
 				case SMILE_SPECIAL_SYMBOL_DO:
-					return Parser_ParseDo(parser, expr, modeFlags, Token_GetPosition(token));
+					return Parser_ParseDo(parser, modeFlags, Token_GetPosition(token));
 				case SMILE_SPECIAL_SYMBOL_WHILE:
-					return Parser_ParseWhileUntil(parser, expr, modeFlags, False, Token_GetPosition(token));
+					return Parser_ParseWhileUntil(parser, modeFlags, False, Token_GetPosition(token));
 				case SMILE_SPECIAL_SYMBOL_UNTIL:
-					return Parser_ParseWhileUntil(parser, expr, modeFlags, True, Token_GetPosition(token));
+					return Parser_ParseWhileUntil(parser, modeFlags, True, Token_GetPosition(token));
 				case SMILE_SPECIAL_SYMBOL_RETURN:
-					return Parser_ParseReturn(parser, expr, modeFlags, Token_GetPosition(token));
+					return Parser_ParseReturn(parser, modeFlags, Token_GetPosition(token));
 				case SMILE_SPECIAL_SYMBOL_TILL:
-					return Parser_ParseTill(parser, expr, modeFlags, Token_GetPosition(token));
+					return Parser_ParseTill(parser, modeFlags, Token_GetPosition(token));
 				case SMILE_SPECIAL_SYMBOL_TRY:
-					return Parser_ParseTry(parser, expr, modeFlags, Token_GetPosition(token));
+					return Parser_ParseTry(parser, modeFlags, Token_GetPosition(token));
 			}
 			// Fall through to default case if not a special form.
 
 		default:
 			Lexer_Unget(parser->lexer);
 			parseResult = Parser_ApplyCustomSyntax(parser, modeFlags, SMILE_SPECIAL_SYMBOL_STMT, SYNTAXROOT_KEYWORD, 0);
-
 			if (parseResult.status != ParseStatus_NotMatchedAndNoTokensConsumed)
-				FORWARD_PARSE_RESULT(parseResult);
+				return parseResult;
 
-			return Parser_ParseOpEquals(parser, expr, (modeFlags & ~COMMAMODE_MASK) | COMMAMODE_NORMAL);
+			return Parser_ParseOpEquals(parser, (modeFlags & ~COMMAMODE_MASK) | COMMAMODE_NORMAL);
 	}
 }
 
@@ -123,16 +134,15 @@ ParseError Parser_ParseStmt(Parser parser, SmileObject *expr, Int modeFlags)
 //           | IF . arith THEN expr ELSE expr
 //           | UNLESS . arith THEN expr
 //           | UNLESS . arith THEN expr ELSE expr
-ParseError Parser_ParseIfUnless(Parser parser, SmileObject *expr, Int modeFlags, Bool invert, LexerPosition lexerPosition)
+ParseResult Parser_ParseIfUnless(Parser parser, Int modeFlags, Bool invert, LexerPosition lexerPosition)
 {
-	ParseError parseError;
-	SmileObject condition;
-	SmileObject thenBody, elseBody;
+	ParseResult conditionResult, thenResult, elseResult;
+	SmileObject condition, thenBody, elseBody;
 	Token token;
 
 	// Parse the condition.
-	parseError = Parser_ParseOpEquals(parser, &condition, (modeFlags & ~BINARYLINEBREAKS_MASK) | BINARYLINEBREAKS_ALLOWED);
-	if (parseError != NULL) {
+	conditionResult = Parser_ParseOpEquals(parser, (modeFlags & ~BINARYLINEBREAKS_MASK) | BINARYLINEBREAKS_ALLOWED);
+	if (IS_PARSE_ERROR(conditionResult)) {
 		// Bad condition.
 		Token recoveryToken = Parser_Recover(parser, Parser_BracesBracketsParenthesesBarName_Recovery,
 			Parser_BracesBracketsParenthesesBarName_Count);
@@ -141,14 +151,15 @@ ParseError Parser_ParseIfUnless(Parser parser, SmileObject *expr, Int modeFlags,
 
 			// Bad condition, but we recovered to a 'then', so try to keep going.
 			Parser_NextToken(parser);
-			Parser_AddMessage(parser, parseError);
+			HANDLE_PARSE_ERROR(parser, conditionResult);
 			condition = NullObject;
 		}
 		else {
-			*expr = NullObject;
-			return parseError;
+			// Didn't recover to anything meaningful, so give up.
+			return conditionResult;
 		}
 	}
+	else condition = conditionResult.expr;
 
 	// Consume the 'then' keyword.
 	if (!(((token = Parser_NextToken(parser))->kind == TOKEN_ALPHANAME || token->kind == TOKEN_UNKNOWNALPHANAME)
@@ -160,8 +171,8 @@ ParseError Parser_ParseIfUnless(Parser parser, SmileObject *expr, Int modeFlags,
 	}
 
 	// Parse the then-body.
-	parseError = Parser_ParseExpr(parser, &thenBody, modeFlags);
-	if (parseError != NULL) {
+	thenResult = Parser_ParseExpr(parser, modeFlags);
+	if (IS_PARSE_ERROR(thenResult)) {
 		// Bad then-body.
 		Token recoveryToken = Parser_Recover(parser, Parser_BracesBracketsParenthesesBarName_Recovery,
 			Parser_BracesBracketsParenthesesBarName_Count);
@@ -170,26 +181,27 @@ ParseError Parser_ParseIfUnless(Parser parser, SmileObject *expr, Int modeFlags,
 
 			// Bad condition, but we recovered to an 'else', so try to keep going.
 			Parser_NextToken(parser);
-			Parser_AddMessage(parser, parseError);
-			condition = NullObject;
+			HANDLE_PARSE_ERROR(parser, thenResult);
+			thenBody = NullObject;
 		}
 		else {
-			*expr = NullObject;
-			return parseError;
+			// Didn't recover to anything meaningful, so give up.
+			return thenResult;
 		}
 	}
+	else thenBody = thenResult.expr;
 
 	// Consume an optional 'else' keyword.
 	if (((token = Parser_NextToken(parser))->kind == TOKEN_ALPHANAME || token->kind == TOKEN_UNKNOWNALPHANAME)
 		&& token->data.symbol == SMILE_SPECIAL_SYMBOL_ELSE) {
 
 		// Parse the else-body.
-		parseError = Parser_ParseExpr(parser, &elseBody, modeFlags);
-		if (parseError != NULL) {
+		elseResult = Parser_ParseExpr(parser, modeFlags);
+		if (IS_PARSE_ERROR(elseResult)) {
 			// No recovery past this point; there are no more tokens we can consume in the grammar.
-			*expr = NullObject;
-			return parseError;
+			return elseResult;
 		}
+		elseBody = elseResult.expr;
 	}
 	else {
 		Lexer_Unget(parser->lexer);
@@ -204,28 +216,26 @@ ParseError Parser_ParseIfUnless(Parser parser, SmileObject *expr, Int modeFlags,
 	// Now make the resulting form.
 	if (SMILE_KIND(elseBody) != SMILE_KIND_NULL) {
 		// Make an [$if cond then else] construct.
-		*expr = (SmileObject)SmileList_CreateFourWithSource(Smile_KnownObjects._ifSymbol, condition, thenBody, elseBody, lexerPosition);
+		return EXPR_RESULT(SmileList_CreateFourWithSource(Smile_KnownObjects._ifSymbol, condition, thenBody, elseBody, lexerPosition));
 	}
 	else {
 		// Make an [$if cond then] construct.
-		*expr = (SmileObject)SmileList_CreateThreeWithSource(Smile_KnownObjects._ifSymbol, condition, thenBody, lexerPosition);
+		return EXPR_RESULT(SmileList_CreateThreeWithSource(Smile_KnownObjects._ifSymbol, condition, thenBody, lexerPosition));
 	}
-	return NULL;
 }
 
 // do_while ::= DO . expr WHILE arith
 //            | DO . expr UNTIL arith
-ParseError Parser_ParseDo(Parser parser, SmileObject *expr, Int modeFlags, LexerPosition lexerPosition)
+ParseResult Parser_ParseDo(Parser parser, Int modeFlags, LexerPosition lexerPosition)
 {
-	ParseError parseError;
-	SmileObject condition;
-	SmileObject body;
+	ParseResult conditionResult, bodyResult;
+	SmileObject condition, body;
 	Token token;
 	Bool invert;
 
 	// Parse the body.
-	parseError = Parser_ParseExpr(parser, &body, modeFlags);
-	if (parseError != NULL) {
+	bodyResult = Parser_ParseExpr(parser, modeFlags);
+	if (IS_PARSE_ERROR(bodyResult)) {
 		// Bad body.
 		Token recoveryToken = Parser_Recover(parser, Parser_BracesBracketsParenthesesBarName_Recovery,
 			Parser_BracesBracketsParenthesesBarName_Count);
@@ -234,14 +244,15 @@ ParseError Parser_ParseDo(Parser parser, SmileObject *expr, Int modeFlags, Lexer
 
 			// Bad condition, but we recovered to a 'while' or an 'until', so try to keep going.
 			Parser_NextToken(parser);
-			Parser_AddMessage(parser, parseError);
-			condition = NullObject;
+			HANDLE_PARSE_ERROR(parser, bodyResult);
+			body = NullObject;
 		}
 		else {
-			*expr = NullObject;
-			return parseError;
+			// Didn't recover to anything meaningful, so give up.
+			return bodyResult;
 		}
 	}
+	else body = bodyResult.expr;
 
 	// Consume the 'while' or 'until' keyword.
 	if (!(((token = Parser_NextToken(parser))->kind == TOKEN_ALPHANAME || token->kind == TOKEN_UNKNOWNALPHANAME)
@@ -254,12 +265,12 @@ ParseError Parser_ParseDo(Parser parser, SmileObject *expr, Int modeFlags, Lexer
 	invert = token->data.symbol == SMILE_SPECIAL_SYMBOL_UNTIL;
 
 	// Parse the condition.
-	parseError = Parser_ParseOpEquals(parser, &condition, (modeFlags & ~BINARYLINEBREAKS_MASK) | BINARYLINEBREAKS_ALLOWED);
-	if (parseError != NULL) {
+	conditionResult = Parser_ParseOpEquals(parser, (modeFlags & ~BINARYLINEBREAKS_MASK) | BINARYLINEBREAKS_ALLOWED);
+	if (IS_PARSE_ERROR(conditionResult)) {
 		// No recovery past this point; there are no more tokens we can consume in the grammar.
-		*expr = NullObject;
-		return parseError;
+		return conditionResult;
 	}
+	else condition = conditionResult.expr;
 
 	// If we're an 'until' form, add a [$not] around the condition.
 	if (invert) {
@@ -267,22 +278,20 @@ ParseError Parser_ParseDo(Parser parser, SmileObject *expr, Int modeFlags, Lexer
 	}
 
 	// Now make the resulting form: [$while body condition null]
-	*expr = (SmileObject)SmileList_CreateFourWithSource(Smile_KnownObjects._whileSymbol, body, condition, NullObject, lexerPosition);
-	return NULL;
+	return EXPR_RESULT(SmileList_CreateFourWithSource(Smile_KnownObjects._whileSymbol, body, condition, NullObject, lexerPosition));
 }
 
 // while_do ::= WHILE . arith DO expr
 //            | UNTIL . arith DO expr
-ParseError Parser_ParseWhileUntil(Parser parser, SmileObject *expr, Int modeFlags, Bool invert, LexerPosition lexerPosition)
+ParseResult Parser_ParseWhileUntil(Parser parser, Int modeFlags, Bool invert, LexerPosition lexerPosition)
 {
-	ParseError parseError;
-	SmileObject condition;
-	SmileObject body;
+	ParseResult conditionResult, bodyResult;
+	SmileObject condition, body;
 	Token token;
 
 	// Parse the condition.
-	parseError = Parser_ParseOpEquals(parser, &condition, (modeFlags & ~BINARYLINEBREAKS_MASK) | BINARYLINEBREAKS_ALLOWED);
-	if (parseError != NULL) {
+	conditionResult = Parser_ParseOpEquals(parser, (modeFlags & ~BINARYLINEBREAKS_MASK) | BINARYLINEBREAKS_ALLOWED);
+	if (IS_PARSE_ERROR(conditionResult)) {
 		// Bad condition.
 		Token recoveryToken = Parser_Recover(parser, Parser_BracesBracketsParenthesesBarName_Recovery,
 			Parser_BracesBracketsParenthesesBarName_Count);
@@ -291,14 +300,15 @@ ParseError Parser_ParseWhileUntil(Parser parser, SmileObject *expr, Int modeFlag
 
 			// Bad condition, but we recovered to a 'do', so try to keep going.
 			Parser_NextToken(parser);
-			Parser_AddMessage(parser, parseError);
+			HANDLE_PARSE_ERROR(parser, conditionResult);
 			condition = NullObject;
 		}
 		else {
-			*expr = NullObject;
-			return parseError;
+			// Can't recover to a known state, so bail.
+			return conditionResult;
 		}
 	}
+	else condition = conditionResult.expr;
 
 	// Consume the 'do' keyword.
 	if (!(((token = Parser_NextToken(parser))->kind == TOKEN_ALPHANAME || token->kind == TOKEN_UNKNOWNALPHANAME)
@@ -310,12 +320,12 @@ ParseError Parser_ParseWhileUntil(Parser parser, SmileObject *expr, Int modeFlag
 	}
 
 	// Parse the then-body.
-	parseError = Parser_ParseExpr(parser, &body, modeFlags);
-	if (parseError != NULL) {
+	bodyResult = Parser_ParseExpr(parser, modeFlags);
+	if (IS_PARSE_ERROR(bodyResult)) {
 		// No recovery past this point; there are no more tokens we can consume in the grammar.
-		*expr = NullObject;
-		return parseError;
+		return bodyResult;
 	}
+	else body = bodyResult.expr;
 
 	// If we're an 'until' form, add a [$not] around the condition.
 	if (invert) {
@@ -323,40 +333,36 @@ ParseError Parser_ParseWhileUntil(Parser parser, SmileObject *expr, Int modeFlag
 	}
 
 	// Now make the resulting form: [$while condition body]
-	*expr = (SmileObject)SmileList_CreateThreeWithSource(Smile_KnownObjects._whileSymbol, condition, body, lexerPosition);
-	return NULL;
+	return EXPR_RESULT(SmileList_CreateThreeWithSource(Smile_KnownObjects._whileSymbol, condition, body, lexerPosition));
 }
 
 // return ::= RETURN . arith
-ParseError Parser_ParseReturn(Parser parser, SmileObject *expr, Int modeFlags, LexerPosition lexerPosition)
+ParseResult Parser_ParseReturn(Parser parser, Int modeFlags, LexerPosition lexerPosition)
 {
-	ParseError parseError;
+	ParseResult parseResult;
 	SmileObject result;
 
 	// Parse the result.
-	parseError = Parser_ParseOpEquals(parser, &result, (modeFlags & ~BINARYLINEBREAKS_MASK) | BINARYLINEBREAKS_ALLOWED);
-	if (parseError != NULL) {
-		*expr = NullObject;
-		return parseError;
-	}
+	parseResult = Parser_ParseOpEquals(parser, (modeFlags & ~BINARYLINEBREAKS_MASK) | BINARYLINEBREAKS_ALLOWED);
+	if (IS_PARSE_ERROR(parseResult))
+		RETURN_PARSE_ERROR(parseResult);
+	result = parseResult.expr;
 
 	// Make a [$return result] construct.
-	*expr = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._returnSymbol, result, lexerPosition);
-	return NULL;
+	return EXPR_RESULT(SmileList_CreateTwoWithSource(Smile_KnownObjects._returnSymbol, result, lexerPosition));
 }
 
 // try_catch ::= TRY . expr CATCH func
-ParseError Parser_ParseTry(Parser parser, SmileObject *expr, Int modeFlags, LexerPosition lexerPosition)
+ParseResult Parser_ParseTry(Parser parser, Int modeFlags, LexerPosition lexerPosition)
 {
-	ParseError parseError;
-	SmileObject handler;
-	SmileObject body;
+	ParseResult handlerResult, bodyResult;
+	SmileObject handler, body;
 	Token token;
 	Int tokenKind;
 
 	// Parse the body.
-	parseError = Parser_ParseExpr(parser, &body, (modeFlags & ~BINARYLINEBREAKS_MASK) | BINARYLINEBREAKS_ALLOWED);
-	if (parseError != NULL) {
+	bodyResult = Parser_ParseExpr(parser, (modeFlags & ~BINARYLINEBREAKS_MASK) | BINARYLINEBREAKS_ALLOWED);
+	if (IS_PARSE_ERROR(bodyResult)) {
 		// Bad condition.
 		Token recoveryToken = Parser_Recover(parser, Parser_BracesBracketsParenthesesBarName_Recovery,
 			Parser_BracesBracketsParenthesesBarName_Count);
@@ -365,14 +371,15 @@ ParseError Parser_ParseTry(Parser parser, SmileObject *expr, Int modeFlags, Lexe
 
 			// Bad body, but we recovered to a 'catch', so try to keep going.
 			Parser_NextToken(parser);
-			Parser_AddMessage(parser, parseError);
+			HANDLE_PARSE_ERROR(parser, bodyResult);
 			body = NullObject;
 		}
 		else {
-			*expr = NullObject;
-			return parseError;
+			// Can't recover to a known state, so bail.
+			return bodyResult;
 		}
 	}
+	else body = bodyResult.expr;
 
 	// Consume the 'catch' keyword.
 	if (!(((token = Parser_NextToken(parser))->kind == TOKEN_ALPHANAME || token->kind == TOKEN_UNKNOWNALPHANAME)
@@ -385,61 +392,57 @@ ParseError Parser_ParseTry(Parser parser, SmileObject *expr, Int modeFlags, Lexe
 
 	// Parse the handler function.
 	if ((tokenKind = Lexer_Next(parser->lexer)) == TOKEN_BAR) {
-		parseError = Parser_ParseFunc(parser, &handler, modeFlags);
-		if (parseError != NULL) {
+		handlerResult = Parser_ParseFunc(parser, modeFlags);
+		if (IS_PARSE_ERROR(handlerResult)) {
 			// No recovery past this point; there are no more tokens we can consume in the grammar.
-			*expr = NullObject;
-			return parseError;
+			return handlerResult;
 		}
+		handler = handlerResult.expr;
 	}
 	else if (tokenKind == TOKEN_LEFTBRACKET) {
 		// Might be [$fn ...], so try to parse that.
 		Lexer_Unget(parser->lexer);
-		parseError = Parser_ParseTerm(parser, &handler, modeFlags, NULL);
-		if (parseError != NULL) {
+		handlerResult = Parser_ParseTerm(parser, modeFlags, NULL);
+		if (IS_PARSE_ERROR(handlerResult)) {
 			// No recovery past this point; there are no more tokens we can consume in the grammar.
-			*expr = NullObject;
-			return parseError;
+			return handlerResult;
 		}
+		handler = handlerResult.expr;
 		if (SMILE_KIND(handler) != SMILE_KIND_LIST
 			|| SMILE_KIND(LIST_FIRST((SmileList)handler)) != SMILE_KIND_SYMBOL
 			|| ((SmileSymbol)LIST_FIRST((SmileList)handler))->symbol != SMILE_SPECIAL_SYMBOL__FN) {
 			// No recovery past this point; there are no more tokens we can consume in the grammar.
 			Lexer_Unget(parser->lexer);
-			*expr = NullObject;
-			return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), String_FromC("'catch' handler must be a function."));
+			return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), String_FromC("'catch' handler must be a function.")));
 		}
 	}
 	else {
 		// No recovery past this point; there are no more tokens we can consume in the grammar.
 		Lexer_Unget(parser->lexer);
-		*expr = NullObject;
-		return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), String_FromC("'catch' handler must be a function."));
+		return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), String_FromC("'catch' handler must be a function.")));
 	}
 
 	// Now make the resulting form: [$catch body handler]
-	*expr = (SmileObject)SmileList_CreateThreeWithSource(Smile_KnownObjects._catchSymbol, body, handler, lexerPosition);
-	return NULL;
+	return EXPR_RESULT(SmileList_CreateThreeWithSource(Smile_KnownObjects._catchSymbol, body, handler, lexerPosition));
 }
 
 // orexpr ::= . orexpr OR andexpr | . andexpr
-ParseError Parser_ParseOrExpr(Parser parser, SmileObject *expr, Int modeFlags)
+ParseResult Parser_ParseOrExpr(Parser parser, Int modeFlags)
 {
 	SmileList tail = NullList;
-	SmileObject rvalue;
-	ParseError parseError;
+	SmileObject expr, rvalue;
 	Token token;
 	LexerPosition lexerPosition;
 	Bool isFirst = True;
 	ParseResult parseResult;
 
 	parseResult = Parser_ApplyCustomSyntax(parser, modeFlags, SMILE_SPECIAL_SYMBOL_EXPR, SYNTAXROOT_KEYWORD, 0);
-	if (parseResult.status != ParseStatus_NotMatchedAndNoTokensConsumed)
-		FORWARD_PARSE_RESULT(parseResult);
+	FORWARD_CUSTOM_SYNTAX_RESULT(parseResult);
 
-	parseError = Parser_ParseAndExpr(parser, expr, modeFlags);
-	if (parseError != NULL)
-		return parseError;
+	parseResult = Parser_ParseAndExpr(parser, modeFlags);
+	if (IS_PARSE_ERROR(parseResult))
+		RETURN_PARSE_ERROR(parseResult);
+	expr = parseResult.expr;
 
 	while (((token = Parser_NextToken(parser))->kind == TOKEN_ALPHANAME || token->kind == TOKEN_UNKNOWNALPHANAME)
 		&& token->data.symbol == SMILE_SPECIAL_SYMBOL_OR
@@ -447,12 +450,13 @@ ParseError Parser_ParseOrExpr(Parser parser, SmileObject *expr, Int modeFlags)
 
 		lexerPosition = Token_GetPosition(token);
 
-		parseError = Parser_ParseAndExpr(parser, &rvalue, modeFlags);
-		if (parseError != NULL)
-			return parseError;
+		parseResult = Parser_ParseAndExpr(parser, modeFlags);
+		if (IS_PARSE_ERROR(parseResult))
+			RETURN_PARSE_ERROR(parseResult);
+		rvalue = parseResult.expr;
 
 		if (isFirst) {
-			*expr = (SmileObject)SmileList_CreateThreeWithSource(Smile_KnownObjects._orSymbol, *expr, rvalue, lexerPosition);
+			expr = (SmileObject)SmileList_CreateThreeWithSource(Smile_KnownObjects._orSymbol, expr, rvalue, lexerPosition);
 			isFirst = False;
 		}
 		else {
@@ -462,22 +466,23 @@ ParseError Parser_ParseOrExpr(Parser parser, SmileObject *expr, Int modeFlags)
 
 	Lexer_Unget(parser->lexer);
 
-	return NULL;
+	return EXPR_RESULT(expr);
 }
 
 // andexpr :: = . andexpr AND notexpr | . notexpr
-ParseError Parser_ParseAndExpr(Parser parser, SmileObject *expr, Int modeFlags)
+ParseResult Parser_ParseAndExpr(Parser parser, Int modeFlags)
 {
 	SmileList tail = NullList;
-	SmileObject rvalue;
-	ParseError parseError;
+	SmileObject expr, rvalue;
 	Token token;
 	LexerPosition lexerPosition;
 	Bool isFirst = True;
+	ParseResult parseResult;
 
-	parseError = Parser_ParseNotExpr(parser, expr, modeFlags);
-	if (parseError != NULL)
-		return parseError;
+	parseResult = Parser_ParseNotExpr(parser, modeFlags);
+	if (IS_PARSE_ERROR(parseResult))
+		RETURN_PARSE_ERROR(parseResult);
+	expr = parseResult.expr;
 
 	while (((token = Parser_NextToken(parser))->kind == TOKEN_ALPHANAME || token->kind == TOKEN_UNKNOWNALPHANAME)
 		&& token->data.symbol == SMILE_SPECIAL_SYMBOL_AND
@@ -485,12 +490,13 @@ ParseError Parser_ParseAndExpr(Parser parser, SmileObject *expr, Int modeFlags)
 
 		lexerPosition = Token_GetPosition(token);
 
-		parseError = Parser_ParseNotExpr(parser, &rvalue, modeFlags);
-		if (parseError != NULL)
-			return parseError;
+		parseResult = Parser_ParseNotExpr(parser, modeFlags);
+		if (IS_PARSE_ERROR(parseResult))
+			RETURN_PARSE_ERROR(parseResult);
+		rvalue = parseResult.expr;
 
 		if (isFirst) {
-			*expr = (SmileObject)SmileList_CreateThreeWithSource(Smile_KnownObjects._andSymbol, *expr, rvalue, lexerPosition);
+			expr = (SmileObject)SmileList_CreateThreeWithSource(Smile_KnownObjects._andSymbol, expr, rvalue, lexerPosition);
 			isFirst = False;
 		}
 		else {
@@ -500,19 +506,20 @@ ParseError Parser_ParseAndExpr(Parser parser, SmileObject *expr, Int modeFlags)
 
 	Lexer_Unget(parser->lexer);
 
-	return NULL;
+	return EXPR_RESULT(expr);
 }
 
 // notexpr :: = . NOT notexpr | . cmpexpr
-ParseError Parser_ParseNotExpr(Parser parser, SmileObject *expr, Int modeFlags)
+ParseResult Parser_ParseNotExpr(Parser parser, Int modeFlags)
 {
-	ParseError parseError;
+	SmileObject expr;
 	Token token;
 	LexerPosition lexerPosition;
 	struct TokenStruct stackOperators[16];					// The first 16 unary operators will go on C's stack.
 	struct TokenStruct *unaryOperators = stackOperators;	// Any successive unary operators will be reallocated on the heap.
 	struct TokenStruct *tempOperators;
 	Int numOperators = 0, maxOperators = 16, newMax, i;
+	ParseResult parseResult;
 
 	// Because this rule is right-recursive, and we don't want to recurse wherever we can
 	// avoid it, we loop to collect NOTs, and then parse the 'cmpexpr' expression, and then build
@@ -543,23 +550,20 @@ ParseError Parser_ParseNotExpr(Parser parser, SmileObject *expr, Int modeFlags)
 	Lexer_Unget(parser->lexer);
 
 	// We now have all of the unary prefix operators.  Now go parse the term itself.
-	parseError = Parser_ParseCmpExpr(parser, expr, modeFlags);
-	if (parseError != NULL)
-		return parseError;
+	parseResult = Parser_ParseCmpExpr(parser, modeFlags);
+	if (IS_PARSE_ERROR(parseResult))
+		RETURN_PARSE_ERROR(parseResult);
+	expr = parseResult.expr;
 
-	// If there were no unary operators, just return the term.
-	if (numOperators <= 0)
-		return NULL;
-
-	// We have unary operators to apply.  So spin out Smile expressions of the form [(expr.unary)] for
+	// Apply any unary operators by spinning out Smile expressions of the form [(expr.unary)] for
 	// each unary operator, going from last (innermost) to first (outermost).
 	for (i = numOperators - 1; i >= 0; i--) {
 		lexerPosition = Token_GetPosition(&unaryOperators[i]);
 		// Not is a special built-in form:  [$not x]
-		*expr = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._notSymbol, *expr, lexerPosition);
+		expr = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._notSymbol, expr, lexerPosition);
 	}
 
-	return NULL;
+	return EXPR_RESULT(expr);
 }
 
 Inline SmileSymbol Parser_GetSymbolObjectForCmpOperator(Symbol symbol)
@@ -592,39 +596,32 @@ Inline SmileSymbol Parser_GetSymbolObjectForCmpOperator(Symbol symbol)
 //       | . cmpexpr EQ addexpr | . cmpexpr NE addexpr | . cmpexpr SUPEREQ addexpr | . cmpexpr SUPERNE addexpr
 //       | . cmpexpr IS addexpr
 //       | . addexpr
-ParseError Parser_ParseCmpExpr(Parser parser, SmileObject *expr, Int modeFlags)
+ParseResult Parser_ParseCmpExpr(Parser parser, Int modeFlags)
 {
-	SmileObject rvalue;
+	SmileObject expr, rvalue;
 	SmileSymbol symbolObject;
-	ParseError parseError;
 	Token token;
 	LexerPosition lexerPosition;
 	Symbol symbol;
 	ParseResult parseResult;
 
 	parseResult = Parser_ApplyCustomSyntax(parser, modeFlags, SMILE_SPECIAL_SYMBOL_CMPEXPR, SYNTAXROOT_KEYWORD, 0);
-	if (parseResult.status != ParseStatus_NotMatchedAndNoTokensConsumed)
-		FORWARD_PARSE_RESULT(parseResult);
+	FORWARD_CUSTOM_SYNTAX_RESULT(parseResult);
 
-	parseError = Parser_ParseAddExpr(parser, expr, modeFlags);
-	if (parseError != NULL)
-		return parseError;
+	parseResult = Parser_ParseAddExpr(parser, modeFlags);
+	if (IS_PARSE_ERROR(parseResult))
+		RETURN_PARSE_ERROR(parseResult);
+	expr = parseResult.expr;
 
 parseNextOperator:
 
 	if (Parser_Has2Lookahead(parser, TOKEN_UNKNOWNPUNCTNAME, TOKEN_EQUALWITHOUTWHITESPACE)) {
 		// This might not be possible, but if this is something like >==, then don't allow it to be consumed as a binary operator.
-		return NULL;
+		return EXPR_RESULT(expr);
 	}
 
-	if ((parseResult = Parser_ApplyCustomSyntax(parser, modeFlags, SMILE_SPECIAL_SYMBOL_CMPEXPR, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_ADDEXPR)).status
-		!= ParseStatus_NotMatchedAndNoTokensConsumed) {
-		
-		if (parseResult.status == ParseStatus_PartialParseWithError)
-			return parseResult.error;
-	
-		goto parseNextOperator;
-	}
+	parseResult = Parser_ApplyCustomSyntax(parser, modeFlags, SMILE_SPECIAL_SYMBOL_CMPEXPR, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_ADDEXPR);
+	FORWARD_CHAINED_CUSTOM_SYNTAX_RESULT(parseResult);
 
 	if (((token = Parser_NextToken(parser))->kind == TOKEN_UNKNOWNPUNCTNAME || token->kind == TOKEN_UNKNOWNALPHANAME
 			|| token->kind == TOKEN_PUNCTNAME || token->kind == TOKEN_ALPHANAME)
@@ -633,17 +630,18 @@ parseNextOperator:
 
 		lexerPosition = Token_GetPosition(token);
 
-		parseError = Parser_ParseAddExpr(parser, &rvalue, modeFlags);
-		if (parseError != NULL)
-			return parseError;
+		parseResult = Parser_ParseAddExpr(parser, modeFlags);
+		if (IS_PARSE_ERROR(parseResult))
+			RETURN_PARSE_ERROR(parseResult);
+		rvalue = parseResult.expr;
 
 		if (symbol == SMILE_SPECIAL_SYMBOL_SUPEREQ || symbol == SMILE_SPECIAL_SYMBOL_SUPERNE
 			|| symbol == SMILE_SPECIAL_SYMBOL_IS) {
-			*expr = (SmileObject)SmileList_CreateThreeWithSource(symbolObject, *expr, rvalue, lexerPosition);
+			expr = (SmileObject)SmileList_CreateThreeWithSource(symbolObject, expr, rvalue, lexerPosition);
 		}
 		else {
-			*expr = (SmileObject)SmileList_CreateTwoWithSource(
-				SmileList_CreateDotWithSource(*expr, symbolObject, lexerPosition), rvalue, lexerPosition);
+			expr = (SmileObject)SmileList_CreateTwoWithSource(
+				SmileList_CreateDotWithSource(expr, symbolObject, lexerPosition), rvalue, lexerPosition);
 		}
 		
 		goto parseNextOperator;
@@ -651,42 +649,35 @@ parseNextOperator:
 
 	Lexer_Unget(parser->lexer);
 
-	return NULL;
+	return EXPR_RESULT(expr);
 }
 
 // addexpr ::= . addexpr PLUS mulexpr | . addexpr MINUS mulexpr | . mulexpr
-ParseError Parser_ParseAddExpr(Parser parser, SmileObject *expr, Int modeFlags)
+ParseResult Parser_ParseAddExpr(Parser parser, Int modeFlags)
 {
-	SmileObject rvalue;
-	ParseError parseError;
+	SmileObject expr, rvalue;
 	Token token;
 	LexerPosition lexerPosition;
 	Symbol symbol;
 	ParseResult parseResult;
 
 	parseResult = Parser_ApplyCustomSyntax(parser, modeFlags, SMILE_SPECIAL_SYMBOL_ADDEXPR, SYNTAXROOT_KEYWORD, 0);
-	if (parseResult.status != ParseStatus_NotMatchedAndNoTokensConsumed)
-		FORWARD_PARSE_RESULT(parseResult);
+	FORWARD_CUSTOM_SYNTAX_RESULT(parseResult);
 
-	parseError = Parser_ParseMulExpr(parser, expr, modeFlags);
-	if (parseError != NULL)
-		return parseError;
+	parseResult = Parser_ParseMulExpr(parser, modeFlags);
+	if (IS_PARSE_ERROR(parseResult))
+		RETURN_PARSE_ERROR(parseResult);
+	expr = parseResult.expr;
 
 parseNextOperator:
 
 	if (Parser_Has2Lookahead(parser, TOKEN_UNKNOWNPUNCTNAME, TOKEN_EQUALWITHOUTWHITESPACE)) {
 		// If this is something like +=, then don't allow it to be consumed as a binary operator.
-		return NULL;
+		return EXPR_RESULT(expr);
 	}
 
-	if ((parseResult = Parser_ApplyCustomSyntax(parser, modeFlags, SMILE_SPECIAL_SYMBOL_ADDEXPR, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_MULEXPR)).status
-		!= ParseStatus_NotMatchedAndNoTokensConsumed) {
-
-		if (parseResult.status == ParseStatus_PartialParseWithError)
-			return parseResult.error;
-
-		goto parseNextOperator;
-	}
+	parseResult = Parser_ApplyCustomSyntax(parser, modeFlags, SMILE_SPECIAL_SYMBOL_ADDEXPR, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_MULEXPR);
+	FORWARD_CHAINED_CUSTOM_SYNTAX_RESULT(parseResult);
 
 	if (((token = Parser_NextToken(parser))->kind == TOKEN_UNKNOWNPUNCTNAME || token->kind == TOKEN_PUNCTNAME)
 		&& ((symbol = token->data.symbol) == SMILE_SPECIAL_SYMBOL_PLUS || symbol == SMILE_SPECIAL_SYMBOL_MINUS)
@@ -694,12 +685,13 @@ parseNextOperator:
 
 		lexerPosition = Token_GetPosition(token);
 
-		parseError = Parser_ParseMulExpr(parser, &rvalue, modeFlags);
-		if (parseError != NULL)
-			return parseError;
+		parseResult = Parser_ParseMulExpr(parser, modeFlags);
+		if (IS_PARSE_ERROR(parseResult))
+			RETURN_PARSE_ERROR(parseResult);
+		rvalue = parseResult.expr;
 
-		*expr = (SmileObject)SmileList_CreateTwoWithSource(
-			SmileList_CreateDotWithSource(*expr,
+		expr = (SmileObject)SmileList_CreateTwoWithSource(
+			SmileList_CreateDotWithSource(expr,
 				symbol == SMILE_SPECIAL_SYMBOL_PLUS ? Smile_KnownObjects.plusSymbol : Smile_KnownObjects.minusSymbol,
 				lexerPosition),
 			rvalue,
@@ -711,42 +703,35 @@ parseNextOperator:
 
 	Lexer_Unget(parser->lexer);
 
-	return NULL;
+	return EXPR_RESULT(expr);
 }
 
 // mulexpr ::= . mulexpr STAR binaryexpr | . mulexpr SLASH binaryexpr | . binaryexpr
-ParseError Parser_ParseMulExpr(Parser parser, SmileObject *expr, Int modeFlags)
+ParseResult Parser_ParseMulExpr(Parser parser, Int modeFlags)
 {
-	SmileObject rvalue;
-	ParseError parseError;
+	SmileObject expr, rvalue;
 	Token token;
 	LexerPosition lexerPosition;
 	Symbol symbol;
 	ParseResult parseResult;
 
 	parseResult = Parser_ApplyCustomSyntax(parser, modeFlags, SMILE_SPECIAL_SYMBOL_MULEXPR, SYNTAXROOT_KEYWORD, 0);
-	if (parseResult.status != ParseStatus_NotMatchedAndNoTokensConsumed)
-		FORWARD_PARSE_RESULT(parseResult);
+	FORWARD_CUSTOM_SYNTAX_RESULT(parseResult);
 
-	parseError = Parser_ParseBinaryExpr(parser, expr, modeFlags);
-	if (parseError != NULL)
-		return parseError;
+	parseResult = Parser_ParseBinaryExpr(parser, modeFlags);
+	if (IS_PARSE_ERROR(parseResult))
+		RETURN_PARSE_ERROR(parseResult);
+	expr = parseResult.expr;
 
 parseNextOperator:
 
 	if (Parser_Has2Lookahead(parser, TOKEN_UNKNOWNPUNCTNAME, TOKEN_EQUALWITHOUTWHITESPACE)) {
 		// If this is something like *=, then don't allow it to be consumed as a binary operator.
-		return NULL;
+		return EXPR_RESULT(expr);
 	}
 
-	if ((parseResult = Parser_ApplyCustomSyntax(parser, modeFlags, SMILE_SPECIAL_SYMBOL_MULEXPR, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_BINARYEXPR)).status
-		!= ParseStatus_NotMatchedAndNoTokensConsumed) {
-
-		if (parseResult.status == ParseStatus_PartialParseWithError)
-			return parseResult.error;
-
-		goto parseNextOperator;
-	}
+	parseResult = Parser_ApplyCustomSyntax(parser, modeFlags, SMILE_SPECIAL_SYMBOL_MULEXPR, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_BINARYEXPR);
+	FORWARD_CHAINED_CUSTOM_SYNTAX_RESULT(parseResult);
 
 	if (((token = Parser_NextToken(parser))->kind == TOKEN_UNKNOWNPUNCTNAME || token->kind == TOKEN_PUNCTNAME)
 		&& ((symbol = token->data.symbol) == SMILE_SPECIAL_SYMBOL_STAR || symbol == SMILE_SPECIAL_SYMBOL_SLASH)
@@ -754,12 +739,13 @@ parseNextOperator:
 
 		lexerPosition = Token_GetPosition(token);
 
-		parseError = Parser_ParseBinaryExpr(parser, &rvalue, modeFlags);
-		if (parseError != NULL)
-			return parseError;
+		parseResult = Parser_ParseBinaryExpr(parser, modeFlags);
+		if (IS_PARSE_ERROR(parseResult))
+			RETURN_PARSE_ERROR(parseResult);
+		rvalue = parseResult.expr;
 
-		*expr = (SmileObject)SmileList_CreateTwoWithSource(
-			SmileList_CreateDotWithSource(*expr,
+		expr = (SmileObject)SmileList_CreateTwoWithSource(
+			SmileList_CreateDotWithSource(expr,
 				symbol == SMILE_SPECIAL_SYMBOL_STAR ? Smile_KnownObjects.starSymbol : Smile_KnownObjects.slashSymbol,
 				lexerPosition),
 			rvalue,
@@ -771,7 +757,7 @@ parseNextOperator:
 
 	Lexer_Unget(parser->lexer);
 
-	return NULL;
+	return EXPR_RESULT(expr);
 }
 
 Inline Bool Parser_IsAcceptableArbitraryBinaryOperator(Parser parser, Symbol symbol)
@@ -816,39 +802,32 @@ Inline Bool Parser_IsAcceptableArbitraryBinaryOperator(Parser parser, Symbol sym
 // 		| . binaryexpr UNKNOWN_ALPHA_NAME binary_args
 // 		| . colonexpr
 // binary_args ::= binary_args COMMA colonexpr | colonexpr
-ParseError Parser_ParseBinaryExpr(Parser parser, SmileObject *expr, Int modeFlags)
+ParseResult Parser_ParseBinaryExpr(Parser parser, Int modeFlags)
 {
 	SmileList binaryExpr, tail;
-	SmileObject rvalue;
-	ParseError parseError;
+	SmileObject expr, rvalue;
 	Token token;
 	LexerPosition lexerPosition;
 	Symbol symbol;
 	ParseResult parseResult;
 
 	parseResult = Parser_ApplyCustomSyntax(parser, modeFlags, SMILE_SPECIAL_SYMBOL_BINARYEXPR, SYNTAXROOT_KEYWORD, 0);
-	if (parseResult.status != ParseStatus_NotMatchedAndNoTokensConsumed)
-		FORWARD_PARSE_RESULT(parseResult);
+	FORWARD_CUSTOM_SYNTAX_RESULT(parseResult);
 
-	parseError = Parser_ParseColonExpr(parser, expr, modeFlags);
-	if (parseError != NULL)
-		return parseError;
+	parseResult = Parser_ParseColonExpr(parser, modeFlags);
+	if (IS_PARSE_ERROR(parseResult))
+		RETURN_PARSE_ERROR(parseResult);
+	expr = parseResult.expr;
 
 parseNextOperator:
 
 	if (Parser_Has2Lookahead(parser, TOKEN_UNKNOWNPUNCTNAME, TOKEN_EQUALWITHOUTWHITESPACE)) {
 		// If this is something like +=, then don't allow it to be consumed as a binary operator.
-		return NULL;
+		return EXPR_RESULT(expr);
 	}
 
-	if ((parseResult = Parser_ApplyCustomSyntax(parser, modeFlags, SMILE_SPECIAL_SYMBOL_BINARYEXPR, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_COLONEXPR)).status
-		!= ParseStatus_NotMatchedAndNoTokensConsumed) {
-
-		if (parseResult.status == ParseStatus_PartialParseWithError)
-			return parseResult.error;
-
-		goto parseNextOperator;
-	}
+	parseResult = Parser_ApplyCustomSyntax(parser, modeFlags, SMILE_SPECIAL_SYMBOL_BINARYEXPR, SYNTAXROOT_NONTERMINAL, SMILE_SPECIAL_SYMBOL_COLONEXPR);
+	FORWARD_CHAINED_CUSTOM_SYNTAX_RESULT(parseResult);
 
 	if (((token = Parser_NextToken(parser))->kind == TOKEN_UNKNOWNALPHANAME || token->kind == TOKEN_UNKNOWNPUNCTNAME)
 		&& ((modeFlags & BINARYLINEBREAKS_MASK) == BINARYLINEBREAKS_ALLOWED || !token->isFirstContentOnLine)
@@ -858,17 +837,18 @@ parseNextOperator:
 
 		if ((modeFlags & COLONMODE_MASK) == COLONMODE_MEMBERDECL && Parser_HasLookahead(parser, TOKEN_COLON)) {
 			Lexer_Unget(parser->lexer);
-			return NULL;
+			return EXPR_RESULT(expr);
 		}
 
-		parseError = Parser_ParseColonExpr(parser, &rvalue, modeFlags);
-		if (parseError != NULL)
-			return parseError;
+		parseResult = Parser_ParseColonExpr(parser, modeFlags);
+		if (IS_PARSE_ERROR(parseResult))
+			RETURN_PARSE_ERROR(parseResult);
+		rvalue = parseResult.expr;
 
 		binaryExpr = tail = SmileList_CreateOneWithSource(
-			SmileList_CreateDotWithSource(*expr, SmileSymbol_Create(symbol), lexerPosition), lexerPosition);
+			SmileList_CreateDotWithSource(expr, SmileSymbol_Create(symbol), lexerPosition), lexerPosition);
 
-		*expr = (SmileObject)binaryExpr;
+		expr = (SmileObject)binaryExpr;
 
 		tail = (SmileList)(tail->d = (SmileObject)SmileList_CreateOneWithSource(rvalue, lexerPosition));
 
@@ -878,9 +858,10 @@ parseNextOperator:
 
 				lexerPosition = Token_GetPosition(parser->lexer->token);
 
-				parseError = Parser_ParseColonExpr(parser, &rvalue, modeFlags);
-				if (parseError != NULL)
-					return parseError;
+				parseResult = Parser_ParseColonExpr(parser, modeFlags);
+				if (IS_PARSE_ERROR(parseResult))
+					RETURN_PARSE_ERROR(parseResult);
+				rvalue = parseResult.expr;
 
 				tail = (SmileList)(tail->d = (SmileObject)SmileList_CreateOneWithSource(rvalue, lexerPosition));
 			}
@@ -891,64 +872,68 @@ parseNextOperator:
 
 	Lexer_Unget(parser->lexer);
 
-	return NULL;
+	return EXPR_RESULT(expr);
 }
 
 // colonexpr :: = . colonexpr COLON rangeexpr | . rangeexpr
-ParseError Parser_ParseColonExpr(Parser parser, SmileObject *expr, Int modeFlags)
+ParseResult Parser_ParseColonExpr(Parser parser, Int modeFlags)
 {
-	SmileObject rvalue;
-	ParseError parseError;
+	SmileObject expr, rvalue;
+	ParseResult parseResult;
 	Token token;
 	LexerPosition lexerPosition;
 
-	parseError = Parser_ParseRangeExpr(parser, expr, modeFlags);
-	if (parseError != NULL)
-		return parseError;
+	parseResult = Parser_ParseRangeExpr(parser, modeFlags);
+	if (IS_PARSE_ERROR(parseResult))
+		RETURN_PARSE_ERROR(parseResult);
+	expr = parseResult.expr;
 
 	if ((modeFlags & COLONMODE_MASK) == COLONMODE_MEMBERDECL)
-		return NULL;
+		return EXPR_RESULT(expr);
 
 	while ((token = Parser_NextToken(parser))->kind == TOKEN_COLON
 		&& ((modeFlags & BINARYLINEBREAKS_MASK) == BINARYLINEBREAKS_ALLOWED || !token->isFirstContentOnLine)) {
 
 		lexerPosition = Token_GetPosition(token);
 
-		parseError = Parser_ParseRangeExpr(parser, &rvalue, modeFlags);
-		if (parseError != NULL)
-			return parseError;
+		parseResult = Parser_ParseRangeExpr(parser, modeFlags);
+		if (IS_PARSE_ERROR(parseResult))
+			RETURN_PARSE_ERROR(parseResult);
+		rvalue = parseResult.expr;
 
-		*expr = (SmileObject)SmileList_CreateIndexWithSource(*expr, rvalue, lexerPosition);
+		expr = (SmileObject)SmileList_CreateIndexWithSource(expr, rvalue, lexerPosition);
 	}
 
 	Lexer_Unget(parser->lexer);
 
-	return NULL;
+	return EXPR_RESULT(expr);
 }
 
 // rangeexpr ::= . prefixexpr DOTDOT prefixexpr | . prefixexpr
-ParseError Parser_ParseRangeExpr(Parser parser, SmileObject *expr, Int modeFlags)
+ParseResult Parser_ParseRangeExpr(Parser parser, Int modeFlags)
 {
-	SmileObject rvalue;
-	ParseError parseError;
+	SmileObject expr, rvalue;
+	ParseResult parseResult;
 	Token token;
 	LexerPosition lexerPosition;
 
-	parseError = Parser_ParsePrefixExpr(parser, expr, modeFlags);
-	if (parseError != NULL)
-		return parseError;
+	parseResult = Parser_ParsePrefixExpr(parser, modeFlags);
+	if (IS_PARSE_ERROR(parseResult))
+		RETURN_PARSE_ERROR(parseResult);
+	expr = parseResult.expr;
 
 	if ((token = Parser_NextToken(parser))->kind == TOKEN_DOTDOT
 		&& ((modeFlags & BINARYLINEBREAKS_MASK) == BINARYLINEBREAKS_ALLOWED || !token->isFirstContentOnLine)) {
 
 		lexerPosition = Token_GetPosition(token);
 
-		parseError = Parser_ParsePrefixExpr(parser, &rvalue, modeFlags);
-		if (parseError != NULL)
-			return parseError;
+		parseResult = Parser_ParsePrefixExpr(parser, modeFlags);
+		if (IS_PARSE_ERROR(parseResult))
+			RETURN_PARSE_ERROR(parseResult);
+		rvalue = parseResult.expr;
 
-		*expr = (SmileObject)SmileList_CreateTwoWithSource(
-			SmileList_CreateDotWithSource(*expr, Smile_KnownObjects.rangeToSymbol, lexerPosition),
+		expr = (SmileObject)SmileList_CreateTwoWithSource(
+			SmileList_CreateDotWithSource(expr, Smile_KnownObjects.rangeToSymbol, lexerPosition),
 			rvalue,
 			lexerPosition
 		);
@@ -957,7 +942,7 @@ ParseError Parser_ParseRangeExpr(Parser parser, SmileObject *expr, Int modeFlags
 		Lexer_Unget(parser->lexer);
 	}
 
-	return NULL;
+	return EXPR_RESULT(expr);
 }
 
 Inline Bool Parser_IsAcceptableArbitraryPrefixOperator(Symbol symbol)
@@ -990,10 +975,11 @@ Inline Bool Parser_IsAcceptableArbitraryPrefixOperator(Symbol symbol)
 // 		| . STAR prefixexpr | . SLASH prefixexpr
 //      | . TYPEOF prefixexpr
 // 		| . new
-ParseError Parser_ParsePrefixExpr(Parser parser, SmileObject *expr, Int modeFlags)
+ParseResult Parser_ParsePrefixExpr(Parser parser, Int modeFlags)
 {
 	LexerPosition position;
-	ParseError parseError;
+	ParseResult parseResult;
+	SmileObject expr;
 	Token token, firstUnaryTokenForErrorReporting = NULL;
 	struct TokenStruct stackOperators[16];					// The first 16 unary operators will go on C's stack.
 	struct TokenStruct *unaryOperators = stackOperators;	// Any successive unary operators will be reallocated on the heap.
@@ -1041,22 +1027,23 @@ ParseError Parser_ParsePrefixExpr(Parser parser, SmileObject *expr, Int modeFlag
 		// for unary terms matches the binary-line-break rule; just as "x - \n y" is illegal,
 		// "- \n y" is also illegal.
 		if (token->isFirstContentOnLine && (modeFlags & BINARYLINEBREAKS_MASK) != BINARYLINEBREAKS_ALLOWED) {
-			return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
+			return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
 				String_Format("Expected an expression term on the same line after unary operator '%S'",
-					SymbolTable_GetName(Smile_SymbolTable, lastUnaryTokenSymbol)));
+					SymbolTable_GetName(Smile_SymbolTable, lastUnaryTokenSymbol))));
 		}
 	}
 
 	Lexer_Unget(parser->lexer);
 
 	// We now have all of the unary prefix operators.  Now go parse the term itself.
-	parseError = Parser_ParseNewExpr(parser, expr, modeFlags, firstUnaryTokenForErrorReporting);
-	if (parseError != NULL)
-		return parseError;
+	parseResult = Parser_ParseNewExpr(parser, modeFlags, firstUnaryTokenForErrorReporting);
+	if (IS_PARSE_ERROR(parseResult))
+		RETURN_PARSE_ERROR(parseResult);
+	expr = parseResult.expr;
 
 	// If there were no unary operators, just return the term.
 	if (numOperators <= 0)
-		return NULL;
+		return EXPR_RESULT(expr);
 
 	// We have unary operators to apply.  So spin out Smile expressions of the form [(expr.unary)] for
 	// each unary operator, going from last (innermost) to first (outermost).
@@ -1065,55 +1052,57 @@ ParseError Parser_ParsePrefixExpr(Parser parser, SmileObject *expr, Int modeFlag
 		symbol = unaryOperators[i].data.symbol;
 		if (symbol == SMILE_SPECIAL_SYMBOL_TYPEOF) {
 			// Typeof is a special built-in form:  [$typeof x]
-			*expr = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._typeofSymbol, *expr, position);
+			expr = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._typeofSymbol, expr, position);
 		}
 		else {
 			// Construct an expression of the unary method-call form:  [(expr.unary)]
-			*expr = (SmileObject)SmileList_CreateOneWithSource(
-				SmileList_CreateDotWithSource(*expr, (SmileObject)SmileSymbol_Create(symbol), position),
+			expr = (SmileObject)SmileList_CreateOneWithSource(
+				SmileList_CreateDotWithSource(expr, (SmileObject)SmileSymbol_Create(symbol), position),
 				position
 			);
 		}
 	}
-	return NULL;
+
+	return EXPR_RESULT(expr);
 }
 
-ParseError Parser_ParsePostfixExpr(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting)
+ParseResult Parser_ParsePostfixExpr(Parser parser, Int modeFlags, Token firstUnaryTokenForErrorReporting)
 {
 	ParseResult parseResult;
 
 	parseResult = Parser_ApplyCustomSyntax(parser, modeFlags, SMILE_SPECIAL_SYMBOL_POSTFIXEXPR, SYNTAXROOT_KEYWORD, 0);
-	if (parseResult.status != ParseStatus_NotMatchedAndNoTokensConsumed)
-		FORWARD_PARSE_RESULT(parseResult);
+	FORWARD_CUSTOM_SYNTAX_RESULT(parseResult);
 
-	return Parser_ParseConsExpr(parser, expr, modeFlags, firstUnaryTokenForErrorReporting);
+	return Parser_ParseConsExpr(parser, modeFlags, firstUnaryTokenForErrorReporting);
 }
 
 // consexpr ::= . dotexpr DOUBLEHASH consexpr | . dotexpr
-ParseError Parser_ParseConsExpr(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting)
+ParseResult Parser_ParseConsExpr(Parser parser, Int modeFlags, Token firstUnaryTokenForErrorReporting)
 {
 	SmileList tail;
-	SmileObject rvalue, nextRValue;
-	ParseError parseError;
+	SmileObject expr, rvalue, nextRValue;
+	ParseResult parseResult;
 	LexerPosition lexerPosition;
 	Bool isFirst;
 
-	parseError = Parser_ParseDotExpr(parser, expr, modeFlags, firstUnaryTokenForErrorReporting);
-	if (parseError != NULL)
-		return parseError;
+	parseResult = Parser_ParseDotExpr(parser, modeFlags, firstUnaryTokenForErrorReporting);
+	if (IS_PARSE_ERROR(parseResult))
+		RETURN_PARSE_ERROR(parseResult);
+	expr = parseResult.expr;
 
 	if (Lexer_Next(parser->lexer) == TOKEN_DOUBLEHASH) {
 
 		lexerPosition = Token_GetPosition(parser->lexer->token);
-		tail = SmileList_CreateOneWithSource(*expr, lexerPosition);
-		*expr = (SmileObject)tail;
+		tail = SmileList_CreateOneWithSource(expr, lexerPosition);
+		expr = (SmileObject)tail;
 		isFirst = True;
 		rvalue = NullObject;
 
 		do {
-			parseError = Parser_ParseDotExpr(parser, &nextRValue, modeFlags, firstUnaryTokenForErrorReporting);
-			if (parseError != NULL)
-				return parseError;
+			parseResult = Parser_ParseDotExpr(parser, modeFlags, firstUnaryTokenForErrorReporting);
+			if (IS_PARSE_ERROR(parseResult))
+				RETURN_PARSE_ERROR(parseResult);
+			nextRValue = parseResult.expr;
 
 			if (!isFirst) {
 				tail = (SmileList)(tail->d = (SmileObject)SmileList_CreateOneWithSource(rvalue, lexerPosition));
@@ -1129,20 +1118,22 @@ ParseError Parser_ParseConsExpr(Parser parser, SmileObject *expr, Int modeFlags,
 
 	Lexer_Unget(parser->lexer);
 
-	return NULL;
+	return EXPR_RESULT(expr);
 }
 
 // dotexpr ::= . dotexpr DOT any_name | . term
-ParseError Parser_ParseDotExpr(Parser parser, SmileObject *expr, Int modeFlags, Token firstUnaryTokenForErrorReporting)
+ParseResult Parser_ParseDotExpr(Parser parser, Int modeFlags, Token firstUnaryTokenForErrorReporting)
 {
-	ParseError parseError;
+	ParseResult parseResult;
+	SmileObject expr;
 	LexerPosition lexerPosition;
 	Symbol symbol;
 	Token token;
 
-	parseError = Parser_ParseTerm(parser, expr, modeFlags, firstUnaryTokenForErrorReporting);
-	if (parseError != NULL)
-		return parseError;
+	parseResult = Parser_ParseTerm(parser, modeFlags, firstUnaryTokenForErrorReporting);
+	if (IS_PARSE_ERROR(parseResult))
+		RETURN_PARSE_ERROR(parseResult);
+	expr = parseResult.expr;
 
 	while (Parser_NextToken(parser)->kind == TOKEN_DOT) {
 
@@ -1154,58 +1145,53 @@ ParseError Parser_ParseDotExpr(Parser parser, SmileObject *expr, Int modeFlags, 
 			symbol = token->data.symbol;
 			lexerPosition = Token_GetPosition(token);
 
-			*expr = (SmileObject)SmileList_CreateDotWithSource(*expr, (SmileObject)SmileSymbol_Create(symbol), lexerPosition);
+			expr = (SmileObject)SmileList_CreateDotWithSource(expr, (SmileObject)SmileSymbol_Create(symbol), lexerPosition);
 		}
 		else {
 			Lexer_Unget(parser->lexer);
-			return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
-				String_Format("Expected a property name after '.', not '%S.'", TokenKind_ToString(token->kind)));
+			return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
+				String_Format("Expected a property name after '.', not '%S.'", TokenKind_ToString(token->kind))));
 		}
 	}
 
 	Lexer_Unget(parser->lexer);
-	return NULL;
+	return EXPR_RESULT(expr);
 }
 
 //  term ::= . LPAREN expr RPAREN
-ParseError Parser_ParseParentheses(Parser parser, SmileObject *result, Int modeFlags)
+ParseResult Parser_ParseParentheses(Parser parser, Int modeFlags)
 {
 	LexerPosition startPosition;
-	ParseError error;
+	ParseResult parseResult;
+	SmileObject expr;
 
 	UNUSED(modeFlags);
 
 	// Expect an initial '('; if it's not there, this is a programming error.
-	if (Lexer_Next(parser->lexer) != TOKEN_LEFTPARENTHESIS) {
-		Parser_AddFatalError(parser, Token_GetPosition(parser->lexer->token), "Expected '(' as first token in Parser_ParseParentheses().");
-		*result = NullObject;
-		return NULL;
-	}
+	if (Lexer_Next(parser->lexer) != TOKEN_LEFTPARENTHESIS)
+		return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_FATAL, Token_GetPosition(parser->lexer->token),
+			String_FromC("Expected '(' as first token in Parser_ParseParentheses().")));
 
 	startPosition = Token_GetPosition(parser->lexer->token);
 
 	// Parse the inside of the '(...)' block as an expression, with binary line-breaks allowed.
-	error = Parser_ParseExpr(parser, result, BINARYLINEBREAKS_ALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
-
-	if (error != NULL) {
+	parseResult = Parser_ParseExpr(parser, BINARYLINEBREAKS_ALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
+	if (IS_PARSE_ERROR(parseResult)) {
 		// Handle any errors generated inside the expression parse by recovering here, and then
 		// telling the caller everything was successful so that it continues trying the parse.
-		Parser_AddMessage(parser, error);
+		HANDLE_PARSE_ERROR(parser, parseResult);
 		Parser_Recover(parser, Parser_RightBracesBracketsParentheses_Recovery, Parser_RightBracesBracketsParentheses_Count);
-		*result = NullObject;
-		return NULL;
+		return RECOVERY_RESULT();
 	}
-	if (*result == Parser_IgnorableObject) *result = NullObject;
+	expr = parseResult.expr;
 
 	// Make sure there's a matching ')' following the opening '('.
 	if (!Parser_HasLookahead(parser, TOKEN_RIGHTPARENTHESIS)) {
-		error = ParseMessage_Create(PARSEMESSAGE_ERROR, startPosition,
-			String_Format("Missing ')' after expression starting on line %d.", startPosition->line));
-		*result = NullObject;
-		return error;
+		return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, startPosition,
+			String_Format("Missing ')' after expression starting on line %d.", startPosition->line)));
 	}
 	Parser_NextToken(parser);
 
 	// No errors, yay!
-	return NULL;
+	return EXPR_RESULT(expr);
 }

@@ -26,9 +26,9 @@
 //  Syntax-based till:  till x, y, z do { ... } when x { ... } when y { ... }
 
 // till_do ::= TILL . till_names DO expr whens_opt
-ParseError Parser_ParseTill(Parser parser, SmileObject *expr, Int modeFlags, LexerPosition lexerPosition)
+ParseResult Parser_ParseTill(Parser parser, Int modeFlags, LexerPosition lexerPosition)
 {
-	ParseError parseError;
+	ParseResult parseResult;
 	Int32Int32Dict tillFlags;
 	SmileList names;
 	SmileObject body;
@@ -39,7 +39,8 @@ ParseError Parser_ParseTill(Parser parser, SmileObject *expr, Int modeFlags, Lex
 	tillFlags = parser->currentScope->symbolDict;
 
 	// Parse the till-names first.
-	if ((parseError = Parser_ParseTillNames(parser, &names)) != NULL) {
+	parseResult = Parser_ParseTillNames(parser);
+	if (IS_PARSE_ERROR(parseResult)) {
 		// Bad flags.
 		Token recoveryToken = Parser_Recover(parser, Parser_BracesBracketsParenthesesBarName_Recovery,
 			Parser_BracesBracketsParenthesesBarName_Count);
@@ -48,15 +49,15 @@ ParseError Parser_ParseTill(Parser parser, SmileObject *expr, Int modeFlags, Lex
 
 			// Bad names, but we recovered to a 'do', so try to keep going.
 			Parser_NextToken(parser);
-			Parser_AddMessage(parser, parseError);
+			HANDLE_PARSE_ERROR(parser, parseResult);
 			names = NullList;
 		}
 		else {
 			Parser_EndScope(parser, False);
-			*expr = NullObject;
-			return parseError;
+			return parseResult;
 		}
 	}
+	else names = (SmileList)parseResult.expr;
 
 	// Consume the 'do' keyword.
 	if (!(((token = Parser_NextToken(parser))->kind == TOKEN_ALPHANAME || token->kind == TOKEN_UNKNOWNALPHANAME)
@@ -68,8 +69,8 @@ ParseError Parser_ParseTill(Parser parser, SmileObject *expr, Int modeFlags, Lex
 	}
 
 	// Parse the loop body.
-	parseError = Parser_ParseExpr(parser, &body, modeFlags);
-	if (parseError != NULL) {
+	parseResult = Parser_ParseExpr(parser, modeFlags);
+	if (IS_PARSE_ERROR(parseResult)) {
 		// Bad flags.
 		Token recoveryToken = Parser_Recover(parser, Parser_BracesBracketsParenthesesBarName_Recovery,
 			Parser_BracesBracketsParenthesesBarName_Count);
@@ -78,45 +79,44 @@ ParseError Parser_ParseTill(Parser parser, SmileObject *expr, Int modeFlags, Lex
 
 			// Bad body, but we recovered to a 'when', so try to keep going.
 			Parser_NextToken(parser);
-			Parser_AddMessage(parser, parseError);
-			names = NullList;
+			HANDLE_PARSE_ERROR(parser, parseResult);
+			body = NullObject;
 		}
 		else {
 			Parser_EndScope(parser, False);
-			*expr = NullObject;
-			return parseError;
+			return parseResult;
 		}
 	}
+	else body = parseResult.expr;
 
 	Parser_EndScope(parser, False);
 
 	// Parse any 'when' clauses hanging off the bottom of the loop.
-	parseError = Parser_ParseWhens(parser, &whens, tillFlags, modeFlags);
-	if (parseError != NULL) {
-		Parser_AddMessage(parser, parseError);
+	parseResult = Parser_ParseWhens(parser, tillFlags, modeFlags);
+	if (IS_PARSE_ERROR(parseResult)) {
+		HANDLE_PARSE_ERROR(parser, parseResult);
 		whens = NullObject;
 	}
+	else whens = parseResult.expr;
 
 	// Now make the resulting form: [$till flags body whens]
-	if (SMILE_KIND(whens) != SMILE_KIND_NULL) {
-		*expr = (SmileObject)SmileList_CreateFourWithSource(Smile_KnownObjects._tillSymbol, names, body, whens, lexerPosition);
-	}
-	else {
-		*expr = (SmileObject)SmileList_CreateThreeWithSource(Smile_KnownObjects._tillSymbol, names, body, lexerPosition);
-	}
-	return NULL;
+	if (SMILE_KIND(whens) != SMILE_KIND_NULL)
+		return EXPR_RESULT(SmileList_CreateFourWithSource(Smile_KnownObjects._tillSymbol, names, body, whens, lexerPosition));
+	else
+		return EXPR_RESULT(SmileList_CreateThreeWithSource(Smile_KnownObjects._tillSymbol, names, body, lexerPosition));
 }
 
 // till_names ::= . anyname | . till_names COMMA anyname
-ParseError Parser_ParseTillNames(Parser parser, SmileList *names)
+ParseResult Parser_ParseTillNames(Parser parser)
 {
+	ParseResult parseResult;
 	SmileObject decl;
-	ParseError error;
 	SmileList head, tail;
 
 	// Parse the first name, which results in a symbol like 'x'.
-	error = Parser_ParseTillName(parser, &decl);
-	if (error != NULL) return error;
+	parseResult = Parser_ParseTillName(parser);
+	if (IS_PARSE_ERROR(parseResult)) return parseResult;
+	decl = parseResult.expr;
 
 	// Wrap it in a list, so it becomes [x].
 	LIST_INIT(head, tail);
@@ -127,8 +127,9 @@ ParseError Parser_ParseTillNames(Parser parser, SmileList *names)
 	// Every time we see a comma, parse the next name, and add it to the list.
 	while (Parser_NextToken(parser)->kind == TOKEN_COMMA) {
 
-		error = Parser_ParseTillName(parser, &decl);
-		if (error != NULL) return error;
+		parseResult = Parser_ParseTillName(parser);
+		if (IS_PARSE_ERROR(parseResult)) return parseResult;
+		decl = parseResult.expr;
 
 		if (decl->kind != SMILE_KIND_NULL) {
 			LIST_APPEND_WITH_SOURCE(head, tail, decl, ((struct SmileListWithSourceInt *)decl)->position);
@@ -139,12 +140,11 @@ ParseError Parser_ParseTillNames(Parser parser, SmileList *names)
 	Lexer_Unget(parser->lexer);
 
 	// Return the list of names.
-	*names = head;
-	return NULL;
+	return EXPR_RESULT(head);
 }
 
 // anyname ::= NAME
-ParseError Parser_ParseTillName(Parser parser, SmileObject *expr)
+ParseResult Parser_ParseTillName(Parser parser)
 {
 	Token token;
 	ParseError error;
@@ -157,27 +157,24 @@ ParseError Parser_ParseTillName(Parser parser, SmileObject *expr)
 		&& token->kind != TOKEN_PUNCTNAME) {
 
 		// No variable name?  That's an error.
-		*expr = NullObject;
-		error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), String_FromC("Missing flag name after 'till'."));
-		return error;
+		return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), String_FromC("Missing flag name after 'till'.")));
 	}
 
 	// Declare it in the current scope.
 	symbol = token->data.symbol;
 	error = ParseScope_DeclareHere(parser->currentScope, symbol, PARSEDECL_TILL, Token_GetPosition(token), NULL);
 	if (error != NULL)
-		return error;
+		return ERROR_RESULT(error);
 
-	*expr = (SmileObject)SmileSymbol_Create(symbol);
-	return NULL;
+	return EXPR_RESULT(SmileSymbol_Create(symbol));
 }
 
 // whens_opt ::= whens |
 // whens ::= when whens | when
 // when ::= WHEN name expr
-ParseError Parser_ParseWhens(Parser parser, SmileObject *expr, Int32Int32Dict tillFlags, Int modeFlags)
+ParseResult Parser_ParseWhens(Parser parser, Int32Int32Dict tillFlags, Int modeFlags)
 {
-	ParseError parseError;
+	ParseResult parseResult;
 	Token token;
 	Int32Dict usedSymbolDict;
 	SmileList whenHead, whenTail;
@@ -230,10 +227,12 @@ ParseError Parser_ParseWhens(Parser parser, SmileObject *expr, Int32Int32Dict ti
 		}
 
 		// There should be a body after the 'when name' clause.
-		parseError = Parser_ParseExpr(parser, &whenBody, modeFlags);
-		if (parseError != NULL) {
-			Parser_AddMessage(parser, parseError);
+		parseResult = Parser_ParseExpr(parser, modeFlags);
+		if (IS_PARSE_ERROR(parseResult)) {
+			HANDLE_PARSE_ERROR(parser, parseResult);
+			whenBody = NullObject;
 		}
+		else whenBody = parseResult.expr;
 
 		// Construct the when clause itself:  [flag body]
 		whenClause = (SmileObject)SmileList_CreateTwoWithSource(flagName ? (SmileObject)SmileSymbol_Create(flagName) : NullObject, whenBody, position);
@@ -242,20 +241,19 @@ ParseError Parser_ParseWhens(Parser parser, SmileObject *expr, Int32Int32Dict ti
 		LIST_APPEND_WITH_SOURCE(whenHead, whenTail, whenClause, position);
 	}
 
-	*expr = (SmileObject)whenHead;
-	return NULL;
+	return EXPR_RESULT(whenHead);
 }
 
 //-----------------------------------------------------------------------------
 //  Lisp-style till:  [$till [x y z] body [[x when] [y when] [z when]]]
 
 // till-when ::= . '[' name expr ']'
-static ParseError Parser_ParseClassicTillWhen(Parser parser, SmileObject *result, ParseScope flagScope)
+static ParseResult Parser_ParseClassicTillWhen(Parser parser, ParseScope flagScope)
 {
 	LexerPosition position;
 	Token token;
-	SmileObject body;
-	ParseError error;
+	SmileObject body, expr;
+	ParseResult parseResult;
 	Symbol name;
 	ParseDecl flag;
 
@@ -267,23 +265,21 @@ static ParseError Parser_ParseClassicTillWhen(Parser parser, SmileObject *result
 	token = Parser_NextToken(parser);
 	if (token->kind != TOKEN_ALPHANAME && token->kind != TOKEN_UNKNOWNALPHANAME
 		&& token->kind != TOKEN_PUNCTNAME && token->kind != TOKEN_UNKNOWNPUNCTNAME) {
-		*result = NullObject;
-		error = ParseMessage_Create(PARSEMESSAGE_ERROR, position, String_FromC("Missing flag name for when-clause in [$till] form."));
-		return error;
+		return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, position, String_FromC("Missing flag name for when-clause in [$till] form.")));
 	}
 	name = token->data.symbol;
 
 	// The name should be one of the declared flags.
 	flag = ParseScope_FindDeclarationHere(flagScope, name);
 	if (flag == NULL) {
-		error = ParseMessage_Create(PARSEMESSAGE_ERROR, position, String_Format("Unknown flag name \"{0}\" for when-clause in [$till] form.",
+		ParseError error = ParseMessage_Create(PARSEMESSAGE_ERROR, position, String_Format("Unknown flag name \"{0}\" for when-clause in [$till] form.",
 			SymbolTable_GetName(Smile_SymbolTable, name)));
 		Parser_AddMessage(parser, error);
 	}
 	else {
 		// The name should also not have been used already.
 		if (flag->scopeIndex < 0) {
-			error = ParseMessage_Create(PARSEMESSAGE_ERROR, position, String_Format("Flag name for \"{0}\" cannot be used for multiple when-clauses in the same [$till] form.",
+			ParseError error = ParseMessage_Create(PARSEMESSAGE_ERROR, position, String_Format("Flag name for \"{0}\" cannot be used for multiple when-clauses in the same [$till] form.",
 				SymbolTable_GetName(Smile_SymbolTable, name)));
 			Parser_AddMessage(parser, error);
 		}
@@ -291,51 +287,51 @@ static ParseError Parser_ParseClassicTillWhen(Parser parser, SmileObject *result
 	}
 
 	// Now consume the expression that forms the body.
-	error = Parser_ParseExpr(parser, &body, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
-	if (error != NULL) {
-		*result = NullObject;
-		return error;
-	}
-	if (body == Parser_IgnorableObject) body = NullObject;
+	parseResult = Parser_ParseExpr(parser, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
+	if (IS_PARSE_ERROR(parseResult))
+		return parseResult;
+	else body = parseResult.expr;
 
 	// Make sure there's a trailing ']' to end the when-clause.
-	if ((error = Parser_ExpectRightBracket(parser, result, NULL, "$till when-clause", position)) != NULL)
-		return error;
+	parseResult = Parser_ExpectRightBracket(parser, NULL, "$till when-clause", position);
+	if (IS_PARSE_ERROR(parseResult))
+		return parseResult;
 
-	*result =
+	expr =
 		(SmileObject)SmileList_ConsWithSource((SmileObject)SmileSymbol_Create(name),
 			(SmileObject)SmileList_ConsWithSource(body, NullObject, position),
 		position);
-	return NULL;
+	return EXPR_RESULT(expr);
 }
 
 // till-whens-opt ::= . till_whens | .
 // till-whens ::= . till_whens till-when | . till-when
-static ParseError Parser_ParseClassicTillWhens(Parser parser, SmileList *result, ParseScope flagScope)
+static ParseResult Parser_ParseClassicTillWhens(Parser parser, ParseScope flagScope)
 {
 	SmileList head = NullList, tail = NullList;
 	SmileObject when;
-	ParseError error;
+	ParseResult parseResult;
 	LexerPosition position;
 
 	while (Parser_HasLookahead(parser, TOKEN_LEFTBRACKET)) {
 		position = Lexer_GetPosition(parser->lexer);
 
-		if ((error = Parser_ParseClassicTillWhen(parser, &when, flagScope)) != NULL) {
-			Parser_AddMessage(parser, error);
+		parseResult = Parser_ParseClassicTillWhen(parser, flagScope);
+		if (IS_PARSE_ERROR(parseResult)) {
+			HANDLE_PARSE_ERROR(parser, parseResult);
 			Parser_Recover(parser, Parser_BracesBracketsParenthesesBar_Recovery, Parser_BracesBracketsParenthesesBar_Count);
 			continue;
 		}
+		when = parseResult.expr;
 
 		LIST_APPEND_WITH_SOURCE(head, tail, when, position);
 	}
 
-	*result = head;
-	return NULL;
+	return EXPR_RESULT(head);
 }
 
 // till-flags ::= . names
-static ParseError Parser_ParseClassicTillFlagNames(Parser parser, SmileList *result)
+static ParseResult Parser_ParseClassicTillFlagNames(Parser parser)
 {
 	SmileList head = NullList, tail = NullList;
 	Token token;
@@ -354,8 +350,7 @@ static ParseError Parser_ParseClassicTillFlagNames(Parser parser, SmileList *res
 			case TOKEN_RIGHTBRACKET:
 			case TOKEN_RIGHTPARENTHESIS:
 				Lexer_Unget(parser->lexer);
-				*result = head;
-				return NULL;
+				return EXPR_RESULT(head);
 			
 			case TOKEN_ALPHANAME:
 			case TOKEN_UNKNOWNALPHANAME:
@@ -374,38 +369,40 @@ static ParseError Parser_ParseClassicTillFlagNames(Parser parser, SmileList *res
 }
 
 // term ::= '[' '$till' . till-flags expr till-whens-opt ']'
-ParseError Parser_ParseClassicTill(Parser parser, SmileObject *result, LexerPosition startPosition)
+ParseResult Parser_ParseClassicTill(Parser parser, LexerPosition startPosition)
 {
-	SmileObject body;
-	SmileList flags;
-	SmileList whens;
-	SmileList temp;
-	ParseError error;
+	SmileObject body, expr;
+	SmileList flags, whens, temp;
+	ParseResult parseResult;
 	ParseDecl decl;
 	SmileSymbol smileSymbol;
 	Token token;
 
 	// Make sure there is a '[' to start the name list.
-	if ((error = Parser_ExpectLeftBracket(parser, result, NULL, "$till", startPosition)) != NULL)
-		return error;
+	parseResult = Parser_ExpectLeftBracket(parser, NULL, "$till", startPosition);
+	if (IS_PARSE_ERROR(parseResult))
+		return parseResult;
 
 	Parser_BeginScope(parser, PARSESCOPE_TILLDO);
 
 	// Parse the names.
-	if ((error = Parser_ParseClassicTillFlagNames(parser, &flags)) != NULL) {
-		Parser_AddMessage(parser, error);
+	parseResult = Parser_ParseClassicTillFlagNames(parser);
+	if (IS_PARSE_ERROR(parseResult)) {
+		HANDLE_PARSE_ERROR(parser, parseResult);
 		flags = NullList;
 	}
+	else flags = (SmileList)parseResult.expr;
 
 	// Make sure there is a ']' to end the flags list.
-	if ((error = Parser_ExpectRightBracket(parser, result, NULL, "$till flags", startPosition)) != NULL) {
+	parseResult = Parser_ExpectRightBracket(parser, NULL, "$till flags", startPosition);
+	if (IS_PARSE_ERROR(parseResult)) {
 		Parser_EndScope(parser, False);
-		return error;
+		return parseResult;
 	}
 
 	// The flags list cannot be empty.
 	if (SMILE_KIND(flags) != SMILE_KIND_LIST) {
-		error = ParseMessage_Create(PARSEMESSAGE_ERROR, startPosition, String_FromC("A [$till] form must start with a list of flags."));
+		ParseError error = ParseMessage_Create(PARSEMESSAGE_ERROR, startPosition, String_FromC("A [$till] form must start with a list of flags."));
 		Parser_AddMessage(parser, error);
 	}
 	else {
@@ -417,11 +414,12 @@ ParseError Parser_ParseClassicTill(Parser parser, SmileObject *result, LexerPosi
 	}
 
 	// Parse the body expression, whatever it may be.
-	if ((error = Parser_ParseExpr(parser, &body, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS)) != NULL) {
-		Parser_AddMessage(parser, error);
+	parseResult = Parser_ParseExpr(parser, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
+	if (IS_PARSE_ERROR(parseResult)) {
+		HANDLE_PARSE_ERROR(parser, parseResult);
 		body = NullObject;
 	}
-	if (body == Parser_IgnorableObject) body = NullObject;
+	else body = parseResult.expr;
 
 	// The scope for the flags is no longer valid after the body expression.
 	Parser_EndScope(parser, False);
@@ -433,23 +431,27 @@ ParseError Parser_ParseClassicTill(Parser parser, SmileObject *result, LexerPosi
 		token = Parser_NextToken(parser);
 
 		// Parse any 'when' declarations.
-		if ((error = Parser_ParseClassicTillWhens(parser, &whens, parser->currentScope)) != NULL) {
-			Parser_AddMessage(parser, error);
+		parseResult = Parser_ParseClassicTillWhens(parser, parser->currentScope);
+		if (IS_PARSE_ERROR(parseResult)) {
+			HANDLE_PARSE_ERROR(parser, parseResult);
 			whens = NullList;
 		}
+		else whens = (SmileList)parseResult.expr;
 
 		// Make sure there is a ']' to end the whens-list.
-		if ((error = Parser_ExpectRightBracket(parser, result, NULL, "$till whens", startPosition)) != NULL)
-			return error;
+		parseResult = Parser_ExpectRightBracket(parser, NULL, "$till whens", startPosition);
+		if (IS_PARSE_ERROR(parseResult))
+			return parseResult;
 	}
 
 	// Make sure there is a ']' to end the till.
-	if ((error = Parser_ExpectRightBracket(parser, result, NULL, "$till", startPosition)) != NULL)
-		return error;
+	parseResult = Parser_ExpectRightBracket(parser, NULL, "$till", startPosition);
+	if (IS_PARSE_ERROR(parseResult))
+		return parseResult;
 
 	// Construct the resulting [$till flags body whens] form.
 	if (SMILE_KIND(whens) != SMILE_KIND_NULL) {
-		*result =
+		expr =
 			(SmileObject)SmileList_ConsWithSource((SmileObject)SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__TILL),
 				(SmileObject)SmileList_ConsWithSource((SmileObject)flags,
 					(SmileObject)SmileList_ConsWithSource(body,
@@ -459,7 +461,7 @@ ParseError Parser_ParseClassicTill(Parser parser, SmileObject *result, LexerPosi
 			startPosition);
 	}
 	else {
-		*result =
+		expr =
 			(SmileObject)SmileList_ConsWithSource((SmileObject)SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__TILL),
 				(SmileObject)SmileList_ConsWithSource((SmileObject)flags,
 					(SmileObject)SmileList_ConsWithSource(body, NullObject, startPosition),
@@ -467,5 +469,5 @@ ParseError Parser_ParseClassicTill(Parser parser, SmileObject *result, LexerPosi
 			startPosition);
 	}
 
-	return NULL;
+	return EXPR_RESULT(expr);
 }
