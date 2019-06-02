@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: a72c394c70c10ecee3e2c16c0fec9da8
+// SourceHash: 285975a73784ba8d44caf830d159c8dd
 
 START_TEST_SUITE(ParserSyntaxWalkTests)
 {
@@ -21,6 +21,14 @@ START_TEST_SUITE(ParserSyntaxWalkTests)
 	CanCreateBasicPrintStatementDynamically,
 	CanDeclareKeywords,
 	DeclaringKeywordsChangesParsingBehavior,
+	CanCollectExprStarSequences,
+	CanCollectEmptyExprStarSequences,
+	CanCollectOneExprStarSequences,
+	CanCollectExprPlusSequences,
+	CanCollectOneExprPlusSequences,
+	CanCollectNamePlusSequences,
+	CanCollectOneNamePlusSequences,
+	CanTransformUnitTestSyntax,
 }
 END_TEST_SUITE(ParserSyntaxWalkTests)
 

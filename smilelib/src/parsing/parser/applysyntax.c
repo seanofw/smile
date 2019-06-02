@@ -429,9 +429,29 @@ Inline Symbol GetSymbolForToken(Token token)
 }
 
 /// <summary>
+/// Speculatively check to see if the current parsing state matches any element of the FOLLOW set.
+/// This is complex, but it runs in O(1) time.
+/// </summary>
+/// <param name="parser">The parser that contains the lexer and the current FOLLOW set.</param>
+/// <returns>True if the next token in the input is an element of the FOLLOW set, False if the
+/// next token is a free/unbound token.  This does not advance the input.</returns>
+static Bool Parser_IsFollowSetMatched(Parser parser)
+{
+	Symbol symbol;
+	Token token;
+
+	if (parser->customFollowSet == NULL) return False;
+
+	token = Parser_NextToken(parser);
+	Lexer_Unget(parser->lexer);
+	symbol = GetSymbolForToken(token);
+	return Int32Int32Dict_ContainsKey(parser->customFollowSet, symbol);
+}
+
+/// <summary>
 /// This is responsible for parsing a looping nonterminal, like this:  [NAME+ names , ]
-/// It attempts to greedily consume as much of the input as possible, and returns
-/// the resulting syntax chunk as a list.
+/// It attempts to consume as much of the input as possible, stopping if it encounters anything
+/// in the known FOLLOW set, and returns the resulting syntax chunk as a list.
 /// </summary>
 static ParseResult Parser_ParseNonterminalList(Parser parser, ParserSyntaxNode node,
 	Int modeFlags, LexerPosition position, Symbol syntaxClassSymbol)
@@ -441,6 +461,17 @@ static ParseResult Parser_ParseNonterminalList(Parser parser, ParserSyntaxNode n
 	ParseResult nestedSyntaxResult;
 
 	for (;;) {
+
+		if (!isFirstInSet || node->repetitionKind == '*' || node->repetitionKind == '?') {
+			// This next element could be optional, so see if we've encountered an element in
+			// the FOLLOW set; if we have, we should transition to it.  This gives FOLLOW elements
+			// a higher parsing precedence than the body of the nonterminal, which solves conflicts
+			// like [[NAME+ names] bar] by ending at the first 'bar' encountered.  (i.e., given a
+			// shift/reduce conflict in a looping nonterminal, it chooses 'reduce' rather than 'shift'.)
+			if (Parser_IsFollowSetMatched(parser)) {
+				return isFirstInSet ? NOMATCH_RESULT() : EXPR_RESULT(innerHead);
+			}
+		}
 
 		// Parse the next element of the set.
 		nestedSyntaxResult = Parser_RecursivelyApplyCustomSyntax(parser, modeFlags, node->name);
@@ -616,7 +647,10 @@ ParseResult Parser_ApplyCustomSyntax(Parser parser, Int modeFlags, Symbol syntax
 			}
 			else {
 				// We handle '?' by simply ignoring the issue if we get back NotMatched.
-				nestedSyntaxResult = Parser_RecursivelyApplyCustomSyntax(parser, modeFlags, node->name);
+				if (node->repetitionKind == '?' && Parser_IsFollowSetMatched(parser))
+					nestedSyntaxResult = NOMATCH_RESULT();
+				else
+					nestedSyntaxResult = Parser_RecursivelyApplyCustomSyntax(parser, modeFlags, node->name);
 			}
 			parser->customFollowSet = oldCustomFollowSet;
 
