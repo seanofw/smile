@@ -15,9 +15,6 @@
 #define SMILE_COMPILER	SMILE_COMPILER_MSVC
 #define SMILE_ENDIAN	SMILE_ENDIAN_LITTLE
 
-// Make MSVC have the C99 standard __func__ macro, which as of VS2019 it does not.
-#define __func__ __FUNCTION__
-
 //------------------------------------------------------------------------------------------------
 //  Portable type definitions.
 

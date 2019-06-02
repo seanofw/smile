@@ -60,9 +60,9 @@ Inline TemplateResult TemplateResult_Create(ParseResult parseResult, Int templat
 		if ((__result__).status == ParseStatus_PartialParseWithError) \
 			return TEMPLATE_RESULT((__result__), TemplateKind_None); \
 		else if ((__result__).status == ParseStatus_NotMatchedAndNoTokensConsumed) \
-			Smile_Abort_FatalError("Unexpected ParseStatus_NotMatchedAndNoTokensConsumed in " __func__ "()."); \
+			Smile_Abort_FatalError("Unexpected ParseStatus_NotMatchedAndNoTokensConsumed in " __FUNCTION__ "()."); \
 		else \
-			Smile_Abort_FatalError("Unknown ParseStatus value in " __func__ "()."); \
+			Smile_Abort_FatalError("Unknown ParseStatus value in " __FUNCTION__ "()."); \
 	} while (0)
 
 //-------------------------------------------------------------------------------------------------
@@ -91,9 +91,9 @@ Inline TemplateResult TemplateResult_Create(ParseResult parseResult, Int templat
 		if ((__result__).status == ParseStatus_PartialParseWithError) \
 			return (__result__); \
 		else if ((__result__).status == ParseStatus_NotMatchedAndNoTokensConsumed) \
-			Smile_Abort_FatalError("Unexpected ParseStatus_NotMatchedAndNoTokensConsumed in " __func__ "()."); \
+			Smile_Abort_FatalError("Unexpected ParseStatus_NotMatchedAndNoTokensConsumed in " __FUNCTION__ "()."); \
 		else \
-			Smile_Abort_FatalError("Unknown ParseStatus value in " __func__ "()."); \
+			Smile_Abort_FatalError("Unknown ParseStatus value in " __FUNCTION__ "()."); \
 	} while (0)
 
 // If a parse error has been raised, log it, or abort (if necessary), resulting in a clean parser.
@@ -101,9 +101,9 @@ Inline TemplateResult TemplateResult_Create(ParseResult parseResult, Int templat
 		if ((__result__).status == ParseStatus_PartialParseWithError) \
 			Parser_AddMessage((__parser__), (__result__).error); \
 		else if ((__result__).status == ParseStatus_NotMatchedAndNoTokensConsumed) \
-			Smile_Abort_FatalError("Unexpected ParseStatus_NotMatchedAndNoTokensConsumed in " __func__ "()."); \
+			Smile_Abort_FatalError("Unexpected ParseStatus_NotMatchedAndNoTokensConsumed in " __FUNCTION__ "()."); \
 		else \
-			Smile_Abort_FatalError("Unknown ParseStatus value in " __func__ "()."); \
+			Smile_Abort_FatalError("Unknown ParseStatus value in " __FUNCTION__ "()."); \
 	} while (0)
 
 //-------------------------------------------------------------------------------------------------
