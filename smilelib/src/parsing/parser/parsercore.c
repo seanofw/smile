@@ -368,7 +368,7 @@ void Parser_ParseCallArgsOpt(Parser parser, SmileList *head, SmileList *tail, In
 
 		// Parse the next expression.
 		parseResult = Parser_ParseOrExpr(parser, modeFlags);
-		if (!IS_PARSE_ERROR(parseResult)) {
+		if (IS_PARSE_ERROR(parseResult)) {
 			HANDLE_PARSE_ERROR(parser, parseResult);
 
 			// Perform simple error-recovery by skipping to the next '{' '}' '[' ']' '(' ')' or '|'.

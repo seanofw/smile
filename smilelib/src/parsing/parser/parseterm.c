@@ -71,8 +71,11 @@ ParseResult Parser_ParseTerm(Parser parser, Int modeFlags, Token firstUnaryToken
 	case TOKEN_LEFTBRACKET:
 		startPosition = Token_GetPosition(token);
 		parseResult = Parser_TryParseSpecialForm(parser, startPosition);
-		if (IS_PARSE_ERROR(parseResult))
-			RETURN_PARSE_ERROR(parseResult);
+		if (parseResult.status != ParseStatus_NotMatchedAndNoTokensConsumed) {
+			if (IS_PARSE_ERROR(parseResult))
+				RETURN_PARSE_ERROR(parseResult);
+			else return parseResult;
+		}
 
 		head = NullList, tail = NullList;
 		Parser_ParseCallArgsOpt(parser, &head, &tail, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);

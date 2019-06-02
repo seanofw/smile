@@ -282,54 +282,52 @@ TemplateResult Parser_ParseRawListItemsOpt(Parser parser, Int modeFlags, SmileLi
 		if (startPosition == NULL) startPosition = lexerPosition;
 
 		// Parse the next expression.
-		itemTemplateKind = TemplateKind_None;
 		templateResult = Parser_ParseRawListDotExpr(parser, modeFlags);
 		if (!IS_PARSE_ERROR(templateResult.parseResult)) {
 
 			expr = templateResult.parseResult.expr;
 			itemTemplateKind = templateResult.templateKind;
 
-			if (expr != NullObject) {
-
-				if (itemTemplateKind > listTemplateKind) {
-					// Uh oh.  The list item is a template form, but this list (so far) is not
-					// yet a template form, or is the wrong kind of template form.  So transform
-					// the list into the right kind of template form, because we can't append
-					// template items to a non-template list.
-					switch (itemTemplateKind) {
-						case TemplateKind_Template:
-							Parser_TransformListIntoTemplate(head, tail, startPosition);
-							break;
-						case TemplateKind_TemplateWithSplicing:
-							if (listTemplateKind == TemplateKind_None)
-								Parser_TransformListIntoSplicedTemplate(head, tail, startPosition);
-							else if (listTemplateKind == TemplateKind_Template)
-								Parser_TransformTemplateIntoSplicedTemplate(head, tail, startPosition);
-							break;
-					}
-					listTemplateKind = itemTemplateKind;
+			if (itemTemplateKind > listTemplateKind) {
+				// Uh oh.  The list item is a template form, but this list (so far) is not
+				// yet a template form, or is the wrong kind of template form.  So transform
+				// the list into the right kind of template form, because we can't append
+				// template items to a non-template list.
+				switch (itemTemplateKind) {
+					case TemplateKind_Template:
+						Parser_TransformListIntoTemplate(head, tail, startPosition);
+						break;
+					case TemplateKind_TemplateWithSplicing:
+						if (listTemplateKind == TemplateKind_None)
+							Parser_TransformListIntoSplicedTemplate(head, tail, startPosition);
+						else if (listTemplateKind == TemplateKind_Template)
+							Parser_TransformTemplateIntoSplicedTemplate(head, tail, startPosition);
+						break;
 				}
-				else if (itemTemplateKind < listTemplateKind) {
-					// This is a templated list, but not a templated item (or not templated enough).
-					// So we need to wrap/quote it before adding it to the list.
-					if (listTemplateKind == TemplateKind_Template && itemTemplateKind == TemplateKind_None) {
-						expr = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol, expr, lexerPosition);
-						itemTemplateKind = TemplateKind_Template;
-					}
-					else if (listTemplateKind == TemplateKind_TemplateWithSplicing && itemTemplateKind == TemplateKind_None) {
-						expr = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol,
-							SmileList_CreateOneWithSource(expr, lexerPosition),
-							lexerPosition
-						);
-						itemTemplateKind = TemplateKind_TemplateWithSplicing;
-					}
-					else if (listTemplateKind == TemplateKind_TemplateWithSplicing && itemTemplateKind == TemplateKind_Template) {
-						expr = Parser_WrapTemplateForSplicing(expr);
-						itemTemplateKind = TemplateKind_TemplateWithSplicing;
-					}
+				listTemplateKind = itemTemplateKind;
+			}
+			else if (itemTemplateKind < listTemplateKind) {
+				// This is a templated list, but not a templated item (or not templated enough).
+				// So we need to wrap/quote it before adding it to the list.
+				if (listTemplateKind == TemplateKind_Template && itemTemplateKind == TemplateKind_None) {
+					expr = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol, expr, lexerPosition);
+					itemTemplateKind = TemplateKind_Template;
 				}
+				else if (listTemplateKind == TemplateKind_TemplateWithSplicing && itemTemplateKind == TemplateKind_None) {
+					expr = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol,
+						SmileList_CreateOneWithSource(expr, lexerPosition),
+						lexerPosition
+					);
+					itemTemplateKind = TemplateKind_TemplateWithSplicing;
+				}
+				else if (listTemplateKind == TemplateKind_TemplateWithSplicing && itemTemplateKind == TemplateKind_Template) {
+					expr = Parser_WrapTemplateForSplicing(expr);
+					itemTemplateKind = TemplateKind_TemplateWithSplicing;
+				}
+			}
 
-				// Add the successfully-parsed expression to the output (if there's something non-null to add).
+			if (templateResult.parseResult.status == ParseStatus_SuccessfulWithResult) {
+				// Add the successfully-parsed expression to the output (if there's something meaningful to add).
 				LIST_APPEND_WITH_SOURCE(*head, *tail, expr, lexerPosition);
 			}
 		}
@@ -390,7 +388,7 @@ TemplateResult Parser_ParseRawListDotExpr(Parser parser, Int modeFlags)
 						SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol, SmileSymbol_Create(symbol), lexerPosition),
 						lexerPosition
 					)),
-					TemplateKind_None);
+					templateResult.templateKind);
 			}
 		}
 		else {
