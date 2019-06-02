@@ -195,7 +195,7 @@ ParseResult Parser_ParseTerm(Parser parser, Int modeFlags, Token firstUnaryToken
 			parseResult = EXPR_RESULT(NullObject);
 		}
 		ParseScope_AddSyntax(parser->currentScope, (SmileSyntax)parseResult.expr);
-		return NULL_RESULT();
+		return EXPR_RESULT(parseResult.expr);
 
 	case TOKEN_LOANWORD_LOANWORD:
 		parseResult = Parser_ParseLoanword(parser, modeFlags);
@@ -207,7 +207,7 @@ ParseResult Parser_ParseTerm(Parser parser, Int modeFlags, Token firstUnaryToken
 			parseResult = EXPR_RESULT(NullObject);
 		}
 		ParseScope_AddLoanword(parser->currentScope, (SmileLoanword)parseResult.expr);
-		return NULL_RESULT();
+		return EXPR_RESULT(parseResult.expr);
 
 	case TOKEN_LOANWORD_CUSTOM:
 		// Lexer doesn't know this loanword, so we have to see if it's in the current loanword table.

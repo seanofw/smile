@@ -184,6 +184,7 @@ SMILE_INTERNAL_FUNC ParseResult Parser_ParseSyntax(Parser parser, Int modeFlags)
 	// parse-time template-evaluation forms is intentionally limited:
 	//
 	//   - n (where n is any nonterminal symbol)
+	//   - Raw numeric constants, strings, and chars/unis
 	//   - [] (i.e., null)
 	//   - [$quote x] (for any x)
 	//   - [List.of x y z ...]
@@ -223,6 +224,9 @@ static Int Parser_VerifyArgumentsAreEvaluableAtParseTime(Parser parser, SmileLis
 /// supported parse-time template-evaluation forms is intentionally very limited:
 ///
 ///   - n (where n is any nonterminal symbol)
+///   - 123 (all numeric constant values)
+///   - "foo" (all string constant values)
+///   - 'x' (all character/uni constant values)
 ///   - [] (i.e., null)
 ///   - [$quote x] (for any x)
 ///   - [[$dot List cons] x y]
@@ -236,8 +240,29 @@ Bool Parser_VerifySyntaxTemplateIsEvaluableAtParseTime(Parser parser, SmileObjec
 	SmileList list;
 
 	switch (SMILE_KIND(expr)) {
-		case SMILE_KIND_SYMBOL:
+		case SMILE_KIND_BOOL:
+		case SMILE_KIND_CHAR:
+		case SMILE_KIND_UNI:
+		case SMILE_KIND_BYTE:
+		case SMILE_KIND_INTEGER16:
+		case SMILE_KIND_INTEGER32:
+		case SMILE_KIND_INTEGER64:
+		case SMILE_KIND_INTEGER128:
+		case SMILE_KIND_REAL32:
+		case SMILE_KIND_REAL64:
+		case SMILE_KIND_REAL128:
+		case SMILE_KIND_FLOAT32:
+		case SMILE_KIND_FLOAT64:
+		case SMILE_KIND_FLOAT128:
+		case SMILE_KIND_BIGINT:
+		case SMILE_KIND_BIGREAL:
+		case SMILE_KIND_BIGFLOAT:
+			return True;
+
 		case SMILE_KIND_NULL:
+			return True;
+
+		case SMILE_KIND_SYMBOL:
 			return True;
 
 		case SMILE_KIND_LIST:

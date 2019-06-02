@@ -247,6 +247,25 @@ SmileObject Parser_RecursivelyApplyTemplate(Parser parser, SmileObject expr, Int
 
 	switch (SMILE_KIND(expr)) {
 
+		case SMILE_KIND_BOOL:
+		case SMILE_KIND_CHAR:
+		case SMILE_KIND_UNI:
+		case SMILE_KIND_BYTE:
+		case SMILE_KIND_INTEGER16:
+		case SMILE_KIND_INTEGER32:
+		case SMILE_KIND_INTEGER64:
+		case SMILE_KIND_INTEGER128:
+		case SMILE_KIND_REAL32:
+		case SMILE_KIND_REAL64:
+		case SMILE_KIND_REAL128:
+		case SMILE_KIND_FLOAT32:
+		case SMILE_KIND_FLOAT64:
+		case SMILE_KIND_FLOAT128:
+		case SMILE_KIND_BIGINT:
+		case SMILE_KIND_BIGREAL:
+		case SMILE_KIND_BIGFLOAT:
+			return expr;
+
 		case SMILE_KIND_SYMBOL:
 			{
 				SmileSymbol symbol = (SmileSymbol)expr;
