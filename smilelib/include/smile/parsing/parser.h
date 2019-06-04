@@ -36,6 +36,37 @@
 //  Public type declarations
 
 /// <summary>
+/// Return flags from the parser's various parse functions.
+/// </summary>
+typedef enum {
+
+	// At least one token has been consumed, but an error was generated.  Error-recovery may be required.
+	ParseStatus_PartialParseWithError = -1,
+
+	// Zero tokens have been consumed, and no errors have been generated.
+	ParseStatus_NotMatchedAndNoTokensConsumed = 0,
+
+	// At least one token has been consumed, an error was generated, error-recovery was performed, and no result was generated.
+	ParseStatus_ErroredButRecovered = 1,
+
+	// At least one token has been consumed, and no errors have been generated, but this type of production has no result.
+	ParseStatus_SuccessfulWithNoResult = 2,
+
+	// At least one token has been consumed, and no errors have been generated.
+	ParseStatus_SuccessfulWithResult = 3,
+
+} ParseStatus;
+
+/// <summary>
+/// The shape returned by each parse function (on the stack or in registers, not dynamically-allocated).
+/// </summary>
+typedef struct {
+	ParseStatus status;
+	SmileObject expr;
+	ParseMessage error;
+} ParseResult;
+
+/// <summary>
 /// A function that can load "include files" from disk (or wherever).
 /// </summary>
 typedef ParseError (*ParserIncludeLoader)(const String path, const LexerPosition position, String *result);
@@ -66,10 +97,10 @@ SMILE_API_FUNC SmileObject Parser_ParseWithDetails(Parser parser, Lexer lexer, P
 SMILE_API_FUNC SmileObject Parser_ParseFromC(Parser parser, ParseScope scope, const char *text);
 SMILE_API_FUNC SmileObject Parser_ParseString(Parser parser, ParseScope scope, String text);
 SMILE_API_FUNC SmileObject Parser_ParseConstant(Parser parser, Lexer lexer, ParseScope scope);
-SMILE_API_FUNC ParseError Parser_ParseOneExpressionFromText(Parser parser, SmileObject *expr, String string, LexerPosition startPosition);
+SMILE_API_FUNC ParseResult Parser_ParseOneExpressionFromText(Parser parser, String string, LexerPosition startPosition);
 
 SMILE_API_FUNC void Parser_ParseExprsOpt(Parser parser, SmileList *head, SmileList *tail, Int modeFlags);
-SMILE_API_FUNC ParseError Parser_ParseExpr(Parser parser, SmileObject *expr, Int modeFlags);
+SMILE_API_FUNC ParseResult Parser_ParseExpr(Parser parser, Int modeFlags);
 
 SMILE_API_FUNC void Parser_AddMessage(Parser parser, ParseMessage message);
 SMILE_API_FUNC void Parser_AddFatalError(Parser parser, LexerPosition position, const char *message, ...);
@@ -92,6 +123,15 @@ SMILE_API_FUNC ParseError Parser_DefaultIncludeLoader(const String path, const L
 
 //-------------------------------------------------------------------------------------------------
 //  Inline parts of the implementation
+
+Inline ParseResult ParseResult_Create(ParseStatus status, SmileObject expr, ParseMessage error)
+{
+	ParseResult parseResult;
+	parseResult.status = status;
+	parseResult.expr = expr;
+	parseResult.error = error;
+	return parseResult;
+}
 
 Inline SmileObject Parser_Parse(Parser parser, Lexer lexer, ParseScope scope)
 {

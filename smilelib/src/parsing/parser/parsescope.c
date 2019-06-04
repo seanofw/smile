@@ -39,7 +39,7 @@ static const char *ParseDecl_Names[] = {
 	"a keyword",
 	"a postcondition result",
 	"a till-loop name",
-	"an included-module value",
+	"a const value included from another module",
 };
 
 /// <summary>
@@ -261,28 +261,32 @@ ParseError ParseScope_DeclareHere(ParseScope scope, Symbol symbol, Int kind, Lex
 	ParseDecl previousDecl;
 	ParseError error;
 	Int32 declIndex;
+	ParseScope foundScope;
 
 	// First, see if we already declared this.
-	if ((previousDecl = ParseScope_FindDeclaration(scope, symbol)) != NULL) {
-	
-		// Already declared.  This isn't necessarily an error, but it depends on what
-		// kind of thing is being declared and how it relates to what was already declared.
-		if ((previousDecl->declKind != kind && previousDecl->declKind >= PARSEDECL_UNDECLARED)
-			|| previousDecl->declKind >= PARSEDECL_CONST) {
+	if ((previousDecl = ParseScope_FindDeclarationAndScope(scope, symbol, &foundScope)) != NULL) {
+		if (foundScope == scope) {
+			// Already declared.  This isn't necessarily an error, but it depends on what
+			// kind of thing is being declared and how it relates to what was already declared.
+			if ((previousDecl->declKind != kind && previousDecl->declKind >= PARSEDECL_UNDECLARED)
+				|| previousDecl->declKind >= PARSEDECL_CONST) {
 
-			if (decl != NULL)
-				*decl = NULL;
-			error = ParseMessage_Create(PARSEMESSAGE_ERROR, position,
-				String_Format("Cannot redeclare \"%S\" as %s; it is already declared as %s, on line \"%d\".",
-				SymbolTable_GetName(Smile_SymbolTable, symbol),
-				ParseDecl_Names[kind],
-				ParseDecl_Names[previousDecl->declKind],
-				previousDecl->position != NULL ? previousDecl->position->line : 0));
-			return error;
+				if (decl != NULL)
+					*decl = NULL;
+				error = ParseMessage_Create(PARSEMESSAGE_ERROR, position,
+					String_Format("Cannot redeclare \"%S\" as %s; it is already declared as %s%s%S.",
+						SymbolTable_GetName(Smile_SymbolTable, symbol),
+						ParseDecl_Names[kind],
+						ParseDecl_Names[previousDecl->declKind],
+						previousDecl->position != NULL ? ", on line " : "",
+						previousDecl->position != NULL ? String_Format("%ld", (Int64)previousDecl->position->line) : String_Empty));
+				return error;
+			}
 		}
 	}
 
-	// It's not already declared, so are we allowed to declare a new variable in this scope?  If not, bail.
+	// It's not already declared, or the previous declaration is in another scope,
+	// so are we allowed to declare a new variable in this scope?  If not, bail.
 	if (scope->kind == PARSESCOPE_EXPLICIT) {
 		if (decl != NULL)
 			*decl = NULL;
@@ -320,7 +324,7 @@ ParseError ParseScope_DeclareHere(ParseScope scope, Symbol symbol, Int kind, Lex
 }
 
 // scope-vars ::= . names
-static ParseError Parser_ParseNameSublist(Parser parser, SmileList *result)
+static ParseResult Parser_ParseNameSublist(Parser parser)
 {
 	SmileList head = NullList, tail = NullList;
 	Token token;
@@ -339,8 +343,7 @@ static ParseError Parser_ParseNameSublist(Parser parser, SmileList *result)
 			case TOKEN_RIGHTBRACKET:
 			case TOKEN_RIGHTPARENTHESIS:
 				Lexer_Unget(parser->lexer);
-				*result = head;
-				return NULL;
+				return EXPR_RESULT(head);
 
 			case TOKEN_ALPHANAME:
 			case TOKEN_UNKNOWNALPHANAME:
@@ -359,7 +362,7 @@ static ParseError Parser_ParseNameSublist(Parser parser, SmileList *result)
 }
 
 // scope-vars ::= . names
-static ParseError Parser_ParseClassicScopeVariableNames(Parser parser, SmileList *result)
+static ParseResult Parser_ParseClassicScopeVariableNames(Parser parser)
 {
 	SmileList head = NullList, tail = NullList;
 	Token token;
@@ -377,19 +380,26 @@ static ParseError Parser_ParseClassicScopeVariableNames(Parser parser, SmileList
 			case TOKEN_RIGHTBRACKET:
 			case TOKEN_RIGHTPARENTHESIS:
 				Lexer_Unget(parser->lexer);
-				*result = head;
-				return NULL;
+				return EXPR_RESULT(head);
 
 			case TOKEN_LEFTBRACKET:
 				{
 					LexerPosition lexerPosition = Token_GetPosition(token);
 					SmileList sublist;
-					error = Parser_ParseNameSublist(parser, &sublist);
-					if (error != NULL) return error;
-					error = Parser_ExpectRightBracket(parser, (SmileObject *)&sublist, NULL, "$scope names", lexerPosition);
-					if (error != NULL) return error;
+					ParseResult parseResult;
+
+					parseResult = Parser_ParseNameSublist(parser);
+					if (IS_PARSE_ERROR(parseResult))
+						return parseResult;
+					sublist = (SmileList)parseResult.expr;
+
+					parseResult = Parser_ExpectRightBracket(parser, NULL, "$scope names", lexerPosition);
+					if (IS_PARSE_ERROR(parseResult))
+						return parseResult;
+
 					if (SMILE_KIND(sublist) == SMILE_KIND_NULL)
 						goto missingName;
+
 					LIST_APPEND_WITH_SOURCE(head, tail, sublist, lexerPosition);
 				}
 				break;
@@ -412,31 +422,36 @@ static ParseError Parser_ParseClassicScopeVariableNames(Parser parser, SmileList
 }
 
 // term ::= '[' '$scope' . scope-vars exprs-opt ']'
-ParseError Parser_ParseClassicScope(Parser parser, SmileObject *result, LexerPosition startPosition)
+ParseResult Parser_ParseClassicScope(Parser parser, LexerPosition startPosition)
 {
 	SmileList variableNames;
 	SmileList head, tail;
 	SmileList temp;
-	ParseError error;
 	ParseDecl decl;
 	SmileSymbol smileSymbol;
+	ParseResult parseResult;
+	SmileObject expr;
 
 	// Make sure there is a '[' to start the name list.
-	if ((error = Parser_ExpectLeftBracket(parser, result, NULL, "$scope", startPosition)) != NULL)
-		return error;
+	parseResult = Parser_ExpectLeftBracket(parser, NULL, "$scope", startPosition);
+	if (IS_PARSE_ERROR(parseResult))
+		return parseResult;
 
 	Parser_BeginScope(parser, PARSESCOPE_SCOPEDECL);
 
 	// Parse the names.
-	if ((error = Parser_ParseClassicScopeVariableNames(parser, &variableNames)) != NULL) {
-		Parser_AddMessage(parser, error);
+	parseResult = Parser_ParseClassicScopeVariableNames(parser);
+	if (IS_PARSE_ERROR(parseResult)) {
+		HANDLE_PARSE_ERROR(parser, parseResult);
 		variableNames = NullList;
 	}
+	else variableNames = (SmileList)parseResult.expr;
 
 	// Make sure there is a ']' to end the variable-names list.
-	if ((error = Parser_ExpectRightBracket(parser, result, NULL, "$scope variables", startPosition)) != NULL) {
+	parseResult = Parser_ExpectRightBracket(parser, NULL, "$scope variables", startPosition);
+	if (IS_PARSE_ERROR(parseResult)) {
 		Parser_EndScope(parser, False);
-		return error;
+		return parseResult;
 	}
 
 	// Spin over the variable-names list and declare each one in the new parsing scope.
@@ -457,7 +472,7 @@ ParseError Parser_ParseClassicScope(Parser parser, SmileObject *result, LexerPos
 					else if (modifierSymbol->symbol == Smile_KnownSymbols.set_once)
 						parseDeclKind = PARSEDECL_CONST;
 					else {
-						error = ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(sublist, getSourceLocation), String_FromC("Unknown modifier for [$scope] variable."));
+						ParseError error = ParseMessage_Create(PARSEMESSAGE_ERROR, SMILE_VCALL(sublist, getSourceLocation), String_FromC("Unknown modifier for [$scope] variable."));
 						Parser_AddMessage(parser, error);
 					}
 				}
@@ -478,16 +493,17 @@ ParseError Parser_ParseClassicScope(Parser parser, SmileObject *result, LexerPos
 	Parser_EndScope(parser, False);
 
 	// Make sure there is a ']' to end the scope.
-	if ((error = Parser_ExpectRightBracket(parser, result, NULL, "$scope", startPosition)) != NULL)
-		return error;
+	parseResult = Parser_ExpectRightBracket(parser, NULL, "$scope", startPosition);
+	if (IS_PARSE_ERROR(parseResult))
+		return parseResult;
 
 	// Construct the resulting [$scope names exprs] form.
-	*result =
+	expr =
 		(SmileObject)SmileList_ConsWithSource((SmileObject)SmileSymbol_Create(SMILE_SPECIAL_SYMBOL__SCOPE),
 			(SmileObject)SmileList_ConsWithSource((SmileObject)variableNames,
 				(SmileObject)head,
 			startPosition),
 		startPosition);
 
-	return NULL;
+	return EXPR_RESULT(expr);
 }

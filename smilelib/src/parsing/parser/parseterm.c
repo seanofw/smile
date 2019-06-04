@@ -34,7 +34,7 @@
 #include <smile/parsing/internal/parsescope.h>
 #include <smile/regex.h>
 
-static Bool Parser_TryParseSpecialForm(Parser parser, LexerPosition startPosition, SmileObject *result, ParseError *error);
+static ParseResult Parser_TryParseSpecialForm(Parser parser, LexerPosition startPosition);
 
 //-------------------------------------------------------------------------------------------------
 // Terms
@@ -54,112 +54,99 @@ static Bool Parser_TryParseSpecialForm(Parser parser, LexerPosition startPositio
 //         | . REAL
 //         | . LOANWORD_SYNTAX
 //         | . LOANWORD_REGEX
-ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, Token firstUnaryTokenForErrorReporting)
+ParseResult Parser_ParseTerm(Parser parser, Int modeFlags, Token firstUnaryTokenForErrorReporting)
 {
 	ParseDecl parseDecl;
 	Token token = Parser_NextTokenWithDeclaration(parser, &parseDecl);
 	LexerPosition startPosition;
-	ParseError error;
+	ParseResult parseResult;
 	SmileList head, tail;
 
 	switch (token->kind) {
 
 	case TOKEN_LEFTPARENTHESIS:
 		Lexer_Unget(parser->lexer);
-		return Parser_ParseParentheses(parser, result, modeFlags);
+		return Parser_ParseParentheses(parser, modeFlags);
 
 	case TOKEN_LEFTBRACKET:
 		startPosition = Token_GetPosition(token);
-		if (Parser_TryParseSpecialForm(parser, startPosition, result, &error))
-			return error;
+		parseResult = Parser_TryParseSpecialForm(parser, startPosition);
+		if (parseResult.status != ParseStatus_NotMatchedAndNoTokensConsumed) {
+			if (IS_PARSE_ERROR(parseResult))
+				RETURN_PARSE_ERROR(parseResult);
+			else return parseResult;
+		}
 
 		head = NullList, tail = NullList;
 		Parser_ParseCallArgsOpt(parser, &head, &tail, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
 
-		if ((error = Parser_ExpectRightBracket(parser, result, firstUnaryTokenForErrorReporting, "list", startPosition)) != NULL)
-			return error;
+		parseResult = Parser_ExpectRightBracket(parser, firstUnaryTokenForErrorReporting, "list", startPosition);
+		if (IS_PARSE_ERROR(parseResult))
+			RETURN_PARSE_ERROR(parseResult);
 
-		*result = (SmileObject)head;
-		return NULL;
+		return EXPR_RESULT(head);
 
 	case TOKEN_BAR:
-		error = Parser_ParseFunc(parser, result, modeFlags);
-		return error;
+		return Parser_ParseFunc(parser, modeFlags);
 
 	case TOKEN_BACKTICK:
-		error = Parser_ParseQuoteBody(parser, result, modeFlags, Token_GetPosition(token));
-		return error;
+		return Parser_ParseQuoteBody(parser, modeFlags, Token_GetPosition(token));
 
 	case TOKEN_LEFTBRACE:
 		Lexer_Unget(parser->lexer);
-		error = Parser_ParseScope(parser, result);
-		return error;
+		return Parser_ParseScope(parser);
 
 	case TOKEN_ALPHANAME:
 	case TOKEN_PUNCTNAME:
 		if (parseDecl->declKind == PARSEDECL_KEYWORD) {
-			error = ParseMessage_Create(PARSEMESSAGE_ERROR,
+			return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR,
 				firstUnaryTokenForErrorReporting != NULL ? Token_GetPosition(firstUnaryTokenForErrorReporting) : Token_GetPosition(token),
-				String_Format("\"%S\" is a keyword and cannot be used as a variable or operator", token->text));
-			return error;
+				String_Format("\"%S\" is a keyword and cannot be used as a variable or operator", token->text)));
 		}
-		*result = (SmileObject)SmileSymbol_Create(token->data.symbol);
-		return NULL;
+		return EXPR_RESULT(SmileSymbol_Create(token->data.symbol));
 
 	case TOKEN_RAWSTRING:
-		*result = (SmileObject)token->text;
-		return NULL;
+		return EXPR_RESULT(token->text);
 
 	case TOKEN_DYNSTRING:
-		return Parser_ParseDynamicString(parser, result, token->text, Token_GetPosition(token));
+		return Parser_ParseDynamicString(parser, token->text, Token_GetPosition(token));
 
 	case TOKEN_CHAR:
-		*result = (SmileObject)SmileChar_Create(token->data.ch);
-		return NULL;
+		return EXPR_RESULT(SmileChar_Create(token->data.ch));
 
 	case TOKEN_UNI:
-		*result = (SmileObject)SmileUni_Create(token->data.uni);
-		return NULL;
+		return EXPR_RESULT(SmileUni_Create(token->data.uni));
 
 	case TOKEN_BYTE:
-		*result = (SmileObject)SmileByte_Create(token->data.byte);
-		return NULL;
+		return EXPR_RESULT(SmileByte_Create(token->data.byte));
 
 	case TOKEN_INTEGER16:
-		*result = (SmileObject)SmileInteger16_Create(token->data.int16);
-		return NULL;
+		return EXPR_RESULT(SmileInteger16_Create(token->data.int16));
 
 	case TOKEN_INTEGER32:
-		*result = (SmileObject)SmileInteger32_Create(token->data.int32);
-		return NULL;
+		return EXPR_RESULT(SmileInteger32_Create(token->data.int32));
 
 	case TOKEN_INTEGER64:
-		*result = (SmileObject)SmileInteger64_Create(token->data.int64);
-		return NULL;
+		return EXPR_RESULT(SmileInteger64_Create(token->data.int64));
 
 	case TOKEN_REAL64:
-		*result = (SmileObject)SmileReal64_Create(token->data.real64);
-		return NULL;
+		return EXPR_RESULT(SmileReal64_Create(token->data.real64));
 
 	case TOKEN_REAL32:
-		*result = (SmileObject)SmileReal32_Create(token->data.real32);
-		return NULL;
+		return EXPR_RESULT(SmileReal32_Create(token->data.real32));
 
 	case TOKEN_FLOAT64:
-		*result = (SmileObject)SmileFloat64_Create(token->data.float64);
-		return NULL;
+		return EXPR_RESULT(SmileFloat64_Create(token->data.float64));
 
 	case TOKEN_FLOAT32:
-		*result = (SmileObject)SmileFloat32_Create(token->data.float32);
-		return NULL;
+		return EXPR_RESULT(SmileFloat32_Create(token->data.float32));
 
 	case TOKEN_UNKNOWNALPHANAME:
 	case TOKEN_UNKNOWNPUNCTNAME:
 		// If we get an operator name instead of a variable name, we can't use it as a term.
-		error = ParseMessage_Create(PARSEMESSAGE_ERROR,
+		return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR,
 			firstUnaryTokenForErrorReporting != NULL ? Token_GetPosition(firstUnaryTokenForErrorReporting) : Token_GetPosition(token),
-			String_Format("\"%S\" is not a known variable name", token->text));
-		return error;
+			String_Format("\"%S\" is not a known variable name", token->text)));
 
 	case TOKEN_LOANWORD_REGEX:
 		{
@@ -194,85 +181,80 @@ ParseError Parser_ParseTerm(Parser parser, SmileObject *result, Int modeFlags, T
 						position),
 					position);
 
-			*result = (SmileObject)creationCall;
+			return EXPR_RESULT(creationCall);
 		}
-		return NULL;
 
 	case TOKEN_LOANWORD_SYNTAX:
 		// Parse the new syntax rule.
-		error = Parser_ParseSyntax(parser, result, modeFlags);
-		if (error != NULL)
-			return error;
+		parseResult = Parser_ParseSyntax(parser, modeFlags);
+		if (IS_PARSE_ERROR(parseResult))
+			RETURN_PARSE_ERROR(parseResult);
 	
 		// Add the syntax rule to the table of syntax rules for the current scope.
-		if (!ParserSyntaxTable_AddRule(parser, &parser->currentScope->syntaxTable, (SmileSyntax)*result)) {
-			*result = NullObject;
+		if (!ParserSyntaxTable_AddRule(parser, &parser->currentScope->syntaxTable, (SmileSyntax)parseResult.expr)) {
+			parseResult = EXPR_RESULT(NullObject);
 		}
-		ParseScope_AddSyntax(parser->currentScope, (SmileSyntax)*result);
-		return NULL;
+		ParseScope_AddSyntax(parser->currentScope, (SmileSyntax)parseResult.expr);
+		return EXPR_RESULT(parseResult.expr);
 
 	case TOKEN_LOANWORD_LOANWORD:
-		error = Parser_ParseLoanword(parser, result, modeFlags);
-		if (error != NULL)
-			return error;
+		parseResult = Parser_ParseLoanword(parser, modeFlags);
+		if (IS_PARSE_ERROR(parseResult))
+			RETURN_PARSE_ERROR(parseResult);
 
 		// Add the loanword rule to the table of loanword rules for the current scope.
-		if (!ParserLoanwordTable_AddRule(parser, &parser->currentScope->loanwordTable, (SmileLoanword)*result)) {
-			*result = NullObject;
+		if (!ParserLoanwordTable_AddRule(parser, &parser->currentScope->loanwordTable, (SmileLoanword)parseResult.expr)) {
+			parseResult = EXPR_RESULT(NullObject);
 		}
-		ParseScope_AddLoanword(parser->currentScope, (SmileLoanword)*result);
-		return NULL;
+		ParseScope_AddLoanword(parser->currentScope, (SmileLoanword)parseResult.expr);
+		return EXPR_RESULT(parseResult.expr);
 
 	case TOKEN_LOANWORD_CUSTOM:
 		// Lexer doesn't know this loanword, so we have to see if it's in the current loanword table.
 		// If so, we use its regex to consume any subsequent characters it requires, and then transform
 		// the regex match into a template substitution.
-		return Parser_ApplyCustomLoanword(parser, token, result);
+		return Parser_ApplyCustomLoanword(parser, token);
 
 	default:
 		// We got an unknown token that can't be turned into a term.  So we're going to generate
 		// an error message, but we do our best to specialize that message according to the most
 		// common mistakes people make.
 		if (firstUnaryTokenForErrorReporting != NULL) {
-			error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(firstUnaryTokenForErrorReporting),
-				String_Format("\"%S\" is not a known variable name", firstUnaryTokenForErrorReporting->text));
+			return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(firstUnaryTokenForErrorReporting),
+				String_Format("\"%S\" is not a known variable name", firstUnaryTokenForErrorReporting->text)));
 		}
 		else if (token->kind == TOKEN_SEMICOLON) {
-			error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
-				String_FromC("Expected a variable or number or other legal expression term, not a semicolon (remember, semicolons don't terminate statements in Smile!)"));
+			return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
+				String_FromC("Expected a variable or number or other legal expression term, not a semicolon (remember, semicolons don't terminate statements in Smile!)")));
 		}
 		else if (token->kind == TOKEN_COMMA) {
-			error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
-				String_FromC("Expected a variable or number or other legal expression term, not a comma (did you mistakenly put commas in a list?)"));
+			return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
+				String_FromC("Expected a variable or number or other legal expression term, not a comma (did you mistakenly put commas in a list?)")));
 		}
 		else if (token->kind == TOKEN_ERROR) {
-			error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), token->text);
+			return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), token->text));
 		}
 		else {
-			error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
-				String_Format("Expected a variable or number or other legal expression term, not \"%S\".", TokenKind_ToString(token->kind)));
+			return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
+				String_Format("Expected a variable or number or other legal expression term, not \"%S\".", TokenKind_ToString(token->kind))));
 		}
-		return error;
 	}
 }
 
 /// <summary>
 /// Parse exactly one name (any name).
 /// </summary>
-ParseError Parser_ParseAnyName(Parser parser, SmileObject *expr)
+ParseResult Parser_ParseAnyName(Parser parser)
 {
 	Token token = Parser_NextToken(parser);
-	ParseError error;
 
 	if (token->kind == TOKEN_ALPHANAME || token->kind == TOKEN_PUNCTNAME
 		|| token->kind == TOKEN_UNKNOWNALPHANAME || token->kind == TOKEN_UNKNOWNPUNCTNAME) {
-		*expr =(SmileObject)SmileSymbol_Create(token->data.symbol);
-		return NULL;
+		return EXPR_RESULT(SmileSymbol_Create(token->data.symbol));
 	}
 
-	error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
-		String_Format("Expected a name, not \"%S\".", TokenKind_ToString(token->kind)));
-	return error;
+	return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
+		String_Format("Expected a name, not \"%S\".", TokenKind_ToString(token->kind))));
 }
 
 /// <summary>
@@ -305,7 +287,7 @@ ParseError Parser_ParseAnyName(Parser parser, SmileObject *expr)
 /// that it simply prohibits [$set] or '=' to have a 'const' variable as its lvalue:
 /// Once everything has been compiled to Lisp forms, there's no such thing as 'const'.
 /// </remarks>
-static Bool Parser_TryParseSpecialForm(Parser parser, LexerPosition startPosition, SmileObject *result, ParseError *error)
+static ParseResult Parser_TryParseSpecialForm(Parser parser, LexerPosition startPosition)
 {
 	Token token;
 	if ((token = Parser_NextToken(parser))->kind == TOKEN_ALPHANAME) {
@@ -313,67 +295,57 @@ static Bool Parser_TryParseSpecialForm(Parser parser, LexerPosition startPositio
 		switch (token->data.symbol) {
 
 			case SMILE_SPECIAL_SYMBOL__QUOTE:
-				*error = Parser_ParseClassicQuote(parser, result, startPosition);
-				return True;
+				return Parser_ParseClassicQuote(parser, startPosition);
 			
 			case SMILE_SPECIAL_SYMBOL__SCOPE:
-				*error = Parser_ParseClassicScope(parser, result, startPosition);
-				return True;
+				return Parser_ParseClassicScope(parser, startPosition);
 			
 			case SMILE_SPECIAL_SYMBOL__FN:
-				*error = Parser_ParseClassicFn(parser, result, startPosition);
-				return True;
+				return Parser_ParseClassicFn(parser, startPosition);
 			
 			case SMILE_SPECIAL_SYMBOL__TILL:
-				*error = Parser_ParseClassicTill(parser, result, startPosition);
-				return True;
+				return Parser_ParseClassicTill(parser, startPosition);
 			
 			case SMILE_SPECIAL_SYMBOL__NEW:
-				*error = Parser_ParseClassicNew(parser, result, startPosition);
-				return True;
+				return Parser_ParseClassicNew(parser, startPosition);
 			
 			case SMILE_SPECIAL_SYMBOL__SET:
-				*error = Parser_ParseClassicSet(parser, result, startPosition);
-				return True;
+				return Parser_ParseClassicSet(parser, startPosition);
 		}
 	}
 
 	Lexer_Unget(parser->lexer);
-	return False;
+	return NOMATCH_RESULT();
 }
 
-ParseError Parser_ExpectLeftBracket(Parser parser, SmileObject *result, Token firstUnaryTokenForErrorReporting, const char *name, LexerPosition startPosition)
+ParseResult Parser_ExpectLeftBracket(Parser parser, Token firstUnaryTokenForErrorReporting, const char *name, LexerPosition startPosition)
 {
-	ParseError error;
+	ParseResult parseResult;
 
 	if (!Parser_HasLookahead(parser, TOKEN_LEFTBRACKET)) {
-		error = ParseMessage_Create(PARSEMESSAGE_ERROR,
+		parseResult = ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR,
 			firstUnaryTokenForErrorReporting != NULL ? Token_GetPosition(firstUnaryTokenForErrorReporting) : startPosition,
-			String_Format("Missing '[' in %s starting on line %d.", name, startPosition->line));
+			String_Format("Missing '[' in %s starting on line %d.", name, startPosition->line)));
 		Parser_Recover(parser, Parser_RightBracesBracketsParentheses_Recovery, Parser_RightBracesBracketsParentheses_Count);
-		*result = NullObject;
-		return error;
+		return parseResult;
 	}
 	Parser_NextToken(parser);
 
-	return NULL;
+	return NULL_RESULT();
 }
 
-ParseError Parser_ExpectRightBracket(Parser parser, SmileObject *result, Token firstUnaryTokenForErrorReporting, const char *name, LexerPosition startPosition)
+ParseResult Parser_ExpectRightBracket(Parser parser, Token firstUnaryTokenForErrorReporting, const char *name, LexerPosition startPosition)
 {
-	ParseError error;
-
 	UNUSED(firstUnaryTokenForErrorReporting);
 
 	if (!Parser_HasLookahead(parser, TOKEN_RIGHTBRACKET)) {
 		LexerPosition lexerPosition = Token_GetPosition(parser->lexer->token);
-		error = ParseMessage_Create(PARSEMESSAGE_ERROR, lexerPosition,
-			String_Format("Missing ']' in %s starting on line %d.", name, startPosition->line));
+		ParseResult parseResult = ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, lexerPosition,
+			String_Format("Missing ']' in %s starting on line %d.", name, startPosition->line)));
 		Parser_Recover(parser, Parser_RightBracesBracketsParentheses_Recovery, Parser_RightBracesBracketsParentheses_Count);
-		*result = NullObject;
-		return error;
+		return parseResult;
 	}
 	Parser_NextToken(parser);
 
-	return NULL;
+	return NULL_RESULT();
 }

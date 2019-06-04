@@ -65,7 +65,7 @@ static Bool DoesStringEndWithAlphabeticExtension(String str)
 //     | LOANWORD_SYNTAX
 //     | LOANWORD_ALL
 //     | include_names COMMA anyname
-ParseError Parser_ParseInclude(Parser parser, SmileObject *expr)
+ParseResult Parser_ParseInclude(Parser parser)
 {
 	Int tokenKind;
 	String filename;
@@ -79,12 +79,10 @@ ParseError Parser_ParseInclude(Parser parser, SmileObject *expr)
 	SmileList resultHead, resultTail;
 	SmileObject setExpr;
 
-	*expr = NullObject;
-
 	if ((tokenKind = Lexer_Next(parser->lexer)) != TOKEN_DYNSTRING
 		&& tokenKind != TOKEN_RAWSTRING) {
-		return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
-			String_FromC("#include must be followed by a string naming a source file or a package"));
+		return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
+			String_FromC("#include must be followed by a string naming a source file or a package")));
 	}
 
 	position = Token_GetPosition(parser->lexer->token);
@@ -110,14 +108,14 @@ ParseError Parser_ParseInclude(Parser parser, SmileObject *expr)
 
 	// If we failed, let the caller deal with it.
 	if (!moduleInfo->loadedSuccessfully) {
-		return ParseMessage_Create(PARSEMESSAGE_ERROR, position, String_Format("Loading of module \"%S\" failed.", filename));
+		return ERROR_RESULT(
+			ParseMessage_Create(PARSEMESSAGE_ERROR, position, String_Format("Loading of module \"%S\" failed.", filename)));
 	}
 
 	// See if they want only a partial import.
 	if (Lexer_Next(parser->lexer) != TOKEN_COLON) {
 		Lexer_Unget(parser->lexer);
-		*expr = Parser_ExposeAll(parser, parser->currentScope, moduleInfo, position);
-		return NULL;
+		return EXPR_RESULT(Parser_ExposeAll(parser, parser->currentScope, moduleInfo, position));
 	}
 
 	head = tail = NullList;
@@ -133,7 +131,7 @@ ParseError Parser_ParseInclude(Parser parser, SmileObject *expr)
 			// Parse the next include name.
 			error = Parser_ParseIncludeName(parser, &oldName, &newName);
 			if (error != NULL)
-				return error;
+				return ERROR_RESULT(error);
 
 			// Expose it in the current scope.
 			setExpr = Parser_ExposeOne(parser, parser->currentScope, moduleInfo, oldName, newName);
@@ -170,8 +168,7 @@ ParseError Parser_ParseInclude(Parser parser, SmileObject *expr)
 	head = SmileList_Cons((SmileObject)Smile_KnownObjects._prognSymbol, (SmileObject)head);
 
 	// Return the fully-executable expression.
-	*expr = (SmileObject)head;
-	return NULL;
+	return EXPR_RESULT(head);
 }
 
 static ParseError Parser_ParseIncludeName(Parser parser, Symbol *oldName, Symbol *newName)

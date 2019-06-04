@@ -404,4 +404,162 @@ START_TEST(DeclaringKeywordsChangesParsingBehavior)
 }
 END_TEST
 
+//-------------------------------------------------------------------------------------------------
+// Speculative syntax parsing tests
+
+START_TEST(CanCollectExprStarSequences)
+{
+	Lexer lexer = SetupLexer(
+		"#syntax STMT: [foo [EXPR* exprs] { }] => 123\n"
+		"4 + 5\n"
+		"foo 3 1 4 1 5 9 { }\n"
+		"6 + 7\n"
+	);
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = (SmileList)Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(RecursiveEquals(LIST_FIRST(result), SimpleParse("$progn")));
+	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(4 . +) 5]")));
+	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("123")));
+	ASSERT(RecursiveEquals(LIST_FIFTH(result), SimpleParse("[(6 . +) 7]")));
+}
+END_TEST
+
+START_TEST(CanCollectEmptyExprStarSequences)
+{
+	Lexer lexer = SetupLexer(
+		"#syntax STMT: [foo [EXPR* exprs] { }] => 123\n"
+		"4 + 5\n"
+		"foo { }\n"
+		"6 + 7\n"
+	);
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = (SmileList)Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(RecursiveEquals(LIST_FIRST(result), SimpleParse("$progn")));
+	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(4 . +) 5]")));
+	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("123")));
+	ASSERT(RecursiveEquals(LIST_FIFTH(result), SimpleParse("[(6 . +) 7]")));
+}
+END_TEST
+
+START_TEST(CanCollectOneExprStarSequences)
+{
+	Lexer lexer = SetupLexer(
+		"#syntax STMT: [foo [EXPR* exprs] { }] => 123\n"
+		"4 + 5\n"
+		"foo 3 { }\n"
+		"6 + 7\n"
+	);
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = (SmileList)Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(RecursiveEquals(LIST_FIRST(result), SimpleParse("$progn")));
+	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(4 . +) 5]")));
+	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("123")));
+	ASSERT(RecursiveEquals(LIST_FIFTH(result), SimpleParse("[(6 . +) 7]")));
+}
+END_TEST
+
+START_TEST(CanCollectExprPlusSequences)
+{
+	Lexer lexer = SetupLexer(
+		"#syntax STMT: [foo [EXPR+ exprs] { }] => 123\n"
+		"4 + 5\n"
+		"foo 3 1 4 1 5 9 { }\n"
+		"6 + 7\n"
+	);
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = (SmileList)Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(RecursiveEquals(LIST_FIRST(result), SimpleParse("$progn")));
+	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(4 . +) 5]")));
+	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("123")));
+	ASSERT(RecursiveEquals(LIST_FIFTH(result), SimpleParse("[(6 . +) 7]")));
+}
+END_TEST
+
+START_TEST(CanCollectOneExprPlusSequences)
+{
+	Lexer lexer = SetupLexer(
+		"#syntax STMT: [foo [EXPR+ exprs] { }] => 123\n"
+		"4 + 5\n"
+		"foo 3 { }\n"
+		"6 + 7\n"
+	);
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = (SmileList)Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(RecursiveEquals(LIST_FIRST(result), SimpleParse("$progn")));
+	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(4 . +) 5]")));
+	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("123")));
+	ASSERT(RecursiveEquals(LIST_FIFTH(result), SimpleParse("[(6 . +) 7]")));
+}
+END_TEST
+
+START_TEST(CanCollectNamePlusSequences)
+{
+	Lexer lexer = SetupLexer(
+		"#syntax STMT: [test [NAME+ names] { }] => 123\n"
+		"4 + 5\n"
+		"test that the program works { }\n"
+		"6 + 7\n"
+	);
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = (SmileList)Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(RecursiveEquals(LIST_FIRST(result), SimpleParse("$progn")));
+	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(4 . +) 5]")));
+	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("123")));
+	ASSERT(RecursiveEquals(LIST_FIFTH(result), SimpleParse("[(6 . +) 7]")));
+}
+END_TEST
+
+START_TEST(CanCollectOneNamePlusSequences)
+{
+	Lexer lexer = SetupLexer(
+		"#syntax STMT: [test [NAME+ names] { }] => 123\n"
+		"4 + 5\n"
+		"test mycode { }\n"
+		"6 + 7\n"
+	);
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = (SmileList)Parser_Parse(parser, lexer, parseScope);
+
+	ASSERT(RecursiveEquals(LIST_FIRST(result), SimpleParse("$progn")));
+	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(4 . +) 5]")));
+	ASSERT(RecursiveEquals(LIST_FOURTH(result), SimpleParse("123")));
+	ASSERT(RecursiveEquals(LIST_FIFTH(result), SimpleParse("[(6 . +) 7]")));
+}
+END_TEST
+
+START_TEST(CanTransformUnitTestSyntax)
+{
+	Lexer lexer = SetupLexer(
+		"#syntax STMT: [test [NAME+ names] { [EXPR* exprs] }] => `[declare-test [$quote @names] [$fn [] @@exprs]]\n"
+		"\n"
+		"test basic addition {\n"
+		"\t4 + 5\n"
+		"\t6 + 7\n"
+		"}\n"
+	);
+	Parser parser = Parser_Create();
+	ParseScope parseScope = ParseScope_CreateRoot();
+	SmileList result = (SmileList)Parser_Parse(parser, lexer, parseScope);
+
+	SmileObject expectedResult = SimpleParse("[declare-test [$quote [basic addition]] [$fn [] [(4 . +) 5] [(6 . +) 7]]]");
+	SmileObject actualResult = LIST_THIRD(result);
+
+	ASSERT(RecursiveEquals(LIST_FIRST(result), SimpleParse("$progn")));
+	ASSERT(RecursiveEquals(actualResult, expectedResult));
+}
+END_TEST
+
 #include "parsersyntax_walk_tests.generated.inc"

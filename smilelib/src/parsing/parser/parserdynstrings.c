@@ -59,34 +59,29 @@ static DynamicStringPiece DynamicStringPiece_Create(String text, LexerPosition f
 //-------------------------------------------------------------------------------------------------
 //  Dynamic string parsing.
 
-ParseError Parser_ParseDynamicString(Parser parser, SmileObject *expr, String text, LexerPosition startPosition)
+ParseResult Parser_ParseDynamicString(Parser parser, String text, LexerPosition startPosition)
 {
 	Lexer stringLexer;
 	DynamicStringPiece *dynamicStringPieces, piece;
 	Int numDynamicStringPieces;
 	ParseError parseError;
+	ParseResult parseResult;
 	SmileList head, tail;
 	SmileObject parsedContent;
 	Int i;
 
-	if (String_IsNullOrEmpty(text)) {
-		*expr = (SmileObject)text;
-		return NULL;
-	}
+	if (String_IsNullOrEmpty(text))
+		return EXPR_RESULT(text);
 
 	stringLexer = Lexer_Create(text, 0, String_Length(text), startPosition->filename, startPosition->line, startPosition->column);
 
 	parseError = Parser_SplitDynamicString(stringLexer, &dynamicStringPieces, &numDynamicStringPieces);
-	if (parseError != NULL) {
-		*expr = NULL;
-		return parseError;
-	}
+	if (parseError != NULL)
+		return ERROR_RESULT(parseError);
 
 	// If there's no parsed content, just return the string verbatim.
-	if (numDynamicStringPieces < 2 && !dynamicStringPieces[0]->isExpression) {
-		*expr = (SmileObject)dynamicStringPieces[0]->text;
-		return NULL;
-	}
+	if (numDynamicStringPieces < 2 && !dynamicStringPieces[0]->isExpression)
+		return EXPR_RESULT(dynamicStringPieces[0]->text);
 
 	// Construct a [[List.of a b c ...].join] form.
 	LIST_INIT(head, tail);
@@ -99,21 +94,18 @@ ParseError Parser_ParseDynamicString(Parser parser, SmileObject *expr, String te
 			LIST_APPEND_WITH_SOURCE(head, tail, piece->text, piece->firstLine);
 		}
 		else {
-			parseError = Parser_ParseOneExpressionFromText(parser, &parsedContent, piece->text, piece->firstLine);
-			if (parseError != NULL) {
-				*expr = NULL;
-				return parseError;
-			}
+			parseResult = Parser_ParseOneExpressionFromText(parser, piece->text, piece->firstLine);
+			if (IS_PARSE_ERROR(parseResult))
+				return parseResult;
+			parsedContent = parseResult.expr;
 			LIST_APPEND_WITH_SOURCE(head, tail, parsedContent, piece->firstLine);
 		}
 	}
 
-	*expr = (SmileObject)SmileList_CreateOneWithSource(
+	return EXPR_RESULT((SmileObject)SmileList_CreateOneWithSource(
 		(SmileObject)SmileList_CreateDotWithSource(head, Smile_KnownObjects.joinSymbol, startPosition),
 		startPosition
-	);
-
-	return NULL;
+	));
 }
 
 #define MAKE_POSITION() \

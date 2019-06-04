@@ -44,21 +44,22 @@ static void Parser_TransformTemplateIntoSplicedTemplate(SmileList *head, SmileLi
 // nonraw_term :: = . LPAREN expr RPAREN
 //    | . scope
 //    | . DYNSTRING
-ParseError Parser_ParseQuotedTerm(Parser parser, SmileObject *result, Int modeFlags, LexerPosition position)
+TemplateResult Parser_ParseQuotedTerm(Parser parser, Int modeFlags, LexerPosition position)
 {
-	ParseError parseError;
-	Int templateKind;
+	TemplateResult templateResult;
 
-	templateKind = TemplateKind_None;
-	parseError = Parser_ParseRawListTerm(parser, result, &templateKind, modeFlags);
-	if (parseError != NULL)
-		return parseError;
+	templateResult = Parser_ParseRawListTerm(parser, modeFlags);
+	if (IS_PARSE_ERROR(templateResult.parseResult))
+		RETURN_TEMPLATE_PARSE_ERROR(templateResult.parseResult);
 
-	if (templateKind == TemplateKind_None) {
-		*result = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol, *result, position);
+	if (templateResult.templateKind == TemplateKind_None) {
+		templateResult = TEMPLATE_RESULT(EXPR_RESULT(
+				(SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol, templateResult.parseResult.expr, position)
+			),
+			TemplateKind_None);
 	}
 
-	return NULL;
+	return templateResult;
 }
 
 SmileObject Parser_WrapTemplateForSplicing(SmileObject obj)
@@ -78,36 +79,29 @@ SmileObject Parser_WrapTemplateForSplicing(SmileObject obj)
 // nonraw_term :: = . LPAREN expr RPAREN
 //    | . scope
 //    | . DYNSTRING
-ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Int *templateKind, Int modeFlags)
+TemplateResult Parser_ParseRawListTerm(Parser parser, Int modeFlags)
 {
 	Token token = Parser_NextToken(parser);
 	LexerPosition startPosition;
 	ParseError error;
+	ParseResult parseResult;
+	TemplateResult templateResult;
 
 	switch (token->kind) {
 
 		case TOKEN_LEFTPARENTHESIS:
 			Lexer_Unget(parser->lexer);
-			*templateKind = TemplateKind_Template;
-			error = Parser_ParseParentheses(parser, result, modeFlags);
-			if (error != NULL)
-				return error;
-			return NULL;
+			return TEMPLATE_RESULT(Parser_ParseParentheses(parser, modeFlags), TemplateKind_Template);
 
 		case TOKEN_LEFTBRACE:
 			Lexer_Unget(parser->lexer);
-			*templateKind = TemplateKind_Template;
-			error = Parser_ParseScope(parser, result);
-			if (error != NULL)
-				return error;
-			return NULL;
+			return TEMPLATE_RESULT(Parser_ParseScope(parser), TemplateKind_Template);
 
 		case TOKEN_DYNSTRING:
-			error = Parser_ParseDynamicString(parser, result, token->text, Token_GetPosition(token));
-			if (error != NULL)
-				return error;
-			*templateKind = (SMILE_KIND(*result) != SMILE_KIND_STRING) ? TemplateKind_Template : TemplateKind_None;
-			return error;
+			parseResult = Parser_ParseDynamicString(parser, token->text, startPosition = Token_GetPosition(token));
+			if (IS_PARSE_ERROR(parseResult))
+				RETURN_TEMPLATE_PARSE_ERROR(parseResult);
+			return TEMPLATE_RESULT(parseResult, (SMILE_KIND(parseResult.expr) != SMILE_KIND_STRING) ? TemplateKind_Template : TemplateKind_None);
 
 		case TOKEN_LEFTBRACKET:
 			{
@@ -116,36 +110,34 @@ ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Int *temp
 
 				startPosition = Token_GetPosition(token);
 
-				Parser_ParseRawListItemsOpt(parser, &head, &tail, &childTemplateKind, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
+				templateResult = Parser_ParseRawListItemsOpt(parser, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS, &head, &tail);
+				childTemplateKind = templateResult.templateKind;
 
-				if (!Parser_HasLookahead(parser, TOKEN_RIGHTBRACKET)) {
-					error = ParseMessage_Create(PARSEMESSAGE_ERROR,
-						startPosition, String_Format("Missing ']' in raw list starting on line %d.", startPosition->line));
-					*result = NullObject;
-					return error;
-				}
+				if (!Parser_HasLookahead(parser, TOKEN_RIGHTBRACKET))
+					return TEMPLATE_RESULT(ERROR_RESULT(
+						ParseMessage_Create(PARSEMESSAGE_ERROR,
+							startPosition, String_Format("Missing ']' in raw list starting on line %d.", startPosition->line))),
+						TemplateKind_None);
 				Parser_NextToken(parser);
 
-				*templateKind = (childTemplateKind == TemplateKind_None ? TemplateKind_None : TemplateKind_Template);
-				*result = (SmileObject)head;
-				return NULL;
+				return TEMPLATE_RESULT(EXPR_RESULT(head),
+					(childTemplateKind == TemplateKind_None ? TemplateKind_None : TemplateKind_Template));
 			}
 
 		case TOKEN_BACKTICK:
 			{
-				Int childTemplateKind, tokenKind;
+				Int tokenKind;
 				if ((tokenKind = Lexer_Peek(parser->lexer)) == TOKEN_LEFTPARENTHESIS
 					|| tokenKind == TOKEN_LEFTBRACE) {
-					error = Parser_ParseTerm(parser, result, modeFlags, Token_Clone(token));
-					childTemplateKind = TemplateKind_None;
+					templateResult = TEMPLATE_RESULT(Parser_ParseTerm(parser, modeFlags, Token_Clone(token)), TemplateKind_None);
 				}
 				else {
-					error = Parser_ParseRawListTerm(parser, result, &childTemplateKind, modeFlags);
+					templateResult = Parser_ParseRawListTerm(parser, modeFlags);
 				}
-				if (error != NULL)
-					return error;
-				*templateKind = (childTemplateKind == TemplateKind_None ? TemplateKind_None : TemplateKind_Template);
-				return NULL;
+				if (IS_PARSE_ERROR(templateResult.parseResult))
+					RETURN_TEMPLATE_PARSE_ERROR(templateResult.parseResult);
+				return TEMPLATE_RESULT(templateResult.parseResult,
+					(templateResult.templateKind == TemplateKind_None ? TemplateKind_None : TemplateKind_Template));
 			}
 
 		case TOKEN_AT:
@@ -155,11 +147,10 @@ ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Int *temp
 					// This is the special '@(...)' form, which works like ',@' in Lisp, and
 					// captures the inner list, and then splices it into the current list.
 					Lexer_Unget(parser->lexer);
-					error = Parser_ParseParentheses(parser, result, modeFlags);
-					if (error != NULL)
-						return error;
-					*templateKind = TemplateKind_TemplateWithSplicing;
-					return NULL;
+					parseResult = Parser_ParseParentheses(parser, modeFlags);
+					if (IS_PARSE_ERROR(parseResult))
+						RETURN_TEMPLATE_PARSE_ERROR(parseResult);
+					return TEMPLATE_RESULT(parseResult, TemplateKind_TemplateWithSplicing);
 				}
 				else if (nextToken == TOKEN_ALPHANAME || nextToken == TOKEN_PUNCTNAME
 					|| nextToken == TOKEN_UNKNOWNALPHANAME || nextToken == TOKEN_UNKNOWNPUNCTNAME) {
@@ -168,15 +159,12 @@ ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Int *temp
 					// (TODO: This form exists primarily to allow '@symbol' and '@@symbol' to be
 					// embedded in the future in quoted syntax-translated template forms,
 					// which would be a really useful ability to have.)
-					*result = (SmileObject)SmileSymbol_Create(parser->lexer->token->data.symbol);
-					*templateKind = TemplateKind_Template;
-					return NULL;
+					return TEMPLATE_RESULT(EXPR_RESULT(SmileSymbol_Create(parser->lexer->token->data.symbol)), TemplateKind_Template);
 				}
 				else {
 					Lexer_Unget(parser->lexer);
-					error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
-						String_FromC("A symbol or a left parenthesis must follow an '@' in a template."));
-					return error;
+					return TEMPLATE_RESULT(ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
+						String_FromC("A symbol or a left parenthesis must follow an '@' in a template."))), TemplateKind_None);
 				}
 			}
 
@@ -190,15 +178,15 @@ ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Int *temp
 					// (TODO: This form exists primarily to allow '@@symbol' to be
 					// embedded in the future in quoted syntax-translated template forms,
 					// which would be a really useful ability to have.)
-					*result = (SmileObject)SmileSymbol_Create(parser->lexer->token->data.symbol);
-					*templateKind = TemplateKind_TemplateWithSplicing;
-					return NULL;
+					return TEMPLATE_RESULT(EXPR_RESULT(SmileSymbol_Create(parser->lexer->token->data.symbol)),
+						TemplateKind_TemplateWithSplicing);
 				}
 				else {
 					Lexer_Unget(parser->lexer);
-					error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
-						String_FromC("A symbol must follow an '@@' in a template."));
-					return error;
+					return TEMPLATE_RESULT(ERROR_RESULT(
+						ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
+							String_FromC("A symbol must follow an '@@' in a template."))),
+						TemplateKind_None);
 				}
 			}
 
@@ -206,71 +194,45 @@ ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Int *temp
 		case TOKEN_PUNCTNAME:
 		case TOKEN_UNKNOWNALPHANAME:
 		case TOKEN_UNKNOWNPUNCTNAME:
-			*result = (SmileObject)SmileSymbol_Create(token->data.symbol);
-			*templateKind = TemplateKind_None;
-			return NULL;
+			return TEMPLATE_RESULT(EXPR_RESULT(SmileSymbol_Create(token->data.symbol)), TemplateKind_None);
 
 		case TOKEN_RAWSTRING:
-			*result = (SmileObject)token->text;
-			*templateKind = TemplateKind_None;
-			return NULL;
+			return TEMPLATE_RESULT(EXPR_RESULT(token->text), TemplateKind_None);
 
 		case TOKEN_CHAR:
-			*result = (SmileObject)SmileChar_Create(token->data.ch);
-			*templateKind = TemplateKind_None;
-			return NULL;
+			return TEMPLATE_RESULT(EXPR_RESULT(SmileChar_Create(token->data.ch)), TemplateKind_None);
 
 		case TOKEN_UNI:
-			*result = (SmileObject)SmileUni_Create(token->data.uni);
-			*templateKind = TemplateKind_None;
-			return NULL;
+			return TEMPLATE_RESULT(EXPR_RESULT(SmileUni_Create(token->data.uni)), TemplateKind_None);
 
 		case TOKEN_BYTE:
-			*result = (SmileObject)SmileByte_Create(token->data.byte);
-			*templateKind = TemplateKind_None;
-			return NULL;
+			return TEMPLATE_RESULT(EXPR_RESULT(SmileByte_Create(token->data.byte)), TemplateKind_None);
 
 		case TOKEN_INTEGER16:
-			*result = (SmileObject)SmileInteger16_Create(token->data.int16);
-			*templateKind = TemplateKind_None;
-			return NULL;
+			return TEMPLATE_RESULT(EXPR_RESULT(SmileInteger16_Create(token->data.int16)), TemplateKind_None);
 
 		case TOKEN_INTEGER32:
-			*result = (SmileObject)SmileInteger32_Create(token->data.int32);
-			*templateKind = TemplateKind_None;
-			return NULL;
+			return TEMPLATE_RESULT(EXPR_RESULT(SmileInteger32_Create(token->data.int32)), TemplateKind_None);
 
 		case TOKEN_INTEGER64:
-			*result = (SmileObject)SmileInteger64_Create(token->data.int64);
-			*templateKind = TemplateKind_None;
-			return NULL;
+			return TEMPLATE_RESULT(EXPR_RESULT(SmileInteger64_Create(token->data.int64)), TemplateKind_None);
 
 		case TOKEN_REAL32:
-			*result = (SmileObject)SmileReal32_Create(token->data.real32);
-			*templateKind = TemplateKind_None;
-			return NULL;
+			return TEMPLATE_RESULT(EXPR_RESULT(SmileReal32_Create(token->data.real32)), TemplateKind_None);
 
 		case TOKEN_REAL64:
-			*result = (SmileObject)SmileReal64_Create(token->data.real64);
-			*templateKind = TemplateKind_None;
-			return NULL;
+			return TEMPLATE_RESULT(EXPR_RESULT(SmileReal64_Create(token->data.real64)), TemplateKind_None);
 
 		case TOKEN_FLOAT32:
-			*result = (SmileObject)SmileFloat32_Create(token->data.float32);
-			*templateKind = TemplateKind_None;
-			return NULL;
+			return TEMPLATE_RESULT(EXPR_RESULT(SmileFloat32_Create(token->data.float32)), TemplateKind_None);
 
 		case TOKEN_FLOAT64:
-			*result = (SmileObject)SmileFloat64_Create(token->data.float64);
-			*templateKind = TemplateKind_None;
-			return NULL;
+			return TEMPLATE_RESULT(EXPR_RESULT(SmileFloat64_Create(token->data.float64)), TemplateKind_None);
 
 		case TOKEN_LOANWORD_REGEX:
 			// The Lexer already constructed [Regex.of pattern-string options-string] for us,
 			// so there's nothing we need to do except return it.
-			*result = (SmileObject)token->data.ptr;
-			*templateKind = TemplateKind_None;
-			return NULL;
+			return TEMPLATE_RESULT(EXPR_RESULT(token->data.ptr), TemplateKind_None);
 
 		default:
 			// We got an unknown token that can't be turned into a term.  So we're going to generate
@@ -291,21 +253,21 @@ ParseError Parser_ParseRawListTerm(Parser parser, SmileObject *result, Int *temp
 				error = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
 					String_Format("Expected a variable or number or other legal expression term, not \"%S\".", TokenKind_ToString(token->kind)));
 			}
-			return error;
+			return TEMPLATE_RESULT(ERROR_RESULT(error), TemplateKind_None);
 	}
 }
 
 // raw_list_items_opt :: = . raw_list_items | .
 // raw_list_items :: = . raw_list_items raw_list_item | . raw_list_item
 // raw_list_item :: = raw_list_dotexpr
-ParseError Parser_ParseRawListItemsOpt(Parser parser, SmileList *head, SmileList *tail, Int *templateKind, Int modeFlags)
+TemplateResult Parser_ParseRawListItemsOpt(Parser parser, Int modeFlags, SmileList *head, SmileList *tail)
 {
 	Token token;
 	LexerPosition lexerPosition, startPosition;
 	SmileObject expr;
-	ParseError error;
 	Int itemTemplateKind;
 	Int listTemplateKind;
+	TemplateResult templateResult;
 
 	listTemplateKind = TemplateKind_None;
 	startPosition = NULL;
@@ -320,56 +282,58 @@ ParseError Parser_ParseRawListItemsOpt(Parser parser, SmileList *head, SmileList
 		if (startPosition == NULL) startPosition = lexerPosition;
 
 		// Parse the next expression.
-		itemTemplateKind = TemplateKind_None;
-		error = Parser_ParseRawListDotExpr(parser, &expr, &itemTemplateKind, modeFlags);
-		if (error == NULL) {
-			if (expr != NullObject) {
+		templateResult = Parser_ParseRawListDotExpr(parser, modeFlags);
+		if (!IS_PARSE_ERROR(templateResult.parseResult)) {
 
-				if (itemTemplateKind > listTemplateKind) {
-					// Uh oh.  The list item is a template form, but this list (so far) is not
-					// yet a template form, or is the wrong kind of template form.  So transform
-					// the list into the right kind of template form, because we can't append
-					// template items to a non-template list.
-					switch (itemTemplateKind) {
-						case TemplateKind_Template:
-							Parser_TransformListIntoTemplate(head, tail, startPosition);
-							break;
-						case TemplateKind_TemplateWithSplicing:
-							if (listTemplateKind == TemplateKind_None)
-								Parser_TransformListIntoSplicedTemplate(head, tail, startPosition);
-							else if (listTemplateKind == TemplateKind_Template)
-								Parser_TransformTemplateIntoSplicedTemplate(head, tail, startPosition);
-							break;
-					}
-					listTemplateKind = itemTemplateKind;
-				}
-				else if (itemTemplateKind < listTemplateKind) {
-					// This is a templated list, but not a templated item (or not templated enough).
-					// So we need to wrap/quote it before adding it to the list.
-					if (listTemplateKind == TemplateKind_Template && itemTemplateKind == TemplateKind_None) {
-						expr = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol, expr, lexerPosition);
-						itemTemplateKind = TemplateKind_Template;
-					}
-					else if (listTemplateKind == TemplateKind_TemplateWithSplicing && itemTemplateKind == TemplateKind_None) {
-						expr = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol,
-							SmileList_CreateOneWithSource(expr, lexerPosition),
-							lexerPosition
-						);
-						itemTemplateKind = TemplateKind_TemplateWithSplicing;
-					}
-					else if (listTemplateKind == TemplateKind_TemplateWithSplicing && itemTemplateKind == TemplateKind_Template) {
-						expr = Parser_WrapTemplateForSplicing(expr);
-						itemTemplateKind = TemplateKind_TemplateWithSplicing;
-					}
-				}
+			expr = templateResult.parseResult.expr;
+			itemTemplateKind = templateResult.templateKind;
 
-				// Add the successfully-parsed expression to the output (if there's something non-null to add).
+			if (itemTemplateKind > listTemplateKind) {
+				// Uh oh.  The list item is a template form, but this list (so far) is not
+				// yet a template form, or is the wrong kind of template form.  So transform
+				// the list into the right kind of template form, because we can't append
+				// template items to a non-template list.
+				switch (itemTemplateKind) {
+					case TemplateKind_Template:
+						Parser_TransformListIntoTemplate(head, tail, startPosition);
+						break;
+					case TemplateKind_TemplateWithSplicing:
+						if (listTemplateKind == TemplateKind_None)
+							Parser_TransformListIntoSplicedTemplate(head, tail, startPosition);
+						else if (listTemplateKind == TemplateKind_Template)
+							Parser_TransformTemplateIntoSplicedTemplate(head, tail, startPosition);
+						break;
+				}
+				listTemplateKind = itemTemplateKind;
+			}
+			else if (itemTemplateKind < listTemplateKind) {
+				// This is a templated list, but not a templated item (or not templated enough).
+				// So we need to wrap/quote it before adding it to the list.
+				if (listTemplateKind == TemplateKind_Template && itemTemplateKind == TemplateKind_None) {
+					expr = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol, expr, lexerPosition);
+					itemTemplateKind = TemplateKind_Template;
+				}
+				else if (listTemplateKind == TemplateKind_TemplateWithSplicing && itemTemplateKind == TemplateKind_None) {
+					expr = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol,
+						SmileList_CreateOneWithSource(expr, lexerPosition),
+						lexerPosition
+					);
+					itemTemplateKind = TemplateKind_TemplateWithSplicing;
+				}
+				else if (listTemplateKind == TemplateKind_TemplateWithSplicing && itemTemplateKind == TemplateKind_Template) {
+					expr = Parser_WrapTemplateForSplicing(expr);
+					itemTemplateKind = TemplateKind_TemplateWithSplicing;
+				}
+			}
+
+			if (templateResult.parseResult.status == ParseStatus_SuccessfulWithResult) {
+				// Add the successfully-parsed expression to the output (if there's something meaningful to add).
 				LIST_APPEND_WITH_SOURCE(*head, *tail, expr, lexerPosition);
 			}
 		}
 		else {
 			// Record the error message.
-			Parser_AddMessage(parser, error);
+			HANDLE_PARSE_ERROR(parser, templateResult.parseResult);
 
 			// If that expression was garbage, perform simple error-recovery by skipping to the
 			// next '{' '}' '[' ']' '(' ')' or '|'.
@@ -377,29 +341,25 @@ ParseError Parser_ParseRawListItemsOpt(Parser parser, SmileList *head, SmileList
 
 			// Reached a terminating '}' or ']' or ')', so presume we're done consuming expressions for now.
 			if (token->kind == TOKEN_RIGHTBRACE || token->kind == TOKEN_RIGHTBRACKET || token->kind == TOKEN_RIGHTPARENTHESIS)
-				return NULL;
-
-			expr = NullObject;
+				return TEMPLATE_RESULT(RECOVERY_RESULT(), TemplateKind_None);
 		}
 	}
 
-	*templateKind = listTemplateKind;
-
 	Lexer_Unget(parser->lexer);
-	return NULL;
+	return TEMPLATE_RESULT(EXPR_RESULT(*head), listTemplateKind);
 }
 
 // raw_list_dotexpr :: = . raw_list_dotexpr DOT any_name | . raw_list_term
-ParseError Parser_ParseRawListDotExpr(Parser parser, SmileObject *result, Int *templateKind, Int modeFlags)
+TemplateResult Parser_ParseRawListDotExpr(Parser parser, Int modeFlags)
 {
-	ParseError parseError;
 	Int tokenKind;
 	LexerPosition lexerPosition;
 	Symbol symbol;
+	TemplateResult templateResult;
 
-	parseError = Parser_ParseRawListTerm(parser, result, templateKind, modeFlags);
-	if (parseError != NULL)
-		return parseError;
+	templateResult = Parser_ParseRawListTerm(parser, modeFlags);
+	if (IS_PARSE_ERROR(templateResult.parseResult))
+		RETURN_TEMPLATE_PARSE_ERROR(templateResult.parseResult);
 
 	while (Parser_NextToken(parser)->kind == TOKEN_DOT) {
 
@@ -411,31 +371,37 @@ ParseError Parser_ParseRawListDotExpr(Parser parser, SmileObject *result, Int *t
 			symbol = parser->lexer->token->data.symbol;
 			lexerPosition = Token_GetPosition(parser->lexer->token);
 
-			if (*templateKind == TemplateKind_None) {
+			if (templateResult.templateKind == TemplateKind_None) {
 				// Generate a simple (expr).symbol as output.
-				*result = (SmileObject)SmileList_CreateDotWithSource(*result, SmileSymbol_Create(symbol), lexerPosition);
+				templateResult = TEMPLATE_RESULT(EXPR_RESULT(
+					SmileList_CreateDotWithSource(templateResult.parseResult.expr, SmileSymbol_Create(symbol), lexerPosition)),
+					TemplateKind_None);
 			}
 			else {
 				// If the left-side expression is a template (spliced or not), then generate
 				// [List.of [$quote $dot] (expr) [$quote symbol]] as output.
-				*result = (SmileObject)SmileList_CreateFourWithSource(
-					SmileList_CreateThreeWithSource(Smile_KnownObjects._dotSymbol, Smile_KnownObjects.ListSymbol, Smile_KnownObjects.ofSymbol, lexerPosition),
-					SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol, Smile_KnownObjects._dotSymbol, lexerPosition),
-					*result,
-					SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol, SmileSymbol_Create(symbol), lexerPosition),
-					lexerPosition
-				);
+				templateResult = TEMPLATE_RESULT(EXPR_RESULT(
+					SmileList_CreateFourWithSource(
+						SmileList_CreateThreeWithSource(Smile_KnownObjects._dotSymbol, Smile_KnownObjects.ListSymbol, Smile_KnownObjects.ofSymbol, lexerPosition),
+						SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol, Smile_KnownObjects._dotSymbol, lexerPosition),
+						templateResult.parseResult.expr,
+						SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol, SmileSymbol_Create(symbol), lexerPosition),
+						lexerPosition
+					)),
+					templateResult.templateKind);
 			}
 		}
 		else {
-			return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
-				String_Format("Expected a property name after '.', not '%S.'", TokenKind_ToString(tokenKind)));
+			return TEMPLATE_RESULT(ERROR_RESULT(
+				ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
+					String_Format("Expected a property name after '.', not '%S.'", TokenKind_ToString(tokenKind)))),
+				TemplateKind_None);
 		}
 	}
 
 	Lexer_Unget(parser->lexer);
 
-	return NULL;
+	return templateResult;
 }
 
 /// <summary>
@@ -571,34 +537,34 @@ static void Parser_TransformTemplateIntoSplicedTemplate(SmileList *head, SmileLi
 }
 
 // term ::= '[' '$quote' raw-list-term ']'
-ParseError Parser_ParseClassicQuote(Parser parser, SmileObject *result, LexerPosition startPosition)
+ParseResult Parser_ParseClassicQuote(Parser parser, LexerPosition startPosition)
 {
-	ParseError error;
+	ParseResult parseResult, bracketResult;
 
-	error = Parser_ParseQuoteBody(parser, result, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS, startPosition);
-	if (error != NULL) {
+	parseResult = Parser_ParseQuoteBody(parser, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS, startPosition);
+	if (IS_PARSE_ERROR(parseResult)) {
+		HANDLE_PARSE_ERROR(parser, parseResult);
 		Parser_Recover(parser, Parser_RightBracesBracketsParentheses_Recovery, Parser_RightBracesBracketsParentheses_Count);
-		*result = NullObject;
-		return error;
+		return RECOVERY_RESULT();
 	}
 
-	if ((error = Parser_ExpectRightBracket(parser, result, NULL, "[$quote] form", startPosition)) != NULL)
-		return error;
+	bracketResult = Parser_ExpectRightBracket(parser, NULL, "[$quote] form", startPosition);
+	if (IS_PARSE_ERROR(bracketResult))
+		RETURN_PARSE_ERROR(bracketResult);
 
-	return NULL;
+	return parseResult;
 }
 
-ParseError Parser_ParseQuoteBody(Parser parser, SmileObject *result, Int modeFlags, LexerPosition startPosition)
+ParseResult Parser_ParseQuoteBody(Parser parser, Int modeFlags, LexerPosition startPosition)
 {
-	ParseError error;
+	ParseResult parseResult;
 
 	if (Lexer_Peek(parser->lexer) == TOKEN_LEFTPARENTHESIS) {
 		// This is a quote of a parenthesized expression, so parse the expression normally and then quote it.
-		error = Parser_ParseParentheses(parser, result, modeFlags);
-		if (error != NULL)
-			return error;
-		*result = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol, *result, startPosition);
-		return NULL;
+		parseResult = Parser_ParseParentheses(parser, modeFlags);
+		if (IS_PARSE_ERROR(parseResult))
+			RETURN_PARSE_ERROR(parseResult);
+		return EXPR_RESULT(SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol, parseResult.expr, startPosition));
 	}
 
 	// This is a quote of a more generic thing, like a list or a symbol, so recursively parse
@@ -606,5 +572,5 @@ ParseError Parser_ParseQuoteBody(Parser parser, SmileObject *result, Int modeFla
 	// a (parenthetical escape), thus turning the "quoted term" from an ordinary quoted list
 	// into a template, we do not do the quoting here, but instead do that quoting work inside
 	// Parser_ParseQuotedTerm() itself, which is the only code that knows how to do it correctly.
-	return Parser_ParseQuotedTerm(parser, result, modeFlags, startPosition);
+	return Parser_ParseQuotedTerm(parser, modeFlags, startPosition).parseResult;
 }

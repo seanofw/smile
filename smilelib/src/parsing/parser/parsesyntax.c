@@ -97,32 +97,33 @@ static const char *_reservedClassNames[] = {
 static Int _reservedClassNameLength = sizeof(_reservedClassNames) / sizeof(const char *);
 
 static ParseError Parser_ValidateSpecialSyntaxClasses(Symbol nonterminal, SmileList pattern, LexerPosition position);
-static ParseError Parser_ParseSyntaxPattern(Parser parser, SmileList **tailRef);
-static ParseError Parser_ParseSyntaxTerminal(Parser parser, SmileList **tailRef);
-static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailRef);
-static ParseError Parser_ParseSyntaxNonterminalWithDeclarations(Parser parser, Int *numWithSymbols, Symbol **withSymbols);
+static ParseResult Parser_ParseSyntaxPattern(Parser parser, SmileList **tailRef);
+static ParseResult Parser_ParseSyntaxTerminal(Parser parser, SmileList **tailRef);
+static ParseResult Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailRef);
+static ParseResult Parser_ParseSyntaxNonterminalWithDeclarations(Parser parser, Int *numWithSymbols, Symbol **withSymbols);
 static void Parser_DeclareNonterminals(SmileList pattern, ParseScope scope, LexerPosition position);
 
 // syntax_expr :: = . syntax_level COLON LBRACKET syntax_pattern RBRACKET IMPLIES raw_list_term
-SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *expr, Int modeFlags)
+SMILE_INTERNAL_FUNC ParseResult Parser_ParseSyntax(Parser parser, Int modeFlags)
 {
 	Token token;
 	Symbol nonterminal;
 	SmileList pattern;
 	SmileList *patternTail;
 	SmileObject replacement;
-	ParseError parseError;
+	ParseResult parseResult;
 	LexerPosition rulePosition, impliesPosition;
 	Int templateKind;
 	SmileSyntax syntax;
+	TemplateResult templateResult;
+	ParseError parseError;
 
 	// First, read the syntax predicate's leading nonterminal.
 	token = Parser_NextToken(parser);
 	rulePosition = Token_GetPosition(token);
 	if (token->kind != TOKEN_ALPHANAME && token->kind != TOKEN_PUNCTNAME
 		&& token->kind != TOKEN_UNKNOWNALPHANAME && token->kind != TOKEN_UNKNOWNPUNCTNAME) {
-		*expr = NullObject;
-		return ParseMessage_Create(PARSEMESSAGE_ERROR, rulePosition, MissingSyntaxClassName);
+		return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, rulePosition, MissingSyntaxClassName));
 	}
 	nonterminal = token->data.symbol;
 
@@ -130,45 +131,35 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *ex
 	// reexporting its imported rules, and we're done.
 	if (nonterminal == Smile_KnownSymbols.reexport) {
 		parser->currentScope->reexport = True;
-		*expr = NullObject;
-		return NULL;
+		return NULL_RESULT();
 	}
 
 	// There must be a colon next.
 	token = Parser_NextToken(parser);
-	if (token->kind != TOKEN_COLON) {
-		*expr = NullObject;
-		return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), MissingSyntaxColon);
-	}
+	if (token->kind != TOKEN_COLON)
+		return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), MissingSyntaxColon));
 
 	// There must be a left bracket next to start the pattern.
 	token = Parser_NextToken(parser);
-	if (token->kind != TOKEN_LEFTBRACKET) {
-		*expr = NullObject;
-		return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), MissingSyntaxLeftBracket);
-	}
+	if (token->kind != TOKEN_LEFTBRACKET)
+		return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), MissingSyntaxLeftBracket));
 
 	// Parse the pattern.
 	patternTail = &pattern;
-	parseError = Parser_ParseSyntaxPattern(parser, &patternTail);
-	if (parseError != NULL) {
-		*expr = NullObject;
-		return parseError;
-	}
+	parseResult = Parser_ParseSyntaxPattern(parser, &patternTail);
+	if (IS_PARSE_ERROR(parseResult))
+		return parseResult;
 
 	// There must be a right bracket to end the pattern.
 	token = Parser_NextToken(parser);
-	if (token->kind != TOKEN_RIGHTBRACKET) {
-		*expr = NullObject;
-		return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), MissingSyntaxRightBracket);
-	}
+	if (token->kind != TOKEN_RIGHTBRACKET)
+		return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), MissingSyntaxRightBracket));
 
 	// Now, ensure that the special '=>' (implies) symbol exists.
 	token = Parser_NextToken(parser);
 	if (!(token->kind == TOKEN_PUNCTNAME || token->kind == TOKEN_UNKNOWNPUNCTNAME)
 		|| token->data.symbol != Smile_KnownSymbols.implies) {
-		*expr = NullObject;
-		return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), MissingSyntaxImpliesSymbol);
+		return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token), MissingSyntaxImpliesSymbol));
 	}
 	impliesPosition = Token_GetPosition(token);
 
@@ -179,12 +170,12 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *ex
 	Parser_DeclareNonterminals(pattern, parser->currentScope, rulePosition);
 
 	// Parse the substitution expression in the syntax rule's scope.
-	parseError = Parser_ParseRawListTerm(parser, &replacement, &templateKind, modeFlags);
+	templateResult = Parser_ParseRawListTerm(parser, modeFlags);
 	Parser_EndScope(parser, False);
-	if (parseError != NULL) {
-		*expr = NullObject;
-		return parseError;
-	}
+	if (IS_PARSE_ERROR(templateResult.parseResult))
+		return templateResult.parseResult;
+	replacement = templateResult.parseResult.expr;
+	templateKind = templateResult.templateKind;
 
 	// Make sure the template is an evaluable expression form, not just a raw term.
 	replacement = Parser_ConvertItemToTemplateIfNeeded(replacement, templateKind, impliesPosition);
@@ -193,6 +184,7 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *ex
 	// parse-time template-evaluation forms is intentionally limited:
 	//
 	//   - n (where n is any nonterminal symbol)
+	//   - Raw numeric constants, strings, and chars/unis
 	//   - [] (i.e., null)
 	//   - [$quote x] (for any x)
 	//   - [List.of x y z ...]
@@ -205,17 +197,14 @@ SMILE_INTERNAL_FUNC ParseError Parser_ParseSyntax(Parser parser, SmileObject *ex
 	// Make sure that if this is one of the special (known) syntax classes, that the pattern is
 	// a valid form.
 	parseError = Parser_ValidateSpecialSyntaxClasses(nonterminal, pattern, rulePosition);
-	if (parseError != NULL) {
-		*expr = NullObject;
-		return parseError;
-	}
+	if (parseError != NULL)
+		return ERROR_RESULT(parseError);
 
 	// Everything passes muster, so create the new syntax object.
 	syntax = SmileSyntax_Create(nonterminal, pattern, replacement, rulePosition);
 
 	// Everything is all set up, so return the finished syntax object.
-	*expr = (SmileObject)syntax;
-	return NULL;
+	return EXPR_RESULT(syntax);
 }
 
 static Int Parser_VerifyArgumentsAreEvaluableAtParseTime(Parser parser, SmileList list)
@@ -235,6 +224,9 @@ static Int Parser_VerifyArgumentsAreEvaluableAtParseTime(Parser parser, SmileLis
 /// supported parse-time template-evaluation forms is intentionally very limited:
 ///
 ///   - n (where n is any nonterminal symbol)
+///   - 123 (all numeric constant values)
+///   - "foo" (all string constant values)
+///   - 'x' (all character/uni constant values)
 ///   - [] (i.e., null)
 ///   - [$quote x] (for any x)
 ///   - [[$dot List cons] x y]
@@ -248,8 +240,29 @@ Bool Parser_VerifySyntaxTemplateIsEvaluableAtParseTime(Parser parser, SmileObjec
 	SmileList list;
 
 	switch (SMILE_KIND(expr)) {
-		case SMILE_KIND_SYMBOL:
+		case SMILE_KIND_BOOL:
+		case SMILE_KIND_CHAR:
+		case SMILE_KIND_UNI:
+		case SMILE_KIND_BYTE:
+		case SMILE_KIND_INTEGER16:
+		case SMILE_KIND_INTEGER32:
+		case SMILE_KIND_INTEGER64:
+		case SMILE_KIND_INTEGER128:
+		case SMILE_KIND_REAL32:
+		case SMILE_KIND_REAL64:
+		case SMILE_KIND_REAL128:
+		case SMILE_KIND_FLOAT32:
+		case SMILE_KIND_FLOAT64:
+		case SMILE_KIND_FLOAT128:
+		case SMILE_KIND_BIGINT:
+		case SMILE_KIND_BIGREAL:
+		case SMILE_KIND_BIGFLOAT:
+			return True;
+
 		case SMILE_KIND_NULL:
+			return True;
+
+		case SMILE_KIND_SYMBOL:
 			return True;
 
 		case SMILE_KIND_LIST:
@@ -337,37 +350,38 @@ SmileObject Parser_ConvertItemToTemplateIfNeeded(SmileObject expr, Int itemTempl
 
 // syntax_pattern :: = . syntax_element | . syntax_element syntax_pattern
 // syntax_element :: = . syntax_term | . syntax_nonterm
-static ParseError Parser_ParseSyntaxPattern(Parser parser, SmileList **tailRef)
+static ParseResult Parser_ParseSyntaxPattern(Parser parser, SmileList **tailRef)
 {
-	ParseError parseError;
+	ParseResult parseResult;
 
 	for (;;) {
 		switch (Lexer_Peek(parser->lexer)) {
 			case TOKEN_LEFTBRACKET:
-				parseError = Parser_ParseSyntaxNonterminal(parser, tailRef);
-				if (parseError != NULL)
-					return parseError;
+				parseResult = Parser_ParseSyntaxNonterminal(parser, tailRef);
+				if (IS_PARSE_ERROR(parseResult))
+					return parseResult;
 				break;
 
 			case TOKEN_RIGHTBRACKET:
 			case TOKEN_RIGHTPARENTHESIS:
 			case TOKEN_RIGHTBRACE:
-				return NULL;
+				return NULL_RESULT();
 
 			default:
-				parseError = Parser_ParseSyntaxTerminal(parser, tailRef);
-				if (parseError != NULL)
-					return parseError;
+				parseResult = Parser_ParseSyntaxTerminal(parser, tailRef);
+				if (IS_PARSE_ERROR(parseResult))
+					return parseResult;
 				break;
 		}
 	}
 }
 
 // syntax_term :: = . any_name | . COMMA | . SEMICOLON | . COLON | . LPAREN syntax_pattern RPAREN | . LBRACE syntax_pattern RBRACE
-static ParseError Parser_ParseSyntaxTerminal(Parser parser, SmileList **tailRef)
+static ParseResult Parser_ParseSyntaxTerminal(Parser parser, SmileList **tailRef)
 {
 	SmileList *tail = *tailRef;
 	ParseError parseError;
+	ParseResult parseResult;
 
 	switch (Lexer_Next(parser->lexer)) {
 
@@ -378,77 +392,78 @@ static ParseError Parser_ParseSyntaxTerminal(Parser parser, SmileList **tailRef)
 			*tail = SmileList_Cons((SmileObject)SmileSymbol_Create(parser->lexer->token->data.symbol), NullObject);
 			tail = (SmileList *)&((*tail)->d);
 			*tailRef = tail;
-			return NULL;
+			return NULL_RESULT();
 
 		case TOKEN_COMMA:
 			*tail = SmileList_Cons((SmileObject)SmileSymbol_Create(Smile_KnownSymbols.comma), NullObject);
 			tail = (SmileList *)&((*tail)->d);
 			*tailRef = tail;
-			return NULL;
+			return NULL_RESULT();
 		case TOKEN_SEMICOLON:
 			*tail = SmileList_Cons((SmileObject)SmileSymbol_Create(Smile_KnownSymbols.semicolon), NullObject);
 			tail = (SmileList *)&((*tail)->d);
 			*tailRef = tail;
-			return NULL;
+			return NULL_RESULT();
 		case TOKEN_COLON:
 			*tail = SmileList_Cons((SmileObject)SmileSymbol_Create(Smile_KnownSymbols.colon), NullObject);
 			tail = (SmileList *)&((*tail)->d);
 			*tailRef = tail;
-			return NULL;
+			return NULL_RESULT();
 
 		case TOKEN_LEFTPARENTHESIS:
 			*tail = SmileList_Cons((SmileObject)SmileSymbol_Create(Smile_KnownSymbols.left_parenthesis), NullObject);
 			tail = (SmileList *)&((*tail)->d);
 
 			*tailRef = tail;
-			parseError = Parser_ParseSyntaxPattern(parser, tailRef);
-			if (parseError != NULL)
-				return parseError;
+			parseResult = Parser_ParseSyntaxPattern(parser, tailRef);
+			if (IS_PARSE_ERROR(parseResult))
+				return parseResult;
 			tail = *tailRef;
 
 			if (Lexer_Next(parser->lexer) != TOKEN_RIGHTPARENTHESIS) {
 				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token), MalformedSyntaxPatternMismatchedParentheses);
 				Parser_Recover(parser, _syntaxRecover, _syntaxRecoverCount);
-				return parseError;
+				return ERROR_RESULT(parseError);
 			}
 
 			*tail = SmileList_Cons((SmileObject)SmileSymbol_Create(Smile_KnownSymbols.right_parenthesis), NullObject);
 			tail = (SmileList *)&((*tail)->d);
 			*tailRef = tail;
-			return NULL;
+			return NULL_RESULT();
 
 		case TOKEN_LEFTBRACE:
 			*tail = SmileList_Cons((SmileObject)SmileSymbol_Create(Smile_KnownSymbols.left_brace), NullObject);
 			tail = (SmileList *)&((*tail)->d);
 
 			*tailRef = tail;
-			parseError = Parser_ParseSyntaxPattern(parser, tailRef);
-			if (parseError != NULL)
-				return parseError;
+			parseResult = Parser_ParseSyntaxPattern(parser, tailRef);
+			if (IS_PARSE_ERROR(parseResult))
+				return parseResult;
 			tail = *tailRef;
 
 			if (Lexer_Next(parser->lexer) != TOKEN_RIGHTBRACE) {
 				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token), MalformedSyntaxPatternMismatchedBraces);
 				Parser_Recover(parser, _syntaxRecover, _syntaxRecoverCount);
-				return parseError;
+				return ERROR_RESULT(parseError);
 			}
 
 			*tail = SmileList_Cons((SmileObject)SmileSymbol_Create(Smile_KnownSymbols.right_brace), NullObject);
 			tail = (SmileList *)&((*tail)->d);
 			*tailRef = tail;
-			return NULL;
+			return NULL_RESULT();
 
 		default:
 			*tailRef = tail;
-			return ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token), MalformedSyntaxPatternKeyword);
+			return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token), MalformedSyntaxPatternKeyword));
 	}
 }
 
 // syntax_nonterm :: = . LBRACKET syntax_with_opt any_name any_name syntax_sep_opt RBRACKET
 // syntax_with_opt :: = WITH any_names COLON | 
-static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailRef)
+static ParseResult Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailRef)
 {
 	ParseError parseError;
+	ParseResult parseResult;
 	Symbol nonterminal;
 	Symbol name;
 	Symbol repeat;
@@ -465,7 +480,7 @@ static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailR
 	if (Lexer_Next(parser->lexer) != TOKEN_LEFTBRACKET) {
 		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token), MalformedSyntaxPatternMismatchedBrackets);
 		Parser_Recover(parser, _syntaxRecover, _syntaxRecoverCount);
-		return parseError;
+		return ERROR_RESULT(parseError);
 	}
 
 	// Read the next thing, which should be the nonterminal name.
@@ -474,7 +489,7 @@ static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailR
 		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
 			String_FormatString(MalformedSyntaxPatternIllegalNonterminal, token->text));
 		Parser_Recover(parser, _syntaxRecover, _syntaxRecoverCount);
-		return parseError;
+		return ERROR_RESULT(parseError);
 	}
 
 	// If the nonterminal name is the special keyword 'with', go parse the list of "with" declarations,
@@ -482,10 +497,10 @@ static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailR
 	if (String_Equals(token->text, withKeyword)) {
 
 		// Go parse the with declarations, until we reach a ':' token.
-		parseError = Parser_ParseSyntaxNonterminalWithDeclarations(parser, &numWithSymbols, &withSymbols);
-		if (parseError != NULL) {
+		parseResult = Parser_ParseSyntaxNonterminalWithDeclarations(parser, &numWithSymbols, &withSymbols);
+		if (IS_PARSE_ERROR(parseResult)) {
 			Parser_Recover(parser, _syntaxRecover, _syntaxRecoverCount);
-			return parseError;
+			return parseResult;
 		}
 
 		// Now get the real nonterminal name.
@@ -494,7 +509,7 @@ static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailR
 			parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
 				String_FormatString(MalformedSyntaxPatternIllegalNonterminal, token->text));
 			Parser_Recover(parser, _syntaxRecover, _syntaxRecoverCount);
-			return parseError;
+			return ERROR_RESULT(parseError);
 		}
 	}
 	else {
@@ -530,7 +545,7 @@ static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailR
 				parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
 					String_FormatString(MalformedSyntaxPatternIllegalNonterminalRepeat, punctuationTail));
 				Parser_Recover(parser, _syntaxRecover, _syntaxRecoverCount);
-				return parseError;
+				return ERROR_RESULT(parseError);
 			}
 		}
 		else {
@@ -546,7 +561,7 @@ static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailR
 		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
 			String_FormatString(MalformedSyntaxPatternIllegalNonterminalName, token->text));
 		Parser_Recover(parser, _syntaxRecover, _syntaxRecoverCount);
-		return parseError;
+		return ERROR_RESULT(parseError);
 	}
 	name = SymbolTable_GetSymbol(Smile_SymbolTable, parser->lexer->token->text);
 
@@ -558,7 +573,7 @@ static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailR
 				String_FormatString(MalformedSyntaxPatternNonterminalRepeatSeparatorMismatch,
 					tokenKind == TOKEN_COMMA ? String_Comma : String_Semicolon));
 			Parser_Recover(parser, _syntaxRecover, _syntaxRecoverCount);
-			return parseError;
+			return ERROR_RESULT(parseError);
 		}
 
 		separator = (tokenKind == TOKEN_COMMA ? Smile_KnownSymbols.comma : Smile_KnownSymbols.semicolon);
@@ -572,13 +587,13 @@ static ParseError Parser_ParseSyntaxNonterminal(Parser parser, SmileList **tailR
 	if (Lexer_Next(parser->lexer) != TOKEN_RIGHTBRACKET) {
 		parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token), MalformedSyntaxPatternMismatchedBrackets);
 		Parser_Recover(parser, _syntaxRecover, _syntaxRecoverCount);
-		return parseError;
+		return ERROR_RESULT(parseError);
 	}
 
 	// Now construct the nonterminal, since we know it's legal.
 	**tailRef = SmileList_Cons((SmileObject)SmileNonterminal_Create(nonterminal, name, repeat, separator, numWithSymbols, withSymbols), NullObject);
 	*tailRef = (SmileList *)&((**tailRef)->d);
-	return NULL;
+	return NULL_RESULT();
 }
 
 /// <summary>
@@ -868,7 +883,7 @@ Inline void SortSymbols(Int numSymbols, Symbol *symbols)
 
 // syntax_with_opt :: = WITH . syntax_with_names COLON |
 // syntax_with_names :: = . syntax_with_names COMMA any_name | . syntax_with_names any_name | . any_name
-static ParseError Parser_ParseSyntaxNonterminalWithDeclarations(Parser parser, Int *numWithSymbolsReturn, Symbol **withSymbolsReturn)
+static ParseResult Parser_ParseSyntaxNonterminalWithDeclarations(Parser parser, Int *numWithSymbolsReturn, Symbol **withSymbolsReturn)
 {
 	Int numWithSymbols, maxWithSymbols;
 	Symbol *withSymbols;
@@ -890,7 +905,7 @@ static ParseError Parser_ParseSyntaxNonterminalWithDeclarations(Parser parser, I
 			parseError = ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(token),
 				String_FormatString(MalformedSyntaxPatternMissingNameAfterWith, token->text));
 			Parser_Recover(parser, _syntaxRecover, _syntaxRecoverCount);
-			return parseError;
+			return ERROR_RESULT(parseError);
 		}
 
 		// Make enough room in the collection of names for another entry, growing the array if necessary.
@@ -929,5 +944,5 @@ static ParseError Parser_ParseSyntaxNonterminalWithDeclarations(Parser parser, I
 	// Return the resulting collection of names.
 	*numWithSymbolsReturn = numWithSymbols;
 	*withSymbolsReturn = withSymbols;
-	return NULL;
+	return NULL_RESULT();
 }
