@@ -39,13 +39,13 @@
 //-------------------------------------------------------------------------------------------------
 //  Parsing scope kinds.
 
-#define PARSESCOPE_OUTERMOST	0	// The one-and-only outermost scope.
-#define PARSESCOPE_FUNCTION	1	// A function scope (a pseudo-scope for its arguments).
-#define PARSESCOPE_SCOPEDECL	2	// A declared scope using {braces}.
+#define PARSESCOPE_OUTERMOST		0	// The one-and-only outermost scope.
+#define PARSESCOPE_FUNCTION			1	// A function scope (a pseudo-scope for its arguments).
+#define PARSESCOPE_SCOPEDECL		2	// A declared scope using {braces}.
 #define PARSESCOPE_POSTCONDITION	3	// A post: or pre:condition mini-scope.
-#define PARSESCOPE_TILLDO	4	// A till...do body in which till-names apply.
-#define PARSESCOPE_SYNTAX	5	// A syntax rule's body, in which the syntax names apply.
-#define PARSESCOPE_EXPLICIT	6	// An explicitly-declared scope using a Lisp-style [$scope] form.
+#define PARSESCOPE_TILLDO			4	// A till...do body in which till-names apply.
+#define PARSESCOPE_SYNTAX			5	// A syntax rule's body, in which the syntax names apply.
+#define PARSESCOPE_EXPLICIT			6	// An explicitly-declared scope using a Lisp-style [$scope] form.
 
 //-------------------------------------------------------------------------------------------------
 //  Parse scopes.
@@ -178,16 +178,31 @@ Inline Bool ParseScope_IsPseudoScope(ParseScope parseScope)
 /// </summary>
 /// <param name="scope">The scope to check for the given symbol.</param>
 /// <param name="symbol">The symbol to check for.</param>
+/// <param name="foundScope">If non-NULL, this will be set to the scope where the symbol was found.</param>
 /// <returns>The declaration if the symbol was declared in this scope or any parent scope, NULL if it was not.</returns>
-Inline ParseDecl ParseScope_FindDeclaration(ParseScope scope, Symbol symbol)
+Inline ParseDecl ParseScope_FindDeclarationAndScope(ParseScope scope, Symbol symbol, ParseScope *foundScope)
 {
 	Int32 index;
 	for (; scope != NULL; scope = scope->parentScope) {
 		if (Int32Int32Dict_TryGetValue(scope->symbolDict, (Int32)symbol, &index)) {
+			if (foundScope != NULL) *foundScope = scope;
 			return scope->decls[index];
 		}
 	}
+	if (foundScope != NULL) *foundScope = NULL;
 	return NULL;
+}
+
+/// <summary>
+/// Determine whether the given symbol was declared within the given scope
+/// or in any parent scopes, and return its declaration.
+/// </summary>
+/// <param name="scope">The scope to check for the given symbol.</param>
+/// <param name="symbol">The symbol to check for.</param>
+/// <returns>The declaration if the symbol was declared in this scope or any parent scope, NULL if it was not.</returns>
+Inline ParseDecl ParseScope_FindDeclaration(ParseScope scope, Symbol symbol)
+{
+	return ParseScope_FindDeclarationAndScope(scope, symbol, NULL);
 }
 
 /// <summary>

@@ -354,7 +354,7 @@ static SmileObject Parser_Accept(Parser parser, SmileObject replacement, Symbol 
 static ParseResult Parser_RecursivelyApplyCustomSyntax(Parser parser, Int modeFlags, Symbol syntaxClassSymbol)
 {
 	switch (syntaxClassSymbol) {
-		case SMILE_SPECIAL_SYMBOL_STMT:			return Parser_ParseStmt(parser, modeFlags);
+		case SMILE_SPECIAL_SYMBOL_STMT:			return Parser_ParseStmt(parser, (modeFlags & ~BINARYLINEBREAKS_MASK) | BINARYLINEBREAKS_DISALLOWED);
 		case SMILE_SPECIAL_SYMBOL_EXPR:			return Parser_ParseEquals(parser, modeFlags);
 		case SMILE_SPECIAL_SYMBOL_CMPEXPR:		return Parser_ParseCmpExpr(parser, modeFlags);
 		case SMILE_SPECIAL_SYMBOL_ADDEXPR:		return Parser_ParseAddExpr(parser, modeFlags);

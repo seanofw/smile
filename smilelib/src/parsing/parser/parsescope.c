@@ -39,7 +39,7 @@ static const char *ParseDecl_Names[] = {
 	"a keyword",
 	"a postcondition result",
 	"a till-loop name",
-	"an included-module value",
+	"a const value included from another module",
 };
 
 /// <summary>
@@ -261,28 +261,31 @@ ParseError ParseScope_DeclareHere(ParseScope scope, Symbol symbol, Int kind, Lex
 	ParseDecl previousDecl;
 	ParseError error;
 	Int32 declIndex;
+	ParseScope foundScope;
 
 	// First, see if we already declared this.
-	if ((previousDecl = ParseScope_FindDeclaration(scope, symbol)) != NULL) {
-	
-		// Already declared.  This isn't necessarily an error, but it depends on what
-		// kind of thing is being declared and how it relates to what was already declared.
-		if ((previousDecl->declKind != kind && previousDecl->declKind >= PARSEDECL_UNDECLARED)
-			|| previousDecl->declKind >= PARSEDECL_CONST) {
+	if ((previousDecl = ParseScope_FindDeclarationAndScope(scope, symbol, &foundScope)) != NULL) {
+		if (foundScope == scope) {
+			// Already declared.  This isn't necessarily an error, but it depends on what
+			// kind of thing is being declared and how it relates to what was already declared.
+			if ((previousDecl->declKind != kind && previousDecl->declKind >= PARSEDECL_UNDECLARED)
+				|| previousDecl->declKind >= PARSEDECL_CONST) {
 
-			if (decl != NULL)
-				*decl = NULL;
-			error = ParseMessage_Create(PARSEMESSAGE_ERROR, position,
-				String_Format("Cannot redeclare \"%S\" as %s; it is already declared as %s, on line \"%d\".",
-				SymbolTable_GetName(Smile_SymbolTable, symbol),
-				ParseDecl_Names[kind],
-				ParseDecl_Names[previousDecl->declKind],
-				previousDecl->position != NULL ? previousDecl->position->line : 0));
-			return error;
+				if (decl != NULL)
+					*decl = NULL;
+				error = ParseMessage_Create(PARSEMESSAGE_ERROR, position,
+					String_Format("Cannot redeclare \"%S\" as %s; it is already declared as %s, on line \"%ld\".",
+						SymbolTable_GetName(Smile_SymbolTable, symbol),
+						ParseDecl_Names[kind],
+						ParseDecl_Names[previousDecl->declKind],
+						previousDecl->position != NULL ? (Int64)previousDecl->position->line : 0));
+				return error;
+			}
 		}
 	}
 
-	// It's not already declared, so are we allowed to declare a new variable in this scope?  If not, bail.
+	// It's not already declared, or the previous declaration is in another scope,
+	// so are we allowed to declare a new variable in this scope?  If not, bail.
 	if (scope->kind == PARSESCOPE_EXPLICIT) {
 		if (decl != NULL)
 			*decl = NULL;
