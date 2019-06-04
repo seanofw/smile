@@ -37,7 +37,7 @@
 extern void ListFiles(String commandLine, Bool longMode, Int consoleWidth);
 extern void ShowHelp(String commandLine);
 
-static Int ProcessCommand(String input, ParseScope globalScope, ClosureInfo globalClosureInfo, SmileObject *result);
+static Int ProcessCommand(String input, Int lineNumber, ParseScope globalScope, ClosureInfo globalClosureInfo, SmileObject *result);
 
 static ClosureInfo SetupGlobalClosureInfo()
 {
@@ -108,7 +108,7 @@ static Bool PrintParseMessages(Parser parser)
 	return hasErrors;
 }
 
-static Int ParseAndEval(String string, ParseScope globalScope, ClosureInfo globalClosureInfo, SmileObject *result)
+static Int ParseAndEval(String string, Int lineNumber, ParseScope globalScope, ClosureInfo globalClosureInfo, SmileObject *result)
 {
 	Lexer lexer;
 	Parser parser;
@@ -116,7 +116,7 @@ static Int ParseAndEval(String string, ParseScope globalScope, ClosureInfo globa
 	SmileObject expr;
 	EvalResult evalResult;
 
-	lexer = Lexer_Create(string, 0, String_Length(string), NULL, 1, 1);
+	lexer = Lexer_Create(string, 0, String_Length(string), NULL, lineNumber, 1);
 	lexer->symbolTable = Smile_SymbolTable;
 	parser = Parser_Create();
 	parser->lexer = lexer;
@@ -314,6 +314,7 @@ void ReplMain()
 	String input;
 	char *line;
 	Int commandType;
+	Int lineNumber;
 
 	globalClosureInfo = SetupGlobalClosureInfo();
 	globalScope = ParseScope_CreateRoot();
@@ -328,7 +329,11 @@ void ReplMain()
 		SetConsoleCtrlHandler(NULL, True);
 #	endif
 
+	lineNumber = 0;
+
 	for (;;) {
+
+		lineNumber++;
 
 #	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
 		printf_styled("\033[0;33;1m] \033[0;37;1m");
@@ -353,13 +358,13 @@ void ReplMain()
 		add_history(line);
 		free(line);
 
-		commandType = ProcessCommand(input, globalScope, globalClosureInfo, &result);
+		commandType = ProcessCommand(input, lineNumber, globalScope, globalClosureInfo, &result);
 		if (commandType == ProcessedCommand) continue;
 		if (commandType == ExitCommand) break;
 
 		Stdio_Invoked = False;
 
-		if (!ParseAndEval(input, globalScope, globalClosureInfo, &result))
+		if (!ParseAndEval(input, lineNumber, globalScope, globalClosureInfo, &result))
 		{
 			if (!Stdio_Invoked) {
 				resultText = SmileObject_Stringify(result);
@@ -377,7 +382,7 @@ void ReplMain()
 #	endif
 }
 
-static Int ProcessCommand(String input, ParseScope globalScope, ClosureInfo globalClosureInfo, SmileObject *result)
+static Int ProcessCommand(String input, Int lineNumber, ParseScope globalScope, ClosureInfo globalClosureInfo, SmileObject *result)
 {
 	Byte ch;
 
@@ -456,7 +461,7 @@ static Int ProcessCommand(String input, ParseScope globalScope, ClosureInfo glob
 			if (String_StartsWithC(input, "eval")
 				&& (String_Length(input) == 4 || String_At(input, 4) == ' ')) {
 				String expr = String_SubstringAt(input, 5);
-				if (!ParseAndEval(expr, globalScope, globalClosureInfo, result))
+				if (!ParseAndEval(expr, lineNumber, globalScope, globalClosureInfo, result))
 				{
 					String resultText = SmileObject_Stringify(*result);
 					printf("%s\n", String_ToC(resultText));
