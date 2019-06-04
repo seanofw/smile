@@ -274,11 +274,12 @@ ParseError ParseScope_DeclareHere(ParseScope scope, Symbol symbol, Int kind, Lex
 				if (decl != NULL)
 					*decl = NULL;
 				error = ParseMessage_Create(PARSEMESSAGE_ERROR, position,
-					String_Format("Cannot redeclare \"%S\" as %s; it is already declared as %s, on line \"%ld\".",
+					String_Format("Cannot redeclare \"%S\" as %s; it is already declared as %s%s%S.",
 						SymbolTable_GetName(Smile_SymbolTable, symbol),
 						ParseDecl_Names[kind],
 						ParseDecl_Names[previousDecl->declKind],
-						previousDecl->position != NULL ? (Int64)previousDecl->position->line : 0));
+						previousDecl->position != NULL ? ", on line " : "",
+						previousDecl->position != NULL ? String_Format("%ld", (Int64)previousDecl->position->line) : String_Empty));
 				return error;
 			}
 		}
