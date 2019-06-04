@@ -5,3 +5,6 @@ Sean Werkema
 Matt Keller
   - MacOS X build scripts and headers
 
+Ben Przystanski
+  - Continuing moral support, brainstorming, ideas, and cheerleading
+
