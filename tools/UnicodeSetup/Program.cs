@@ -729,6 +729,24 @@ namespace UnicodeSetup
 				"\t\t\t\t\t\t\t\t\t\t\t",
 			};
 
+			private static readonly string[] _depthFlags = { "", "ONE_POINT", "TWO_POINTS", "THREE_POINTS", "FOUR_POINTS" };
+
+			private string StringifyCode(uint codeValue, int depth = 0)
+			{
+				return StringifyCode((int)codeValue, depth);
+			}
+
+			private string StringifyCode(int codeValue, int depth = 0)
+			{
+				if (codeValue == -1)
+					return "NO_MATCH";
+
+				if (depth == 0)
+					return string.Format("0x{0:X}", codeValue);
+
+				return string.Format("(0x{0:X} | {1})", codeValue, _depthFlags[depth]);
+			}
+
 			private void WriteOutput(StringBuilder stringBuilder, Dictionary<int, CompositionTrieNode> tree, int depth, int defaultValue)
 			{
 				stringBuilder.AppendFormat("{0}switch ({1}) {{\r\n", indents[depth+1], (char)(depth + 'a'));
@@ -737,13 +755,28 @@ namespace UnicodeSetup
 					CompositionTrieNode node = tree[code];
 					if (node.Subtree != null)
 					{
-						stringBuilder.AppendFormat("{0}case {1}:\r\n", indents[depth+1], code);
-						int childDefaultValue = node.CharacterInfo != null ? ((int)node.CharacterInfo.CodeValue | ((depth + 1) << 24)) : defaultValue;
+						stringBuilder.AppendFormat("{0}case {1}:\r\n", indents[depth+1], StringifyCode(code));
+						int childDefaultValue = node.CharacterInfo != null ? (int)node.CharacterInfo.CodeValue : defaultValue;
 						if (node.Subtree.Count == 1)
 						{
 							KeyValuePair<int, CompositionTrieNode> childPair = node.Subtree.First();
 							stringBuilder.AppendFormat("{0}return {1} == {2} ? {3} : {4};\r\n",
-								indents[depth + 2], (char)(depth + 1 + 'a'), childPair.Key, ((int)childPair.Value.CharacterInfo.CodeValue | ((depth + 2) << 24)), childDefaultValue);
+								indents[depth + 2], (char)(depth + 1 + 'a'),
+								StringifyCode(childPair.Key),
+								StringifyCode(childPair.Value.CharacterInfo.CodeValue, depth + 2),
+								StringifyCode(childDefaultValue, depth + 1));
+						}
+						else if (node.Subtree.Count == 2)
+						{
+							KeyValuePair<int, CompositionTrieNode> firstPair = node.Subtree.First();
+							KeyValuePair<int, CompositionTrieNode> secondPair = node.Subtree.Skip(1).First();
+							stringBuilder.AppendFormat("{0}return {1} == {2} ? {3}\r\n"
+									+ "{0}\t: {4} == {5} ? {6}\r\n"
+									+ "{0}\t: {7};\r\n",
+								indents[depth + 2],
+								(char)(depth + 1 + 'a'), StringifyCode(firstPair.Key), StringifyCode(firstPair.Value.CharacterInfo.CodeValue, depth + 2),
+								(char)(depth + 1 + 'a'), StringifyCode(secondPair.Key), StringifyCode(secondPair.Value.CharacterInfo.CodeValue, depth + 2),
+								StringifyCode(childDefaultValue, depth + 1));
 						}
 						else
 						{
@@ -752,15 +785,17 @@ namespace UnicodeSetup
 					}
 					else if (node.CharacterInfo != null && depth > 0)
 					{
-						stringBuilder.AppendFormat("{0}case {1}: return {2};\r\n", indents[depth+1], code, ((int)node.CharacterInfo.CodeValue | ((depth+1) << 24)));
+						stringBuilder.AppendFormat("{0}case {1}: return {2};\r\n",
+							indents[depth+1], StringifyCode(code), StringifyCode(node.CharacterInfo.CodeValue, depth+1));
 					}
 					else if (defaultValue != -1)
 					{
-						stringBuilder.AppendFormat("{0}case {1}: return {1};\r\n", indents[depth+1], code, defaultValue);
+						stringBuilder.AppendFormat("{0}case {1}: return {2};\r\n",
+							indents[depth+1], StringifyCode(code), StringifyCode(defaultValue, depth+1));
 					}
 				}
 				stringBuilder.AppendFormat("{0}default: return {1};\r\n"
-					+ "{0}}}\r\n", indents[depth+1], defaultValue);
+					+ "{0}}}\r\n", indents[depth+1], StringifyCode(defaultValue, depth));
 			}
 		}
 
@@ -791,6 +826,15 @@ namespace UnicodeSetup
 			StringBuilder output = new StringBuilder();
 
 			BeginOutput(output);
+
+			output.Append(
+				  "#define NO_MATCH\t(-1)\r\n"
+				+ "\r\n"
+				+ "#define ONE_POINT\t(1 << 24)\r\n"
+				+ "#define TWO_POINTS\t(2 << 24)\r\n"
+				+ "#define THREE_POINTS\t(3 << 24)\r\n"
+				+ "#define FOUR_POINTS\t(4 << 24)\r\n"
+				+ "\r\n");
 
 			output.Append("Int32 Unicode_Compose(Int32 a, Int32 b, Int32 c, Int32 d)\r\n"
 				+ "{\r\n");
