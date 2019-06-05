@@ -43,8 +43,6 @@ namespace UnicodeSetup
 				.Where(c => string.IsNullOrEmpty(c.Condition))
 				.ToDictionary(c => c.CodeValue);
 
-			WriteEnums();
-
 			GenerateCaseConversionTables(unicodeLookup, specialCasingLookup);
 
 			GenerateCaseFoldingTables(caseFoldingLookup);
@@ -335,103 +333,6 @@ namespace UnicodeSetup
 			}
 
 			return codePageKind;
-		}
-
-		#endregion
-
-		#region Enum definitions
-
-		private static void WriteEnums()
-		{
-			StringBuilder output = new StringBuilder();
-
-			BeginOutput(output);
-
-			output.Append(
-@"		public enum GeneralCategory : byte
-		{
-			// 0..7 range: Normative
-			// 8..F range: Informative
-
-			OtherFamily = 0x00,
-			OtherNotAssigned = 0x00,
-			OtherControl = 0x01,
-			OtherFormat = 0x02,
-			OtherSurrogate = 0x03,
-			OtherPrivateUse = 0x04,
-
-			LetterFamily = 0x10,
-			LetterUppercase = 0x11,
-			LetterLowercase = 0x12,
-			LetterTitlecase = 0x13,
-			LetterModifier = 0x19,
-			LetterOther = 0x1A,
-
-			MarkFamily = 0x20,
-			MarkNonSpacing = 0x21,
-			MarkSpacingCombining = 0x22,
-			MarkEnclosing = 0x23,
-
-			NumberFamily = 0x30,
-			NumberDecimalDigit = 0x31,
-			NumberLetter = 0x32,
-			NumberOther = 0x33,
-
-			SeparatorFamily = 0x40,
-			SeparatorSpace = 0x41,
-			SeparatorLine = 0x42,
-			SeparatorParagraph = 0x43,
-
-			PunctuationFamily = 0x50,
-			PunctuationConnector = 0x59,
-			PunctuationDash = 0x5A,
-			PunctuationOpen = 0x5B,
-			PunctuationClose = 0x5C,
-			PunctuationInitialQuote = 0x5D,
-			PunctuationFinalQuote = 0x5E,
-			PunctuationOther = 0x5F,
-
-			SymbolFamily = 0x60,
-			SymbolMath = 0x69,
-			SymbolCurrency = 0x6A,
-			SymbolModifier = 0x6B,
-			SymbolOther = 0x6C,
-		}
-
-		public enum CanonicalCombiningClass : byte
-		{
-			Spacing = 0,
-			OverlaysAndInterior = 1,
-			Nuktas = 7,
-			HiraganaKatakanaVoicingMark = 8,
-			Viramas = 9,
-			StartOfFixedPositionClasses = 10,
-			EndOfFixedPositionClasses = 199,
-			BelowLeftAttached = 200,
-			BelowAttached = 202,
-			BelowRightAttached = 204,
-			LeftAttached = 208,
-			RightAttached = 210,
-			AboveLeftAttached = 212,
-			AboveAttached = 214,
-			AboveRightAttached = 216,
-			BelowLeft = 218,
-			Below = 220,
-			BelowRight = 222,
-			Left = 224,
-			Right = 226,
-			AboveLeft = 228,
-			Above = 230,
-			AboveRight = 232,
-			DoubleBelow = 232,
-			DoubleAbove = 234,
-			BelowIotaSubscript = 240,
-		}
-");
-
-			EndOutput(output);
-
-			File.WriteAllText(@"Output\UnicodeEnums.cpp", output.ToString(), Encoding.UTF8);
 		}
 
 		#endregion
