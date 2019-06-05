@@ -101,17 +101,20 @@ SMILE_EXTERNAL_FUNCTION(ToInt32)
 
 SMILE_EXTERNAL_FUNCTION(ToInt16)
 {
-	return SmileUnboxedInteger16_From((Int16)(UInt16)argv[0].unboxed.uni);
+	UInt32 uni = argv[0].unboxed.uni;
+	return SmileUnboxedInteger16_From(uni <= 0xFFFF ? (Int16)(UInt16)uni : (Int16)(UInt16)0xFFFF);
 }
 
 SMILE_EXTERNAL_FUNCTION(ToByte)
 {
-	return SmileUnboxedByte_From((Byte)argv[0].unboxed.uni);
+	UInt32 uni = argv[0].unboxed.uni;
+	return SmileUnboxedByte_From(uni <= 0xFF ? (Byte)uni : (Byte)0xFF);
 }
 
 SMILE_EXTERNAL_FUNCTION(ToChar)
 {
-	return SmileUnboxedChar_From((Byte)argv[0].unboxed.uni);
+	UInt32 uni = argv[0].unboxed.uni;
+	return SmileUnboxedChar_From(uni <= 0xFF ? (Byte)uni : (Byte)0xFF);
 }
 
 SMILE_EXTERNAL_FUNCTION(ToUni)
