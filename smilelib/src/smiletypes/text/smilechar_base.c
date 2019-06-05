@@ -230,6 +230,75 @@ SMILE_EXTERNAL_FUNCTION(Compare)
 }
 
 //-------------------------------------------------------------------------------------------------
+// Conversions and value-testing.
+
+SMILE_EXTERNAL_FUNCTION(Lowercase)
+{
+	Byte ch = (Byte)argv[0].unboxed.ch;
+	return (ch >= 'A' && ch <= 'Z') ? SmileUnboxedChar_From(ch + ('a' - 'A')) : argv[0];
+}
+
+SMILE_EXTERNAL_FUNCTION(Uppercase)
+{
+	Byte ch = (Byte)argv[0].unboxed.ch;
+	return (ch >= 'a' && ch <= 'z') ? SmileUnboxedChar_From(ch - ('a' - 'A')) : argv[0];
+}
+
+SMILE_EXTERNAL_FUNCTION(IsWhitespace)
+{
+	Byte ch = (Byte)argv[0].unboxed.ch;
+	return SmileUnboxedBool_From(ch <= 32);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsAlpha)
+{
+	Byte ch = (Byte)argv[0].unboxed.ch;
+	return SmileUnboxedBool_From((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z'));
+}
+
+SMILE_EXTERNAL_FUNCTION(IsLowercase)
+{
+	Byte ch = (Byte)argv[0].unboxed.ch;
+	return SmileUnboxedBool_From(ch >= 'a' && ch <= 'z');
+}
+
+SMILE_EXTERNAL_FUNCTION(IsUppercase)
+{
+	Byte ch = (Byte)argv[0].unboxed.ch;
+	return SmileUnboxedBool_From(ch >= 'A' && ch <= 'Z');
+}
+
+SMILE_EXTERNAL_FUNCTION(IsAlnum)
+{
+	Byte ch = (Byte)argv[0].unboxed.ch;
+	return SmileUnboxedBool_From((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9'));
+}
+
+SMILE_EXTERNAL_FUNCTION(IsDigit)
+{
+	Byte ch = (Byte)argv[0].unboxed.ch;
+	return SmileUnboxedBool_From(ch >= '0' && ch <= '9');
+}
+
+SMILE_EXTERNAL_FUNCTION(IsHex)
+{
+	Byte ch = (Byte)argv[0].unboxed.ch;
+	return SmileUnboxedBool_From((ch >= 'A' && ch <= 'F') || (ch >= 'a' && ch <= 'f') || (ch >= '0' && ch <= '9'));
+}
+
+SMILE_EXTERNAL_FUNCTION(IsOctal)
+{
+	Byte ch = (Byte)argv[0].unboxed.ch;
+	return SmileUnboxedBool_From(ch >= '0' && ch <= '7');
+}
+
+SMILE_EXTERNAL_FUNCTION(IsCIdent)
+{
+	Byte ch = (Byte)argv[0].unboxed.ch;
+	return SmileUnboxedBool_From((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch == '_');
+}
+
+//-------------------------------------------------------------------------------------------------
 
 void SmileChar_Setup(SmileUserObject base)
 {
@@ -260,6 +329,22 @@ void SmileChar_Setup(SmileUserObject base)
 
 	SetupFunction("compare", Compare, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _charChecks);
 	SetupSynonym("compare", "cmp");
+
+	SetupFunction("lowercase", Lowercase, NULL, "ch", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _charChecks);
+	SetupFunction("uppercase", Uppercase, NULL, "ch", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _charChecks);
+	SetupSynonym("lowercase", "case-fold");
+	SetupSynonym("lowercase", "fold");
+
+	SetupFunction("whitespace?", IsWhitespace, NULL, "ch", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _charChecks);
+	SetupFunction("alpha?", IsAlpha, NULL, "ch", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _charChecks);
+	SetupFunction("lowercase?", IsLowercase, NULL, "ch", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _charChecks);
+	SetupFunction("uppercase?", IsUppercase, NULL, "ch", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _charChecks);
+	SetupFunction("alnum?", IsAlnum, NULL, "ch", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _charChecks);
+	SetupFunction("digit?", IsDigit, NULL, "ch", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _charChecks);
+	SetupFunction("hex?", IsHex, NULL, "ch", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _charChecks);
+	SetupFunction("octal?", IsOctal, NULL, "ch", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _charChecks);
+
+	SetupFunction("c-ident?", IsCIdent, NULL, "ch", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _charChecks);
 
 	SetupFunction("range-to", RangeTo, NULL, "start end", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _charChecks);
 }
