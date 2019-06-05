@@ -96,7 +96,7 @@ namespace UnicodeSetup
 				codePage.Add("0");
 			}
 
-			WriteCodePage(output, "static int", name, codePage, 16);
+			WriteCodePage(output, "static const Int32", name, codePage, 16);
 		}
 
 		#endregion
@@ -136,13 +136,13 @@ namespace UnicodeSetup
 
 			List<IGrouping<uint, SpecialCasingInfo>> casedCodePages = casedCharacters.GroupBy(c => (uint)(c.CodeValue & ~0xFF)).ToList();
 
-			WriteRelativeConversionTablesToFile("LowercaseTable", "_lowercaseTable", "_l0", casedLookup, casedCodePages,
+			WriteRelativeConversionTablesToFile("lowercase.c", "LowercaseTable", "_lowercaseTable", "_l0", casedLookup, casedCodePages,
 				code => casedLookup.ContainsKey(code) ? casedLookup[code].Lowercase : null);
 
-			WriteRelativeConversionTablesToFile("UppercaseTable", "_uppercaseTable", "_u0", casedLookup, casedCodePages,
+			WriteRelativeConversionTablesToFile("uppercase.c", "UppercaseTable", "_uppercaseTable", "_u0", casedLookup, casedCodePages,
 				code => casedLookup.ContainsKey(code) ? casedLookup[code].Uppercase : null);
 
-			WriteRelativeConversionTablesToFile("TitlecaseTable", "_titlecaseTable", "_t0", casedLookup, casedCodePages,
+			WriteRelativeConversionTablesToFile("titlecase.c", "TitlecaseTable", "_titlecaseTable", "_t0", casedLookup, casedCodePages,
 				code => casedLookup.ContainsKey(code) ? casedLookup[code].Titlecase : null);
 		}
 
@@ -150,21 +150,26 @@ namespace UnicodeSetup
 		{
 			List<IGrouping<uint, CaseFoldingInfo>> casedCodePages = caseFoldingLookup.Values.GroupBy(c => (uint)(c.CodeValue & ~0xFF)).ToList();
 			Func<uint, List<uint>> mapper = code => caseFoldingLookup.ContainsKey(code) ? caseFoldingLookup[code].FoldedValues : null;
-			WriteRelativeConversionTablesToFile("CaseFoldingTable", "_caseFoldingTable", "_c0", casedCodePages.ToDictionary(grouping => grouping.Key), casedCodePages, mapper);
+			WriteRelativeConversionTablesToFile("casefolding.c", "CaseFoldingTable", "_caseFoldingTable", "_c0", casedCodePages.ToDictionary(grouping => grouping.Key), casedCodePages, mapper);
 		}
 
 		#endregion
 
 		#region Shared code-page table generation routines
 
-		private static void WriteRelativeConversionTablesToFile<T, S>(string identifierName, string subtableName, string identityTableName,
+		private static void WriteRelativeConversionTablesToFile<T, S>(string filename, string identifierName, string subtableName, string identityTableName,
 			Dictionary<uint, S> casedLookup, List<IGrouping<uint, T>> casedCodePages, Func<uint, List<uint>> mapper)
 		{
 			StringBuilder output = new StringBuilder();
 
 			BeginOutput(output);
 
-			output.AppendFormat("\t\textern int {0}ExtendedValues[];\r\n\r\n", subtableName);
+			output.AppendFormat("#ifdef _MSC_VER\r\n"
+				+ "\textern const Int32 {0}ExtendedValues[];\r\n"
+				+ "#else\r\n"
+				+ "\tstatic const Int32 {0}ExtendedValues[];\r\n"
+				+ "#endif\r\n"
+				+ "\r\n", subtableName);
 
 			WriteIdentityTable(identityTableName, output);
 
@@ -181,13 +186,13 @@ namespace UnicodeSetup
 
 			EndOutput(output);
 
-			File.WriteAllText(@"Output\Unicode" + identifierName + ".cpp", output.ToString(), Encoding.UTF8);
+			File.WriteAllText(@"Output\" + filename, output.ToString(), Encoding.UTF8);
 		}
 
 		private static void GenerateRelativeCodePageIndex(StringBuilder output, string identifierName, string subtableName, string identityName,
 			List<uint> codePageStarts, List<string> extendedValues, Func<uint, List<uint>> mapper)
 		{
-			WriteCodePage(output, "static int", subtableName + "ExtendedValues", extendedValues, 16);
+			WriteCodePage(output, "static const Int32", subtableName + "ExtendedValues", extendedValues, 16);
 
 			List<string> codePage = new List<string>();
 
@@ -202,7 +207,7 @@ namespace UnicodeSetup
 					: identityName);
 			}
 
-			WriteCodePage(output, "int *", "UnicodeTables_" + identifierName, codePage, 8);
+			WriteCodePage(output, "const Int32 *", "UnicodeTables_" + identifierName, codePage, 8);
 
 			codePage = new List<string>();
 
@@ -217,9 +222,9 @@ namespace UnicodeSetup
 					: "NULL");
 			}
 
-			WriteCodePage(output, "int **", "UnicodeTables_" + identifierName + "Extended", codePage, 8);
+			WriteCodePage(output, "const Int32 **", "UnicodeTables_" + identifierName + "Extended", codePage, 8);
 
-			output.AppendFormat("\t\tint UnicodeTables_" + identifierName + "Count = {0};\r\n", lastPage);
+			output.AppendFormat("const Int32 UnicodeTables_" + identifierName + "Count = {0};\r\n", lastPage);
 		}
 
 		private static void GenerateRelativeCodePage(StringBuilder output, string identifierName,
@@ -246,7 +251,7 @@ namespace UnicodeSetup
 				codePage.Add(outputValue.ToString());
 			}
 
-			WriteCodePage(output, "static int", identifierName + (baseOffset >> 8).ToString("X2"), codePage, 16);
+			WriteCodePage(output, "static const Int32", identifierName + (baseOffset >> 8).ToString("X2"), codePage, 16);
 
 			if (codePageKind == CodePageKind.Extended)
 			{
@@ -294,7 +299,7 @@ namespace UnicodeSetup
 					}
 				}
 
-				WriteCodePage(output, "static int *", identifierName + "Extended" + (baseOffset >> 8).ToString("X2"), codePage, 8);
+				WriteCodePage(output, "static const Int32 *", identifierName + "Extended" + (baseOffset >> 8).ToString("X2"), codePage, 8);
 			}
 		}
 
@@ -1028,7 +1033,25 @@ namespace UnicodeSetup
 
 		private static void BeginOutput(StringBuilder output)
 		{
-			output.Append("//--------------------------------------------------------------\r\n"
+			output.Append(
+				  "//---------------------------------------------------------------------------------------\r\n"
+				+ "//  Smile Programming Language Interpreter\r\n"
+				+ "//  Copyright 2004-2019 Sean Werkema\r\n"
+				+ "//\r\n"
+				+ "//  Licensed under the Apache License, Version 2.0 (the \"License\");\r\n"
+				+ "//  you may not use this file except in compliance with the License.\r\n"
+				+ "//  You may obtain a copy of the License at\r\n"
+				+ "//\r\n"
+				+ "//      http://www.apache.org/licenses/LICENSE-2.0\r\n"
+				+ "//\r\n"
+				+ "//  Unless required by applicable law or agreed to in writing, software\r\n"
+				+ "//  distributed under the License is distributed on an \"AS IS\" BASIS,\r\n"
+				+ "//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\r\n"
+				+ "//  See the License for the specific language governing permissions and\r\n"
+				+ "//  limitations under the License.\r\n"
+				+ "//---------------------------------------------------------------------------------------\r\n"
+				+ "\r\n"
+				+ "//--------------------------------------------------------------\r\n"
 				+ "// WARNING: This file was generated automatically. Do not edit!\r\n"
 				+ "//\r\n"
 				+ "// The contents of this file are aggregated from data files\r\n"
@@ -1036,21 +1059,12 @@ namespace UnicodeSetup
 				+ "//--------------------------------------------------------------\r\n"
 				+ "\r\n");
 
-			output.Append("#include \"stdafx.h\"\r\n"
-				+ "#include \"UnicodeTables.h\"\r\n"
+			output.Append("#include <smile/internal/unicode.h>\r\n"
 				+ "\r\n");
-
-			output.Append("namespace SmileCore\r\n"
-				+ "{\r\n"
-				+ "\tnamespace SmileUnicode\r\n"
-				+ "\t{\r\n");
 		}
 
 		private static void EndOutput(StringBuilder output)
 		{
-			output.Append("\t}\r\n");
-
-			output.Append("}\r\n");
 		}
 
 		private static void WriteCodePage(StringBuilder output, string type, string name, IEnumerable<string> items, int lineLength)
@@ -1058,15 +1072,15 @@ namespace UnicodeSetup
 			if (!type.EndsWith("*"))
 				type += " ";
 
-			output.AppendFormat("\t\t{0}{1}[] =\r\n"
-				+ "\t\t{{\r\n", type, name);
+			output.AppendFormat("{0}{1}[] =\r\n"
+				+ "{{\r\n", type, name);
 
 			int i = 0;
 			foreach (string item in items)
 			{
 				if ((i % lineLength) == 0)
 				{
-					output.Append("\t\t\t");
+					output.Append("\t");
 				}
 				output.Append(item);
 				output.Append(",");
@@ -1086,7 +1100,7 @@ namespace UnicodeSetup
 				output.Append("\r\n");
 			}
 
-			output.Append("\t\t};\r\n\r\n");
+			output.Append("};\r\n\r\n");
 		}
 
 		private static string StringifyCodeValues(List<uint> codeValues)
