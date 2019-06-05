@@ -457,20 +457,20 @@ namespace UnicodeSetup
 				.Select(pair => "_combining_" + pair.Value.ExternalIdentifier.ToString("X4"))
 				.ToList();
 
-			output.AppendFormat("\t\tconst int CombiningLookupCount = {0};\r\n", lookupTable.Count);
-			output.AppendFormat("\t\tconst int CombiningTableCount = {0};\r\n", codePages.Count);
-			output.AppendFormat("\t\tconst int CombiningByteCount = {0};\r\n\r\n", codePages.Count * (1 << BitsPerPage));
+			output.AppendFormat("const Int UnicodeTables_CanonicalCombiningClassLookupCount = {0};\r\n", lookupTable.Count);
+			output.AppendFormat("const Int UnicodeTables_CanonicalCombiningClassTableCount = {0};\r\n", codePages.Count);
+			output.AppendFormat("const Int UnicodeTables_CanonicalCombiningClassByteCount = {0};\r\n\r\n", codePages.Count * (1 << BitsPerPage));
 
 			foreach (CodePage codePage in codePages.Keys)
 			{
-				WriteCodePage(output, "static byte", "_combining_" + codePage.ExternalIdentifier.ToString("X4"), codePage, 16);
+				WriteCodePage(output, "static const Byte", "_combining_" + codePage.ExternalIdentifier.ToString("X4"), codePage, 16);
 			}
 
-			WriteCodePage(output, "static byte *", "CanonicalCombiningClassTable", lookupTable, 8);
+			WriteCodePage(output, "const Byte *", "UnicodeTables_CanonicalCombiningClassTable", lookupTable, 8);
 
 			EndOutput(output);
 
-			File.WriteAllText(@"Output\UnicodeCanonicalCombiningClassTable.cpp", output.ToString(), Encoding.UTF8);
+			File.WriteAllText(@"Output\combiningclass.c", output.ToString(), Encoding.UTF8);
 		}
 
 
