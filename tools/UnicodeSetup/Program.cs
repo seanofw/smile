@@ -731,19 +731,19 @@ namespace UnicodeSetup
 
 			private void WriteOutput(StringBuilder stringBuilder, Dictionary<int, CompositionTrieNode> tree, int depth, int defaultValue)
 			{
-				stringBuilder.AppendFormat("{0}switch ({1}) {{\r\n", indents[depth+3], (char)(depth + 'a'));
+				stringBuilder.AppendFormat("{0}switch ({1}) {{\r\n", indents[depth+1], (char)(depth + 'a'));
 				foreach (int code in tree.Keys.OrderBy(k => k))
 				{
 					CompositionTrieNode node = tree[code];
 					if (node.Subtree != null)
 					{
-						stringBuilder.AppendFormat("{0}case {1}:\r\n", indents[depth+3], code);
+						stringBuilder.AppendFormat("{0}case {1}:\r\n", indents[depth+1], code);
 						int childDefaultValue = node.CharacterInfo != null ? ((int)node.CharacterInfo.CodeValue | ((depth + 1) << 24)) : defaultValue;
 						if (node.Subtree.Count == 1)
 						{
 							KeyValuePair<int, CompositionTrieNode> childPair = node.Subtree.First();
 							stringBuilder.AppendFormat("{0}return {1} == {2} ? {3} : {4};\r\n",
-								indents[depth + 4], (char)(depth + 1 + 'a'), childPair.Key, ((int)childPair.Value.CharacterInfo.CodeValue | ((depth + 2) << 24)), childDefaultValue);
+								indents[depth + 2], (char)(depth + 1 + 'a'), childPair.Key, ((int)childPair.Value.CharacterInfo.CodeValue | ((depth + 2) << 24)), childDefaultValue);
 						}
 						else
 						{
@@ -752,15 +752,15 @@ namespace UnicodeSetup
 					}
 					else if (node.CharacterInfo != null && depth > 0)
 					{
-						stringBuilder.AppendFormat("{0}case {1}: return {2};\r\n", indents[depth+3], code, ((int)node.CharacterInfo.CodeValue | ((depth+1) << 24)));
+						stringBuilder.AppendFormat("{0}case {1}: return {2};\r\n", indents[depth+1], code, ((int)node.CharacterInfo.CodeValue | ((depth+1) << 24)));
 					}
 					else if (defaultValue != -1)
 					{
-						stringBuilder.AppendFormat("{0}case {1}: return {1};\r\n", indents[depth+3], code, defaultValue);
+						stringBuilder.AppendFormat("{0}case {1}: return {1};\r\n", indents[depth+1], code, defaultValue);
 					}
 				}
 				stringBuilder.AppendFormat("{0}default: return {1};\r\n"
-					+ "{0}}}\r\n", indents[depth+3], defaultValue);
+					+ "{0}}}\r\n", indents[depth+1], defaultValue);
 			}
 		}
 
@@ -792,14 +792,14 @@ namespace UnicodeSetup
 
 			BeginOutput(output);
 
-			output.Append("\t\tint UnicodeTables::Compose(int a, int b, int c, int d)\r\n"
-				+ "\t\t{\r\n");
+			output.Append("Int32 Unicode_Compose(Int32 a, Int32 b, Int32 c, Int32 d)\r\n"
+				+ "{\r\n");
 			trie.WriteOutput(output);
-			output.Append("\t\t}\r\n");
+			output.Append("}\r\n");
 
 			EndOutput(output);
 
-			File.WriteAllText(@"Output\UnicodeCompositionTable.cpp", output.ToString());
+			File.WriteAllText(@"Output\composition.c", output.ToString());
 		}
 
 		#endregion
