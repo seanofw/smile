@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
 //  Copyright 2004-2019 Sean Werkema
 //
@@ -743,3 +743,4 @@ const Byte *UnicodeTables_CanonicalCombiningClassTable[] =
 	_combining_0000, _combining_0000, _combining_0000, _combining_0000, _combining_0000, _combining_0000, _combining_0000, _combining_0000,
 	_combining_0000, _combining_0000, _combining_0000, _combining_FB00, _combining_0000, _combining_0000, _combining_FE00, _combining_0000,
 };
+

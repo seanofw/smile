@@ -24,1784 +24,1695 @@
 
 #include <smile/internal/unicode.h>
 
+#define NO_MATCH	(-1)
+
+#define ONE_POINT	(1 << 24)
+#define TWO_POINTS	(2 << 24)
+#define THREE_POINTS	(3 << 24)
+#define FOUR_POINTS	(4 << 24)
+
 Int32 Unicode_Compose(Int32 a, Int32 b, Int32 c, Int32 d)
 {
 	switch (a) {
-	case 60:
-		return b == 824 ? 33563246 : -1;
-	case 61:
-		return b == 824 ? 33563232 : -1;
-	case 62:
-		return b == 824 ? 33563247 : -1;
-	case 65:
+	case 0x3C:
+		return b == 0x338 ? (0x226E | TWO_POINTS) : NO_MATCH;
+	case 0x3D:
+		return b == 0x338 ? (0x2260 | TWO_POINTS) : NO_MATCH;
+	case 0x3E:
+		return b == 0x338 ? (0x226F | TWO_POINTS) : NO_MATCH;
+	case 0x41:
 		switch (b) {
-		case 768: return 33554624;
-		case 769: return 33554625;
-		case 770:
+		case 0x300: return (0xC0 | TWO_POINTS);
+		case 0x301: return (0xC1 | TWO_POINTS);
+		case 0x302:
 			switch (c) {
-			case 768: return 50339494;
-			case 769: return 50339492;
-			case 771: return 50339498;
-			case 777: return 50339496;
-			default: return 33554626;
+			case 0x300: return (0x1EA6 | THREE_POINTS);
+			case 0x301: return (0x1EA4 | THREE_POINTS);
+			case 0x303: return (0x1EAA | THREE_POINTS);
+			case 0x309: return (0x1EA8 | THREE_POINTS);
+			default: return (0xC2 | TWO_POINTS);
 			}
-		case 771: return 33554627;
-		case 772: return 33554688;
-		case 774:
+		case 0x303: return (0xC3 | TWO_POINTS);
+		case 0x304: return (0x100 | TWO_POINTS);
+		case 0x306:
 			switch (c) {
-			case 768: return 50339504;
-			case 769: return 50339502;
-			case 771: return 50339508;
-			case 777: return 50339506;
-			default: return 33554690;
+			case 0x300: return (0x1EB0 | THREE_POINTS);
+			case 0x301: return (0x1EAE | THREE_POINTS);
+			case 0x303: return (0x1EB4 | THREE_POINTS);
+			case 0x309: return (0x1EB2 | THREE_POINTS);
+			default: return (0x102 | TWO_POINTS);
 			}
-		case 775:
-			return c == 772 ? 50332128 : 33554982;
-		case 776:
-			return c == 772 ? 50332126 : 33554628;
-		case 777: return 33562274;
-		case 778:
-			return c == 769 ? 50332154 : 33562923;
-		case 780: return 33554893;
-		case 783: return 33554944;
-		case 785: return 33554946;
-		case 803:
+		case 0x307:
+			return c == 0x304 ? (0x1E0 | THREE_POINTS) : (0x226 | TWO_POINTS);
+		case 0x308:
+			return c == 0x304 ? (0x1DE | THREE_POINTS) : (0xC4 | TWO_POINTS);
+		case 0x309: return (0x1EA2 | TWO_POINTS);
+		case 0x30A:
+			return c == 0x301 ? (0x1FA | THREE_POINTS) : (0x212B | TWO_POINTS);
+		case 0x30C: return (0x1CD | TWO_POINTS);
+		case 0x30F: return (0x200 | TWO_POINTS);
+		case 0x311: return (0x202 | TWO_POINTS);
+		case 0x323:
+			return c == 0x302 ? (0x1EAC | THREE_POINTS)
+				: c == 0x306 ? (0x1EB6 | THREE_POINTS)
+				: (0x1EA0 | TWO_POINTS);
+		case 0x325: return (0x1E00 | TWO_POINTS);
+		case 0x328: return (0x104 | TWO_POINTS);
+		default: return NO_MATCH;
+		}
+	case 0x42:
+		switch (b) {
+		case 0x307: return (0x1E02 | TWO_POINTS);
+		case 0x323: return (0x1E04 | TWO_POINTS);
+		case 0x331: return (0x1E06 | TWO_POINTS);
+		default: return NO_MATCH;
+		}
+	case 0x43:
+		switch (b) {
+		case 0x301: return (0x106 | TWO_POINTS);
+		case 0x302: return (0x108 | TWO_POINTS);
+		case 0x307: return (0x10A | TWO_POINTS);
+		case 0x30C: return (0x10C | TWO_POINTS);
+		case 0x327:
+			return c == 0x301 ? (0x1E08 | THREE_POINTS) : (0xC7 | TWO_POINTS);
+		default: return NO_MATCH;
+		}
+	case 0x44:
+		switch (b) {
+		case 0x307: return (0x1E0A | TWO_POINTS);
+		case 0x30C: return (0x10E | TWO_POINTS);
+		case 0x323: return (0x1E0C | TWO_POINTS);
+		case 0x327: return (0x1E10 | TWO_POINTS);
+		case 0x32D: return (0x1E12 | TWO_POINTS);
+		case 0x331: return (0x1E0E | TWO_POINTS);
+		default: return NO_MATCH;
+		}
+	case 0x45:
+		switch (b) {
+		case 0x300: return (0xC8 | TWO_POINTS);
+		case 0x301: return (0xC9 | TWO_POINTS);
+		case 0x302:
 			switch (c) {
-			case 770: return 50339500;
-			case 774: return 50339510;
-			default: return 33562272;
+			case 0x300: return (0x1EC0 | THREE_POINTS);
+			case 0x301: return (0x1EBE | THREE_POINTS);
+			case 0x303: return (0x1EC4 | THREE_POINTS);
+			case 0x309: return (0x1EC2 | THREE_POINTS);
+			default: return (0xCA | TWO_POINTS);
 			}
-		case 805: return 33562112;
-		case 808: return 33554692;
-		default: return -1;
+		case 0x303: return (0x1EBC | TWO_POINTS);
+		case 0x304:
+			return c == 0x300 ? (0x1E14 | THREE_POINTS)
+				: c == 0x301 ? (0x1E16 | THREE_POINTS)
+				: (0x112 | TWO_POINTS);
+		case 0x306: return (0x114 | TWO_POINTS);
+		case 0x307: return (0x116 | TWO_POINTS);
+		case 0x308: return (0xCB | TWO_POINTS);
+		case 0x309: return (0x1EBA | TWO_POINTS);
+		case 0x30C: return (0x11A | TWO_POINTS);
+		case 0x30F: return (0x204 | TWO_POINTS);
+		case 0x311: return (0x206 | TWO_POINTS);
+		case 0x323:
+			return c == 0x302 ? (0x1EC6 | THREE_POINTS) : (0x1EB8 | TWO_POINTS);
+		case 0x327:
+			return c == 0x306 ? (0x1E1C | THREE_POINTS) : (0x228 | TWO_POINTS);
+		case 0x328: return (0x118 | TWO_POINTS);
+		case 0x32D: return (0x1E18 | TWO_POINTS);
+		case 0x330: return (0x1E1A | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 66:
+	case 0x46:
+		return b == 0x307 ? (0x1E1E | TWO_POINTS) : NO_MATCH;
+	case 0x47:
 		switch (b) {
-		case 775: return 33562114;
-		case 803: return 33562116;
-		case 817: return 33562118;
-		default: return -1;
+		case 0x301: return (0x1F4 | TWO_POINTS);
+		case 0x302: return (0x11C | TWO_POINTS);
+		case 0x304: return (0x1E20 | TWO_POINTS);
+		case 0x306: return (0x11E | TWO_POINTS);
+		case 0x307: return (0x120 | TWO_POINTS);
+		case 0x30C: return (0x1E6 | TWO_POINTS);
+		case 0x327: return (0x122 | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 67:
+	case 0x48:
 		switch (b) {
-		case 769: return 33554694;
-		case 770: return 33554696;
-		case 775: return 33554698;
-		case 780: return 33554700;
-		case 807:
-			return c == 769 ? 50339336 : 33554631;
-		default: return -1;
+		case 0x302: return (0x124 | TWO_POINTS);
+		case 0x307: return (0x1E22 | TWO_POINTS);
+		case 0x308: return (0x1E26 | TWO_POINTS);
+		case 0x30C: return (0x21E | TWO_POINTS);
+		case 0x323: return (0x1E24 | TWO_POINTS);
+		case 0x327: return (0x1E28 | TWO_POINTS);
+		case 0x32E: return (0x1E2A | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 68:
+	case 0x49:
 		switch (b) {
-		case 775: return 33562122;
-		case 780: return 33554702;
-		case 803: return 33562124;
-		case 807: return 33562128;
-		case 813: return 33562130;
-		case 817: return 33562126;
-		default: return -1;
+		case 0x300: return (0xCC | TWO_POINTS);
+		case 0x301: return (0xCD | TWO_POINTS);
+		case 0x302: return (0xCE | TWO_POINTS);
+		case 0x303: return (0x128 | TWO_POINTS);
+		case 0x304: return (0x12A | TWO_POINTS);
+		case 0x306: return (0x12C | TWO_POINTS);
+		case 0x307: return (0x130 | TWO_POINTS);
+		case 0x308:
+			return c == 0x301 ? (0x1E2E | THREE_POINTS) : (0xCF | TWO_POINTS);
+		case 0x309: return (0x1EC8 | TWO_POINTS);
+		case 0x30C: return (0x1CF | TWO_POINTS);
+		case 0x30F: return (0x208 | TWO_POINTS);
+		case 0x311: return (0x20A | TWO_POINTS);
+		case 0x323: return (0x1ECA | TWO_POINTS);
+		case 0x328: return (0x12E | TWO_POINTS);
+		case 0x330: return (0x1E2C | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 69:
+	case 0x4A:
+		return b == 0x302 ? (0x134 | TWO_POINTS) : NO_MATCH;
+	case 0x4B:
 		switch (b) {
-		case 768: return 33554632;
-		case 769: return 33554633;
-		case 770:
+		case 0x301: return (0x1E30 | TWO_POINTS);
+		case 0x30C: return (0x1E8 | TWO_POINTS);
+		case 0x323: return (0x1E32 | TWO_POINTS);
+		case 0x327: return (0x136 | TWO_POINTS);
+		case 0x331: return (0x1E34 | TWO_POINTS);
+		default: return (0x212A | ONE_POINT);
+		}
+	case 0x4C:
+		switch (b) {
+		case 0x301: return (0x139 | TWO_POINTS);
+		case 0x30C: return (0x13D | TWO_POINTS);
+		case 0x323:
+			return c == 0x304 ? (0x1E38 | THREE_POINTS) : (0x1E36 | TWO_POINTS);
+		case 0x327: return (0x13B | TWO_POINTS);
+		case 0x32D: return (0x1E3C | TWO_POINTS);
+		case 0x331: return (0x1E3A | TWO_POINTS);
+		default: return NO_MATCH;
+		}
+	case 0x4D:
+		switch (b) {
+		case 0x301: return (0x1E3E | TWO_POINTS);
+		case 0x307: return (0x1E40 | TWO_POINTS);
+		case 0x323: return (0x1E42 | TWO_POINTS);
+		default: return NO_MATCH;
+		}
+	case 0x4E:
+		switch (b) {
+		case 0x300: return (0x1F8 | TWO_POINTS);
+		case 0x301: return (0x143 | TWO_POINTS);
+		case 0x303: return (0xD1 | TWO_POINTS);
+		case 0x307: return (0x1E44 | TWO_POINTS);
+		case 0x30C: return (0x147 | TWO_POINTS);
+		case 0x323: return (0x1E46 | TWO_POINTS);
+		case 0x327: return (0x145 | TWO_POINTS);
+		case 0x32D: return (0x1E4A | TWO_POINTS);
+		case 0x331: return (0x1E48 | TWO_POINTS);
+		default: return NO_MATCH;
+		}
+	case 0x4F:
+		switch (b) {
+		case 0x300: return (0xD2 | TWO_POINTS);
+		case 0x301: return (0xD3 | TWO_POINTS);
+		case 0x302:
 			switch (c) {
-			case 768: return 50339520;
-			case 769: return 50339518;
-			case 771: return 50339524;
-			case 777: return 50339522;
-			default: return 33554634;
+			case 0x300: return (0x1ED2 | THREE_POINTS);
+			case 0x301: return (0x1ED0 | THREE_POINTS);
+			case 0x303: return (0x1ED6 | THREE_POINTS);
+			case 0x309: return (0x1ED4 | THREE_POINTS);
+			default: return (0xD4 | TWO_POINTS);
 			}
-		case 771: return 33562300;
-		case 772:
+		case 0x303:
 			switch (c) {
-			case 768: return 50339348;
-			case 769: return 50339350;
-			default: return 33554706;
+			case 0x301: return (0x1E4C | THREE_POINTS);
+			case 0x304: return (0x22C | THREE_POINTS);
+			case 0x308: return (0x1E4E | THREE_POINTS);
+			default: return (0xD5 | TWO_POINTS);
 			}
-		case 774: return 33554708;
-		case 775: return 33554710;
-		case 776: return 33554635;
-		case 777: return 33562298;
-		case 780: return 33554714;
-		case 783: return 33554948;
-		case 785: return 33554950;
-		case 803:
-			return c == 770 ? 50339526 : 33562296;
-		case 807:
-			return c == 774 ? 50339356 : 33554984;
-		case 808: return 33554712;
-		case 813: return 33562136;
-		case 816: return 33562138;
-		default: return -1;
-		}
-	case 70:
-		return b == 775 ? 33562142 : -1;
-	case 71:
-		switch (b) {
-		case 769: return 33554932;
-		case 770: return 33554716;
-		case 772: return 33562144;
-		case 774: return 33554718;
-		case 775: return 33554720;
-		case 780: return 33554918;
-		case 807: return 33554722;
-		default: return -1;
-		}
-	case 72:
-		switch (b) {
-		case 770: return 33554724;
-		case 775: return 33562146;
-		case 776: return 33562150;
-		case 780: return 33554974;
-		case 803: return 33562148;
-		case 807: return 33562152;
-		case 814: return 33562154;
-		default: return -1;
-		}
-	case 73:
-		switch (b) {
-		case 768: return 33554636;
-		case 769: return 33554637;
-		case 770: return 33554638;
-		case 771: return 33554728;
-		case 772: return 33554730;
-		case 774: return 33554732;
-		case 775: return 33554736;
-		case 776:
-			return c == 769 ? 50339374 : 33554639;
-		case 777: return 33562312;
-		case 780: return 33554895;
-		case 783: return 33554952;
-		case 785: return 33554954;
-		case 803: return 33562314;
-		case 808: return 33554734;
-		case 816: return 33562156;
-		default: return -1;
-		}
-	case 74:
-		return b == 770 ? 33554740 : -1;
-	case 75:
-		switch (b) {
-		case 769: return 33562160;
-		case 780: return 33554920;
-		case 803: return 33562162;
-		case 807: return 33554742;
-		case 817: return 33562164;
-		default: return 16785706;
-		}
-	case 76:
-		switch (b) {
-		case 769: return 33554745;
-		case 780: return 33554749;
-		case 803:
-			return c == 772 ? 50339384 : 33562166;
-		case 807: return 33554747;
-		case 813: return 33562172;
-		case 817: return 33562170;
-		default: return -1;
-		}
-	case 77:
-		switch (b) {
-		case 769: return 33562174;
-		case 775: return 33562176;
-		case 803: return 33562178;
-		default: return -1;
-		}
-	case 78:
-		switch (b) {
-		case 768: return 33554936;
-		case 769: return 33554755;
-		case 771: return 33554641;
-		case 775: return 33562180;
-		case 780: return 33554759;
-		case 803: return 33562182;
-		case 807: return 33554757;
-		case 813: return 33562186;
-		case 817: return 33562184;
-		default: return -1;
-		}
-	case 79:
-		switch (b) {
-		case 768: return 33554642;
-		case 769: return 33554643;
-		case 770:
+		case 0x304:
+			return c == 0x300 ? (0x1E50 | THREE_POINTS)
+				: c == 0x301 ? (0x1E52 | THREE_POINTS)
+				: (0x14C | TWO_POINTS);
+		case 0x306: return (0x14E | TWO_POINTS);
+		case 0x307:
+			return c == 0x304 ? (0x230 | THREE_POINTS) : (0x22E | TWO_POINTS);
+		case 0x308:
+			return c == 0x304 ? (0x22A | THREE_POINTS) : (0xD6 | TWO_POINTS);
+		case 0x309: return (0x1ECE | TWO_POINTS);
+		case 0x30B: return (0x150 | TWO_POINTS);
+		case 0x30C: return (0x1D1 | TWO_POINTS);
+		case 0x30F: return (0x20C | TWO_POINTS);
+		case 0x311: return (0x20E | TWO_POINTS);
+		case 0x31B:
 			switch (c) {
-			case 768: return 50339538;
-			case 769: return 50339536;
-			case 771: return 50339542;
-			case 777: return 50339540;
-			default: return 33554644;
+			case 0x300: return (0x1EDC | THREE_POINTS);
+			case 0x301: return (0x1EDA | THREE_POINTS);
+			case 0x303: return (0x1EE0 | THREE_POINTS);
+			case 0x309: return (0x1EDE | THREE_POINTS);
+			case 0x323: return (0x1EE2 | THREE_POINTS);
+			default: return (0x1A0 | TWO_POINTS);
 			}
-		case 771:
+		case 0x323:
+			return c == 0x302 ? (0x1ED8 | THREE_POINTS) : (0x1ECC | TWO_POINTS);
+		case 0x328:
+			return c == 0x304 ? (0x1EC | THREE_POINTS) : (0x1EA | TWO_POINTS);
+		default: return NO_MATCH;
+		}
+	case 0x50:
+		return b == 0x301 ? (0x1E54 | TWO_POINTS)
+			: b == 0x307 ? (0x1E56 | TWO_POINTS)
+			: NO_MATCH;
+	case 0x52:
+		switch (b) {
+		case 0x301: return (0x154 | TWO_POINTS);
+		case 0x307: return (0x1E58 | TWO_POINTS);
+		case 0x30C: return (0x158 | TWO_POINTS);
+		case 0x30F: return (0x210 | TWO_POINTS);
+		case 0x311: return (0x212 | TWO_POINTS);
+		case 0x323:
+			return c == 0x304 ? (0x1E5C | THREE_POINTS) : (0x1E5A | TWO_POINTS);
+		case 0x327: return (0x156 | TWO_POINTS);
+		case 0x331: return (0x1E5E | TWO_POINTS);
+		default: return NO_MATCH;
+		}
+	case 0x53:
+		switch (b) {
+		case 0x301:
+			return c == 0x307 ? (0x1E64 | THREE_POINTS) : (0x15A | TWO_POINTS);
+		case 0x302: return (0x15C | TWO_POINTS);
+		case 0x307: return (0x1E60 | TWO_POINTS);
+		case 0x30C:
+			return c == 0x307 ? (0x1E66 | THREE_POINTS) : (0x160 | TWO_POINTS);
+		case 0x323:
+			return c == 0x307 ? (0x1E68 | THREE_POINTS) : (0x1E62 | TWO_POINTS);
+		case 0x326: return (0x218 | TWO_POINTS);
+		case 0x327: return (0x15E | TWO_POINTS);
+		default: return NO_MATCH;
+		}
+	case 0x54:
+		switch (b) {
+		case 0x307: return (0x1E6A | TWO_POINTS);
+		case 0x30C: return (0x164 | TWO_POINTS);
+		case 0x323: return (0x1E6C | TWO_POINTS);
+		case 0x326: return (0x21A | TWO_POINTS);
+		case 0x327: return (0x162 | TWO_POINTS);
+		case 0x32D: return (0x1E70 | TWO_POINTS);
+		case 0x331: return (0x1E6E | TWO_POINTS);
+		default: return NO_MATCH;
+		}
+	case 0x55:
+		switch (b) {
+		case 0x300: return (0xD9 | TWO_POINTS);
+		case 0x301: return (0xDA | TWO_POINTS);
+		case 0x302: return (0xDB | TWO_POINTS);
+		case 0x303:
+			return c == 0x301 ? (0x1E78 | THREE_POINTS) : (0x168 | TWO_POINTS);
+		case 0x304:
+			return c == 0x308 ? (0x1E7A | THREE_POINTS) : (0x16A | TWO_POINTS);
+		case 0x306: return (0x16C | TWO_POINTS);
+		case 0x308:
 			switch (c) {
-			case 769: return 50339404;
-			case 772: return 50332204;
-			case 776: return 50339406;
-			default: return 33554645;
+			case 0x300: return (0x1DB | THREE_POINTS);
+			case 0x301: return (0x1D7 | THREE_POINTS);
+			case 0x304: return (0x1D5 | THREE_POINTS);
+			case 0x30C: return (0x1D9 | THREE_POINTS);
+			default: return (0xDC | TWO_POINTS);
 			}
-		case 772:
+		case 0x309: return (0x1EE6 | TWO_POINTS);
+		case 0x30A: return (0x16E | TWO_POINTS);
+		case 0x30B: return (0x170 | TWO_POINTS);
+		case 0x30C: return (0x1D3 | TWO_POINTS);
+		case 0x30F: return (0x214 | TWO_POINTS);
+		case 0x311: return (0x216 | TWO_POINTS);
+		case 0x31B:
 			switch (c) {
-			case 768: return 50339408;
-			case 769: return 50339410;
-			default: return 33554764;
+			case 0x300: return (0x1EEA | THREE_POINTS);
+			case 0x301: return (0x1EE8 | THREE_POINTS);
+			case 0x303: return (0x1EEE | THREE_POINTS);
+			case 0x309: return (0x1EEC | THREE_POINTS);
+			case 0x323: return (0x1EF0 | THREE_POINTS);
+			default: return (0x1AF | TWO_POINTS);
 			}
-		case 774: return 33554766;
-		case 775:
-			return c == 772 ? 50332208 : 33554990;
-		case 776:
-			return c == 772 ? 50332202 : 33554646;
-		case 777: return 33562318;
-		case 779: return 33554768;
-		case 780: return 33554897;
-		case 783: return 33554956;
-		case 785: return 33554958;
-		case 795:
+		case 0x323: return (0x1EE4 | TWO_POINTS);
+		case 0x324: return (0x1E72 | TWO_POINTS);
+		case 0x328: return (0x172 | TWO_POINTS);
+		case 0x32D: return (0x1E76 | TWO_POINTS);
+		case 0x330: return (0x1E74 | TWO_POINTS);
+		default: return NO_MATCH;
+		}
+	case 0x56:
+		return b == 0x303 ? (0x1E7C | TWO_POINTS)
+			: b == 0x323 ? (0x1E7E | TWO_POINTS)
+			: NO_MATCH;
+	case 0x57:
+		switch (b) {
+		case 0x300: return (0x1E80 | TWO_POINTS);
+		case 0x301: return (0x1E82 | TWO_POINTS);
+		case 0x302: return (0x174 | TWO_POINTS);
+		case 0x307: return (0x1E86 | TWO_POINTS);
+		case 0x308: return (0x1E84 | TWO_POINTS);
+		case 0x323: return (0x1E88 | TWO_POINTS);
+		default: return NO_MATCH;
+		}
+	case 0x58:
+		return b == 0x307 ? (0x1E8A | TWO_POINTS)
+			: b == 0x308 ? (0x1E8C | TWO_POINTS)
+			: NO_MATCH;
+	case 0x59:
+		switch (b) {
+		case 0x300: return (0x1EF2 | TWO_POINTS);
+		case 0x301: return (0xDD | TWO_POINTS);
+		case 0x302: return (0x176 | TWO_POINTS);
+		case 0x303: return (0x1EF8 | TWO_POINTS);
+		case 0x304: return (0x232 | TWO_POINTS);
+		case 0x307: return (0x1E8E | TWO_POINTS);
+		case 0x308: return (0x178 | TWO_POINTS);
+		case 0x309: return (0x1EF6 | TWO_POINTS);
+		case 0x323: return (0x1EF4 | TWO_POINTS);
+		default: return NO_MATCH;
+		}
+	case 0x5A:
+		switch (b) {
+		case 0x301: return (0x179 | TWO_POINTS);
+		case 0x302: return (0x1E90 | TWO_POINTS);
+		case 0x307: return (0x17B | TWO_POINTS);
+		case 0x30C: return (0x17D | TWO_POINTS);
+		case 0x323: return (0x1E92 | TWO_POINTS);
+		case 0x331: return (0x1E94 | TWO_POINTS);
+		default: return NO_MATCH;
+		}
+	case 0x61:
+		switch (b) {
+		case 0x300: return (0xE0 | TWO_POINTS);
+		case 0x301: return (0xE1 | TWO_POINTS);
+		case 0x302:
 			switch (c) {
-			case 768: return 50339548;
-			case 769: return 50339546;
-			case 771: return 50339552;
-			case 777: return 50339550;
-			case 803: return 50339554;
-			default: return 33554848;
+			case 0x300: return (0x1EA7 | THREE_POINTS);
+			case 0x301: return (0x1EA5 | THREE_POINTS);
+			case 0x303: return (0x1EAB | THREE_POINTS);
+			case 0x309: return (0x1EA9 | THREE_POINTS);
+			default: return (0xE2 | TWO_POINTS);
 			}
-		case 803:
-			return c == 770 ? 50339544 : 33562316;
-		case 808:
-			return c == 772 ? 50332140 : 33554922;
-		default: return -1;
-		}
-	case 80:
-		switch (b) {
-		case 769: return 33562196;
-		case 775: return 33562198;
-		default: return -1;
-		}
-	case 82:
-		switch (b) {
-		case 769: return 33554772;
-		case 775: return 33562200;
-		case 780: return 33554776;
-		case 783: return 33554960;
-		case 785: return 33554962;
-		case 803:
-			return c == 772 ? 50339420 : 33562202;
-		case 807: return 33554774;
-		case 817: return 33562206;
-		default: return -1;
-		}
-	case 83:
-		switch (b) {
-		case 769:
-			return c == 775 ? 50339428 : 33554778;
-		case 770: return 33554780;
-		case 775: return 33562208;
-		case 780:
-			return c == 775 ? 50339430 : 33554784;
-		case 803:
-			return c == 775 ? 50339432 : 33562210;
-		case 806: return 33554968;
-		case 807: return 33554782;
-		default: return -1;
-		}
-	case 84:
-		switch (b) {
-		case 775: return 33562218;
-		case 780: return 33554788;
-		case 803: return 33562220;
-		case 806: return 33554970;
-		case 807: return 33554786;
-		case 813: return 33562224;
-		case 817: return 33562222;
-		default: return -1;
-		}
-	case 85:
-		switch (b) {
-		case 768: return 33554649;
-		case 769: return 33554650;
-		case 770: return 33554651;
-		case 771:
-			return c == 769 ? 50339448 : 33554792;
-		case 772:
-			return c == 776 ? 50339450 : 33554794;
-		case 774: return 33554796;
-		case 776:
+		case 0x303: return (0xE3 | TWO_POINTS);
+		case 0x304: return (0x101 | TWO_POINTS);
+		case 0x306:
 			switch (c) {
-			case 768: return 50332123;
-			case 769: return 50332119;
-			case 772: return 50332117;
-			case 780: return 50332121;
-			default: return 33554652;
+			case 0x300: return (0x1EB1 | THREE_POINTS);
+			case 0x301: return (0x1EAF | THREE_POINTS);
+			case 0x303: return (0x1EB5 | THREE_POINTS);
+			case 0x309: return (0x1EB3 | THREE_POINTS);
+			default: return (0x103 | TWO_POINTS);
 			}
-		case 777: return 33562342;
-		case 778: return 33554798;
-		case 779: return 33554800;
-		case 780: return 33554899;
-		case 783: return 33554964;
-		case 785: return 33554966;
-		case 795:
+		case 0x307:
+			return c == 0x304 ? (0x1E1 | THREE_POINTS) : (0x227 | TWO_POINTS);
+		case 0x308:
+			return c == 0x304 ? (0x1DF | THREE_POINTS) : (0xE4 | TWO_POINTS);
+		case 0x309: return (0x1EA3 | TWO_POINTS);
+		case 0x30A:
+			return c == 0x301 ? (0x1FB | THREE_POINTS) : (0xE5 | TWO_POINTS);
+		case 0x30C: return (0x1CE | TWO_POINTS);
+		case 0x30F: return (0x201 | TWO_POINTS);
+		case 0x311: return (0x203 | TWO_POINTS);
+		case 0x323:
+			return c == 0x302 ? (0x1EAD | THREE_POINTS)
+				: c == 0x306 ? (0x1EB7 | THREE_POINTS)
+				: (0x1EA1 | TWO_POINTS);
+		case 0x325: return (0x1E01 | TWO_POINTS);
+		case 0x328: return (0x105 | TWO_POINTS);
+		default: return NO_MATCH;
+		}
+	case 0x62:
+		switch (b) {
+		case 0x307: return (0x1E03 | TWO_POINTS);
+		case 0x323: return (0x1E05 | TWO_POINTS);
+		case 0x331: return (0x1E07 | TWO_POINTS);
+		default: return NO_MATCH;
+		}
+	case 0x63:
+		switch (b) {
+		case 0x301: return (0x107 | TWO_POINTS);
+		case 0x302: return (0x109 | TWO_POINTS);
+		case 0x307: return (0x10B | TWO_POINTS);
+		case 0x30C: return (0x10D | TWO_POINTS);
+		case 0x327:
+			return c == 0x301 ? (0x1E09 | THREE_POINTS) : (0xE7 | TWO_POINTS);
+		default: return NO_MATCH;
+		}
+	case 0x64:
+		switch (b) {
+		case 0x307: return (0x1E0B | TWO_POINTS);
+		case 0x30C: return (0x10F | TWO_POINTS);
+		case 0x323: return (0x1E0D | TWO_POINTS);
+		case 0x327: return (0x1E11 | TWO_POINTS);
+		case 0x32D: return (0x1E13 | TWO_POINTS);
+		case 0x331: return (0x1E0F | TWO_POINTS);
+		default: return NO_MATCH;
+		}
+	case 0x65:
+		switch (b) {
+		case 0x300: return (0xE8 | TWO_POINTS);
+		case 0x301: return (0xE9 | TWO_POINTS);
+		case 0x302:
 			switch (c) {
-			case 768: return 50339562;
-			case 769: return 50339560;
-			case 771: return 50339566;
-			case 777: return 50339564;
-			case 803: return 50339568;
-			default: return 33554863;
+			case 0x300: return (0x1EC1 | THREE_POINTS);
+			case 0x301: return (0x1EBF | THREE_POINTS);
+			case 0x303: return (0x1EC5 | THREE_POINTS);
+			case 0x309: return (0x1EC3 | THREE_POINTS);
+			default: return (0xEA | TWO_POINTS);
 			}
-		case 803: return 33562340;
-		case 804: return 33562226;
-		case 808: return 33554802;
-		case 813: return 33562230;
-		case 816: return 33562228;
-		default: return -1;
+		case 0x303: return (0x1EBD | TWO_POINTS);
+		case 0x304:
+			return c == 0x300 ? (0x1E15 | THREE_POINTS)
+				: c == 0x301 ? (0x1E17 | THREE_POINTS)
+				: (0x113 | TWO_POINTS);
+		case 0x306: return (0x115 | TWO_POINTS);
+		case 0x307: return (0x117 | TWO_POINTS);
+		case 0x308: return (0xEB | TWO_POINTS);
+		case 0x309: return (0x1EBB | TWO_POINTS);
+		case 0x30C: return (0x11B | TWO_POINTS);
+		case 0x30F: return (0x205 | TWO_POINTS);
+		case 0x311: return (0x207 | TWO_POINTS);
+		case 0x323:
+			return c == 0x302 ? (0x1EC7 | THREE_POINTS) : (0x1EB9 | TWO_POINTS);
+		case 0x327:
+			return c == 0x306 ? (0x1E1D | THREE_POINTS) : (0x229 | TWO_POINTS);
+		case 0x328: return (0x119 | TWO_POINTS);
+		case 0x32D: return (0x1E19 | TWO_POINTS);
+		case 0x330: return (0x1E1B | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 86:
+	case 0x66:
+		return b == 0x307 ? (0x1E1F | TWO_POINTS) : NO_MATCH;
+	case 0x67:
 		switch (b) {
-		case 771: return 33562236;
-		case 803: return 33562238;
-		default: return -1;
+		case 0x301: return (0x1F5 | TWO_POINTS);
+		case 0x302: return (0x11D | TWO_POINTS);
+		case 0x304: return (0x1E21 | TWO_POINTS);
+		case 0x306: return (0x11F | TWO_POINTS);
+		case 0x307: return (0x121 | TWO_POINTS);
+		case 0x30C: return (0x1E7 | TWO_POINTS);
+		case 0x327: return (0x123 | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 87:
+	case 0x68:
 		switch (b) {
-		case 768: return 33562240;
-		case 769: return 33562242;
-		case 770: return 33554804;
-		case 775: return 33562246;
-		case 776: return 33562244;
-		case 803: return 33562248;
-		default: return -1;
+		case 0x302: return (0x125 | TWO_POINTS);
+		case 0x307: return (0x1E23 | TWO_POINTS);
+		case 0x308: return (0x1E27 | TWO_POINTS);
+		case 0x30C: return (0x21F | TWO_POINTS);
+		case 0x323: return (0x1E25 | TWO_POINTS);
+		case 0x327: return (0x1E29 | TWO_POINTS);
+		case 0x32E: return (0x1E2B | TWO_POINTS);
+		case 0x331: return (0x1E96 | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 88:
+	case 0x69:
 		switch (b) {
-		case 775: return 33562250;
-		case 776: return 33562252;
-		default: return -1;
+		case 0x300: return (0xEC | TWO_POINTS);
+		case 0x301: return (0xED | TWO_POINTS);
+		case 0x302: return (0xEE | TWO_POINTS);
+		case 0x303: return (0x129 | TWO_POINTS);
+		case 0x304: return (0x12B | TWO_POINTS);
+		case 0x306: return (0x12D | TWO_POINTS);
+		case 0x308:
+			return c == 0x301 ? (0x1E2F | THREE_POINTS) : (0xEF | TWO_POINTS);
+		case 0x309: return (0x1EC9 | TWO_POINTS);
+		case 0x30C: return (0x1D0 | TWO_POINTS);
+		case 0x30F: return (0x209 | TWO_POINTS);
+		case 0x311: return (0x20B | TWO_POINTS);
+		case 0x323: return (0x1ECB | TWO_POINTS);
+		case 0x328: return (0x12F | TWO_POINTS);
+		case 0x330: return (0x1E2D | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 89:
+	case 0x6A:
+		return b == 0x302 ? (0x135 | TWO_POINTS)
+			: b == 0x30C ? (0x1F0 | TWO_POINTS)
+			: NO_MATCH;
+	case 0x6B:
 		switch (b) {
-		case 768: return 33562354;
-		case 769: return 33554653;
-		case 770: return 33554806;
-		case 771: return 33562360;
-		case 772: return 33554994;
-		case 775: return 33562254;
-		case 776: return 33554808;
-		case 777: return 33562358;
-		case 803: return 33562356;
-		default: return -1;
+		case 0x301: return (0x1E31 | TWO_POINTS);
+		case 0x30C: return (0x1E9 | TWO_POINTS);
+		case 0x323: return (0x1E33 | TWO_POINTS);
+		case 0x327: return (0x137 | TWO_POINTS);
+		case 0x331: return (0x1E35 | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 90:
+	case 0x6C:
 		switch (b) {
-		case 769: return 33554809;
-		case 770: return 33562256;
-		case 775: return 33554811;
-		case 780: return 33554813;
-		case 803: return 33562258;
-		case 817: return 33562260;
-		default: return -1;
+		case 0x301: return (0x13A | TWO_POINTS);
+		case 0x30C: return (0x13E | TWO_POINTS);
+		case 0x323:
+			return c == 0x304 ? (0x1E39 | THREE_POINTS) : (0x1E37 | TWO_POINTS);
+		case 0x327: return (0x13C | TWO_POINTS);
+		case 0x32D: return (0x1E3D | TWO_POINTS);
+		case 0x331: return (0x1E3B | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 97:
+	case 0x6D:
 		switch (b) {
-		case 768: return 33554656;
-		case 769: return 33554657;
-		case 770:
+		case 0x301: return (0x1E3F | TWO_POINTS);
+		case 0x307: return (0x1E41 | TWO_POINTS);
+		case 0x323: return (0x1E43 | TWO_POINTS);
+		default: return NO_MATCH;
+		}
+	case 0x6E:
+		switch (b) {
+		case 0x300: return (0x1F9 | TWO_POINTS);
+		case 0x301: return (0x144 | TWO_POINTS);
+		case 0x303: return (0xF1 | TWO_POINTS);
+		case 0x307: return (0x1E45 | TWO_POINTS);
+		case 0x30C: return (0x148 | TWO_POINTS);
+		case 0x323: return (0x1E47 | TWO_POINTS);
+		case 0x327: return (0x146 | TWO_POINTS);
+		case 0x32D: return (0x1E4B | TWO_POINTS);
+		case 0x331: return (0x1E49 | TWO_POINTS);
+		default: return NO_MATCH;
+		}
+	case 0x6F:
+		switch (b) {
+		case 0x300: return (0xF2 | TWO_POINTS);
+		case 0x301: return (0xF3 | TWO_POINTS);
+		case 0x302:
 			switch (c) {
-			case 768: return 50339495;
-			case 769: return 50339493;
-			case 771: return 50339499;
-			case 777: return 50339497;
-			default: return 33554658;
+			case 0x300: return (0x1ED3 | THREE_POINTS);
+			case 0x301: return (0x1ED1 | THREE_POINTS);
+			case 0x303: return (0x1ED7 | THREE_POINTS);
+			case 0x309: return (0x1ED5 | THREE_POINTS);
+			default: return (0xF4 | TWO_POINTS);
 			}
-		case 771: return 33554659;
-		case 772: return 33554689;
-		case 774:
+		case 0x303:
 			switch (c) {
-			case 768: return 50339505;
-			case 769: return 50339503;
-			case 771: return 50339509;
-			case 777: return 50339507;
-			default: return 33554691;
+			case 0x301: return (0x1E4D | THREE_POINTS);
+			case 0x304: return (0x22D | THREE_POINTS);
+			case 0x308: return (0x1E4F | THREE_POINTS);
+			default: return (0xF5 | TWO_POINTS);
 			}
-		case 775:
-			return c == 772 ? 50332129 : 33554983;
-		case 776:
-			return c == 772 ? 50332127 : 33554660;
-		case 777: return 33562275;
-		case 778:
-			return c == 769 ? 50332155 : 33554661;
-		case 780: return 33554894;
-		case 783: return 33554945;
-		case 785: return 33554947;
-		case 803:
+		case 0x304:
+			return c == 0x300 ? (0x1E51 | THREE_POINTS)
+				: c == 0x301 ? (0x1E53 | THREE_POINTS)
+				: (0x14D | TWO_POINTS);
+		case 0x306: return (0x14F | TWO_POINTS);
+		case 0x307:
+			return c == 0x304 ? (0x231 | THREE_POINTS) : (0x22F | TWO_POINTS);
+		case 0x308:
+			return c == 0x304 ? (0x22B | THREE_POINTS) : (0xF6 | TWO_POINTS);
+		case 0x309: return (0x1ECF | TWO_POINTS);
+		case 0x30B: return (0x151 | TWO_POINTS);
+		case 0x30C: return (0x1D2 | TWO_POINTS);
+		case 0x30F: return (0x20D | TWO_POINTS);
+		case 0x311: return (0x20F | TWO_POINTS);
+		case 0x31B:
 			switch (c) {
-			case 770: return 50339501;
-			case 774: return 50339511;
-			default: return 33562273;
+			case 0x300: return (0x1EDD | THREE_POINTS);
+			case 0x301: return (0x1EDB | THREE_POINTS);
+			case 0x303: return (0x1EE1 | THREE_POINTS);
+			case 0x309: return (0x1EDF | THREE_POINTS);
+			case 0x323: return (0x1EE3 | THREE_POINTS);
+			default: return (0x1A1 | TWO_POINTS);
 			}
-		case 805: return 33562113;
-		case 808: return 33554693;
-		default: return -1;
+		case 0x323:
+			return c == 0x302 ? (0x1ED9 | THREE_POINTS) : (0x1ECD | TWO_POINTS);
+		case 0x328:
+			return c == 0x304 ? (0x1ED | THREE_POINTS) : (0x1EB | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 98:
+	case 0x70:
+		return b == 0x301 ? (0x1E55 | TWO_POINTS)
+			: b == 0x307 ? (0x1E57 | TWO_POINTS)
+			: NO_MATCH;
+	case 0x72:
 		switch (b) {
-		case 775: return 33562115;
-		case 803: return 33562117;
-		case 817: return 33562119;
-		default: return -1;
+		case 0x301: return (0x155 | TWO_POINTS);
+		case 0x307: return (0x1E59 | TWO_POINTS);
+		case 0x30C: return (0x159 | TWO_POINTS);
+		case 0x30F: return (0x211 | TWO_POINTS);
+		case 0x311: return (0x213 | TWO_POINTS);
+		case 0x323:
+			return c == 0x304 ? (0x1E5D | THREE_POINTS) : (0x1E5B | TWO_POINTS);
+		case 0x327: return (0x157 | TWO_POINTS);
+		case 0x331: return (0x1E5F | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 99:
+	case 0x73:
 		switch (b) {
-		case 769: return 33554695;
-		case 770: return 33554697;
-		case 775: return 33554699;
-		case 780: return 33554701;
-		case 807:
-			return c == 769 ? 50339337 : 33554663;
-		default: return -1;
+		case 0x301:
+			return c == 0x307 ? (0x1E65 | THREE_POINTS) : (0x15B | TWO_POINTS);
+		case 0x302: return (0x15D | TWO_POINTS);
+		case 0x307: return (0x1E61 | TWO_POINTS);
+		case 0x30C:
+			return c == 0x307 ? (0x1E67 | THREE_POINTS) : (0x161 | TWO_POINTS);
+		case 0x323:
+			return c == 0x307 ? (0x1E69 | THREE_POINTS) : (0x1E63 | TWO_POINTS);
+		case 0x326: return (0x219 | TWO_POINTS);
+		case 0x327: return (0x15F | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 100:
+	case 0x74:
 		switch (b) {
-		case 775: return 33562123;
-		case 780: return 33554703;
-		case 803: return 33562125;
-		case 807: return 33562129;
-		case 813: return 33562131;
-		case 817: return 33562127;
-		default: return -1;
+		case 0x307: return (0x1E6B | TWO_POINTS);
+		case 0x308: return (0x1E97 | TWO_POINTS);
+		case 0x30C: return (0x165 | TWO_POINTS);
+		case 0x323: return (0x1E6D | TWO_POINTS);
+		case 0x326: return (0x21B | TWO_POINTS);
+		case 0x327: return (0x163 | TWO_POINTS);
+		case 0x32D: return (0x1E71 | TWO_POINTS);
+		case 0x331: return (0x1E6F | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 101:
+	case 0x75:
 		switch (b) {
-		case 768: return 33554664;
-		case 769: return 33554665;
-		case 770:
+		case 0x300: return (0xF9 | TWO_POINTS);
+		case 0x301: return (0xFA | TWO_POINTS);
+		case 0x302: return (0xFB | TWO_POINTS);
+		case 0x303:
+			return c == 0x301 ? (0x1E79 | THREE_POINTS) : (0x169 | TWO_POINTS);
+		case 0x304:
+			return c == 0x308 ? (0x1E7B | THREE_POINTS) : (0x16B | TWO_POINTS);
+		case 0x306: return (0x16D | TWO_POINTS);
+		case 0x308:
 			switch (c) {
-			case 768: return 50339521;
-			case 769: return 50339519;
-			case 771: return 50339525;
-			case 777: return 50339523;
-			default: return 33554666;
+			case 0x300: return (0x1DC | THREE_POINTS);
+			case 0x301: return (0x1D8 | THREE_POINTS);
+			case 0x304: return (0x1D6 | THREE_POINTS);
+			case 0x30C: return (0x1DA | THREE_POINTS);
+			default: return (0xFC | TWO_POINTS);
 			}
-		case 771: return 33562301;
-		case 772:
+		case 0x309: return (0x1EE7 | TWO_POINTS);
+		case 0x30A: return (0x16F | TWO_POINTS);
+		case 0x30B: return (0x171 | TWO_POINTS);
+		case 0x30C: return (0x1D4 | TWO_POINTS);
+		case 0x30F: return (0x215 | TWO_POINTS);
+		case 0x311: return (0x217 | TWO_POINTS);
+		case 0x31B:
 			switch (c) {
-			case 768: return 50339349;
-			case 769: return 50339351;
-			default: return 33554707;
+			case 0x300: return (0x1EEB | THREE_POINTS);
+			case 0x301: return (0x1EE9 | THREE_POINTS);
+			case 0x303: return (0x1EEF | THREE_POINTS);
+			case 0x309: return (0x1EED | THREE_POINTS);
+			case 0x323: return (0x1EF1 | THREE_POINTS);
+			default: return (0x1B0 | TWO_POINTS);
 			}
-		case 774: return 33554709;
-		case 775: return 33554711;
-		case 776: return 33554667;
-		case 777: return 33562299;
-		case 780: return 33554715;
-		case 783: return 33554949;
-		case 785: return 33554951;
-		case 803:
-			return c == 770 ? 50339527 : 33562297;
-		case 807:
-			return c == 774 ? 50339357 : 33554985;
-		case 808: return 33554713;
-		case 813: return 33562137;
-		case 816: return 33562139;
-		default: return -1;
+		case 0x323: return (0x1EE5 | TWO_POINTS);
+		case 0x324: return (0x1E73 | TWO_POINTS);
+		case 0x328: return (0x173 | TWO_POINTS);
+		case 0x32D: return (0x1E77 | TWO_POINTS);
+		case 0x330: return (0x1E75 | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 102:
-		return b == 775 ? 33562143 : -1;
-	case 103:
+	case 0x76:
+		return b == 0x303 ? (0x1E7D | TWO_POINTS)
+			: b == 0x323 ? (0x1E7F | TWO_POINTS)
+			: NO_MATCH;
+	case 0x77:
 		switch (b) {
-		case 769: return 33554933;
-		case 770: return 33554717;
-		case 772: return 33562145;
-		case 774: return 33554719;
-		case 775: return 33554721;
-		case 780: return 33554919;
-		case 807: return 33554723;
-		default: return -1;
+		case 0x300: return (0x1E81 | TWO_POINTS);
+		case 0x301: return (0x1E83 | TWO_POINTS);
+		case 0x302: return (0x175 | TWO_POINTS);
+		case 0x307: return (0x1E87 | TWO_POINTS);
+		case 0x308: return (0x1E85 | TWO_POINTS);
+		case 0x30A: return (0x1E98 | TWO_POINTS);
+		case 0x323: return (0x1E89 | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 104:
+	case 0x78:
+		return b == 0x307 ? (0x1E8B | TWO_POINTS)
+			: b == 0x308 ? (0x1E8D | TWO_POINTS)
+			: NO_MATCH;
+	case 0x79:
 		switch (b) {
-		case 770: return 33554725;
-		case 775: return 33562147;
-		case 776: return 33562151;
-		case 780: return 33554975;
-		case 803: return 33562149;
-		case 807: return 33562153;
-		case 814: return 33562155;
-		case 817: return 33562262;
-		default: return -1;
+		case 0x300: return (0x1EF3 | TWO_POINTS);
+		case 0x301: return (0xFD | TWO_POINTS);
+		case 0x302: return (0x177 | TWO_POINTS);
+		case 0x303: return (0x1EF9 | TWO_POINTS);
+		case 0x304: return (0x233 | TWO_POINTS);
+		case 0x307: return (0x1E8F | TWO_POINTS);
+		case 0x308: return (0xFF | TWO_POINTS);
+		case 0x309: return (0x1EF7 | TWO_POINTS);
+		case 0x30A: return (0x1E99 | TWO_POINTS);
+		case 0x323: return (0x1EF5 | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 105:
+	case 0x7A:
 		switch (b) {
-		case 768: return 33554668;
-		case 769: return 33554669;
-		case 770: return 33554670;
-		case 771: return 33554729;
-		case 772: return 33554731;
-		case 774: return 33554733;
-		case 776:
-			return c == 769 ? 50339375 : 33554671;
-		case 777: return 33562313;
-		case 780: return 33554896;
-		case 783: return 33554953;
-		case 785: return 33554955;
-		case 803: return 33562315;
-		case 808: return 33554735;
-		case 816: return 33562157;
-		default: return -1;
+		case 0x301: return (0x17A | TWO_POINTS);
+		case 0x302: return (0x1E91 | TWO_POINTS);
+		case 0x307: return (0x17C | TWO_POINTS);
+		case 0x30C: return (0x17E | TWO_POINTS);
+		case 0x323: return (0x1E93 | TWO_POINTS);
+		case 0x331: return (0x1E95 | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 106:
+	case 0xA8:
 		switch (b) {
-		case 770: return 33554741;
-		case 780: return 33554928;
-		default: return -1;
+		case 0x300: return (0x1FED | TWO_POINTS);
+		case 0x301: return (0x1FEE | TWO_POINTS);
+		case 0x342: return (0x1FC1 | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 107:
+	case 0xC6:
+		return b == 0x304 ? (0x1E2 | TWO_POINTS)
+			: b == 0x301 ? (0x1FC | TWO_POINTS)
+			: NO_MATCH;
+	case 0xD8:
+		return b == 0x301 ? (0x1FE | TWO_POINTS) : NO_MATCH;
+	case 0xE6:
+		return b == 0x304 ? (0x1E3 | TWO_POINTS)
+			: b == 0x301 ? (0x1FD | TWO_POINTS)
+			: NO_MATCH;
+	case 0xF8:
+		return b == 0x301 ? (0x1FF | TWO_POINTS) : NO_MATCH;
+	case 0x17F:
+		return b == 0x307 ? (0x1E9B | TWO_POINTS) : NO_MATCH;
+	case 0x1B7:
+		return b == 0x30C ? (0x1EE | TWO_POINTS) : NO_MATCH;
+	case 0x292:
+		return b == 0x30C ? (0x1EF | TWO_POINTS) : NO_MATCH;
+	case 0x308:
+		return b == 0x301 ? (0x344 | TWO_POINTS) : NO_MATCH;
+	case 0x391:
 		switch (b) {
-		case 769: return 33562161;
-		case 780: return 33554921;
-		case 803: return 33562163;
-		case 807: return 33554743;
-		case 817: return 33562165;
-		default: return -1;
-		}
-	case 108:
-		switch (b) {
-		case 769: return 33554746;
-		case 780: return 33554750;
-		case 803:
-			return c == 772 ? 50339385 : 33562167;
-		case 807: return 33554748;
-		case 813: return 33562173;
-		case 817: return 33562171;
-		default: return -1;
-		}
-	case 109:
-		switch (b) {
-		case 769: return 33562175;
-		case 775: return 33562177;
-		case 803: return 33562179;
-		default: return -1;
-		}
-	case 110:
-		switch (b) {
-		case 768: return 33554937;
-		case 769: return 33554756;
-		case 771: return 33554673;
-		case 775: return 33562181;
-		case 780: return 33554760;
-		case 803: return 33562183;
-		case 807: return 33554758;
-		case 813: return 33562187;
-		case 817: return 33562185;
-		default: return -1;
-		}
-	case 111:
-		switch (b) {
-		case 768: return 33554674;
-		case 769: return 33554675;
-		case 770:
+		case 0x300: return (0x1FBA | TWO_POINTS);
+		case 0x301: return (0x1FBB | TWO_POINTS);
+		case 0x304: return (0x1FB9 | TWO_POINTS);
+		case 0x306: return (0x1FB8 | TWO_POINTS);
+		case 0x313:
 			switch (c) {
-			case 768: return 50339539;
-			case 769: return 50339537;
-			case 771: return 50339543;
-			case 777: return 50339541;
-			default: return 33554676;
+			case 0x300:
+				return d == 0x345 ? (0x1F8A | FOUR_POINTS) : (0x1F0A | THREE_POINTS);
+			case 0x301:
+				return d == 0x345 ? (0x1F8C | FOUR_POINTS) : (0x1F0C | THREE_POINTS);
+			case 0x342:
+				return d == 0x345 ? (0x1F8E | FOUR_POINTS) : (0x1F0E | THREE_POINTS);
+			case 0x345: return (0x1F88 | THREE_POINTS);
+			default: return (0x1F08 | TWO_POINTS);
 			}
-		case 771:
+		case 0x314:
 			switch (c) {
-			case 769: return 50339405;
-			case 772: return 50332205;
-			case 776: return 50339407;
-			default: return 33554677;
+			case 0x300:
+				return d == 0x345 ? (0x1F8B | FOUR_POINTS) : (0x1F0B | THREE_POINTS);
+			case 0x301:
+				return d == 0x345 ? (0x1F8D | FOUR_POINTS) : (0x1F0D | THREE_POINTS);
+			case 0x342:
+				return d == 0x345 ? (0x1F8F | FOUR_POINTS) : (0x1F0F | THREE_POINTS);
+			case 0x345: return (0x1F89 | THREE_POINTS);
+			default: return (0x1F09 | TWO_POINTS);
 			}
-		case 772:
+		case 0x345: return (0x1FBC | TWO_POINTS);
+		default: return NO_MATCH;
+		}
+	case 0x395:
+		switch (b) {
+		case 0x300: return (0x1FC8 | TWO_POINTS);
+		case 0x301: return (0x1FC9 | TWO_POINTS);
+		case 0x313:
+			return c == 0x300 ? (0x1F1A | THREE_POINTS)
+				: c == 0x301 ? (0x1F1C | THREE_POINTS)
+				: (0x1F18 | TWO_POINTS);
+		case 0x314:
+			return c == 0x300 ? (0x1F1B | THREE_POINTS)
+				: c == 0x301 ? (0x1F1D | THREE_POINTS)
+				: (0x1F19 | TWO_POINTS);
+		default: return NO_MATCH;
+		}
+	case 0x397:
+		switch (b) {
+		case 0x300: return (0x1FCA | TWO_POINTS);
+		case 0x301: return (0x1FCB | TWO_POINTS);
+		case 0x313:
 			switch (c) {
-			case 768: return 50339409;
-			case 769: return 50339411;
-			default: return 33554765;
+			case 0x300:
+				return d == 0x345 ? (0x1F9A | FOUR_POINTS) : (0x1F2A | THREE_POINTS);
+			case 0x301:
+				return d == 0x345 ? (0x1F9C | FOUR_POINTS) : (0x1F2C | THREE_POINTS);
+			case 0x342:
+				return d == 0x345 ? (0x1F9E | FOUR_POINTS) : (0x1F2E | THREE_POINTS);
+			case 0x345: return (0x1F98 | THREE_POINTS);
+			default: return (0x1F28 | TWO_POINTS);
 			}
-		case 774: return 33554767;
-		case 775:
-			return c == 772 ? 50332209 : 33554991;
-		case 776:
-			return c == 772 ? 50332203 : 33554678;
-		case 777: return 33562319;
-		case 779: return 33554769;
-		case 780: return 33554898;
-		case 783: return 33554957;
-		case 785: return 33554959;
-		case 795:
+		case 0x314:
 			switch (c) {
-			case 768: return 50339549;
-			case 769: return 50339547;
-			case 771: return 50339553;
-			case 777: return 50339551;
-			case 803: return 50339555;
-			default: return 33554849;
+			case 0x300:
+				return d == 0x345 ? (0x1F9B | FOUR_POINTS) : (0x1F2B | THREE_POINTS);
+			case 0x301:
+				return d == 0x345 ? (0x1F9D | FOUR_POINTS) : (0x1F2D | THREE_POINTS);
+			case 0x342:
+				return d == 0x345 ? (0x1F9F | FOUR_POINTS) : (0x1F2F | THREE_POINTS);
+			case 0x345: return (0x1F99 | THREE_POINTS);
+			default: return (0x1F29 | TWO_POINTS);
 			}
-		case 803:
-			return c == 770 ? 50339545 : 33562317;
-		case 808:
-			return c == 772 ? 50332141 : 33554923;
-		default: return -1;
+		case 0x345: return (0x1FCC | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 112:
+	case 0x399:
 		switch (b) {
-		case 769: return 33562197;
-		case 775: return 33562199;
-		default: return -1;
-		}
-	case 114:
-		switch (b) {
-		case 769: return 33554773;
-		case 775: return 33562201;
-		case 780: return 33554777;
-		case 783: return 33554961;
-		case 785: return 33554963;
-		case 803:
-			return c == 772 ? 50339421 : 33562203;
-		case 807: return 33554775;
-		case 817: return 33562207;
-		default: return -1;
-		}
-	case 115:
-		switch (b) {
-		case 769:
-			return c == 775 ? 50339429 : 33554779;
-		case 770: return 33554781;
-		case 775: return 33562209;
-		case 780:
-			return c == 775 ? 50339431 : 33554785;
-		case 803:
-			return c == 775 ? 50339433 : 33562211;
-		case 806: return 33554969;
-		case 807: return 33554783;
-		default: return -1;
-		}
-	case 116:
-		switch (b) {
-		case 775: return 33562219;
-		case 776: return 33562263;
-		case 780: return 33554789;
-		case 803: return 33562221;
-		case 806: return 33554971;
-		case 807: return 33554787;
-		case 813: return 33562225;
-		case 817: return 33562223;
-		default: return -1;
-		}
-	case 117:
-		switch (b) {
-		case 768: return 33554681;
-		case 769: return 33554682;
-		case 770: return 33554683;
-		case 771:
-			return c == 769 ? 50339449 : 33554793;
-		case 772:
-			return c == 776 ? 50339451 : 33554795;
-		case 774: return 33554797;
-		case 776:
+		case 0x300: return (0x1FDA | TWO_POINTS);
+		case 0x301: return (0x1FDB | TWO_POINTS);
+		case 0x304: return (0x1FD9 | TWO_POINTS);
+		case 0x306: return (0x1FD8 | TWO_POINTS);
+		case 0x308: return (0x3AA | TWO_POINTS);
+		case 0x313:
 			switch (c) {
-			case 768: return 50332124;
-			case 769: return 50332120;
-			case 772: return 50332118;
-			case 780: return 50332122;
-			default: return 33554684;
+			case 0x300: return (0x1F3A | THREE_POINTS);
+			case 0x301: return (0x1F3C | THREE_POINTS);
+			case 0x342: return (0x1F3E | THREE_POINTS);
+			default: return (0x1F38 | TWO_POINTS);
 			}
-		case 777: return 33562343;
-		case 778: return 33554799;
-		case 779: return 33554801;
-		case 780: return 33554900;
-		case 783: return 33554965;
-		case 785: return 33554967;
-		case 795:
+		case 0x314:
 			switch (c) {
-			case 768: return 50339563;
-			case 769: return 50339561;
-			case 771: return 50339567;
-			case 777: return 50339565;
-			case 803: return 50339569;
-			default: return 33554864;
+			case 0x300: return (0x1F3B | THREE_POINTS);
+			case 0x301: return (0x1F3D | THREE_POINTS);
+			case 0x342: return (0x1F3F | THREE_POINTS);
+			default: return (0x1F39 | TWO_POINTS);
 			}
-		case 803: return 33562341;
-		case 804: return 33562227;
-		case 808: return 33554803;
-		case 813: return 33562231;
-		case 816: return 33562229;
-		default: return -1;
+		default: return NO_MATCH;
 		}
-	case 118:
+	case 0x39F:
 		switch (b) {
-		case 771: return 33562237;
-		case 803: return 33562239;
-		default: return -1;
+		case 0x300: return (0x1FF8 | TWO_POINTS);
+		case 0x301: return (0x1FF9 | TWO_POINTS);
+		case 0x313:
+			return c == 0x300 ? (0x1F4A | THREE_POINTS)
+				: c == 0x301 ? (0x1F4C | THREE_POINTS)
+				: (0x1F48 | TWO_POINTS);
+		case 0x314:
+			return c == 0x300 ? (0x1F4B | THREE_POINTS)
+				: c == 0x301 ? (0x1F4D | THREE_POINTS)
+				: (0x1F49 | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 119:
+	case 0x3A1:
+		return b == 0x314 ? (0x1FEC | TWO_POINTS) : NO_MATCH;
+	case 0x3A5:
 		switch (b) {
-		case 768: return 33562241;
-		case 769: return 33562243;
-		case 770: return 33554805;
-		case 775: return 33562247;
-		case 776: return 33562245;
-		case 778: return 33562264;
-		case 803: return 33562249;
-		default: return -1;
-		}
-	case 120:
-		switch (b) {
-		case 775: return 33562251;
-		case 776: return 33562253;
-		default: return -1;
-		}
-	case 121:
-		switch (b) {
-		case 768: return 33562355;
-		case 769: return 33554685;
-		case 770: return 33554807;
-		case 771: return 33562361;
-		case 772: return 33554995;
-		case 775: return 33562255;
-		case 776: return 33554687;
-		case 777: return 33562359;
-		case 778: return 33562265;
-		case 803: return 33562357;
-		default: return -1;
-		}
-	case 122:
-		switch (b) {
-		case 769: return 33554810;
-		case 770: return 33562257;
-		case 775: return 33554812;
-		case 780: return 33554814;
-		case 803: return 33562259;
-		case 817: return 33562261;
-		default: return -1;
-		}
-	case 168:
-		switch (b) {
-		case 768: return 33562605;
-		case 769: return 33562606;
-		case 834: return 33562561;
-		default: return -1;
-		}
-	case 198:
-		switch (b) {
-		case 769: return 33554940;
-		case 772: return 33554914;
-		default: return -1;
-		}
-	case 216:
-		return b == 769 ? 33554942 : -1;
-	case 230:
-		switch (b) {
-		case 769: return 33554941;
-		case 772: return 33554915;
-		default: return -1;
-		}
-	case 248:
-		return b == 769 ? 33554943 : -1;
-	case 383:
-		return b == 775 ? 33562267 : -1;
-	case 439:
-		return b == 780 ? 33554926 : -1;
-	case 658:
-		return b == 780 ? 33554927 : -1;
-	case 776:
-		return b == 769 ? 33555268 : -1;
-	case 913:
-		switch (b) {
-		case 768: return 33562554;
-		case 769: return 33562555;
-		case 772: return 33562553;
-		case 774: return 33562552;
-		case 787:
+		case 0x300: return (0x1FEA | TWO_POINTS);
+		case 0x301: return (0x1FEB | TWO_POINTS);
+		case 0x304: return (0x1FE9 | TWO_POINTS);
+		case 0x306: return (0x1FE8 | TWO_POINTS);
+		case 0x308: return (0x3AB | TWO_POINTS);
+		case 0x314:
 			switch (c) {
-			case 768:
-				return d == 837 ? 67116938 : 50339594;
-			case 769:
-				return d == 837 ? 67116940 : 50339596;
-			case 834:
-				return d == 837 ? 67116942 : 50339598;
-			case 837: return 50339720;
-			default: return 33562376;
+			case 0x300: return (0x1F5B | THREE_POINTS);
+			case 0x301: return (0x1F5D | THREE_POINTS);
+			case 0x342: return (0x1F5F | THREE_POINTS);
+			default: return (0x1F59 | TWO_POINTS);
 			}
-		case 788:
+		default: return NO_MATCH;
+		}
+	case 0x3A9:
+		switch (b) {
+		case 0x300: return (0x1FFA | TWO_POINTS);
+		case 0x301: return (0x1FFB | TWO_POINTS);
+		case 0x313:
 			switch (c) {
-			case 768:
-				return d == 837 ? 67116939 : 50339595;
-			case 769:
-				return d == 837 ? 67116941 : 50339597;
-			case 834:
-				return d == 837 ? 67116943 : 50339599;
-			case 837: return 50339721;
-			default: return 33562377;
+			case 0x300:
+				return d == 0x345 ? (0x1FAA | FOUR_POINTS) : (0x1F6A | THREE_POINTS);
+			case 0x301:
+				return d == 0x345 ? (0x1FAC | FOUR_POINTS) : (0x1F6C | THREE_POINTS);
+			case 0x342:
+				return d == 0x345 ? (0x1FAE | FOUR_POINTS) : (0x1F6E | THREE_POINTS);
+			case 0x345: return (0x1FA8 | THREE_POINTS);
+			default: return (0x1F68 | TWO_POINTS);
 			}
-		case 837: return 33562556;
-		default: return -1;
-		}
-	case 917:
-		switch (b) {
-		case 768: return 33562568;
-		case 769: return 33562569;
-		case 787:
+		case 0x314:
 			switch (c) {
-			case 768: return 50339610;
-			case 769: return 50339612;
-			default: return 33562392;
+			case 0x300:
+				return d == 0x345 ? (0x1FAB | FOUR_POINTS) : (0x1F6B | THREE_POINTS);
+			case 0x301:
+				return d == 0x345 ? (0x1FAD | FOUR_POINTS) : (0x1F6D | THREE_POINTS);
+			case 0x342:
+				return d == 0x345 ? (0x1FAF | FOUR_POINTS) : (0x1F6F | THREE_POINTS);
+			case 0x345: return (0x1FA9 | THREE_POINTS);
+			default: return (0x1F69 | TWO_POINTS);
 			}
-		case 788:
+		case 0x345: return (0x1FFC | TWO_POINTS);
+		default: return (0x2126 | ONE_POINT);
+		}
+	case 0x3B1:
+		switch (b) {
+		case 0x300:
+			return c == 0x345 ? (0x1FB2 | THREE_POINTS) : (0x1F70 | TWO_POINTS);
+		case 0x301:
+			return c == 0x345 ? (0x1FB4 | THREE_POINTS) : (0x1F71 | TWO_POINTS);
+		case 0x304: return (0x1FB1 | TWO_POINTS);
+		case 0x306: return (0x1FB0 | TWO_POINTS);
+		case 0x313:
 			switch (c) {
-			case 768: return 50339611;
-			case 769: return 50339613;
-			default: return 33562393;
+			case 0x300:
+				return d == 0x345 ? (0x1F82 | FOUR_POINTS) : (0x1F02 | THREE_POINTS);
+			case 0x301:
+				return d == 0x345 ? (0x1F84 | FOUR_POINTS) : (0x1F04 | THREE_POINTS);
+			case 0x342:
+				return d == 0x345 ? (0x1F86 | FOUR_POINTS) : (0x1F06 | THREE_POINTS);
+			case 0x345: return (0x1F80 | THREE_POINTS);
+			default: return (0x1F00 | TWO_POINTS);
 			}
-		default: return -1;
-		}
-	case 919:
-		switch (b) {
-		case 768: return 33562570;
-		case 769: return 33562571;
-		case 787:
+		case 0x314:
 			switch (c) {
-			case 768:
-				return d == 837 ? 67116954 : 50339626;
-			case 769:
-				return d == 837 ? 67116956 : 50339628;
-			case 834:
-				return d == 837 ? 67116958 : 50339630;
-			case 837: return 50339736;
-			default: return 33562408;
+			case 0x300:
+				return d == 0x345 ? (0x1F83 | FOUR_POINTS) : (0x1F03 | THREE_POINTS);
+			case 0x301:
+				return d == 0x345 ? (0x1F85 | FOUR_POINTS) : (0x1F05 | THREE_POINTS);
+			case 0x342:
+				return d == 0x345 ? (0x1F87 | FOUR_POINTS) : (0x1F07 | THREE_POINTS);
+			case 0x345: return (0x1F81 | THREE_POINTS);
+			default: return (0x1F01 | TWO_POINTS);
 			}
-		case 788:
+		case 0x342:
+			return c == 0x345 ? (0x1FB7 | THREE_POINTS) : (0x1FB6 | TWO_POINTS);
+		case 0x345: return (0x1FB3 | TWO_POINTS);
+		default: return NO_MATCH;
+		}
+	case 0x3B5:
+		switch (b) {
+		case 0x300: return (0x1F72 | TWO_POINTS);
+		case 0x301: return (0x1F73 | TWO_POINTS);
+		case 0x313:
+			return c == 0x300 ? (0x1F12 | THREE_POINTS)
+				: c == 0x301 ? (0x1F14 | THREE_POINTS)
+				: (0x1F10 | TWO_POINTS);
+		case 0x314:
+			return c == 0x300 ? (0x1F13 | THREE_POINTS)
+				: c == 0x301 ? (0x1F15 | THREE_POINTS)
+				: (0x1F11 | TWO_POINTS);
+		default: return NO_MATCH;
+		}
+	case 0x3B7:
+		switch (b) {
+		case 0x300:
+			return c == 0x345 ? (0x1FC2 | THREE_POINTS) : (0x1F74 | TWO_POINTS);
+		case 0x301:
+			return c == 0x345 ? (0x1FC4 | THREE_POINTS) : (0x1F75 | TWO_POINTS);
+		case 0x313:
 			switch (c) {
-			case 768:
-				return d == 837 ? 67116955 : 50339627;
-			case 769:
-				return d == 837 ? 67116957 : 50339629;
-			case 834:
-				return d == 837 ? 67116959 : 50339631;
-			case 837: return 50339737;
-			default: return 33562409;
+			case 0x300:
+				return d == 0x345 ? (0x1F92 | FOUR_POINTS) : (0x1F22 | THREE_POINTS);
+			case 0x301:
+				return d == 0x345 ? (0x1F94 | FOUR_POINTS) : (0x1F24 | THREE_POINTS);
+			case 0x342:
+				return d == 0x345 ? (0x1F96 | FOUR_POINTS) : (0x1F26 | THREE_POINTS);
+			case 0x345: return (0x1F90 | THREE_POINTS);
+			default: return (0x1F20 | TWO_POINTS);
 			}
-		case 837: return 33562572;
-		default: return -1;
-		}
-	case 921:
-		switch (b) {
-		case 768: return 33562586;
-		case 769: return 33562587;
-		case 772: return 33562585;
-		case 774: return 33562584;
-		case 776: return 33555370;
-		case 787:
+		case 0x314:
 			switch (c) {
-			case 768: return 50339642;
-			case 769: return 50339644;
-			case 834: return 50339646;
-			default: return 33562424;
+			case 0x300:
+				return d == 0x345 ? (0x1F93 | FOUR_POINTS) : (0x1F23 | THREE_POINTS);
+			case 0x301:
+				return d == 0x345 ? (0x1F95 | FOUR_POINTS) : (0x1F25 | THREE_POINTS);
+			case 0x342:
+				return d == 0x345 ? (0x1F97 | FOUR_POINTS) : (0x1F27 | THREE_POINTS);
+			case 0x345: return (0x1F91 | THREE_POINTS);
+			default: return (0x1F21 | TWO_POINTS);
 			}
-		case 788:
+		case 0x342:
+			return c == 0x345 ? (0x1FC7 | THREE_POINTS) : (0x1FC6 | TWO_POINTS);
+		case 0x345: return (0x1FC3 | TWO_POINTS);
+		default: return NO_MATCH;
+		}
+	case 0x3B9:
+		switch (b) {
+		case 0x300: return (0x1F76 | TWO_POINTS);
+		case 0x301: return (0x1F77 | TWO_POINTS);
+		case 0x304: return (0x1FD1 | TWO_POINTS);
+		case 0x306: return (0x1FD0 | TWO_POINTS);
+		case 0x308:
 			switch (c) {
-			case 768: return 50339643;
-			case 769: return 50339645;
-			case 834: return 50339647;
-			default: return 33562425;
+			case 0x300: return (0x1FD2 | THREE_POINTS);
+			case 0x301: return (0x1FD3 | THREE_POINTS);
+			case 0x342: return (0x1FD7 | THREE_POINTS);
+			default: return (0x3CA | TWO_POINTS);
 			}
-		default: return -1;
-		}
-	case 927:
-		switch (b) {
-		case 768: return 33562616;
-		case 769: return 33562617;
-		case 787:
+		case 0x313:
 			switch (c) {
-			case 768: return 50339658;
-			case 769: return 50339660;
-			default: return 33562440;
+			case 0x300: return (0x1F32 | THREE_POINTS);
+			case 0x301: return (0x1F34 | THREE_POINTS);
+			case 0x342: return (0x1F36 | THREE_POINTS);
+			default: return (0x1F30 | TWO_POINTS);
 			}
-		case 788:
+		case 0x314:
 			switch (c) {
-			case 768: return 50339659;
-			case 769: return 50339661;
-			default: return 33562441;
+			case 0x300: return (0x1F33 | THREE_POINTS);
+			case 0x301: return (0x1F35 | THREE_POINTS);
+			case 0x342: return (0x1F37 | THREE_POINTS);
+			default: return (0x1F31 | TWO_POINTS);
 			}
-		default: return -1;
+		case 0x342: return (0x1FD6 | TWO_POINTS);
+		default: return (0x1FBE | ONE_POINT);
 		}
-	case 929:
-		return b == 788 ? 33562604 : -1;
-	case 933:
+	case 0x3BF:
 		switch (b) {
-		case 768: return 33562602;
-		case 769: return 33562603;
-		case 772: return 33562601;
-		case 774: return 33562600;
-		case 776: return 33555371;
-		case 788:
+		case 0x300: return (0x1F78 | TWO_POINTS);
+		case 0x301: return (0x1F79 | TWO_POINTS);
+		case 0x313:
+			return c == 0x300 ? (0x1F42 | THREE_POINTS)
+				: c == 0x301 ? (0x1F44 | THREE_POINTS)
+				: (0x1F40 | TWO_POINTS);
+		case 0x314:
+			return c == 0x300 ? (0x1F43 | THREE_POINTS)
+				: c == 0x301 ? (0x1F45 | THREE_POINTS)
+				: (0x1F41 | TWO_POINTS);
+		default: return NO_MATCH;
+		}
+	case 0x3C1:
+		return b == 0x313 ? (0x1FE4 | TWO_POINTS)
+			: b == 0x314 ? (0x1FE5 | TWO_POINTS)
+			: NO_MATCH;
+	case 0x3C5:
+		switch (b) {
+		case 0x300: return (0x1F7A | TWO_POINTS);
+		case 0x301: return (0x1F7B | TWO_POINTS);
+		case 0x304: return (0x1FE1 | TWO_POINTS);
+		case 0x306: return (0x1FE0 | TWO_POINTS);
+		case 0x308:
 			switch (c) {
-			case 768: return 50339675;
-			case 769: return 50339677;
-			case 834: return 50339679;
-			default: return 33562457;
+			case 0x300: return (0x1FE2 | THREE_POINTS);
+			case 0x301: return (0x1FE3 | THREE_POINTS);
+			case 0x342: return (0x1FE7 | THREE_POINTS);
+			default: return (0x3CB | TWO_POINTS);
 			}
-		default: return -1;
-		}
-	case 937:
-		switch (b) {
-		case 768: return 33562618;
-		case 769: return 33562619;
-		case 787:
+		case 0x313:
 			switch (c) {
-			case 768:
-				return d == 837 ? 67116970 : 50339690;
-			case 769:
-				return d == 837 ? 67116972 : 50339692;
-			case 834:
-				return d == 837 ? 67116974 : 50339694;
-			case 837: return 50339752;
-			default: return 33562472;
+			case 0x300: return (0x1F52 | THREE_POINTS);
+			case 0x301: return (0x1F54 | THREE_POINTS);
+			case 0x342: return (0x1F56 | THREE_POINTS);
+			default: return (0x1F50 | TWO_POINTS);
 			}
-		case 788:
+		case 0x314:
 			switch (c) {
-			case 768:
-				return d == 837 ? 67116971 : 50339691;
-			case 769:
-				return d == 837 ? 67116973 : 50339693;
-			case 834:
-				return d == 837 ? 67116975 : 50339695;
-			case 837: return 50339753;
-			default: return 33562473;
+			case 0x300: return (0x1F53 | THREE_POINTS);
+			case 0x301: return (0x1F55 | THREE_POINTS);
+			case 0x342: return (0x1F57 | THREE_POINTS);
+			default: return (0x1F51 | TWO_POINTS);
 			}
-		case 837: return 33562620;
-		default: return 16785702;
+		case 0x342: return (0x1FE6 | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 945:
+	case 0x3C9:
 		switch (b) {
-		case 768:
-			return c == 837 ? 50339762 : 33562480;
-		case 769:
-			return c == 837 ? 50339764 : 33562481;
-		case 772: return 33562545;
-		case 774: return 33562544;
-		case 787:
+		case 0x300:
+			return c == 0x345 ? (0x1FF2 | THREE_POINTS) : (0x1F7C | TWO_POINTS);
+		case 0x301:
+			return c == 0x345 ? (0x1FF4 | THREE_POINTS) : (0x1F7D | TWO_POINTS);
+		case 0x313:
 			switch (c) {
-			case 768:
-				return d == 837 ? 67116930 : 50339586;
-			case 769:
-				return d == 837 ? 67116932 : 50339588;
-			case 834:
-				return d == 837 ? 67116934 : 50339590;
-			case 837: return 50339712;
-			default: return 33562368;
+			case 0x300:
+				return d == 0x345 ? (0x1FA2 | FOUR_POINTS) : (0x1F62 | THREE_POINTS);
+			case 0x301:
+				return d == 0x345 ? (0x1FA4 | FOUR_POINTS) : (0x1F64 | THREE_POINTS);
+			case 0x342:
+				return d == 0x345 ? (0x1FA6 | FOUR_POINTS) : (0x1F66 | THREE_POINTS);
+			case 0x345: return (0x1FA0 | THREE_POINTS);
+			default: return (0x1F60 | TWO_POINTS);
 			}
-		case 788:
+		case 0x314:
 			switch (c) {
-			case 768:
-				return d == 837 ? 67116931 : 50339587;
-			case 769:
-				return d == 837 ? 67116933 : 50339589;
-			case 834:
-				return d == 837 ? 67116935 : 50339591;
-			case 837: return 50339713;
-			default: return 33562369;
+			case 0x300:
+				return d == 0x345 ? (0x1FA3 | FOUR_POINTS) : (0x1F63 | THREE_POINTS);
+			case 0x301:
+				return d == 0x345 ? (0x1FA5 | FOUR_POINTS) : (0x1F65 | THREE_POINTS);
+			case 0x342:
+				return d == 0x345 ? (0x1FA7 | FOUR_POINTS) : (0x1F67 | THREE_POINTS);
+			case 0x345: return (0x1FA1 | THREE_POINTS);
+			default: return (0x1F61 | TWO_POINTS);
 			}
-		case 834:
-			return c == 837 ? 50339767 : 33562550;
-		case 837: return 33562547;
-		default: return -1;
+		case 0x342:
+			return c == 0x345 ? (0x1FF7 | THREE_POINTS) : (0x1FF6 | TWO_POINTS);
+		case 0x345: return (0x1FF3 | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 949:
+	case 0x3D2:
+		return b == 0x301 ? (0x3D3 | TWO_POINTS)
+			: b == 0x308 ? (0x3D4 | TWO_POINTS)
+			: NO_MATCH;
+	case 0x406:
+		return b == 0x308 ? (0x407 | TWO_POINTS) : NO_MATCH;
+	case 0x410:
+		return b == 0x306 ? (0x4D0 | TWO_POINTS)
+			: b == 0x308 ? (0x4D2 | TWO_POINTS)
+			: NO_MATCH;
+	case 0x413:
+		return b == 0x301 ? (0x403 | TWO_POINTS) : NO_MATCH;
+	case 0x415:
 		switch (b) {
-		case 768: return 33562482;
-		case 769: return 33562483;
-		case 787:
-			switch (c) {
-			case 768: return 50339602;
-			case 769: return 50339604;
-			default: return 33562384;
-			}
-		case 788:
-			switch (c) {
-			case 768: return 50339603;
-			case 769: return 50339605;
-			default: return 33562385;
-			}
-		default: return -1;
+		case 0x300: return (0x400 | TWO_POINTS);
+		case 0x306: return (0x4D6 | TWO_POINTS);
+		case 0x308: return (0x401 | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 951:
+	case 0x416:
+		return b == 0x306 ? (0x4C1 | TWO_POINTS)
+			: b == 0x308 ? (0x4DC | TWO_POINTS)
+			: NO_MATCH;
+	case 0x417:
+		return b == 0x308 ? (0x4DE | TWO_POINTS) : NO_MATCH;
+	case 0x418:
 		switch (b) {
-		case 768:
-			return c == 837 ? 50339778 : 33562484;
-		case 769:
-			return c == 837 ? 50339780 : 33562485;
-		case 787:
-			switch (c) {
-			case 768:
-				return d == 837 ? 67116946 : 50339618;
-			case 769:
-				return d == 837 ? 67116948 : 50339620;
-			case 834:
-				return d == 837 ? 67116950 : 50339622;
-			case 837: return 50339728;
-			default: return 33562400;
-			}
-		case 788:
-			switch (c) {
-			case 768:
-				return d == 837 ? 67116947 : 50339619;
-			case 769:
-				return d == 837 ? 67116949 : 50339621;
-			case 834:
-				return d == 837 ? 67116951 : 50339623;
-			case 837: return 50339729;
-			default: return 33562401;
-			}
-		case 834:
-			return c == 837 ? 50339783 : 33562566;
-		case 837: return 33562563;
-		default: return -1;
+		case 0x300: return (0x40D | TWO_POINTS);
+		case 0x304: return (0x4E2 | TWO_POINTS);
+		case 0x306: return (0x419 | TWO_POINTS);
+		case 0x308: return (0x4E4 | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 953:
+	case 0x41A:
+		return b == 0x301 ? (0x40C | TWO_POINTS) : NO_MATCH;
+	case 0x41E:
+		return b == 0x308 ? (0x4E6 | TWO_POINTS) : NO_MATCH;
+	case 0x423:
 		switch (b) {
-		case 768: return 33562486;
-		case 769: return 33562487;
-		case 772: return 33562577;
-		case 774: return 33562576;
-		case 776:
-			switch (c) {
-			case 768: return 50339794;
-			case 769: return 50339795;
-			case 834: return 50339799;
-			default: return 33555402;
-			}
-		case 787:
-			switch (c) {
-			case 768: return 50339634;
-			case 769: return 50339636;
-			case 834: return 50339638;
-			default: return 33562416;
-			}
-		case 788:
-			switch (c) {
-			case 768: return 50339635;
-			case 769: return 50339637;
-			case 834: return 50339639;
-			default: return 33562417;
-			}
-		case 834: return 33562582;
-		default: return 16785342;
+		case 0x304: return (0x4EE | TWO_POINTS);
+		case 0x306: return (0x40E | TWO_POINTS);
+		case 0x308: return (0x4F0 | TWO_POINTS);
+		case 0x30B: return (0x4F2 | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 959:
+	case 0x427:
+		return b == 0x308 ? (0x4F4 | TWO_POINTS) : NO_MATCH;
+	case 0x42B:
+		return b == 0x308 ? (0x4F8 | TWO_POINTS) : NO_MATCH;
+	case 0x42D:
+		return b == 0x308 ? (0x4EC | TWO_POINTS) : NO_MATCH;
+	case 0x430:
+		return b == 0x306 ? (0x4D1 | TWO_POINTS)
+			: b == 0x308 ? (0x4D3 | TWO_POINTS)
+			: NO_MATCH;
+	case 0x433:
+		return b == 0x301 ? (0x453 | TWO_POINTS) : NO_MATCH;
+	case 0x435:
 		switch (b) {
-		case 768: return 33562488;
-		case 769: return 33562489;
-		case 787:
-			switch (c) {
-			case 768: return 50339650;
-			case 769: return 50339652;
-			default: return 33562432;
-			}
-		case 788:
-			switch (c) {
-			case 768: return 50339651;
-			case 769: return 50339653;
-			default: return 33562433;
-			}
-		default: return -1;
+		case 0x300: return (0x450 | TWO_POINTS);
+		case 0x306: return (0x4D7 | TWO_POINTS);
+		case 0x308: return (0x451 | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 961:
+	case 0x436:
+		return b == 0x306 ? (0x4C2 | TWO_POINTS)
+			: b == 0x308 ? (0x4DD | TWO_POINTS)
+			: NO_MATCH;
+	case 0x437:
+		return b == 0x308 ? (0x4DF | TWO_POINTS) : NO_MATCH;
+	case 0x438:
 		switch (b) {
-		case 787: return 33562596;
-		case 788: return 33562597;
-		default: return -1;
+		case 0x300: return (0x45D | TWO_POINTS);
+		case 0x304: return (0x4E3 | TWO_POINTS);
+		case 0x306: return (0x439 | TWO_POINTS);
+		case 0x308: return (0x4E5 | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 965:
+	case 0x43A:
+		return b == 0x301 ? (0x45C | TWO_POINTS) : NO_MATCH;
+	case 0x43E:
+		return b == 0x308 ? (0x4E7 | TWO_POINTS) : NO_MATCH;
+	case 0x443:
 		switch (b) {
-		case 768: return 33562490;
-		case 769: return 33562491;
-		case 772: return 33562593;
-		case 774: return 33562592;
-		case 776:
-			switch (c) {
-			case 768: return 50339810;
-			case 769: return 50339811;
-			case 834: return 50339815;
-			default: return 33555403;
-			}
-		case 787:
-			switch (c) {
-			case 768: return 50339666;
-			case 769: return 50339668;
-			case 834: return 50339670;
-			default: return 33562448;
-			}
-		case 788:
-			switch (c) {
-			case 768: return 50339667;
-			case 769: return 50339669;
-			case 834: return 50339671;
-			default: return 33562449;
-			}
-		case 834: return 33562598;
-		default: return -1;
+		case 0x304: return (0x4EF | TWO_POINTS);
+		case 0x306: return (0x45E | TWO_POINTS);
+		case 0x308: return (0x4F1 | TWO_POINTS);
+		case 0x30B: return (0x4F3 | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 969:
+	case 0x447:
+		return b == 0x308 ? (0x4F5 | TWO_POINTS) : NO_MATCH;
+	case 0x44B:
+		return b == 0x308 ? (0x4F9 | TWO_POINTS) : NO_MATCH;
+	case 0x44D:
+		return b == 0x308 ? (0x4ED | TWO_POINTS) : NO_MATCH;
+	case 0x456:
+		return b == 0x308 ? (0x457 | TWO_POINTS) : NO_MATCH;
+	case 0x474:
+		return b == 0x30F ? (0x476 | TWO_POINTS) : NO_MATCH;
+	case 0x475:
+		return b == 0x30F ? (0x477 | TWO_POINTS) : NO_MATCH;
+	case 0x4D8:
+		return b == 0x308 ? (0x4DA | TWO_POINTS) : NO_MATCH;
+	case 0x4D9:
+		return b == 0x308 ? (0x4DB | TWO_POINTS) : NO_MATCH;
+	case 0x4E8:
+		return b == 0x308 ? (0x4EA | TWO_POINTS) : NO_MATCH;
+	case 0x4E9:
+		return b == 0x308 ? (0x4EB | TWO_POINTS) : NO_MATCH;
+	case 0x5D0:
 		switch (b) {
-		case 768:
-			return c == 837 ? 50339826 : 33562492;
-		case 769:
-			return c == 837 ? 50339828 : 33562493;
-		case 787:
-			switch (c) {
-			case 768:
-				return d == 837 ? 67116962 : 50339682;
-			case 769:
-				return d == 837 ? 67116964 : 50339684;
-			case 834:
-				return d == 837 ? 67116966 : 50339686;
-			case 837: return 50339744;
-			default: return 33562464;
-			}
-		case 788:
-			switch (c) {
-			case 768:
-				return d == 837 ? 67116963 : 50339683;
-			case 769:
-				return d == 837 ? 67116965 : 50339685;
-			case 834:
-				return d == 837 ? 67116967 : 50339687;
-			case 837: return 50339745;
-			default: return 33562465;
-			}
-		case 834:
-			return c == 837 ? 50339831 : 33562614;
-		case 837: return 33562611;
-		default: return -1;
+		case 0x5B7: return (0xFB2E | TWO_POINTS);
+		case 0x5B8: return (0xFB2F | TWO_POINTS);
+		case 0x5BC: return (0xFB30 | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 978:
+	case 0x5D1:
+		return b == 0x5BC ? (0xFB31 | TWO_POINTS)
+			: b == 0x5BF ? (0xFB4C | TWO_POINTS)
+			: NO_MATCH;
+	case 0x5D2:
+		return b == 0x5BC ? (0xFB32 | TWO_POINTS) : NO_MATCH;
+	case 0x5D3:
+		return b == 0x5BC ? (0xFB33 | TWO_POINTS) : NO_MATCH;
+	case 0x5D4:
+		return b == 0x5BC ? (0xFB34 | TWO_POINTS) : NO_MATCH;
+	case 0x5D5:
+		return b == 0x5BC ? (0xFB35 | TWO_POINTS)
+			: b == 0x5B9 ? (0xFB4B | TWO_POINTS)
+			: NO_MATCH;
+	case 0x5D6:
+		return b == 0x5BC ? (0xFB36 | TWO_POINTS) : NO_MATCH;
+	case 0x5D8:
+		return b == 0x5BC ? (0xFB38 | TWO_POINTS) : NO_MATCH;
+	case 0x5D9:
+		return b == 0x5B4 ? (0xFB1D | TWO_POINTS)
+			: b == 0x5BC ? (0xFB39 | TWO_POINTS)
+			: NO_MATCH;
+	case 0x5DA:
+		return b == 0x5BC ? (0xFB3A | TWO_POINTS) : NO_MATCH;
+	case 0x5DB:
+		return b == 0x5BC ? (0xFB3B | TWO_POINTS)
+			: b == 0x5BF ? (0xFB4D | TWO_POINTS)
+			: NO_MATCH;
+	case 0x5DC:
+		return b == 0x5BC ? (0xFB3C | TWO_POINTS) : NO_MATCH;
+	case 0x5DE:
+		return b == 0x5BC ? (0xFB3E | TWO_POINTS) : NO_MATCH;
+	case 0x5E0:
+		return b == 0x5BC ? (0xFB40 | TWO_POINTS) : NO_MATCH;
+	case 0x5E1:
+		return b == 0x5BC ? (0xFB41 | TWO_POINTS) : NO_MATCH;
+	case 0x5E3:
+		return b == 0x5BC ? (0xFB43 | TWO_POINTS) : NO_MATCH;
+	case 0x5E4:
+		return b == 0x5BC ? (0xFB44 | TWO_POINTS)
+			: b == 0x5BF ? (0xFB4E | TWO_POINTS)
+			: NO_MATCH;
+	case 0x5E6:
+		return b == 0x5BC ? (0xFB46 | TWO_POINTS) : NO_MATCH;
+	case 0x5E7:
+		return b == 0x5BC ? (0xFB47 | TWO_POINTS) : NO_MATCH;
+	case 0x5E8:
+		return b == 0x5BC ? (0xFB48 | TWO_POINTS) : NO_MATCH;
+	case 0x5E9:
 		switch (b) {
-		case 769: return 33555411;
-		case 776: return 33555412;
-		default: return -1;
+		case 0x5BC:
+			return c == 0x5C1 ? (0xFB2C | THREE_POINTS)
+				: c == 0x5C2 ? (0xFB2D | THREE_POINTS)
+				: (0xFB49 | TWO_POINTS);
+		case 0x5C1: return (0xFB2A | TWO_POINTS);
+		case 0x5C2: return (0xFB2B | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 1030:
-		return b == 776 ? 33555463 : -1;
-	case 1040:
+	case 0x5EA:
+		return b == 0x5BC ? (0xFB4A | TWO_POINTS) : NO_MATCH;
+	case 0x5F2:
+		return b == 0x5B7 ? (0xFB1F | TWO_POINTS) : NO_MATCH;
+	case 0x627:
 		switch (b) {
-		case 774: return 33555664;
-		case 776: return 33555666;
-		default: return -1;
+		case 0x653: return (0x622 | TWO_POINTS);
+		case 0x654: return (0x623 | TWO_POINTS);
+		case 0x655: return (0x625 | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 1043:
-		return b == 769 ? 33555459 : -1;
-	case 1045:
+	case 0x648:
+		return b == 0x654 ? (0x624 | TWO_POINTS) : NO_MATCH;
+	case 0x64A:
+		return b == 0x654 ? (0x626 | TWO_POINTS) : NO_MATCH;
+	case 0x6C1:
+		return b == 0x654 ? (0x6C2 | TWO_POINTS) : NO_MATCH;
+	case 0x6D2:
+		return b == 0x654 ? (0x6D3 | TWO_POINTS) : NO_MATCH;
+	case 0x6D5:
+		return b == 0x654 ? (0x6C0 | TWO_POINTS) : NO_MATCH;
+	case 0x915:
+		return b == 0x93C ? (0x958 | TWO_POINTS) : NO_MATCH;
+	case 0x916:
+		return b == 0x93C ? (0x959 | TWO_POINTS) : NO_MATCH;
+	case 0x917:
+		return b == 0x93C ? (0x95A | TWO_POINTS) : NO_MATCH;
+	case 0x91C:
+		return b == 0x93C ? (0x95B | TWO_POINTS) : NO_MATCH;
+	case 0x921:
+		return b == 0x93C ? (0x95C | TWO_POINTS) : NO_MATCH;
+	case 0x922:
+		return b == 0x93C ? (0x95D | TWO_POINTS) : NO_MATCH;
+	case 0x928:
+		return b == 0x93C ? (0x929 | TWO_POINTS) : NO_MATCH;
+	case 0x92B:
+		return b == 0x93C ? (0x95E | TWO_POINTS) : NO_MATCH;
+	case 0x92F:
+		return b == 0x93C ? (0x95F | TWO_POINTS) : NO_MATCH;
+	case 0x930:
+		return b == 0x93C ? (0x931 | TWO_POINTS) : NO_MATCH;
+	case 0x933:
+		return b == 0x93C ? (0x934 | TWO_POINTS) : NO_MATCH;
+	case 0x9A1:
+		return b == 0x9BC ? (0x9DC | TWO_POINTS) : NO_MATCH;
+	case 0x9A2:
+		return b == 0x9BC ? (0x9DD | TWO_POINTS) : NO_MATCH;
+	case 0x9AF:
+		return b == 0x9BC ? (0x9DF | TWO_POINTS) : NO_MATCH;
+	case 0x9C7:
+		return b == 0x9BE ? (0x9CB | TWO_POINTS)
+			: b == 0x9D7 ? (0x9CC | TWO_POINTS)
+			: NO_MATCH;
+	case 0xA16:
+		return b == 0xA3C ? (0xA59 | TWO_POINTS) : NO_MATCH;
+	case 0xA17:
+		return b == 0xA3C ? (0xA5A | TWO_POINTS) : NO_MATCH;
+	case 0xA1C:
+		return b == 0xA3C ? (0xA5B | TWO_POINTS) : NO_MATCH;
+	case 0xA2B:
+		return b == 0xA3C ? (0xA5E | TWO_POINTS) : NO_MATCH;
+	case 0xA32:
+		return b == 0xA3C ? (0xA33 | TWO_POINTS) : NO_MATCH;
+	case 0xA38:
+		return b == 0xA3C ? (0xA36 | TWO_POINTS) : NO_MATCH;
+	case 0xB21:
+		return b == 0xB3C ? (0xB5C | TWO_POINTS) : NO_MATCH;
+	case 0xB22:
+		return b == 0xB3C ? (0xB5D | TWO_POINTS) : NO_MATCH;
+	case 0xB47:
 		switch (b) {
-		case 768: return 33555456;
-		case 774: return 33555670;
-		case 776: return 33555457;
-		default: return -1;
+		case 0xB3E: return (0xB4B | TWO_POINTS);
+		case 0xB56: return (0xB48 | TWO_POINTS);
+		case 0xB57: return (0xB4C | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 1046:
+	case 0xB92:
+		return b == 0xBD7 ? (0xB94 | TWO_POINTS) : NO_MATCH;
+	case 0xBC6:
+		return b == 0xBBE ? (0xBCA | TWO_POINTS)
+			: b == 0xBD7 ? (0xBCC | TWO_POINTS)
+			: NO_MATCH;
+	case 0xBC7:
+		return b == 0xBBE ? (0xBCB | TWO_POINTS) : NO_MATCH;
+	case 0xC46:
+		return b == 0xC56 ? (0xC48 | TWO_POINTS) : NO_MATCH;
+	case 0xCBF:
+		return b == 0xCD5 ? (0xCC0 | TWO_POINTS) : NO_MATCH;
+	case 0xCC6:
 		switch (b) {
-		case 774: return 33555649;
-		case 776: return 33555676;
-		default: return -1;
+		case 0xCC2:
+			return c == 0xCD5 ? (0xCCB | THREE_POINTS) : (0xCCA | TWO_POINTS);
+		case 0xCD5: return (0xCC7 | TWO_POINTS);
+		case 0xCD6: return (0xCC8 | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 1047:
-		return b == 776 ? 33555678 : -1;
-	case 1048:
+	case 0xD46:
+		return b == 0xD3E ? (0xD4A | TWO_POINTS)
+			: b == 0xD57 ? (0xD4C | TWO_POINTS)
+			: NO_MATCH;
+	case 0xD47:
+		return b == 0xD3E ? (0xD4B | TWO_POINTS) : NO_MATCH;
+	case 0xDD9:
 		switch (b) {
-		case 768: return 33555469;
-		case 772: return 33555682;
-		case 774: return 33555481;
-		case 776: return 33555684;
-		default: return -1;
+		case 0xDCA: return (0xDDA | TWO_POINTS);
+		case 0xDCF:
+			return c == 0xDCA ? (0xDDD | THREE_POINTS) : (0xDDC | TWO_POINTS);
+		case 0xDDF: return (0xDDE | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 1050:
-		return b == 769 ? 33555468 : -1;
-	case 1054:
-		return b == 776 ? 33555686 : -1;
-	case 1059:
+	case 0xF40:
+		return b == 0xFB5 ? (0xF69 | TWO_POINTS) : NO_MATCH;
+	case 0xF42:
+		return b == 0xFB7 ? (0xF43 | TWO_POINTS) : NO_MATCH;
+	case 0xF4C:
+		return b == 0xFB7 ? (0xF4D | TWO_POINTS) : NO_MATCH;
+	case 0xF51:
+		return b == 0xFB7 ? (0xF52 | TWO_POINTS) : NO_MATCH;
+	case 0xF56:
+		return b == 0xFB7 ? (0xF57 | TWO_POINTS) : NO_MATCH;
+	case 0xF5B:
+		return b == 0xFB7 ? (0xF5C | TWO_POINTS) : NO_MATCH;
+	case 0xF71:
 		switch (b) {
-		case 772: return 33555694;
-		case 774: return 33555470;
-		case 776: return 33555696;
-		case 779: return 33555698;
-		default: return -1;
+		case 0xF72: return (0xF73 | TWO_POINTS);
+		case 0xF74: return (0xF75 | TWO_POINTS);
+		case 0xF80: return (0xF81 | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 1063:
-		return b == 776 ? 33555700 : -1;
-	case 1067:
-		return b == 776 ? 33555704 : -1;
-	case 1069:
-		return b == 776 ? 33555692 : -1;
-	case 1072:
+	case 0xF90:
+		return b == 0xFB5 ? (0xFB9 | TWO_POINTS) : NO_MATCH;
+	case 0xF92:
+		return b == 0xFB7 ? (0xF93 | TWO_POINTS) : NO_MATCH;
+	case 0xF9C:
+		return b == 0xFB7 ? (0xF9D | TWO_POINTS) : NO_MATCH;
+	case 0xFA1:
+		return b == 0xFB7 ? (0xFA2 | TWO_POINTS) : NO_MATCH;
+	case 0xFA6:
+		return b == 0xFB7 ? (0xFA7 | TWO_POINTS) : NO_MATCH;
+	case 0xFAB:
+		return b == 0xFB7 ? (0xFAC | TWO_POINTS) : NO_MATCH;
+	case 0xFB2:
+		return b == 0xF80 ? (0xF76 | TWO_POINTS) : NO_MATCH;
+	case 0xFB3:
+		return b == 0xF80 ? (0xF78 | TWO_POINTS) : NO_MATCH;
+	case 0x1025:
+		return b == 0x102E ? (0x1026 | TWO_POINTS) : NO_MATCH;
+	case 0x1B05:
+		return b == 0x1B35 ? (0x1B06 | TWO_POINTS) : NO_MATCH;
+	case 0x1B07:
+		return b == 0x1B35 ? (0x1B08 | TWO_POINTS) : NO_MATCH;
+	case 0x1B09:
+		return b == 0x1B35 ? (0x1B0A | TWO_POINTS) : NO_MATCH;
+	case 0x1B0B:
+		return b == 0x1B35 ? (0x1B0C | TWO_POINTS) : NO_MATCH;
+	case 0x1B0D:
+		return b == 0x1B35 ? (0x1B0E | TWO_POINTS) : NO_MATCH;
+	case 0x1B11:
+		return b == 0x1B35 ? (0x1B12 | TWO_POINTS) : NO_MATCH;
+	case 0x1B3A:
+		return b == 0x1B35 ? (0x1B3B | TWO_POINTS) : NO_MATCH;
+	case 0x1B3C:
+		return b == 0x1B35 ? (0x1B3D | TWO_POINTS) : NO_MATCH;
+	case 0x1B3E:
+		return b == 0x1B35 ? (0x1B40 | TWO_POINTS) : NO_MATCH;
+	case 0x1B3F:
+		return b == 0x1B35 ? (0x1B41 | TWO_POINTS) : NO_MATCH;
+	case 0x1B42:
+		return b == 0x1B35 ? (0x1B43 | TWO_POINTS) : NO_MATCH;
+	case 0x1FBF:
 		switch (b) {
-		case 774: return 33555665;
-		case 776: return 33555667;
-		default: return -1;
+		case 0x300: return (0x1FCD | TWO_POINTS);
+		case 0x301: return (0x1FCE | TWO_POINTS);
+		case 0x342: return (0x1FCF | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 1075:
-		return b == 769 ? 33555539 : -1;
-	case 1077:
+	case 0x1FFE:
 		switch (b) {
-		case 768: return 33555536;
-		case 774: return 33555671;
-		case 776: return 33555537;
-		default: return -1;
+		case 0x300: return (0x1FDD | TWO_POINTS);
+		case 0x301: return (0x1FDE | TWO_POINTS);
+		case 0x342: return (0x1FDF | TWO_POINTS);
+		default: return NO_MATCH;
 		}
-	case 1078:
-		switch (b) {
-		case 774: return 33555650;
-		case 776: return 33555677;
-		default: return -1;
-		}
-	case 1079:
-		return b == 776 ? 33555679 : -1;
-	case 1080:
-		switch (b) {
-		case 768: return 33555549;
-		case 772: return 33555683;
-		case 774: return 33555513;
-		case 776: return 33555685;
-		default: return -1;
-		}
-	case 1082:
-		return b == 769 ? 33555548 : -1;
-	case 1086:
-		return b == 776 ? 33555687 : -1;
-	case 1091:
-		switch (b) {
-		case 772: return 33555695;
-		case 774: return 33555550;
-		case 776: return 33555697;
-		case 779: return 33555699;
-		default: return -1;
-		}
-	case 1095:
-		return b == 776 ? 33555701 : -1;
-	case 1099:
-		return b == 776 ? 33555705 : -1;
-	case 1101:
-		return b == 776 ? 33555693 : -1;
-	case 1110:
-		return b == 776 ? 33555543 : -1;
-	case 1140:
-		return b == 783 ? 33555574 : -1;
-	case 1141:
-		return b == 783 ? 33555575 : -1;
-	case 1240:
-		return b == 776 ? 33555674 : -1;
-	case 1241:
-		return b == 776 ? 33555675 : -1;
-	case 1256:
-		return b == 776 ? 33555690 : -1;
-	case 1257:
-		return b == 776 ? 33555691 : -1;
-	case 1488:
-		switch (b) {
-		case 1463: return 33618734;
-		case 1464: return 33618735;
-		case 1468: return 33618736;
-		default: return -1;
-		}
-	case 1489:
-		switch (b) {
-		case 1468: return 33618737;
-		case 1471: return 33618764;
-		default: return -1;
-		}
-	case 1490:
-		return b == 1468 ? 33618738 : -1;
-	case 1491:
-		return b == 1468 ? 33618739 : -1;
-	case 1492:
-		return b == 1468 ? 33618740 : -1;
-	case 1493:
-		switch (b) {
-		case 1465: return 33618763;
-		case 1468: return 33618741;
-		default: return -1;
-		}
-	case 1494:
-		return b == 1468 ? 33618742 : -1;
-	case 1496:
-		return b == 1468 ? 33618744 : -1;
-	case 1497:
-		switch (b) {
-		case 1460: return 33618717;
-		case 1468: return 33618745;
-		default: return -1;
-		}
-	case 1498:
-		return b == 1468 ? 33618746 : -1;
-	case 1499:
-		switch (b) {
-		case 1468: return 33618747;
-		case 1471: return 33618765;
-		default: return -1;
-		}
-	case 1500:
-		return b == 1468 ? 33618748 : -1;
-	case 1502:
-		return b == 1468 ? 33618750 : -1;
-	case 1504:
-		return b == 1468 ? 33618752 : -1;
-	case 1505:
-		return b == 1468 ? 33618753 : -1;
-	case 1507:
-		return b == 1468 ? 33618755 : -1;
-	case 1508:
-		switch (b) {
-		case 1468: return 33618756;
-		case 1471: return 33618766;
-		default: return -1;
-		}
-	case 1510:
-		return b == 1468 ? 33618758 : -1;
-	case 1511:
-		return b == 1468 ? 33618759 : -1;
-	case 1512:
-		return b == 1468 ? 33618760 : -1;
-	case 1513:
-		switch (b) {
-		case 1468:
-			switch (c) {
-			case 1473: return 50395948;
-			case 1474: return 50395949;
-			default: return 33618761;
-			}
-		case 1473: return 33618730;
-		case 1474: return 33618731;
-		default: return -1;
-		}
-	case 1514:
-		return b == 1468 ? 33618762 : -1;
-	case 1522:
-		return b == 1463 ? 33618719 : -1;
-	case 1575:
-		switch (b) {
-		case 1619: return 33556002;
-		case 1620: return 33556003;
-		case 1621: return 33556005;
-		default: return -1;
-		}
-	case 1608:
-		return b == 1620 ? 33556004 : -1;
-	case 1610:
-		return b == 1620 ? 33556006 : -1;
-	case 1729:
-		return b == 1620 ? 33556162 : -1;
-	case 1746:
-		return b == 1620 ? 33556179 : -1;
-	case 1749:
-		return b == 1620 ? 33556160 : -1;
-	case 2325:
-		return b == 2364 ? 33556824 : -1;
-	case 2326:
-		return b == 2364 ? 33556825 : -1;
-	case 2327:
-		return b == 2364 ? 33556826 : -1;
-	case 2332:
-		return b == 2364 ? 33556827 : -1;
-	case 2337:
-		return b == 2364 ? 33556828 : -1;
-	case 2338:
-		return b == 2364 ? 33556829 : -1;
-	case 2344:
-		return b == 2364 ? 33556777 : -1;
-	case 2347:
-		return b == 2364 ? 33556830 : -1;
-	case 2351:
-		return b == 2364 ? 33556831 : -1;
-	case 2352:
-		return b == 2364 ? 33556785 : -1;
-	case 2355:
-		return b == 2364 ? 33556788 : -1;
-	case 2465:
-		return b == 2492 ? 33556956 : -1;
-	case 2466:
-		return b == 2492 ? 33556957 : -1;
-	case 2479:
-		return b == 2492 ? 33556959 : -1;
-	case 2503:
-		switch (b) {
-		case 2494: return 33556939;
-		case 2519: return 33556940;
-		default: return -1;
-		}
-	case 2582:
-		return b == 2620 ? 33557081 : -1;
-	case 2583:
-		return b == 2620 ? 33557082 : -1;
-	case 2588:
-		return b == 2620 ? 33557083 : -1;
-	case 2603:
-		return b == 2620 ? 33557086 : -1;
-	case 2610:
-		return b == 2620 ? 33557043 : -1;
-	case 2616:
-		return b == 2620 ? 33557046 : -1;
-	case 2849:
-		return b == 2876 ? 33557340 : -1;
-	case 2850:
-		return b == 2876 ? 33557341 : -1;
-	case 2887:
-		switch (b) {
-		case 2878: return 33557323;
-		case 2902: return 33557320;
-		case 2903: return 33557324;
-		default: return -1;
-		}
-	case 2962:
-		return b == 3031 ? 33557396 : -1;
-	case 3014:
-		switch (b) {
-		case 3006: return 33557450;
-		case 3031: return 33557452;
-		default: return -1;
-		}
-	case 3015:
-		return b == 3006 ? 33557451 : -1;
-	case 3142:
-		return b == 3158 ? 33557576 : -1;
-	case 3263:
-		return b == 3285 ? 33557696 : -1;
-	case 3270:
-		switch (b) {
-		case 3266:
-			return c == 3285 ? 50334923 : 33557706;
-		case 3285: return 33557703;
-		case 3286: return 33557704;
-		default: return -1;
-		}
-	case 3398:
-		switch (b) {
-		case 3390: return 33557834;
-		case 3415: return 33557836;
-		default: return -1;
-		}
-	case 3399:
-		return b == 3390 ? 33557835 : -1;
-	case 3545:
-		switch (b) {
-		case 3530: return 33557978;
-		case 3535:
-			return c == 3530 ? 50335197 : 33557980;
-		case 3551: return 33557982;
-		default: return -1;
-		}
-	case 3904:
-		return b == 4021 ? 33558377 : -1;
-	case 3906:
-		return b == 4023 ? 33558339 : -1;
-	case 3916:
-		return b == 4023 ? 33558349 : -1;
-	case 3921:
-		return b == 4023 ? 33558354 : -1;
-	case 3926:
-		return b == 4023 ? 33558359 : -1;
-	case 3931:
-		return b == 4023 ? 33558364 : -1;
-	case 3953:
-		switch (b) {
-		case 3954: return 33558387;
-		case 3956: return 33558389;
-		case 3968: return 33558401;
-		default: return -1;
-		}
-	case 3984:
-		return b == 4021 ? 33558457 : -1;
-	case 3986:
-		return b == 4023 ? 33558419 : -1;
-	case 3996:
-		return b == 4023 ? 33558429 : -1;
-	case 4001:
-		return b == 4023 ? 33558434 : -1;
-	case 4006:
-		return b == 4023 ? 33558439 : -1;
-	case 4011:
-		return b == 4023 ? 33558444 : -1;
-	case 4018:
-		return b == 3968 ? 33558390 : -1;
-	case 4019:
-		return b == 3968 ? 33558392 : -1;
-	case 4133:
-		return b == 4142 ? 33558566 : -1;
-	case 6917:
-		return b == 6965 ? 33561350 : -1;
-	case 6919:
-		return b == 6965 ? 33561352 : -1;
-	case 6921:
-		return b == 6965 ? 33561354 : -1;
-	case 6923:
-		return b == 6965 ? 33561356 : -1;
-	case 6925:
-		return b == 6965 ? 33561358 : -1;
-	case 6929:
-		return b == 6965 ? 33561362 : -1;
-	case 6970:
-		return b == 6965 ? 33561403 : -1;
-	case 6972:
-		return b == 6965 ? 33561405 : -1;
-	case 6974:
-		return b == 6965 ? 33561408 : -1;
-	case 6975:
-		return b == 6965 ? 33561409 : -1;
-	case 6978:
-		return b == 6965 ? 33561411 : -1;
-	case 8127:
-		switch (b) {
-		case 768: return 33562573;
-		case 769: return 33562574;
-		case 834: return 33562575;
-		default: return -1;
-		}
-	case 8190:
-		switch (b) {
-		case 768: return 33562589;
-		case 769: return 33562590;
-		case 834: return 33562591;
-		default: return -1;
-		}
-	case 8592:
-		return b == 824 ? 33563034 : -1;
-	case 8594:
-		return b == 824 ? 33563035 : -1;
-	case 8596:
-		return b == 824 ? 33563054 : -1;
-	case 8656:
-		return b == 824 ? 33563085 : -1;
-	case 8658:
-		return b == 824 ? 33563087 : -1;
-	case 8660:
-		return b == 824 ? 33563086 : -1;
-	case 8707:
-		return b == 824 ? 33563140 : -1;
-	case 8712:
-		return b == 824 ? 33563145 : -1;
-	case 8715:
-		return b == 824 ? 33563148 : -1;
-	case 8739:
-		return b == 824 ? 33563172 : -1;
-	case 8741:
-		return b == 824 ? 33563174 : -1;
-	case 8764:
-		return b == 824 ? 33563201 : -1;
-	case 8771:
-		return b == 824 ? 33563204 : -1;
-	case 8773:
-		return b == 824 ? 33563207 : -1;
-	case 8776:
-		return b == 824 ? 33563209 : -1;
-	case 8781:
-		return b == 824 ? 33563245 : -1;
-	case 8801:
-		return b == 824 ? 33563234 : -1;
-	case 8804:
-		return b == 824 ? 33563248 : -1;
-	case 8805:
-		return b == 824 ? 33563249 : -1;
-	case 8818:
-		return b == 824 ? 33563252 : -1;
-	case 8819:
-		return b == 824 ? 33563253 : -1;
-	case 8822:
-		return b == 824 ? 33563256 : -1;
-	case 8823:
-		return b == 824 ? 33563257 : -1;
-	case 8826:
-		return b == 824 ? 33563264 : -1;
-	case 8827:
-		return b == 824 ? 33563265 : -1;
-	case 8828:
-		return b == 824 ? 33563360 : -1;
-	case 8829:
-		return b == 824 ? 33563361 : -1;
-	case 8834:
-		return b == 824 ? 33563268 : -1;
-	case 8835:
-		return b == 824 ? 33563269 : -1;
-	case 8838:
-		return b == 824 ? 33563272 : -1;
-	case 8839:
-		return b == 824 ? 33563273 : -1;
-	case 8849:
-		return b == 824 ? 33563362 : -1;
-	case 8850:
-		return b == 824 ? 33563363 : -1;
-	case 8866:
-		return b == 824 ? 33563308 : -1;
-	case 8872:
-		return b == 824 ? 33563309 : -1;
-	case 8873:
-		return b == 824 ? 33563310 : -1;
-	case 8875:
-		return b == 824 ? 33563311 : -1;
-	case 8882:
-		return b == 824 ? 33563370 : -1;
-	case 8883:
-		return b == 824 ? 33563371 : -1;
-	case 8884:
-		return b == 824 ? 33563372 : -1;
-	case 8885:
-		return b == 824 ? 33563373 : -1;
-	case 10973:
-		return b == 824 ? 33565404 : -1;
-	case 12358:
-		return b == 12441 ? 33566868 : -1;
-	case 12363:
-		return b == 12441 ? 33566796 : -1;
-	case 12365:
-		return b == 12441 ? 33566798 : -1;
-	case 12367:
-		return b == 12441 ? 33566800 : -1;
-	case 12369:
-		return b == 12441 ? 33566802 : -1;
-	case 12371:
-		return b == 12441 ? 33566804 : -1;
-	case 12373:
-		return b == 12441 ? 33566806 : -1;
-	case 12375:
-		return b == 12441 ? 33566808 : -1;
-	case 12377:
-		return b == 12441 ? 33566810 : -1;
-	case 12379:
-		return b == 12441 ? 33566812 : -1;
-	case 12381:
-		return b == 12441 ? 33566814 : -1;
-	case 12383:
-		return b == 12441 ? 33566816 : -1;
-	case 12385:
-		return b == 12441 ? 33566818 : -1;
-	case 12388:
-		return b == 12441 ? 33566821 : -1;
-	case 12390:
-		return b == 12441 ? 33566823 : -1;
-	case 12392:
-		return b == 12441 ? 33566825 : -1;
-	case 12399:
-		switch (b) {
-		case 12441: return 33566832;
-		case 12442: return 33566833;
-		default: return -1;
-		}
-	case 12402:
-		switch (b) {
-		case 12441: return 33566835;
-		case 12442: return 33566836;
-		default: return -1;
-		}
-	case 12405:
-		switch (b) {
-		case 12441: return 33566838;
-		case 12442: return 33566839;
-		default: return -1;
-		}
-	case 12408:
-		switch (b) {
-		case 12441: return 33566841;
-		case 12442: return 33566842;
-		default: return -1;
-		}
-	case 12411:
-		switch (b) {
-		case 12441: return 33566844;
-		case 12442: return 33566845;
-		default: return -1;
-		}
-	case 12445:
-		return b == 12441 ? 33566878 : -1;
-	case 12454:
-		return b == 12441 ? 33566964 : -1;
-	case 12459:
-		return b == 12441 ? 33566892 : -1;
-	case 12461:
-		return b == 12441 ? 33566894 : -1;
-	case 12463:
-		return b == 12441 ? 33566896 : -1;
-	case 12465:
-		return b == 12441 ? 33566898 : -1;
-	case 12467:
-		return b == 12441 ? 33566900 : -1;
-	case 12469:
-		return b == 12441 ? 33566902 : -1;
-	case 12471:
-		return b == 12441 ? 33566904 : -1;
-	case 12473:
-		return b == 12441 ? 33566906 : -1;
-	case 12475:
-		return b == 12441 ? 33566908 : -1;
-	case 12477:
-		return b == 12441 ? 33566910 : -1;
-	case 12479:
-		return b == 12441 ? 33566912 : -1;
-	case 12481:
-		return b == 12441 ? 33566914 : -1;
-	case 12484:
-		return b == 12441 ? 33566917 : -1;
-	case 12486:
-		return b == 12441 ? 33566919 : -1;
-	case 12488:
-		return b == 12441 ? 33566921 : -1;
-	case 12495:
-		switch (b) {
-		case 12441: return 33566928;
-		case 12442: return 33566929;
-		default: return -1;
-		}
-	case 12498:
-		switch (b) {
-		case 12441: return 33566931;
-		case 12442: return 33566932;
-		default: return -1;
-		}
-	case 12501:
-		switch (b) {
-		case 12441: return 33566934;
-		case 12442: return 33566935;
-		default: return -1;
-		}
-	case 12504:
-		switch (b) {
-		case 12441: return 33566937;
-		case 12442: return 33566938;
-		default: return -1;
-		}
-	case 12507:
-		switch (b) {
-		case 12441: return 33566940;
-		case 12442: return 33566941;
-		default: return -1;
-		}
-	case 12527:
-		return b == 12441 ? 33566967 : -1;
-	case 12528:
-		return b == 12441 ? 33566968 : -1;
-	case 12529:
-		return b == 12441 ? 33566969 : -1;
-	case 12530:
-		return b == 12441 ? 33566970 : -1;
-	case 12541:
-		return b == 12441 ? 33566974 : -1;
-	case 69785:
-		return b == 69818 ? 33624218 : -1;
-	case 69787:
-		return b == 69818 ? 33624220 : -1;
-	case 69797:
-		return b == 69818 ? 33624235 : -1;
-	case 69937:
-		return b == 69927 ? 33624366 : -1;
-	case 69938:
-		return b == 69927 ? 33624367 : -1;
-	case 119127:
-		return b == 119141 ? 33673566 : -1;
-	case 119128:
-		return b == 119141 ? 33673567 : -1;
-	case 119225:
-		return b == 119141 ? 33673659 : -1;
-	case 119226:
-		return b == 119141 ? 33673660 : -1;
-	default: return -1;
+	case 0x2190:
+		return b == 0x338 ? (0x219A | TWO_POINTS) : NO_MATCH;
+	case 0x2192:
+		return b == 0x338 ? (0x219B | TWO_POINTS) : NO_MATCH;
+	case 0x2194:
+		return b == 0x338 ? (0x21AE | TWO_POINTS) : NO_MATCH;
+	case 0x21D0:
+		return b == 0x338 ? (0x21CD | TWO_POINTS) : NO_MATCH;
+	case 0x21D2:
+		return b == 0x338 ? (0x21CF | TWO_POINTS) : NO_MATCH;
+	case 0x21D4:
+		return b == 0x338 ? (0x21CE | TWO_POINTS) : NO_MATCH;
+	case 0x2203:
+		return b == 0x338 ? (0x2204 | TWO_POINTS) : NO_MATCH;
+	case 0x2208:
+		return b == 0x338 ? (0x2209 | TWO_POINTS) : NO_MATCH;
+	case 0x220B:
+		return b == 0x338 ? (0x220C | TWO_POINTS) : NO_MATCH;
+	case 0x2223:
+		return b == 0x338 ? (0x2224 | TWO_POINTS) : NO_MATCH;
+	case 0x2225:
+		return b == 0x338 ? (0x2226 | TWO_POINTS) : NO_MATCH;
+	case 0x223C:
+		return b == 0x338 ? (0x2241 | TWO_POINTS) : NO_MATCH;
+	case 0x2243:
+		return b == 0x338 ? (0x2244 | TWO_POINTS) : NO_MATCH;
+	case 0x2245:
+		return b == 0x338 ? (0x2247 | TWO_POINTS) : NO_MATCH;
+	case 0x2248:
+		return b == 0x338 ? (0x2249 | TWO_POINTS) : NO_MATCH;
+	case 0x224D:
+		return b == 0x338 ? (0x226D | TWO_POINTS) : NO_MATCH;
+	case 0x2261:
+		return b == 0x338 ? (0x2262 | TWO_POINTS) : NO_MATCH;
+	case 0x2264:
+		return b == 0x338 ? (0x2270 | TWO_POINTS) : NO_MATCH;
+	case 0x2265:
+		return b == 0x338 ? (0x2271 | TWO_POINTS) : NO_MATCH;
+	case 0x2272:
+		return b == 0x338 ? (0x2274 | TWO_POINTS) : NO_MATCH;
+	case 0x2273:
+		return b == 0x338 ? (0x2275 | TWO_POINTS) : NO_MATCH;
+	case 0x2276:
+		return b == 0x338 ? (0x2278 | TWO_POINTS) : NO_MATCH;
+	case 0x2277:
+		return b == 0x338 ? (0x2279 | TWO_POINTS) : NO_MATCH;
+	case 0x227A:
+		return b == 0x338 ? (0x2280 | TWO_POINTS) : NO_MATCH;
+	case 0x227B:
+		return b == 0x338 ? (0x2281 | TWO_POINTS) : NO_MATCH;
+	case 0x227C:
+		return b == 0x338 ? (0x22E0 | TWO_POINTS) : NO_MATCH;
+	case 0x227D:
+		return b == 0x338 ? (0x22E1 | TWO_POINTS) : NO_MATCH;
+	case 0x2282:
+		return b == 0x338 ? (0x2284 | TWO_POINTS) : NO_MATCH;
+	case 0x2283:
+		return b == 0x338 ? (0x2285 | TWO_POINTS) : NO_MATCH;
+	case 0x2286:
+		return b == 0x338 ? (0x2288 | TWO_POINTS) : NO_MATCH;
+	case 0x2287:
+		return b == 0x338 ? (0x2289 | TWO_POINTS) : NO_MATCH;
+	case 0x2291:
+		return b == 0x338 ? (0x22E2 | TWO_POINTS) : NO_MATCH;
+	case 0x2292:
+		return b == 0x338 ? (0x22E3 | TWO_POINTS) : NO_MATCH;
+	case 0x22A2:
+		return b == 0x338 ? (0x22AC | TWO_POINTS) : NO_MATCH;
+	case 0x22A8:
+		return b == 0x338 ? (0x22AD | TWO_POINTS) : NO_MATCH;
+	case 0x22A9:
+		return b == 0x338 ? (0x22AE | TWO_POINTS) : NO_MATCH;
+	case 0x22AB:
+		return b == 0x338 ? (0x22AF | TWO_POINTS) : NO_MATCH;
+	case 0x22B2:
+		return b == 0x338 ? (0x22EA | TWO_POINTS) : NO_MATCH;
+	case 0x22B3:
+		return b == 0x338 ? (0x22EB | TWO_POINTS) : NO_MATCH;
+	case 0x22B4:
+		return b == 0x338 ? (0x22EC | TWO_POINTS) : NO_MATCH;
+	case 0x22B5:
+		return b == 0x338 ? (0x22ED | TWO_POINTS) : NO_MATCH;
+	case 0x2ADD:
+		return b == 0x338 ? (0x2ADC | TWO_POINTS) : NO_MATCH;
+	case 0x3046:
+		return b == 0x3099 ? (0x3094 | TWO_POINTS) : NO_MATCH;
+	case 0x304B:
+		return b == 0x3099 ? (0x304C | TWO_POINTS) : NO_MATCH;
+	case 0x304D:
+		return b == 0x3099 ? (0x304E | TWO_POINTS) : NO_MATCH;
+	case 0x304F:
+		return b == 0x3099 ? (0x3050 | TWO_POINTS) : NO_MATCH;
+	case 0x3051:
+		return b == 0x3099 ? (0x3052 | TWO_POINTS) : NO_MATCH;
+	case 0x3053:
+		return b == 0x3099 ? (0x3054 | TWO_POINTS) : NO_MATCH;
+	case 0x3055:
+		return b == 0x3099 ? (0x3056 | TWO_POINTS) : NO_MATCH;
+	case 0x3057:
+		return b == 0x3099 ? (0x3058 | TWO_POINTS) : NO_MATCH;
+	case 0x3059:
+		return b == 0x3099 ? (0x305A | TWO_POINTS) : NO_MATCH;
+	case 0x305B:
+		return b == 0x3099 ? (0x305C | TWO_POINTS) : NO_MATCH;
+	case 0x305D:
+		return b == 0x3099 ? (0x305E | TWO_POINTS) : NO_MATCH;
+	case 0x305F:
+		return b == 0x3099 ? (0x3060 | TWO_POINTS) : NO_MATCH;
+	case 0x3061:
+		return b == 0x3099 ? (0x3062 | TWO_POINTS) : NO_MATCH;
+	case 0x3064:
+		return b == 0x3099 ? (0x3065 | TWO_POINTS) : NO_MATCH;
+	case 0x3066:
+		return b == 0x3099 ? (0x3067 | TWO_POINTS) : NO_MATCH;
+	case 0x3068:
+		return b == 0x3099 ? (0x3069 | TWO_POINTS) : NO_MATCH;
+	case 0x306F:
+		return b == 0x3099 ? (0x3070 | TWO_POINTS)
+			: b == 0x309A ? (0x3071 | TWO_POINTS)
+			: NO_MATCH;
+	case 0x3072:
+		return b == 0x3099 ? (0x3073 | TWO_POINTS)
+			: b == 0x309A ? (0x3074 | TWO_POINTS)
+			: NO_MATCH;
+	case 0x3075:
+		return b == 0x3099 ? (0x3076 | TWO_POINTS)
+			: b == 0x309A ? (0x3077 | TWO_POINTS)
+			: NO_MATCH;
+	case 0x3078:
+		return b == 0x3099 ? (0x3079 | TWO_POINTS)
+			: b == 0x309A ? (0x307A | TWO_POINTS)
+			: NO_MATCH;
+	case 0x307B:
+		return b == 0x3099 ? (0x307C | TWO_POINTS)
+			: b == 0x309A ? (0x307D | TWO_POINTS)
+			: NO_MATCH;
+	case 0x309D:
+		return b == 0x3099 ? (0x309E | TWO_POINTS) : NO_MATCH;
+	case 0x30A6:
+		return b == 0x3099 ? (0x30F4 | TWO_POINTS) : NO_MATCH;
+	case 0x30AB:
+		return b == 0x3099 ? (0x30AC | TWO_POINTS) : NO_MATCH;
+	case 0x30AD:
+		return b == 0x3099 ? (0x30AE | TWO_POINTS) : NO_MATCH;
+	case 0x30AF:
+		return b == 0x3099 ? (0x30B0 | TWO_POINTS) : NO_MATCH;
+	case 0x30B1:
+		return b == 0x3099 ? (0x30B2 | TWO_POINTS) : NO_MATCH;
+	case 0x30B3:
+		return b == 0x3099 ? (0x30B4 | TWO_POINTS) : NO_MATCH;
+	case 0x30B5:
+		return b == 0x3099 ? (0x30B6 | TWO_POINTS) : NO_MATCH;
+	case 0x30B7:
+		return b == 0x3099 ? (0x30B8 | TWO_POINTS) : NO_MATCH;
+	case 0x30B9:
+		return b == 0x3099 ? (0x30BA | TWO_POINTS) : NO_MATCH;
+	case 0x30BB:
+		return b == 0x3099 ? (0x30BC | TWO_POINTS) : NO_MATCH;
+	case 0x30BD:
+		return b == 0x3099 ? (0x30BE | TWO_POINTS) : NO_MATCH;
+	case 0x30BF:
+		return b == 0x3099 ? (0x30C0 | TWO_POINTS) : NO_MATCH;
+	case 0x30C1:
+		return b == 0x3099 ? (0x30C2 | TWO_POINTS) : NO_MATCH;
+	case 0x30C4:
+		return b == 0x3099 ? (0x30C5 | TWO_POINTS) : NO_MATCH;
+	case 0x30C6:
+		return b == 0x3099 ? (0x30C7 | TWO_POINTS) : NO_MATCH;
+	case 0x30C8:
+		return b == 0x3099 ? (0x30C9 | TWO_POINTS) : NO_MATCH;
+	case 0x30CF:
+		return b == 0x3099 ? (0x30D0 | TWO_POINTS)
+			: b == 0x309A ? (0x30D1 | TWO_POINTS)
+			: NO_MATCH;
+	case 0x30D2:
+		return b == 0x3099 ? (0x30D3 | TWO_POINTS)
+			: b == 0x309A ? (0x30D4 | TWO_POINTS)
+			: NO_MATCH;
+	case 0x30D5:
+		return b == 0x3099 ? (0x30D6 | TWO_POINTS)
+			: b == 0x309A ? (0x30D7 | TWO_POINTS)
+			: NO_MATCH;
+	case 0x30D8:
+		return b == 0x3099 ? (0x30D9 | TWO_POINTS)
+			: b == 0x309A ? (0x30DA | TWO_POINTS)
+			: NO_MATCH;
+	case 0x30DB:
+		return b == 0x3099 ? (0x30DC | TWO_POINTS)
+			: b == 0x309A ? (0x30DD | TWO_POINTS)
+			: NO_MATCH;
+	case 0x30EF:
+		return b == 0x3099 ? (0x30F7 | TWO_POINTS) : NO_MATCH;
+	case 0x30F0:
+		return b == 0x3099 ? (0x30F8 | TWO_POINTS) : NO_MATCH;
+	case 0x30F1:
+		return b == 0x3099 ? (0x30F9 | TWO_POINTS) : NO_MATCH;
+	case 0x30F2:
+		return b == 0x3099 ? (0x30FA | TWO_POINTS) : NO_MATCH;
+	case 0x30FD:
+		return b == 0x3099 ? (0x30FE | TWO_POINTS) : NO_MATCH;
+	case 0x11099:
+		return b == 0x110BA ? (0x1109A | TWO_POINTS) : NO_MATCH;
+	case 0x1109B:
+		return b == 0x110BA ? (0x1109C | TWO_POINTS) : NO_MATCH;
+	case 0x110A5:
+		return b == 0x110BA ? (0x110AB | TWO_POINTS) : NO_MATCH;
+	case 0x11131:
+		return b == 0x11127 ? (0x1112E | TWO_POINTS) : NO_MATCH;
+	case 0x11132:
+		return b == 0x11127 ? (0x1112F | TWO_POINTS) : NO_MATCH;
+	case 0x1D157:
+		return b == 0x1D165 ? (0x1D15E | TWO_POINTS) : NO_MATCH;
+	case 0x1D158:
+		return b == 0x1D165 ? (0x1D15F | TWO_POINTS) : NO_MATCH;
+	case 0x1D1B9:
+		return b == 0x1D165 ? (0x1D1BB | TWO_POINTS) : NO_MATCH;
+	case 0x1D1BA:
+		return b == 0x1D165 ? (0x1D1BC | TWO_POINTS) : NO_MATCH;
+	default: return NO_MATCH;
 	}
 }

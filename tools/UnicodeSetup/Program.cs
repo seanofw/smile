@@ -354,11 +354,25 @@ namespace UnicodeSetup
 			BeginOutput(output);
 
 			Dictionary<CodePage, uint> codePages = new Dictionary<CodePage, uint>();
-			Dictionary<uint, CodePage> codePageLookup = new Dictionary<uint, CodePage>();
-			CodePage currentCodePage = null;
-			const int BitsPerPage = 8;
+			Dictionary<uint, uint> codePageMap = new Dictionary<uint, uint>();
+			Dictionary<uint, uint> paragraphOffsets = new Dictionary<uint, uint>();
+			Dictionary<uint, int> usages = new Dictionary<uint, int>();
+
+			const int BitsPerPage = 4;
 			const int PageMask = (1 << BitsPerPage) - 1;
-			for (uint i = 0; i < 0x10000; i++)
+
+			CodePage zeroPage = new CodePage();
+			for (uint i = 0; i < (1 << BitsPerPage); i++)
+			{
+				zeroPage.Add(GeneralCategory.Cn.ToString());
+			}
+			codePages.Add(zeroPage, 0);
+
+			uint lastCode = unicodeLookup.Keys.Max();
+			uint endPoint = (uint)((lastCode + PageMask) & ~PageMask);
+
+			CodePage currentCodePage = null;
+			for (uint i = 0; i < endPoint; i++)
 			{
 				if ((i & PageMask) == 0)
 				{
@@ -369,43 +383,238 @@ namespace UnicodeSetup
 				{
 					charInfo = _unusedCharacter;
 				}
-				currentCodePage.Add(((int)charInfo.GeneralCategory).ToString());
+				currentCodePage.Add(charInfo.GeneralCategory.ToString());
 				if ((i & PageMask) == PageMask)
 				{
 					uint lookupIndex;
-					if (codePages.ContainsKey(currentCodePage))
+					if (!codePages.TryGetValue(currentCodePage, out lookupIndex))
 					{
-						lookupIndex = codePages[currentCodePage];
-						currentCodePage = codePageLookup[lookupIndex];
+						codePages.Add(currentCodePage, lookupIndex = (uint)codePages.Count);
 					}
-					else
-					{
-						codePages.Add(currentCodePage, lookupIndex = i - PageMask);
-						currentCodePage.ExternalIdentifier = lookupIndex;
-					}
-					codePageLookup.Add(i - PageMask, currentCodePage);
+
+					if (!usages.ContainsKey(lookupIndex))
+						usages.Add(lookupIndex, 1);
+					else usages[lookupIndex]++;
+
+					codePageMap.Add((i - PageMask) / (1 << BitsPerPage), lookupIndex);
 				}
 			}
 
-			List<string> lookupTable = codePageLookup
-				.OrderBy(pair => pair.Key)
-				.Select(pair => "_general_" + pair.Value.ExternalIdentifier.ToString("X4"))
-				.ToList();
+			output.AppendFormat("#ifdef _MSC_VER\r\n"
+				+ "\textern const SByte Unicode_GeneralCategoryData[];\r\n"
+				+ "\textern const UInt16 Unicode_GeneralCategoryBmpLookup[];\r\n"
+				+ "\textern const ExtendedTuple Unicode_GeneralCategoryExtendedLookup[];\r\n"
+				+ "\textern const Int Unicode_GeneralCategoryExtendedLookupCount;\r\n"
+				+ "#else\r\n"
+				+ "\tstatic const SByte Unicode_GeneralCategoryData[];\r\n"
+				+ "\tstatic const UInt16 Unicode_GeneralCategoryBmpLookup[];\r\n"
+				+ "\tstatic const ExtendedTuple Unicode_GeneralCategoryExtendedLookup[];\r\n"
+				+ "\tstatic const Int Unicode_GeneralCategoryExtendedLookupCount;\r\n"
+				+ "#endif\r\n"
+				+ "\r\n");
 
-			output.AppendFormat("\t\tconst int GeneralLookupCount = {0};\r\n", lookupTable.Count);
-			output.AppendFormat("\t\tconst int GeneralTableCount = {0};\r\n", codePages.Count);
-			output.AppendFormat("\t\tconst int GeneralByteCount = {0};\r\n\r\n", codePages.Count * (1 << BitsPerPage));
-
-			foreach (CodePage codePage in codePages.Keys)
+			foreach (GeneralCategory value in Enum.GetValues(typeof(GeneralCategory)))
 			{
-				WriteCodePage(output, "static byte", "_general_" + codePage.ExternalIdentifier.ToString("X4"), codePage, 16);
+				output.AppendFormat("#define {0} 0x{1:X2}\r\n", value.ToString(), (int)value);
+			}
+			output.Append("\r\n");
+
+			output.AppendFormat("// General Category values for various sets of code points.\r\n"
+				+ "// Each row of 16 values is indexed by the lookup tables below.\r\n"
+				+ "// Rows near the top are more likely to be used than rows near the bottom.\r\n"
+				+ "const SByte Unicode_GeneralCategoryData[{0}] = {{\r\n",
+				codePages.Count);
+
+			uint offset = 0;
+			foreach (KeyValuePair<CodePage, uint> pair in codePages.OrderByDescending(pair => usages[pair.Value]).ThenBy(pair => pair.Value))
+			{
+				Tuple<string, uint> valuesAndCount = CompressPageValues(pair.Key.ToArray());
+				output.Append("\t");
+				output.Append(valuesAndCount.Item1);
+				output.Append("\t// Row ");
+				output.Append(offset >> BitsPerPage);
+				output.Append(", used ");
+				output.Append(usages[pair.Value]);
+				output.Append(" times\r\n");
+				paragraphOffsets[pair.Value] = offset;
+				offset += valuesAndCount.Item2;
 			}
 
-			WriteCodePage(output, "static byte *", "GeneralCategoryTable", lookupTable, 8);
+			output.Append("};\r\n\r\n");
+
+			output.AppendFormat("// The paragraphs (sets of code points) in the Basic Multilingual Plane.\r\n"
+				+ "// Each value is an index to a row of the general-category data above.\r\n"
+				+ "const UInt16 Unicode_GeneralCategoryBmpLookup[{0}] = {{",
+				0x10000 >> BitsPerPage);
+
+			List<uint> mapValues = codePageMap.OrderBy(pair => pair.Key).Select(pair => pair.Value).ToList();
+			for (int i = 0; i < (0x10000 >> BitsPerPage); i++)
+			{
+				if ((i & PageMask) == 0)
+					output.Append("\r\n\t");
+				output.Append(paragraphOffsets[mapValues[i]] >> BitsPerPage);
+				output.Append(",");
+			}
+
+			output.Append("\r\n};\r\n\r\n");
+
+			int extendedCount = 0;
+			for (int i = (0x10000 >> BitsPerPage); i < mapValues.Count; i++)
+			{
+				if (mapValues[i] != 0) extendedCount++;
+			}
+
+			output.AppendFormat("// All assigned paragraphs above the BMP, sorted for efficient binary search.\r\n"
+				+ "// First value is paragraph ID (starting code point = (id + " + (0x10000 >> BitsPerPage) + ") << " + BitsPerPage + ").\r\n"
+				+ "// Second value is an index into a row of the general-category data above.\r\n"
+				+ "const Unicode_ExtendedTuple Unicode_GeneralCategoryExtendedLookup[{0}] = {{",
+				extendedCount);
+
+			for (int i = (0x10000 >> BitsPerPage); i < mapValues.Count; i++)
+			{
+				if (mapValues[i] != 0)
+				{
+					output.Append("\r\n\t{ ");
+					output.Append(i - (0x10000 >> BitsPerPage));
+					output.Append(",");
+					output.Append(paragraphOffsets[mapValues[i]] >> BitsPerPage);
+					output.Append(" },");
+				}
+			}
+
+			output.Append("\r\n};\r\n\r\n");
+
+			output.Append("const Int Unicode_GeneralCategoryExtendedLookupCount = " + extendedCount + ";\r\n");
+
+			output.Append(@"
+/// <summary>
+/// Given a Unicode code point known to be > U+FFFF, this uses an efficient binary search
+/// (with embedded fast linear search) to look up its General Category assignment.
+/// 
+/// Note: While a general binary search runs in O(lg n) time, this implementation will
+/// always run in O(1) time because of the limited dataset to test against (but note that
+/// O(1) is NOT the same as cryptographically-secure constant time; the execution time will
+/// be variable, but it will still be within O(1)).  For current datasets, this implementation
+/// will test the code-point against at most ~16 values before finding the correct answer.
+/// </summary>
+/// <param name=""codePoint"">A Unicode code point that must be higher than U+FFFF.</param>
+/// <returns>The General Category assignment for that code point, or 0 if it is an unknown code point (or <= U+FFFF).</returns>
+Byte Unicode_GetGeneralCategoryExtended(UInt32 codePoint)
+{
+	Int paragraphId = ((codePoint - 0x10000) >> " + BitsPerPage + @";
+	Int start = 0;
+	Int end = Unicode_GeneralCategoryExtendedLookupCount;
+	Unicode_ExtendedTuple *tuples, *tupleEnd;
+
+	// Use binary search until we get to a smallish range.  For the current Unicode dataset,
+	// this will loop at most seven times.
+	while (start + 8 < end)
+	{
+		Int midpt = (start + end) >> 1;
+		UInt16 midptValue = Unicode_GeneralCategoryExtendedLookup[midpt].paragraphId;
+		if (paragraphId == midptValue)
+		{
+			return Unicode_GeneralCategoryData[Unicode_GeneralCategoryExtendedLookup[midpt].offset + (codePoint & 0xF)];
+		}
+		else if (paragraphId < midptValue)
+		{
+			end = midpt;
+		}
+		else
+		{
+			start = midpt + 1;
+		}
+	}
+
+#define TRY_AT(index) \
+	if (paragraphId == tuples[index].paragraphId) \
+		return Unicode_GeneralCategoryData[tuples[index].offset + (codePoint & 0xF)]
+
+	// Use an unrolled linear search (via computed goto) when the range gets small,
+	// since the binary reduction gets very expensive for small ranges.  This will also
+	// test about eight values.
+	tuples = Unicode_GeneralCategoryExtendedLookup + start;
+	switch (end - start) {
+		case 8: TRY_AT(7);
+		case 7: TRY_AT(6);
+		case 6: TRY_AT(5);
+		case 5: TRY_AT(4);
+		case 4: TRY_AT(3);
+		case 3: TRY_AT(2);
+		case 2: TRY_AT(1);
+		case 1: TRY_AT(0);
+		case 0:
+		default: return 0;
+	}
+}
+
+");
 
 			EndOutput(output);
 
-			File.WriteAllText(@"Output\UnicodeGeneralCategoryTable.cpp", output.ToString(), Encoding.UTF8);
+			File.WriteAllText(@"Output\category.c", output.ToString(), Encoding.UTF8);
+		}
+
+		private static Tuple<string, uint> CompressPageValues(IList<string> values)
+		{
+			return new Tuple<string, uint>(string.Join(", ", values), (uint)values.Count);
+
+			/*
+			// This compression algorithm seemed like a great idea, but in reality, it only ends up
+			// saving about 17% of the size of the data tables.  Adding a lot of runtime complexity
+			// and a runtime performance cost just so that we can cut the dataset from 18.5 KiB to
+			// 15.3 KiB simply isn't worth it, so this is all commented out, and we just store the
+			// data verbatim.  The compression algorithm is in C#, and the C decompression code is
+			// included below for historical reference:
+
+			Inline Byte Unicode_SequenceToGeneralCategory(SByte *sequence, UInt32 codePoint)
+			{
+				SByte runCount = sequence[0];
+				UInt32 offset = codePoint & 0xF;
+
+				return runCount == 0 ? (                                    sequence[offset            + 1])
+					 : runCount >  0 ? (offset <   runCount ? sequence[1] : sequence[offset - runCount + 2])
+					 :                 (offset >= -runCount ? sequence[1] : sequence[offset            + 2]);
+			}
+
+			int forwardRun = MeasureRun(values, 0, values.Count, +1);
+			int backwardRun = MeasureRun(values, values.Count - 1, -1, -1);
+
+			if (forwardRun == values.Count)
+			{
+				// If the run covers all of the values, emit a simple pair that covers all of them.
+				return new Tuple<string, uint>(string.Format("+{0,2}, {1}", values.Count, values[0]), 2);
+			}
+			else if (forwardRun > backwardRun && forwardRun > 2)
+			{
+				// If the forward run is large, emit the starting set compressed, and the rest verbatim.
+				string uncompressed = string.Join(", ", values.Skip(forwardRun));
+				return new Tuple<string, uint>(string.Format("+{0,2}, {1}, {2}", forwardRun, values[0], uncompressed),
+					(uint)(values.Count - forwardRun + 2));
+			}
+			else if (backwardRun > 2)
+			{
+				// If the backward run is large, emit the ending set compressed, and the rest verbatim.
+				string uncompressed = string.Join(", ", values.Take(values.Count - backwardRun));
+				return new Tuple<string, uint>(string.Format("-{0,2}, {1}, {2}", backwardRun, values[values.Count - 1], uncompressed),
+					(uint)(values.Count - backwardRun + 2));
+			}
+			else
+			{
+				// Not easily compressible, so emit a '0' run, followed by all values verbatim.
+				return new Tuple<string, uint>("  0, " + string.Join(", ", values), (uint)values.Count + 1);
+			}
+
+			static int MeasureRun(IList<string> values, int start, int end, int step)
+			{
+				string firstValue = values[start];
+				int count = 0;
+
+				for (start += step, count++; start != end && values[start] == firstValue; start += step, count++) ;
+
+				return count;
+			}
+			*/
 		}
 
 		#endregion
@@ -572,7 +781,7 @@ namespace UnicodeSetup
 			{
 				codePage.Add(NeedExtendedDecompositionCodePage(i << 8, decompositionLookup)
 					? subtableName + "Extended" + i.ToString("X2")
-					: "null");
+					: "NULL");
 			}
 
 			WriteCodePage(output, "static int **", identifierName + "Extended", codePage, 16);
