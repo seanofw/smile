@@ -716,22 +716,35 @@ Byte Unicode_GetGeneralCategoryExtended(UInt32 codePoint)
 
 			List<IGrouping<uint, CharacterInfo>> codePages = decomposedCharacters.GroupBy(c => (uint)(c.CodeValue & ~0xFF)).ToList();
 
+			List<uint> extendedValues = new List<uint>();
+
 			StringBuilder output = new StringBuilder();
 
 			BeginOutput(output);
+
+			output.Append(@"#ifdef _MSC_VER
+	extern const Int32 _decompositionTableExtendedValues[];
+#else
+	static const Int32 _decompositionTableExtendedValues[];
+#endif
+
+");
 
 			WriteIdentityTable("_d0", output);
 
 			for (uint i = 0; i < 256; i++)
 			{
-				GenerateDecompositionCodePage(output, "_decompositionTable", i << 8, decompositionLookup);
+				GenerateDecompositionCodePage(output, "_decompositionTable", i << 8, decompositionLookup, extendedValues);
 			}
 
-			GenerateDecompositionCodePageIndex(output, "DecompositionTable", "_decompositionTable", codePages, decompositionLookup);
+			WriteCodePage(output, "static const Int32", "_decompositionTableExtendedValues",
+				extendedValues.Select(v => v.ToString()), 16);
+
+			GenerateDecompositionCodePageIndex(output, "UnicodeTables_DecompositionTable", "_decompositionTable", codePages, decompositionLookup);
 
 			EndOutput(output);
 
-			File.WriteAllText(@"Output\UnicodeDecompositionTable.cpp", output.ToString());
+			File.WriteAllText(@"Output\decomposition.c", output.ToString());
 		}
 
 		private static List<uint> RecursivelyDecompose(CharacterInfo characterInfo, Dictionary<uint, CharacterInfo> unicodeLookup)
@@ -781,7 +794,9 @@ Byte Unicode_GetGeneralCategoryExtended(UInt32 codePoint)
 					: "_d0");
 			}
 
-			WriteCodePage(output, "static int *", identifierName, codePage, 16);
+			output.Append("const Int32 " + identifierName + "Count = 256;\r\n\r\n");
+
+			WriteCodePage(output, "const Int32 *", identifierName, codePage, 16);
 
 			codePage = new List<string>();
 
@@ -792,11 +807,11 @@ Byte Unicode_GetGeneralCategoryExtended(UInt32 codePoint)
 					: "NULL");
 			}
 
-			WriteCodePage(output, "static int **", identifierName + "Extended", codePage, 16);
+			WriteCodePage(output, "const Int32 **", identifierName + "Extended", codePage, 16);
 		}
 
 		private static void GenerateDecompositionCodePage(StringBuilder output, string identifierName,
-			uint baseOffset, Dictionary<uint, CharacterInfo> decompositionLookup)
+			uint baseOffset, Dictionary<uint, CharacterInfo> decompositionLookup, List<uint> extendedValues)
 		{
 			if (!NeedDecompositionCodePage(baseOffset, decompositionLookup)) return;
 
@@ -818,7 +833,7 @@ Byte Unicode_GetGeneralCategoryExtended(UInt32 codePoint)
 				codePage.Add(outputValue.ToString());
 			}
 
-			WriteCodePage(output, "static int", identifierName + (baseOffset >> 8).ToString("X2"), codePage, 16);
+			WriteCodePage(output, "static const Int32", identifierName + (baseOffset >> 8).ToString("X2"), codePage, 16);
 
 			if (NeedExtendedDecompositionCodePage(baseOffset, decompositionLookup))
 			{
@@ -832,7 +847,10 @@ Byte Unicode_GetGeneralCategoryExtended(UInt32 codePoint)
 						List<uint> codeValues = decompositionLookup[codeValue].CharacterDecompositionMapping;
 						if (codeValues.Count > 1)
 						{
-							codePage.Add(StringifyCodeValues(codeValues));
+							int offset = extendedValues.Count;
+							extendedValues.Add((uint)codeValues.Count);
+							extendedValues.AddRange(codeValues);
+							codePage.Add("_decompositionTableExtendedValues+" + offset);
 						}
 						else
 						{
@@ -845,7 +863,7 @@ Byte Unicode_GetGeneralCategoryExtended(UInt32 codePoint)
 					}
 				}
 
-				WriteCodePage(output, "static int *", identifierName + "Extended" + (baseOffset >> 8).ToString("X2"), codePage, 8);
+				WriteCodePage(output, "static const Int32 *", identifierName + "Extended" + (baseOffset >> 8).ToString("X2"), codePage, 8);
 			}
 		}
 

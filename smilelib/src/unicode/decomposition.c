@@ -1561,3 +1561,4 @@ const Int32 **UnicodeTables_DecompositionTableExtended[] =
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, _decompositionTableExtendedFB, NULL, NULL, NULL, NULL,
 };
+
