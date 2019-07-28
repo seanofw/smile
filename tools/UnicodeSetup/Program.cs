@@ -55,9 +55,13 @@ namespace UnicodeSetup
 
 			GenerateCompositionTable(unicodeLookup);
 
-			GenerateCodePageTables(new Dictionary<string, string>
+			GenerateCodePageTables("codepages_cpx.c", new Dictionary<string, string>
 			{
 				{ "cp437.txt", "Cp437" },
+			});
+
+			GenerateCodePageTables("codepages_win125x.c", new Dictionary<string, string>
+			{
 				{ "cp1250.txt", "Windows1250" },
 				{ "cp1251.txt", "Windows1251" },
 				{ "cp1252.txt", "Windows1252" },
@@ -67,6 +71,10 @@ namespace UnicodeSetup
 				{ "cp1256.txt", "Windows1256" },
 				{ "cp1257.txt", "Windows1257" },
 				{ "cp1258.txt", "Windows1258" },
+			});
+
+			GenerateCodePageTables("codepages_iso8859.c", new Dictionary<string, string>
+			{
 				{ "iso-8859-2.txt", "Iso_8859_2" },
 				{ "iso-8859-3.txt", "Iso_8859_3" },
 				{ "iso-8859-4.txt", "Iso_8859_4" },
@@ -81,7 +89,7 @@ namespace UnicodeSetup
 				{ "iso-8859-14.txt", "Iso_8859_14" },
 				{ "iso-8859-15.txt", "Iso_8859_15" },
 				{ "iso-8859-16.txt", "Iso_8859_16" },
-			});
+			}, Iso88591Table);
 		}
 
 		#region Identity Tables
@@ -1104,7 +1112,67 @@ Byte Unicode_GetGeneralCategoryExtended(UInt32 codePoint)
 			return values;
 		}
 
-		private static void GenerateCodePageTables(Dictionary<string, string> codePages)
+		private const string Iso88591Table = @"
+//-----------------------------------------------------------------------------------------
+// ISO 8859-1 is represented as a special mapping of raw bytes to the low 256 code points.
+//
+// This is a bit more than the real ISO 8859-1 has defined.  ISO 8859-1 omits a meaningful
+// transform for byte values in the range of 0x80-0xBF, so those would normally be
+// transformed to Unicode U+FFFD, or 'no character'.  But when defined with equivalent
+// values for 0x80-0xBF, this code page has the unique property that it's can safely
+// round-trip between raw byte values and Unicode, which is a such a highly-desirable
+// property that it's better to define it this way than to use the official definition and
+// have a hole in the middle of the table.
+
+const UInt16 UnicodeTables_Iso_8859_1ToUnicodeTable[] =
+{
+	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+	16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+	32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+	48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,
+	64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79,
+	80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95,
+	96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111,
+	112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127,
+	128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143,
+	144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159,
+	160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175,
+	176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191,
+	192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207,
+	208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223,
+	224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239,
+	240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255,
+};
+
+static const Byte _Iso_8859_1_00[] =
+{
+	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+	16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+	32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+	48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,
+	64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79,
+	80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95,
+	96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111,
+	112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127,
+	128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143,
+	144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159,
+	160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175,
+	176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191,
+	192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207,
+	208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223,
+	224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239,
+	240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255,
+};
+
+const Byte *UnicodeTables_UnicodeToIso_8859_1Table[] =
+{
+	_Iso_8859_1_00,
+};
+
+const Int UnicodeTables_UnicodeToIso_8859_1TableCount = sizeof(UnicodeTables_UnicodeToIso_8859_1Table) / sizeof(const Byte **);
+";
+
+		private static void GenerateCodePageTables(string outputFile, Dictionary<string, string> codePages, string extra = null)
 		{
 			StringBuilder output = new StringBuilder();
 
@@ -1115,7 +1183,12 @@ Byte Unicode_GetGeneralCategoryExtended(UInt32 codePoint)
 			{
 				undefined.Add("63");
 			}
-			WriteCodePage(output, "static byte", "_undefined", undefined, 16);
+			WriteCodePage(output, "static const Byte", "_undefined", undefined, 16);
+
+			if (!string.IsNullOrEmpty(extra))
+			{
+				output.Append(extra);
+			}
 
 			foreach (KeyValuePair<string, string> pair in codePages)
 			{
@@ -1126,12 +1199,12 @@ Byte Unicode_GetGeneralCategoryExtended(UInt32 codePoint)
 
 			EndOutput(output);
 
-			File.WriteAllText(@"Output\UnicodeCodePages.cpp", output.ToString());
+			File.WriteAllText(@"Output\" + outputFile, output.ToString());
 		}
 
 		private static void GenerateCodePageTable(StringBuilder output, string codePageName, IEnumerable<int[]> mappings)
 		{
-			output.Append("\t\t//-----------------------------------------------------------------------------------------\r\n\r\n");
+			output.Append("//-----------------------------------------------------------------------------------------\r\n\r\n");
 
 			int[] forwardLookup = new int[256];
 			for (int i = 0; i < 256; i++)
@@ -1143,7 +1216,7 @@ Byte Unicode_GetGeneralCategoryExtended(UInt32 codePoint)
 				forwardLookup[pair[0]] = pair[1];
 			}
 
-			WriteCodePage(output, "int", "UnicodeTables::" + codePageName + "ToUnicodeTable", forwardLookup.Select(value => value.ToString()), 16);
+			WriteCodePage(output, "const UInt16", "UnicodeTables_" + codePageName + "ToUnicodeTable", forwardLookup.Select(value => value.ToString()), 16);
 
 			Dictionary<int, IEnumerable<int[]>> groupedMappings = mappings
 				.Where(m => m.Length > 1)
@@ -1175,10 +1248,14 @@ Byte Unicode_GetGeneralCategoryExtended(UInt32 codePoint)
 					reverseLookup[pair[1] & 0xFF] = (byte)pair[0];
 				}
 
-				WriteCodePage(output, "static byte", partialName, reverseLookup.Select(value => value.ToString()), 16);
+				WriteCodePage(output, "static const Byte", partialName, reverseLookup.Select(value => value.ToString()), 16);
 			}
 
-			WriteCodePage(output, "byte *", "UnicodeTables::UnicodeTo" + codePageName + "Table", codePagePointers, 8);
+			WriteCodePage(output, "const Byte *", "UnicodeTables_UnicodeTo" + codePageName + "Table", codePagePointers, 8);
+
+			output.Append("const Int UnicodeTables_UnicodeTo" + codePageName
+				+ "TableCount = sizeof(UnicodeTables_UnicodeTo" + codePageName
+				+ "Table) / sizeof(const Byte **);\r\n");
 		}
 
 		#endregion

@@ -176,7 +176,6 @@ const Byte *UnicodeTables_UnicodeToWindows1250Table[] =
 };
 
 const Int UnicodeTables_UnicodeToWindows1250TableCount = sizeof(UnicodeTables_UnicodeToWindows1250Table) / sizeof(const Byte **);
-
 //-----------------------------------------------------------------------------------------
 
 const UInt16 UnicodeTables_Windows1251ToUnicodeTable[] =
@@ -289,7 +288,6 @@ const Byte *UnicodeTables_UnicodeToWindows1251Table[] =
 };
 
 const Int UnicodeTables_UnicodeToWindows1251TableCount = sizeof(UnicodeTables_UnicodeToWindows1251Table) / sizeof(const Byte **);
-
 //-----------------------------------------------------------------------------------------
 
 const UInt16 UnicodeTables_Windows1252ToUnicodeTable[] =
@@ -422,7 +420,6 @@ const Byte *UnicodeTables_UnicodeToWindows1252Table[] =
 };
 
 const Int UnicodeTables_UnicodeToWindows1252TableCount = sizeof(UnicodeTables_UnicodeToWindows1252Table) / sizeof(const Byte **);
-
 //-----------------------------------------------------------------------------------------
 
 const UInt16 UnicodeTables_Windows1253ToUnicodeTable[] =
@@ -555,7 +552,6 @@ const Byte *UnicodeTables_UnicodeToWindows1253Table[] =
 };
 
 const Int UnicodeTables_UnicodeToWindows1253TableCount = sizeof(UnicodeTables_UnicodeToWindows1253Table) / sizeof(const Byte **);
-
 //-----------------------------------------------------------------------------------------
 
 const UInt16 UnicodeTables_Windows1254ToUnicodeTable[] =
@@ -688,7 +684,6 @@ const Byte *UnicodeTables_UnicodeToWindows1254Table[] =
 };
 
 const Int UnicodeTables_UnicodeToWindows1254TableCount = sizeof(UnicodeTables_UnicodeToWindows1254Table) / sizeof(const Byte **);
-
 //-----------------------------------------------------------------------------------------
 
 const UInt16 UnicodeTables_Windows1255ToUnicodeTable[] =
@@ -841,7 +836,6 @@ const Byte *UnicodeTables_UnicodeToWindows1255Table[] =
 };
 
 const Int UnicodeTables_UnicodeToWindows1255TableCount = sizeof(UnicodeTables_UnicodeToWindows1255Table) / sizeof(const Byte **);
-
 //-----------------------------------------------------------------------------------------
 
 const UInt16 UnicodeTables_Windows1256ToUnicodeTable[] =
@@ -994,7 +988,6 @@ const Byte *UnicodeTables_UnicodeToWindows1256Table[] =
 };
 
 const Int UnicodeTables_UnicodeToWindows1256TableCount = sizeof(UnicodeTables_UnicodeToWindows1256Table) / sizeof(const Byte **);
-
 //-----------------------------------------------------------------------------------------
 
 const UInt16 UnicodeTables_Windows1257ToUnicodeTable[] =
@@ -1127,7 +1120,6 @@ const Byte *UnicodeTables_UnicodeToWindows1257Table[] =
 };
 
 const Int UnicodeTables_UnicodeToWindows1257TableCount = sizeof(UnicodeTables_UnicodeToWindows1257Table) / sizeof(const Byte **);
-
 //-----------------------------------------------------------------------------------------
 
 const UInt16 UnicodeTables_Windows1258ToUnicodeTable[] =

@@ -44,7 +44,17 @@ static const Byte _undefined[] =
 	63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
 };
 
+
 //-----------------------------------------------------------------------------------------
+// ISO 8859-1 is represented as a special mapping of raw bytes to the low 256 code points.
+//
+// This is a bit more than the real ISO 8859-1 has defined.  ISO 8859-1 omits a meaningful
+// transform for byte values in the range of 0x80-0xBF, so those would normally be
+// transformed to Unicode U+FFFD, or 'no character'.  But when defined with equivalent
+// values for 0x80-0xBF, this code page has the unique property that it's can safely
+// round-trip between raw byte values and Unicode, which is a such a highly-desirable
+// property that it's better to define it this way than to use the official definition and
+// have a hole in the middle of the table.
 
 const UInt16 UnicodeTables_Iso_8859_1ToUnicodeTable[] =
 {
@@ -92,7 +102,6 @@ const Byte *UnicodeTables_UnicodeToIso_8859_1Table[] =
 };
 
 const Int UnicodeTables_UnicodeToIso_8859_1TableCount = sizeof(UnicodeTables_UnicodeToIso_8859_1Table) / sizeof(const Byte **);
-
 //-----------------------------------------------------------------------------------------
 
 const UInt16 UnicodeTables_Iso_8859_2ToUnicodeTable[] =
@@ -181,7 +190,6 @@ const Byte *UnicodeTables_UnicodeToIso_8859_2Table[] =
 };
 
 const Int UnicodeTables_UnicodeToIso_8859_2TableCount = sizeof(UnicodeTables_UnicodeToIso_8859_2Table) / sizeof(const Byte **);
-
 //-----------------------------------------------------------------------------------------
 
 const UInt16 UnicodeTables_Iso_8859_3ToUnicodeTable[] =
@@ -270,7 +278,6 @@ const Byte *UnicodeTables_UnicodeToIso_8859_3Table[] =
 };
 
 const Int UnicodeTables_UnicodeToIso_8859_3TableCount = sizeof(UnicodeTables_UnicodeToIso_8859_3Table) / sizeof(const Byte **);
-
 //-----------------------------------------------------------------------------------------
 
 const UInt16 UnicodeTables_Iso_8859_4ToUnicodeTable[] =
@@ -359,7 +366,6 @@ const Byte *UnicodeTables_UnicodeToIso_8859_4Table[] =
 };
 
 const Int UnicodeTables_UnicodeToIso_8859_4TableCount = sizeof(UnicodeTables_UnicodeToIso_8859_4Table) / sizeof(const Byte **);
-
 //-----------------------------------------------------------------------------------------
 
 const UInt16 UnicodeTables_Iso_8859_5ToUnicodeTable[] =
@@ -452,7 +458,6 @@ const Byte *UnicodeTables_UnicodeToIso_8859_5Table[] =
 };
 
 const Int UnicodeTables_UnicodeToIso_8859_5TableCount = sizeof(UnicodeTables_UnicodeToIso_8859_5Table) / sizeof(const Byte **);
-
 //-----------------------------------------------------------------------------------------
 
 const UInt16 UnicodeTables_Iso_8859_6ToUnicodeTable[] =
@@ -521,7 +526,6 @@ const Byte *UnicodeTables_UnicodeToIso_8859_6Table[] =
 };
 
 const Int UnicodeTables_UnicodeToIso_8859_6TableCount = sizeof(UnicodeTables_UnicodeToIso_8859_6Table) / sizeof(const Byte **);
-
 //-----------------------------------------------------------------------------------------
 
 const UInt16 UnicodeTables_Iso_8859_7ToUnicodeTable[] =
@@ -614,7 +618,6 @@ const Byte *UnicodeTables_UnicodeToIso_8859_7Table[] =
 };
 
 const Int UnicodeTables_UnicodeToIso_8859_7TableCount = sizeof(UnicodeTables_UnicodeToIso_8859_7Table) / sizeof(const Byte **);
-
 //-----------------------------------------------------------------------------------------
 
 const UInt16 UnicodeTables_Iso_8859_8ToUnicodeTable[] =
@@ -707,7 +710,6 @@ const Byte *UnicodeTables_UnicodeToIso_8859_8Table[] =
 };
 
 const Int UnicodeTables_UnicodeToIso_8859_8TableCount = sizeof(UnicodeTables_UnicodeToIso_8859_8Table) / sizeof(const Byte **);
-
 //-----------------------------------------------------------------------------------------
 
 const UInt16 UnicodeTables_Iso_8859_9ToUnicodeTable[] =
@@ -776,7 +778,6 @@ const Byte *UnicodeTables_UnicodeToIso_8859_9Table[] =
 };
 
 const Int UnicodeTables_UnicodeToIso_8859_9TableCount = sizeof(UnicodeTables_UnicodeToIso_8859_9Table) / sizeof(const Byte **);
-
 //-----------------------------------------------------------------------------------------
 
 const UInt16 UnicodeTables_Iso_8859_10ToUnicodeTable[] =
@@ -869,7 +870,6 @@ const Byte *UnicodeTables_UnicodeToIso_8859_10Table[] =
 };
 
 const Int UnicodeTables_UnicodeToIso_8859_10TableCount = sizeof(UnicodeTables_UnicodeToIso_8859_10Table) / sizeof(const Byte **);
-
 //-----------------------------------------------------------------------------------------
 
 const UInt16 UnicodeTables_Iso_8859_11ToUnicodeTable[] =
@@ -939,11 +939,6 @@ const Byte *UnicodeTables_UnicodeToIso_8859_11Table[] =
 };
 
 const Int UnicodeTables_UnicodeToIso_8859_11TableCount = sizeof(UnicodeTables_UnicodeToIso_8859_11Table) / sizeof(const Byte **);
-
-//-----------------------------------------------------------------------------------------
-
-// For historical reasons, there's no such thing as ISO 8859-12.
-
 //-----------------------------------------------------------------------------------------
 
 const UInt16 UnicodeTables_Iso_8859_13ToUnicodeTable[] =
@@ -1036,7 +1031,6 @@ const Byte *UnicodeTables_UnicodeToIso_8859_13Table[] =
 };
 
 const Int UnicodeTables_UnicodeToIso_8859_13TableCount = sizeof(UnicodeTables_UnicodeToIso_8859_13Table) / sizeof(const Byte **);
-
 //-----------------------------------------------------------------------------------------
 
 const UInt16 UnicodeTables_Iso_8859_14ToUnicodeTable[] =
@@ -1128,7 +1122,6 @@ const Byte *UnicodeTables_UnicodeToIso_8859_14Table[] =
 };
 
 const Int UnicodeTables_UnicodeToIso_8859_14TableCount = sizeof(UnicodeTables_UnicodeToIso_8859_14Table) / sizeof(const Byte **);
-
 //-----------------------------------------------------------------------------------------
 
 const UInt16 UnicodeTables_Iso_8859_15ToUnicodeTable[] =
@@ -1221,7 +1214,6 @@ const Byte *UnicodeTables_UnicodeToIso_8859_15Table[] =
 };
 
 const Int UnicodeTables_UnicodeToIso_8859_15TableCount = sizeof(UnicodeTables_UnicodeToIso_8859_15Table) / sizeof(const Byte **);
-
 //-----------------------------------------------------------------------------------------
 
 const UInt16 UnicodeTables_Iso_8859_16ToUnicodeTable[] =
