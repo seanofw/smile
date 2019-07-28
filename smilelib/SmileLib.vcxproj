@@ -1081,6 +1081,7 @@
     <ClCompile Include="src\string\string_utf16.c" />
     <ClCompile Include="src\time\ticks.c" />
     <ClCompile Include="src\unicode\casefolding.c" />
+    <ClCompile Include="src\unicode\category.c" />
     <ClCompile Include="src\unicode\codepages_cpx.c" />
     <ClCompile Include="src\unicode\codepages_iso8859.c" />
     <ClCompile Include="src\unicode\codepages_win125x.c" />

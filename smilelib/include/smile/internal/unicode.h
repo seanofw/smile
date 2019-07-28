@@ -57,7 +57,7 @@ enum {
 };
 
 typedef struct {
-	UInt16 paragraphID;
+	UInt16 paragraphId;
 	UInt16 offset;
 } Unicode_ExtendedTuple;
 
@@ -77,7 +77,7 @@ SMILE_API_FUNC Byte Unicode_GetGeneralCategoryExtended(UInt32 codePoint);
 /// <returns>The General Category assignment for that code point.</returns>
 Inline Byte Unicode_GetGeneralCategoryBmp(UInt32 codePoint)
 {
-	return Unicode_GeneralCategoryData[Unicode_GeneralCategoryBmpLookup[codePoint >> 4] + (codePoint & 0xF)];
+	return Unicode_GeneralCategoryData[(Unicode_GeneralCategoryBmpLookup[codePoint >> 4] << 4) + (codePoint & 0xF)];
 }
 
 /// <summary>

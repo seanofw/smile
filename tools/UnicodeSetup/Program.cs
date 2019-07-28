@@ -411,12 +411,12 @@ namespace UnicodeSetup
 			output.AppendFormat("#ifdef _MSC_VER\r\n"
 				+ "\textern const SByte Unicode_GeneralCategoryData[];\r\n"
 				+ "\textern const UInt16 Unicode_GeneralCategoryBmpLookup[];\r\n"
-				+ "\textern const ExtendedTuple Unicode_GeneralCategoryExtendedLookup[];\r\n"
+				+ "\textern const Unicode_ExtendedTuple Unicode_GeneralCategoryExtendedLookup[];\r\n"
 				+ "\textern const Int Unicode_GeneralCategoryExtendedLookupCount;\r\n"
 				+ "#else\r\n"
 				+ "\tstatic const SByte Unicode_GeneralCategoryData[];\r\n"
 				+ "\tstatic const UInt16 Unicode_GeneralCategoryBmpLookup[];\r\n"
-				+ "\tstatic const ExtendedTuple Unicode_GeneralCategoryExtendedLookup[];\r\n"
+				+ "\tstatic const Unicode_ExtendedTuple Unicode_GeneralCategoryExtendedLookup[];\r\n"
 				+ "\tstatic const Int Unicode_GeneralCategoryExtendedLookupCount;\r\n"
 				+ "#endif\r\n"
 				+ "\r\n");
@@ -431,7 +431,7 @@ namespace UnicodeSetup
 				+ "// Each row of 16 values is indexed by the lookup tables below.\r\n"
 				+ "// Rows near the top are more likely to be used than rows near the bottom.\r\n"
 				+ "const SByte Unicode_GeneralCategoryData[{0}] = {{\r\n",
-				codePages.Count);
+				codePages.Count << BitsPerPage);
 
 			uint offset = 0;
 			foreach (KeyValuePair<CodePage, uint> pair in codePages.OrderByDescending(pair => usages[pair.Value]).ThenBy(pair => pair.Value))
@@ -439,7 +439,7 @@ namespace UnicodeSetup
 				Tuple<string, uint> valuesAndCount = CompressPageValues(pair.Key.ToArray());
 				output.Append("\t");
 				output.Append(valuesAndCount.Item1);
-				output.Append("\t// Row ");
+				output.Append(",\t// Row ");
 				output.Append(offset >> BitsPerPage);
 				output.Append(", used ");
 				output.Append(usages[pair.Value]);
@@ -509,10 +509,10 @@ namespace UnicodeSetup
 /// <returns>The General Category assignment for that code point, or 0 if it is an unknown code point (or <= U+FFFF).</returns>
 Byte Unicode_GetGeneralCategoryExtended(UInt32 codePoint)
 {
-	Int paragraphId = ((codePoint - 0x10000) >> " + BitsPerPage + @";
+	Int paragraphId = (codePoint - 0x10000) >> " + BitsPerPage + @";
 	Int start = 0;
 	Int end = Unicode_GeneralCategoryExtendedLookupCount;
-	Unicode_ExtendedTuple *tuples, *tupleEnd;
+	const Unicode_ExtendedTuple *tuples;
 
 	// Use binary search until we get to a smallish range.  For the current Unicode dataset,
 	// this will loop at most seven times.
