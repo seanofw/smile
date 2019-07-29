@@ -457,19 +457,6 @@ namespace UnicodeSetup
 				}
 			}
 
-			output.AppendFormat("#ifdef _MSC_VER\r\n"
-				+ "\textern const SByte Unicode_GeneralCategoryData[];\r\n"
-				+ "\textern const UInt16 Unicode_GeneralCategoryBmpLookup[];\r\n"
-				+ "\textern const Unicode_ExtendedTuple Unicode_GeneralCategoryExtendedLookup[];\r\n"
-				+ "\textern const Int Unicode_GeneralCategoryExtendedLookupCount;\r\n"
-				+ "#else\r\n"
-				+ "\tstatic const SByte Unicode_GeneralCategoryData[];\r\n"
-				+ "\tstatic const UInt16 Unicode_GeneralCategoryBmpLookup[];\r\n"
-				+ "\tstatic const Unicode_ExtendedTuple Unicode_GeneralCategoryExtendedLookup[];\r\n"
-				+ "\tstatic const Int Unicode_GeneralCategoryExtendedLookupCount;\r\n"
-				+ "#endif\r\n"
-				+ "\r\n");
-
 			foreach (GeneralCategory value in Enum.GetValues(typeof(GeneralCategory)))
 			{
 				output.AppendFormat("#define {0} 0x{1:X2}\r\n", value.ToString(), (int)value);

@@ -25,18 +25,6 @@
 #include <smile/string.h>
 #include <smile/internal/unicode.h>
 
-#ifdef _MSC_VER
-	extern const SByte Unicode_GeneralCategoryData[];
-	extern const UInt16 Unicode_GeneralCategoryBmpLookup[];
-	extern const Unicode_ExtendedTuple Unicode_GeneralCategoryExtendedLookup[];
-	extern const Int Unicode_GeneralCategoryExtendedLookupCount;
-#else
-	static const SByte Unicode_GeneralCategoryData[];
-	static const UInt16 Unicode_GeneralCategoryBmpLookup[];
-	static const Unicode_ExtendedTuple Unicode_GeneralCategoryExtendedLookup[];
-	static const Int Unicode_GeneralCategoryExtendedLookupCount;
-#endif
-
 #define Cn 0x00
 #define Cc 0x01
 #define Cf 0x02
