@@ -22,6 +22,7 @@
 // provided by the Unicode Consortium, www.unicode.org.
 //--------------------------------------------------------------
 
+#include <smile/string.h>
 #include <smile/internal/unicode.h>
 
 #define NO_MATCH	(-1)

@@ -22,6 +22,7 @@
 // provided by the Unicode Consortium, www.unicode.org.
 //--------------------------------------------------------------
 
+#include <smile/string.h>
 #include <smile/internal/unicode.h>
 
 #ifdef _MSC_VER
@@ -1461,7 +1462,7 @@ const Int Unicode_GeneralCategoryExtendedLookupCount = 575;
 /// </summary>
 /// <param name="codePoint">A Unicode code point that must be higher than U+FFFF.</param>
 /// <returns>The General Category assignment for that code point, or 0 if it is an unknown code point (or <= U+FFFF).</returns>
-Byte Unicode_GetGeneralCategoryExtended(UInt32 codePoint)
+Byte Uni_GetGeneralCategoryExtended(UInt32 codePoint)
 {
 	Int paragraphId = (codePoint - 0x10000) >> 4;
 	Int start = 0;

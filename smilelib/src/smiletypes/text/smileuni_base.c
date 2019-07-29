@@ -19,6 +19,7 @@
 #include <smile/stringbuilder.h>
 #include <smile/smiletypes/text/smilechar.h>
 #include <smile/smiletypes/text/smileuni.h>
+#include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/base.h>
 #include <smile/smiletypes/smileobject.h>
 #include <smile/smiletypes/smileuserobject.h>
@@ -28,8 +29,9 @@
 #include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
-#include <smile/internal/staticstring.h>
 #include <smile/smiletypes/range/smileunirange.h>
+#include <smile/internal/staticstring.h>
+#include <smile/internal/unicode.h>
 
 SMILE_IGNORE_UNUSED_VARIABLES
 
@@ -204,6 +206,182 @@ SMILE_EXTERNAL_FUNCTION(Minus)
 }
 
 //-------------------------------------------------------------------------------------------------
+// Unicode-specific conversions
+
+SMILE_EXTERNAL_FUNCTION(Category)
+{
+	Symbol symbol;
+	UInt32 uni = argv[0].unboxed.uni;
+	Byte category = Uni_GetGeneralCategory(uni);
+
+	switch (category) {
+		case GeneralCategory_Cn: symbol = Smile_KnownSymbols.Cn; break;
+		case GeneralCategory_Cc: symbol = Smile_KnownSymbols.Cc; break;
+		case GeneralCategory_Cf: symbol = Smile_KnownSymbols.Cf; break;
+		case GeneralCategory_Cs: symbol = Smile_KnownSymbols.Cs; break;
+		case GeneralCategory_Co: symbol = Smile_KnownSymbols.Co; break;
+		case GeneralCategory_Lu: symbol = Smile_KnownSymbols.Lu; break;
+		case GeneralCategory_Ll: symbol = Smile_KnownSymbols.Ll; break;
+		case GeneralCategory_Lt: symbol = Smile_KnownSymbols.Lt; break;
+		case GeneralCategory_Mn: symbol = Smile_KnownSymbols.Mn; break;
+		case GeneralCategory_Mc: symbol = Smile_KnownSymbols.Mc; break;
+		case GeneralCategory_Me: symbol = Smile_KnownSymbols.Me; break;
+		case GeneralCategory_Nd: symbol = Smile_KnownSymbols.Nd; break;
+		case GeneralCategory_Nl: symbol = Smile_KnownSymbols.Nl; break;
+		case GeneralCategory_No: symbol = Smile_KnownSymbols.No; break;
+		case GeneralCategory_Zs: symbol = Smile_KnownSymbols.Zs; break;
+		case GeneralCategory_Zl: symbol = Smile_KnownSymbols.Zl; break;
+		case GeneralCategory_Zp: symbol = Smile_KnownSymbols.Zp; break;
+		case GeneralCategory_Lm: symbol = Smile_KnownSymbols.Lm; break;
+		case GeneralCategory_Lo: symbol = Smile_KnownSymbols.Lo; break;
+		case GeneralCategory_Pc: symbol = Smile_KnownSymbols.Pc; break;
+		case GeneralCategory_Pd: symbol = Smile_KnownSymbols.Pd; break;
+		case GeneralCategory_Ps: symbol = Smile_KnownSymbols.Ps; break;
+		case GeneralCategory_Pe: symbol = Smile_KnownSymbols.Pe; break;
+		case GeneralCategory_Pi: symbol = Smile_KnownSymbols.Pi; break;
+		case GeneralCategory_Pf: symbol = Smile_KnownSymbols.Pf; break;
+		case GeneralCategory_Po: symbol = Smile_KnownSymbols.Po; break;
+		case GeneralCategory_Sm: symbol = Smile_KnownSymbols.Sm; break;
+		case GeneralCategory_Sc: symbol = Smile_KnownSymbols.Sc; break;
+		case GeneralCategory_Sk: symbol = Smile_KnownSymbols.Sk; break;
+		case GeneralCategory_So: symbol = Smile_KnownSymbols.So; break;
+
+		default: return SmileArg_From(NullObject);
+	}
+
+	return SmileUnboxedSymbol_From(symbol);
+}
+
+SMILE_EXTERNAL_FUNCTION(Lowercase)
+{
+	UInt32 uni = argv[0].unboxed.uni;
+	uni = Uni_ToLower(uni);
+	return SmileUnboxedUni_FromSafeInt32(uni);
+}
+
+SMILE_EXTERNAL_FUNCTION(Uppercase)
+{
+	UInt32 uni = argv[0].unboxed.uni;
+	uni = Uni_ToUpper(uni);
+	return SmileUnboxedUni_FromSafeInt32(uni);
+}
+
+SMILE_EXTERNAL_FUNCTION(Titlecase)
+{
+	UInt32 uni = argv[0].unboxed.uni;
+	uni = Uni_ToTitle(uni);
+	return SmileUnboxedUni_FromSafeInt32(uni);
+}
+
+SMILE_EXTERNAL_FUNCTION(CaseFold)
+{
+	UInt32 uni = argv[0].unboxed.uni;
+	uni = Uni_CaseFold(uni);
+	return SmileUnboxedUni_FromSafeInt32(uni);
+}
+
+//-------------------------------------------------------------------------------------------------
+// Unicode-specific type tests
+
+SMILE_EXTERNAL_FUNCTION(IsLetter)
+{
+	UInt32 uni = argv[0].unboxed.uni;
+	Bool result = Uni_IsLetter(uni);
+	return SmileUnboxedBool_From(result);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsCasedLetter)
+{
+	UInt32 uni = argv[0].unboxed.uni;
+	Bool result = Uni_IsCasedLetter(uni);
+	return SmileUnboxedBool_From(result);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsNumber)
+{
+	UInt32 uni = argv[0].unboxed.uni;
+	Bool result = Uni_IsNumber(uni);
+	return SmileUnboxedBool_From(result);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsMark)
+{
+	UInt32 uni = argv[0].unboxed.uni;
+	Bool result = Uni_IsMark(uni);
+	return SmileUnboxedBool_From(result);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsPunctuation)
+{
+	UInt32 uni = argv[0].unboxed.uni;
+	Bool result = Uni_IsPunct(uni);
+	return SmileUnboxedBool_From(result);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsOther)
+{
+	UInt32 uni = argv[0].unboxed.uni;
+	Bool result = Uni_IsOther(uni);
+	return SmileUnboxedBool_From(result);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsSymbol)
+{
+	UInt32 uni = argv[0].unboxed.uni;
+	Bool result = Uni_IsSymbol(uni);
+	return SmileUnboxedBool_From(result);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsSeparator)
+{
+	UInt32 uni = argv[0].unboxed.uni;
+	Bool result = Uni_IsSep(uni);
+	return SmileUnboxedBool_From(result);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsUppercase)
+{
+	UInt32 uni = argv[0].unboxed.uni;
+	Bool result = Uni_IsUpper(uni);
+	return SmileUnboxedBool_From(result);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsLowercase)
+{
+	UInt32 uni = argv[0].unboxed.uni;
+	Bool result = Uni_IsLower(uni);
+	return SmileUnboxedBool_From(result);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsTitlecase)
+{
+	UInt32 uni = argv[0].unboxed.uni;
+	Bool result = Uni_IsTitle(uni);
+	return SmileUnboxedBool_From(result);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsDigit)
+{
+	UInt32 uni = argv[0].unboxed.uni;
+	Bool result = Uni_IsDigit(uni);
+	return SmileUnboxedBool_From(result);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsLetterOrNumber)
+{
+	UInt32 uni = argv[0].unboxed.uni;
+	Bool result = Uni_IsLetterOrNumber(uni);
+	return SmileUnboxedBool_From(result);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsWhitespace)
+{
+	UInt32 uni = argv[0].unboxed.uni;
+	Bool result = Uni_IsWhitespace(uni);
+	return SmileUnboxedBool_From(result);
+}
+
+//-------------------------------------------------------------------------------------------------
 // Comparisons
 
 SMILE_EXTERNAL_FUNCTION(Eq)
@@ -282,6 +460,34 @@ void SmileUni_Setup(SmileUserObject base)
 
 	SetupFunction("compare", Compare, NULL, "x y", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _uniChecks);
 	SetupSynonym("compare", "cmp");
+
+	SetupFunction("category", Category, NULL, "uni", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _uniChecks);
+
+	SetupFunction("lowercase", Lowercase, NULL, "uni", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _uniChecks);
+	SetupFunction("uppercase", Uppercase, NULL, "uni", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _uniChecks);
+	SetupFunction("titlecase", Titlecase, NULL, "uni", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _uniChecks);
+	SetupFunction("case-fold", CaseFold, NULL, "uni", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _uniChecks);
+	SetupSynonym("case-fold", "fold");
+
+	SetupFunction("letter?", IsLetter, NULL, "uni", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _uniChecks);
+	SetupFunction("cased-letter?", IsCasedLetter, NULL, "uni", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _uniChecks);
+	SetupSynonym("cased-letter?", "alpha?");
+	SetupFunction("number?", IsNumber, NULL, "uni", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _uniChecks);
+	SetupFunction("separator?", IsSeparator, NULL, "uni", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _uniChecks);
+	SetupSynonym("separator?", "sep?");
+	SetupFunction("symbol?", IsSymbol, NULL, "uni", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _uniChecks);
+	SetupFunction("punctuation?", IsPunctuation, NULL, "uni", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _uniChecks);
+	SetupSynonym("punctuation?", "punct?");
+	SetupFunction("other?", IsOther, NULL, "uni", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _uniChecks);
+
+	SetupFunction("lowercase?", IsLowercase, NULL, "uni", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _uniChecks);
+	SetupFunction("uppercase?", IsUppercase, NULL, "uni", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _uniChecks);
+	SetupFunction("titlecase?", IsTitlecase, NULL, "uni", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _uniChecks);
+	SetupFunction("digit?", IsDigit, NULL, "uni", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _uniChecks);
+
+	SetupFunction("letter-or-number?", IsLetterOrNumber, NULL, "uni", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _uniChecks);
+	SetupSynonym("letter-or-number?", "alnum?");
+	SetupFunction("whitespace?", IsWhitespace, NULL, "uni", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _uniChecks);
 
 	SetupFunction("range-to", RangeTo, NULL, "start end", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _uniChecks);
 }

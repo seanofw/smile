@@ -7,111 +7,26 @@
 #endif
 
 //---------------------------------------------------------------------------
-// Core Unicode support: General Category Lookup.
-
-enum {
-	// Normative Categories
-	GeneralCategory_Cn = 0x00,
-	GeneralCategory_Cc = 0x01,
-	GeneralCategory_Cf = 0x02,
-	GeneralCategory_Cs = 0x03,
-	GeneralCategory_Co = 0x04,
-	GeneralCategory_Lu = 0x11,
-	GeneralCategory_Ll = 0x12,
-	GeneralCategory_Lt = 0x13,
-	GeneralCategory_Mn = 0x21,
-	GeneralCategory_Mc = 0x22,
-	GeneralCategory_Me = 0x23,
-	GeneralCategory_Nd = 0x31,
-	GeneralCategory_Nl = 0x32,
-	GeneralCategory_No = 0x33,
-	GeneralCategory_Zs = 0x41,
-	GeneralCategory_Zl = 0x42,
-	GeneralCategory_Zp = 0x43,
-
-	// Informative Categories
-	GeneralCategory_Lm = 0x19,
-	GeneralCategory_Lo = 0x1A,
-	GeneralCategory_Pc = 0x59,
-	GeneralCategory_Pd = 0x5A,
-	GeneralCategory_Ps = 0x5B,
-	GeneralCategory_Pe = 0x5C,
-	GeneralCategory_Pi = 0x5D,
-	GeneralCategory_Pf = 0x5E,
-	GeneralCategory_Po = 0x5F,
-	GeneralCategory_Sm = 0x69,
-	GeneralCategory_Sc = 0x6A,
-	GeneralCategory_Sk = 0x6B,
-	GeneralCategory_So = 0x6C,
-
-	// 00 family: Others
-	// 1x family: Letters
-	// 2x family: Marks
-	// 3x family: Numbers
-	// 4x family: Separators
-	// 5x family: Punctuation
-	// 6x family: Spacing
-
-	// 0..7 range: Normative
-	// 8..F range: Informative
-};
-
-typedef struct {
-	UInt16 paragraphId;
-	UInt16 offset;
-} Unicode_ExtendedTuple;
-
-SMILE_INTERNAL_DATA extern const SByte Unicode_GeneralCategoryData[];
-SMILE_INTERNAL_DATA extern const UInt16 Unicode_GeneralCategoryBmpLookup[];
-SMILE_INTERNAL_DATA extern const Unicode_ExtendedTuple Unicode_GeneralCategoryExtendedLookup[];
-SMILE_INTERNAL_DATA extern const Int Unicode_GeneralCategoryExtendedLookupCount;
-
-SMILE_API_FUNC Byte Unicode_GetGeneralCategoryExtended(UInt32 codePoint);
-
-/// <summary>
-/// Given a Unicode code point in the Basic Multilingual Plane, this uses fast lookup tables
-/// to find its General Category assignment (in O(1) time).
-/// </summary>
-/// <param name="codePoint">A Unicode code point that must be less than or equal to U+FFFF.  Code points above U+FFFF
-/// will result in reading outside known arrays (i.e., corrupt memory accesses).</param>
-/// <returns>The General Category assignment for that code point.</returns>
-Inline Byte Unicode_GetGeneralCategoryBmp(UInt32 codePoint)
-{
-	return Unicode_GeneralCategoryData[(Unicode_GeneralCategoryBmpLookup[codePoint >> 4] << 4) + (codePoint & 0xF)];
-}
-
-/// <summary>
-/// Given a Unicode code point, this finds its General Category assignment.  Code points in the
-/// Basic Multilingual Plane will be found in O(1) time; code points outside the BMP will be found
-/// in O(lg n) time.
-/// </summary>
-/// <param name="codePoint">A Unicode code point.</param>
-/// <returns>The General Category assignment for that code point.</returns>
-Inline Byte Unicode_GetGeneralCategory(UInt32 codePoint)
-{
-	if (codePoint <= 0x10000)
-		return Unicode_GetGeneralCategoryBmp(codePoint);
-	else
-		return Unicode_GetGeneralCategoryExtended(codePoint);
-}
-
-//---------------------------------------------------------------------------
 // Core Unicode support: Casing, composition, and normalization.
 
 SMILE_INTERNAL_DATA extern const Int32 *UnicodeTables_LowercaseTable[];
-SMILE_INTERNAL_DATA extern const Int32 **UnicodeTables_LowercaseTableExtended[];
+SMILE_INTERNAL_DATA extern const Int32 **UnicodeTables_LowercaseTableFullExtended[];
+SMILE_INTERNAL_DATA extern const Int32 **UnicodeTables_LowercaseTableSimpleExtended[];
 SMILE_INTERNAL_DATA extern const Int32 UnicodeTables_LowercaseTableCount;
 
 SMILE_INTERNAL_DATA extern const Int32 *UnicodeTables_UppercaseTable[];
-SMILE_INTERNAL_DATA extern const Int32 **UnicodeTables_UppercaseTableExtended[];
+SMILE_INTERNAL_DATA extern const Int32 **UnicodeTables_UppercaseTableFullExtended[];
+SMILE_INTERNAL_DATA extern const Int32 **UnicodeTables_UppercaseTableSimpleExtended[];
 SMILE_INTERNAL_DATA extern const Int32 UnicodeTables_UppercaseTableCount;
 
 SMILE_INTERNAL_DATA extern const Int32 *UnicodeTables_TitlecaseTable[];
-SMILE_INTERNAL_DATA extern const Int32 **UnicodeTables_TitlecaseTableExtended[];
+SMILE_INTERNAL_DATA extern const Int32 **UnicodeTables_TitlecaseTableFullExtended[];
+SMILE_INTERNAL_DATA extern const Int32 **UnicodeTables_TitlecaseTableSimpleExtended[];
 SMILE_INTERNAL_DATA extern const Int32 UnicodeTables_TitlecaseTableCount;
 
 SMILE_INTERNAL_DATA extern const Int32 *UnicodeTables_CaseFoldingTable[];
-SMILE_INTERNAL_DATA extern const Int32 **UnicodeTables_CaseFoldingTableExtended[];
+SMILE_INTERNAL_DATA extern const Int32 **UnicodeTables_CaseFoldingTableSimpleExtended[];
+SMILE_INTERNAL_DATA extern const Int32 **UnicodeTables_CaseFoldingTableFullExtended[];
 SMILE_INTERNAL_DATA extern const Int32 UnicodeTables_CaseFoldingTableCount;
 
 SMILE_INTERNAL_DATA extern const Int32 *UnicodeTables_DecompositionTable[];

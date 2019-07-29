@@ -264,6 +264,145 @@ SMILE_API_FUNC Int32 String_ExtractUnicodeCharacterInternal(const Byte **start, 
 SMILE_API_FUNC String String_ConvertUtf8ToCodePageRange(const String str, Int start, Int length, const Byte **utf8ToCodePageTables, Int numTables);
 SMILE_API_FUNC String String_ConvertCodePageToUtf8Range(const String str, Int start, Int length, const UInt16 *codePageToUtf8Table);
 
+//---------------------------------------------------------------------------
+// Core Unicode support: General Category Lookup.
+
+enum {
+	// Normative Categories
+	GeneralCategory_Cn = 0x00,		// Other / Not assigned
+	GeneralCategory_Cc = 0x01,		// Other / Control
+	GeneralCategory_Cf = 0x02,		// Other / Format
+	GeneralCategory_Cs = 0x03,		// Other / Surrogate
+	GeneralCategory_Co = 0x04,		// Other / Private use
+	GeneralCategory_Lu = 0x11,		// Letter / Uppercase
+	GeneralCategory_Ll = 0x12,		// Letter / Lowercase
+	GeneralCategory_Lt = 0x13,		// Letter / Titlecase
+	GeneralCategory_Mn = 0x21,		// Mark / Non-spacing
+	GeneralCategory_Mc = 0x22,		// Mark / Spacing combining
+	GeneralCategory_Me = 0x23,		// Mark / Enclosing
+	GeneralCategory_Nd = 0x31,		// Number / Decimal digit
+	GeneralCategory_Nl = 0x32,		// Number / Letter
+	GeneralCategory_No = 0x33,		// Number / other
+	GeneralCategory_Zs = 0x41,		// Separator / Space
+	GeneralCategory_Zl = 0x42,		// Separator / Line
+	GeneralCategory_Zp = 0x43,		// Separator / Paragraph
+
+	// Informative Categories
+	GeneralCategory_Lm = 0x19,		// Letter / Modifier
+	GeneralCategory_Lo = 0x1A,		// Letter / Other
+	GeneralCategory_Pc = 0x59,		// Punctuation / Connector
+	GeneralCategory_Pd = 0x5A,		// Punctuation / Dash
+	GeneralCategory_Ps = 0x5B,		// Punctuation / Open
+	GeneralCategory_Pe = 0x5C,		// Punctuation / Close
+	GeneralCategory_Pi = 0x5D,		// Punctuation / Initial quote
+	GeneralCategory_Pf = 0x5E,		// Punctuation / Final quote
+	GeneralCategory_Po = 0x5F,		// Punctuation / Other
+	GeneralCategory_Sm = 0x69,		// Symbol / Math
+	GeneralCategory_Sc = 0x6A,		// Symbol / Currency
+	GeneralCategory_Sk = 0x6B,		// Symbol / Modifier
+	GeneralCategory_So = 0x6C,		// Symbol / Other
+
+	// 00 family: Others
+	// 1x family: Letters
+	// 2x family: Marks
+	// 3x family: Numbers
+	// 4x family: Separators
+	// 5x family: Punctuation
+	// 6x family: Symbols
+
+	// 0..7 range: Normative
+	// 8..F range: Informative
+};
+
+typedef struct {
+	UInt16 paragraphId;
+	UInt16 offset;
+} Unicode_ExtendedTuple;
+
+SMILE_API_DATA const SByte Unicode_GeneralCategoryData[];
+SMILE_API_DATA const UInt16 Unicode_GeneralCategoryBmpLookup[];
+SMILE_API_DATA const Unicode_ExtendedTuple Unicode_GeneralCategoryExtendedLookup[];
+SMILE_API_DATA const Int Unicode_GeneralCategoryExtendedLookupCount;
+
+SMILE_API_FUNC Byte Uni_GetGeneralCategoryExtended(UInt32 codePoint);
+
+/// <summary>
+/// Given a Unicode code point in the Basic Multilingual Plane, this uses fast lookup tables
+/// to find its General Category assignment (in O(1) time).
+/// </summary>
+/// <param name="codePoint">A Unicode code point that must be less than or equal to U+FFFF.  Code points above U+FFFF
+/// will result in reading outside known arrays (i.e., corrupt memory accesses).</param>
+/// <returns>The General Category assignment for that code point.</returns>
+Inline Byte Uni_GetGeneralCategoryBmp(UInt32 codePoint)
+{
+	return Unicode_GeneralCategoryData[(Unicode_GeneralCategoryBmpLookup[codePoint >> 4] << 4) + (codePoint & 0xF)];
+}
+
+/// <summary>
+/// Given a Unicode code point, this finds its General Category assignment.  Code points in the
+/// Basic Multilingual Plane will be found in O(1) time; code points outside the BMP will be found
+/// in O(lg n) time.
+/// </summary>
+/// <param name="codePoint">A Unicode code point.</param>
+/// <returns>The General Category assignment for that code point.</returns>
+Inline Byte Uni_GetGeneralCategory(UInt32 codePoint)
+{
+	if (codePoint <= 0x10000)
+		return Uni_GetGeneralCategoryBmp(codePoint);
+	else
+		return Uni_GetGeneralCategoryExtended(codePoint);
+}
+
+Inline Bool Uni_IsUpper(UInt32 codePoint)
+	{ return Uni_GetGeneralCategory(codePoint) == GeneralCategory_Lu; }
+Inline Bool Uni_IsLower(UInt32 codePoint)
+	{ return Uni_GetGeneralCategory(codePoint) == GeneralCategory_Ll; }
+Inline Bool Uni_IsTitle(UInt32 codePoint)
+	{ return Uni_GetGeneralCategory(codePoint) == GeneralCategory_Lt; }
+Inline Bool Uni_IsDigit(UInt32 codePoint)
+	{ return Uni_GetGeneralCategory(codePoint) == GeneralCategory_Nd; }
+
+Inline Bool Uni_IsCasedLetter(UInt32 codePoint)
+{
+	Byte category = Uni_GetGeneralCategory(codePoint);
+	return category == GeneralCategory_Ll || category == GeneralCategory_Lu || category == GeneralCategory_Lt;
+}
+
+Inline Bool Uni_IsLetterOrNumber(UInt32 codePoint)
+{
+	Byte category = Uni_GetGeneralCategory(codePoint);
+	return (category & 0xF0) == 0x10 || (category & 0xF0) == 0x30;
+}
+
+Inline Bool Uni_IsWhitespace(UInt32 codePoint)
+{
+	Byte category = Uni_GetGeneralCategory(codePoint);
+	return (category & 0xF0) == 0x40 || category == GeneralCategory_Cc;
+}
+
+Inline Bool Uni_IsOther(UInt32 codePoint)
+	{ return (Uni_GetGeneralCategory(codePoint) & 0xF0) == 0x00; }
+Inline Bool Uni_IsLetter(UInt32 codePoint)
+	{ return (Uni_GetGeneralCategory(codePoint) & 0xF0) == 0x10; }
+Inline Bool Uni_IsMark(UInt32 codePoint)
+	{ return (Uni_GetGeneralCategory(codePoint) & 0xF0) == 0x20; }
+Inline Bool Uni_IsNumber(UInt32 codePoint)
+	{ return (Uni_GetGeneralCategory(codePoint) & 0xF0) == 0x30; }
+Inline Bool Uni_IsSep(UInt32 codePoint)
+	{ return (Uni_GetGeneralCategory(codePoint) & 0xF0) == 0x40; }
+Inline Bool Uni_IsPunct(UInt32 codePoint)
+	{ return (Uni_GetGeneralCategory(codePoint) & 0xF0) == 0x50; }
+Inline Bool Uni_IsSymbol(UInt32 codePoint)
+	{ return (Uni_GetGeneralCategory(codePoint) & 0xF0) == 0x60; }
+
+//-------------------------------------------------------------------------------------------------
+//  External parts of the implementation (Unicode case support)
+
+SMILE_API_FUNC UInt32 Uni_ToLower(UInt32 codePoint);
+SMILE_API_FUNC UInt32 Uni_ToUpper(UInt32 codePoint);
+SMILE_API_FUNC UInt32 Uni_ToTitle(UInt32 codePoint);
+SMILE_API_FUNC UInt32 Uni_CaseFold(UInt32 codePoint);
+
 //-------------------------------------------------------------------------------------------------
 //  External parts of the implementation (path-specific functions).
 

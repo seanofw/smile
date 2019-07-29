@@ -22,12 +22,15 @@
 // provided by the Unicode Consortium, www.unicode.org.
 //--------------------------------------------------------------
 
+#include <smile/string.h>
 #include <smile/internal/unicode.h>
 
 #ifdef _MSC_VER
-	extern const Int32 _lowercaseTableExtendedValues[];
+	extern const Int32 _lowercaseTableFullExtendedValues[];
+	extern const Int32 _lowercaseTableSimpleExtendedValues[];
 #else
-	static const Int32 _lowercaseTableExtendedValues[];
+	static const Int32 _lowercaseTableFullExtendedValues[];
+	static const Int32 _lowercaseTableSimpleExtendedValues[];
 #endif
 
 static const Int32 _l0[] =
@@ -70,9 +73,14 @@ static const Int32 _lowercaseTable00[] =
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 
-static const Int32 *_lowercaseTableExtended00[] =
+static const Int32 *_lowercaseTableFullExtended00[] =
 {
-	_lowercaseTableExtendedValues+0, 
+	_lowercaseTableFullExtendedValues+0, 
+};
+
+static const Int32 *_lowercaseTableSimpleExtended00[] =
+{
+	_lowercaseTableSimpleExtendedValues+0, 
 };
 
 static const Int32 _lowercaseTable01[] =
@@ -95,7 +103,7 @@ static const Int32 _lowercaseTable01[] =
 	0, 2, 1, 0, 1, 0, -97, -56, 1, 0, 1, 0, 1, 0, 1, 0,
 };
 
-static const Int32 *_lowercaseTableExtended01[] =
+static const Int32 *_lowercaseTableFullExtended01[] =
 {
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -103,7 +111,18 @@ static const Int32 *_lowercaseTableExtended01[] =
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	_lowercaseTableExtendedValues+2, 
+	_lowercaseTableFullExtendedValues+2, 
+};
+
+static const Int32 *_lowercaseTableSimpleExtended01[] =
+{
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	_lowercaseTableSimpleExtendedValues+2, 
 };
 
 static const Int32 _lowercaseTable02[] =
@@ -386,9 +405,14 @@ static const Int32 _lowercaseTable104[] =
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 
-static const Int32 _lowercaseTableExtendedValues[] =
+static const Int32 _lowercaseTableFullExtendedValues[] =
 {
 	1, 0, 2, 105, 775, 
+};
+
+static const Int32 _lowercaseTableSimpleExtendedValues[] =
+{
+	1, 0, 1, 105, 
 };
 
 const Int32 *UnicodeTables_LowercaseTable[] =
@@ -428,9 +452,14 @@ const Int32 *UnicodeTables_LowercaseTable[] =
 	_l0, _l0, _l0, _l0, _lowercaseTable104, 
 };
 
-const Int32 **UnicodeTables_LowercaseTableExtended[] =
+const Int32 **UnicodeTables_LowercaseTableFullExtended[] =
 {
-	_lowercaseTableExtended00, _lowercaseTableExtended01, 
+	_lowercaseTableFullExtended00, _lowercaseTableFullExtended01, 
+};
+
+const Int32 **UnicodeTables_LowercaseTableSimpleExtended[] =
+{
+	_lowercaseTableSimpleExtended00, _lowercaseTableSimpleExtended01, 
 };
 
 const Int32 UnicodeTables_LowercaseTableCount = 2;

@@ -28,9 +28,6 @@ namespace UnicodeSetup
 				.Where(line => !string.IsNullOrEmpty(line))
 				.Select(line => CaseFoldingInfo.Parse(line))
 				.ToList();
-			Dictionary<uint, CaseFoldingInfo> caseFoldingLookup = parsedCaseFolding
-				.Where(c => c.Kind == CaseFoldingKind.Common || c.Kind == CaseFoldingKind.Full)
-				.ToDictionary(c => c.CodeValue);
 
 			List<string> specialCasing = File.ReadAllLines("Data\\SpecialCasing.Txt").ToList();
 
@@ -45,7 +42,7 @@ namespace UnicodeSetup
 
 			GenerateCaseConversionTables(unicodeLookup, specialCasingLookup);
 
-			GenerateCaseFoldingTables(caseFoldingLookup);
+			GenerateCaseFoldingTables(parsedCaseFolding);
 
 			GenerateGeneralCategoryTable(unicodeLookup);
 
@@ -117,7 +114,7 @@ namespace UnicodeSetup
 				.Select(c => c.CodeValue));
 			allCasedCharacters.UnionWith(specialCasingLookup.Keys);
 
-			List<SpecialCasingInfo> casedCharacters = allCasedCharacters
+			List<SpecialCasingInfo> fullCasedCharacters = allCasedCharacters
 				.Select(v =>
 				{
 					if (specialCasingLookup.ContainsKey(v)) return specialCasingLookup[v];
@@ -138,25 +135,61 @@ namespace UnicodeSetup
 				.OrderBy(c => c.CodeValue)
 				.ToList();
 
-			Dictionary<uint, SpecialCasingInfo> casedLookup = casedCharacters.ToDictionary(c => c.CodeValue);
+			List<SpecialCasingInfo> simpleCasedCharacters = allCasedCharacters
+				.Select(v =>
+				{
+					CharacterInfo c = unicodeLookup[v];
 
-			List<IGrouping<uint, SpecialCasingInfo>> casedCodePages = casedCharacters.GroupBy(c => (uint)(c.CodeValue & ~0xFF)).ToList();
+					SpecialCasingInfo casingInfo = new SpecialCasingInfo
+					{
+						CodeValue = v,
+						Lowercase = new List<uint> { c.LowercaseMapping.HasValue ? c.LowercaseMapping.Value : c.CodeValue },
+						Titlecase = new List<uint> { c.TitlecaseMapping.HasValue ? c.TitlecaseMapping.Value : c.CodeValue },
+						Uppercase = new List<uint> { c.UppercaseMapping.HasValue ? c.UppercaseMapping.Value : c.CodeValue },
+						Condition = string.Empty,
+					};
 
-			WriteRelativeConversionTablesToFile("lowercase.c", "LowercaseTable", "_lowercaseTable", "_l0", casedLookup, casedCodePages,
-				code => casedLookup.ContainsKey(code) ? casedLookup[code].Lowercase : null);
+					return casingInfo;
+				})
+				.OrderBy(c => c.CodeValue)
+				.ToList();
 
-			WriteRelativeConversionTablesToFile("uppercase.c", "UppercaseTable", "_uppercaseTable", "_u0", casedLookup, casedCodePages,
-				code => casedLookup.ContainsKey(code) ? casedLookup[code].Uppercase : null);
+			Dictionary<uint, SpecialCasingInfo> fullCasedLookup = fullCasedCharacters.ToDictionary(c => c.CodeValue);
+			Dictionary<uint, SpecialCasingInfo> simpleCasedLookup = simpleCasedCharacters.ToDictionary(c => c.CodeValue);
 
-			WriteRelativeConversionTablesToFile("titlecase.c", "TitlecaseTable", "_titlecaseTable", "_t0", casedLookup, casedCodePages,
-				code => casedLookup.ContainsKey(code) ? casedLookup[code].Titlecase : null);
+			List<IGrouping<uint, SpecialCasingInfo>> fullCasedCodePages = fullCasedCharacters.GroupBy(c => (uint)(c.CodeValue & ~0xFF)).ToList();
+
+			WriteRelativeConversionTablesToFile("lowercase.c", "LowercaseTable", "_lowercaseTable", "_l0", fullCasedLookup, fullCasedCodePages,
+				code => fullCasedLookup.ContainsKey(code),
+				code => fullCasedLookup[code].Lowercase,
+				code => simpleCasedLookup.ContainsKey(code) ? simpleCasedLookup[code].Lowercase : new List<uint> { code });
+
+			WriteRelativeConversionTablesToFile("uppercase.c", "UppercaseTable", "_uppercaseTable", "_u0", fullCasedLookup, fullCasedCodePages,
+				code => fullCasedLookup.ContainsKey(code),
+				code => fullCasedLookup[code].Uppercase,
+				code => simpleCasedLookup.ContainsKey(code) ? simpleCasedLookup[code].Uppercase : new List<uint> { code });
+
+			WriteRelativeConversionTablesToFile("titlecase.c", "TitlecaseTable", "_titlecaseTable", "_t0", fullCasedLookup, fullCasedCodePages,
+				code => fullCasedLookup.ContainsKey(code),
+				code => fullCasedLookup[code].Titlecase,
+				code => simpleCasedLookup.ContainsKey(code) ? simpleCasedLookup[code].Titlecase : new List<uint> { code });
 		}
 
-		private static void GenerateCaseFoldingTables(Dictionary<uint, CaseFoldingInfo> caseFoldingLookup)
+		private static void GenerateCaseFoldingTables(List<CaseFoldingInfo> caseFoldingInfo)
 		{
-			List<IGrouping<uint, CaseFoldingInfo>> casedCodePages = caseFoldingLookup.Values.GroupBy(c => (uint)(c.CodeValue & ~0xFF)).ToList();
-			Func<uint, List<uint>> mapper = code => caseFoldingLookup.ContainsKey(code) ? caseFoldingLookup[code].FoldedValues : null;
-			WriteRelativeConversionTablesToFile("casefolding.c", "CaseFoldingTable", "_caseFoldingTable", "_c0", casedCodePages.ToDictionary(grouping => grouping.Key), casedCodePages, mapper);
+			Dictionary<uint, CaseFoldingInfo> fullCaseFoldingLookup = caseFoldingInfo
+				.Where(c => c.Kind == CaseFoldingKind.Common || c.Kind == CaseFoldingKind.Full)
+				.ToDictionary(c => c.CodeValue);
+			Dictionary<uint, CaseFoldingInfo> simpleCaseFoldingLookup = caseFoldingInfo
+				.Where(c => c.Kind == CaseFoldingKind.Common || c.Kind == CaseFoldingKind.Simple)
+				.ToDictionary(c => c.CodeValue);
+
+			List<IGrouping<uint, CaseFoldingInfo>> casedCodePages = fullCaseFoldingLookup.Values.GroupBy(c => (uint)(c.CodeValue & ~0xFF)).ToList();
+
+			WriteRelativeConversionTablesToFile("casefolding.c", "CaseFoldingTable", "_caseFoldingTable", "_c0", casedCodePages.ToDictionary(grouping => grouping.Key), casedCodePages,
+				code => fullCaseFoldingLookup.ContainsKey(code) || simpleCaseFoldingLookup.ContainsKey(code),
+				code => fullCaseFoldingLookup.ContainsKey(code) ? fullCaseFoldingLookup[code].FoldedValues : new List<uint> { code },
+				code => simpleCaseFoldingLookup.ContainsKey(code) ? simpleCaseFoldingLookup[code].FoldedValues : new List<uint> { code });
 		}
 
 		#endregion
@@ -164,30 +197,34 @@ namespace UnicodeSetup
 		#region Shared code-page table generation routines
 
 		private static void WriteRelativeConversionTablesToFile<T, S>(string filename, string identifierName, string subtableName, string identityTableName,
-			Dictionary<uint, S> casedLookup, List<IGrouping<uint, T>> casedCodePages, Func<uint, List<uint>> mapper)
+			Dictionary<uint, S> casedLookup, List<IGrouping<uint, T>> casedCodePages,
+			Func<uint, bool> hasMapping, Func<uint, List<uint>> fullMapper, Func<uint, List<uint>> simpleMapper)
 		{
 			StringBuilder output = new StringBuilder();
 
 			BeginOutput(output);
 
 			output.AppendFormat("#ifdef _MSC_VER\r\n"
-				+ "\textern const Int32 {0}ExtendedValues[];\r\n"
+				+ "\textern const Int32 {0}FullExtendedValues[];\r\n"
+				+ "\textern const Int32 {0}SimpleExtendedValues[];\r\n"
 				+ "#else\r\n"
-				+ "\tstatic const Int32 {0}ExtendedValues[];\r\n"
+				+ "\tstatic const Int32 {0}FullExtendedValues[];\r\n"
+				+ "\tstatic const Int32 {0}SimpleExtendedValues[];\r\n"
 				+ "#endif\r\n"
 				+ "\r\n", subtableName);
 
 			WriteIdentityTable(identityTableName, output);
 
-			List<string> extendedValues = new List<string>();
+			List<string> fullExtendedValues = new List<string>();
+			List<string> simpleExtendedValues = new List<string>();
 
 			foreach (IGrouping<uint, T> page in casedCodePages)
 			{
-				GenerateRelativeCodePage(output, subtableName, page.Key, extendedValues, mapper);
+				GenerateRelativeCodePage(output, subtableName, page.Key, fullExtendedValues, simpleExtendedValues, hasMapping, fullMapper, simpleMapper);
 			}
 
 			GenerateRelativeCodePageIndex(output, identifierName, subtableName, identityTableName,
-				casedCodePages.Select(page => page.Key).ToList(), extendedValues, mapper);
+				casedCodePages.Select(page => page.Key).ToList(), fullExtendedValues, simpleExtendedValues, hasMapping, fullMapper, simpleMapper);
 
 
 			EndOutput(output);
@@ -196,47 +233,52 @@ namespace UnicodeSetup
 		}
 
 		private static void GenerateRelativeCodePageIndex(StringBuilder output, string identifierName, string subtableName, string identityName,
-			List<uint> codePageStarts, List<string> extendedValues, Func<uint, List<uint>> mapper)
+			List<uint> codePageStarts, List<string> fullExtendedValues, List<string> simpleExtendedValues,
+			Func<uint, bool> hasMapping, Func<uint, List<uint>> fullMapper, Func<uint, List<uint>> simpleMapper)
 		{
-			WriteCodePage(output, "static const Int32", subtableName + "ExtendedValues", extendedValues, 16);
+			WriteCodePage(output, "static const Int32", subtableName + "FullExtendedValues", fullExtendedValues, 16);
+			WriteCodePage(output, "static const Int32", subtableName + "SimpleExtendedValues", simpleExtendedValues, 16);
 
 			List<string> codePage = new List<string>();
 
 			int lastPage = (int)codePageStarts
-				.Where(start => NeedRelativeCodePage(start, mapper) != CodePageKind.None)
+				.Where(start => NeedRelativeCodePage(start, hasMapping, fullMapper) != CodePageKind.None)
 				.Max(start => start >> 8)
 				+ 1;
 			for (uint i = 0; i < lastPage; i++)
 			{
-				codePage.Add(NeedRelativeCodePage(i << 8, mapper) != CodePageKind.None
+				codePage.Add(NeedRelativeCodePage(i << 8, hasMapping, fullMapper) != CodePageKind.None
 					? subtableName + i.ToString("X2")
 					: identityName);
 			}
 
 			WriteCodePage(output, "const Int32 *", "UnicodeTables_" + identifierName, codePage, 8);
 
-			codePage = new List<string>();
+			List<string> fullCodePage = new List<string>();
+			List<string> simpleCodePage = new List<string>();
 
 			lastPage = (int)codePageStarts
-				.Where(start => NeedRelativeCodePage(start, mapper) == CodePageKind.Extended)
+				.Where(start => NeedRelativeCodePage(start, hasMapping, fullMapper) == CodePageKind.Extended)
 				.Max(start => start >> 8)
 				+ 1;
 			for (uint i = 0; i < lastPage; i++)
 			{
-				codePage.Add(NeedRelativeCodePage(i << 8, mapper) == CodePageKind.Extended
-					? subtableName + "Extended" + i.ToString("X2")
-					: "NULL");
+				bool needCodePage = NeedRelativeCodePage(i << 8, hasMapping, fullMapper) == CodePageKind.Extended;
+				fullCodePage.Add(needCodePage ? subtableName + "FullExtended" + i.ToString("X2") : "NULL");
+				simpleCodePage.Add(needCodePage ? subtableName + "SimpleExtended" + i.ToString("X2") : "NULL");
 			}
 
-			WriteCodePage(output, "const Int32 **", "UnicodeTables_" + identifierName + "Extended", codePage, 8);
+			WriteCodePage(output, "const Int32 **", "UnicodeTables_" + identifierName + "FullExtended", fullCodePage, 8);
+			WriteCodePage(output, "const Int32 **", "UnicodeTables_" + identifierName + "SimpleExtended", simpleCodePage, 8);
 
 			output.AppendFormat("const Int32 UnicodeTables_" + identifierName + "Count = {0};\r\n", lastPage);
 		}
 
 		private static void GenerateRelativeCodePage(StringBuilder output, string identifierName,
-			uint baseOffset, List<string> extendedValues, Func<uint, List<uint>> mapper)
+			uint baseOffset, List<string> fullExtendedValues, List<string> simpleExtendedValues,
+			Func<uint, bool> hasMapping, Func<uint, List<uint>> fullMapper, Func<uint, List<uint>> simpleMapper)
 		{
-			CodePageKind codePageKind = NeedRelativeCodePage(baseOffset, mapper);
+			CodePageKind codePageKind = NeedRelativeCodePage(baseOffset, hasMapping, fullMapper);
 			if (codePageKind == CodePageKind.None) return;
 
 			List<string> codePage = new List<string>();
@@ -245,9 +287,9 @@ namespace UnicodeSetup
 			{
 				uint codeValue = i + baseOffset;
 				int outputValue;
-				List<uint> codeValues = mapper(codeValue);
-				if (codeValues != null)
+				if (hasMapping(codeValue))
 				{
+					List<uint> codeValues = fullMapper(codeValue);
 					outputValue = (codeValues.Count > 1) ? -(int)codeValue : (int)codeValues[0] - (int)(i + baseOffset);
 				}
 				else
@@ -261,52 +303,59 @@ namespace UnicodeSetup
 
 			if (codePageKind == CodePageKind.Extended)
 			{
-				codePage = new List<string>();
-
-				uint end = 0;
-				for (uint i = 0; i < 256; i++)
+				Func<uint, bool> hasExtendedMapping = (uint codeValue) =>
 				{
-					uint codeValue = i + baseOffset;
-					List<uint> codeValues = mapper(codeValue);
-					if (codeValue == 0 || (codeValues != null && codeValues.Count > 1))
-					{
-						if (i + 1 > end) end = i + 1;
-					}
-				}
+					if (!hasMapping(codeValue)) return false;
+					List<uint> codeValues = fullMapper(codeValue);
+					return codeValues.Count > 1;
+				};
 
-				for (uint i = 0; i < end; i++)
-				{
-					uint codeValue = i + baseOffset;
-					List<uint> codeValues = mapper(codeValue);
-					if (codeValue == 0)
-					{
-						int offset = extendedValues.Count;
-						codePage.Add(identifierName + "ExtendedValues+" + offset);
-						extendedValues.Add("1");
-						extendedValues.Add("0");
-					}
-					else if (codeValues != null)
-					{
-						if (codeValues.Count > 1)
-						{
-							int offset = extendedValues.Count;
-							codePage.Add(identifierName + "ExtendedValues+" + offset);
-							extendedValues.Add(codeValues.Count.ToString());
-							extendedValues.AddRange(codeValues.Select(cv => cv.ToString()));
-						}
-						else
-						{
-							codePage.Add("NULL");
-						}
-					}
-					else
-					{
-						codePage.Add("NULL");
-					}
-				}
-
-				WriteCodePage(output, "static const Int32 *", identifierName + "Extended" + (baseOffset >> 8).ToString("X2"), codePage, 8);
+				GenerateExtendedCodePageValues(output, identifierName + "Full", baseOffset, fullExtendedValues, hasExtendedMapping, fullMapper);
+				GenerateExtendedCodePageValues(output, identifierName + "Simple", baseOffset, simpleExtendedValues, hasExtendedMapping, simpleMapper);
 			}
+		}
+
+		private static void GenerateExtendedCodePageValues(StringBuilder output, string identifierName,
+			uint baseOffset, List<string> extendedValues,
+			Func<uint, bool> hasMapping, Func<uint, List<uint>> mapper)
+		{
+			List<string> codePage = new List<string>();
+
+			uint end = 0;
+			for (uint i = 0; i < 256; i++)
+			{
+				uint codeValue = i + baseOffset;
+				if (codeValue == 0 || hasMapping(codeValue))
+				{
+					if (i + 1 > end) end = i + 1;
+				}
+			}
+
+			for (uint i = 0; i < end; i++)
+			{
+				uint codeValue = i + baseOffset;
+				if (codeValue == 0)
+				{
+					int offset = extendedValues.Count;
+					codePage.Add(identifierName + "ExtendedValues+" + offset);
+					extendedValues.Add("1");
+					extendedValues.Add("0");
+				}
+				else if (hasMapping(codeValue))
+				{
+					List<uint> codeValues = mapper(codeValue);
+					int offset = extendedValues.Count;
+					codePage.Add(identifierName + "ExtendedValues+" + offset);
+					extendedValues.Add(codeValues.Count.ToString());
+					extendedValues.AddRange(codeValues.Select(cv => cv.ToString()));
+				}
+				else
+				{
+					codePage.Add("NULL");
+				}
+			}
+
+			WriteCodePage(output, "static const Int32 *", identifierName + "Extended" + (baseOffset >> 8).ToString("X2"), codePage, 8);
 		}
 
 		[Flags]
@@ -317,7 +366,7 @@ namespace UnicodeSetup
 			Extended = 3,
 		}
 
-		private static CodePageKind NeedRelativeCodePage(uint baseOffset, Func<uint, List<uint>> mapper)
+		private static CodePageKind NeedRelativeCodePage(uint baseOffset, Func<uint, bool> hasMapping, Func<uint, List<uint>> mapper)
 		{
 			if (baseOffset == 0) return CodePageKind.Extended;
 
@@ -326,7 +375,7 @@ namespace UnicodeSetup
 			for (uint i = 0; i < 256; i++)
 			{
 				uint codeValue = i + baseOffset;
-				List<uint> codes = mapper(codeValue);
+				List<uint> codes = hasMapping(codeValue) ? mapper(codeValue) : null;
 				if (codes != null && codes.Count > 0)
 				{
 					if (codes.Count == 1 && codes[0] != codeValue)
@@ -507,7 +556,7 @@ namespace UnicodeSetup
 /// </summary>
 /// <param name=""codePoint"">A Unicode code point that must be higher than U+FFFF.</param>
 /// <returns>The General Category assignment for that code point, or 0 if it is an unknown code point (or <= U+FFFF).</returns>
-Byte Unicode_GetGeneralCategoryExtended(UInt32 codePoint)
+Byte Uni_GetGeneralCategoryExtended(UInt32 codePoint)
 {
 	Int paragraphId = (codePoint - 0x10000) >> " + BitsPerPage + @";
 	Int start = 0;
@@ -1308,7 +1357,8 @@ const Int UnicodeTables_UnicodeToIso_8859_1TableCount = sizeof(UnicodeTables_Uni
 				+ "//--------------------------------------------------------------\r\n"
 				+ "\r\n");
 
-			output.Append("#include <smile/internal/unicode.h>\r\n"
+			output.Append("#include <smile/string.h>\r\n"
+				+ "#include <smile/internal/unicode.h>\r\n"
 				+ "\r\n");
 		}
 
