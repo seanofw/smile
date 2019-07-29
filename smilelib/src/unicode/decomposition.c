@@ -22,6 +22,7 @@
 // provided by the Unicode Consortium, www.unicode.org.
 //--------------------------------------------------------------
 
+#include <smile/string.h>
 #include <smile/internal/unicode.h>
 
 #ifdef _MSC_VER
@@ -1561,3 +1562,4 @@ const Int32 **UnicodeTables_DecompositionTableExtended[] =
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, _decompositionTableExtendedFB, NULL, NULL, NULL, NULL,
 };
+

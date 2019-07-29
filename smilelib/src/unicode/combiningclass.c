@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
 //  Copyright 2004-2019 Sean Werkema
 //
@@ -22,6 +22,7 @@
 // provided by the Unicode Consortium, www.unicode.org.
 //--------------------------------------------------------------
 
+#include <smile/string.h>
 #include <smile/internal/unicode.h>
 
 const Int UnicodeTables_CanonicalCombiningClassLookupCount = 256;
@@ -743,3 +744,4 @@ const Byte *UnicodeTables_CanonicalCombiningClassTable[] =
 	_combining_0000, _combining_0000, _combining_0000, _combining_0000, _combining_0000, _combining_0000, _combining_0000, _combining_0000,
 	_combining_0000, _combining_0000, _combining_0000, _combining_FB00, _combining_0000, _combining_0000, _combining_FE00, _combining_0000,
 };
+

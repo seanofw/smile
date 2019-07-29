@@ -1631,4 +1631,9 @@
       <Filter>src\unicode</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\unicode\category.c">
+      <Filter>src\unicode</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>

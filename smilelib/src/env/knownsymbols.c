@@ -481,6 +481,74 @@ static void KnownSymbolsInt_PreloadTypenames(SymbolTable symbolTable, KnownSymbo
 }
 
 //-------------------------------------------------------------------------------------------------
+//  Unicode category symbols.
+
+STATIC_STRING(Cn, "Cn");
+STATIC_STRING(Cc, "Cc");
+STATIC_STRING(Cf, "Cf");
+STATIC_STRING(Cs, "Cs");
+STATIC_STRING(Co, "Co");
+STATIC_STRING(Lu, "Lu");
+STATIC_STRING(Ll, "Ll");
+STATIC_STRING(Lt, "Lt");
+STATIC_STRING(Mn, "Mn");
+STATIC_STRING(Mc, "Mc");
+STATIC_STRING(Me, "Me");
+STATIC_STRING(Nd, "Nd");
+STATIC_STRING(Nl, "Nl");
+STATIC_STRING(No, "No");
+STATIC_STRING(Zs, "Zs");
+STATIC_STRING(Zl, "Zl");
+STATIC_STRING(Zp, "Zp");
+STATIC_STRING(Lm, "Lm");
+STATIC_STRING(Lo, "Lo");
+STATIC_STRING(Pc, "Pc");
+STATIC_STRING(Pd, "Pd");
+STATIC_STRING(Ps, "Ps");
+STATIC_STRING(Pe, "Pe");
+STATIC_STRING(Pi, "Pi");
+STATIC_STRING(Pf, "Pf");
+STATIC_STRING(Po, "Po");
+STATIC_STRING(Sm, "Sm");
+STATIC_STRING(Sc, "Sc");
+STATIC_STRING(Sk, "Sk");
+STATIC_STRING(So, "So");
+
+static void KnownSymbolsInt_PreloadUnicodeCategories(SymbolTable symbolTable, KnownSymbols knownSymbols)
+{
+	knownSymbols->Cn = SymbolTableInt_AddFast(symbolTable, Cn);
+	knownSymbols->Cc = SymbolTableInt_AddFast(symbolTable, Cc);
+	knownSymbols->Cf = SymbolTableInt_AddFast(symbolTable, Cf);
+	knownSymbols->Cs = SymbolTableInt_AddFast(symbolTable, Cs);
+	knownSymbols->Co = SymbolTableInt_AddFast(symbolTable, Co);
+	knownSymbols->Lu = SymbolTableInt_AddFast(symbolTable, Lu);
+	knownSymbols->Ll = SymbolTableInt_AddFast(symbolTable, Ll);
+	knownSymbols->Lt = SymbolTableInt_AddFast(symbolTable, Lt);
+	knownSymbols->Mn = SymbolTableInt_AddFast(symbolTable, Mn);
+	knownSymbols->Mc = SymbolTableInt_AddFast(symbolTable, Mc);
+	knownSymbols->Me = SymbolTableInt_AddFast(symbolTable, Me);
+	knownSymbols->Nd = SymbolTableInt_AddFast(symbolTable, Nd);
+	knownSymbols->Nl = SymbolTableInt_AddFast(symbolTable, Nl);
+	knownSymbols->No = SymbolTableInt_AddFast(symbolTable, No);
+	knownSymbols->Zs = SymbolTableInt_AddFast(symbolTable, Zs);
+	knownSymbols->Zl = SymbolTableInt_AddFast(symbolTable, Zl);
+	knownSymbols->Zp = SymbolTableInt_AddFast(symbolTable, Zp);
+	knownSymbols->Lm = SymbolTableInt_AddFast(symbolTable, Lm);
+	knownSymbols->Lo = SymbolTableInt_AddFast(symbolTable, Lo);
+	knownSymbols->Pc = SymbolTableInt_AddFast(symbolTable, Pc);
+	knownSymbols->Pd = SymbolTableInt_AddFast(symbolTable, Pd);
+	knownSymbols->Ps = SymbolTableInt_AddFast(symbolTable, Ps);
+	knownSymbols->Pe = SymbolTableInt_AddFast(symbolTable, Pe);
+	knownSymbols->Pi = SymbolTableInt_AddFast(symbolTable, Pi);
+	knownSymbols->Pf = SymbolTableInt_AddFast(symbolTable, Pf);
+	knownSymbols->Po = SymbolTableInt_AddFast(symbolTable, Po);
+	knownSymbols->Sm = SymbolTableInt_AddFast(symbolTable, Sm);
+	knownSymbols->Sc = SymbolTableInt_AddFast(symbolTable, Sc);
+	knownSymbols->Sk = SymbolTableInt_AddFast(symbolTable, Sk);
+	knownSymbols->So = SymbolTableInt_AddFast(symbolTable, So);
+}
+
+//-------------------------------------------------------------------------------------------------
 //  General symbols.
 
 STATIC_STRING(a, "a");
@@ -1164,6 +1232,7 @@ void KnownSymbols_PreloadSymbolTable(SymbolTable symbolTable, KnownSymbols known
 
 	KnownSymbolsInt_PreloadSpecials(symbolTable, knownSymbols);
 	KnownSymbolsInt_PreloadTypenames(symbolTable, knownSymbols);
+	KnownSymbolsInt_PreloadUnicodeCategories(symbolTable, knownSymbols);
 	KnownSymbolsInt_PreloadGeneralSymbols(symbolTable, knownSymbols);
 	KnownSymbolsInt_PreloadErrorSymbols(symbolTable, knownSymbols);
 }

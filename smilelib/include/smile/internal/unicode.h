@@ -10,19 +10,23 @@
 // Core Unicode support: Casing, composition, and normalization.
 
 SMILE_INTERNAL_DATA extern const Int32 *UnicodeTables_LowercaseTable[];
-SMILE_INTERNAL_DATA extern const Int32 **UnicodeTables_LowercaseTableExtended[];
+SMILE_INTERNAL_DATA extern const Int32 **UnicodeTables_LowercaseTableFullExtended[];
+SMILE_INTERNAL_DATA extern const Int32 **UnicodeTables_LowercaseTableSimpleExtended[];
 SMILE_INTERNAL_DATA extern const Int32 UnicodeTables_LowercaseTableCount;
 
 SMILE_INTERNAL_DATA extern const Int32 *UnicodeTables_UppercaseTable[];
-SMILE_INTERNAL_DATA extern const Int32 **UnicodeTables_UppercaseTableExtended[];
+SMILE_INTERNAL_DATA extern const Int32 **UnicodeTables_UppercaseTableFullExtended[];
+SMILE_INTERNAL_DATA extern const Int32 **UnicodeTables_UppercaseTableSimpleExtended[];
 SMILE_INTERNAL_DATA extern const Int32 UnicodeTables_UppercaseTableCount;
 
 SMILE_INTERNAL_DATA extern const Int32 *UnicodeTables_TitlecaseTable[];
-SMILE_INTERNAL_DATA extern const Int32 **UnicodeTables_TitlecaseTableExtended[];
+SMILE_INTERNAL_DATA extern const Int32 **UnicodeTables_TitlecaseTableFullExtended[];
+SMILE_INTERNAL_DATA extern const Int32 **UnicodeTables_TitlecaseTableSimpleExtended[];
 SMILE_INTERNAL_DATA extern const Int32 UnicodeTables_TitlecaseTableCount;
 
 SMILE_INTERNAL_DATA extern const Int32 *UnicodeTables_CaseFoldingTable[];
-SMILE_INTERNAL_DATA extern const Int32 **UnicodeTables_CaseFoldingTableExtended[];
+SMILE_INTERNAL_DATA extern const Int32 **UnicodeTables_CaseFoldingTableSimpleExtended[];
+SMILE_INTERNAL_DATA extern const Int32 **UnicodeTables_CaseFoldingTableFullExtended[];
 SMILE_INTERNAL_DATA extern const Int32 UnicodeTables_CaseFoldingTableCount;
 
 SMILE_INTERNAL_DATA extern const Int32 *UnicodeTables_DecompositionTable[];

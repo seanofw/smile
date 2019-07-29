@@ -198,6 +198,15 @@ typedef struct KnownSymbolsStruct {
 	Symbol Float64_, Float64Array_, Float64Range_, Float64Map_;
 	Symbol Float128_, Float128Array_, Float128Range_, Float128Map_;
 
+	// Unicode category symbols.
+	Symbol Cn, Cc, Cf, Cs, Co;
+	Symbol Lu, Ll, Lt;
+	Symbol Mn, Mc, Me, Nd, Nl, No;
+	Symbol Zs, Zl, Zp;
+	Symbol Lm, Lo;
+	Symbol Pc, Pd, Ps, Pe, Pi, Pf, Po;
+	Symbol Sm, Sc, Sk, So;
+
 	// General symbols.
 	Symbol a, abs, acos, add_c_slashes, alnum_q, alpha_q, apply, apply_method, arguments, asin, assertions, assigned_name, atan, atan2;
 	Symbol base_, big_float, big_int, big_real, bit_and, bit_not, bit_or, bit_xor, body, bool_, byte_, byte_array, byte_range;

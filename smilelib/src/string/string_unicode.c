@@ -324,6 +324,88 @@ Int String_CompareRangeI(const String a, Int astart, Int alength, const String b
 /// <summary>
 /// Shared case-conversion function, using a common lookup-table structure shared by all of the case-conversion functions.
 /// </summary>
+/// <param name="codePoint">The Unicode code-point you would like to convert.</param>
+/// <param name="caseTable">A pointer to the caseTable, which is itself pointers to 256-character tables containing code-point deltas.
+/// A delta which results in a code point of zero will be looked up against the extended table, as it converts to multiple characters.</param>
+/// <param name="caseTableExtended">A pointer to the caseTableExtended, which is similar to the caseTable, but which contains sequences
+/// of code points for each converted code point instead of individual code points.  Only used if the code point delta in the caseTable results
+/// in a zero.</param>
+/// <param name="caseTableCount">The number of pointers to 256-code-point tables found within the caseTable/castTableExtended pointer tables.</param>
+/// <returns>The case-converted equivalent code point, using 'simple' conversion rules.</returns>
+Inline UInt32 Uni_ConvertCase(UInt32 codePoint, const Int32 **caseTable, const Int32 ***caseTableExtended, Int32 caseTableCount)
+{
+	Int32 codePageIndex = codePoint >> 8;
+	const Int32 *codePage = (codePageIndex < caseTableCount ? caseTable[codePageIndex] : _identityTable);
+	Int32 newCodeValue = codePoint + codePage[codePoint & 0xFF];
+
+	return newCodeValue != 0
+		? newCodeValue
+		: caseTableExtended[codePoint >> 8][codePoint & 0xFF][1];
+}
+
+/// <summary>
+/// Convert a single Unicode code point to its lowercase equivalent, using the
+/// 'simple' (not 'full') Unicode conversion rules.
+/// </summary>
+/// <param name="codePoint">The code point to convert to lowercase.  This must be in the range of [0, 0x10FFFF].</param>
+/// <returns>The code point converted to lowercase, if it had a lowercase equivalent, or the same code point,
+/// if it did not have a lowercase equivalent or was already lowercase.</param>
+UInt32 Uni_ToLower(UInt32 codePoint)
+{
+	return Uni_ConvertCase(codePoint,
+		UnicodeTables_LowercaseTable,
+		UnicodeTables_LowercaseTableSimpleExtended,
+		UnicodeTables_LowercaseTableCount);
+}
+
+/// <summary>
+/// Convert a single Unicode code point to its uppercase equivalent, using the
+/// 'simple' (not 'full') Unicode conversion rules.
+/// </summary>
+/// <param name="codePoint">The code point to convert to uppercase.  This must be in the range of [0, 0x10FFFF].</param>
+/// <returns>The code point converted to uppercase, if it had a uppercase equivalent, or the same code point,
+/// if it did not have a uppercase equivalent or was already uppercase.</param>
+UInt32 Uni_ToUpper(UInt32 codePoint)
+{
+	return Uni_ConvertCase(codePoint,
+		UnicodeTables_UppercaseTable,
+		UnicodeTables_UppercaseTableSimpleExtended,
+		UnicodeTables_UppercaseTableCount);
+}
+
+/// <summary>
+/// Convert a single Unicode code point to its titlecase equivalent, using the
+/// 'simple' (not 'full') Unicode conversion rules.
+/// </summary>
+/// <param name="codePoint">The code point to convert to titlecase.  This must be in the range of [0, 0x10FFFF].</param>
+/// <returns>The code point converted to titlecase, if it had a titlecase equivalent, or the same code point,
+/// if it did not have a titlecase equivalent or was already titlecase.</param>
+UInt32 Uni_ToTitle(UInt32 codePoint)
+{
+	return Uni_ConvertCase(codePoint,
+		UnicodeTables_TitlecaseTable,
+		UnicodeTables_TitlecaseTableSimpleExtended,
+		UnicodeTables_TitlecaseTableCount);
+}
+
+/// <summary>
+/// Convert a single Unicode code point to its case-folded equivalent, using the
+/// 'simple' (not 'full') Unicode conversion rules.
+/// </summary>
+/// <param name="codePoint">The code point to case-fold.  This must be in the range of [0, 0x10FFFF].</param>
+/// <returns>The code point case-folded, if it had a case-folded equivalent, or the same code point,
+/// if it did not have a case-folded equivalent.</param>
+UInt32 Uni_CaseFold(UInt32 codePoint)
+{
+	return Uni_ConvertCase(codePoint,
+		UnicodeTables_CaseFoldingTable,
+		UnicodeTables_CaseFoldingTableSimpleExtended,
+		UnicodeTables_CaseFoldingTableCount);
+}
+
+/// <summary>
+/// Shared case-conversion function, using a common lookup-table structure shared by all of the case-conversion functions.
+/// </summary>
 /// <param name="str">The string whose substring you would like to convert.</param>
 /// <param name="start">The start of the substring within that string.</param>
 /// <param name="length">The length of the substring within that string.</param>
@@ -414,7 +496,7 @@ String String_ToLowerRange(const String str, Int start, Int length)
 {
 	return ConvertCase(str, start, length,
 		UnicodeTables_LowercaseTable,
-		UnicodeTables_LowercaseTableExtended,
+		UnicodeTables_LowercaseTableFullExtended,
 		UnicodeTables_LowercaseTableCount);
 }
 
@@ -430,7 +512,7 @@ String String_ToTitleRange(const String str, Int start, Int length)
 {
 	return ConvertCase(str, start, length,
 		UnicodeTables_TitlecaseTable,
-		UnicodeTables_TitlecaseTableExtended,
+		UnicodeTables_TitlecaseTableFullExtended,
 		UnicodeTables_TitlecaseTableCount);
 }
 
@@ -446,7 +528,7 @@ String String_ToUpperRange(const String str, Int start, Int length)
 {
 	return ConvertCase(str, start, length,
 		UnicodeTables_UppercaseTable,
-		UnicodeTables_UppercaseTableExtended,
+		UnicodeTables_UppercaseTableFullExtended,
 		UnicodeTables_UppercaseTableCount);
 }
 
@@ -462,7 +544,7 @@ String String_CaseFoldRange(const String str, Int start, Int length)
 {
 	return ConvertCase(str, start, length,
 		UnicodeTables_CaseFoldingTable,
-		UnicodeTables_CaseFoldingTableExtended,
+		UnicodeTables_CaseFoldingTableFullExtended,
 		UnicodeTables_CaseFoldingTableCount);
 }
 

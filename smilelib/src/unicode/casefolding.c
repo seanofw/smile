@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
 //  Copyright 2004-2019 Sean Werkema
 //
@@ -22,12 +22,15 @@
 // provided by the Unicode Consortium, www.unicode.org.
 //--------------------------------------------------------------
 
+#include <smile/string.h>
 #include <smile/internal/unicode.h>
 
 #ifdef _MSC_VER
-	extern const Int32 _caseFoldingTableExtendedValues[];
+	extern const Int32 _caseFoldingTableFullExtendedValues[];
+	extern const Int32 _caseFoldingTableSimpleExtendedValues[];
 #else
-	static const Int32 _caseFoldingTableExtendedValues[];
+	static const Int32 _caseFoldingTableFullExtendedValues[];
+	static const Int32 _caseFoldingTableSimpleExtendedValues[];
 #endif
 
 static const Int32 _c0[] =
@@ -70,9 +73,9 @@ static const Int32 _caseFoldingTable00[] =
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 
-static const Int32 *_caseFoldingTableExtended00[] =
+static const Int32 *_caseFoldingTableFullExtended00[] =
 {
-	_caseFoldingTableExtendedValues+0, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	_caseFoldingTableFullExtendedValues+0, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -99,7 +102,39 @@ static const Int32 *_caseFoldingTableExtended00[] =
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, NULL, NULL, NULL, NULL, _caseFoldingTableExtendedValues+2,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, _caseFoldingTableFullExtendedValues+2,
+};
+
+static const Int32 *_caseFoldingTableSimpleExtended00[] =
+{
+	_caseFoldingTableSimpleExtendedValues+0, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, _caseFoldingTableSimpleExtendedValues+2,
 };
 
 static const Int32 _caseFoldingTable01[] =
@@ -122,7 +157,7 @@ static const Int32 _caseFoldingTable01[] =
 	-496, 2, 1, 0, 1, 0, -97, -56, 1, 0, 1, 0, 1, 0, 1, 0,
 };
 
-static const Int32 *_caseFoldingTableExtended01[] =
+static const Int32 *_caseFoldingTableFullExtended01[] =
 {
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -130,13 +165,10 @@ static const Int32 *_caseFoldingTableExtended01[] =
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	_caseFoldingTableExtendedValues+5, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	_caseFoldingTableFullExtendedValues+5, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, _caseFoldingTableExtendedValues+8, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, _caseFoldingTableFullExtendedValues+8, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -154,7 +186,45 @@ static const Int32 *_caseFoldingTableExtended01[] =
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	_caseFoldingTableExtendedValues+11, 
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	_caseFoldingTableFullExtendedValues+11, 
+};
+
+static const Int32 *_caseFoldingTableSimpleExtended01[] =
+{
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	_caseFoldingTableSimpleExtendedValues+4, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, _caseFoldingTableSimpleExtendedValues+6, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	_caseFoldingTableSimpleExtendedValues+8, 
 };
 
 static const Int32 _caseFoldingTable02[] =
@@ -197,7 +267,7 @@ static const Int32 _caseFoldingTable03[] =
 	-54, -48, 0, 0, -60, -64, 0, 1, 0, -7, 1, 0, 0, -130, -130, -130,
 };
 
-static const Int32 *_caseFoldingTableExtended03[] =
+static const Int32 *_caseFoldingTableFullExtended03[] =
 {
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -217,11 +287,38 @@ static const Int32 *_caseFoldingTableExtended03[] =
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	_caseFoldingTableExtendedValues+14, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	_caseFoldingTableFullExtendedValues+14, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	_caseFoldingTableExtendedValues+18, 
+	_caseFoldingTableFullExtendedValues+18, 
+};
+
+static const Int32 *_caseFoldingTableSimpleExtended03[] =
+{
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	_caseFoldingTableSimpleExtendedValues+10, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	_caseFoldingTableSimpleExtendedValues+12, 
 };
 
 static const Int32 _caseFoldingTable04[] =
@@ -264,7 +361,7 @@ static const Int32 _caseFoldingTable05[] =
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 
-static const Int32 *_caseFoldingTableExtended05[] =
+static const Int32 *_caseFoldingTableFullExtended05[] =
 {
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -282,7 +379,28 @@ static const Int32 *_caseFoldingTableExtended05[] =
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, NULL, NULL, NULL, NULL, _caseFoldingTableExtendedValues+22,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, _caseFoldingTableFullExtendedValues+22,
+};
+
+static const Int32 *_caseFoldingTableSimpleExtended05[] =
+{
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, _caseFoldingTableSimpleExtendedValues+14,
 };
 
 static const Int32 _caseFoldingTable10[] =
@@ -325,7 +443,7 @@ static const Int32 _caseFoldingTable1E[] =
 	1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0,
 };
 
-static const Int32 *_caseFoldingTableExtended1E[] =
+static const Int32 *_caseFoldingTableFullExtended1E[] =
 {
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -345,8 +463,32 @@ static const Int32 *_caseFoldingTableExtended1E[] =
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, NULL, NULL, NULL, _caseFoldingTableExtendedValues+25, _caseFoldingTableExtendedValues+28,
-	_caseFoldingTableExtendedValues+31, _caseFoldingTableExtendedValues+34, _caseFoldingTableExtendedValues+37, NULL, NULL, NULL, _caseFoldingTableExtendedValues+40, 
+	NULL, NULL, NULL, NULL, NULL, NULL, _caseFoldingTableFullExtendedValues+25, _caseFoldingTableFullExtendedValues+28,
+	_caseFoldingTableFullExtendedValues+31, _caseFoldingTableFullExtendedValues+34, _caseFoldingTableFullExtendedValues+37, NULL, NULL, NULL, _caseFoldingTableFullExtendedValues+40, 
+};
+
+static const Int32 *_caseFoldingTableSimpleExtended1E[] =
+{
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, _caseFoldingTableSimpleExtendedValues+16, _caseFoldingTableSimpleExtendedValues+18,
+	_caseFoldingTableSimpleExtendedValues+20, _caseFoldingTableSimpleExtendedValues+22, _caseFoldingTableSimpleExtendedValues+24, NULL, NULL, NULL, _caseFoldingTableSimpleExtendedValues+26, 
 };
 
 static const Int32 _caseFoldingTable1F[] =
@@ -369,7 +511,7 @@ static const Int32 _caseFoldingTable1F[] =
 	0, 0, -8178, -8179, -8180, 0, -8182, -8183, -128, -128, -126, -126, -8188, 0, 0, 0,
 };
 
-static const Int32 *_caseFoldingTableExtended1F[] =
+static const Int32 *_caseFoldingTableFullExtended1F[] =
 {
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -381,28 +523,64 @@ static const Int32 *_caseFoldingTableExtended1F[] =
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	_caseFoldingTableExtendedValues+43, NULL, _caseFoldingTableExtendedValues+46, NULL, _caseFoldingTableExtendedValues+50, NULL, _caseFoldingTableExtendedValues+54, NULL,
+	_caseFoldingTableFullExtendedValues+43, NULL, _caseFoldingTableFullExtendedValues+46, NULL, _caseFoldingTableFullExtendedValues+50, NULL, _caseFoldingTableFullExtendedValues+54, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	_caseFoldingTableExtendedValues+58, _caseFoldingTableExtendedValues+61, _caseFoldingTableExtendedValues+64, _caseFoldingTableExtendedValues+67, _caseFoldingTableExtendedValues+70, _caseFoldingTableExtendedValues+73, _caseFoldingTableExtendedValues+76, _caseFoldingTableExtendedValues+79,
-	_caseFoldingTableExtendedValues+82, _caseFoldingTableExtendedValues+85, _caseFoldingTableExtendedValues+88, _caseFoldingTableExtendedValues+91, _caseFoldingTableExtendedValues+94, _caseFoldingTableExtendedValues+97, _caseFoldingTableExtendedValues+100, _caseFoldingTableExtendedValues+103,
-	_caseFoldingTableExtendedValues+106, _caseFoldingTableExtendedValues+109, _caseFoldingTableExtendedValues+112, _caseFoldingTableExtendedValues+115, _caseFoldingTableExtendedValues+118, _caseFoldingTableExtendedValues+121, _caseFoldingTableExtendedValues+124, _caseFoldingTableExtendedValues+127,
-	_caseFoldingTableExtendedValues+130, _caseFoldingTableExtendedValues+133, _caseFoldingTableExtendedValues+136, _caseFoldingTableExtendedValues+139, _caseFoldingTableExtendedValues+142, _caseFoldingTableExtendedValues+145, _caseFoldingTableExtendedValues+148, _caseFoldingTableExtendedValues+151,
-	_caseFoldingTableExtendedValues+154, _caseFoldingTableExtendedValues+157, _caseFoldingTableExtendedValues+160, _caseFoldingTableExtendedValues+163, _caseFoldingTableExtendedValues+166, _caseFoldingTableExtendedValues+169, _caseFoldingTableExtendedValues+172, _caseFoldingTableExtendedValues+175,
-	_caseFoldingTableExtendedValues+178, _caseFoldingTableExtendedValues+181, _caseFoldingTableExtendedValues+184, _caseFoldingTableExtendedValues+187, _caseFoldingTableExtendedValues+190, _caseFoldingTableExtendedValues+193, _caseFoldingTableExtendedValues+196, _caseFoldingTableExtendedValues+199,
-	NULL, NULL, _caseFoldingTableExtendedValues+202, _caseFoldingTableExtendedValues+205, _caseFoldingTableExtendedValues+208, NULL, _caseFoldingTableExtendedValues+211, _caseFoldingTableExtendedValues+214,
-	NULL, NULL, NULL, NULL, _caseFoldingTableExtendedValues+218, NULL, NULL, NULL,
-	NULL, NULL, _caseFoldingTableExtendedValues+221, _caseFoldingTableExtendedValues+224, _caseFoldingTableExtendedValues+227, NULL, _caseFoldingTableExtendedValues+230, _caseFoldingTableExtendedValues+233,
-	NULL, NULL, NULL, NULL, _caseFoldingTableExtendedValues+237, NULL, NULL, NULL,
-	NULL, NULL, _caseFoldingTableExtendedValues+240, _caseFoldingTableExtendedValues+244, NULL, NULL, _caseFoldingTableExtendedValues+248, _caseFoldingTableExtendedValues+251,
+	_caseFoldingTableFullExtendedValues+58, _caseFoldingTableFullExtendedValues+61, _caseFoldingTableFullExtendedValues+64, _caseFoldingTableFullExtendedValues+67, _caseFoldingTableFullExtendedValues+70, _caseFoldingTableFullExtendedValues+73, _caseFoldingTableFullExtendedValues+76, _caseFoldingTableFullExtendedValues+79,
+	_caseFoldingTableFullExtendedValues+82, _caseFoldingTableFullExtendedValues+85, _caseFoldingTableFullExtendedValues+88, _caseFoldingTableFullExtendedValues+91, _caseFoldingTableFullExtendedValues+94, _caseFoldingTableFullExtendedValues+97, _caseFoldingTableFullExtendedValues+100, _caseFoldingTableFullExtendedValues+103,
+	_caseFoldingTableFullExtendedValues+106, _caseFoldingTableFullExtendedValues+109, _caseFoldingTableFullExtendedValues+112, _caseFoldingTableFullExtendedValues+115, _caseFoldingTableFullExtendedValues+118, _caseFoldingTableFullExtendedValues+121, _caseFoldingTableFullExtendedValues+124, _caseFoldingTableFullExtendedValues+127,
+	_caseFoldingTableFullExtendedValues+130, _caseFoldingTableFullExtendedValues+133, _caseFoldingTableFullExtendedValues+136, _caseFoldingTableFullExtendedValues+139, _caseFoldingTableFullExtendedValues+142, _caseFoldingTableFullExtendedValues+145, _caseFoldingTableFullExtendedValues+148, _caseFoldingTableFullExtendedValues+151,
+	_caseFoldingTableFullExtendedValues+154, _caseFoldingTableFullExtendedValues+157, _caseFoldingTableFullExtendedValues+160, _caseFoldingTableFullExtendedValues+163, _caseFoldingTableFullExtendedValues+166, _caseFoldingTableFullExtendedValues+169, _caseFoldingTableFullExtendedValues+172, _caseFoldingTableFullExtendedValues+175,
+	_caseFoldingTableFullExtendedValues+178, _caseFoldingTableFullExtendedValues+181, _caseFoldingTableFullExtendedValues+184, _caseFoldingTableFullExtendedValues+187, _caseFoldingTableFullExtendedValues+190, _caseFoldingTableFullExtendedValues+193, _caseFoldingTableFullExtendedValues+196, _caseFoldingTableFullExtendedValues+199,
+	NULL, NULL, _caseFoldingTableFullExtendedValues+202, _caseFoldingTableFullExtendedValues+205, _caseFoldingTableFullExtendedValues+208, NULL, _caseFoldingTableFullExtendedValues+211, _caseFoldingTableFullExtendedValues+214,
+	NULL, NULL, NULL, NULL, _caseFoldingTableFullExtendedValues+218, NULL, NULL, NULL,
+	NULL, NULL, _caseFoldingTableFullExtendedValues+221, _caseFoldingTableFullExtendedValues+224, _caseFoldingTableFullExtendedValues+227, NULL, _caseFoldingTableFullExtendedValues+230, _caseFoldingTableFullExtendedValues+233,
+	NULL, NULL, NULL, NULL, _caseFoldingTableFullExtendedValues+237, NULL, NULL, NULL,
+	NULL, NULL, _caseFoldingTableFullExtendedValues+240, _caseFoldingTableFullExtendedValues+244, NULL, NULL, _caseFoldingTableFullExtendedValues+248, _caseFoldingTableFullExtendedValues+251,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, _caseFoldingTableExtendedValues+255, _caseFoldingTableExtendedValues+259, _caseFoldingTableExtendedValues+263, NULL, _caseFoldingTableExtendedValues+266, _caseFoldingTableExtendedValues+269,
+	NULL, NULL, _caseFoldingTableFullExtendedValues+255, _caseFoldingTableFullExtendedValues+259, _caseFoldingTableFullExtendedValues+263, NULL, _caseFoldingTableFullExtendedValues+266, _caseFoldingTableFullExtendedValues+269,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, _caseFoldingTableExtendedValues+273, _caseFoldingTableExtendedValues+276, _caseFoldingTableExtendedValues+279, NULL, _caseFoldingTableExtendedValues+282, _caseFoldingTableExtendedValues+285,
-	NULL, NULL, NULL, NULL, _caseFoldingTableExtendedValues+289, 
+	NULL, NULL, _caseFoldingTableFullExtendedValues+273, _caseFoldingTableFullExtendedValues+276, _caseFoldingTableFullExtendedValues+279, NULL, _caseFoldingTableFullExtendedValues+282, _caseFoldingTableFullExtendedValues+285,
+	NULL, NULL, NULL, NULL, _caseFoldingTableFullExtendedValues+289, 
+};
+
+static const Int32 *_caseFoldingTableSimpleExtended1F[] =
+{
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	_caseFoldingTableSimpleExtendedValues+28, NULL, _caseFoldingTableSimpleExtendedValues+30, NULL, _caseFoldingTableSimpleExtendedValues+32, NULL, _caseFoldingTableSimpleExtendedValues+34, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	_caseFoldingTableSimpleExtendedValues+36, _caseFoldingTableSimpleExtendedValues+38, _caseFoldingTableSimpleExtendedValues+40, _caseFoldingTableSimpleExtendedValues+42, _caseFoldingTableSimpleExtendedValues+44, _caseFoldingTableSimpleExtendedValues+46, _caseFoldingTableSimpleExtendedValues+48, _caseFoldingTableSimpleExtendedValues+50,
+	_caseFoldingTableSimpleExtendedValues+52, _caseFoldingTableSimpleExtendedValues+54, _caseFoldingTableSimpleExtendedValues+56, _caseFoldingTableSimpleExtendedValues+58, _caseFoldingTableSimpleExtendedValues+60, _caseFoldingTableSimpleExtendedValues+62, _caseFoldingTableSimpleExtendedValues+64, _caseFoldingTableSimpleExtendedValues+66,
+	_caseFoldingTableSimpleExtendedValues+68, _caseFoldingTableSimpleExtendedValues+70, _caseFoldingTableSimpleExtendedValues+72, _caseFoldingTableSimpleExtendedValues+74, _caseFoldingTableSimpleExtendedValues+76, _caseFoldingTableSimpleExtendedValues+78, _caseFoldingTableSimpleExtendedValues+80, _caseFoldingTableSimpleExtendedValues+82,
+	_caseFoldingTableSimpleExtendedValues+84, _caseFoldingTableSimpleExtendedValues+86, _caseFoldingTableSimpleExtendedValues+88, _caseFoldingTableSimpleExtendedValues+90, _caseFoldingTableSimpleExtendedValues+92, _caseFoldingTableSimpleExtendedValues+94, _caseFoldingTableSimpleExtendedValues+96, _caseFoldingTableSimpleExtendedValues+98,
+	_caseFoldingTableSimpleExtendedValues+100, _caseFoldingTableSimpleExtendedValues+102, _caseFoldingTableSimpleExtendedValues+104, _caseFoldingTableSimpleExtendedValues+106, _caseFoldingTableSimpleExtendedValues+108, _caseFoldingTableSimpleExtendedValues+110, _caseFoldingTableSimpleExtendedValues+112, _caseFoldingTableSimpleExtendedValues+114,
+	_caseFoldingTableSimpleExtendedValues+116, _caseFoldingTableSimpleExtendedValues+118, _caseFoldingTableSimpleExtendedValues+120, _caseFoldingTableSimpleExtendedValues+122, _caseFoldingTableSimpleExtendedValues+124, _caseFoldingTableSimpleExtendedValues+126, _caseFoldingTableSimpleExtendedValues+128, _caseFoldingTableSimpleExtendedValues+130,
+	NULL, NULL, _caseFoldingTableSimpleExtendedValues+132, _caseFoldingTableSimpleExtendedValues+134, _caseFoldingTableSimpleExtendedValues+136, NULL, _caseFoldingTableSimpleExtendedValues+138, _caseFoldingTableSimpleExtendedValues+140,
+	NULL, NULL, NULL, NULL, _caseFoldingTableSimpleExtendedValues+142, NULL, NULL, NULL,
+	NULL, NULL, _caseFoldingTableSimpleExtendedValues+144, _caseFoldingTableSimpleExtendedValues+146, _caseFoldingTableSimpleExtendedValues+148, NULL, _caseFoldingTableSimpleExtendedValues+150, _caseFoldingTableSimpleExtendedValues+152,
+	NULL, NULL, NULL, NULL, _caseFoldingTableSimpleExtendedValues+154, NULL, NULL, NULL,
+	NULL, NULL, _caseFoldingTableSimpleExtendedValues+156, _caseFoldingTableSimpleExtendedValues+158, NULL, NULL, _caseFoldingTableSimpleExtendedValues+160, _caseFoldingTableSimpleExtendedValues+162,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, _caseFoldingTableSimpleExtendedValues+164, _caseFoldingTableSimpleExtendedValues+166, _caseFoldingTableSimpleExtendedValues+168, NULL, _caseFoldingTableSimpleExtendedValues+170, _caseFoldingTableSimpleExtendedValues+172,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, _caseFoldingTableSimpleExtendedValues+174, _caseFoldingTableSimpleExtendedValues+176, _caseFoldingTableSimpleExtendedValues+178, NULL, _caseFoldingTableSimpleExtendedValues+180, _caseFoldingTableSimpleExtendedValues+182,
+	NULL, NULL, NULL, NULL, _caseFoldingTableSimpleExtendedValues+184, 
 };
 
 static const Int32 _caseFoldingTable21[] =
@@ -525,11 +703,18 @@ static const Int32 _caseFoldingTableFB[] =
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 
-static const Int32 *_caseFoldingTableExtendedFB[] =
+static const Int32 *_caseFoldingTableFullExtendedFB[] =
 {
-	_caseFoldingTableExtendedValues+292, _caseFoldingTableExtendedValues+295, _caseFoldingTableExtendedValues+298, _caseFoldingTableExtendedValues+301, _caseFoldingTableExtendedValues+305, _caseFoldingTableExtendedValues+309, _caseFoldingTableExtendedValues+312, NULL,
+	_caseFoldingTableFullExtendedValues+292, _caseFoldingTableFullExtendedValues+295, _caseFoldingTableFullExtendedValues+298, _caseFoldingTableFullExtendedValues+301, _caseFoldingTableFullExtendedValues+305, _caseFoldingTableFullExtendedValues+309, _caseFoldingTableFullExtendedValues+312, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, _caseFoldingTableExtendedValues+315, _caseFoldingTableExtendedValues+318, _caseFoldingTableExtendedValues+321, _caseFoldingTableExtendedValues+324, _caseFoldingTableExtendedValues+327,
+	NULL, NULL, NULL, _caseFoldingTableFullExtendedValues+315, _caseFoldingTableFullExtendedValues+318, _caseFoldingTableFullExtendedValues+321, _caseFoldingTableFullExtendedValues+324, _caseFoldingTableFullExtendedValues+327,
+};
+
+static const Int32 *_caseFoldingTableSimpleExtendedFB[] =
+{
+	_caseFoldingTableSimpleExtendedValues+186, _caseFoldingTableSimpleExtendedValues+188, _caseFoldingTableSimpleExtendedValues+190, _caseFoldingTableSimpleExtendedValues+192, _caseFoldingTableSimpleExtendedValues+194, _caseFoldingTableSimpleExtendedValues+196, _caseFoldingTableSimpleExtendedValues+198, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, _caseFoldingTableSimpleExtendedValues+200, _caseFoldingTableSimpleExtendedValues+202, _caseFoldingTableSimpleExtendedValues+204, _caseFoldingTableSimpleExtendedValues+206, _caseFoldingTableSimpleExtendedValues+208,
 };
 
 static const Int32 _caseFoldingTableFF[] =
@@ -572,7 +757,7 @@ static const Int32 _caseFoldingTable104[] =
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 
-static const Int32 _caseFoldingTableExtendedValues[] =
+static const Int32 _caseFoldingTableFullExtendedValues[] =
 {
 	1, 0, 2, 115, 115, 2, 105, 775, 2, 700, 110, 2, 106, 780, 3, 953,
 	776, 769, 3, 965, 776, 769, 2, 1381, 1410, 2, 104, 817, 2, 116, 776, 2,
@@ -595,6 +780,24 @@ static const Int32 _caseFoldingTableExtendedValues[] =
 	953, 2, 969, 953, 2, 102, 102, 2, 102, 105, 2, 102, 108, 3, 102, 102,
 	105, 3, 102, 102, 108, 2, 115, 116, 2, 115, 116, 2, 1396, 1398, 2, 1396,
 	1381, 2, 1396, 1387, 2, 1406, 1398, 2, 1396, 1389, 
+};
+
+static const Int32 _caseFoldingTableSimpleExtendedValues[] =
+{
+	1, 0, 1, 223, 1, 304, 1, 329, 1, 496, 1, 912, 1, 944, 1, 1415,
+	1, 7830, 1, 7831, 1, 7832, 1, 7833, 1, 7834, 1, 223, 1, 8016, 1, 8018,
+	1, 8020, 1, 8022, 1, 8064, 1, 8065, 1, 8066, 1, 8067, 1, 8068, 1, 8069,
+	1, 8070, 1, 8071, 1, 8064, 1, 8065, 1, 8066, 1, 8067, 1, 8068, 1, 8069,
+	1, 8070, 1, 8071, 1, 8080, 1, 8081, 1, 8082, 1, 8083, 1, 8084, 1, 8085,
+	1, 8086, 1, 8087, 1, 8080, 1, 8081, 1, 8082, 1, 8083, 1, 8084, 1, 8085,
+	1, 8086, 1, 8087, 1, 8096, 1, 8097, 1, 8098, 1, 8099, 1, 8100, 1, 8101,
+	1, 8102, 1, 8103, 1, 8096, 1, 8097, 1, 8098, 1, 8099, 1, 8100, 1, 8101,
+	1, 8102, 1, 8103, 1, 8114, 1, 8115, 1, 8116, 1, 8118, 1, 8119, 1, 8115,
+	1, 8130, 1, 8131, 1, 8132, 1, 8134, 1, 8135, 1, 8131, 1, 8146, 1, 8147,
+	1, 8150, 1, 8151, 1, 8162, 1, 8163, 1, 8164, 1, 8166, 1, 8167, 1, 8178,
+	1, 8179, 1, 8180, 1, 8182, 1, 8183, 1, 8179, 1, 64256, 1, 64257, 1, 64258,
+	1, 64259, 1, 64260, 1, 64261, 1, 64262, 1, 64275, 1, 64276, 1, 64277, 1, 64278,
+	1, 64279, 
 };
 
 const Int32 *UnicodeTables_CaseFoldingTable[] =
@@ -634,15 +837,12 @@ const Int32 *UnicodeTables_CaseFoldingTable[] =
 	_c0, _c0, _c0, _c0, _caseFoldingTable104, 
 };
 
-const Int32 **UnicodeTables_CaseFoldingTableExtended[] =
+const Int32 **UnicodeTables_CaseFoldingTableFullExtended[] =
 {
-	_caseFoldingTableExtended00, _caseFoldingTableExtended01, NULL, _caseFoldingTableExtended03, NULL, _caseFoldingTableExtended05, NULL, NULL,
+	_caseFoldingTableFullExtended00, _caseFoldingTableFullExtended01, NULL, _caseFoldingTableFullExtended03, NULL, _caseFoldingTableFullExtended05, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, NULL, NULL, NULL, _caseFoldingTableExtended1E, _caseFoldingTableExtended1F,
-	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, _caseFoldingTableFullExtended1E, _caseFoldingTableFullExtended1F,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -667,7 +867,46 @@ const Int32 **UnicodeTables_CaseFoldingTableExtended[] =
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, _caseFoldingTableExtendedFB, 
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, _caseFoldingTableFullExtendedFB, 
+};
+
+const Int32 **UnicodeTables_CaseFoldingTableSimpleExtended[] =
+{
+	_caseFoldingTableSimpleExtended00, _caseFoldingTableSimpleExtended01, NULL, _caseFoldingTableSimpleExtended03, NULL, _caseFoldingTableSimpleExtended05, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, _caseFoldingTableSimpleExtended1E, _caseFoldingTableSimpleExtended1F,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, _caseFoldingTableSimpleExtendedFB, 
 };
 
 const Int32 UnicodeTables_CaseFoldingTableCount = 252;

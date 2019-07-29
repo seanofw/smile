@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
 //  Copyright 2004-2019 Sean Werkema
 //
@@ -22,12 +22,15 @@
 // provided by the Unicode Consortium, www.unicode.org.
 //--------------------------------------------------------------
 
+#include <smile/string.h>
 #include <smile/internal/unicode.h>
 
 #ifdef _MSC_VER
-	extern const Int32 _uppercaseTableExtendedValues[];
+	extern const Int32 _uppercaseTableFullExtendedValues[];
+	extern const Int32 _uppercaseTableSimpleExtendedValues[];
 #else
-	static const Int32 _uppercaseTableExtendedValues[];
+	static const Int32 _uppercaseTableFullExtendedValues[];
+	static const Int32 _uppercaseTableSimpleExtendedValues[];
 #endif
 
 static const Int32 _u0[] =
@@ -70,9 +73,9 @@ static const Int32 _uppercaseTable00[] =
 	-32, -32, -32, -32, -32, -32, -32, 0, -32, -32, -32, -32, -32, -32, -32, 121,
 };
 
-static const Int32 *_uppercaseTableExtended00[] =
+static const Int32 *_uppercaseTableFullExtended00[] =
 {
-	_uppercaseTableExtendedValues+0, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	_uppercaseTableFullExtendedValues+0, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -99,7 +102,39 @@ static const Int32 *_uppercaseTableExtended00[] =
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, NULL, NULL, NULL, NULL, _uppercaseTableExtendedValues+2,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, _uppercaseTableFullExtendedValues+2,
+};
+
+static const Int32 *_uppercaseTableSimpleExtended00[] =
+{
+	_uppercaseTableSimpleExtendedValues+0, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, _uppercaseTableSimpleExtendedValues+2,
 };
 
 static const Int32 _uppercaseTable01[] =
@@ -122,7 +157,7 @@ static const Int32 _uppercaseTable01[] =
 	-496, 0, -1, -2, 0, -1, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1,
 };
 
-static const Int32 *_uppercaseTableExtended01[] =
+static const Int32 *_uppercaseTableFullExtended01[] =
 {
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -133,7 +168,7 @@ static const Int32 *_uppercaseTableExtended01[] =
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, _uppercaseTableExtendedValues+5, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, _uppercaseTableFullExtendedValues+5, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -154,7 +189,42 @@ static const Int32 *_uppercaseTableExtended01[] =
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	_uppercaseTableExtendedValues+8, 
+	_uppercaseTableFullExtendedValues+8, 
+};
+
+static const Int32 *_uppercaseTableSimpleExtended01[] =
+{
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, _uppercaseTableSimpleExtendedValues+4, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	_uppercaseTableSimpleExtendedValues+6, 
 };
 
 static const Int32 _uppercaseTable02[] =
@@ -197,7 +267,7 @@ static const Int32 _uppercaseTable03[] =
 	-86, -80, 7, 0, 0, -96, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0,
 };
 
-static const Int32 *_uppercaseTableExtended03[] =
+static const Int32 *_uppercaseTableFullExtended03[] =
 {
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -217,11 +287,38 @@ static const Int32 *_uppercaseTableExtended03[] =
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	_uppercaseTableExtendedValues+11, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	_uppercaseTableFullExtendedValues+11, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	_uppercaseTableExtendedValues+15, 
+	_uppercaseTableFullExtendedValues+15, 
+};
+
+static const Int32 *_uppercaseTableSimpleExtended03[] =
+{
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	_uppercaseTableSimpleExtendedValues+8, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	_uppercaseTableSimpleExtendedValues+10, 
 };
 
 static const Int32 _uppercaseTable04[] =
@@ -264,7 +361,7 @@ static const Int32 _uppercaseTable05[] =
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 
-static const Int32 *_uppercaseTableExtended05[] =
+static const Int32 *_uppercaseTableFullExtended05[] =
 {
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -282,7 +379,28 @@ static const Int32 *_uppercaseTableExtended05[] =
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, NULL, NULL, NULL, NULL, _uppercaseTableExtendedValues+19,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, _uppercaseTableFullExtendedValues+19,
+};
+
+static const Int32 *_uppercaseTableSimpleExtended05[] =
+{
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, _uppercaseTableSimpleExtendedValues+12,
 };
 
 static const Int32 _uppercaseTable1D[] =
@@ -325,7 +443,7 @@ static const Int32 _uppercaseTable1E[] =
 	0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1,
 };
 
-static const Int32 *_uppercaseTableExtended1E[] =
+static const Int32 *_uppercaseTableFullExtended1E[] =
 {
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -345,8 +463,32 @@ static const Int32 *_uppercaseTableExtended1E[] =
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, NULL, NULL, NULL, _uppercaseTableExtendedValues+22, _uppercaseTableExtendedValues+25,
-	_uppercaseTableExtendedValues+28, _uppercaseTableExtendedValues+31, _uppercaseTableExtendedValues+34, 
+	NULL, NULL, NULL, NULL, NULL, NULL, _uppercaseTableFullExtendedValues+22, _uppercaseTableFullExtendedValues+25,
+	_uppercaseTableFullExtendedValues+28, _uppercaseTableFullExtendedValues+31, _uppercaseTableFullExtendedValues+34, 
+};
+
+static const Int32 *_uppercaseTableSimpleExtended1E[] =
+{
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, _uppercaseTableSimpleExtendedValues+14, _uppercaseTableSimpleExtendedValues+16,
+	_uppercaseTableSimpleExtendedValues+18, _uppercaseTableSimpleExtendedValues+20, _uppercaseTableSimpleExtendedValues+22, 
 };
 
 static const Int32 _uppercaseTable1F[] =
@@ -369,7 +511,7 @@ static const Int32 _uppercaseTable1F[] =
 	0, 0, -8178, -8179, -8180, 0, -8182, -8183, 0, 0, 0, 0, -8188, 0, 0, 0,
 };
 
-static const Int32 *_uppercaseTableExtended1F[] =
+static const Int32 *_uppercaseTableFullExtended1F[] =
 {
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -381,28 +523,64 @@ static const Int32 *_uppercaseTableExtended1F[] =
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	_uppercaseTableExtendedValues+37, NULL, _uppercaseTableExtendedValues+40, NULL, _uppercaseTableExtendedValues+44, NULL, _uppercaseTableExtendedValues+48, NULL,
+	_uppercaseTableFullExtendedValues+37, NULL, _uppercaseTableFullExtendedValues+40, NULL, _uppercaseTableFullExtendedValues+44, NULL, _uppercaseTableFullExtendedValues+48, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	_uppercaseTableExtendedValues+52, _uppercaseTableExtendedValues+55, _uppercaseTableExtendedValues+58, _uppercaseTableExtendedValues+61, _uppercaseTableExtendedValues+64, _uppercaseTableExtendedValues+67, _uppercaseTableExtendedValues+70, _uppercaseTableExtendedValues+73,
-	_uppercaseTableExtendedValues+76, _uppercaseTableExtendedValues+79, _uppercaseTableExtendedValues+82, _uppercaseTableExtendedValues+85, _uppercaseTableExtendedValues+88, _uppercaseTableExtendedValues+91, _uppercaseTableExtendedValues+94, _uppercaseTableExtendedValues+97,
-	_uppercaseTableExtendedValues+100, _uppercaseTableExtendedValues+103, _uppercaseTableExtendedValues+106, _uppercaseTableExtendedValues+109, _uppercaseTableExtendedValues+112, _uppercaseTableExtendedValues+115, _uppercaseTableExtendedValues+118, _uppercaseTableExtendedValues+121,
-	_uppercaseTableExtendedValues+124, _uppercaseTableExtendedValues+127, _uppercaseTableExtendedValues+130, _uppercaseTableExtendedValues+133, _uppercaseTableExtendedValues+136, _uppercaseTableExtendedValues+139, _uppercaseTableExtendedValues+142, _uppercaseTableExtendedValues+145,
-	_uppercaseTableExtendedValues+148, _uppercaseTableExtendedValues+151, _uppercaseTableExtendedValues+154, _uppercaseTableExtendedValues+157, _uppercaseTableExtendedValues+160, _uppercaseTableExtendedValues+163, _uppercaseTableExtendedValues+166, _uppercaseTableExtendedValues+169,
-	_uppercaseTableExtendedValues+172, _uppercaseTableExtendedValues+175, _uppercaseTableExtendedValues+178, _uppercaseTableExtendedValues+181, _uppercaseTableExtendedValues+184, _uppercaseTableExtendedValues+187, _uppercaseTableExtendedValues+190, _uppercaseTableExtendedValues+193,
-	NULL, NULL, _uppercaseTableExtendedValues+196, _uppercaseTableExtendedValues+199, _uppercaseTableExtendedValues+202, NULL, _uppercaseTableExtendedValues+205, _uppercaseTableExtendedValues+208,
-	NULL, NULL, NULL, NULL, _uppercaseTableExtendedValues+212, NULL, NULL, NULL,
-	NULL, NULL, _uppercaseTableExtendedValues+215, _uppercaseTableExtendedValues+218, _uppercaseTableExtendedValues+221, NULL, _uppercaseTableExtendedValues+224, _uppercaseTableExtendedValues+227,
-	NULL, NULL, NULL, NULL, _uppercaseTableExtendedValues+231, NULL, NULL, NULL,
-	NULL, NULL, _uppercaseTableExtendedValues+234, _uppercaseTableExtendedValues+238, NULL, NULL, _uppercaseTableExtendedValues+242, _uppercaseTableExtendedValues+245,
+	_uppercaseTableFullExtendedValues+52, _uppercaseTableFullExtendedValues+55, _uppercaseTableFullExtendedValues+58, _uppercaseTableFullExtendedValues+61, _uppercaseTableFullExtendedValues+64, _uppercaseTableFullExtendedValues+67, _uppercaseTableFullExtendedValues+70, _uppercaseTableFullExtendedValues+73,
+	_uppercaseTableFullExtendedValues+76, _uppercaseTableFullExtendedValues+79, _uppercaseTableFullExtendedValues+82, _uppercaseTableFullExtendedValues+85, _uppercaseTableFullExtendedValues+88, _uppercaseTableFullExtendedValues+91, _uppercaseTableFullExtendedValues+94, _uppercaseTableFullExtendedValues+97,
+	_uppercaseTableFullExtendedValues+100, _uppercaseTableFullExtendedValues+103, _uppercaseTableFullExtendedValues+106, _uppercaseTableFullExtendedValues+109, _uppercaseTableFullExtendedValues+112, _uppercaseTableFullExtendedValues+115, _uppercaseTableFullExtendedValues+118, _uppercaseTableFullExtendedValues+121,
+	_uppercaseTableFullExtendedValues+124, _uppercaseTableFullExtendedValues+127, _uppercaseTableFullExtendedValues+130, _uppercaseTableFullExtendedValues+133, _uppercaseTableFullExtendedValues+136, _uppercaseTableFullExtendedValues+139, _uppercaseTableFullExtendedValues+142, _uppercaseTableFullExtendedValues+145,
+	_uppercaseTableFullExtendedValues+148, _uppercaseTableFullExtendedValues+151, _uppercaseTableFullExtendedValues+154, _uppercaseTableFullExtendedValues+157, _uppercaseTableFullExtendedValues+160, _uppercaseTableFullExtendedValues+163, _uppercaseTableFullExtendedValues+166, _uppercaseTableFullExtendedValues+169,
+	_uppercaseTableFullExtendedValues+172, _uppercaseTableFullExtendedValues+175, _uppercaseTableFullExtendedValues+178, _uppercaseTableFullExtendedValues+181, _uppercaseTableFullExtendedValues+184, _uppercaseTableFullExtendedValues+187, _uppercaseTableFullExtendedValues+190, _uppercaseTableFullExtendedValues+193,
+	NULL, NULL, _uppercaseTableFullExtendedValues+196, _uppercaseTableFullExtendedValues+199, _uppercaseTableFullExtendedValues+202, NULL, _uppercaseTableFullExtendedValues+205, _uppercaseTableFullExtendedValues+208,
+	NULL, NULL, NULL, NULL, _uppercaseTableFullExtendedValues+212, NULL, NULL, NULL,
+	NULL, NULL, _uppercaseTableFullExtendedValues+215, _uppercaseTableFullExtendedValues+218, _uppercaseTableFullExtendedValues+221, NULL, _uppercaseTableFullExtendedValues+224, _uppercaseTableFullExtendedValues+227,
+	NULL, NULL, NULL, NULL, _uppercaseTableFullExtendedValues+231, NULL, NULL, NULL,
+	NULL, NULL, _uppercaseTableFullExtendedValues+234, _uppercaseTableFullExtendedValues+238, NULL, NULL, _uppercaseTableFullExtendedValues+242, _uppercaseTableFullExtendedValues+245,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, _uppercaseTableExtendedValues+249, _uppercaseTableExtendedValues+253, _uppercaseTableExtendedValues+257, NULL, _uppercaseTableExtendedValues+260, _uppercaseTableExtendedValues+263,
+	NULL, NULL, _uppercaseTableFullExtendedValues+249, _uppercaseTableFullExtendedValues+253, _uppercaseTableFullExtendedValues+257, NULL, _uppercaseTableFullExtendedValues+260, _uppercaseTableFullExtendedValues+263,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, _uppercaseTableExtendedValues+267, _uppercaseTableExtendedValues+270, _uppercaseTableExtendedValues+273, NULL, _uppercaseTableExtendedValues+276, _uppercaseTableExtendedValues+279,
-	NULL, NULL, NULL, NULL, _uppercaseTableExtendedValues+283, 
+	NULL, NULL, _uppercaseTableFullExtendedValues+267, _uppercaseTableFullExtendedValues+270, _uppercaseTableFullExtendedValues+273, NULL, _uppercaseTableFullExtendedValues+276, _uppercaseTableFullExtendedValues+279,
+	NULL, NULL, NULL, NULL, _uppercaseTableFullExtendedValues+283, 
+};
+
+static const Int32 *_uppercaseTableSimpleExtended1F[] =
+{
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	_uppercaseTableSimpleExtendedValues+24, NULL, _uppercaseTableSimpleExtendedValues+26, NULL, _uppercaseTableSimpleExtendedValues+28, NULL, _uppercaseTableSimpleExtendedValues+30, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	_uppercaseTableSimpleExtendedValues+32, _uppercaseTableSimpleExtendedValues+34, _uppercaseTableSimpleExtendedValues+36, _uppercaseTableSimpleExtendedValues+38, _uppercaseTableSimpleExtendedValues+40, _uppercaseTableSimpleExtendedValues+42, _uppercaseTableSimpleExtendedValues+44, _uppercaseTableSimpleExtendedValues+46,
+	_uppercaseTableSimpleExtendedValues+48, _uppercaseTableSimpleExtendedValues+50, _uppercaseTableSimpleExtendedValues+52, _uppercaseTableSimpleExtendedValues+54, _uppercaseTableSimpleExtendedValues+56, _uppercaseTableSimpleExtendedValues+58, _uppercaseTableSimpleExtendedValues+60, _uppercaseTableSimpleExtendedValues+62,
+	_uppercaseTableSimpleExtendedValues+64, _uppercaseTableSimpleExtendedValues+66, _uppercaseTableSimpleExtendedValues+68, _uppercaseTableSimpleExtendedValues+70, _uppercaseTableSimpleExtendedValues+72, _uppercaseTableSimpleExtendedValues+74, _uppercaseTableSimpleExtendedValues+76, _uppercaseTableSimpleExtendedValues+78,
+	_uppercaseTableSimpleExtendedValues+80, _uppercaseTableSimpleExtendedValues+82, _uppercaseTableSimpleExtendedValues+84, _uppercaseTableSimpleExtendedValues+86, _uppercaseTableSimpleExtendedValues+88, _uppercaseTableSimpleExtendedValues+90, _uppercaseTableSimpleExtendedValues+92, _uppercaseTableSimpleExtendedValues+94,
+	_uppercaseTableSimpleExtendedValues+96, _uppercaseTableSimpleExtendedValues+98, _uppercaseTableSimpleExtendedValues+100, _uppercaseTableSimpleExtendedValues+102, _uppercaseTableSimpleExtendedValues+104, _uppercaseTableSimpleExtendedValues+106, _uppercaseTableSimpleExtendedValues+108, _uppercaseTableSimpleExtendedValues+110,
+	_uppercaseTableSimpleExtendedValues+112, _uppercaseTableSimpleExtendedValues+114, _uppercaseTableSimpleExtendedValues+116, _uppercaseTableSimpleExtendedValues+118, _uppercaseTableSimpleExtendedValues+120, _uppercaseTableSimpleExtendedValues+122, _uppercaseTableSimpleExtendedValues+124, _uppercaseTableSimpleExtendedValues+126,
+	NULL, NULL, _uppercaseTableSimpleExtendedValues+128, _uppercaseTableSimpleExtendedValues+130, _uppercaseTableSimpleExtendedValues+132, NULL, _uppercaseTableSimpleExtendedValues+134, _uppercaseTableSimpleExtendedValues+136,
+	NULL, NULL, NULL, NULL, _uppercaseTableSimpleExtendedValues+138, NULL, NULL, NULL,
+	NULL, NULL, _uppercaseTableSimpleExtendedValues+140, _uppercaseTableSimpleExtendedValues+142, _uppercaseTableSimpleExtendedValues+144, NULL, _uppercaseTableSimpleExtendedValues+146, _uppercaseTableSimpleExtendedValues+148,
+	NULL, NULL, NULL, NULL, _uppercaseTableSimpleExtendedValues+150, NULL, NULL, NULL,
+	NULL, NULL, _uppercaseTableSimpleExtendedValues+152, _uppercaseTableSimpleExtendedValues+154, NULL, NULL, _uppercaseTableSimpleExtendedValues+156, _uppercaseTableSimpleExtendedValues+158,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, _uppercaseTableSimpleExtendedValues+160, _uppercaseTableSimpleExtendedValues+162, _uppercaseTableSimpleExtendedValues+164, NULL, _uppercaseTableSimpleExtendedValues+166, _uppercaseTableSimpleExtendedValues+168,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, _uppercaseTableSimpleExtendedValues+170, _uppercaseTableSimpleExtendedValues+172, _uppercaseTableSimpleExtendedValues+174, NULL, _uppercaseTableSimpleExtendedValues+176, _uppercaseTableSimpleExtendedValues+178,
+	NULL, NULL, NULL, NULL, _uppercaseTableSimpleExtendedValues+180, 
 };
 
 static const Int32 _uppercaseTable21[] =
@@ -545,11 +723,18 @@ static const Int32 _uppercaseTableFB[] =
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 
-static const Int32 *_uppercaseTableExtendedFB[] =
+static const Int32 *_uppercaseTableFullExtendedFB[] =
 {
-	_uppercaseTableExtendedValues+286, _uppercaseTableExtendedValues+289, _uppercaseTableExtendedValues+292, _uppercaseTableExtendedValues+295, _uppercaseTableExtendedValues+299, _uppercaseTableExtendedValues+303, _uppercaseTableExtendedValues+306, NULL,
+	_uppercaseTableFullExtendedValues+286, _uppercaseTableFullExtendedValues+289, _uppercaseTableFullExtendedValues+292, _uppercaseTableFullExtendedValues+295, _uppercaseTableFullExtendedValues+299, _uppercaseTableFullExtendedValues+303, _uppercaseTableFullExtendedValues+306, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, _uppercaseTableExtendedValues+309, _uppercaseTableExtendedValues+312, _uppercaseTableExtendedValues+315, _uppercaseTableExtendedValues+318, _uppercaseTableExtendedValues+321,
+	NULL, NULL, NULL, _uppercaseTableFullExtendedValues+309, _uppercaseTableFullExtendedValues+312, _uppercaseTableFullExtendedValues+315, _uppercaseTableFullExtendedValues+318, _uppercaseTableFullExtendedValues+321,
+};
+
+static const Int32 *_uppercaseTableSimpleExtendedFB[] =
+{
+	_uppercaseTableSimpleExtendedValues+182, _uppercaseTableSimpleExtendedValues+184, _uppercaseTableSimpleExtendedValues+186, _uppercaseTableSimpleExtendedValues+188, _uppercaseTableSimpleExtendedValues+190, _uppercaseTableSimpleExtendedValues+192, _uppercaseTableSimpleExtendedValues+194, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, _uppercaseTableSimpleExtendedValues+196, _uppercaseTableSimpleExtendedValues+198, _uppercaseTableSimpleExtendedValues+200, _uppercaseTableSimpleExtendedValues+202, _uppercaseTableSimpleExtendedValues+204,
 };
 
 static const Int32 _uppercaseTableFF[] =
@@ -592,7 +777,7 @@ static const Int32 _uppercaseTable104[] =
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 
-static const Int32 _uppercaseTableExtendedValues[] =
+static const Int32 _uppercaseTableFullExtendedValues[] =
 {
 	1, 0, 2, 83, 83, 2, 700, 78, 2, 74, 780, 3, 921, 776, 769, 3,
 	933, 776, 769, 2, 1333, 1362, 2, 72, 817, 2, 84, 776, 2, 87, 778, 2,
@@ -615,6 +800,23 @@ static const Int32 _uppercaseTableExtendedValues[] =
 	70, 2, 70, 73, 2, 70, 76, 3, 70, 70, 73, 3, 70, 70, 76, 2,
 	83, 84, 2, 83, 84, 2, 1348, 1350, 2, 1348, 1333, 2, 1348, 1339, 2, 1358,
 	1350, 2, 1348, 1341, 
+};
+
+static const Int32 _uppercaseTableSimpleExtendedValues[] =
+{
+	1, 0, 1, 223, 1, 329, 1, 496, 1, 912, 1, 944, 1, 1415, 1, 7830,
+	1, 7831, 1, 7832, 1, 7833, 1, 7834, 1, 8016, 1, 8018, 1, 8020, 1, 8022,
+	1, 8072, 1, 8073, 1, 8074, 1, 8075, 1, 8076, 1, 8077, 1, 8078, 1, 8079,
+	1, 8072, 1, 8073, 1, 8074, 1, 8075, 1, 8076, 1, 8077, 1, 8078, 1, 8079,
+	1, 8088, 1, 8089, 1, 8090, 1, 8091, 1, 8092, 1, 8093, 1, 8094, 1, 8095,
+	1, 8088, 1, 8089, 1, 8090, 1, 8091, 1, 8092, 1, 8093, 1, 8094, 1, 8095,
+	1, 8104, 1, 8105, 1, 8106, 1, 8107, 1, 8108, 1, 8109, 1, 8110, 1, 8111,
+	1, 8104, 1, 8105, 1, 8106, 1, 8107, 1, 8108, 1, 8109, 1, 8110, 1, 8111,
+	1, 8114, 1, 8124, 1, 8116, 1, 8118, 1, 8119, 1, 8124, 1, 8130, 1, 8140,
+	1, 8132, 1, 8134, 1, 8135, 1, 8140, 1, 8146, 1, 8147, 1, 8150, 1, 8151,
+	1, 8162, 1, 8163, 1, 8164, 1, 8166, 1, 8167, 1, 8178, 1, 8188, 1, 8180,
+	1, 8182, 1, 8183, 1, 8188, 1, 64256, 1, 64257, 1, 64258, 1, 64259, 1, 64260,
+	1, 64261, 1, 64262, 1, 64275, 1, 64276, 1, 64277, 1, 64278, 1, 64279, 
 };
 
 const Int32 *UnicodeTables_UppercaseTable[] =
@@ -654,15 +856,12 @@ const Int32 *UnicodeTables_UppercaseTable[] =
 	_u0, _u0, _u0, _u0, _uppercaseTable104, 
 };
 
-const Int32 **UnicodeTables_UppercaseTableExtended[] =
+const Int32 **UnicodeTables_UppercaseTableFullExtended[] =
 {
-	_uppercaseTableExtended00, _uppercaseTableExtended01, NULL, _uppercaseTableExtended03, NULL, _uppercaseTableExtended05, NULL, NULL,
+	_uppercaseTableFullExtended00, _uppercaseTableFullExtended01, NULL, _uppercaseTableFullExtended03, NULL, _uppercaseTableFullExtended05, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, NULL, NULL, NULL, _uppercaseTableExtended1E, _uppercaseTableExtended1F,
-	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, _uppercaseTableFullExtended1E, _uppercaseTableFullExtended1F,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -687,7 +886,46 @@ const Int32 **UnicodeTables_UppercaseTableExtended[] =
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, _uppercaseTableExtendedFB, 
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, _uppercaseTableFullExtendedFB, 
+};
+
+const Int32 **UnicodeTables_UppercaseTableSimpleExtended[] =
+{
+	_uppercaseTableSimpleExtended00, _uppercaseTableSimpleExtended01, NULL, _uppercaseTableSimpleExtended03, NULL, _uppercaseTableSimpleExtended05, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, _uppercaseTableSimpleExtended1E, _uppercaseTableSimpleExtended1F,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, _uppercaseTableSimpleExtendedFB, 
 };
 
 const Int32 UnicodeTables_UppercaseTableCount = 252;
