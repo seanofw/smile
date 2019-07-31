@@ -232,6 +232,7 @@ extern void String_Setup(SmileUserObject base);
 
 extern void SmileChar_Setup(SmileUserObject base);
 extern void SmileUni_Setup(SmileUserObject base);
+extern void SmileSymbol_Setup(SmileUserObject base);
 
 extern void SmileRegex_Setup(SmileUserObject base);
 extern void SmileRegexMatch_Setup(SmileUserObject base);
@@ -266,6 +267,7 @@ void KnownBases_Setup(struct KnownBasesStruct *knownBases)
 
 	SmileChar_Setup(knownBases->Char);
 	SmileUni_Setup(knownBases->Uni);
+	SmileSymbol_Setup(knownBases->Symbol);
 
 	SmileUnboxedBool_Instance->base = (SmileObject)knownBases->Bool;
 	SmileUnboxedSymbol_Instance->base = (SmileObject)knownBases->Symbol;
