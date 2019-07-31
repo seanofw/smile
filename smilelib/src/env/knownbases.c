@@ -230,6 +230,7 @@ extern void SmileList_Setup(SmileUserObject base);
 extern void SmileObject_Setup(SmileUserObject base);
 extern void String_Setup(SmileUserObject base);
 
+extern void SmileBool_Setup(SmileUserObject base);
 extern void SmileChar_Setup(SmileUserObject base);
 extern void SmileUni_Setup(SmileUserObject base);
 extern void SmileSymbol_Setup(SmileUserObject base);
@@ -265,6 +266,7 @@ void KnownBases_Setup(struct KnownBasesStruct *knownBases)
 	SmileFloat32Range_Setup(knownBases->Float32Range);
 	SmileFloat64Range_Setup(knownBases->Float64Range);
 
+	SmileBool_Setup(knownBases->Bool);
 	SmileChar_Setup(knownBases->Char);
 	SmileUni_Setup(knownBases->Uni);
 	SmileSymbol_Setup(knownBases->Symbol);

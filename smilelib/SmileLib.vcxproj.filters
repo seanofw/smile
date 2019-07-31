@@ -1638,5 +1638,8 @@
     <ClCompile Include="src\smiletypes\text\smilesymbol_base.c">
       <Filter>src\smiletypes\text</Filter>
     </ClCompile>
+    <ClCompile Include="src\smiletypes\smilebool_base.c">
+      <Filter>src\smiletypes</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
