@@ -81,7 +81,7 @@ SMILE_EXTERNAL_FUNCTION(Hash)
 	SmileChar obj = (SmileChar)argv[0].obj;
 
 	if (SMILE_KIND(obj) == SMILE_KIND_UNBOXED_CHAR)
-		return SmileUnboxedInteger64_From((UInt32)obj->ch);
+		return SmileUnboxedInteger64_From((UInt32)argv[0].unboxed.ch);
 
 	return SmileUnboxedInteger64_From(Smile_ApplyHashOracle((PtrInt)obj));
 }
