@@ -176,30 +176,32 @@ static void StringifyRecursive(SmileObject obj, StringBuilder stringBuilder, Int
 					list = LIST_REST(list);
 					isFirst = False;
 				}
-				if (includeSource && (list->kind & SMILE_FLAG_WITHSOURCE)) {
-					String filename = ((struct SmileListWithSourceInt *)list)->position->filename;
-					if (filename != NULL) {
-						StringBuilder_AppendFormat(stringBuilder, "\t// %S:%d",
-							Path_GetFilename(filename), ((struct SmileListWithSourceInt *)list)->position->line);
-					}
-					else {
-						StringBuilder_AppendFormat(stringBuilder, "\t// line %d",
-							((struct SmileListWithSourceInt *)list)->position->line);
+				if (includeSource) {
+					LexerPosition position = SmileList_Position(list);
+					if (position != NULL) {
+						String filename = position->filename;
+						if (filename != NULL) {
+							StringBuilder_AppendFormat(stringBuilder, "\t// %S:%d", Path_GetFilename(filename), position->line);
+						}
+						else {
+							StringBuilder_AppendFormat(stringBuilder, "\t// line %d", position->line);
+						}
 					}
 				}
 				StringBuilder_AppendByte(stringBuilder, '\n');
 				while (SMILE_KIND(list) == SMILE_KIND_LIST) {
 					StringBuilder_AppendRepeat(stringBuilder, ' ', (indent + 1) * 4);
 					StringifyRecursive((SmileObject)list->a, stringBuilder, indent + 1, includeSource);
-					if (includeSource && (list->kind & SMILE_FLAG_WITHSOURCE)) {
-						String filename = ((struct SmileListWithSourceInt *)list)->position->filename;
-						if (filename != NULL) {
-							StringBuilder_AppendFormat(stringBuilder, "\t// %S:%d",
-								Path_GetFilename(filename), ((struct SmileListWithSourceInt *)list)->position->line);
-						}
-						else {
-							StringBuilder_AppendFormat(stringBuilder, "\t// line %d",
-								((struct SmileListWithSourceInt *)list)->position->line);
+					if (includeSource) {
+						LexerPosition position = SmileList_Position(list);
+						if (position != NULL) {
+							String filename = position->filename;
+							if (filename != NULL) {
+								StringBuilder_AppendFormat(stringBuilder, "\t// %S:%d", Path_GetFilename(filename), position->line);
+							}
+							else {
+								StringBuilder_AppendFormat(stringBuilder, "\t// line %d", position->line);
+							}
 						}
 					}
 					StringBuilder_AppendByte(stringBuilder, '\n');

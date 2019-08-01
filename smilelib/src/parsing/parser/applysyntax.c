@@ -148,30 +148,28 @@ static Int32Dict Parser_MapKeysToValues(Symbol *keys, Int numKeys, SmileList val
 
 static SmileObject Parser_RecursivelyClone(SmileObject expr)
 {
-	switch (expr->kind & (SMILE_KIND_MASK | SMILE_FLAG_WITHSOURCE)) {
-		case SMILE_KIND_LIST:
-		{
-			SmileList oldList = (SmileList)expr;
-			SmileList newList = SmileList_Cons(
+	if (SMILE_KIND(expr) == SMILE_KIND_LIST) {
+		SmileList oldList = (SmileList)expr;
+		SmileList newList;
+
+		if (oldList->extraData != NULL) {
+			newList = SmileList_ConsWithSource(
+				Parser_RecursivelyClone(oldList->a),
+				Parser_RecursivelyClone(oldList->d),
+				oldList->extraData->position
+			);
+			newList->extraData->securityKey = oldList->extraData->securityKey;
+		}
+		else {
+			newList = SmileList_Cons(
 				Parser_RecursivelyClone(oldList->a),
 				Parser_RecursivelyClone(oldList->d)
 			);
-			return (SmileObject)newList;
 		}
-
-		case SMILE_KIND_LIST | SMILE_FLAG_WITHSOURCE:
-		{
-			struct SmileListWithSourceInt *oldList = (struct SmileListWithSourceInt *)expr;
-			SmileList newList = SmileList_ConsWithSource(
-				Parser_RecursivelyClone(oldList->a),
-				Parser_RecursivelyClone(oldList->d),
-				oldList->position
-			);
-			return (SmileObject)newList;
-		}
-
-		default:
-			return expr;
+		return (SmileObject)newList;
+	}
+	else {
+		return expr;
 	}
 }
 
@@ -180,7 +178,7 @@ Inline SmileObject Parser_ApplyListOf(Parser parser, SmileList list, Int32Dict r
 	SmileList head = NullList, tail = NullList;
 
 	for (; SMILE_KIND(list) != SMILE_KIND_NULL; list = LIST_REST(list)) {
-		LexerPosition lexerPosition = (list->kind & SMILE_FLAG_WITHSOURCE) ? ((struct SmileListWithSourceInt *)list)->position : NULL;
+		LexerPosition lexerPosition = SmileList_Position(list);
 		SmileObject oldValue = list->a;
 		SmileObject newValue = Parser_RecursivelyApplyTemplate(parser, oldValue, replacements, lexerPosition);
 
@@ -200,7 +198,7 @@ Inline SmileObject Parser_ApplyListCombine(Parser parser, SmileList list, Int32D
 	SmileList head = NullList, tail = NullList;
 
 	for (; SMILE_KIND(list) != SMILE_KIND_NULL; list = LIST_REST(list)) {
-		LexerPosition lexerPosition = (list->kind & SMILE_FLAG_WITHSOURCE) ? ((struct SmileListWithSourceInt *)list)->position : NULL;
+		LexerPosition lexerPosition = SmileList_Position(list);
 		SmileObject oldValue = list->a;
 		SmileObject newValue = Parser_RecursivelyApplyTemplate(parser, oldValue, replacements, lexerPosition);
 
@@ -213,7 +211,7 @@ Inline SmileObject Parser_ApplyListCombine(Parser parser, SmileList list, Int32D
 		// static content, so we *must* append clones to ensure templates can be reused.
 		for (; SMILE_KIND(newValue) == SMILE_KIND_LIST; newValue = ((SmileList)newValue)->d) {
 			SmileObject newItem = ((SmileList)newValue)->a;
-			LexerPosition newPosition = (newValue->kind & SMILE_FLAG_WITHSOURCE) ? ((struct SmileListWithSourceInt *)list)->position : lexerPosition;
+			LexerPosition newPosition = SmileList_Position((SmileList)newValue);
 			if (newPosition != NULL) {
 				LIST_APPEND_WITH_SOURCE(head, tail, newItem, newPosition);
 			}
@@ -228,7 +226,7 @@ Inline SmileObject Parser_ApplyListCombine(Parser parser, SmileList list, Int32D
 
 Inline SmileObject Parser_ApplyListCons(Parser parser, SmileList list, Int32Dict replacements)
 {
-	LexerPosition lexerPosition = (list->kind & SMILE_FLAG_WITHSOURCE) ? ((struct SmileListWithSourceInt *)list)->position : NULL;
+	LexerPosition lexerPosition = SmileList_Position(list);
 
 	SmileObject oldA = list->a;
 	SmileObject newA = Parser_RecursivelyApplyTemplate(parser, oldA, replacements, lexerPosition);

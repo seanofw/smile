@@ -463,12 +463,18 @@ SMILE_EXTERNAL_FUNCTION(Read)
 		case 2:
 			// Buffer only.
 			byteArray = (SmileByteArray)argv[1].obj;
+			if (!(byteArray->kind & SMILE_SECURITY_WRITABLE))
+				Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+					String_FromC("File.read: Cannot write to a read-only ByteArray."));
 			start = 0;
 			length = byteArray->length;
 			break;
 		case 3:
 			// Buffer and length.
 			byteArray = (SmileByteArray)argv[1].obj;
+			if (!(byteArray->kind & SMILE_SECURITY_WRITABLE))
+				Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+					String_FromC("File.read: Cannot write to a read-only ByteArray."));
 			start = 0;
 			length = argv[2].unboxed.i64;
 			if (length > byteArray->length)
@@ -478,6 +484,9 @@ SMILE_EXTERNAL_FUNCTION(Read)
 		case 4:
 			// Buffer and length.
 			byteArray = (SmileByteArray)argv[1].obj;
+			if (!(byteArray->kind & SMILE_SECURITY_WRITABLE))
+				Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+					String_FromC("File.read: Cannot write to a read-only ByteArray."));
 			start = argv[2].unboxed.i64;
 			length = argv[3].unboxed.i64;
 			if (start > byteArray->length || length > byteArray->length - start)

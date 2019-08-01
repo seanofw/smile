@@ -121,7 +121,7 @@ ParseResult Parser_ParseTillNames(Parser parser)
 	// Wrap it in a list, so it becomes [x].
 	LIST_INIT(head, tail);
 	if (decl->kind != SMILE_KIND_NULL) {
-		LIST_APPEND_WITH_SOURCE(head, tail, decl, ((struct SmileListWithSourceInt *)decl)->position);
+		LIST_APPEND_WITH_SOURCE(head, tail, decl, SmileList_Position((SmileList)decl));
 	}
 
 	// Every time we see a comma, parse the next name, and add it to the list.
@@ -132,7 +132,7 @@ ParseResult Parser_ParseTillNames(Parser parser)
 		decl = parseResult.expr;
 
 		if (decl->kind != SMILE_KIND_NULL) {
-			LIST_APPEND_WITH_SOURCE(head, tail, decl, ((struct SmileListWithSourceInt *)decl)->position);
+			LIST_APPEND_WITH_SOURCE(head, tail, decl, SmileList_Position((SmileList)decl));
 		}
 	}
 

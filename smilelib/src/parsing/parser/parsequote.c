@@ -429,7 +429,7 @@ static void Parser_TransformListIntoTemplate(SmileList *head, SmileList *tail, L
 	// Copy each element from the old list, projecting it...
 	for (; SMILE_KIND(oldHead) != SMILE_KIND_NULL; oldHead = LIST_REST(oldHead)) {
 		oldExpr = oldHead->a;
-		position = ((struct SmileListWithSourceInt *)oldHead)->position;
+		position = SmileList_Position(oldHead);
 
 		// Take each element x in the old list, and turn it into [$quote x] in the new list.
 		newExpr = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol, oldExpr, position);
@@ -467,7 +467,7 @@ static void Parser_TransformListIntoSplicedTemplate(SmileList *head, SmileList *
 	// Copy each element from the old list, projecting it...
 	for (; SMILE_KIND(oldHead) != SMILE_KIND_NULL; oldHead = LIST_REST(oldHead)) {
 		oldExpr = oldHead->a;
-		position = ((struct SmileListWithSourceInt *)oldHead)->position;
+		position = SmileList_Position(oldHead);
 
 		// Take each element x in the old list, and turn it into [$quote [x]] in the new list.
 		newExpr = (SmileObject)SmileList_CreateTwoWithSource(Smile_KnownObjects._quoteSymbol,
@@ -508,7 +508,7 @@ static void Parser_TransformTemplateIntoSplicedTemplate(SmileList *head, SmileLi
 	// Copy each element from the old list, projecting it...
 	for (oldHead = LIST_REST(oldHead); SMILE_KIND(oldHead) != SMILE_KIND_NULL; oldHead = LIST_REST(oldHead)) {
 		oldExpr = oldHead->a;
-		position = ((struct SmileListWithSourceInt *)oldHead)->position;
+		position = SmileList_Position(oldHead);
 
 		// See if this element x is actually of the form [$quote x].  If it is, we can use a better
 		// replacement for it --- [$quote [x]] --- than the general-purpose cons technique below.

@@ -128,7 +128,9 @@ SmileByteArray SmileByteArray_CreateInternal(SmileObject base, Byte *buffer, Int
 	if (byteArray == NULL) Smile_Abort_OutOfMemory();
 
 	byteArray->base = base;
-	byteArray->kind = writable ? (SMILE_KIND_BYTEARRAY | SMILE_SECURITY_WRITABLE) : (SMILE_KIND_BYTEARRAY | SMILE_SECURITY_READONLY);
+	byteArray->kind = writable
+		? (SMILE_KIND_BYTEARRAY | SMILE_SECURITY_WRITABLE | SMILE_SECURITY_UNFROZEN)
+		: (SMILE_KIND_BYTEARRAY | SMILE_SECURITY_READONLY);
 	byteArray->vtable = writable ? SmileByteArray_VTable_ReadWrite : SmileByteArray_VTable_ReadOnly;
 	byteArray->securityKey = writable ? NullObject : (SmileObject)PrivateKey;
 	byteArray->data = buffer;
@@ -174,42 +176,38 @@ void SmileByteArray_Resize(SmileByteArray byteArray, Int length)
 	byteArray->length = length;
 }
 
-void SmileByteArray_SetSecurityKey(SmileByteArray self, SmileObject newSecurityKey, SmileObject oldSecurityKey)
+Bool SmileByteArray_SetSecurityKey(SmileByteArray self, SmileObject newSecurityKey, SmileObject oldSecurityKey)
 {
 	Bool isValidSecurityKey = self->securityKey->vtable->compareEqual(self->securityKey, (SmileUnboxedData) { 0 }, oldSecurityKey, (SmileUnboxedData) { 0 });
 	if (!isValidSecurityKey)
-		Smile_ThrowException(Smile_KnownSymbols.object_security_error, String_InvalidSecurityKey);
+		return False;
 
 	self->securityKey = newSecurityKey;
+	return True;
 }
 
-void SmileByteArray_SetSecurity(SmileByteArray self, Int security, SmileObject securityKey)
+Bool SmileByteArray_SetSecurity(SmileByteArray self, Int security, SmileObject securityKey)
 {
 	Bool isValidSecurityKey = self->securityKey->vtable->compareEqual(self->securityKey, (SmileUnboxedData) { 0 }, securityKey, (SmileUnboxedData) { 0 });
 	if (!isValidSecurityKey)
-		Smile_ThrowException(Smile_KnownSymbols.object_security_error, String_InvalidSecurityKey);
+		return False;
 
 	self->kind = (self->kind & ~SMILE_SECURITY_READWRITEAPPEND) | (security & SMILE_SECURITY_READWRITEAPPEND);
 
 	switch (security & SMILE_SECURITY_READWRITEAPPEND) {
-	case SMILE_SECURITY_READONLY:
-		self->vtable = SmileByteArray_VTable_ReadOnly;
-		break;
-	case SMILE_SECURITY_WRITABLE:
-		self->vtable = SmileByteArray_VTable_ReadWrite;
-		break;
-	case SMILE_SECURITY_APPENDABLE:
-	case SMILE_SECURITY_READWRITEAPPEND:
-		Smile_ThrowException(Smile_KnownSymbols.object_security_error, String_FromC("Cannot set a ByteArray to be appendable."));
-		break;
+		case SMILE_SECURITY_READONLY:
+			self->vtable = SmileByteArray_VTable_ReadOnly;
+			return True;
+		case SMILE_SECURITY_WRITABLE:
+			self->vtable = SmileByteArray_VTable_ReadWrite;
+			return True;
+		case SMILE_SECURITY_APPENDABLE:
+		case SMILE_SECURITY_READWRITEAPPEND:
+			return False;
+		default:
+			return False;
 	}
 }
-
-Int SmileByteArray_GetSecurity(SmileByteArray self)
-{
-	return self->kind & SMILE_SECURITY_READWRITEAPPEND;
-}
-
 
 UInt32 SmileByteArray_Hash(SmileByteArray self)
 {
@@ -330,7 +328,6 @@ SMILE_VTABLE(SmileByteArray_VTable_ReadWrite, SmileByteArray)
 
 	SmileByteArray_SetSecurityKey,
 	SmileByteArray_SetSecurity,
-	SmileByteArray_GetSecurity,
 
 	SmileByteArray_GetProperty,
 	SmileByteArray_SetProperty_ReadWrite,
@@ -352,7 +349,6 @@ SMILE_VTABLE(SmileByteArray_VTable_ReadOnly, SmileByteArray)
 
 	SmileByteArray_SetSecurityKey,
 	SmileByteArray_SetSecurity,
-	SmileByteArray_GetSecurity,
 
 	SmileByteArray_GetProperty,
 	SmileByteArray_SetProperty_ReadOnly,

@@ -33,7 +33,7 @@ SmileUserObject SmileUserObject_CreateWithSize(SmileObject base, Symbol name, In
 	if (userObject == NULL || initialSize >= Int32Max) Smile_Abort_OutOfMemory();
 
 	userObject->base = base;
-	userObject->kind = SMILE_KIND_USEROBJECT | SMILE_SECURITY_READWRITEAPPEND;
+	userObject->kind = SMILE_KIND_USEROBJECT | SMILE_SECURITY_READWRITEAPPEND | SMILE_SECURITY_UNFROZEN;
 	userObject->vtable = SmileUserObject_VTable_ReadWriteAppend;
 	userObject->securityKey = NullObject;
 	userObject->name = name;
@@ -48,7 +48,7 @@ void SmileUserObject_InitWithSize(SmileUserObject userObject, SmileObject base, 
 	if (initialSize >= Int32Max) Smile_Abort_OutOfMemory();
 
 	userObject->base = base;
-	userObject->kind = SMILE_KIND_USEROBJECT | SMILE_SECURITY_READWRITEAPPEND;
+	userObject->kind = SMILE_KIND_USEROBJECT | SMILE_SECURITY_READWRITEAPPEND | SMILE_SECURITY_UNFROZEN;
 	userObject->vtable = SmileUserObject_VTable_ReadWriteAppend;
 	userObject->securityKey = NullObject;
 	userObject->name = name;
@@ -119,20 +119,21 @@ UInt32 SmileUserObject_Hash(SmileUserObject self)
 	return Smile_ApplyHashOracle((PtrInt)self);
 }
 
-void SmileUserObject_SetSecurityKey(SmileUserObject self, SmileObject newSecurityKey, SmileObject oldSecurityKey)
+Bool SmileUserObject_SetSecurityKey(SmileUserObject self, SmileObject newSecurityKey, SmileObject oldSecurityKey)
 {
 	Bool isValidSecurityKey = self->securityKey->vtable->compareEqual(self->securityKey, (SmileUnboxedData){ 0 }, oldSecurityKey, (SmileUnboxedData){ 0 });
 	if (!isValidSecurityKey)
-		Smile_ThrowException(Smile_KnownSymbols.object_security_error, String_InvalidSecurityKey);
+		return False;
 
 	self->securityKey = newSecurityKey;
+	return True;
 }
 
-void SmileUserObject_SetSecurity(SmileUserObject self, Int security, SmileObject securityKey)
+Bool SmileUserObject_SetSecurity(SmileUserObject self, Int security, SmileObject securityKey)
 {
 	Bool isValidSecurityKey = self->securityKey->vtable->compareEqual(self->securityKey, (SmileUnboxedData){ 0 }, securityKey, (SmileUnboxedData){ 0 });
 	if (!isValidSecurityKey)
-		Smile_ThrowException(Smile_KnownSymbols.object_security_error, String_InvalidSecurityKey);
+		return False;
 
 	self->kind = (self->kind & ~SMILE_SECURITY_READWRITEAPPEND) | (security & SMILE_SECURITY_READWRITEAPPEND);
 
@@ -150,11 +151,7 @@ void SmileUserObject_SetSecurity(SmileUserObject self, Int security, SmileObject
 			self->vtable = SmileUserObject_VTable_ReadWriteAppend;
 			break;
 	}
-}
-
-Int SmileUserObject_GetSecurity(SmileUserObject self)
-{
-	return self->kind & SMILE_SECURITY_READWRITEAPPEND;
+	return True;
 }
 
 SmileObject SmileUserObject_GetProperty(SmileUserObject self, Symbol propertyName)
@@ -180,11 +177,16 @@ void SmileUserObject_SetProperty_ReadOnly(SmileUserObject self, Symbol propertyN
 
 void SmileUserObject_SetProperty_ReadWrite(SmileUserObject self, Symbol propertyName, SmileObject value)
 {
-	Bool wasReplaced = Int32Dict_ReplaceValue((Int32Dict)&self->dict, (Int32)propertyName, value);
-	if (!wasReplaced) {
-		Smile_ThrowException(Smile_KnownSymbols.property_error,
-			String_Format("Cannot set property \"%S\" on this object; this object cannot be appended to.",
-			SymbolTable_GetName(Smile_SymbolTable, propertyName)));
+	if (SmileObject_IsNull(value)) {
+		Int32Dict_Remove((Int32Dict)&self->dict, (Int32)propertyName);
+	}
+	else {
+		Bool wasReplaced = Int32Dict_ReplaceValue((Int32Dict)&self->dict, (Int32)propertyName, value);
+		if (!wasReplaced) {
+			Smile_ThrowException(Smile_KnownSymbols.property_error,
+				String_Format("Cannot set property \"%S\" on this object; this object cannot be appended to.",
+				SymbolTable_GetName(Smile_SymbolTable, propertyName)));
+		}
 	}
 }
 
@@ -326,7 +328,6 @@ SMILE_VTABLE(SmileUserObject_VTable_ReadWriteAppend, SmileUserObject)
 
 	SmileUserObject_SetSecurityKey,
 	SmileUserObject_SetSecurity,
-	SmileUserObject_GetSecurity,
 
 	SmileUserObject_GetProperty,
 	SmileUserObject_SetProperty_ReadWriteAppend,
@@ -348,7 +349,6 @@ SMILE_VTABLE(SmileUserObject_VTable_ReadWrite, SmileUserObject)
 
 	SmileUserObject_SetSecurityKey,
 	SmileUserObject_SetSecurity,
-	SmileUserObject_GetSecurity,
 
 	SmileUserObject_GetProperty,
 	SmileUserObject_SetProperty_ReadWrite,
@@ -370,7 +370,6 @@ SMILE_VTABLE(SmileUserObject_VTable_ReadAppend, SmileUserObject)
 
 	SmileUserObject_SetSecurityKey,
 	SmileUserObject_SetSecurity,
-	SmileUserObject_GetSecurity,
 
 	SmileUserObject_GetProperty,
 	SmileUserObject_SetProperty_ReadAppend,
@@ -392,7 +391,6 @@ SMILE_VTABLE(SmileUserObject_VTable_ReadOnly, SmileUserObject)
 
 	SmileUserObject_SetSecurityKey,
 	SmileUserObject_SetSecurity,
-	SmileUserObject_GetSecurity,
 
 	SmileUserObject_GetProperty,
 	SmileUserObject_SetProperty_ReadOnly,

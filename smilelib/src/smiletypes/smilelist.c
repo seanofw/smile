@@ -23,35 +23,51 @@
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/stringbuilder.h>
 
-SMILE_EASY_OBJECT_VTABLE(SmileList);
+extern SmileVTable SmileList_VTable_ReadOnly;
+extern SmileVTable SmileList_VTable_ReadWrite;
 
-SMILE_EASY_OBJECT_READONLY_SECURITY(SmileList);
 SMILE_EASY_OBJECT_NO_CALL(SmileList, "A List");
 SMILE_EASY_OBJECT_NO_UNBOX(SmileList)
 
-SmileList SmileList_Cons(SmileObject a, SmileObject d)
+Inline SmileListExtraData CreateExtraData(void)
+{
+	SmileListExtraData extraData = GC_MALLOC_STRUCT(struct SmileListExtraDataStruct);
+	if (extraData == NULL)
+		Smile_Abort_OutOfMemory();
+	return extraData;
+}
+
+Inline SmileList Cons(SmileObject a, SmileObject d)
 {
 	SmileList smileList = GC_MALLOC_STRUCT(struct SmileListInt);
-	if (smileList == NULL) Smile_Abort_OutOfMemory();
+	if (smileList == NULL)
+		Smile_Abort_OutOfMemory();
 	smileList->base = (SmileObject)Smile_KnownBases.List;
-	smileList->kind = SMILE_KIND_LIST | SMILE_SECURITY_WRITABLE;
-	smileList->vtable = SmileList_VTable;
+	smileList->kind = SMILE_KIND_LIST | SMILE_SECURITY_WRITABLE | SMILE_SECURITY_UNFROZEN;
+	smileList->vtable = SmileList_VTable_ReadWrite;
 	smileList->a = a;
 	smileList->d = d;
+	smileList->extraData = NULL;
 	return smileList;
+}
+
+SmileList SmileList_Cons(SmileObject a, SmileObject d)
+{
+	return Cons(a, d);
 }
 
 SmileList SmileList_ConsWithSource(SmileObject a, SmileObject d, LexerPosition position)
 {
-	struct SmileListWithSourceInt *smileList = GC_MALLOC_STRUCT(struct SmileListWithSourceInt);
-	if (smileList == NULL) Smile_Abort_OutOfMemory();
-	smileList->base = (SmileObject)Smile_KnownBases.List;
-	smileList->kind = SMILE_KIND_LIST | SMILE_FLAG_WITHSOURCE | SMILE_SECURITY_WRITABLE;
-	smileList->vtable = SmileList_VTable;
-	smileList->a = a;
-	smileList->d = d;
-	smileList->position = position;
-	return (SmileList)smileList;
+	SmileList smileList = Cons(a, d);
+	smileList->extraData = CreateExtraData();
+	smileList->extraData->position = position;
+	smileList->extraData->securityKey = NullObject;
+	return smileList;
+}
+
+SmileListExtraData SmileList_CreateExtraData(void)
+{
+	return CreateExtraData();
 }
 
 SmileList SmileList_CreateListFromArray(SmileObject *objects, Int numObjects)
@@ -152,6 +168,50 @@ static UInt32 SmileList_Hash(SmileList self)
 	return (UInt32)(PtrInt)self;
 }
 
+Bool SmileList_SetSecurityKey(SmileList self, SmileObject newSecurityKey, SmileObject oldSecurityKey)
+{
+	SmileListExtraData extraData;
+	SmileObject securityKey;
+	Bool isValidSecurityKey;
+
+	securityKey = SmileList_SecurityKey(self);
+
+	isValidSecurityKey = securityKey->vtable->compareEqual(securityKey, (SmileUnboxedData) { 0 }, oldSecurityKey, (SmileUnboxedData) { 0 });
+	if (!isValidSecurityKey)
+		return False;
+
+	extraData = SmileList_GetOrCreateExtraData(self);
+	extraData->securityKey = newSecurityKey;
+	return True;
+}
+
+Bool SmileList_SetSecurity(SmileList self, Int security, SmileObject userSecurityKey)
+{
+	SmileObject securityKey;
+	Bool isValidSecurityKey;
+
+	securityKey = SmileList_SecurityKey(self);
+
+	isValidSecurityKey = securityKey->vtable->compareEqual(securityKey, (SmileUnboxedData) { 0 }, userSecurityKey, (SmileUnboxedData) { 0 });
+	if (!isValidSecurityKey)
+		return False;
+
+	self->kind = (self->kind & ~SMILE_SECURITY_READWRITEAPPEND) | (security & SMILE_SECURITY_READWRITEAPPEND);
+
+	switch (security &SMILE_SECURITY_READWRITEAPPEND) {
+		case SMILE_SECURITY_READONLY:
+			self->vtable = SmileList_VTable_ReadOnly;
+			return True;
+		case SMILE_SECURITY_WRITABLE:
+			self->vtable = SmileList_VTable_ReadWrite;
+			return True;
+		case SMILE_SECURITY_APPENDABLE:
+		case SMILE_SECURITY_READWRITEAPPEND:
+		default:
+			return False;
+	}
+}
+
 static SmileObject SmileList_GetProperty(SmileList self, Symbol propertyName)
 {
 	if (propertyName == Smile_KnownSymbols.a)
@@ -162,7 +222,7 @@ static SmileObject SmileList_GetProperty(SmileList self, Symbol propertyName)
 		return self->base->vtable->getProperty(self->base, propertyName);
 }
 
-static void SmileList_SetProperty(SmileList self, Symbol propertyName, SmileObject value)
+static void SmileList_SetProperty_ReadWrite(SmileList self, Symbol propertyName, SmileObject value)
 {
 	if (propertyName == Smile_KnownSymbols.a)
 		self->a = value;
@@ -173,6 +233,16 @@ static void SmileList_SetProperty(SmileList self, Symbol propertyName, SmileObje
 			String_Format("Cannot set property \"%S\" on list cell: This property does not exist, and list cells are not appendable objects.",
 			SymbolTable_GetName(Smile_SymbolTable, propertyName)));
 	}
+}
+
+static void SmileList_SetProperty_ReadOnly(SmileList self, Symbol propertyName, SmileObject value)
+{
+	UNUSED(value);
+	UNUSED(self);
+
+	Smile_ThrowException(Smile_KnownSymbols.property_error,
+		String_Format("Cannot set property \"%S\" on list cell: This list cell is read-only.",
+			SymbolTable_GetName(Smile_SymbolTable, propertyName)));
 }
 
 static Bool SmileList_HasProperty(SmileList self, Symbol propertyName)
@@ -566,11 +636,7 @@ static String SmileList_ToString(SmileList self, SmileUnboxedData unboxedData)
 
 static LexerPosition SmileList_GetSourceLocation(SmileList list)
 {
-	if (list->kind & SMILE_FLAG_WITHSOURCE) {
-		struct SmileListWithSourceInt *listWithSource = (struct SmileListWithSourceInt *)list;
-		return listWithSource->position;
-	}
-	else return NULL;
+	return SmileList_Position(list);
 }
 
 /// <summary>
@@ -806,3 +872,45 @@ Bool InterruptibleListSort_Continue(InterruptibleListSortInfo sortInfo, Int64 cm
 
 	return False;
 }
+
+SMILE_VTABLE(SmileList_VTable_ReadWrite, SmileList)
+{
+	SmileList_CompareEqual,
+	SmileList_DeepEqual,
+	SmileList_Hash,
+
+	SmileList_SetSecurityKey,
+	SmileList_SetSecurity,
+
+	SmileList_GetProperty,
+	SmileList_SetProperty_ReadWrite,
+	SmileList_HasProperty,
+	SmileList_GetPropertyNames,
+
+	SmileList_ToBool,
+	SmileList_ToString,
+
+	SmileList_Call,
+	SmileList_GetSourceLocation,
+};
+
+SMILE_VTABLE(SmileList_VTable_ReadOnly, SmileList)
+{
+	SmileList_CompareEqual,
+	SmileList_DeepEqual,
+	SmileList_Hash,
+
+	SmileList_SetSecurityKey,
+	SmileList_SetSecurity,
+
+	SmileList_GetProperty,
+	SmileList_SetProperty_ReadOnly,
+	SmileList_HasProperty,
+	SmileList_GetPropertyNames,
+
+	SmileList_ToBool,
+	SmileList_ToString,
+
+	SmileList_Call,
+	SmileList_GetSourceLocation,
+};
