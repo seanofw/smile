@@ -34,8 +34,6 @@
 
 SMILE_IGNORE_UNUSED_VARIABLES
 
-SMILE_INTERNAL_FUNC void Stdio_Path_Init(SmileUserObject base);
-
 static Byte _stringChecks[] = {
 	0, 0,
 	SMILE_KIND_MASK, SMILE_KIND_STRING,
@@ -118,6 +116,7 @@ SMILE_EXTERNAL_FUNCTION(Resolve)
 
 		// Use _wfullpath() to do the hard work.
 		resultPath16 = _wfullpath(NULL, originalPath16, 0);
+		if (resultPath16 == NULL) resultPath16 = originalPath16;
 		resolvedLength = wcslen(resultPath16);
 		result = String_FromUtf16((const UInt16 *)resultPath16, resolvedLength);
 		free(resultPath16);

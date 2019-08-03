@@ -76,12 +76,34 @@ typedef enum {
 	FILE_MODE_STD = (1 << 8),	// This file is one of the three specials: Stdin, Stdout, Stderr
 } Stdio_FileMode;
 
+typedef struct IoSymbolsStruct {
+
+	Symbol File;
+
+	Symbol read, reading, read_only;
+	Symbol write, writing, write_only;
+	Symbol append, appending, append_only;
+	Symbol read_write, read_append;
+	Symbol trunc, truncate;
+	Symbol create, open, create_only, open_only, create_or_open;
+
+	Symbol closed;
+	Symbol error;
+
+	Symbol set, start, cur, current, end, seek_set, seek_cur, seek_end;
+
+} *IoSymbols;
+
 SMILE_INTERNAL_FUNC void Stdio_File_DeclareStdInOutErr(ExternalVar *vars, Int *numVars, SmileObject fileBase);
 SMILE_INTERNAL_FUNC SmileHandle Stdio_File_CreateFromPath(SmileObject base, String path, UInt32 openMode, UInt32 newFileMode);
 SMILE_INTERNAL_FUNC void Stdio_File_UpdateLastError(Stdio_File file);
 
-SMILE_INTERNAL_FUNC void Stdio_File_Init(SmileUserObject base);
-SMILE_INTERNAL_FUNC void Stdio_Dir_Init(SmileUserObject base);
+SMILE_INTERNAL_FUNC UInt16 *Stdio_ToWindowsPath(String path, Int *length);
+SMILE_INTERNAL_FUNC String Stdio_FromWindowsPath(UInt16 *buffer, Int length);
+SMILE_INTERNAL_FUNC UInt32 Stdio_ParseModeArg(SmileArg arg, const char *methodName);
+
+SMILE_INTERNAL_FUNC void Stdio_File_Init(SmileUserObject base, IoSymbols ioSymbols);
+SMILE_INTERNAL_FUNC void Stdio_Dir_Init(SmileUserObject base, IoSymbols ioSymbols);
 SMILE_INTERNAL_FUNC void Stdio_Path_Init(SmileUserObject base);
 
 #endif

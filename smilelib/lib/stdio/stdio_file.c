@@ -125,19 +125,15 @@ static Bool Stdio_File_ToBool(SmileHandle handle, SmileUnboxedData unboxedData)
 	{
 		HANDLE win32Handle;
 		wchar_t *path16;
+		Int length;
 		UInt32 desiredAccess, shareMode, creationDisposition, flagsAndAttributes;
 		Stdio_File file;
 		SmileHandle handle;
 
 		UNUSED(newFileMode);
 
-		// Windows wants backslashes in the path, not forward slashes.
-		if (String_IndexOfChar(path, '/', 0) >= 0) {
-			path = String_ReplaceChar(path, '/', '\\');
-		}
-
 		// Convert the path to UTF-16, because that's what the Windows APIs need.
-		path16 = (wchar_t *)String_ToUtf16(path, NULL);
+		path16 = (wchar_t *)Stdio_ToWindowsPath(path, &length);
 
 		// Compute out the various mode and attribute bits Windows needs from our mode mask.
 		desiredAccess = 0;
