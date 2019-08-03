@@ -42,6 +42,7 @@ CompiledBlock Compiler_CompileReturn(Compiler compiler, SmileList args, CompileF
 	else if (SMILE_KIND(args) == SMILE_KIND_LIST && SMILE_KIND(args->d) == SMILE_KIND_NULL) {
 		// Compile the return expression...
 		childBlock = Compiler_CompileExpr(compiler, args->a, compileFlags & ~COMPILE_FLAG_NORESULT);
+		CompiledBlock_AppendChild(compiledBlock, childBlock);
 
 		// ...and return it.
 		EMIT0(Op_Ret, -1);
