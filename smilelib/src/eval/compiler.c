@@ -646,7 +646,7 @@ Bool Compiler_StripNots(SmileObject *objPtr)
 
 	// If this is of the form [$not x]...
 	while (SMILE_KIND(list) == SMILE_KIND_LIST && SMILE_KIND(list->a) == SMILE_KIND_SYMBOL
-		&& ((SmileSymbol)list->a)->symbol == Smile_KnownSymbols.not_
+		&& ((SmileSymbol)list->a)->symbol == Smile_KnownSymbols._not
 		&& SMILE_KIND(list->d) == SMILE_KIND_LIST && SMILE_KIND(((SmileList)list->d)->d) == SMILE_KIND_NULL)
 	{
 		// ...substitute it with just x, and keep track of how many [$not]s we removed.
