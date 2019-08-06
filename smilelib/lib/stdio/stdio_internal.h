@@ -75,7 +75,7 @@ typedef enum {
 	FILE_MODE_OPEN_ONLY = (2 << 4),	// At opening, fail if it doesn't exist, open if it does
 	FILE_MODE_CREATE_OR_OPEN = (3 << 4),	// At opening, create if it doesn't exist, open if it does
 
-	FILE_MODE_STD = (1 << 8),	// This file is one of the three specials: Stdin, Stdout, Stderr
+	FILE_MODE_STD = (1 << 8),	// This file is one of the three specials: stdin, stdout, stderr
 } Stdio_FileMode;
 
 typedef struct IoSymbolsStruct {

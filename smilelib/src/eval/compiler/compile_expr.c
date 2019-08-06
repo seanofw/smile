@@ -35,6 +35,34 @@
 #include <smile/parsing/internal/parsedecl.h>
 #include <smile/parsing/internal/parsescope.h>
 
+// TODO: FIXME: HACK:  This should properly use the new type model to determine if
+// the first argument is a type object or an ordinary object.  But since we don't
+// have the new type model, we just test to see if:
+//
+//   1. 'obj' (the first argument) is a symbol; and
+//   2. the symbol starts with a capital letter.
+//
+// This is utterly hacktastic, but it works well enough that we can continue building out
+// the methods in the standard library even though we don't have a 'type' keyword yet.
+static Bool IsStaticInvocation(SmileList dotArgs)
+{
+	// Test #1:  Is the first argument a symbol?
+	if (SMILE_KIND(dotArgs) == SMILE_KIND_LIST
+		&& SMILE_KIND(dotArgs->a) == SMILE_KIND_SYMBOL) {
+
+		// Test #2:  Is the symbol's first character an uppercase letter?
+		// This is a lot of function calls, but still runs in amortized O(1) time.
+		Symbol symbol = ((SmileSymbol)dotArgs->a)->symbol;
+		String symbolText = SymbolTable_GetName(Smile_SymbolTable, symbol);
+		const Byte *text = String_GetBytes(symbolText);
+		if (*text >= 'A' && *text <= 'Z') {
+			return True;
+		}
+	}
+
+	return False;
+}
+
 /// <summary>
 /// Compile the given *single* expression.
 /// </summary>
@@ -170,6 +198,12 @@ CompiledBlock Compiler_CompileExpr(Compiler compiler, SmileObject expr, CompileF
 						SmileList subList = (SmileList)(list->a);
 						if (SMILE_KIND(subList->a) == SMILE_KIND_SYMBOL
 							&& ((SmileSymbol)subList->a)->symbol == SMILE_SPECIAL_SYMBOL__DOT) {
+							if (IsStaticInvocation((SmileList)subList->d)) {
+								// When 'obj' is known to be a $type object, don't invoke it like a
+								// method (passing 'obj' as the first parameter), but simply invoke
+								// its function like an ordinary function call instead.
+								goto defaultListForm;
+							}
 							compiledBlock = Compiler_CompileMethodCall(compiler, (SmileList)subList->d, (SmileList)list->d, compileFlags);
 							compiler->currentFunction->currentSourceLocation = oldSourceLocation;
 							return compiledBlock;

@@ -174,8 +174,10 @@ SMILE_EXTERNAL_FUNCTION(Open)
 	}
 
 	if ((flags & FILE_MODE_OPEN_MASK) == 0) {
-		// Nothing specified, so assume open-existing.
-		flags |= FILE_MODE_CREATE_ONLY;
+		// Nothing specified, so assume open-existing (read) or create-if-missing (write/append).
+		flags |= ((flags & (FILE_MODE_WRITE | FILE_MODE_APPEND)) != 0)
+			? FILE_MODE_CREATE_OR_OPEN
+			: FILE_MODE_OPEN_ONLY;
 	}
 
 	// We're all set, so go do it!
@@ -245,6 +247,9 @@ SMILE_EXTERNAL_FUNCTION(Close)
 	FileInfo fileInfo = (FileInfo)param;
 	Stdio_File file = GetFileFromHandle(handle, (FileInfo)param, "File.close");
 
+	if (!file->isOpen)
+		return SmileUnboxedSymbol_From(fileInfo->ioSymbols->closed);
+
 	if (!handle->methods->end(handle, True)) {
 		file->lastErrorCode = 0;
 		file->lastErrorMessage = String_FromC("Cannot close a special file handle.");
@@ -261,6 +266,9 @@ SMILE_EXTERNAL_FUNCTION(Tell)
 {
 	Int64 pos;
 	Stdio_File file = GetFileFromHandle((SmileHandle)argv[0].obj, (FileInfo)param, "File.tell");
+
+	if (!file->isOpen)
+		return SmileUnboxedSymbol_From(((FileInfo)param)->ioSymbols->closed);
 
 #	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
 		pos = _telli64(file->fd);
@@ -297,6 +305,9 @@ SMILE_EXTERNAL_FUNCTION(Seek)
 	IoSymbols ioSymbols = fileInfo->ioSymbols;
 	int whence = SEEK_SET;
 
+	if (!file->isOpen)
+		return SmileUnboxedSymbol_From(((FileInfo)param)->ioSymbols->closed);
+
 	if (argc == 3) {
 		Symbol symbol = argv[2].unboxed.symbol;
 		if (symbol == ioSymbols->start || symbol == ioSymbols->set || symbol == ioSymbols->seek_set)
@@ -319,6 +330,8 @@ SMILE_EXTERNAL_FUNCTION(Seek)
 SMILE_EXTERNAL_FUNCTION(Rewind)
 {
 	Stdio_File file = GetFileFromHandle((SmileHandle)argv[0].obj, (FileInfo)param, "File.rewind");
+	if (!file->isOpen)
+		return SmileUnboxedSymbol_From(((FileInfo)param)->ioSymbols->closed);
 	SeekForReal(file, 0, SEEK_SET);
 	return argv[0];
 }
@@ -326,6 +339,8 @@ SMILE_EXTERNAL_FUNCTION(Rewind)
 SMILE_EXTERNAL_FUNCTION(SeekSet)
 {
 	Stdio_File file = GetFileFromHandle((SmileHandle)argv[0].obj, (FileInfo)param, "File.seek-set");
+	if (!file->isOpen)
+		return SmileUnboxedSymbol_From(((FileInfo)param)->ioSymbols->closed);
 	SeekForReal(file, argv[1].unboxed.i64, SEEK_SET);
 	return argv[0];
 }
@@ -333,6 +348,8 @@ SMILE_EXTERNAL_FUNCTION(SeekSet)
 SMILE_EXTERNAL_FUNCTION(SeekCur)
 {
 	Stdio_File file = GetFileFromHandle((SmileHandle)argv[0].obj, (FileInfo)param, "File.seek-cur");
+	if (!file->isOpen)
+		return SmileUnboxedSymbol_From(((FileInfo)param)->ioSymbols->closed);
 	SeekForReal(file, argv[1].unboxed.i64, SEEK_CUR);
 	return argv[0];
 }
@@ -340,6 +357,8 @@ SMILE_EXTERNAL_FUNCTION(SeekCur)
 SMILE_EXTERNAL_FUNCTION(SeekEnd)
 {
 	Stdio_File file = GetFileFromHandle((SmileHandle)argv[0].obj, (FileInfo)param, "File.seek-end");
+	if (!file->isOpen)
+		return SmileUnboxedSymbol_From(((FileInfo)param)->ioSymbols->closed);
 	SeekForReal(file, argv[1].unboxed.i64, SEEK_END);
 	return argv[0];
 }
@@ -350,6 +369,8 @@ SMILE_EXTERNAL_FUNCTION(ReadByte)
 	Byte buffer[1];
 	int count;
 
+	if (!file->isOpen)
+		return SmileUnboxedSymbol_From(((FileInfo)param)->ioSymbols->closed);
 	if (file->mode & FILE_MODE_STD)
 		Stdio_Invoked = True;
 
@@ -374,7 +395,7 @@ SMILE_EXTERNAL_FUNCTION(ReadByte)
 	}
 	else {
 		Stdio_File_UpdateLastError(file);
-		return SmileUnboxedSymbol_From(((FileInfo)param)->ioSymbols->error);
+		return SmileUnboxedSymbol_From(((FileInfo)param)->ioSymbols->closed);
 	}
 }
 
@@ -383,6 +404,8 @@ static SmileArg WriteByteInternal(Stdio_File file, FileInfo fileInfo, Byte byte)
 	Byte buffer[1];
 	int count;
 
+	if (!file->isOpen)
+		return SmileUnboxedSymbol_From(fileInfo->ioSymbols->closed);
 	if (file->mode & FILE_MODE_STD)
 		Stdio_Invoked = True;
 
@@ -403,7 +426,7 @@ static SmileArg WriteByteInternal(Stdio_File file, FileInfo fileInfo, Byte byte)
 	}
 	else {
 		Stdio_File_UpdateLastError(file);
-		return SmileUnboxedSymbol_From(fileInfo->ioSymbols->error);
+		return SmileUnboxedSymbol_From(fileInfo->ioSymbols->closed);
 	}
 }
 
@@ -411,6 +434,8 @@ static SmileArg WriteBytesInternal(Stdio_File file, FileInfo fileInfo, const Byt
 {
 	int count;
 
+	if (!file->isOpen)
+		return SmileUnboxedSymbol_From(fileInfo->ioSymbols->closed);
 	if (file->mode & FILE_MODE_STD)
 		Stdio_Invoked = True;
 
@@ -429,7 +454,7 @@ static SmileArg WriteBytesInternal(Stdio_File file, FileInfo fileInfo, const Byt
 	}
 	else {
 		Stdio_File_UpdateLastError(file);
-		return SmileUnboxedSymbol_From(fileInfo->ioSymbols->error);
+		return SmileUnboxedSymbol_From(fileInfo->ioSymbols->closed);
 	}
 }
 
@@ -465,6 +490,8 @@ SMILE_EXTERNAL_FUNCTION(Read)
 	SmileByteArray byteArray;
 	Byte *buffer;
 
+	if (!file->isOpen)
+		return SmileUnboxedSymbol_From(((FileInfo)param)->ioSymbols->closed);
 	if (file->mode & FILE_MODE_STD)
 		Stdio_Invoked = True;
 
@@ -553,6 +580,8 @@ SMILE_EXTERNAL_FUNCTION(Write)
 	SmileByteArray byteArray;
 	Byte *buffer;
 
+	if (!file->isOpen)
+		return SmileUnboxedSymbol_From(((FileInfo)param)->ioSymbols->closed);
 	if (file->mode & FILE_MODE_STD)
 		Stdio_Invoked = True;
 

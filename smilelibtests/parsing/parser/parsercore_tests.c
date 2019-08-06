@@ -424,15 +424,15 @@ END_TEST
 
 START_TEST(CanParseTheDotOperator)
 {
-	Lexer lexer = SetupLexer("\t [true.string] [Stdout.print true.string.args.count] \n");
+	Lexer lexer = SetupLexer("\t [true.string] [stdout.print true.string.args.count] \n");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	Symbol stdoutSymbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "Stdout");
+	Symbol stdoutSymbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "stdout");
 	ParseError trueDeclError = ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "true"), PARSEDECL_VARIABLE, NULL, NULL);
 	ParseError declError = ParseScope_DeclareHere(parseScope, stdoutSymbol, PARSEDECL_VARIABLE, NULL, NULL);
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
-	SmileObject expectedResult = SimpleParse("[$progn [(true . string)] [(Stdout . print) (((true . string) . args) . count)] ]");
+	SmileObject expectedResult = SimpleParse("[$progn [(true . string)] [(stdout . print) (((true . string) . args) . count)] ]");
 
 	ASSERT(RecursiveEquals(result, (SmileObject)expectedResult));
 }

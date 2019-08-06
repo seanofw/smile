@@ -53,8 +53,8 @@ STATIC_STRING(_stdioBootstrap,
 		"file write-char '\\n'\n"
 	"}\n"
 	"\n"
-	"#syntax STMT: [print [EXPR+ exprs ,]] => `[Stdout.print @(exprs)]\n"
-	"#syntax STMT: [print-line [EXPR+ exprs ,]] => `[Stdout.print-line @(exprs)]\n"
+	"#syntax STMT: [print [EXPR+ exprs ,]] => `[stdout.print @(exprs)]\n"
+	"#syntax STMT: [print-line [EXPR+ exprs ,]] => `[stdout.print-line @(exprs)]\n"
 	"\n"
 );
 

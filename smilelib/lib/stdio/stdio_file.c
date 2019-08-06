@@ -47,7 +47,7 @@ static Bool Stdio_File_ToBool(SmileHandle handle, SmileUnboxedData unboxedData)
 
 		if (file->mode & FILE_MODE_STD) return False;
 
-		if (file->fd != 0) {
+		if (file->fd > 0) {
 			_close(file->fd);
 			file->fd = 0;
 		}
@@ -113,11 +113,11 @@ static Bool Stdio_File_ToBool(SmileHandle handle, SmileUnboxedData unboxedData)
 		SmileHandle stdoutHandle = Stdio_File_CreateFromWin32Handle((SmileObject)fileBase, _stdoutName, GetStdHandle(STD_OUTPUT_HANDLE), FILE_MODE_WRITE | FILE_MODE_APPEND | FILE_MODE_STD);
 		SmileHandle stderrHandle = Stdio_File_CreateFromWin32Handle((SmileObject)fileBase, _stderrName, GetStdHandle(STD_ERROR_HANDLE), FILE_MODE_WRITE | FILE_MODE_APPEND | FILE_MODE_STD);
 
-		vars[*numVars].symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "Stdin");
+		vars[*numVars].symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "stdin");
 		vars[(*numVars)++].obj = (SmileObject)stdinHandle;
-		vars[*numVars].symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "Stdout");
+		vars[*numVars].symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "stdout");
 		vars[(*numVars)++].obj = (SmileObject)stdoutHandle;
-		vars[*numVars].symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "Stderr");
+		vars[*numVars].symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "stderr");
 		vars[(*numVars)++].obj = (SmileObject)stderrHandle;
 	}
 
@@ -180,7 +180,7 @@ static Bool Stdio_File_ToBool(SmileHandle handle, SmileUnboxedData unboxedData)
 		file = (Stdio_File)handle->ptr;
 
 		// Record any errors.
-		if (win32Handle == NULL) {
+		if (win32Handle == NULL || win32Handle == INVALID_HANDLE_VALUE) {
 			file->isOpen = False;
 			Stdio_File_UpdateLastError(file);
 		}
@@ -323,11 +323,11 @@ static Bool Stdio_File_ToBool(SmileHandle handle, SmileUnboxedData unboxedData)
 		SmileHandle stdoutHandle = Stdio_File_CreateFromUnixFD((SmileObject)fileBase, _stdoutName, STDOUT_FILENO, FILE_MODE_WRITE | FILE_MODE_APPEND | FILE_MODE_STD);
 		SmileHandle stderrHandle = Stdio_File_CreateFromUnixFD((SmileObject)fileBase, _stderrName, STDERR_FILENO, FILE_MODE_WRITE | FILE_MODE_APPEND | FILE_MODE_STD);
 
-		vars[*numVars].symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "Stdin");
+		vars[*numVars].symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "stdin");
 		vars[(*numVars)++].obj = (SmileObject)stdinHandle;
-		vars[*numVars].symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "Stdout");
+		vars[*numVars].symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "stdout");
 		vars[(*numVars)++].obj = (SmileObject)stdoutHandle;
-		vars[*numVars].symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "Stderr");
+		vars[*numVars].symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "stderr");
 		vars[(*numVars)++].obj = (SmileObject)stdoutHandle;
 	}
 
