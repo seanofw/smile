@@ -180,7 +180,7 @@ SMILE_EXTERNAL_FUNCTION(Read)
 
 		FindClose(handle);
 #	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
-		Dir *dir;
+		DIR *dir;
 		struct dirent *entry;
 		String fileName;
 
