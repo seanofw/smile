@@ -186,7 +186,7 @@ SMILE_EXTERNAL_FUNCTION(Read)
 
 		LIST_INIT(head, tail);
 
-		if ((dir = opendir(dirPath)) == NULL)
+		if ((dir = opendir(String_ToC(path))) == NULL)
 			return SmileUnboxedBool_From(False);
 
 		while ((entry = readdir(dir)) != NULL) {
