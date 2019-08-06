@@ -41,10 +41,12 @@
 
 #elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
 
-#	include <sys/types.h>
-#	include <unistd.h>
+#	include <dirent.h>
 #	include <errno.h>
 #	include <limits.h>
+#	include <unistd.h>
+#	include <sys/stat.h>
+#	include <sys/types.h>
 
 	typedef struct Stdio_FileStruct {
 		String path;
