@@ -883,20 +883,20 @@ String String_ReplaceWithLimit(const String str, const String pattern, const Str
 String String_ReplaceChar(const String str, Byte pattern, Byte replacement)
 {
 	String newString;
-	const Byte *src;
+	const Byte *src, *temp, *end;
 	Byte *newText, *dest;
 	Int length;
 	Byte ch;
-	Int i, j;
 
 	if (String_IsNullOrEmpty(str)) return String_Empty;
 
 	length = String_Length(str);
 	src = String_GetBytes(str);
+	end = src + length;
 
 	// Search forward for a match for the pattern.
-	for (i = 0; i < length; i++) {
-		if (*src == pattern) {
+	for (temp = src; temp < end; temp++) {
+		if (*temp == pattern) {
 			goto replace;
 		}
 	}
@@ -912,13 +912,13 @@ replace:
 	// Copy every character up to the first match verbatim into the new string,
 	// since we know they don't match the pattern.  This avoids repeating
 	// the comparisons we already performed in the loop above.
-	for (j = 0; j < i; j++) {
-		*dest++ = *src++;
+	for ( ; src < temp; src++) {
+		*dest++ = *src;
 	}
 
 	// Copy the rest, testing each character to see if it matches the pattern.
-	for ( ; j < length; j++) {
-		*dest++ = ((ch = *src++) == pattern ? replacement : ch);
+	for ( ; src < end; src++) {
+		*dest++ = ((ch = *src) == pattern ? replacement : ch);
 	}
 
 	*dest = '\0';
