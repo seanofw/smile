@@ -4,7 +4,7 @@
 
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
-//  Copyright 2004-2019 Sean Werkema
+//  Copyright 2004-2017 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ STATIC_STRING(_negativeSqrt, "Square root of negative number");
 
 STATIC_STRING(_invalidTypeError, "All arguments to 'Integer64.%s' must be of type 'Integer64'.");
 
-STATIC_STRING(_stringTypeError, "Second argument to 'string' must be of type 'Integer64'");
+STATIC_STRING(_stringTypeError, "Second argument to 'string' must be of type 'Integer64'.");
 STATIC_STRING(_numericBaseError, "Valid numeric base must be in the range of 2..36");
 STATIC_STRING(_parseArguments, "Illegal arguments to 'parse' function");
 
@@ -94,7 +94,7 @@ SMILE_EXTERNAL_FUNCTION(ToInt)
 
 SMILE_EXTERNAL_FUNCTION(ToString)
 {
-	Int64 numericBase;
+	Int numericBase;
 	STATIC_STRING(integer64, "Integer64");
 
 	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_UNBOXED_INTEGER64) {
@@ -107,7 +107,7 @@ SMILE_EXTERNAL_FUNCTION(ToString)
 		}
 		else numericBase = 10;
 
-		return SmileArg_From((SmileObject)String_CreateFromInteger(argv[0].unboxed.i64, (Int)numericBase, False));
+		return SmileArg_From((SmileObject)String_CreateFromInteger(argv[0].unboxed.i64, numericBase, False));
 	}
 
 	return SmileArg_From((SmileObject)integer64);
@@ -1727,7 +1727,7 @@ void SmileInteger64_Setup(SmileUserObject base)
 
 	SetupFunction("bool", ToBool, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 	SetupFunction("int", ToInt, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
-	SetupFunction("string", ToString, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("string", ToString, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX, 1, 2, 0, NULL);
 	SetupFunction("hash", Hash, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 
 	SetupFunction("int64", ToInt64, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
