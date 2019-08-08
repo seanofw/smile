@@ -22,6 +22,7 @@
 #include <smile/smiletypes/smilehandle.h>
 #include <smile/smiletypes/smilebool.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
+#include <smile/smiletypes/numeric/smilereal64.h>
 #include <smile/smiletypes/numeric/smilebyte.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/raw/smilebytearray.h>
@@ -31,7 +32,41 @@
 
 SMILE_IGNORE_UNUSED_VARIABLES
 
-Bool Stdio_Invoked;
+
+#if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+
+// To make Windows pretend to return mode bits like Unix, we define
+// the Unix mode-bit constants here so we can reference them by name
+// in Windows-land.
+
+#	define S_IFMT   0170000		// Mask for file type bits
+#	define S_IFSOCK 0140000		// File type: Socket
+#	define S_IFLNK  0120000		// File type: Soft link
+#	define S_IFREG  0100000		// File type: Regular file
+#	define S_IFBLK  0060000		// File type: Block device
+#	define S_IFDIR  0040000		// File type: Directory
+#	define S_IFCHR  0020000		// File type: Character device
+#	define S_IFIFO  0010000		// File type: FIFO device
+#	define S_ISUID  0004000		// Set-user-ID flag
+#	define S_ISGID  0002000		// Set-group-ID flag
+#	define S_ISVTX  0001000		// Sticky bit (i.e., privileged deletion only)
+
+#	define S_IRWXU  0000700		// Mask for owner mode bits
+#	define S_IRUSR  0000400		// Read-by-owner
+#	define S_IWUSR  0000200		// Write-by-owner
+#	define S_IXUSR  0000100		// Execute-by-owner
+
+#	define S_IRWXG  0000070		// Mask for group mode bits
+#	define S_IRGRP  0000040		// Read-by-group
+#	define S_IWGRP  0000020		// Write-by-group
+#	define S_IXGRP  0000010		// Execute-by-group
+
+#	define S_IRWXO  0000070		// Mask for others (world) mode bits
+#	define S_IROTH  0000004		// Read-by-others (world)
+#	define S_IWOTH  0000002		// Write-by-others (world)
+#	define S_IXOTH  0000001		// Execute-by-others (world)
+
+#endif
 
 typedef struct FileInfoStruct {
 	SmileObject fileBase;
@@ -87,6 +122,17 @@ static Byte _timeChecks[] = {
 	0, 0,
 };
 
+/// <summary>
+/// This weird little Boolean flag is set to true if and only if the stdio library
+/// is used at least once to read or write data from stdin, stdout, or stderr.
+/// It's consumed by the Smile REPL so that the REPL knows whether your last operation
+/// likely emitted text output; and if it did, the REPL then avoids printing out
+/// the result of the evaluation, since your operation has already printed something.
+/// It's a very weird special-case one-off, and it should NOT be consumed by anything
+/// else that isn't the REPL.
+/// </summary>
+Bool Stdio_Invoked;
+
 void Stdio_File_UpdateLastError(Stdio_File file)
 {
 #	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
@@ -110,8 +156,6 @@ SMILE_EXTERNAL_FUNCTION(Open)
 	IoSymbols ioSymbols = fileInfo->ioSymbols;
 	SmileHandle fileHandle;
 	const char *methodName = "File.open";
-
-	if (argv[i].obj == fileInfo->fileBase) i++;
 
 	if (SMILE_KIND(argv[i].obj) != SMILE_KIND_STRING) {
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error,
@@ -653,27 +697,295 @@ SMILE_EXTERNAL_FUNCTION(Write)
 
 SMILE_EXTERNAL_FUNCTION(Rename)
 {
-	return SmileArg_From(NullObject);
+	String oldName = (String)argv[0].obj;
+	String newName = (String)argv[1].obj;
+
+#	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+		Int oldName16Length, newName16Length;
+		UInt16 *oldName16 = Stdio_ToWindowsPath(oldName, &oldName16Length);
+		UInt16 *newName16 = Stdio_ToWindowsPath(newName, &newName16Length);
+		Bool result = !!MoveFileW(oldName16, newName16);
+#	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+		Bool result = !rename(String_ToC(oldName), String_ToC(newName));
+#	else
+#		error Unsupported OS.
+#	endif
+
+	return SmileUnboxedBool_From(result);
 }
 
 SMILE_EXTERNAL_FUNCTION(Remove)
 {
-	return SmileArg_From(NullObject);
+	String name = (String)argv[0].obj;
+
+#	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+		Int name16Length;
+		UInt16 *name16 = Stdio_ToWindowsPath(name, &name16Length);
+		Bool result = !!DeleteFileW(name16);
+#	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+		Bool result = !unlink(String_ToC(name));
+#	else
+#		error Unsupported OS.
+#	endif
+
+	return SmileUnboxedBool_From(result);
 }
+
+#if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+	static struct StringDictStruct _pathExtTable = { 0 };
+
+	static void Stdio_InitializePathExtTable(void)
+	{
+		static UInt16 pathExt[] = { 'P', 'A', 'T', 'H', 'E', 'X', 'T', 0 };
+		UInt16 stackBuffer[256];
+		Int32 pathExtBufferSize = 255;
+		UInt16 *pathExtBuffer = stackBuffer;
+		Int32 result;
+		String pathExtVariable;
+		String *pieces;
+		Int i, numPieces;
+		String semicolon;
+
+		// We will shortly populate this, but by initializing it first, we make sure that
+		// the caller knows when we've already parsed the PATHEXT environment variable.
+		StringDict_Clear(&_pathExtTable);
+
+		// First, ask Windows for the PATHEXT environment variable.
+		//
+		// A typical Windows PATHEXT environment variable looks like this:
+		//     PATHEXT=.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC
+		//
+		// We take that, split it on semicolons, and make a hash table out
+		// of it so that we can quickly look up a file by its extension to see
+		// if Windows thinks it's an executable.  This is needed to correctly
+		// simulate the 'execute' mode bit on Windows for the 'File.get-mode'
+		// method.
+	retry:
+		result = GetEnvironmentVariableW(pathExt, pathExtBuffer, pathExtBufferSize);
+		if (result < 0)
+			return;
+		if (result > pathExtBufferSize) {
+			pathExtBuffer = GC_MALLOC_RAW_ARRAY(Int16, result + 1);
+			pathExtBufferSize = result;
+			goto retry;
+		}
+
+		// Transform Windows's UTF-16-encoded buffer into a UTF-8-encoded String.
+		pathExtBuffer[pathExtBufferSize] = '\0';
+		pathExtVariable = String_FromUtf16(pathExtBuffer, WStrLen(pathExtBuffer));
+
+		// Split the environment-variable String on semicolons.
+		semicolon = String_FromC(";");
+		numPieces = String_Split(String_CaseFold(pathExtVariable), semicolon, &pieces);
+
+		// Spin over each of the extensions, and add them to the _pathExtTable
+		// dictionary so that they can be rapidly tested against filenames.
+		for (i = 0; i < numPieces; i++) {
+			StringDict_Add(&_pathExtTable, pieces[i], NULL);
+		}
+	}
+
+	static Bool Stdio_IsExecutable(String name)
+	{
+		String ext;
+
+		if (_pathExtTable._opaque.mask == 0)
+			Stdio_InitializePathExtTable();
+
+		// Extract out the filename extension, and case-fold it for comparison.
+		ext = String_CaseFold(Path_GetExt(name));
+
+		// See if that's a known executable extension.
+		return StringDict_ContainsKey(&_pathExtTable, ext);
+	}
+#endif
 
 SMILE_EXTERNAL_FUNCTION(GetMode)
 {
-	return SmileArg_From(NullObject);
+	Int64 result;
+	String name = (String)argv[0].obj;
+
+#	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+		Int name16Length;
+		UInt16 *name16 = Stdio_ToWindowsPath(name, &name16Length);
+		WIN32_FILE_ATTRIBUTE_DATA attrData;
+		if (!GetFileAttributesExW(name16, GetFileExInfoStandard, &attrData))
+			return SmileUnboxedBool_From(False);
+
+		result = 0;
+		if (attrData.dwFileAttributes & FILE_ATTRIBUTE_DEVICE)
+			result |= S_IFBLK;
+		else if (attrData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+			result |= S_IFDIR | 0111;	// Directories are effectively always executable.
+		else if (attrData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
+			result |= S_IFLNK;			// Reparse points aren't *always* soft links... but they *usually* are.
+		else {
+			result |= S_IFREG;
+			if (Stdio_IsExecutable(name))
+				result |= 0111;			// Has an executable extension, so mark it with executable bits.
+		}
+		result |= (attrData.dwFileAttributes & FILE_ATTRIBUTE_READONLY)
+			? 0444 : 0644;				// Acceptably-equivalent mode-bit behavior.
+
+#	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+		struct stat statbuf;
+		if (lstat(String_ToC(name), &statbuf))
+			return SmileUnboxedBool_From(False);
+		result = (Int64)statbuf.st_mode;
+#	else
+#		error Unsupported OS.
+#	endif
+
+	return SmileUnboxedInteger64_From(result);
 }
 
 SMILE_EXTERNAL_FUNCTION(SetMode)
 {
+	Int64 mode = 0;
+	String name = (String)argv[0].obj;
+	Bool result;
+
+	switch (SMILE_KIND(argv[1].obj)) {
+		case SMILE_KIND_UNBOXED_BYTE:
+			mode = (Int64)(UInt64)(UInt8)argv[1].unboxed.i8;
+			break;
+		case SMILE_KIND_UNBOXED_INTEGER16:
+			mode = (Int64)(UInt64)(UInt16)argv[1].unboxed.i16;
+			break;
+		case SMILE_KIND_UNBOXED_INTEGER32:
+			mode = (Int64)(UInt64)(UInt32)argv[1].unboxed.i32;
+			break;
+		case SMILE_KIND_UNBOXED_INTEGER64:
+			mode = argv[1].unboxed.i64;
+			break;
+		default:
+			Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+				String_FromC("Argument 2 to File.set-mode must be of an Integer type."));
+			break;
+	}
+
+#	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+		Int name16Length;
+		UInt16 *name16 = Stdio_ToWindowsPath(name, &name16Length);
+		UInt32 attr = ((mode & 0222) != 0 ? FILE_ATTRIBUTE_NORMAL : FILE_ATTRIBUTE_READONLY);
+		result = !!SetFileAttributesW(name16, attr);
+#	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+		result = !chmod(String_ToC(name), mode);
+#	else
+#		error Unsupported OS.
+#	endif
+
+	return SmileUnboxedBool_From(result);
+}
+
+SMILE_EXTERNAL_FUNCTION(GetSize)
+{
+	Int64 result;
+	String name = (String)argv[0].obj;
+
+#	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+		Int name16Length;
+		UInt16 *name16;
+		HANDLE handle;
+		LARGE_INTEGER fileSize;
+
+		name16 = Stdio_ToWindowsPath(name, &name16Length);
+		handle = CreateFileW(name16, GENERIC_READ | GENERIC_WRITE,
+			FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL,
+			OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		if (handle == NULL || handle == INVALID_HANDLE_VALUE)
+			return SmileUnboxedBool_From(False);
+		if (!GetFileSizeEx(handle, &fileSize)) {
+			CloseHandle(handle);
+			return SmileUnboxedBool_From(False);
+		}
+		CloseHandle(handle);
+
+		result = fileSize.QuadPart;
+#	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+		struct stat statbuf;
+		if (lstat(String_ToC(name), &statbuf))
+			return SmileUnboxedBool_From(False);
+		result = (Int64)statbuf.st_size;
+#	else
+#		error Unsupported OS.
+#	endif
+
+	return SmileUnboxedInteger64_From(result);
+}
+
+SMILE_EXTERNAL_FUNCTION(SetSize)
+{
 	return SmileArg_From(NullObject);
 }
 
+#if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+
+#	define WINDOWS_TICKS_PER_SECOND 10000000LL
+#	define SECONDS_FROM_WINDOWS_TO_UNIX_EPOCH 11644473600LL
+
+	static Real64 _windowsTicksMultiply;
+	static Real64 _windowsTicksDivide;
+	static Bool _windowsTicksShiftIsAssigned = False;
+
+	static void InitWindowsTicksShift(void)
+	{
+		Real64 windowsTicksPerSecond = Real64_FromInt64(WINDOWS_TICKS_PER_SECOND);
+		_windowsTicksMultiply = windowsTicksPerSecond;
+		_windowsTicksDivide = Real64_Div(Real64_One, windowsTicksPerSecond);
+		_windowsTicksShiftIsAssigned = True;
+	}
+
+	static Real64 FileTimeToUnixTimestamp(FILETIME *filetime)
+	{
+		Int64 windowsTimestamp;
+
+		if (!_windowsTicksShiftIsAssigned)
+			InitWindowsTicksShift();
+
+		windowsTimestamp = (Int64)(((Int64)filetime->dwHighDateTime << 32) | (Int64)filetime->dwLowDateTime);
+		windowsTimestamp -= SECONDS_FROM_WINDOWS_TO_UNIX_EPOCH * WINDOWS_TICKS_PER_SECOND;
+		return Real64_Mul(Real64_FromInt64(windowsTimestamp), _windowsTicksDivide);
+	}
+
+	static void UnixTimestampToFileTime(Real64 timestamp, FILETIME *filetime)
+	{
+		Int64 windowsTimestamp;
+
+		if (!_windowsTicksShiftIsAssigned)
+			InitWindowsTicksShift();
+
+		windowsTimestamp = Real64_ToInt64(Real64_Add(Real64_Mul(timestamp, _windowsTicksMultiply), Real64_OneHalf));
+		windowsTimestamp += SECONDS_FROM_WINDOWS_TO_UNIX_EPOCH * WINDOWS_TICKS_PER_SECOND;
+		filetime->dwLowDateTime = (UInt32)windowsTimestamp;
+		filetime->dwHighDateTime = (UInt32)(windowsTimestamp >> 32);
+	}
+
+#endif
+
 SMILE_EXTERNAL_FUNCTION(GetCreateTime)
 {
-	return SmileArg_From(NullObject);
+	Real64 result;
+	String name = (String)argv[0].obj;
+
+#	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+		Int name16Length;
+		UInt16 *name16 = Stdio_ToWindowsPath(name, &name16Length);
+		WIN32_FILE_ATTRIBUTE_DATA attrData;
+		if (!GetFileAttributesExW(name16, GetFileExInfoStandard, &attrData))
+			return SmileUnboxedBool_From(False);
+
+		result = FileTimeToUnixTimestamp(&attrData.ftCreationTime);
+#	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+		struct stat statbuf;
+		if (lstat(String_ToC(name), &statbuf))
+			return SmileUnboxedBool_From(False);
+		result = Real64_FromInt64((Int64)statbuf.st_ctime);
+#	else
+#		error Unsupported OS.
+#	endif
+
+	return SmileUnboxedReal64_From(result);
 }
 
 SMILE_EXTERNAL_FUNCTION(SetCreateTime)
@@ -683,7 +995,27 @@ SMILE_EXTERNAL_FUNCTION(SetCreateTime)
 
 SMILE_EXTERNAL_FUNCTION(GetModifyTime)
 {
-	return SmileArg_From(NullObject);
+	Real64 result;
+	String name = (String)argv[0].obj;
+
+#	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+		Int name16Length;
+		UInt16 *name16 = Stdio_ToWindowsPath(name, &name16Length);
+		WIN32_FILE_ATTRIBUTE_DATA attrData;
+		if (!GetFileAttributesExW(name16, GetFileExInfoStandard, &attrData))
+			return SmileUnboxedBool_From(False);
+
+		result = FileTimeToUnixTimestamp(&attrData.ftLastWriteTime);
+#	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+		struct stat statbuf;
+		if (lstat(String_ToC(name), &statbuf))
+			return SmileUnboxedBool_From(False);
+		result = Real64_FromInt64((Int64)statbuf.st_mtime);
+#	else
+#		error Unsupported OS.
+#	endif
+
+	return SmileUnboxedReal64_From(result);
 }
 
 SMILE_EXTERNAL_FUNCTION(SetModifyTime)
@@ -693,7 +1025,27 @@ SMILE_EXTERNAL_FUNCTION(SetModifyTime)
 
 SMILE_EXTERNAL_FUNCTION(GetAccessTime)
 {
-	return SmileArg_From(NullObject);
+	Real64 result;
+	String name = (String)argv[0].obj;
+
+#	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+		Int name16Length;
+		UInt16 *name16 = Stdio_ToWindowsPath(name, &name16Length);
+		WIN32_FILE_ATTRIBUTE_DATA attrData;
+		if (!GetFileAttributesExW(name16, GetFileExInfoStandard, &attrData))
+			return SmileUnboxedBool_From(False);
+
+		result = FileTimeToUnixTimestamp(&attrData.ftLastAccessTime);
+#	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+		struct stat statbuf;
+		if (lstat(String_ToC(name), &statbuf))
+			return SmileUnboxedBool_From(False);
+		result = Real64_FromInt64((Int64)statbuf.st_atime);
+#	else
+#		error Unsupported OS.
+#	endif
+
+	return SmileUnboxedReal64_From(result);
 }
 
 SMILE_EXTERNAL_FUNCTION(SetAccessTime)
@@ -749,13 +1101,24 @@ void Stdio_File_Init(SmileUserObject base, IoSymbols ioSymbols)
 	SetupSynonym("remove", "rm");
 
 	SetupFunction("get-mode", GetMode, (void *)fileInfo, "path", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupSynonym("get-mode", "mode");
 	SetupFunction("set-mode", SetMode, (void *)fileInfo, "path mode...", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 2, _modeChecks);
 	SetupSynonym("set-mode", "chmod");
 
+	SetupFunction("get-size", GetSize, (void *)fileInfo, "path", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupSynonym("get-size", "size");
+	SetupFunction("set-size", SetSize, (void *)fileInfo, "path size", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 0, 2, _modeChecks);
+
 	SetupFunction("get-create-time", GetCreateTime, (void *)fileInfo, "path", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _timeChecks);
+	SetupSynonym("get-create-time", "create-time");
 	SetupFunction("set-create-time", SetCreateTime, (void *)fileInfo, "path time", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _timeChecks);
 	SetupFunction("get-modify-time", GetModifyTime, (void *)fileInfo, "path", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _timeChecks);
+	SetupSynonym("get-modify-time", "modify-time");
+	SetupSynonym("get-modify-time", "get-time");
+	SetupSynonym("get-modify-time", "time");
 	SetupFunction("set-modify-time", SetModifyTime, (void *)fileInfo, "path time", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _timeChecks);
+	SetupSynonym("set-modify-time", "set-time");
 	SetupFunction("get-access-time", GetAccessTime, (void *)fileInfo, "path", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _timeChecks);
+	SetupSynonym("get-access-time", "access-time");
 	SetupFunction("set-access-time", SetAccessTime, (void *)fileInfo, "path time", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _timeChecks);
 }

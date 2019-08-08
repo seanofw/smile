@@ -43,14 +43,6 @@ static Byte _modeChecks[] = {
 	0, 0,
 };
 
-Inline Int WStrLen(const UInt16 *str)
-{
-	Int count = 0;
-	if (str == NULL) return 0;
-	while (*str++) count++;
-	return count;
-}
-
 SMILE_EXTERNAL_FUNCTION(SetCurrent)
 {
 	String path = (String)argv[0].obj;

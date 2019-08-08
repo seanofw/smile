@@ -43,6 +43,7 @@
 
 #	include <dirent.h>
 #	include <errno.h>
+#	include <fcntl.h>
 #	include <limits.h>
 #	include <unistd.h>
 #	include <sys/stat.h>
@@ -107,5 +108,15 @@ SMILE_INTERNAL_FUNC UInt32 Stdio_ParseModeArg(SmileArg arg, const char *methodNa
 SMILE_INTERNAL_FUNC void Stdio_File_Init(SmileUserObject base, IoSymbols ioSymbols);
 SMILE_INTERNAL_FUNC void Stdio_Dir_Init(SmileUserObject base, IoSymbols ioSymbols);
 SMILE_INTERNAL_FUNC void Stdio_Path_Init(SmileUserObject base);
+
+#if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+	Inline Int WStrLen(const UInt16 *str)
+	{
+		Int count = 0;
+		if (str == NULL) return 0;
+		while (*str++) count++;
+		return count;
+	}
+#endif
 
 #endif
