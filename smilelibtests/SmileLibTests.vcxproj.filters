@@ -123,6 +123,7 @@
     </ClCompile>
     <ClCompile Include="string\stringident_tests.c" />
     <ClCompile Include="dict\hash_tests.c" />
+    <ClCompile Include="numeric\timestamp_tests.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />

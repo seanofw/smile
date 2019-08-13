@@ -185,6 +185,7 @@ static void SetupMiscTypes(struct KnownBasesStruct *knownBases)
 	knownBases->Uni = SmileUserObject_Create((SmileObject)knownBases->Object, Smile_KnownSymbols.Uni_);
 	knownBases->Symbol = SmileUserObject_Create((SmileObject)knownBases->Object, Smile_KnownSymbols.Symbol_);
 	knownBases->Exception = SmileUserObject_Create((SmileObject)knownBases->Object, Smile_KnownSymbols.Exception_);
+	knownBases->Timestamp = SmileUserObject_Create((SmileObject)knownBases->Timestamp, Smile_KnownSymbols.Timestamp_);
 	knownBases->Handle = SmileUserObject_Create((SmileObject)knownBases->Object, Smile_KnownSymbols.Handle_);
 
 	knownBases->Regex = SmileUserObject_Create((SmileObject)knownBases->Handle, Smile_KnownSymbols.Regex_);
@@ -237,6 +238,7 @@ extern void SmileSymbol_Setup(SmileUserObject base);
 
 extern void SmileRegex_Setup(SmileUserObject base);
 extern void SmileRegexMatch_Setup(SmileUserObject base);
+extern void SmileTimestamp_Setup(SmileUserObject base);
 
 void KnownBases_Setup(struct KnownBasesStruct *knownBases)
 {
@@ -270,6 +272,7 @@ void KnownBases_Setup(struct KnownBasesStruct *knownBases)
 	SmileChar_Setup(knownBases->Char);
 	SmileUni_Setup(knownBases->Uni);
 	SmileSymbol_Setup(knownBases->Symbol);
+	SmileTimestamp_Setup(knownBases->Timestamp);
 
 	SmileUnboxedBool_Instance->base = (SmileObject)knownBases->Bool;
 	SmileUnboxedSymbol_Instance->base = (SmileObject)knownBases->Symbol;

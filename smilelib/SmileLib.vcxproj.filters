@@ -1641,5 +1641,16 @@
     <ClCompile Include="src\smiletypes\smilebool_base.c">
       <Filter>src\smiletypes</Filter>
     </ClCompile>
+    <ClCompile Include="src\smiletypes\numeric\smiletimestamp.c">
+      <Filter>src\smiletypes\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\numeric\smiletimestamp_base.c">
+      <Filter>src\smiletypes\numeric</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\smile\smiletypes\numeric\smiletimestamp.h">
+      <Filter>include\smiletypes\numeric</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

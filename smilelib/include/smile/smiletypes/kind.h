@@ -67,6 +67,7 @@ typedef enum {
 	SMILE_KIND_BIGFLOAT				= 0x35,
 	SMILE_KIND_REAL128				= 0x38,
 	SMILE_KIND_BIGREAL				= 0x39,
+	SMILE_KIND_TIMESTAMP			= 0x3F,
 
 	// Range versions of numeric types.	
 	SMILE_KIND_BYTERANGE			= 0x40,
