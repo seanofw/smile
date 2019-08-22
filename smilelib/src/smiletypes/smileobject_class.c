@@ -143,7 +143,6 @@ SMILE_EXTERNAL_FUNCTION(GetAccess)
 			return SmileUnboxedSymbol_From(Smile_KnownSymbols.read_write_append);
 		default:
 			Smile_Abort_FatalError("Illegal object access setting.");
-			return SmileArg_From(NullObject);
 	}
 }
 

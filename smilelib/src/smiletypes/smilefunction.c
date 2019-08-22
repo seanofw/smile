@@ -337,7 +337,6 @@ Inline SmileVTable GetExternalFunctionVTableByFlags(Int argCheckFlags)
 
 		default:
 			Smile_Abort_FatalError("Unsupported external function argument configuration.");
-			return NULL;
 	}
 }
 

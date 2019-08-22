@@ -146,6 +146,5 @@ SMILE_API_FUNC String TokenKind_ToString(Int tokenKind)
 			Smile_Abort_FatalError(
 				String_ToC(String_Format("Cannot convert TokenKind %d to string; unknown token. [Internal error; please report this.]",
 					tokenKind)));
-			return NULL;
 	}
 }

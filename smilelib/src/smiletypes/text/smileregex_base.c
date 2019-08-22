@@ -309,7 +309,9 @@ SMILE_EXTERNAL_FUNCTION(Split)
 	}
 
 	regex = (Regex)handle->ptr;
-	if (IntMax < Int64Max && limit > IntMax) limit = IntMax;
+#	if SizeofInt < 8
+		if (limit > IntMax) limit = IntMax;
+#	endif
 	numPieces = Regex_Split(regex, input, &pieces, withEmpty, (Int)limit);
 
 	head = tail = NullList;
@@ -339,7 +341,9 @@ SMILE_EXTERNAL_FUNCTION(Replace)
 
 	regex = (Regex)handle->ptr;
 
-	if (IntMax < Int64Max && limit > IntMax) limit = IntMax;
+#	if SizeofInt < 8
+		if (limit > IntMax) limit = IntMax;
+#	endif
 	if (startOffset < 0) startOffset = 0;
 	if (startOffset > length) startOffset = length;
 

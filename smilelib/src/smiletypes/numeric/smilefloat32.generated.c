@@ -141,7 +141,6 @@ static SmileObject SmileUnboxedFloat32_Box(SmileArg src)
 static SmileArg SmileUnboxedFloat32_Unbox(SmileUnboxedFloat32 smileUnboxedFloat)
 {
 	Smile_Abort_FatalError("Cannot re-unbox a unboxed object.");
-	return (SmileArg){ 0 };
 }
 
 static struct SmileUnboxedFloat32Int SmileUnboxedFloat32_Instance_Struct = {

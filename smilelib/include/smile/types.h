@@ -112,8 +112,8 @@ typedef struct StringBuilderStruct *StringBuilder;
 // Global functions for the core runtime.
 SMILE_API_FUNC void Smile_Init(void);
 SMILE_API_FUNC void Smile_End(void);
-SMILE_API_FUNC void Smile_Abort_OutOfMemory(void);
-SMILE_API_FUNC void Smile_Abort_FatalError(const char *message);
+SMILE_NO_RETURN SMILE_API_FUNC void Smile_Abort_OutOfMemory(void);
+SMILE_NO_RETURN SMILE_API_FUNC void Smile_Abort_FatalError(const char *message);
 
 SMILE_API_DATA UInt64 Smile_StartTicks;
 SMILE_API_FUNC UInt64 Smile_GetTicks(void);

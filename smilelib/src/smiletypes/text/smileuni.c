@@ -136,7 +136,6 @@ static SmileObject SmileUnboxedUni_Box(SmileArg src)
 static SmileArg SmileUnboxedUni_Unbox(SmileUnboxedUni smileUnboxedInt)
 {
 	Smile_Abort_FatalError("Cannot re-unbox a unboxed object.");
-	return (SmileArg) { 0 };
 }
 
 static struct SmileUnboxedUniInt SmileUnboxedUni_Instance_Struct = {
