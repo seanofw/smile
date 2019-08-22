@@ -66,11 +66,11 @@ typedef struct __attribute__((aligned(16))) { UInt64 value[2]; } Real128;
 #if __SIZEOF_INT128__ == 16
 #	undef SMILE_COMPILER_HAS_INT128
 #	define SMILE_COMPILER_HAS_INT128 1
-typedef __int128 Int128
+	typedef __int128 Int128;
 
 #	undef SMILE_COMPILER_HAS_UINT128
 #	define SMILE_COMPILER_HAS_UINT128 1
-typedef unsigned __int128 UInt128
+	typedef unsigned __int128 UInt128;
 #endif
 
 //------------------------------------------------------------------------------------------------
