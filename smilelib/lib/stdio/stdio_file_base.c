@@ -938,7 +938,7 @@ SMILE_EXTERNAL_FUNCTION(GetCreateTime)
 		struct stat statbuf;
 		if (lstat(String_ToC(name), &statbuf))
 			return SmileUnboxedBool_From(False);
-		result = SmileTimestamp_FromUnix((Int64)statbuf.st_ctime);
+		result = SmileTimestamp_FromUnix((Int64)statbuf.st_ctime, 0);
 #	else
 #		error Unsupported OS.
 #	endif
@@ -969,7 +969,7 @@ SMILE_EXTERNAL_FUNCTION(GetModifyTime)
 		struct stat statbuf;
 		if (lstat(String_ToC(name), &statbuf))
 			return SmileUnboxedBool_From(False);
-		result = SmileTimestamp_FromUnix((Int64)statbuf.st_mtime);
+		result = SmileTimestamp_FromUnix((Int64)statbuf.st_mtime, 0);
 #	else
 #		error Unsupported OS.
 #	endif
@@ -1000,7 +1000,7 @@ SMILE_EXTERNAL_FUNCTION(GetAccessTime)
 		struct stat statbuf;
 		if (lstat(String_ToC(name), &statbuf))
 			return SmileUnboxedBool_From(False);
-		result = SmileTimestamp_FromUnix((Int64)statbuf.st_atime);
+		result = SmileTimestamp_FromUnix((Int64)statbuf.st_atime, 0);
 #	else
 #		error Unsupported OS.
 #	endif
