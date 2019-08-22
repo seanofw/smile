@@ -63,7 +63,8 @@ STATIC_STRING(BigInt_, "BigInt");
 STATIC_STRING(Float128_, "Float128");
 STATIC_STRING(BigFloat_, "BigFloat");
 STATIC_STRING(Real128_, "Real128");
-STATIC_STRING(BigReal_, "bigReal");
+STATIC_STRING(BigReal_, "BigReal");
+STATIC_STRING(Timestamp_, "Timestamp");
 
 STATIC_STRING(ByteArray_, "ByteArray");
 
@@ -123,6 +124,7 @@ String SmileKind_GetName(Int kind)
 		case SMILE_KIND_BIGFLOAT: return BigFloat_;
 		case SMILE_KIND_REAL128: return Real128_;
 		case SMILE_KIND_BIGREAL: return BigReal_;
+		case SMILE_KIND_TIMESTAMP: return Timestamp_;
 
 		// Raw buffer types.
 		case SMILE_KIND_BYTEARRAY: return ByteArray_;
@@ -193,6 +195,7 @@ Symbol SmileKind_GetTypeOf(Int smileKind)
 		case SMILE_KIND_BIGFLOAT: return Smile_KnownSymbols.big_float;
 		case SMILE_KIND_REAL128: return Smile_KnownSymbols.real128_;
 		case SMILE_KIND_BIGREAL: return Smile_KnownSymbols.big_real;
+		case SMILE_KIND_TIMESTAMP: return Smile_KnownSymbols.timestamp_;
 
 		// Range versions of numeric types.
 		case SMILE_KIND_BYTERANGE: return Smile_KnownSymbols.byte_range;

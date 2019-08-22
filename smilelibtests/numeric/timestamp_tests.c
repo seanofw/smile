@@ -372,4 +372,119 @@ START_TEST(CanDecomposeTimes)
 }
 END_TEST
 
+//-------------------------------------------------------------------------------------------------
+//  ISO 8601 Stringification Tests.
+
+START_TEST(CanStringifyIso8601DatesAndTimes)
+{
+	SmileTimestamp timestamp;
+	String string;
+
+	// 62135596800.0  -->  1970-01-01 00:00:00
+	timestamp = SmileTimestamp_Create(62135596800LL, 0);
+	string = SmileTimestamp_Stringify(timestamp);
+	ASSERT_STRING(string, "1970-01-01T00:00:00Z", 20);
+
+	// 62798198400.0  -->  1990-12-31 00:00:00
+	timestamp = SmileTimestamp_Create(62798198400LL, 0);
+	string = SmileTimestamp_Stringify(timestamp);
+	ASSERT_STRING(string, "1990-12-31T00:00:00Z", 20);
+
+	// 62135642096.0  -->  1970-01-01 12:34:56
+	timestamp = SmileTimestamp_Create(62135642096LL, 0);
+	string = SmileTimestamp_Stringify(timestamp);
+	ASSERT_STRING(string, "1970-01-01T12:34:56Z", 20);
+
+	// 62135683199.0  -->  1970-01-01 23:59:59
+	timestamp = SmileTimestamp_Create(62135683199LL, 0);
+	string = SmileTimestamp_Stringify(timestamp);
+	ASSERT_STRING(string, "1970-01-01T23:59:59Z", 20);
+
+	// 62135683199.1  -->  1970-01-01 23:59:59.1
+	timestamp = SmileTimestamp_Create(62135683199LL, 100000000);
+	string = SmileTimestamp_Stringify(timestamp);
+	ASSERT_STRING(string, "1970-01-01T23:59:59.1Z", 22);
+
+	// 62135683199.12345  -->  1970-01-01 23:59:59.12345
+	timestamp = SmileTimestamp_Create(62135683199LL, 123450000);
+	string = SmileTimestamp_Stringify(timestamp);
+	ASSERT_STRING(string, "1970-01-01T23:59:59.12345Z", 26);
+
+	// 62135683199.123456789  -->  1970-01-01 23:59:59.123456789
+	timestamp = SmileTimestamp_Create(62135683199LL, 123456789);
+	string = SmileTimestamp_Stringify(timestamp);
+	ASSERT_STRING(string, "1970-01-01T23:59:59.123456789Z", 30);
+
+	// 62135683199.012345678  --> 1970-01-01 23:59:59.012345678
+	timestamp = SmileTimestamp_Create(62135683199LL, 12345678);
+	string = SmileTimestamp_Stringify(timestamp);
+	ASSERT_STRING(string, "1970-01-01T23:59:59.012345678Z", 30);
+
+	// 62135683199.999999999  -->  1970-01-01 23:59:59.999999999
+	timestamp = SmileTimestamp_Create(62135683199LL, 999999999);
+	string = SmileTimestamp_Stringify(timestamp);
+	ASSERT_STRING(string, "1970-01-01T23:59:59.999999999Z", 30);
+}
+END_TEST
+
+//-------------------------------------------------------------------------------------------------
+//  Unix Conversion Tests.
+
+START_TEST(CanConvertUnixEpochValuesToTimestamps)
+{
+	SmileTimestamp timestamp;
+
+	// Unix 0  -->  1970-01-01 00:00:00  -->  62135596800.0
+	timestamp = SmileTimestamp_FromUnix(0LL, 0);
+	ASSERT(timestamp->seconds == 62135596800LL);
+	ASSERT(timestamp->nanos == 0);
+
+	// Unix 1  -->  1970-01-01 00:00:01  -->  62135596801.0
+	timestamp = SmileTimestamp_FromUnix(1LL, 0);
+	ASSERT(timestamp->seconds == 62135596801LL);
+	ASSERT(timestamp->nanos == 0);
+
+	// Unix -1  -->  1969-12-31 12:59:59  -->  62135596799.0
+	timestamp = SmileTimestamp_FromUnix(-1LL, 0);
+	ASSERT(timestamp->seconds == 62135596799LL);
+	ASSERT(timestamp->nanos == 0);
+
+	// Unix 0x7FFFFFFF  -->  2038-01-19 03:14:07  -->  64283080447.0
+	timestamp = SmileTimestamp_FromUnix(0x7FFFFFFFLL, 0);
+	ASSERT(timestamp->seconds == 64283080447LL);
+	ASSERT(timestamp->nanos == 0);
+
+	// Unix 1566206356  -->  2019-08-19 09:19:16  -->  63701803156.0
+	timestamp = SmileTimestamp_FromUnix(1566206356, 0);
+	ASSERT(timestamp->seconds == 63701803156LL);
+	ASSERT(timestamp->nanos == 0);
+}
+END_TEST
+
+START_TEST(CanConvertTimestampValuesToUnixEpoch)
+{
+	Int64 unixSeconds;
+
+	// Unix 0  -->  1970-01-01 00:00:00  -->  62135596800.0
+	unixSeconds = SmileTimestamp_ToUnix(SmileTimestamp_Create(62135596800LL, 0));
+	ASSERT(unixSeconds == 0);
+
+	// Unix 1  -->  1975-01-01 00:00:01  -->  62293363201.0
+	unixSeconds = SmileTimestamp_ToUnix(SmileTimestamp_Create(62135596801LL, 0));
+	ASSERT(unixSeconds == 1);
+
+	// Unix -1  -->  1969-12-31 12:59:59  -->  62135596799.0
+	unixSeconds = SmileTimestamp_ToUnix(SmileTimestamp_Create(62135596799LL, 0));
+	ASSERT(unixSeconds == -1);
+
+	// Unix 0x7FFFFFFF  -->  2038-01-19 03:14:07  -->  64283080447.0
+	unixSeconds = SmileTimestamp_ToUnix(SmileTimestamp_Create(64283080447LL, 0));
+	ASSERT(unixSeconds == 0x7FFFFFFF);
+
+	// Unix 1566206356  -->  2019-08-19 09:19:16  -->  63701803156.0
+	unixSeconds = SmileTimestamp_ToUnix(SmileTimestamp_Create(63701803156LL, 0));
+	ASSERT(unixSeconds == 1566206356);
+}
+END_TEST
+
 #include "timestamp_tests.generated.inc"

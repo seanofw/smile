@@ -4,103 +4,77 @@
 #ifndef __SMILE_TYPES_H__
 #include <smile/types.h>
 #endif
-#ifndef __SMILE_STRING_H__
-#include <smile/string.h>
-#endif
 
-//-------------------------------------------------------------------------------------------------
-// Predefined constants.
+SMILE_API_FUNC void UInt64_MulExtended128_External(UInt64 x, UInt64 y, UInt64 *lo, UInt64 *hi);
+SMILE_API_FUNC void Int64_MulExtended128_External(Int64 x, Int64 y, Int64 *lo, Int64 *hi);
 
-SMILE_API_DATA Int128 Int128_Min;
-SMILE_API_DATA Int128 Int128_NegSixteen;
-SMILE_API_DATA Int128 Int128_NegTen;
-SMILE_API_DATA Int128 Int128_NegTwo;
-SMILE_API_DATA Int128 Int128_NegOne;
-SMILE_API_DATA Int128 Int128_NegZero;
-SMILE_API_DATA Int128 Int128_Zero;
-SMILE_API_DATA Int128 Int128_One;
-SMILE_API_DATA Int128 Int128_Two;
-SMILE_API_DATA Int128 Int128_Ten;
-SMILE_API_DATA Int128 Int128_Sixteen;
-SMILE_API_DATA Int128 Int128_Max;
-
-//-------------------------------------------------------------------------------------------------
-// External functions.
-
-SMILE_API_FUNC Int128 Int128_FromInt32(Int32 int32);
-SMILE_API_FUNC Int128 Int128_FromInt64(Int64 int64);
-
-SMILE_API_FUNC Bool Int128_TryParse(String str, Int128 *result);
-SMILE_API_FUNC String Int128_ToStringEx(Int128 int128, Int minIntDigits, Bool forceSign);
-
-SMILE_API_FUNC Int128 Int128_Add(Int128 a, Int128 b);
-SMILE_API_FUNC Int128 Int128_Sub(Int128 a, Int128 b);
-SMILE_API_FUNC Int128 Int128_Mul(Int128 a, Int128 b);
-SMILE_API_FUNC Int128 Int128_Div(Int128 a, Int128 b);
-SMILE_API_FUNC Int128 Int128_Mod(Int128 a, Int128 b);
-SMILE_API_FUNC void Int128_DivMo(Int128 a, Int128 b, Int128 *div, Int128 *mod);
-SMILE_API_FUNC Int128 Int128_Rem(Int128 a, Int128 b);
-
-SMILE_API_FUNC Int128 Int128_Neg(Int128 int128);
-SMILE_API_FUNC Int128 Int128_Abs(Int128 int128);
-
-SMILE_API_FUNC Bool Int128_IsNeg(Int128 int128);
-SMILE_API_FUNC Bool Int128_IsZero(Int128 int128);
-
-SMILE_API_FUNC Int Int128_Compare(Int128 a, Int128 b);
-
-SMILE_API_FUNC Bool Int128_Eq(Int128 a, Int128 b);
-SMILE_API_FUNC Bool Int128_Ne(Int128 a, Int128 b);
-SMILE_API_FUNC Bool Int128_Lt(Int128 a, Int128 b);
-SMILE_API_FUNC Bool Int128_Gt(Int128 a, Int128 b);
-SMILE_API_FUNC Bool Int128_Le(Int128 a, Int128 b);
-SMILE_API_FUNC Bool Int128_Ge(Int128 a, Int128 b);
-
-//-------------------------------------------------------------------------------------------------
-// Inline functions.
-
-Inline Int128 Int128_Sign(Int128 x)
+Inline void UInt128_Add(UInt64 x_lo, UInt64 x_hi, UInt64 y_lo, UInt64 y_hi,
+	UInt64 *result_lo, UInt64 *result_hi)
 {
-	return x.hi == 0 && x.lo == 0 ? Int128_Zero
-		: x.hi < 0 ? Int128_NegOne
-		: Int128_One;
+	*result_lo = x_lo + y_lo;
+	*result_hi = x_hi + y_hi + (x_lo + y_lo < x_lo);
 }
 
-Inline Int Int128_IntSign(Int128 x)
+Inline void UInt128_Sub(UInt64 x_lo, UInt64 x_hi, UInt64 y_lo, UInt64 y_hi,
+	UInt64 * result_lo, UInt64 * result_hi)
 {
-	return x.hi == 0 && x.lo == 0 ? 0
-		: x.hi < 0 ? -1
-		: +1;
+	*result_lo = x_lo - y_lo;
+	*result_hi = x_hi - y_hi - (x_lo - y_lo > x_lo);
 }
 
-Inline Int128 Int128_Parse(String str)
+Inline void UInt128_IncInPlace(UInt64 *lo, UInt64 *hi)
 {
-	Int128 result;
-	Int128_TryParse(str, &result);
-	return result;
+	if ((*lo)++ == 0)
+		(*hi)++;
 }
 
-Inline Bool Int128_TryParseC(const char *str, Int128 *result)
+Inline void UInt128_DecInPlace(UInt64 *lo, UInt64 *hi)
 {
-	DECLARE_TEMP_C_STRING(string);
-	INIT_TEMP_C_STRING(string, str);
-
-	return Int128_TryParse(string, result);
+	if ((*lo)-- == (UInt64)(Int64)-1)
+		(*hi)--;
 }
 
-Inline Int128 Int128_ParseC(const char *str)
+Inline void Int128_IncInPlace(Int64 *lo, Int64 *hi)
 {
-	Int128 result;
-	DECLARE_TEMP_C_STRING(string);
-	INIT_TEMP_C_STRING(string, str);
-
-	Int128_TryParse(string, &result);
-	return result;
+	if ((*lo)++ == 0)
+		(*hi)++;
 }
 
-Inline String Int128_ToString(Real128 real128)
+Inline void Int128_DecInPlace(Int64 *lo, Int64 *hi)
 {
-	return Int128_ToStringEx(real128, 0, False);
+	if ((*lo)-- == -1)
+		(*hi)--;
+}
+
+Inline void Int128_NegInPlace(Int64 *lo, Int64 *hi)
+{
+	*lo = ~*lo;
+	*hi = ~*hi;
+
+	if (*lo == 0)
+		(*hi)++;
+}
+
+Inline void UInt64_MulExtended128(UInt64 x, UInt64 y, UInt64 *lo, UInt64 *hi)
+{
+#	if SMILE_COMPILER_HAS_UINT128
+		UInt128 result = (UInt128)x * (UInt128)y;
+		*lo = (UInt64)result;
+		*hi = (UInt64)(result >> 64);
+#	else
+		UInt64_MulExtended128_External(x, y, lo, hi);
+#	endif
+}
+
+Inline void Int64_MulExtended128(Int64 x, Int64 y, Int64 *lo, Int64 *hi)
+{
+#	if SMILE_COMPILER_HAS_UINT128
+		Int128 result = (Int128)x * (Int128)y;
+		*lo = (Int64)result;
+		*hi = (Int64)(result >> 64);
+#	else
+		Int64_MulExtended128_External(x, y, lo, hi);
+#	endif
 }
 
 #endif

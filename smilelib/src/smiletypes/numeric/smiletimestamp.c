@@ -41,10 +41,11 @@
 #define INTERNAL_YEAR (1LL)
 #define ABSOLUTE_TO_INTERNAL ((ABSOLUTE_ZERO_YEAR - INTERNAL_YEAR) * SECONDS_PER_YEAR)
 #define INTERNAL_TO_ABSOLUTE (-ABSOLUTE_TO_INTERNAL)
-#define INTERNAL_TO_UNIX ((Int64)(1969*365 + 1969/4 - 1969/100 + 1969/400) * SECONDS_PER_DAY)
+#define INTERNAL_TO_UNIX (-(Int64)(1969*365 + 1969/4 - 1969/100 + 1969/400) * SECONDS_PER_DAY)
+	// 1969 and not 1970 because INTERNAL_YEAR starts at 1, not 0.
+#define UNIX_TO_INTERNAL (-INTERNAL_TO_UNIX)
 #define SECONDS_FROM_WINDOWS_TO_UNIX_EPOCH (11644473600LL)
 #define SECONDS_FROM_UNIX_TO_WINDOWS_EPOCH (-SECONDS_FROM_WINDOWS_TO_UNIX_EPOCH)
-#define UNIX_TO_INTERNAL (-INTERNAL_TO_UNIX)
 
 #define WINDOWS_TICKS_PER_SECOND (10000000)
 #define WINDOWS_TICKS_PER_NANOSECOND (100)
@@ -61,8 +62,8 @@ SMILE_EASY_OBJECT_VTABLE(SmileTimestamp);
 /// seconds will vary if the absolute year is changed.
 /// </summary>
 /// <param name="seconds">The number of seconds since the start of the epoch.
-/// Currently, the epoch starts at midnight on January 1, year -292277022399 UTC,
-/// using the Gregorian calendar, but this may change in future releases.</param>
+/// The Smile epoch starts at midnight on January 1, year 1 UTC, using the perpetual
+/// Gregorian calendar (the same as the Golang epoch).</param>
 /// <param name="nanos">The number of nanoseconds since the start of the given second.</param>
 /// <returns>A new SmileTimestamp object that represents the given seconds/nanos tuple.</returns>
 SmileTimestamp SmileTimestamp_Create(Int64 seconds, UInt32 nanos)
@@ -177,7 +178,7 @@ static SmileObject SmileTimestamp_GetProperty(SmileTimestamp self, Symbol proper
 		SmileTimestamp_Decompose(self, &decomposed, DecomposeLeapYear);
 		return (SmileObject)SmileInteger64_Create(decomposed.leapYear);
 	}
-	else return NullObject;
+	else return SMILE_VCALL1(self->base, getProperty, propertyName);
 }
 
 static void SmileTimestamp_SetProperty(SmileTimestamp self, Symbol propertyName, SmileObject value)
@@ -400,20 +401,23 @@ String SmileTimestamp_Stringify(SmileTimestamp self)
 
 	SmileTimestamp_Decompose(self, &decomposed, DecomposeAll);
 
-	// Format the nanos as a padded unsigned integer.
-	nanos = String_Format("%09u", decomposed.nanos);
+	// Format the nanos as a padded unsigned integer, with preceding decimal point.
+	nanos = String_Format(".%09u", decomposed.nanos);
 
-	// Trim trailing zeros from the nanos, but always leave at least one digit
-	// (even if that digit is just a zero).
+	// Trim all trailing zeros from the nanos.
 	nanosText = String_GetBytes(nanos);
 	nanosEnd = nanosText + String_Length(nanos);
-	for (nanosNewEnd = nanosEnd; nanosNewEnd > nanosText + 1 && nanosNewEnd[-1] == '0'; nanosNewEnd--) ;
+	for (nanosNewEnd = nanosEnd; nanosNewEnd[-1] == '0'; nanosNewEnd--) ;
 	if (nanosNewEnd != nanosEnd) {
-		nanos = String_Create(nanosText, nanosNewEnd - nanosText);
+		// Strip it back, since there were trailing zeros.  If only a decimal
+		// point is left, remove the entire thing.
+		nanos = (nanosNewEnd == nanosText + 1)
+			? String_Empty
+			: String_Create(nanosText, nanosNewEnd - nanosText);
 	}
 
 	// Format the timestamp in ISO 8601 form, in UTC (since timestamp objects are always UTC).
-	return String_Format("%04ld-%02hd-%02hdT%02hd:%02hd:%02hd.%SZ",
+	return String_Format("%04ld-%02hd-%02hdT%02hd:%02hd:%02hd%SZ",
 		decomposed.year, (Int32)decomposed.month, (Int32)decomposed.day,
 		(Int32)decomposed.hour, (Int32)decomposed.minute, (Int32)decomposed.second,
 		nanos);

@@ -244,7 +244,7 @@ typedef struct KnownSymbolsStruct {
 	Symbol sqrt, sqrt_domain, stack_trace, start, starts_with, starts_with_i, step, stepping;
 	Symbol string_, strip_c_slashes, studied_, study, substr, substring, symbol;
 	Symbol symbol_currency, symbol_math, symbol_modifier, symbol_other, syntax;
-	Symbol tan, text, this_, this_closure, throw_, title, titlecase, titlecase_q, trim, trim_end, trim_start, true_, type;
+	Symbol tan, text, this_, this_closure, throw_, timestamp_, title, titlecase, titlecase_q, trim, trim_end, trim_start, true_, type;
 	Symbol underscorize, uni_, unknown, upper, uppercase, uppercase_q, url_decode, url_encode, url_query_encode, user_object, utf8_to_latin1;
 	Symbol value, values;
 	Symbol where_, whitespace_q, wildcard_matches, without;

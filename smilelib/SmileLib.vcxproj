@@ -128,6 +128,7 @@
     <ClInclude Include="gc\include\private\gc_priv.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\smile\numeric\int128.h" />
     <ClInclude Include="include\smile\smiletypes\numeric\smiletimestamp.h" />
     <ClInclude Include="regex\src\config.h" />
     <ClInclude Include="regex\src\oniguruma.h" />
@@ -955,6 +956,7 @@
     <ClCompile Include="src\dict\stringdict.c" />
     <ClCompile Include="src\dict\stringintdict.c" />
     <ClCompile Include="src\numeric\float64.c" />
+    <ClCompile Include="src\numeric\int128.c" />
     <ClCompile Include="src\numeric\random.c" />
     <ClCompile Include="src\numeric\real128.c" />
     <ClCompile Include="src\numeric\real32.c" />

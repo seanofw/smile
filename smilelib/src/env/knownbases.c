@@ -185,7 +185,7 @@ static void SetupMiscTypes(struct KnownBasesStruct *knownBases)
 	knownBases->Uni = SmileUserObject_Create((SmileObject)knownBases->Object, Smile_KnownSymbols.Uni_);
 	knownBases->Symbol = SmileUserObject_Create((SmileObject)knownBases->Object, Smile_KnownSymbols.Symbol_);
 	knownBases->Exception = SmileUserObject_Create((SmileObject)knownBases->Object, Smile_KnownSymbols.Exception_);
-	knownBases->Timestamp = SmileUserObject_Create((SmileObject)knownBases->Timestamp, Smile_KnownSymbols.Timestamp_);
+	knownBases->Timestamp = SmileUserObject_Create((SmileObject)knownBases->Object, Smile_KnownSymbols.Timestamp_);
 	knownBases->Handle = SmileUserObject_Create((SmileObject)knownBases->Object, Smile_KnownSymbols.Handle_);
 
 	knownBases->Regex = SmileUserObject_Create((SmileObject)knownBases->Handle, Smile_KnownSymbols.Regex_);

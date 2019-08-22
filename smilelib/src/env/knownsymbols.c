@@ -851,6 +851,7 @@ STATIC_STRING(text, "text");
 STATIC_STRING(this_, "this");
 STATIC_STRING(this_closure, "this-closure");
 STATIC_STRING(throw_, "throw");
+STATIC_STRING(timestamp_, "timestamp");
 STATIC_STRING(title, "title");
 STATIC_STRING(titlecase, "titlecase");
 STATIC_STRING(titlecase_q, "titlecase?");
@@ -1181,6 +1182,7 @@ static void KnownSymbolsInt_PreloadGeneralSymbols(SymbolTable symbolTable, Known
 	knownSymbols->this_ = SymbolTableInt_AddFast(symbolTable, this_);
 	knownSymbols->this_closure = SymbolTableInt_AddFast(symbolTable, this_closure);
 	knownSymbols->throw_ = SymbolTableInt_AddFast(symbolTable, throw_);
+	knownSymbols->timestamp_ = SymbolTableInt_AddFast(symbolTable, timestamp_);
 	knownSymbols->title = SymbolTableInt_AddFast(symbolTable, title);
 	knownSymbols->titlecase = SymbolTableInt_AddFast(symbolTable, titlecase);
 	knownSymbols->titlecase_q = SymbolTableInt_AddFast(symbolTable, titlecase_q);

@@ -4,7 +4,7 @@
 
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
-//  Copyright 2004-2017 Sean Werkema
+//  Copyright 2004-2019 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -238,6 +238,23 @@ SMILE_EXTERNAL_FUNCTION(ToChar)
 SMILE_EXTERNAL_FUNCTION(ToUni)
 {
 	return SmileUnboxedUni_FromSafeInt64(argv[0].unboxed.i64);
+}
+
+SMILE_EXTERNAL_FUNCTION(Hex)
+{
+	STATIC_STRING(prefix, "0x");
+	return SmileArg_From((SmileObject)String_Concat(prefix, String_CreateFromInteger(argv[0].unboxed.i64, 16, False)));
+}
+
+SMILE_EXTERNAL_FUNCTION(Octal)
+{
+	STATIC_STRING(prefix, "0");
+	return SmileArg_From((SmileObject)String_Concat(prefix, String_CreateFromInteger(argv[0].unboxed.i64, 8, False)));
+}
+
+SMILE_EXTERNAL_FUNCTION(Binary)
+{
+	return SmileArg_From((SmileObject)String_CreateFromInteger(argv[0].unboxed.i64, 2, False));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1745,15 +1762,19 @@ void SmileInteger64_Setup(SmileUserObject base)
 	SetupFunction("zerox16", ZeroExtend16, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
 	SetupFunction("zerox8", ZeroExtend8, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
 
-	SetupFunction("float32", ToFloat32, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
-	SetupFunction("float64", ToFloat64, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
-	SetupFunction("float", ToFloat64, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
-	SetupFunction("real32", ToReal32, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
-	SetupFunction("real64", ToReal64, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
-	SetupFunction("real", ToReal64, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("float32", ToFloat32, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupFunction("float64", ToFloat64, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupFunction("float", ToFloat64, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupFunction("real32", ToReal32, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupFunction("real64", ToReal64, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupFunction("real", ToReal64, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
 
 	SetupFunction("char", ToChar, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
 	SetupFunction("uni", ToUni, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+
+	SetupFunction("hex", Hex, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupFunction("octal", Octal, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
+	SetupFunction("binary", Binary, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _integer64Checks);
 
 	SetupFunction("parse", Parse, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX, 1, 3, 0, NULL);
 
