@@ -24,6 +24,7 @@
 #include <smile/smiletypes/numeric/smileinteger64.h>
 #include <smile/smiletypes/numeric/smilereal64.h>
 #include <smile/smiletypes/numeric/smilebyte.h>
+#include <smile/smiletypes/numeric/smiletimestamp.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/raw/smilebytearray.h>
 #include <smile/stringbuilder.h>
@@ -919,53 +920,9 @@ SMILE_EXTERNAL_FUNCTION(SetSize)
 	return SmileArg_From(NullObject);
 }
 
-#if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
-
-#	define WINDOWS_TICKS_PER_SECOND 10000000LL
-#	define SECONDS_FROM_WINDOWS_TO_UNIX_EPOCH 11644473600LL
-
-	static Real64 _windowsTicksMultiply;
-	static Real64 _windowsTicksDivide;
-	static Bool _windowsTicksShiftIsAssigned = False;
-
-	static void InitWindowsTicksShift(void)
-	{
-		Real64 windowsTicksPerSecond = Real64_FromInt64(WINDOWS_TICKS_PER_SECOND);
-		_windowsTicksMultiply = windowsTicksPerSecond;
-		_windowsTicksDivide = Real64_Div(Real64_One, windowsTicksPerSecond);
-		_windowsTicksShiftIsAssigned = True;
-	}
-
-	static Real64 FileTimeToUnixTimestamp(FILETIME *filetime)
-	{
-		Int64 windowsTimestamp;
-
-		if (!_windowsTicksShiftIsAssigned)
-			InitWindowsTicksShift();
-
-		windowsTimestamp = (Int64)(((Int64)filetime->dwHighDateTime << 32) | (Int64)filetime->dwLowDateTime);
-		windowsTimestamp -= SECONDS_FROM_WINDOWS_TO_UNIX_EPOCH * WINDOWS_TICKS_PER_SECOND;
-		return Real64_Mul(Real64_FromInt64(windowsTimestamp), _windowsTicksDivide);
-	}
-
-	static void UnixTimestampToFileTime(Real64 timestamp, FILETIME *filetime)
-	{
-		Int64 windowsTimestamp;
-
-		if (!_windowsTicksShiftIsAssigned)
-			InitWindowsTicksShift();
-
-		windowsTimestamp = Real64_ToInt64(Real64_Add(Real64_Mul(timestamp, _windowsTicksMultiply), Real64_OneHalf));
-		windowsTimestamp += SECONDS_FROM_WINDOWS_TO_UNIX_EPOCH * WINDOWS_TICKS_PER_SECOND;
-		filetime->dwLowDateTime = (UInt32)windowsTimestamp;
-		filetime->dwHighDateTime = (UInt32)(windowsTimestamp >> 32);
-	}
-
-#endif
-
 SMILE_EXTERNAL_FUNCTION(GetCreateTime)
 {
-	Real64 result;
+	SmileTimestamp result;
 	String name = (String)argv[0].obj;
 
 #	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
@@ -975,17 +932,18 @@ SMILE_EXTERNAL_FUNCTION(GetCreateTime)
 		if (!GetFileAttributesExW(name16, GetFileExInfoStandard, &attrData))
 			return SmileUnboxedBool_From(False);
 
-		result = FileTimeToUnixTimestamp(&attrData.ftCreationTime);
+		result = SmileTimestamp_FromWindows(((Int64)attrData.ftCreationTime.dwHighDateTime << 32)
+			| attrData.ftCreationTime.dwLowDateTime);
 #	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
 		struct stat statbuf;
 		if (lstat(String_ToC(name), &statbuf))
 			return SmileUnboxedBool_From(False);
-		result = Real64_FromInt64((Int64)statbuf.st_ctime);
+		result = SmileTimestamp_FromUnix((Int64)statbuf.st_ctime);
 #	else
 #		error Unsupported OS.
 #	endif
 
-	return SmileUnboxedReal64_From(result);
+	return SmileArg_From((SmileObject)result);
 }
 
 SMILE_EXTERNAL_FUNCTION(SetCreateTime)
@@ -995,7 +953,7 @@ SMILE_EXTERNAL_FUNCTION(SetCreateTime)
 
 SMILE_EXTERNAL_FUNCTION(GetModifyTime)
 {
-	Real64 result;
+	SmileTimestamp result;
 	String name = (String)argv[0].obj;
 
 #	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
@@ -1005,17 +963,18 @@ SMILE_EXTERNAL_FUNCTION(GetModifyTime)
 		if (!GetFileAttributesExW(name16, GetFileExInfoStandard, &attrData))
 			return SmileUnboxedBool_From(False);
 
-		result = FileTimeToUnixTimestamp(&attrData.ftLastWriteTime);
+		result = SmileTimestamp_FromWindows(((Int64)attrData.ftLastWriteTime.dwHighDateTime << 32)
+			| attrData.ftLastWriteTime.dwLowDateTime);
 #	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
 		struct stat statbuf;
 		if (lstat(String_ToC(name), &statbuf))
 			return SmileUnboxedBool_From(False);
-		result = Real64_FromInt64((Int64)statbuf.st_mtime);
+		result = SmileTimestamp_FromUnix((Int64)statbuf.st_mtime);
 #	else
 #		error Unsupported OS.
 #	endif
 
-	return SmileUnboxedReal64_From(result);
+	return SmileArg_From((SmileObject)result);
 }
 
 SMILE_EXTERNAL_FUNCTION(SetModifyTime)
@@ -1025,7 +984,7 @@ SMILE_EXTERNAL_FUNCTION(SetModifyTime)
 
 SMILE_EXTERNAL_FUNCTION(GetAccessTime)
 {
-	Real64 result;
+	SmileTimestamp result;
 	String name = (String)argv[0].obj;
 
 #	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
@@ -1035,17 +994,18 @@ SMILE_EXTERNAL_FUNCTION(GetAccessTime)
 		if (!GetFileAttributesExW(name16, GetFileExInfoStandard, &attrData))
 			return SmileUnboxedBool_From(False);
 
-		result = FileTimeToUnixTimestamp(&attrData.ftLastAccessTime);
+		result = SmileTimestamp_FromWindows(((Int64)attrData.ftLastAccessTime.dwHighDateTime << 32)
+			| attrData.ftLastAccessTime.dwLowDateTime);
 #	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
 		struct stat statbuf;
 		if (lstat(String_ToC(name), &statbuf))
 			return SmileUnboxedBool_From(False);
-		result = Real64_FromInt64((Int64)statbuf.st_atime);
+		result = SmileTimestamp_FromUnix((Int64)statbuf.st_atime);
 #	else
 #		error Unsupported OS.
 #	endif
 
-	return SmileUnboxedReal64_From(result);
+	return SmileArg_From((SmileObject)result);
 }
 
 SMILE_EXTERNAL_FUNCTION(SetAccessTime)

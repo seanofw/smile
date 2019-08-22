@@ -487,4 +487,164 @@ START_TEST(CanConvertTimestampValuesToUnixEpoch)
 }
 END_TEST
 
+//-------------------------------------------------------------------------------------------------
+//  Windows Conversion Tests.
+
+START_TEST(CanConvertWindowsFiletimesToTimestamps)
+{
+	SmileTimestamp timestamp;
+
+	// Windows 0  -->  1601-01-01 00:00:00  -->  50491123200.0
+	timestamp = SmileTimestamp_FromWindows(0LL);
+	ASSERT(timestamp->seconds == 50491123200LL);
+	ASSERT(timestamp->nanos == 0);
+
+	// Windows 1  -->  1601-01-01 00:00:00.0000001  -->  50491123200.000000100
+	timestamp = SmileTimestamp_FromWindows(1LL);
+	ASSERT(timestamp->seconds == 50491123200LL);
+	ASSERT(timestamp->nanos == 100);
+
+	// Windows 116444736000000000  -->  1970-01-01 00:00:00  -->  62135596800.0
+	timestamp = SmileTimestamp_FromWindows(116444736000000000LL);
+	ASSERT(timestamp->seconds == 62135596800LL);
+	ASSERT(timestamp->nanos == 0);
+
+	// Windows 116444736000000001  -->  1970-01-01 00:00:00.00000001  -->  62135596800.000000100
+	timestamp = SmileTimestamp_FromWindows(116444736000000001LL);
+	ASSERT(timestamp->seconds == 62135596800LL);
+	ASSERT(timestamp->nanos == 100);
+
+	// Windows 116444736009999999  -->  1970-01-01 00:00:00.9999999  -->  62135596800.999999900
+	timestamp = SmileTimestamp_FromWindows(116444736009999999LL);
+	ASSERT(timestamp->seconds == 62135596800LL);
+	ASSERT(timestamp->nanos == 999999900);
+
+	// Windows 116444736010000000  -->  1970-01-01 00:00:01  -->  62135596801.0
+	timestamp = SmileTimestamp_FromWindows(116444736010000000LL);
+	ASSERT(timestamp->seconds == 62135596801LL);
+	ASSERT(timestamp->nanos == 0);
+
+	// Windows 132106799560000000  -->  2019-08-19 09:19:16  -->  63701803156.0
+	timestamp = SmileTimestamp_FromWindows(132106799560000000LL);
+	ASSERT(timestamp->seconds == 63701803156LL);
+	ASSERT(timestamp->nanos == 0);
+}
+END_TEST
+
+START_TEST(CanConvertNegativeWindowsFiletimesToTimestamps)
+{
+	SmileTimestamp timestamp;
+
+	// Windows -1  -->  1600-12-31 12:59:59.9999999  -->  50491123199.999999900
+	timestamp = SmileTimestamp_FromWindows(-1LL);
+	ASSERT(timestamp->seconds == 50491123199LL);
+	ASSERT(timestamp->nanos == 999999900);
+
+	// Windows -9999998  -->  1600-12-31 12:59:59.0000002  -->  50491123199.000000200
+	timestamp = SmileTimestamp_FromWindows(-9999998LL);
+	ASSERT(timestamp->seconds == 50491123199LL);
+	ASSERT(timestamp->nanos == 200);
+
+	// Windows -9999999  -->  1600-12-31 12:59:59.0000001  -->  50491123199.000000100
+	timestamp = SmileTimestamp_FromWindows(-9999999LL);
+	ASSERT(timestamp->seconds == 50491123199LL);
+	ASSERT(timestamp->nanos == 100);
+
+	// Windows -10000000  -->  1600-12-31 12:59:59  -->  50491123199.0
+	timestamp = SmileTimestamp_FromWindows(-10000000LL);
+	ASSERT(timestamp->seconds == 50491123199LL);
+	ASSERT(timestamp->nanos == 0);
+
+	// Windows -10000001  -->  1600-12-31 12:59:58.9999999  -->  50491123198.999999900
+	timestamp = SmileTimestamp_FromWindows(-10000001LL);
+	ASSERT(timestamp->seconds == 50491123198LL);
+	ASSERT(timestamp->nanos == 999999900);
+
+	// Windows -504911232000000000  -->  0000-01-01 00:00:00  -->  0.0
+	timestamp = SmileTimestamp_FromWindows(-504911232000000000LL);
+	ASSERT(timestamp->seconds == 0);
+	ASSERT(timestamp->nanos == 0);
+}
+END_TEST
+
+START_TEST(CanConvertTimestampValuesToWindowsFiletimes)
+{
+	Int64 ticks;
+
+	// 50491123200.000000000  -->  1601-01-01 00:00:00  -->  Windows 0
+	ticks = SmileTimestamp_ToWindows(SmileTimestamp_Create(50491123200LL, 0));
+	ASSERT(ticks == 0);
+
+	// 50491123200.000000049  -->  1601-01-01 00:00:00.0000000  -->  Windows 0
+	ticks = SmileTimestamp_ToWindows(SmileTimestamp_Create(50491123200LL, 49));
+	ASSERT(ticks == 0);
+
+	// 50491123200.000000050  -->  1601-01-01 00:00:00.0000001  -->  Windows 1
+	ticks = SmileTimestamp_ToWindows(SmileTimestamp_Create(50491123200LL, 50));
+	ASSERT(ticks == 1);
+
+	// 50491123200.000000100  -->  1601-01-01 00:00:00.0000001  -->  Windows 1
+	ticks = SmileTimestamp_ToWindows(SmileTimestamp_Create(50491123200LL, 100));
+	ASSERT(ticks == 1);
+
+	// 62135596800.000000000  -->  1970-01-01 00:00:00  -->  Windows 116444736000000000
+	ticks = SmileTimestamp_ToWindows(SmileTimestamp_Create(62135596800LL, 0));
+	ASSERT(ticks == 116444736000000000LL);
+
+	// 62135596800.000000100  -->  1970-01-01 00:00:00.00000001  -->  Windows 116444736000000001
+	ticks = SmileTimestamp_ToWindows(SmileTimestamp_Create(62135596800LL, 100));
+	ASSERT(ticks == 116444736000000001LL);
+
+	// 62135596800.999999900  -->  1970-01-01 00:00:00.9999999  -->  Windows 116444736009999999
+	ticks = SmileTimestamp_ToWindows(SmileTimestamp_Create(62135596800LL, 999999900));
+	ASSERT(ticks == 116444736009999999LL);
+
+	// 62135596801.000000000  -->  1970-01-01 00:00:01  -->  Windows 116444736010000000
+	ticks = SmileTimestamp_ToWindows(SmileTimestamp_Create(62135596801LL, 0));
+	ASSERT(ticks == 116444736010000000LL);
+
+	// 63701803156.000000000  -->  2019-08-19 09:19:16  -->  Windows 132106799560000000
+	ticks = SmileTimestamp_ToWindows(SmileTimestamp_Create(63701803156LL, 0));
+	ASSERT(ticks == 132106799560000000LL);
+
+	// 63701803156.000000049  -->  2019-08-19 09:19:16  -->  Windows 132106799560000000
+	ticks = SmileTimestamp_ToWindows(SmileTimestamp_Create(63701803156LL, 49));
+	ASSERT(ticks == 132106799560000000LL);
+
+	// 63701803156.000000050  -->  2019-08-19 09:19:16  -->  Windows 132106799560000001
+	ticks = SmileTimestamp_ToWindows(SmileTimestamp_Create(63701803156LL, 50));
+	ASSERT(ticks == 132106799560000001LL);
+}
+END_TEST
+
+START_TEST(CanConvertTimestampsToNegativeWindowsFiletimes)
+{
+	Int64 ticks;
+
+	// 50491123199.999999900  -->  1600-12-31 12:59:59.9999999  --> Windows -1
+	ticks = SmileTimestamp_ToWindows(SmileTimestamp_Create(50491123199LL, 999999900));
+	ASSERT(ticks == -1LL);
+
+	// 50491123199.000000200  -->  1600-12-31 12:59:59.0000002  -->  Windows -9999998
+	ticks = SmileTimestamp_ToWindows(SmileTimestamp_Create(50491123199LL, 200));
+	ASSERT(ticks == -9999998LL);
+
+	// 50491123199.000000100  -->  1600-12-31 12:59:59.0000001  -->  Windows -9999999
+	ticks = SmileTimestamp_ToWindows(SmileTimestamp_Create(50491123199LL, 100));
+	ASSERT(ticks == -9999999LL);
+
+	// 50491123199.0  -->  1600-12-31 12:59:59  -->  Windows -10000000
+	ticks = SmileTimestamp_ToWindows(SmileTimestamp_Create(50491123199LL, 0));
+	ASSERT(ticks == -10000000LL);
+
+	// 50491123198.999999900  -->  1600-12-31 12:59:58.9999999  -->  Windows -10000001
+	ticks = SmileTimestamp_ToWindows(SmileTimestamp_Create(50491123198LL, 999999900));
+	ASSERT(ticks == -10000001LL);
+
+	// 0.0  -->  0000-01-01 00:00:00  -->  Windows -504911232000000000
+	ticks = SmileTimestamp_ToWindows(SmileTimestamp_Create(0, 0));
+	ASSERT(ticks == -504911232000000000LL);
+}
+END_TEST
+
 #include "timestamp_tests.generated.inc"

@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 9cbeb2b7f155fc2160a1a9130b39c6b8
+// SourceHash: 6622a8b83aaa32430bdd574356684f5b
 
 START_TEST_SUITE(TimestampTests)
 {
@@ -15,6 +15,10 @@ START_TEST_SUITE(TimestampTests)
 	CanStringifyIso8601DatesAndTimes,
 	CanConvertUnixEpochValuesToTimestamps,
 	CanConvertTimestampValuesToUnixEpoch,
+	CanConvertWindowsFiletimesToTimestamps,
+	CanConvertNegativeWindowsFiletimesToTimestamps,
+	CanConvertTimestampValuesToWindowsFiletimes,
+	CanConvertTimestampsToNegativeWindowsFiletimes,
 }
 END_TEST_SUITE(TimestampTests)
 

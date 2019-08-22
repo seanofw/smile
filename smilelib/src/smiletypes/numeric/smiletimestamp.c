@@ -43,8 +43,9 @@
 #define INTERNAL_TO_ABSOLUTE (-ABSOLUTE_TO_INTERNAL)
 #define INTERNAL_TO_UNIX (-(Int64)(1969*365 + 1969/4 - 1969/100 + 1969/400) * SECONDS_PER_DAY)
 	// 1969 and not 1970 because INTERNAL_YEAR starts at 1, not 0.
+	// INTERNAL_TO_UNIX == -62135596800LL
 #define UNIX_TO_INTERNAL (-INTERNAL_TO_UNIX)
-#define SECONDS_FROM_WINDOWS_TO_UNIX_EPOCH (11644473600LL)
+#define SECONDS_FROM_WINDOWS_TO_UNIX_EPOCH (-11644473600LL)
 #define SECONDS_FROM_UNIX_TO_WINDOWS_EPOCH (-SECONDS_FROM_WINDOWS_TO_UNIX_EPOCH)
 
 #define WINDOWS_TICKS_PER_SECOND (10000000)
@@ -111,8 +112,28 @@ Int64 SmileTimestamp_ToUnix(SmileTimestamp timestamp)
 /// <returns>A new SmileTimestamp object that represents the given time.</returns>
 SmileTimestamp SmileTimestamp_FromWindows(Int64 ticks)
 {
-	Int64 seconds = ticks / WINDOWS_TICKS_PER_SECOND;
-	UInt32 nanos = (ticks % WINDOWS_TICKS_PER_SECOND) * WINDOWS_TICKS_PER_NANOSECOND;
+	Int64 seconds;
+	Int32 hundredNanos;
+	UInt32 nanos;
+
+	if (ticks >= 0) {
+		seconds = ticks / WINDOWS_TICKS_PER_SECOND;
+		hundredNanos = ticks % WINDOWS_TICKS_PER_SECOND;
+	}
+	else {
+		// Signed division rounds toward zero, but we need it to always round toward
+		// -infinity, so we have to play tricks here to force it to round down.
+		seconds = (ticks - WINDOWS_TICKS_PER_SECOND + 1) / WINDOWS_TICKS_PER_SECOND;
+		hundredNanos = ticks % WINDOWS_TICKS_PER_SECOND;
+
+		// Modulus of a negative value will result in a negative value or zero, so we
+		// have to move it up to the next positive mark, but only if it's not zero.
+		if (hundredNanos < 0)
+			hundredNanos += WINDOWS_TICKS_PER_SECOND;
+	}
+
+	nanos = (UInt32)(hundredNanos * WINDOWS_TICKS_PER_NANOSECOND);
+
 	return SmileTimestamp_Create(seconds + SECONDS_FROM_WINDOWS_TO_UNIX_EPOCH + UNIX_TO_INTERNAL, nanos);
 }
 
@@ -124,8 +145,8 @@ SmileTimestamp SmileTimestamp_FromWindows(Int64 ticks)
 Int64 SmileTimestamp_ToWindows(SmileTimestamp timestamp)
 {
 	Int64 seconds = timestamp->seconds + INTERNAL_TO_UNIX + SECONDS_FROM_UNIX_TO_WINDOWS_EPOCH;
-	Int64 ticks = timestamp->nanos / WINDOWS_TICKS_PER_NANOSECOND;
-	ticks += seconds * WINDOWS_TICKS_PER_NANOSECOND;
+	Int64 ticks = (timestamp->nanos + (WINDOWS_TICKS_PER_NANOSECOND / 2)) / WINDOWS_TICKS_PER_NANOSECOND;
+	ticks += seconds * WINDOWS_TICKS_PER_SECOND;
 	return ticks;
 }
 
