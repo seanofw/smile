@@ -26,7 +26,6 @@
 #include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
-#include <smile/smiletypes/numeric/smileinteger128.h>
 #include <smile/smiletypes/numeric/smilefloat32.h>
 #include <smile/smiletypes/numeric/smilefloat64.h>
 #include <smile/smiletypes/numeric/smilereal32.h>

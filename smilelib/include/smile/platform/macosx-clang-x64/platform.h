@@ -30,16 +30,6 @@ typedef unsigned int UInt32;
 typedef long long Int64;
 typedef unsigned long long UInt64;
 
-typedef struct {
-	unsigned long long hi;
-	unsigned long long lo;
-} UInt128;
-
-typedef struct {
-	long long hi;
-	unsigned long long lo;
-} Int128;
-
 // Portable pointer-casting types.
 typedef UInt64 PtrInt;		// An unsigned integer type that is the same size as a pointer.
 typedef Int64 Int;			// A signed integer type that matches the native platform's "best" register size.

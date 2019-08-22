@@ -1006,7 +1006,6 @@
     <ClCompile Include="src\smiletypes\numeric\smilefloat32_base.generated.c" />
     <ClCompile Include="src\smiletypes\numeric\smilefloat64.generated.c" />
     <ClCompile Include="src\smiletypes\numeric\smilefloat64_base.generated.c" />
-    <ClCompile Include="src\smiletypes\numeric\smileinteger128.c" />
     <ClCompile Include="src\smiletypes\numeric\smileinteger16.generated.c" />
     <ClCompile Include="src\smiletypes\numeric\smileinteger16_base.generated.c" />
     <ClCompile Include="src\smiletypes\numeric\smileinteger32.generated.c" />

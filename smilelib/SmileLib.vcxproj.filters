@@ -1363,9 +1363,6 @@
     <ClCompile Include="src\smiletypes\numeric\smilefloat64_base.generated.c">
       <Filter>src\smiletypes\numeric</Filter>
     </ClCompile>
-    <ClCompile Include="src\smiletypes\numeric\smileinteger128.c">
-      <Filter>src\smiletypes\numeric</Filter>
-    </ClCompile>
     <ClCompile Include="src\smiletypes\numeric\smileinteger16.generated.c">
       <Filter>src\smiletypes\numeric</Filter>
     </ClCompile>

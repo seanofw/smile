@@ -29,7 +29,6 @@
 #include <smile/smiletypes/numeric/smileinteger16.h>
 #include <smile/smiletypes/numeric/smileinteger32.h>
 #include <smile/smiletypes/numeric/smileinteger64.h>
-#include <smile/smiletypes/numeric/smileinteger128.h>
 
 static struct SmileByteInt _bytes[256];
 static struct SmileCharInt _chars[256];
@@ -38,7 +37,6 @@ static struct SmileUniInt _unis[1024];
 void KnownObjects_Setup(struct KnownObjectsStruct *knownObjects, struct KnownSymbolsStruct *knownSymbols)
 {
 	Int32 i;
-	Int128 i128;
 
 	knownObjects->NullInstance = SmileNull_Create();
 
@@ -62,25 +60,19 @@ void KnownObjects_Setup(struct KnownObjectsStruct *knownObjects, struct KnownSym
 		knownObjects->SmallInt16s[i + 100] = SmileInteger16_CreateInternal((Int16)i);
 		knownObjects->SmallInt32s[i + 100] = SmileInteger32_CreateInternal(i);
 		knownObjects->SmallInt64s[i + 100] = SmileInteger64_CreateInternal((Int64)i);
-		i128.hi = (Int64)i >> 31;
-		i128.lo = (Int64)i;
-		knownObjects->SmallInt128s[i + 100] = SmileInteger128_CreateInternal(i128);
 	}
 
 	knownObjects->ZeroInt16 = knownObjects->SmallInt16s[0 + 100];
 	knownObjects->ZeroInt32 = knownObjects->SmallInt32s[0 + 100];
 	knownObjects->ZeroInt64 = knownObjects->SmallInt64s[0 + 100];
-	knownObjects->ZeroInt128 = knownObjects->SmallInt128s[0 + 100];
 
 	knownObjects->OneInt16 = knownObjects->SmallInt16s[1 + 100];
 	knownObjects->OneInt32 = knownObjects->SmallInt32s[1 + 100];
 	knownObjects->OneInt64 = knownObjects->SmallInt64s[1 + 100];
-	knownObjects->OneInt128 = knownObjects->SmallInt128s[1 + 100];
 
 	knownObjects->NegOneInt16 = knownObjects->SmallInt16s[-1 + 100];
 	knownObjects->NegOneInt32 = knownObjects->SmallInt32s[-1 + 100];
 	knownObjects->NegOneInt64 = knownObjects->SmallInt64s[-1 + 100];
-	knownObjects->NegOneInt128 = knownObjects->SmallInt128s[-1 + 100];
 
 	knownObjects->TrueObj = SmileBool_Create(True);
 	knownObjects->FalseObj = SmileBool_Create(False);
