@@ -1048,9 +1048,9 @@ enum {
 #if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
 	Inline Bool GetUnixTime(const char *name, Int timeType, Int64 *seconds, Int32 *nanoseconds)
 	{
-		struct stat statbuf;
+		struct stat statBuf;
 
-		if (lstat(name, &statbuf))
+		if (lstat(name, &statBuf))
 			return False;
 
 #		if _POSIX_C_SOURCE >= 200809L || _XOPEN_SOURCE >= 700
