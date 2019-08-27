@@ -33,7 +33,6 @@
 
 SMILE_IGNORE_UNUSED_VARIABLES
 
-
 #if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
 
 // To make Windows pretend to return mode bits like Unix, we define
@@ -123,6 +122,11 @@ static Byte _timeChecks[] = {
 	0, 0,
 };
 
+static Byte _handleStringChecks[] = {
+	SMILE_KIND_MASK, SMILE_KIND_HANDLE,
+	SMILE_KIND_MASK, SMILE_KIND_STRING,
+};
+
 /// <summary>
 /// This weird little Boolean flag is set to true if and only if the stdio library
 /// is used at least once to read or write data from stdin, stdout, or stderr.
@@ -134,18 +138,8 @@ static Byte _timeChecks[] = {
 /// </summary>
 Bool Stdio_Invoked;
 
-void Stdio_File_UpdateLastError(Stdio_File file)
-{
-#	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
-		file->lastErrorCode = GetLastError();
-		file->lastErrorMessage = file->lastErrorCode ? Smile_Win32_GetErrorString(file->lastErrorCode) : String_Empty;
-#	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
-		file->lastErrorCode = errno;
-		file->lastErrorMessage = errno ? Smile_Unix_GetErrorString(errno) : String_Empty;
-#	else
-#		error Unsupported OS.
-#	endif
-}
+//-------------------------------------------------------------------------------------------------
+// Opening and creating files.
 
 SMILE_EXTERNAL_FUNCTION(Open)
 {
@@ -241,6 +235,9 @@ static Stdio_File GetFileFromHandle(SmileHandle handle, FileInfo fileInfo, const
 	return (Stdio_File)handle->ptr;
 }
 
+//-------------------------------------------------------------------------------------------------
+// File status tests.
+
 SMILE_EXTERNAL_FUNCTION(IsOpen)
 {
 	Stdio_File file = GetFileFromHandle((SmileHandle)argv[0].obj, (FileInfo)param, "File.open?");
@@ -253,6 +250,22 @@ SMILE_EXTERNAL_FUNCTION(IsEof)
 	Stdio_File file = GetFileFromHandle((SmileHandle)argv[0].obj, (FileInfo)param, "File.eof?");
 
 	return SmileUnboxedBool_From(file->isEof);
+}
+
+//-------------------------------------------------------------------------------------------------
+// Errors.
+
+void Stdio_File_UpdateLastError(Stdio_File file)
+{
+#	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+		file->lastErrorCode = GetLastError();
+		file->lastErrorMessage = file->lastErrorCode ? Smile_Win32_GetErrorString(file->lastErrorCode) : String_Empty;
+#	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+		file->lastErrorCode = errno;
+		file->lastErrorMessage = errno ? Smile_Unix_GetErrorString(errno) : String_Empty;
+#	else
+#		error Unsupported OS.
+#	endif
 }
 
 SMILE_EXTERNAL_FUNCTION(IsError)
@@ -286,6 +299,33 @@ SMILE_EXTERNAL_FUNCTION(ClearError)
 	return argv[0];
 }
 
+//-------------------------------------------------------------------------------------------------
+// Flush and Close.
+
+SMILE_EXTERNAL_FUNCTION(Flush)
+{
+	SmileHandle handle = (SmileHandle)argv[0].obj;
+	FileInfo fileInfo = (FileInfo)param;
+	Stdio_File file = GetFileFromHandle(handle, (FileInfo)param, "File.flush");
+	Bool result;
+
+	if (!file->isOpen)
+		return SmileUnboxedSymbol_From(fileInfo->ioSymbols->closed);
+
+#	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+		result = !!FlushFileBuffers(file->handle);
+#	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+		result = !fsync(file->fd);
+#	else
+#		error Unsupported OS.
+#	endif
+
+	if (!result)
+		Stdio_File_UpdateLastError(file);
+
+	return argv[0];
+}
+
 SMILE_EXTERNAL_FUNCTION(Close)
 {
 	SmileHandle handle = (SmileHandle)argv[0].obj;
@@ -306,6 +346,9 @@ SMILE_EXTERNAL_FUNCTION(Close)
 		return SmileUnboxedSymbol_From(fileInfo->ioSymbols->closed);
 	}
 }
+
+//-------------------------------------------------------------------------------------------------
+// Seek and tell.
 
 SMILE_EXTERNAL_FUNCTION(Tell)
 {
@@ -407,6 +450,9 @@ SMILE_EXTERNAL_FUNCTION(SeekEnd)
 	SeekForReal(file, argv[1].unboxed.i64, SEEK_END);
 	return argv[0];
 }
+
+//-------------------------------------------------------------------------------------------------
+// Read and write.
 
 SMILE_EXTERNAL_FUNCTION(ReadByte)
 {
@@ -604,17 +650,19 @@ SMILE_EXTERNAL_FUNCTION(Read)
 
 	if (count < 0) {
 		Stdio_File_UpdateLastError(file);
-	}
-	else if (count == 0) {
-		file->isEof = True;
-		file->lastErrorCode = 0;
-		file->lastErrorMessage = String_Empty;
-	}
-	else if (count > 0) {
-		file->lastErrorCode = 0;
-		file->lastErrorMessage = String_Empty;
+
+		// Explicitly *not* the `error symbol, due to the way loops are often written.
+		// Symbols are truthy, so if we returned a symbol, an expression like
+		// 'while file read buffer do [something]' would continue forever if there
+		// was an error.
+		return SmileArg_From(NullObject);
 	}
 
+	if (count == 0)
+		file->isEof = True;
+
+	file->lastErrorCode = 0;
+	file->lastErrorMessage = String_Empty;
 	return SmileUnboxedInteger64_From(count);
 }
 
@@ -685,16 +733,20 @@ SMILE_EXTERNAL_FUNCTION(Write)
 
 	if (count < 0) {
 		Stdio_File_UpdateLastError(file);
+
+		// Explicitly *not* the `error symbol, for parallelism with the implementation
+		// of read above.
+		return SmileArg_From(NullObject);
 	}
 	else {
 		file->lastErrorCode = 0;
 		file->lastErrorMessage = String_Empty;
+		return SmileUnboxedInteger64_From(count);
 	}
-
-	return SmileUnboxedInteger64_From(count);
 }
 
 //-------------------------------------------------------------------------------------------------
+// Remove and rename.
 
 SMILE_EXTERNAL_FUNCTION(Rename)
 {
@@ -801,6 +853,9 @@ SMILE_EXTERNAL_FUNCTION(Remove)
 	}
 #endif
 
+//-------------------------------------------------------------------------------------------------
+// Getting and setting file modes / attributes.
+
 SMILE_EXTERNAL_FUNCTION(GetMode)
 {
 	Int64 result;
@@ -879,6 +934,9 @@ SMILE_EXTERNAL_FUNCTION(SetMode)
 	return SmileUnboxedBool_From(result);
 }
 
+//-------------------------------------------------------------------------------------------------
+// Getting and setting file sizes.
+
 SMILE_EXTERNAL_FUNCTION(GetSize)
 {
 	Int64 result;
@@ -917,28 +975,159 @@ SMILE_EXTERNAL_FUNCTION(GetSize)
 
 SMILE_EXTERNAL_FUNCTION(SetSize)
 {
-	return SmileArg_From(NullObject);
+	Bool result;
+	String name = (String)argv[0].obj;
+	Int64 length = argv[1].unboxed.i64;
+
+	if (length < 0) length = 0;
+
+#	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+		// On Windows, we have to open the file, seek to where we want the file to end,
+		// and then call SetEndOfFile(), which will either shrink or expand the file.
+		// Unfortunately, per Windows' documentation, if it expands, there's no guarantee
+		// as to what will be inside the empty space, and if it wasn't created as a sparse
+		// file, the expansion will likely take a while.  This makes for a much less pleasant
+		// implementation on Windows than on Unix, but it's passable.
+
+		HANDLE handle;
+		Int name16Length;
+		UInt16 *name16;
+		LARGE_INTEGER distanceToMove;
+
+		name16 = Stdio_ToWindowsPath(name, &name16Length);
+
+		handle = CreateFileW(name16, GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
+			FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL);
+		if (handle == NULL)
+			return SmileUnboxedBool_From(False);
+
+		distanceToMove.LowPart = (Int32)length;
+		distanceToMove.HighPart = (Int32)((UInt64)length >> 32);
+		if (!SetFilePointerEx(handle, distanceToMove, NULL, FILE_BEGIN)) {
+			CloseHandle(handle);
+			return SmileUnboxedBool_From(False);
+		}
+
+		result = !!SetEndOfFile(handle);
+
+		CloseHandle(handle);
+
+#	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+		// Unix truncate() can both shrink and expand files, and when a file expands, the
+		// filesystem may even allocate it automatically as sparse storage; either way,
+		// the spec guarantees that the file will appear to have '\0' bytes at the end.
+		// Pretty sweet.
+
+		result = !truncate(String_ToC(name), (off_t)length);
+#	else
+#		error Unsupported OS.
+#	endif
+
+	return SmileUnboxedBool_From(result);
 }
 
-SMILE_EXTERNAL_FUNCTION(GetCreateTime)
+SMILE_EXTERNAL_FUNCTION(Truncate)
+{
+	SmileArg argvNew[2];
+
+	argvNew[0] = argv[0];
+	argvNew[1] = SmileUnboxedInteger64_From(0);
+
+	return SetSize(2, argvNew, param);
+}
+
+//-------------------------------------------------------------------------------------------------
+// Getting and setting file times.
+
+enum {
+	CREATE_TIME = 1,
+	MODIFY_TIME = 2,
+	ACCESS_TIME = 3,
+};
+
+#if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+	Inline Bool GetUnixTime(const char *name, Int timeType, Int64 *seconds, Int32 *nanoseconds)
+	{
+		struct stat statbuf;
+
+		if (lstat(name, &statbuf))
+			return False;
+
+#		if _POSIX_C_SOURCE >= 200809L || _XOPEN_SOURCE >= 700
+			switch (timeType) {
+				case CREATE_TIME:
+					*seconds = (Int64)statBuf.st_ctim.tv_sec;
+					*nanoseconds = (Int32)statBuf.st_ctim.tv_nsec;
+					break;
+				default:
+				case MODIFY_TIME:
+					*seconds = (Int64)statBuf.st_mtim.tv_sec;
+					*nanoseconds = (Int32)statBuf.st_mtim.tv_nsec;
+					break;
+				case ACCESS_TIME:
+					*seconds = (Int64)statBuf.st_atim.tv_sec;
+					*nanoseconds = (Int32)statBuf.st_atim.tv_nsec;
+					break;
+			}
+#		else
+			switch (timeType) {
+				case CREATE_TIME:
+					*seconds = (Int64)statBuf.st_ctime;
+					break;
+				default:
+				case MODIFY_TIME:
+					*seconds = (Int64)statBuf.st_mtime;
+					break;
+				case ACCESS_TIME:
+					*seconds = (Int64)statBuf.st_atime;
+					break;
+			}
+			*nanoseconds = 0;
+#		endif
+
+		return True;
+	}
+#endif
+
+SMILE_EXTERNAL_FUNCTION(GetTime)
 {
 	SmileTimestamp result;
 	String name = (String)argv[0].obj;
+	PtrInt timeType = (PtrInt)param;
 
 #	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+
 		Int name16Length;
 		UInt16 *name16 = Stdio_ToWindowsPath(name, &name16Length);
 		WIN32_FILE_ATTRIBUTE_DATA attrData;
+		FILETIME *fileTime;
+
 		if (!GetFileAttributesExW(name16, GetFileExInfoStandard, &attrData))
 			return SmileUnboxedBool_From(False);
 
-		result = SmileTimestamp_FromWindows(((Int64)attrData.ftCreationTime.dwHighDateTime << 32)
-			| attrData.ftCreationTime.dwLowDateTime);
+		switch (timeType) {
+			case CREATE_TIME:
+				fileTime = &attrData.ftCreationTime;
+				break;
+			default:
+			case MODIFY_TIME:
+				fileTime = &attrData.ftLastWriteTime;
+				break;
+			case ACCESS_TIME:
+				fileTime = &attrData.ftLastAccessTime;
+				break;
+		}
+
+		result = SmileTimestamp_FromWindows(((Int64)fileTime->dwHighDateTime << 32) | fileTime->dwLowDateTime);
+
 #	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
-		struct stat statbuf;
-		if (lstat(String_ToC(name), &statbuf))
+		Int64 seconds;
+		Int32 nanoseconds;
+
+		if (!GetUnixTime(String_ToC(name), (Int)timeType, &seconds, &nanoseconds))
 			return SmileUnboxedBool_From(False);
-		result = SmileTimestamp_FromUnix((Int64)statbuf.st_ctime, 0);
+
+		result = SmileTimestamp_FromUnix(seconds, nanoseconds);
 #	else
 #		error Unsupported OS.
 #	endif
@@ -946,71 +1135,235 @@ SMILE_EXTERNAL_FUNCTION(GetCreateTime)
 	return SmileArg_From((SmileObject)result);
 }
 
-SMILE_EXTERNAL_FUNCTION(SetCreateTime)
+SMILE_EXTERNAL_FUNCTION(SetTime)
 {
-	return SmileArg_From(NullObject);
-}
-
-SMILE_EXTERNAL_FUNCTION(GetModifyTime)
-{
-	SmileTimestamp result;
+	Bool result;
 	String name = (String)argv[0].obj;
+	SmileTimestamp timestamp = (SmileTimestamp)argv[1].obj;
+	PtrInt timeType = (PtrInt)param;
 
 #	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+
 		Int name16Length;
-		UInt16 *name16 = Stdio_ToWindowsPath(name, &name16Length);
-		WIN32_FILE_ATTRIBUTE_DATA attrData;
-		if (!GetFileAttributesExW(name16, GetFileExInfoStandard, &attrData))
+		UInt16 *name16;
+		HANDLE handle;
+		FILETIME time;
+		UInt64 ticks;
+		
+		name16 = Stdio_ToWindowsPath(name, &name16Length);
+
+		ticks = SmileTimestamp_ToWindows(timestamp);
+		time.dwLowDateTime = (UInt32)ticks;
+		time.dwHighDateTime = (UInt32)(ticks >> 32);
+
+		handle = CreateFileW(name16, GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+			NULL, OPEN_EXISTING, 0, NULL);
+		if (handle == NULL)
 			return SmileUnboxedBool_From(False);
 
-		result = SmileTimestamp_FromWindows(((Int64)attrData.ftLastWriteTime.dwHighDateTime << 32)
-			| attrData.ftLastWriteTime.dwLowDateTime);
+		switch (timeType) {
+			case CREATE_TIME:
+				result = !!SetFileTime(handle, &time, NULL, NULL);
+				break;
+			default:
+			case MODIFY_TIME:
+				result = !!SetFileTime(handle, NULL, NULL, &time);
+				break;
+			case ACCESS_TIME:
+				result = !!SetFileTime(handle, NULL, &time, NULL);
+				break;
+		}
+
+		CloseHandle(handle);
+
 #	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
-		struct stat statbuf;
-		if (lstat(String_ToC(name), &statbuf))
-			return SmileUnboxedBool_From(False);
-		result = SmileTimestamp_FromUnix((Int64)statbuf.st_mtime, 0);
+
+		const char *pathname = String_ToC(name);
+
+#		if _POSIX_C_SOURCE >= 200809L
+			// On newer Unixes, we can use utimensat() to update just the correct field,
+			// and update it to nanosecond precision.  This is likely at least any system
+			// from the last ten years, if not longer.
+			struct timespec times[2];
+
+			switch (timeType) {
+				case CREATE_TIME:
+					return SmileUnboxedBool_From(False);
+				default:
+				case MODIFY_TIME:
+					times[0].tv_nsec = UTIME_OMIT;
+					times[1].tv_sec = (time_t)SmileTimestamp_ToUnix(timestamp);
+					times[1].tv_nsec = timestamp->nanos;
+					result = !utimensat(AT_FDCWD, pathname, times, AT_SYMLINK_NOFOLLOW);
+					break;
+				case ACCESS_TIME:
+					times[1].tv_nsec = UTIME_OMIT;
+					times[0].tv_sec = (time_t)SmileTimestamp_ToUnix(timestamp);
+					times[0].tv_nsec = timestamp->nanos;
+					result = !utimensat(AT_FDCWD, pathname, times, AT_SYMLINK_NOFOLLOW);
+					break;
+			}
+#		else
+			// On older Unixes, we're stuck with the utimes() interface, which loses precision.
+			// Really really old Unixes might only support utime(), which we don't bother supporting
+			// because it's very limited and loses even *more* precision.
+			Int64 aSeconds, mSeconds;
+			Int32 aNanoseconds, mNanoseconds;
+			struct timeval times[2];
+
+			switch (timeType) {
+				case CREATE_TIME:
+					return SmileUnboxedBool_From(False);
+				default:
+				case MODIFY_TIME:
+					if (!GetUnixTime(String_ToC(name), ACCESS_TIME, &aSeconds, &aNanoseconds))
+						return SmileUnboxedBool_From(False);
+					times[0].tv_sec = (time_t)aSeconds;
+					times[0].tv_usec = (int)(aNanoseconds / 1000);
+					times[1].tv_sec = (time_t)SmileTimestamp_ToUnix(timestamp);
+					times[1].tv_usec = (int)(timestamp->nanos / 1000);
+					result = !utimes(pathname, times);
+					break;
+				case ACCESS_TIME:
+					if (!GetUnixTime(String_ToC(name), MODIFY_TIME, &mSeconds, &mNanoseconds))
+						return SmileUnboxedBool_From(False);
+					times[0].tv_sec = (time_t)SmileTimestamp_ToUnix(timestamp);
+					times[0].tv_usec = (int)(timestamp->nanos / 1000);
+					times[1].tv_sec = (time_t)mSeconds;
+					times[1].tv_usec = (int)(mNanoseconds / 1000);
+					result = !utimes(pathname, times);
+					break;
+			}
+#		endif
 #	else
 #		error Unsupported OS.
 #	endif
 
-	return SmileArg_From((SmileObject)result);
+	return SmileUnboxedBool_From(result);
 }
 
-SMILE_EXTERNAL_FUNCTION(SetModifyTime)
-{
-	return SmileArg_From(NullObject);
-}
+//-------------------------------------------------------------------------------------------------
+// Read-line (and, nominally, write-line).
+//
+// TODO:  This is a very inefficient implementation.  It's logically correct, given
+//    that Files are very "raw" objects, but since we don't attempt to buffer anything
+//    in memory, and we don't want to seek to run afoul of blocking on unusual file types,
+//    we simply implement read-line as a byte-by-byte search for a '\n' character in the
+//    stream, which means that read-line here is a couple orders of magnitude slower
+//    than, say, a typical implementation of fgets().
+//
+//    A smarter future implementation would detect types of input streams and perform
+//    clever buffering and stuff like that.
 
-SMILE_EXTERNAL_FUNCTION(GetAccessTime)
+Inline SmileArg ReadLineCommon(Stdio_File file, FileInfo fileInfo, Bool keepNewline)
 {
-	SmileTimestamp result;
-	String name = (String)argv[0].obj;
+	Bool gotNewline = False;
+	Byte buffer[1];
+	int count;
+	DECLARE_INLINE_STRINGBUILDER(stringBuilder, 1024);
+
+	INIT_INLINE_STRINGBUILDER(stringBuilder);
+
+	if (!file->isOpen)
+		return SmileUnboxedSymbol_From(fileInfo->ioSymbols->closed);
+	if (file->mode & FILE_MODE_STD)
+		Stdio_Invoked = True;
 
 #	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
-		Int name16Length;
-		UInt16 *name16 = Stdio_ToWindowsPath(name, &name16Length);
-		WIN32_FILE_ATTRIBUTE_DATA attrData;
-		if (!GetFileAttributesExW(name16, GetFileExInfoStandard, &attrData))
-			return SmileUnboxedBool_From(False);
-
-		result = SmileTimestamp_FromWindows(((Int64)attrData.ftLastAccessTime.dwHighDateTime << 32)
-			| attrData.ftLastAccessTime.dwLowDateTime);
+	retry:
+		count = _read(file->fd, buffer, 1);
+		if (count > 0) {
+			StringBuilder_AppendByte(stringBuilder, buffer[0]);
+			if (buffer[0] != '\n')
+				goto retry;
+			gotNewline = True;
+		}
 #	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
-		struct stat statbuf;
-		if (lstat(String_ToC(name), &statbuf))
-			return SmileUnboxedBool_From(False);
-		result = SmileTimestamp_FromUnix((Int64)statbuf.st_atime, 0);
+	retry:
+		 count = read(file->fd, buffer, 1);
+		 if (count > 0) {
+			 StringBuilder_AppendByte(stringBuilder, buffer[0]);
+			 if (buffer[0] != '\n')
+				 goto retry;
+			 gotNewline = True;
+		}
 #	else
 #		error Unsupported OS.
 #	endif
 
-	return SmileArg_From((SmileObject)result);
+	if (!keepNewline && gotNewline) {
+		// Strip off the trailing newline, since we read one.
+		//
+		// Also, if there's a preceding '\r', strip that too.  This allows newlines to be of
+		// either of the forms '\r\n' or '\n' --- but not '\r' or '\r\n' --- to be recognized.
+		// This is a break with the way Smile usually handles newlines, but making all four
+		// forms be correctly recognized is basically impossible when you have no way to
+		// buffer the input stream or "unget" previously-read bytes.
+		Int length = StringBuilder_GetLength(stringBuilder);
+		if (length > 1 && StringBuilder_At(stringBuilder, length - 2) == '\r')
+			StringBuilder_SetLength(stringBuilder, length - 2);
+		else
+			StringBuilder_SetLength(stringBuilder, length - 1);
+	}
+
+	if (count >= 0) {
+		if (StringBuilder_GetLength(stringBuilder) > 0) {
+			file->lastErrorCode = 0;
+			file->lastErrorMessage = String_Empty;
+			return SmileArg_From((SmileObject)StringBuilder_ToString(stringBuilder));
+		}
+		else {
+			file->isEof = True;
+			file->lastErrorCode = 0;
+			file->lastErrorMessage = String_Empty;
+			return SmileArg_From(NullObject);
+		}
+	}
+	else {
+		Stdio_File_UpdateLastError(file);
+		return SmileUnboxedSymbol_From(fileInfo->ioSymbols->closed);
+	}
 }
 
-SMILE_EXTERNAL_FUNCTION(SetAccessTime)
+SMILE_EXTERNAL_FUNCTION(ReadRawLine)
 {
-	return SmileArg_From(NullObject);
+	Stdio_File file;
+	file = GetFileFromHandle((SmileHandle)argv[0].obj, (FileInfo)param, "File.read-raw-line");
+
+	return ReadLineCommon(file, (FileInfo)param, True);
+}
+
+SMILE_EXTERNAL_FUNCTION(ReadLine)
+{
+	Stdio_File file;
+	file = GetFileFromHandle((SmileHandle)argv[0].obj, (FileInfo)param, "File.read-line");
+
+	return ReadLineCommon(file, (FileInfo)param, False);
+}
+
+SMILE_EXTERNAL_FUNCTION(WriteRawLine)
+{
+	SmileArg newArgv[2];
+
+	newArgv[0] = argv[0];
+	newArgv[1] = SmileArg_From((SmileObject)String_ToByteArray((String)argv[1].obj));
+
+	return Write(2, newArgv, param);
+}
+
+SMILE_EXTERNAL_FUNCTION(WriteLine)
+{
+	SmileArg newArgv[2];
+	SmileArg result;
+
+	newArgv[0] = argv[0];
+	newArgv[1] = SmileArg_From((SmileObject)String_ToByteArray((String)argv[1].obj));
+
+	result = Write(2, newArgv, param);
+	if (result.obj == NullObject) return result;	// Encountered an error.
+
+	Stdio_File file = GetFileFromHandle((SmileHandle)argv[0].obj, (FileInfo)param, "File.write-line");
+	return WriteByteInternal(file, (FileInfo)param, '\n');
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1046,10 +1399,15 @@ void Stdio_File_Init(SmileUserObject base, IoSymbols ioSymbols)
 	SetupFunction("write", Write, (void *)fileInfo, "file buffer start size", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 4, 4, _readWriteChecks);
 	SetupFunction("eof?", IsEof, (void *)fileInfo, "file", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _handleChecks);
 	SetupSynonym("eof?", "eoi?");
-	//SetupFunction("flush", Flush, (void *)fileInfo, "file", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _handleChecks);
+	SetupFunction("flush", Flush, (void *)fileInfo, "file", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _handleChecks);
 	SetupSynonym("write-byte", "print-byte");
 	SetupSynonym("write-char", "print-char");
 	SetupSynonym("write-uni", "print-uni");
+	SetupFunction("read-line", ReadLine, (void *)fileInfo, "file", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _handleChecks);
+	SetupFunction("read-raw-line", ReadRawLine, (void *)fileInfo, "file", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _handleChecks);
+	SetupSynonym("read-raw-line", "get-line");
+	SetupFunction("write-line", WriteLine, (void *)fileInfo, "file string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _handleStringChecks);
+	SetupFunction("write-raw-line", WriteRawLine, (void *)fileInfo, "file string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _handleStringChecks);
 
 	SetupFunction("rename", Rename, (void *)fileInfo, "old-name new-name", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringChecks);
 	SetupSynonym("rename", "move");
@@ -1067,18 +1425,20 @@ void Stdio_File_Init(SmileUserObject base, IoSymbols ioSymbols)
 
 	SetupFunction("get-size", GetSize, (void *)fileInfo, "path", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupSynonym("get-size", "size");
-	SetupFunction("set-size", SetSize, (void *)fileInfo, "path size", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 0, 2, _modeChecks);
+	SetupFunction("set-size", SetSize, (void *)fileInfo, "path size", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 2, 2, _seekChecks);
+	SetupFunction("truncate", Truncate, (void *)fileInfo, "path", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _seekChecks);
+	SetupSynonym("truncate", "trunc");
 
-	SetupFunction("get-create-time", GetCreateTime, (void *)fileInfo, "path", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _timeChecks);
+	SetupFunction("get-create-time", GetTime, (void *)(PtrInt)CREATE_TIME, "path", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _timeChecks);
 	SetupSynonym("get-create-time", "create-time");
-	SetupFunction("set-create-time", SetCreateTime, (void *)fileInfo, "path time", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _timeChecks);
-	SetupFunction("get-modify-time", GetModifyTime, (void *)fileInfo, "path", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _timeChecks);
+	SetupFunction("set-create-time", SetTime, (void *)(PtrInt)CREATE_TIME, "path time", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _timeChecks);
+	SetupFunction("get-modify-time", GetTime, (void *)(PtrInt)MODIFY_TIME, "path", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _timeChecks);
 	SetupSynonym("get-modify-time", "modify-time");
 	SetupSynonym("get-modify-time", "get-time");
 	SetupSynonym("get-modify-time", "time");
-	SetupFunction("set-modify-time", SetModifyTime, (void *)fileInfo, "path time", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _timeChecks);
+	SetupFunction("set-modify-time", SetTime, (void *)(PtrInt)MODIFY_TIME, "path time", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _timeChecks);
 	SetupSynonym("set-modify-time", "set-time");
-	SetupFunction("get-access-time", GetAccessTime, (void *)fileInfo, "path", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _timeChecks);
+	SetupFunction("get-access-time", GetTime, (void *)(PtrInt)ACCESS_TIME, "path", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _timeChecks);
 	SetupSynonym("get-access-time", "access-time");
-	SetupFunction("set-access-time", SetAccessTime, (void *)fileInfo, "path time", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _timeChecks);
+	SetupFunction("set-access-time", SetTime, (void *)(PtrInt)ACCESS_TIME, "path time", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _timeChecks);
 }

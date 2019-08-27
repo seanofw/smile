@@ -46,7 +46,9 @@
 #	include <fcntl.h>
 #	include <limits.h>
 #	include <unistd.h>
+#	include <utime.h>
 #	include <sys/stat.h>
+#	include <sys/time.h>
 #	include <sys/types.h>
 
 	typedef struct Stdio_FileStruct {
