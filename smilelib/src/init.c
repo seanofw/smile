@@ -118,7 +118,7 @@ void Smile_End(void)
 /// <summary>
 /// Abort execution of the program because the runtime has run out of memory.
 /// </summary>
-void Smile_Abort_OutOfMemory(void)
+SMILE_NO_RETURN void Smile_Abort_OutOfMemory(void)
 {
 	Smile_Abort_FatalError("Out of memory!");
 }
@@ -126,7 +126,7 @@ void Smile_Abort_OutOfMemory(void)
 /// <summary>
 /// Abort execution of the program because the runtime has run out of memory.
 /// </summary>
-void Smile_Abort_FatalError(const char *message)
+SMILE_NO_RETURN void Smile_Abort_FatalError(const char *message)
 {
 	fprintf(stderr, "\nFatal error:  %s\nAborting program.\n", message);
 	exit(-1);

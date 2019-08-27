@@ -56,17 +56,17 @@ END_TEST
 
 START_TEST(CanParseSyntaxFormsThatUseSyntaxForms)
 {
-	Lexer lexer = SetupLexer("#syntax STMT: [do magic] => `(Stdout print \"Hello, World.\")");
+	Lexer lexer = SetupLexer("#syntax STMT: [do magic] => `(stdout print \"Hello, World.\")");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("Stdout")), PARSEDECL_VARIABLE, NULL, NULL);
+	ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("stdout")), PARSEDECL_VARIABLE, NULL, NULL);
 
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
 	SmileSyntax expectedResult = SmileSyntax_Create(
 		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
 		(SmileList)SimpleParse("[do magic]"),
-		(SmileObject)SimpleParse("[$quote [(Stdout.print) \"Hello, World.\"]]"),
+		(SmileObject)SimpleParse("[$quote [(stdout.print) \"Hello, World.\"]]"),
 		NULL
 	);
 
@@ -76,17 +76,17 @@ END_TEST
 
 START_TEST(CanParseSyntaxFormsThatUseListForms)
 {
-	Lexer lexer = SetupLexer("#syntax STMT: [do magic] => [Stdout.print \"Hello, World.\"]");
+	Lexer lexer = SetupLexer("#syntax STMT: [do magic] => [stdout.print \"Hello, World.\"]");
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("Stdout")), PARSEDECL_VARIABLE, NULL, NULL);
+	ParseScope_DeclareHere(parseScope, SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("stdout")), PARSEDECL_VARIABLE, NULL, NULL);
 
 	SmileObject result = Parser_Parse(parser, lexer, parseScope);
 
 	SmileSyntax expectedResult = SmileSyntax_Create(
 		SymbolTable_GetSymbol(Smile_SymbolTable, String_FromC("STMT")),
 		(SmileList)SimpleParse("[do magic]"),
-		(SmileObject)SimpleParse("[$quote [(Stdout.print) \"Hello, World.\"]]"),
+		(SmileObject)SimpleParse("[$quote [(stdout.print) \"Hello, World.\"]]"),
 		NULL
 	);
 

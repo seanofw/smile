@@ -151,10 +151,6 @@ typedef struct {
 ///	an always-immutable object type, like String, may always prohibit attempts to
 ///	force it to allow WRITE access to its data).</p>
 ///	
-/// <code>getSecurity</code>:	<p>Get the current security flags applied to this object, from the SMILE_SECURITY_*
-///	enum.  All objects may be queried as to their security, and must respond according to
-///	what they permit.</p>
-///	
 /// <hr />	
 /// <h4>Property operations:</h4>	
 ///	
@@ -218,9 +214,8 @@ typedef struct {
 		Bool (*deepEqual)(__type__ self, SmileUnboxedData selfData, SmileObject other, SmileUnboxedData otherData, PointerSet visitedPointers); \
 		UInt32 (*hash)(__type__ self); \
 		\
-		void (*setSecurityKey)(__type__ self, SmileObject newSecurityKey, SmileObject oldSecurityKey); \
-		void (*setSecurity)(__type__ self, Int security, SmileObject securityKey); \
-		Int (*getSecurity)(__type__ self); \
+		Bool (*setSecurityKey)(__type__ self, SmileObject newSecurityKey, SmileObject oldSecurityKey); \
+		Bool (*setSecurity)(__type__ self, Int security, SmileObject securityKey); \
 		\
 		SmileObject (*getProperty)(__type__ self, Symbol propertyName); \
 		void (*setProperty)(__type__ self, Symbol propertyName, SmileObject value); \
@@ -383,11 +378,6 @@ Inline Bool SmileObject_IsList(SmileObject self)
 {
 	register UInt32 kind = SMILE_KIND(self);
 	return kind == SMILE_KIND_LIST || kind == SMILE_KIND_NULL;
-}
-
-Inline Bool SmileObject_IsListWithSource(SmileObject self)
-{
-	return SmileObject_IsList(self) && (self->kind & SMILE_FLAG_WITHSOURCE);
 }
 
 Inline Bool SmileObject_IsSymbol(SmileObject self)

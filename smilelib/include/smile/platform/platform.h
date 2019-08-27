@@ -54,6 +54,11 @@
 #define SMILE_ENDIAN_BIG	1
 
 //------------------------------------------------------------------------------------------------
+//  Compiler compatibility default settings.
+
+#define SMILE_COMPILER_HAS_INT128 0
+
+//------------------------------------------------------------------------------------------------
 //  Platform-specific type declarations.
 //
 //  To port Smile to your platform, you will need to define a suitable 'platform.h' file,

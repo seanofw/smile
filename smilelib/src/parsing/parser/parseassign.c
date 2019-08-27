@@ -82,7 +82,7 @@ ParseResult Parser_ParseVarDecls(Parser parser, Int modeFlags, Int declKind)
 			return declResult;
 		case ParseStatus_SuccessfulWithResult:
 			// Attach it to the list as a nested list, so it becomes [[\ = x 5]].
-			LIST_APPEND_WITH_SOURCE(head, tail, declResult.expr, ((struct SmileListWithSourceInt*)declResult.expr)->position);
+			LIST_APPEND_WITH_SOURCE(head, tail, declResult.expr, SmileList_Position((SmileList)declResult.expr));
 			break;
 		case ParseStatus_SuccessfulWithNoResult:
 		case ParseStatus_ErroredButRecovered:
@@ -105,7 +105,7 @@ ParseResult Parser_ParseVarDecls(Parser parser, Int modeFlags, Int declKind)
 			case ParseStatus_PartialParseWithError:
 				return declResult;
 			case ParseStatus_SuccessfulWithResult:
-				LIST_APPEND_WITH_SOURCE(head, tail, declResult.expr, ((struct SmileListWithSourceInt*)declResult.expr)->position);
+				LIST_APPEND_WITH_SOURCE(head, tail, declResult.expr, SmileList_Position((SmileList)declResult.expr));
 				break;
 			case ParseStatus_SuccessfulWithNoResult:
 			case ParseStatus_ErroredButRecovered:
@@ -127,7 +127,7 @@ ParseResult Parser_ParseVarDecls(Parser parser, Int modeFlags, Int declKind)
 	return (head->kind == SMILE_KIND_NULL)
 		? NULL_RESULT()
 		: EXPR_RESULT((SmileObject)SmileList_ConsWithSource((SmileObject)Smile_KnownObjects._prognSymbol, (SmileObject)head,
-			((struct SmileListWithSourceInt *)head)->position));
+			SmileList_Position(head)));
 }
 
 //  decl ::= . name | . name EQUAL arith | . name EQUAL_NOSPACE arith

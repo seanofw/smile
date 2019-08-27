@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter
-//  Copyright 2004-2017 Sean Werkema
+//  Copyright 2004-2019 Sean Werkema
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -136,7 +136,6 @@ static SmileObject SmileUnboxed%Type%_Box(SmileArg src)
 static SmileArg SmileUnboxed%Type%_Unbox(SmileUnboxed%Type% smileUnboxedInt)
 {
 	Smile_Abort_FatalError("Cannot re-unbox a unboxed object.");
-	return (SmileArg){ 0 };
 }
 
 static struct SmileUnboxed%Type%Int SmileUnboxed%Type%_Instance_Struct = {

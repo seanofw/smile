@@ -877,28 +877,50 @@ String String_ReplaceWithLimit(const String str, const String pattern, const Str
 /// <param name="str">The string to search through (if NULL, an empty string is returned).</param>
 /// <param name="pattern">The pattern to search for.</param>
 /// <param name="replacement">A replacement character for each instance of the pattern.</param>
-/// <returns>A new string where all instances of the pattern character have been replaced by the given replacement character.</returns>
+/// <returns>A new string where all instances of the pattern character have been replaced by
+/// the given replacement character.  If the pattern character is not found at all, this may
+/// be the same instance as the originally-provided string.</returns>
 String String_ReplaceChar(const String str, Byte pattern, Byte replacement)
 {
 	String newString;
-	const Byte *src;
+	const Byte *src, *temp, *end;
 	Byte *newText, *dest;
 	Int length;
 	Byte ch;
-	Int i;
 
 	if (String_IsNullOrEmpty(str)) return String_Empty;
 
 	length = String_Length(str);
-
-	newString = String_CreateInternal(length);
-
 	src = String_GetBytes(str);
+	end = src + length;
+
+	// Search forward for a match for the pattern.
+	for (temp = src; temp < end; temp++) {
+		if (*temp == pattern) {
+			goto replace;
+		}
+	}
+
+	// No match, so return the original string, avoiding an allocation.
+	return str;
+
+replace:
+	// Got a match for the pattern, so allocate a new string.
+	newString = String_CreateInternal(length);
 	dest = newText = newString->_opaque.text;
 
-	for (i = 0; i < length; i++) {
-		*dest++ = ((ch = *src++) == pattern ? replacement : ch);
+	// Copy every character up to the first match verbatim into the new string,
+	// since we know they don't match the pattern.  This avoids repeating
+	// the comparisons we already performed in the loop above.
+	for ( ; src < temp; src++) {
+		*dest++ = *src;
 	}
+
+	// Copy the rest, testing each character to see if it matches the pattern.
+	for ( ; src < end; src++) {
+		*dest++ = ((ch = *src) == pattern ? replacement : ch);
+	}
+
 	*dest = '\0';
 
 	return newString;

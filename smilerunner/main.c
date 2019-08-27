@@ -47,7 +47,7 @@ static const char *_whileWrapper =
 	"#include \"stdio\"\n"
 	"\n"
 	"till done do {\n"
-	"\tline = get-line Stdin\n"
+	"\tline = get-line stdin\n"
 	"\tif line === null then done\n"
 	"%S\n"
 	"%S\n"
@@ -98,9 +98,9 @@ static void PrintHelp()
 		"  \033[0;1;36m-r --raw       \033[0;37mLike '-c', but print out the resulting 'raw' form of the code\n"
 		"  \033[0;1;36m-D\033[0;36mname=value   \033[0;37mDefine a global variable with the given constant value\n"
 		"  \033[0;1;36m-e \033[0;36m'script'    \033[0;37mOne line of program (several -e's allowed; omit program.sm)\n"
-		"  \033[0;1;36m-n             \033[0;37mWrap script with \"till done { line = get-line Stdin ... }\"\n"
-		"  \033[0;1;36m-o             \033[0;37mPrint program's resulting value to Stdout\n"
-		"  \033[0;1;36m-p             \033[0;37mLike '-n', but also add \"Stdout print line\" in the loop\n"
+		"  \033[0;1;36m-n             \033[0;37mWrap script with \"till done { line = get-line stdin ... }\"\n"
+		"  \033[0;1;36m-o             \033[0;37mPrint program's resulting value to stdout\n"
+		"  \033[0;1;36m-p             \033[0;37mLike '-n', but also add \"stdout print line\" in the loop\n"
 		"\n"
 		"\033[0;37;1mInformation options:\033[0;37m\n"
 		"  \033[0;1;36m-h --help      \033[0;37mHelp (you're looking at it)\n"
@@ -619,7 +619,7 @@ static int SmileMain(int argc, const char **argv)
 	if (options->script != NULL) {
 		if (options->wrapWithWhile) {
 			script = String_Format(_whileWrapper, options->script, options->printLineInLoop
-				? String_FromC("Stdout print line") : String_Empty);
+				? String_FromC("stdout print line") : String_Empty);
 			scriptName = String_FromC("script");
 		}
 		else {

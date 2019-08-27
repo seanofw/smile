@@ -8,7 +8,7 @@
 var run-assertion = |fn description=""| {
 	var result = [fn]
 	if not result then {
-		Stderr print-line """assertion failed: {result}{if description then ": " + description}\n{fn.body}\n"""
+		stderr print-line """assertion failed: {result}{if description then ": " + description}\n{fn.body}\n"""
 		throw new {
 			kind: `assert
 			message: "assertion failed",
@@ -26,7 +26,7 @@ var run-all-tests = |suite-name test-list| {
 	test-list each |test-pair| {
 
 		print "  {first test-pair}: "
-		flush Stdout
+		flush stdout
 		failed = false
 
 		try [second test-pair]
@@ -35,7 +35,7 @@ var run-all-tests = |suite-name test-list| {
 
 		if not failed then print "OK!"
 		print "\n"
-		flush Stdout
+		flush stdout
 	}
 }
 

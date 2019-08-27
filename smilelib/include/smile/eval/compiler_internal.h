@@ -162,10 +162,12 @@ Inline void Compiler_RevertSourceLocation(Compiler compiler, Int oldSourceLocati
 /// </summary>
 Inline Int Compiler_SetSourceLocationFromList(Compiler compiler, SmileList list)
 {
-	if (!(list->kind & SMILE_FLAG_WITHSOURCE))
+	LexerPosition position = SmileList_Position(list);
+
+	if (position == NULL)
 		return compiler->currentFunction->currentSourceLocation;
 
-	return Compiler_SetSourceLocation(compiler, ((struct SmileListWithSourceInt *)list)->position);
+	return Compiler_SetSourceLocation(compiler, position);
 }
 
 #endif

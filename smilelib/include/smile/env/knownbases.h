@@ -59,6 +59,7 @@ struct KnownBasesStruct {
 	SmileUserObject     Uni;
 	SmileUserObject     Symbol;
 	SmileUserObject     Exception;
+	SmileUserObject     Timestamp;
 	SmileUserObject     Handle;
 	SmileUserObject       Regex;
 	SmileUserObject       RegexMatch;

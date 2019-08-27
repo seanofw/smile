@@ -33,6 +33,9 @@
 
 #include "style.h"
 
+// TODO: Replace this implementation with invocations of the File and Dir methods
+//    in 'stdio' for consistency, and use Timestamps instead of the ad-hoc code here.
+
 #define FILE_TYPE_MASK	0170000
 #define FILE_TYPE_DIR	0040000
 #define FILE_TYPE_CHR	0020000
@@ -201,6 +204,8 @@ static FileInfo *GetRawFileList(Bool allMode, Bool longMode, Int *numFiles)
 			if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 				mode |= FILE_TYPE_DIR | FILE_MODE_OWNER_EXEC | FILE_MODE_GROUP_EXEC | FILE_MODE_WORLD_EXEC;
 			else mode |= FILE_TYPE_REG;
+			if (findData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
+				mode = (mode & ~FILE_TYPE_MASK) | FILE_TYPE_LNK;
 			if (findData.dwFileAttributes & FILE_ATTRIBUTE_READONLY) mode &= ~0222;
 
 			FileTimeToSystemTime(&findData.ftLastWriteTime, &systemTime);
@@ -224,6 +229,8 @@ static FileInfo *GetRawFileList(Bool allMode, Bool longMode, Int *numFiles)
 				if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 					mode |= FILE_TYPE_DIR | FILE_MODE_OWNER_EXEC | FILE_MODE_GROUP_EXEC | FILE_MODE_WORLD_EXEC;
 				else mode |= FILE_TYPE_REG;
+				if (findData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
+					mode = (mode & ~FILE_TYPE_MASK) | FILE_TYPE_LNK;
 				if (findData.dwFileAttributes & FILE_ATTRIBUTE_READONLY) mode &= ~0222;
 
 				FileTimeToLocalFileTime(&findData.ftLastWriteTime, &localFileTime);

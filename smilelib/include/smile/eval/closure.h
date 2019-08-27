@@ -243,7 +243,10 @@ SMILE_API_FUNC void Closure_StringifyToStringBuilder(StringBuilder stringBuilder
 	  ((__closure__)->stackTop++) )
 
 #define Closure_Pop(__closure__) \
-	(*--(__closure__)->stackTop)
+	(*(--(__closure__)->stackTop))
+
+#define Closure_PopAndDiscard(__closure__) \
+	((__closure__)->stackTop--)
 
 #define Closure_GetTop(__closure__) \
 	((__closure__)->stackTop[-1])

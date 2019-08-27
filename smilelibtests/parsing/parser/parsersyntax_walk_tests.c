@@ -314,17 +314,17 @@ END_TEST
 START_TEST(CanCreateBasicPrintStatementDynamically)
 {
 	Lexer lexer = SetupLexer(
-		"#syntax STMT: [print [EXPR+ exprs ,]] => `[Stdout.print [[List.of @@exprs].join]]\n"
+		"#syntax STMT: [print [EXPR+ exprs ,]] => `[stdout.print [[List.of @@exprs].join]]\n"
 		"\n"
 		"print \"Hello, World.\"\n"
 	);
 	Parser parser = Parser_Create();
 	ParseScope parseScope = ParseScope_CreateRoot();
-	ParseError declError = ParseScope_Declare(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "Stdout"), PARSEDECL_GLOBAL, NULL, NULL);
+	ParseError declError = ParseScope_Declare(parseScope, SymbolTable_GetSymbolC(Smile_SymbolTable, "stdout"), PARSEDECL_GLOBAL, NULL, NULL);
 	SmileList result = (SmileList)Parser_Parse(parser, lexer, parseScope);
 
 	ASSERT(RecursiveEquals(LIST_FIRST(result), SimpleParse("$progn")));
-	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(Stdout.print) [([(List.of) \"Hello, World.\"].join)]]")));
+	ASSERT(RecursiveEquals(LIST_THIRD(result), SimpleParse("[(stdout.print) [([(List.of) \"Hello, World.\"].join)]]")));
 }
 END_TEST
 

@@ -24,7 +24,7 @@ typedef struct SmileByteInt *SmileByte;
 typedef struct SmileInteger16Int *SmileInteger16;
 typedef struct SmileInteger32Int *SmileInteger32;
 typedef struct SmileInteger64Int *SmileInteger64;
-typedef struct SmileInteger128Int *SmileInteger128;
+typedef struct SmileTimestampInt *SmileTimestamp;
 
 typedef struct SmileUnboxedByteInt *SmileUnboxedByte;
 typedef struct SmileUnboxedInteger16Int *SmileUnboxedInteger16;

@@ -9,7 +9,14 @@ typedef enum {
 	// Special masks.	
 	SMILE_KIND_MASK					= ((1 << 8) - 1),	// Bottom eight bits are the *actual* kind; any upper bits are flags.
 	SMILE_KIND_LIST_BIT				= (1 << 0),			// Must be a power of two.
-		
+
+	SMILE_KIND_UNBOXED_MIN			= 0x00,
+	SMILE_KIND_UNBOXED_MAX			= 0x0F,
+	SMILE_KIND_UNBOXABLE_MIN		= 0x10,
+	SMILE_KIND_UNBOXABLE_MAX		= 0x1F,
+	SMILE_KIND_SPECIAL_AGGREGATE_MIN = 0x40,
+	SMILE_KIND_SPECIAL_AGGREGATE_MAX = 0x7F,
+
 	// Unboxed types.	
 	SMILE_KIND_UNBOXED_BYTE			= 0x00,
 	SMILE_KIND_UNBOXED_INTEGER16	= 0x01,
@@ -60,6 +67,7 @@ typedef enum {
 	SMILE_KIND_BIGFLOAT				= 0x35,
 	SMILE_KIND_REAL128				= 0x38,
 	SMILE_KIND_BIGREAL				= 0x39,
+	SMILE_KIND_TIMESTAMP			= 0x3F,
 
 	// Range versions of numeric types.	
 	SMILE_KIND_BYTERANGE			= 0x40,
@@ -94,11 +102,11 @@ typedef enum {
 	SMILE_SECURITY_READWRITEAPPEND	= (SMILE_SECURITY_WRITABLE | SMILE_SECURITY_APPENDABLE),
 		
 	SMILE_SECURITY_HASKEY			= (1 << 10),
+	SMILE_SECURITY_UNFROZEN			= (1 << 11),
 		
 	//----------------------	
 	// Miscellaneous flags.	
 		
-	SMILE_FLAG_WITHSOURCE			= (1 << 11),
 	SMILE_FLAG_EXTERNAL_FUNCTION	= (1 << 12),
 
 } SmileKind;

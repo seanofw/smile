@@ -1363,9 +1363,6 @@
     <ClCompile Include="src\smiletypes\numeric\smilefloat64_base.generated.c">
       <Filter>src\smiletypes\numeric</Filter>
     </ClCompile>
-    <ClCompile Include="src\smiletypes\numeric\smileinteger128.c">
-      <Filter>src\smiletypes\numeric</Filter>
-    </ClCompile>
     <ClCompile Include="src\smiletypes\numeric\smileinteger16.generated.c">
       <Filter>src\smiletypes\numeric</Filter>
     </ClCompile>
@@ -1635,5 +1632,34 @@
     <ClCompile Include="src\unicode\category.c">
       <Filter>src\unicode</Filter>
     </ClCompile>
+    <ClCompile Include="src\smiletypes\text\smilesymbol_base.c">
+      <Filter>src\smiletypes\text</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\smilebool_base.c">
+      <Filter>src\smiletypes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\numeric\smiletimestamp.c">
+      <Filter>src\smiletypes\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\smiletypes\numeric\smiletimestamp_base.c">
+      <Filter>src\smiletypes\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\numeric\int128.c">
+      <Filter>src\numeric</Filter>
+    </ClCompile>
+    <ClCompile Include="src\crypto\base64.c">
+      <Filter>src\crypto</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\smile\smiletypes\numeric\smiletimestamp.h">
+      <Filter>include\smiletypes\numeric</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\numeric\int128.h">
+      <Filter>include\numeric</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\crypto\base64.h">
+      <Filter>include\crypto</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

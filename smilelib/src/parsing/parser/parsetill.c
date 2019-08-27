@@ -112,8 +112,10 @@ ParseResult Parser_ParseTillNames(Parser parser)
 	ParseResult parseResult;
 	SmileObject decl;
 	SmileList head, tail;
+	LexerPosition position;
 
 	// Parse the first name, which results in a symbol like 'x'.
+	position = Lexer_GetPosition(parser->lexer);
 	parseResult = Parser_ParseTillName(parser);
 	if (IS_PARSE_ERROR(parseResult)) return parseResult;
 	decl = parseResult.expr;
@@ -121,18 +123,19 @@ ParseResult Parser_ParseTillNames(Parser parser)
 	// Wrap it in a list, so it becomes [x].
 	LIST_INIT(head, tail);
 	if (decl->kind != SMILE_KIND_NULL) {
-		LIST_APPEND_WITH_SOURCE(head, tail, decl, ((struct SmileListWithSourceInt *)decl)->position);
+		LIST_APPEND_WITH_SOURCE(head, tail, decl, position);
 	}
 
 	// Every time we see a comma, parse the next name, and add it to the list.
 	while (Parser_NextToken(parser)->kind == TOKEN_COMMA) {
 
+		position = Lexer_GetPosition(parser->lexer);
 		parseResult = Parser_ParseTillName(parser);
 		if (IS_PARSE_ERROR(parseResult)) return parseResult;
 		decl = parseResult.expr;
 
 		if (decl->kind != SMILE_KIND_NULL) {
-			LIST_APPEND_WITH_SOURCE(head, tail, decl, ((struct SmileListWithSourceInt *)decl)->position);
+			LIST_APPEND_WITH_SOURCE(head, tail, decl, position);
 		}
 	}
 

@@ -337,7 +337,6 @@ Inline SmileVTable GetExternalFunctionVTableByFlags(Int argCheckFlags)
 
 		default:
 			Smile_Abort_FatalError("Unsupported external function argument configuration.");
-			return NULL;
 	}
 }
 
@@ -574,7 +573,6 @@ LexerPosition SmileExternalFunction_GetSourceLocation(SmileFunction self)
 		\
 		SmileFunction_SetSecurityKey, \
 		SmileFunction_SetSecurity, \
-		SmileFunction_GetSecurity, \
 		\
 		SmileUserFunction_GetProperty, \
 		SmileFunction_SetProperty, \
@@ -615,7 +613,6 @@ USER_FUNCTION_VTABLE(CheckedRest);	// Function with at least one type-checked ar
 		\
 		SmileFunction_SetSecurityKey, \
 		SmileFunction_SetSecurity, \
-		SmileFunction_GetSecurity, \
 		\
 		SmileExternalFunction_GetProperty, \
 		SmileFunction_SetProperty, \

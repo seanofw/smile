@@ -21,29 +21,30 @@
 //-------------------------------------------------------------------------------------------------
 //  Type declarations
 
+typedef struct SmileListExtraDataStruct {
+	SmileObject securityKey;
+	LexerPosition position;
+} *SmileListExtraData;
+
 struct SmileListInt {
 	DECLARE_BASE_OBJECT_PROPERTIES;
 	SmileObject a;
 	SmileObject d;
-};
-
-struct SmileListWithSourceInt {
-	DECLARE_BASE_OBJECT_PROPERTIES;
-	SmileObject a;
-	SmileObject d;
-	LexerPosition position;
+	SmileListExtraData extraData;
 };
 
 //-------------------------------------------------------------------------------------------------
 //  Public interface
 
-SMILE_API_DATA SmileVTable SmileList_VTable;
+SMILE_API_DATA SmileVTable SmileList_VTable_ReadOnly;
+SMILE_API_DATA SmileVTable SmileList_VTable_ReadWrite;
 
 SMILE_API_FUNC SmileList SmileList_Cons(SmileObject a, SmileObject d);
 SMILE_API_FUNC SmileList SmileList_ConsWithSource(SmileObject a, SmileObject d, LexerPosition position);
 SMILE_API_FUNC SmileList SmileList_CreateListFromArray(SmileObject *objects, Int numObjects);
 SMILE_API_FUNC SmileList SmileList_CreateList(SmileObject firstObject, ...);
 SMILE_API_FUNC SmileList SmileList_CreateListv(SmileObject firstObject, va_list v);
+SMILE_API_FUNC SmileListExtraData SmileList_CreateExtraData(void);
 SMILE_API_FUNC Int SmileList_Length(SmileList list);
 SMILE_API_FUNC Int SmileList_SafeLength(SmileList list);
 SMILE_API_FUNC SmileList SmileList_SafeTail(SmileList list);
@@ -58,6 +59,16 @@ SMILE_API_FUNC SmileList SmileList_CloneRange(SmileList list, Int start, Int end
 SMILE_API_FUNC SmileList SmileList_CellAt(SmileList list, Int index);
 SMILE_API_FUNC SmileList SmileList_ApplyStepping(SmileList list, Int stepping);
 SMILE_API_FUNC Bool SmileObject_IsCallToSymbol(Symbol symbol, SmileObject obj);
+
+Inline SmileListExtraData SmileList_GetOrCreateExtraData(SmileList list)
+{
+	if (list->extraData == NULL)
+		list->extraData = SmileList_CreateExtraData();
+	return list->extraData;
+}
+
+#define SmileList_Position(__list__) ((__list__)->extraData != NULL ? (__list__)->extraData->position : NULL)
+#define SmileList_SecurityKey(__list__) ((__list__)->extraData != NULL ? (__list__)->extraData->securityKey : NullObject)
 
 #define SmileList_CreateOne(__elem1__) \
 	(SmileList_Cons((SmileObject)(__elem1__), NullObject))

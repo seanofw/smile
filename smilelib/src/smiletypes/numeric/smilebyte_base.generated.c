@@ -69,7 +69,7 @@ STATIC_STRING(_negativeSqrt, "Square root of negative number");
 
 STATIC_STRING(_invalidTypeError, "All arguments to 'Byte.%s' must be of type 'Byte'.");
 
-STATIC_STRING(_stringTypeError, "Second argument to 'string' must be of type 'Byte'");
+STATIC_STRING(_stringTypeError, "Second argument to 'string' must be of type 'Integer64'.");
 STATIC_STRING(_numericBaseError, "Valid numeric base must be in the range of 2..36");
 STATIC_STRING(_parseArguments, "Illegal arguments to 'parse' function");
 
@@ -94,20 +94,20 @@ SMILE_EXTERNAL_FUNCTION(ToInt)
 
 SMILE_EXTERNAL_FUNCTION(ToString)
 {
-	Byte numericBase;
+	Int numericBase;
 	STATIC_STRING(byte, "Byte");
 
 	if (SMILE_KIND(argv[0].obj) == SMILE_KIND_UNBOXED_BYTE) {
 		if (argc == 2) {
-			if (SMILE_KIND(argv[1].obj) != SMILE_KIND_UNBOXED_BYTE)
+			if (SMILE_KIND(argv[1].obj) != SMILE_KIND_UNBOXED_INTEGER64)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _stringTypeError);
-			numericBase = (Int)argv[1].unboxed.i8;
+			numericBase = (Int)argv[1].unboxed.i64;
 			if (numericBase < 2 || numericBase > 36)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error, _numericBaseError);
 		}
 		else numericBase = 10;
 
-		return SmileArg_From((SmileObject)String_CreateFromInteger(argv[0].unboxed.i8, (Int)numericBase, False));
+		return SmileArg_From((SmileObject)String_CreateFromInteger(argv[0].unboxed.i8, numericBase, False));
 	}
 
 	return SmileArg_From((SmileObject)byte);
@@ -238,6 +238,23 @@ SMILE_EXTERNAL_FUNCTION(ToChar)
 SMILE_EXTERNAL_FUNCTION(ToUni)
 {
 	return SmileUnboxedUni_From(argv[0].unboxed.i8);
+}
+
+SMILE_EXTERNAL_FUNCTION(Hex)
+{
+	STATIC_STRING(prefix, "0x");
+	return SmileArg_From((SmileObject)String_Concat(prefix, String_CreateFromInteger(argv[0].unboxed.i8, 16, False)));
+}
+
+SMILE_EXTERNAL_FUNCTION(Octal)
+{
+	STATIC_STRING(prefix, "0");
+	return SmileArg_From((SmileObject)String_Concat(prefix, String_CreateFromInteger(argv[0].unboxed.i8, 8, False)));
+}
+
+SMILE_EXTERNAL_FUNCTION(Binary)
+{
+	return SmileArg_From((SmileObject)String_CreateFromInteger(argv[0].unboxed.i8, 2, False));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1727,7 +1744,7 @@ void SmileByte_Setup(SmileUserObject base)
 
 	SetupFunction("bool", ToBool, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 	SetupFunction("int", ToInt, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
-	SetupFunction("string", ToString, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("string", ToString, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX, 1, 2, 0, NULL);
 	SetupFunction("hash", Hash, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
 
 	SetupFunction("int64", ToInt64, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
@@ -1745,15 +1762,19 @@ void SmileByte_Setup(SmileUserObject base)
 	SetupFunction("zerox16", ZeroExtend16, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
 	SetupFunction("zerox8", ZeroExtend8, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
 
-	SetupFunction("float32", ToFloat32, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
-	SetupFunction("float64", ToFloat64, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
-	SetupFunction("float", ToFloat64, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
-	SetupFunction("real32", ToReal32, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
-	SetupFunction("real64", ToReal64, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
-	SetupFunction("real", ToReal64, NULL, "value", ARG_CHECK_EXACT, 1, 1, 0, NULL);
+	SetupFunction("float32", ToFloat32, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("float64", ToFloat64, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("float", ToFloat64, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("real32", ToReal32, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("real64", ToReal64, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("real", ToReal64, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
 
 	SetupFunction("char", ToChar, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
 	SetupFunction("uni", ToUni, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+
+	SetupFunction("hex", Hex, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("octal", Octal, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
+	SetupFunction("binary", Binary, NULL, "value", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _byteChecks);
 
 	SetupFunction("parse", Parse, NULL, "value", ARG_CHECK_MIN | ARG_CHECK_MAX, 1, 3, 0, NULL);
 

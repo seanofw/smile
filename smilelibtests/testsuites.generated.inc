@@ -40,6 +40,7 @@ EXTERN_TEST_SUITE(StringIntDictTests);
 EXTERN_TEST_SUITE(StringParseTests);
 EXTERN_TEST_SUITE(StringUnicodeTests);
 EXTERN_TEST_SUITE(SymbolTableTests);
+EXTERN_TEST_SUITE(TimestampTests);
 
 TestSuiteResults *RunAllTests()
 {
@@ -85,6 +86,7 @@ TestSuiteResults *RunAllTests()
 	RUN_TEST_SUITE(results, StringParseTests);
 	RUN_TEST_SUITE(results, StringUnicodeTests);
 	RUN_TEST_SUITE(results, SymbolTableTests);
+	RUN_TEST_SUITE(results, TimestampTests);
 
 	DisplayTestSuiteResults(results);
 
@@ -133,8 +135,9 @@ const char *TestSuiteNames[] = {
 	"StringParseTests",
 	"StringUnicodeTests",
 	"SymbolTableTests",
+	"TimestampTests",
 };
 
 
-int NumTestSuites = 40;
+int NumTestSuites = 41;
 

@@ -30,16 +30,6 @@ typedef unsigned int UInt32;
 typedef long long Int64;
 typedef unsigned long long UInt64;
 
-typedef struct {
-	unsigned long long hi;
-	unsigned long long lo;
-} UInt128;
-
-typedef struct {
-	long long hi;
-	unsigned long long lo;
-} Int128;
-
 // Portable pointer-casting types.
 typedef UInt32 PtrInt;		// An unsigned integer type that is the same size as a pointer.
 typedef Int32 Int;			// A signed integer type that matches the native platform's "best" register size.
@@ -57,6 +47,17 @@ typedef struct __attribute__((aligned(16))) { UInt64 value[2]; } Float128;
 typedef struct __attribute__((aligned(4))) { UInt32 value; } Real32;
 typedef struct __attribute__((aligned(8))) { UInt64 value; } Real64;
 typedef struct __attribute__((aligned(16))) { UInt64 value[2]; } Real128;
+
+// If we have support for __int128, enable it.
+#if __SIZEOF_INT128__ == 16
+#	undef SMILE_COMPILER_HAS_INT128
+#	define SMILE_COMPILER_HAS_INT128 1
+	typedef __int128 Int128;
+
+#	undef SMILE_COMPILER_HAS_UINT128
+#	define SMILE_COMPILER_HAS_UINT128 1
+	typedef unsigned __int128 UInt128;
+#endif
 
 //------------------------------------------------------------------------------------------------
 //  Declaration prefixes.
