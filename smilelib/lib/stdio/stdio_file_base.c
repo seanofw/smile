@@ -1237,7 +1237,7 @@ SMILE_EXTERNAL_FUNCTION(ReadLink)
 			// Bad dog, readlink().  You go sit in the corner.
 			buffer[returnedSize] = '\0';
 
-			return SmileArg_From(String_Create((Byte *)buffer, (Int)returnedSize));
+			return SmileArg_From((SmileObject)String_Create((Byte *)buffer, (Int)returnedSize));
 		}
 		else {
 			// On error, we return 'null', which is easily distinguished from a successful read.

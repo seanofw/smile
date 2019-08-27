@@ -73,7 +73,7 @@ typedef struct IoSymbolsStruct {
 #	include <sys/types.h>
 
 	typedef struct Stdio_FileStruct {
-		IoSymbols *ioSymbols;
+		IoSymbols ioSymbols;
 
 		String path;
 		UInt32 mode;
