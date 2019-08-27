@@ -1647,6 +1647,9 @@
     <ClCompile Include="src\numeric\int128.c">
       <Filter>src\numeric</Filter>
     </ClCompile>
+    <ClCompile Include="src\crypto\base64.c">
+      <Filter>src\crypto</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\smile\smiletypes\numeric\smiletimestamp.h">
@@ -1654,6 +1657,9 @@
     </ClInclude>
     <ClInclude Include="include\smile\numeric\int128.h">
       <Filter>include\numeric</Filter>
+    </ClInclude>
+    <ClInclude Include="include\smile\crypto\base64.h">
+      <Filter>include\crypto</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

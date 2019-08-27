@@ -15,6 +15,25 @@
 
 #include <stdio.h>
 
+typedef struct IoSymbolsStruct {
+
+	Symbol File;
+
+	Symbol read, reading, read_only, readable;
+	Symbol write, writing, write_only, writable;
+	Symbol append, appending, append_only, appendable;
+	Symbol read_write, read_append;
+	Symbol trunc, truncate;
+	Symbol create, open, create_only, open_only, create_or_open;
+
+	Symbol closed;
+	Symbol error;
+	Symbol name;
+
+	Symbol set, start, cur, current, end, seek_set, seek_cur, seek_end;
+
+} *IoSymbols;
+
 #if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
 
 #	define WIN32_LEAN_AND_MEAN
@@ -26,6 +45,8 @@
 #	pragma warning(pop)
 
 	typedef struct Stdio_FileStruct {
+		IoSymbols ioSymbols;
+
 		String path;
 		UInt32 mode;
 		UInt32 lastErrorCode;
@@ -37,7 +58,7 @@
 		HANDLE handle;
 	} *Stdio_File;
 
-	SMILE_INTERNAL_FUNC SmileHandle Stdio_File_CreateFromWin32Handle(SmileObject base, String name, HANDLE handle, UInt32 mode);
+	SMILE_INTERNAL_FUNC SmileHandle Stdio_File_CreateFromWin32Handle(SmileObject base, String name, HANDLE handle, UInt32 mode, IoSymbols ioSymbols);
 
 #elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
 
@@ -52,6 +73,8 @@
 #	include <sys/types.h>
 
 	typedef struct Stdio_FileStruct {
+		IoSymbols *ioSymbols;
+
 		String path;
 		UInt32 mode;
 		UInt32 lastErrorCode;
@@ -61,7 +84,7 @@
 		Int32 fd;
 	} *Stdio_File;
 
-	SMILE_INTERNAL_FUNC SmileHandle Stdio_File_CreateFromUnixFD(SmileObject base, String name, Int32 fd, UInt32 mode);
+	SMILE_INTERNAL_FUNC SmileHandle Stdio_File_CreateFromUnixFD(SmileObject base, String name, Int32 fd, UInt32 mode, IoSymbols ioSymbols);
 
 #else
 #	error Unsupported OS.
@@ -81,26 +104,8 @@ typedef enum {
 	FILE_MODE_STD = (1 << 8),	// This file is one of the three specials: stdin, stdout, stderr
 } Stdio_FileMode;
 
-typedef struct IoSymbolsStruct {
-
-	Symbol File;
-
-	Symbol read, reading, read_only;
-	Symbol write, writing, write_only;
-	Symbol append, appending, append_only;
-	Symbol read_write, read_append;
-	Symbol trunc, truncate;
-	Symbol create, open, create_only, open_only, create_or_open;
-
-	Symbol closed;
-	Symbol error;
-
-	Symbol set, start, cur, current, end, seek_set, seek_cur, seek_end;
-
-} *IoSymbols;
-
-SMILE_INTERNAL_FUNC void Stdio_File_DeclareStdInOutErr(ExternalVar *vars, Int *numVars, SmileObject fileBase);
-SMILE_INTERNAL_FUNC SmileHandle Stdio_File_CreateFromPath(SmileObject base, String path, UInt32 openMode, UInt32 newFileMode);
+SMILE_INTERNAL_FUNC void Stdio_File_DeclareStdInOutErr(ExternalVar *vars, Int *numVars, SmileObject fileBase, IoSymbols ioSymbols);
+SMILE_INTERNAL_FUNC SmileHandle Stdio_File_CreateFromPath(SmileObject base, String path, UInt32 openMode, UInt32 newFileMode, IoSymbols ioSymbols);
 SMILE_INTERNAL_FUNC void Stdio_File_UpdateLastError(Stdio_File file);
 
 SMILE_INTERNAL_FUNC UInt16 *Stdio_ToWindowsPath(String path, Int *length);

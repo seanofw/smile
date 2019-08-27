@@ -127,12 +127,15 @@ static IoSymbols Stdio_CreateIoSymbols(void)
 	ioSymbols->read = SymbolTable_GetSymbolC(Smile_SymbolTable, "read");
 	ioSymbols->reading = SymbolTable_GetSymbolC(Smile_SymbolTable, "reading");
 	ioSymbols->read_only = SymbolTable_GetSymbolC(Smile_SymbolTable, "read-only");
+	ioSymbols->readable = SymbolTable_GetSymbolC(Smile_SymbolTable, "readable");
 	ioSymbols->write = SymbolTable_GetSymbolC(Smile_SymbolTable, "write");
 	ioSymbols->writing = SymbolTable_GetSymbolC(Smile_SymbolTable, "writing");
 	ioSymbols->write_only = SymbolTable_GetSymbolC(Smile_SymbolTable, "write-only");
+	ioSymbols->writable = SymbolTable_GetSymbolC(Smile_SymbolTable, "writable");
 	ioSymbols->append = SymbolTable_GetSymbolC(Smile_SymbolTable, "append");
 	ioSymbols->appending = SymbolTable_GetSymbolC(Smile_SymbolTable, "appending");
 	ioSymbols->append_only = SymbolTable_GetSymbolC(Smile_SymbolTable, "append-only");
+	ioSymbols->appendable = SymbolTable_GetSymbolC(Smile_SymbolTable, "appendable");
 	ioSymbols->read_write = SymbolTable_GetSymbolC(Smile_SymbolTable, "read-write");
 	ioSymbols->read_append = SymbolTable_GetSymbolC(Smile_SymbolTable, "read-append");
 	ioSymbols->trunc = SymbolTable_GetSymbolC(Smile_SymbolTable, "trunc");
@@ -145,6 +148,7 @@ static IoSymbols Stdio_CreateIoSymbols(void)
 
 	ioSymbols->closed = SymbolTable_GetSymbolC(Smile_SymbolTable, "closed");
 	ioSymbols->error = SymbolTable_GetSymbolC(Smile_SymbolTable, "error");
+	ioSymbols->name = SymbolTable_GetSymbolC(Smile_SymbolTable, "name");
 
 	ioSymbols->set = SymbolTable_GetSymbolC(Smile_SymbolTable, "set");
 	ioSymbols->start = SymbolTable_GetSymbolC(Smile_SymbolTable, "start");
@@ -186,7 +190,7 @@ ModuleInfo Stdio_Main(void)
 	vars[numVars++].obj = (SmileObject)dirBase;
 	vars[numVars].symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "Path");
 	vars[numVars++].obj = (SmileObject)pathBase;
-	Stdio_File_DeclareStdInOutErr(vars, &numVars, (SmileObject)fileBase);
+	Stdio_File_DeclareStdInOutErr(vars, &numVars, (SmileObject)fileBase, ioSymbols);
 
 	expr = Smile_ParseInScope(_stdioBootstrap, _stdioFilename, vars, numVars, &parseMessages, &numParseMessages, &moduleScope);
 

@@ -20,6 +20,8 @@
 #include <smile/smiletypes/smilefunction.h>
 #include <smile/smiletypes/base.h>
 #include <smile/smiletypes/smilehandle.h>
+#include <smile/smiletypes/smilelist.h>
+#include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/internal/staticstring.h>
 
 #include "stdio_internal.h"
@@ -35,6 +37,65 @@ static Bool Stdio_File_ToBool(SmileHandle handle, SmileUnboxedData unboxedData)
 	UNUSED(unboxedData);
 
 	return file->isOpen;
+}
+
+/// <summary>
+/// This will be invoked to convert the file to a string.
+/// </summary>
+static String Stdio_File_ToString(SmileHandle handle, SmileUnboxedData unboxedData)
+{
+	Stdio_File file = (Stdio_File)handle->ptr;
+	UNUSED(unboxedData);
+	return file->path;
+}
+
+/// <summary>
+/// Get a property of the file.
+/// </summary>
+static SmileObject Stdio_File_GetProperty(SmileHandle handle, Symbol symbol)
+{
+	Stdio_File file = (Stdio_File)handle->ptr;
+	IoSymbols ioSymbols = file->ioSymbols;
+
+	if (symbol == ioSymbols->name)
+		return (SmileObject)file->path;
+	else if (symbol == ioSymbols->readable)
+		return (file->mode &FILE_MODE_READ) ? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
+	else if (symbol == ioSymbols->writable)
+		return (file->mode & FILE_MODE_WRITE) ? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
+	else if (symbol == ioSymbols->appendable)
+		return (file->mode & FILE_MODE_APPEND) ? (SmileObject)Smile_KnownObjects.TrueObj : (SmileObject)Smile_KnownObjects.FalseObj;
+	else
+		return SMILE_VCALL1(handle->base, getProperty, symbol);
+}
+
+/// <summary>
+/// Ask a file if it has the given property.
+/// </summary>
+static Bool Stdio_File_HasProperty(SmileHandle handle, Symbol symbol)
+{
+	Stdio_File file = (Stdio_File)handle->ptr;
+	IoSymbols ioSymbols = file->ioSymbols;
+
+	return (symbol == ioSymbols->name || symbol == ioSymbols->readable
+		|| symbol == ioSymbols->writable || symbol == ioSymbols->appendable);
+}
+
+/// <summary>
+/// Get a list of all property names of a file.
+/// </summary>
+static SmileList Stdio_File_GetPropertyNames(SmileHandle handle)
+{
+	Stdio_File file = (Stdio_File)handle->ptr;
+	IoSymbols ioSymbols = file->ioSymbols;
+
+	return SmileList_CreateList(
+		(SmileObject)SmileSymbol_Create(ioSymbols->name),
+		(SmileObject)SmileSymbol_Create(ioSymbols->readable),
+		(SmileObject)SmileSymbol_Create(ioSymbols->writable),
+		(SmileObject)SmileSymbol_Create(ioSymbols->appendable),
+		NULL
+	);
 }
 
 #if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
@@ -58,6 +119,10 @@ static Bool Stdio_File_ToBool(SmileHandle handle, SmileUnboxedData unboxedData)
 	static struct SmileHandleMethodsStruct Stdio_File_Methods = {
 		.end = Stdio_File_Win32End,
 		.toBool = Stdio_File_ToBool,
+		.toString = Stdio_File_ToString,
+		.getProperty = Stdio_File_GetProperty,
+		.hasProperty = Stdio_File_HasProperty,
+		.getPropertyNames = Stdio_File_GetPropertyNames,
 	};
 
 	/// <summary>
@@ -81,7 +146,7 @@ static Bool Stdio_File_ToBool(SmileHandle handle, SmileUnboxedData unboxedData)
 		return fd;
 	}
 
-	SMILE_INTERNAL_FUNC SmileHandle Stdio_File_CreateFromWin32Handle(SmileObject base, String name, HANDLE win32Handle, UInt32 mode)
+	SMILE_INTERNAL_FUNC SmileHandle Stdio_File_CreateFromWin32Handle(SmileObject base, String name, HANDLE win32Handle, UInt32 mode, IoSymbols ioSymbols)
 	{
 		SmileHandle handle;
 		Stdio_File file;
@@ -101,17 +166,17 @@ static Bool Stdio_File_ToBool(SmileHandle handle, SmileUnboxedData unboxedData)
 		file->lastErrorMessage = String_Empty;
 		file->isOpen = True;
 		file->fd = GetFileDescriptorFromWin32Handle(win32Handle, mode);
-
+		file->ioSymbols = ioSymbols;
 		file->handle = win32Handle;
 
 		return handle;
 	}
 
-	void Stdio_File_DeclareStdInOutErr(ExternalVar *vars, Int *numVars, SmileObject fileBase)
+	void Stdio_File_DeclareStdInOutErr(ExternalVar *vars, Int *numVars, SmileObject fileBase, IoSymbols ioSymbols)
 	{
-		SmileHandle stdinHandle = Stdio_File_CreateFromWin32Handle((SmileObject)fileBase, _stdinName, GetStdHandle(STD_INPUT_HANDLE), FILE_MODE_READ | FILE_MODE_STD);
-		SmileHandle stdoutHandle = Stdio_File_CreateFromWin32Handle((SmileObject)fileBase, _stdoutName, GetStdHandle(STD_OUTPUT_HANDLE), FILE_MODE_WRITE | FILE_MODE_APPEND | FILE_MODE_STD);
-		SmileHandle stderrHandle = Stdio_File_CreateFromWin32Handle((SmileObject)fileBase, _stderrName, GetStdHandle(STD_ERROR_HANDLE), FILE_MODE_WRITE | FILE_MODE_APPEND | FILE_MODE_STD);
+		SmileHandle stdinHandle = Stdio_File_CreateFromWin32Handle((SmileObject)fileBase, _stdinName, GetStdHandle(STD_INPUT_HANDLE), FILE_MODE_READ | FILE_MODE_STD, ioSymbols);
+		SmileHandle stdoutHandle = Stdio_File_CreateFromWin32Handle((SmileObject)fileBase, _stdoutName, GetStdHandle(STD_OUTPUT_HANDLE), FILE_MODE_WRITE | FILE_MODE_APPEND | FILE_MODE_STD, ioSymbols);
+		SmileHandle stderrHandle = Stdio_File_CreateFromWin32Handle((SmileObject)fileBase, _stderrName, GetStdHandle(STD_ERROR_HANDLE), FILE_MODE_WRITE | FILE_MODE_APPEND | FILE_MODE_STD, ioSymbols);
 
 		vars[*numVars].symbol = SymbolTable_GetSymbolC(Smile_SymbolTable, "stdin");
 		vars[(*numVars)++].obj = (SmileObject)stdinHandle;
@@ -121,7 +186,7 @@ static Bool Stdio_File_ToBool(SmileHandle handle, SmileUnboxedData unboxedData)
 		vars[(*numVars)++].obj = (SmileObject)stderrHandle;
 	}
 
-	SmileHandle Stdio_File_CreateFromPath(SmileObject base, String path, UInt32 mode, UInt32 newFileMode)
+	SmileHandle Stdio_File_CreateFromPath(SmileObject base, String path, UInt32 mode, UInt32 newFileMode, IoSymbols ioSymbols)
 	{
 		HANDLE win32Handle;
 		wchar_t *path16;
@@ -162,7 +227,7 @@ static Bool Stdio_File_ToBool(SmileHandle handle, SmileUnboxedData unboxedData)
 				creationDisposition = CREATE_ALWAYS;
 				break;
 			default:
-				handle = Stdio_File_CreateFromWin32Handle(base, path, NULL, mode);
+				handle = Stdio_File_CreateFromWin32Handle(base, path, NULL, mode, ioSymbols);
 				file = (Stdio_File)handle->ptr;
 				file->isOpen = False;
 				file->lastErrorCode = (UInt32)~0;
@@ -176,7 +241,7 @@ static Bool Stdio_File_ToBool(SmileHandle handle, SmileUnboxedData unboxedData)
 		win32Handle = CreateFileW((LPCWSTR)path16, desiredAccess, shareMode, NULL, creationDisposition, flagsAndAttributes, NULL);
 
 		// Create a wrapper object around it, even if it's not open.
-		handle = Stdio_File_CreateFromWin32Handle(base, path, win32Handle, mode);
+		handle = Stdio_File_CreateFromWin32Handle(base, path, win32Handle, mode, ioSymbols);
 		file = (Stdio_File)handle->ptr;
 
 		// Record any errors.
@@ -214,9 +279,13 @@ static Bool Stdio_File_ToBool(SmileHandle handle, SmileUnboxedData unboxedData)
 	static struct SmileHandleMethodsStruct Stdio_File_Methods = {
 		.end = Stdio_File_UnixEnd,
 		.toBool = Stdio_File_ToBool,
+		.toString = Stdio_File_ToString,
+		.getProperty = Stdio_File_GetProperty,
+		.hasProperty = Stdio_File_HasProperty,
+		.getPropertyNames = Stdio_File_GetPropertyNames,
 	};
 
-	SMILE_INTERNAL_FUNC SmileHandle Stdio_File_CreateFromUnixFD(SmileObject base, String name, Int32 fd, UInt32 mode)
+	SMILE_INTERNAL_FUNC SmileHandle Stdio_File_CreateFromUnixFD(SmileObject base, String name, Int32 fd, UInt32 mode, IoSymbols ioSymbols)
 	{
 		SmileHandle handle;
 		Stdio_File file;
@@ -236,11 +305,12 @@ static Bool Stdio_File_ToBool(SmileHandle handle, SmileUnboxedData unboxedData)
 		file->isOpen = True;
 		file->isEof = False;
 		file->fd = fd;
+		file->ioSymbols = ioSymbols;
 
 		return handle;
 	}
 
-	SmileHandle Stdio_File_CreateFromPath(SmileObject base, String path, UInt32 mode, UInt32 newFileMode)
+	SmileHandle Stdio_File_CreateFromPath(SmileObject base, String path, UInt32 mode, UInt32 newFileMode, IoSymbols ioSymbols)
 	{
 		Stdio_File file;
 		SmileHandle handle;
@@ -271,7 +341,7 @@ static Bool Stdio_File_ToBool(SmileHandle handle, SmileUnboxedData unboxedData)
 				openFlags = O_CREAT | O_TRUNC;
 				break;
 			default:
-				handle = Stdio_File_CreateFromUnixFD(base, path, -1, mode);
+				handle = Stdio_File_CreateFromUnixFD(base, path, -1, mode, ioSymbols);
 				file = (Stdio_File)handle->ptr;
 				file->isOpen = False;
 				file->lastErrorCode = (UInt32)~0;
@@ -305,7 +375,7 @@ static Bool Stdio_File_ToBool(SmileHandle handle, SmileUnboxedData unboxedData)
 		fd = open(String_ToC(path), openFlags, newFileMode);
 
 		// Create a wrapper object around it, even if it's not open.
-		handle = Stdio_File_CreateFromUnixFD(base, path, fd, mode);
+		handle = Stdio_File_CreateFromUnixFD(base, path, fd, mode, ioSymbols);
 		file = (Stdio_File)handle->ptr;
 
 		// Record any errors.

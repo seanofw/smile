@@ -28,6 +28,9 @@
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/raw/smilebytearray.h>
 #include <smile/stringbuilder.h>
+#include <smile/numeric/random.h>
+#include <smile/crypto/sha2.h>
+#include <smile/crypto/base64.h>
 
 #include "stdio_internal.h"
 
@@ -127,6 +130,11 @@ static Byte _handleStringChecks[] = {
 	SMILE_KIND_MASK, SMILE_KIND_STRING,
 };
 
+static Byte _createTempChecks[] = {
+	SMILE_KIND_MASK, SMILE_KIND_STRING,
+	0, 0,
+};
+
 /// <summary>
 /// This weird little Boolean flag is set to true if and only if the stdio library
 /// is used at least once to read or write data from stdin, stdout, or stderr.
@@ -220,7 +228,7 @@ SMILE_EXTERNAL_FUNCTION(Open)
 	}
 
 	// We're all set, so go do it!
-	fileHandle = Stdio_File_CreateFromPath(fileInfo->fileBase, path, flags, fileMode);
+	fileHandle = Stdio_File_CreateFromPath(fileInfo->fileBase, path, flags, fileMode, ioSymbols);
 
 	// Right or wrong, return the file.
 	return SmileArg_From((SmileObject)fileHandle);
@@ -856,25 +864,24 @@ SMILE_EXTERNAL_FUNCTION(Remove)
 //-------------------------------------------------------------------------------------------------
 // Getting and setting file modes / attributes.
 
-SMILE_EXTERNAL_FUNCTION(GetMode)
+static Int64 GetModeCommon(String name)
 {
 	Int64 result;
-	String name = (String)argv[0].obj;
 
 #	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
 		Int name16Length;
 		UInt16 *name16 = Stdio_ToWindowsPath(name, &name16Length);
 		WIN32_FILE_ATTRIBUTE_DATA attrData;
 		if (!GetFileAttributesExW(name16, GetFileExInfoStandard, &attrData))
-			return SmileUnboxedBool_From(False);
+			return -1;
 
 		result = 0;
-		if (attrData.dwFileAttributes & FILE_ATTRIBUTE_DEVICE)
+		if (attrData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
+			result |= S_IFLNK;			// Reparse points aren't *always* soft links... but they *usually* are.
+		else if (attrData.dwFileAttributes & FILE_ATTRIBUTE_DEVICE)
 			result |= S_IFBLK;
 		else if (attrData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 			result |= S_IFDIR | 0111;	// Directories are effectively always executable.
-		else if (attrData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
-			result |= S_IFLNK;			// Reparse points aren't *always* soft links... but they *usually* are.
 		else {
 			result |= S_IFREG;
 			if (Stdio_IsExecutable(name))
@@ -886,13 +893,22 @@ SMILE_EXTERNAL_FUNCTION(GetMode)
 #	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
 		struct stat statbuf;
 		if (lstat(String_ToC(name), &statbuf))
-			return SmileUnboxedBool_From(False);
+			return -1;
 		result = (Int64)statbuf.st_mode;
 #	else
 #		error Unsupported OS.
 #	endif
 
-	return SmileUnboxedInteger64_From(result);
+	return result;
+}
+
+SMILE_EXTERNAL_FUNCTION(GetMode)
+{
+	Int64 result = GetModeCommon((String)argv[0].obj);
+
+	return result >= 0
+		? SmileUnboxedInteger64_From(result)
+		: SmileUnboxedBool_From(False);
 }
 
 SMILE_EXTERNAL_FUNCTION(SetMode)
@@ -932,6 +948,304 @@ SMILE_EXTERNAL_FUNCTION(SetMode)
 #	endif
 
 	return SmileUnboxedBool_From(result);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsLink)
+{
+	Int64 result = GetModeCommon((String)argv[0].obj);
+	return SmileUnboxedBool_From(result >= 0 && (result & S_IFMT) == S_IFLNK);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsDir)
+{
+	Int64 result = GetModeCommon((String)argv[0].obj);
+	return SmileUnboxedBool_From(result >= 0 && (result & S_IFMT) == S_IFDIR);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsBlockDev)
+{
+	Int64 result = GetModeCommon((String)argv[0].obj);
+	return SmileUnboxedBool_From(result >= 0 && (result & S_IFMT) == S_IFBLK);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsCharDev)
+{
+	Int64 result = GetModeCommon((String)argv[0].obj);
+	return SmileUnboxedBool_From(result >= 0 && (result & S_IFMT) == S_IFCHR);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsFile)
+{
+	Int64 result = GetModeCommon((String)argv[0].obj);
+	return SmileUnboxedBool_From(result >= 0 && (result & S_IFMT) == S_IFREG);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsSocket)
+{
+	Int64 result = GetModeCommon((String)argv[0].obj);
+	return SmileUnboxedBool_From(result >= 0 && (result & S_IFMT) == S_IFSOCK);
+}
+
+SMILE_EXTERNAL_FUNCTION(IsFifo)
+{
+	Int64 result = GetModeCommon((String)argv[0].obj);
+	return SmileUnboxedBool_From(result >= 0 && (result & S_IFMT) == S_IFIFO);
+}
+
+//-------------------------------------------------------------------------------------------------
+// Soft links.
+
+SMILE_EXTERNAL_FUNCTION(MakeLink)
+{
+	Bool result;
+	String oldName = (String)argv[0].obj;
+	String newName = (String)argv[1].obj;
+
+#	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+
+		// Oh, Windows.
+		Int oldName16Length, newName16Length;
+		UInt16 *oldName16, *newName16;
+		Int64 oldMode;
+		Bool isDir;
+
+		oldName16 = Stdio_ToWindowsPath(oldName, &oldName16Length);
+		newName16 = Stdio_ToWindowsPath(newName, &newName16Length);
+
+		// For this to work sanely, we have to first ask if the target object is a
+		// directory, and then pass the special "directory" flag to CreateSymbolicLinkW().
+		// This means there's a potential race condition if the target object is changing
+		// file type frequently or is coming into existence in parallel while we are
+		// creating the link to it --- neither of which shouldhappen in any sane use of
+		// the filesystem.
+		oldMode = GetModeCommon(oldName);
+		isDir = (oldMode >= 0 && (oldMode & S_IFDIR) != 0);
+
+		result = !!CreateSymbolicLinkW(newName16, oldName16, isDir ? SYMBOLIC_LINK_FLAG_DIRECTORY : 0);
+
+#	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+		result = !symlink(String_ToC(oldName), String_ToC(newName));
+#	else
+#		error Unsupported OS.
+#	endif
+
+	return SmileUnboxedBool_From(result);
+}
+
+SMILE_EXTERNAL_FUNCTION(ReadLink)
+{
+	String name = (String)argv[0].obj;
+
+#	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+
+		// Windows makes this unnecessarily hard:  GetFinalPathNameByHandle() wasn't
+		// introduced until Vista, and it resolves too far if all you want is to
+		// answer "what's the *immediate* target of this link?"  So to accommodate
+		// both problems, we open the link file, read its reparse points, and decode
+		// them in hopes of finding a 'symlink' reparse point somewhere in there.
+		// Ugh.
+
+		// Some versions of the SDK don't include FSCTL_GET_REPARSE_POINT or
+		// the other definitions we'll need, so if they're missing, add them.
+#		ifndef FSCTL_GET_REPARSE_POINT
+
+#			define FSCTL_GET_REPARSE_POINT 0x000900A8
+
+			// Maximum reparse buffer info size. The max user defined reparse
+			// data is 16KB, plus there's a header.
+#			define MAX_REPARSE_SIZE 17000
+
+			// Some versions of the SDK don't include the reparse tag types.
+#			ifndef IO_REPARSE_TAG_SYMBOLIC_LINK
+#				define IO_REPARSE_TAG_SYMBOLIC_LINK	0x80000000
+#			endif
+#			ifndef IO_REPARSE_TAG_MOUNT_POINT
+				// a.k.a., a "directory junction".
+#				define IO_REPARSE_TAG_MOUNT_POINT	0xA0000003
+#			endif
+#			ifndef IO_REPARSE_TAG_SYMLINK
+				// This seems to be the way that symlinks are created by Windows' mklink command
+				// and CreateSymbolicLink() APIs.  Does anything use the 0x80000000 tag?
+#				define IO_REPARSE_TAG_SYMLINK		0xA000000C
+#			endif
+#			ifndef IO_REPARSE_TAG_HSM
+#				define IO_REPARSE_TAG_HSM			0xC0000004
+#			endif
+#			ifndef IO_REPARSE_TAG_NSS
+#				define IO_REPARSE_TAG_NSS			0x80000005
+#			endif
+#			ifndef IO_REPARSE_TAG_NSSRECOVER
+#				define IO_REPARSE_TAG_NSSRECOVER	0x80000006
+#			endif
+#			ifndef IO_REPARSE_TAG_SIS
+#				define IO_REPARSE_TAG_SIS			0x80000007
+#			endif
+#			ifndef IO_REPARSE_TAG_DFS
+#				define IO_REPARSE_TAG_DFS			0x80000008
+#			endif
+#			ifndef IO_REPARSE_TAG_WSLSYMLINK
+				// WSL uses its own symlink format.
+#				define IO_REPARSE_TAG_WSLSYMLINK	0xA000001D
+#			endif
+#		endif
+
+		// This is the shape of the NTFS reparse data, if it exists.
+		typedef struct {
+			UInt32 ReparseTag;
+			UInt16 ReparseDataLength;
+			UInt16 Reserved;
+			union {
+				struct {
+					UInt16 SubstituteNameOffset;
+					UInt16 SubstituteNameLength;
+					UInt16 PrintNameOffset;
+					UInt16 PrintNameLength;
+					UInt32 Flags;
+					Int16 PathBuffer[1];
+				} SymbolicLinkReparseBuffer;
+				struct {
+					UInt16 SubstituteNameOffset;
+					UInt16 SubstituteNameLength;
+					UInt16 PrintNameOffset;
+					UInt16 PrintNameLength;
+					Int16 PathBuffer[1];
+				} MountPointReparseBuffer;
+				struct {
+					Byte DataBuffer[1];
+				} GenericReparseBuffer;
+				struct {
+					UInt16 SubstituteNameOffset;
+					Byte PathBuffer[1];
+				} WslSymbolicLinkReparseBuffer;
+			} u;
+		} WIN32_REPARSE_DATA_BUFFER;
+
+		// Declare the local data buffers we'll need.
+		HANDLE handle;
+		Int16 *name16;
+		Int name16Length;
+		Int32 returnedLength;
+		Int32 result;
+		Int16 *nameBuffer;
+		String resultName;
+		WIN32_REPARSE_DATA_BUFFER *reparseInfo = (WIN32_REPARSE_DATA_BUFFER *)GC_MALLOC_ATOMIC(MAX_REPARSE_SIZE);
+
+		name16 = Stdio_ToWindowsPath(name, &name16Length);
+
+		// Open the file, but only so we can read its attributes and metadata.
+		handle = CreateFile(name16, FILE_READ_ATTRIBUTES, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+			0, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_ATTRIBUTE_REPARSE_POINT | FILE_FLAG_OPEN_REPARSE_POINT, 0);
+		if (handle == NULL || handle == INVALID_HANDLE_VALUE)
+			return SmileArg_From(NullObject);
+
+		// Files may have more than one reparse point, so we have to read all of them :-(
+		do {
+			// Attempt to read the file's next reparse point, if it has one.
+			result = DeviceIoControl(handle, FSCTL_GET_REPARSE_POINT, NULL, 0,
+				reparseInfo, MAX_REPARSE_SIZE, &returnedLength, NULL);
+
+			// It may have failed, so we only try to process the reparse point if one was returned.
+			if (result) {
+				switch (reparseInfo->ReparseTag) {
+					case IO_REPARSE_TAG_SYMBOLIC_LINK:
+					case IO_REPARSE_TAG_SYMLINK:
+						CloseHandle(handle);
+
+						// Extract out the "substitute name" from the returned buffer, which
+						// will typically contain more than one name in it.  The lengths are
+						// always returned as a count of bytes, not of "wide characters," so
+						// we have to divide them by two.
+						nameBuffer = (Int16 *)((Byte *)reparseInfo->u.SymbolicLinkReparseBuffer.PathBuffer
+							+ reparseInfo->u.SymbolicLinkReparseBuffer.SubstituteNameOffset);
+						resultName = String_FromUtf16(nameBuffer,
+							(Int)reparseInfo->u.SymbolicLinkReparseBuffer.SubstituteNameLength / sizeof(Int16));
+						goto normalizeName;
+
+					case IO_REPARSE_TAG_MOUNT_POINT:
+						CloseHandle(handle);
+
+						// Extract out the "substitute name" from the returned buffer, which
+						// will typically contain more than one name in it.  The lengths are
+						// always returned as a count of bytes, not of "wide characters," so
+						// we have to divide them by two.
+						nameBuffer = (Int16 *)((Byte *)reparseInfo->u.MountPointReparseBuffer.PathBuffer
+							+ reparseInfo->u.MountPointReparseBuffer.SubstituteNameOffset);
+						resultName = String_FromUtf16(nameBuffer,
+							(Int)reparseInfo->u.MountPointReparseBuffer.SubstituteNameLength / sizeof(Int16));
+						goto normalizeName;
+
+					case IO_REPARSE_TAG_WSLSYMLINK:
+						{
+							// Extract out the "substitute name" from the returned buffer.
+							Byte *wslNameBuffer = (Byte *)reparseInfo->u.WslSymbolicLinkReparseBuffer.PathBuffer
+								+ reparseInfo->u.WslSymbolicLinkReparseBuffer.SubstituteNameOffset;
+
+							// The length field seems to always be zero, and there's no trailing '\0', so
+							// the length must be presumed to be the size of the returned reparse info blob,
+							// minus its initial four-byte header.
+							Int length = (Int)(
+								reparseInfo->ReparseDataLength
+									- (wslNameBuffer - (Byte *)&reparseInfo->u.WslSymbolicLinkReparseBuffer)
+							);
+
+							// The buffer is actually UTF-8, not UTF-16, so we can copy it directly.
+							resultName = String_Create(wslNameBuffer, length);
+							goto normalizeName;
+
+						normalizeName:
+							// Trim off any preceding "\??\" prefix, if there is one.
+							if (String_StartsWithC(resultName, "\\??\\"))
+								resultName = String_SubstringAt(resultName, 4);
+
+							// Normalize slashes.
+							resultName = String_ReplaceChar(resultName, '\\', '/');
+
+							// We finally have a reasonable answer, so return it.
+							return SmileArg_From((SmileObject)resultName);
+						}
+				}
+			}
+		} while (GetLastError() == ERROR_MORE_DATA);
+
+		// Didn't find a symlink reparse point, so give up.
+		CloseHandle(handle);
+		return SmileArg_From(NullObject);
+
+#	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+
+		char inlineBuffer[1024];
+		char *buffer = inlineBuffer;
+		size_t bufferSize = 1024;
+		size_t returnedSize;
+
+	retry:
+		// readlink() will read a soft-link for you, but it won't tell you how much
+		// space you need for the result.  So you have to keep reading until you get it
+		// right, which is an annoying API design (and is not very transaction-friendly).
+		returnedSize = readlink(String_ToC(name), (char *)buffer, bufferSize - 1);
+
+		if (returnedSize >= bufferSize - 1) {
+			// May have run out of space, so we have to try again with a larger size.
+			bufferSize *= 2;
+			buffer = GC_MALLOC_ATOMIC(bufferSize);
+			if (buffer == NULL)
+				Smile_Abort_OutOfMemory();
+			goto retry;
+		}
+		if (returnedSize >= 0) {
+			// readlink() doesn't fill in the trailing '\0' automatically.
+			// Bad dog, readlink().  You go sit in the corner.
+			buffer[returnedSize] = '\0';
+
+			return SmileArg_From(String_Create((Byte *)buffer, (Int)returnedSize));
+		}
+		else {
+			// On error, we return 'null', which is easily distinguished from a successful read.
+			return SmileArg_From(NullObject);
+		}
+#	else
+#		error Unsupported OS.
+#	endif
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1243,6 +1557,135 @@ SMILE_EXTERNAL_FUNCTION(SetTime)
 }
 
 //-------------------------------------------------------------------------------------------------
+// Temp files.
+//
+// Not strictly needed for all programs, but still broadly-enough needed that it's extremely
+// useful to have as built-in functions.
+//
+// We don't rely on the OS to give us a sane way to create these things; instead, we only
+// ask the OS to give us a reasonable "temp path" and then we create nice unique temp names
+// ourselves using the random-number generator, which is seeded with good entropy like the
+// current time and process ID and even OS entropy data if it's available; and which has
+// a long enough period that it's unlikely to repeat.  Then we SHA-hash its value to
+// result in a statistically-unlikely chance of collision.
+
+static String CreateTempName(String prefix)
+{
+	String name, randomChars;
+	UInt32 randomBuffer32[4];
+	Byte hash[32];
+	Byte *ptr, *end;
+
+	// Get 128 bits of entropy from the random-number generator.
+	randomBuffer32[0] = Random_UInt32(Random_Shared);
+	randomBuffer32[1] = Random_UInt32(Random_Shared);
+	randomBuffer32[2] = Random_UInt32(Random_Shared);
+	randomBuffer32[3] = Random_UInt32(Random_Shared);
+
+	// SHA-256 hash that pile of entropy to ensure the resulting data we use is
+	// irreversible to the function that generated it.
+	Sha256(hash, (const Byte *)randomBuffer32, sizeof(randomBuffer32));
+
+	// Stringify the first 15 bytes' worth as a mushy base-64 encoding.  This will result
+	// in exactly 20 random alphanumeric characters, an acceptable balance between names
+	// that are "too long" and names that are sufficiently random as to not accidentally
+	// collide:  The names generated this way will always have about 72 random bits
+	// in them by the time we're done.  That's not modern crypto-secure, but it's more
+	// than enough to prevent accidental collisions (and it was acceptably crypto-secure
+	// back in the '90s!).
+	randomChars = Base64Encode(hash, 15, False);
+
+	// Mutate the string in-place, since we can always be sure it was allocated uniquely
+	// by Base64Encode().  We strip out problematic characters, so that the result only
+	// uses lowercase letters, numbers, '-', '_', and '~', all of which are safe in
+	// nearly every filesystem (and in URLs!).
+	ptr = (Byte *)String_GetBytes(randomChars);
+	end = ptr + String_Length(randomChars);
+	for (; ptr < end; ptr++) {
+		Byte ch = *ptr;
+		if (ch >= 'A' && ch <= 'Z') * ptr = ch + ('a' - 'A');	// Always lowercase, for case-insensitive filesystems.
+		else if (ch == '+') * ptr = '-';		// Sometimes can't allow '+' in a filename.
+		else if (ch == '/') * ptr = '_';		// Can't allow '/' in a filename.
+		else if (ch == '=') * ptr = '~';		// Sometimes can't allow '=' in a filename either.
+	}
+
+	// Apply the name's prefix and suffix.  The suffix is always ".tmp", which readily
+	// distinguishes temp files in most OSes, and if no prefix is provided, we use "~"
+	// which is also a common "temporary file" identifier.
+	name = String_Format("%S%S.tmp", prefix, randomChars);
+
+	return name;
+}
+
+SMILE_EXTERNAL_FUNCTION(TempName)
+{
+	String prefix = argc > 0 ? (String)argv[0].obj : String_Tilde;
+	String name = CreateTempName(prefix);
+	return SmileArg_From((SmileObject)name);
+}
+
+SMILE_EXTERNAL_FUNCTION(CreateTemp)
+{
+	Int i = 0;
+	UInt32 flags = 0;
+	String prefix, name;
+	UInt32 fileMode = 0644;
+	FileInfo fileInfo = (FileInfo)param;
+	IoSymbols ioSymbols = fileInfo->ioSymbols;
+	SmileHandle fileHandle;
+	const char *methodName = "File.create-temp";
+	Stdio_File file;
+
+	flags = FILE_MODE_CREATE_ONLY | FILE_MODE_WRITE | FILE_MODE_APPEND | FILE_MODE_READ;
+
+	prefix = argc > 0 ? (String)argv[0].obj : String_Tilde;
+
+	if (argc > 1) {
+		switch (SMILE_KIND(argv[i].obj)) {
+			case SMILE_KIND_UNBOXED_INTEGER64:
+				fileMode = (UInt32)argv[i].unboxed.i64;
+				break;
+			case SMILE_KIND_UNBOXED_INTEGER32:
+				fileMode = (UInt32)argv[i].unboxed.i32;
+				break;
+			case SMILE_KIND_UNBOXED_INTEGER16:
+				fileMode = (UInt32)argv[i].unboxed.i16;
+				break;
+			case SMILE_KIND_UNBOXED_BYTE:
+				fileMode = (UInt32)argv[i].unboxed.i8;
+				break;
+
+			default:
+				Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+					String_Format("Second argument to '%s' must be an Integer for 'rwx'-style file-mode bits.", methodName));
+		}
+	}
+
+retry:
+	// Make a unique name.
+	name = CreateTempName(prefix);
+
+	// We're all set, so go do it!
+	fileHandle = Stdio_File_CreateFromPath(fileInfo->fileBase, name, flags, fileMode, ioSymbols);
+	
+	// Let's see if it failed because the file already existed.  That's unlikely, but
+	// if it happened, we need to come up with a new name and try again.
+	file = (Stdio_File)fileHandle->ptr;
+	if (!file->isOpen) {
+#		if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+			if (file->lastErrorCode == ERROR_FILE_EXISTS) goto retry;
+#		elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+			if (file->lastErrorCode == EEXIST) goto retry;
+#		else
+#			error Unsupported OS.
+#		endif
+	}
+
+	// Right or wrong, return the file.
+	return SmileArg_From((SmileObject)fileHandle);
+}
+
+//-------------------------------------------------------------------------------------------------
 // Read-line (and, nominally, write-line).
 //
 // TODO:  This is a very inefficient implementation.  It's logically correct, given
@@ -1409,6 +1852,11 @@ void Stdio_File_Init(SmileUserObject base, IoSymbols ioSymbols)
 	SetupFunction("write-line", WriteLine, (void *)fileInfo, "file string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _handleStringChecks);
 	SetupFunction("write-raw-line", WriteRawLine, (void *)fileInfo, "file string", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _handleStringChecks);
 
+	SetupFunction("create-temp", CreateTemp, (void *)fileInfo, "prefix mode", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 0, 2, 2, _createTempChecks);
+	SetupSynonym("create-temp", "open-temp");
+	SetupFunction("temp-name", TempName, (void *)fileInfo, "prefix", ARG_CHECK_MAX | ARG_CHECK_TYPES, 0, 1, 1, _stringChecks);
+	SetupSynonym("temp-name", "get-temp-name");
+
 	SetupFunction("rename", Rename, (void *)fileInfo, "old-name new-name", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringChecks);
 	SetupSynonym("rename", "move");
 	SetupSynonym("rename", "mv");
@@ -1418,10 +1866,28 @@ void Stdio_File_Init(SmileUserObject base, IoSymbols ioSymbols)
 	SetupSynonym("remove", "unlink");
 	SetupSynonym("remove", "rm");
 
+	SetupFunction("link", MakeLink, (void *)fileInfo, "old-name new-name", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _stringChecks);
+	SetupSynonym("link", "ln");
+	SetupSynonym("link", "make-link");
+	SetupFunction("read-link", ReadLink, (void *)fileInfo, "path", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupSynonym("read-link", "get-link");
+
 	SetupFunction("get-mode", GetMode, (void *)fileInfo, "path", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupSynonym("get-mode", "mode");
 	SetupFunction("set-mode", SetMode, (void *)fileInfo, "path mode...", ARG_CHECK_MIN | ARG_CHECK_TYPES, 1, 0, 2, _modeChecks);
 	SetupSynonym("set-mode", "chmod");
+
+	SetupFunction("link?", IsLink, (void *)fileInfo, "path", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupFunction("file?", IsFile, (void *)fileInfo, "path", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupSynonym("file?", "regular?");
+	SetupSynonym("file?", "normal?");
+	SetupFunction("fifo?", IsFifo, (void *)fileInfo, "path", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupFunction("socket?", IsSocket, (void *)fileInfo, "path", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupFunction("dir?", IsDir, (void *)fileInfo, "path", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupFunction("block-dev?", IsBlockDev, (void *)fileInfo, "path", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupSynonym("block-dev?", "block-device?");
+	SetupFunction("char-dev?", IsCharDev, (void *)fileInfo, "path", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
+	SetupSynonym("char-dev?", "character-device?");
 
 	SetupFunction("get-size", GetSize, (void *)fileInfo, "path", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _stringChecks);
 	SetupSynonym("get-size", "size");
