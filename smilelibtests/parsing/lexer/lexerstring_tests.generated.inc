@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: f1f927074a29cceae34e80a54f4b67cc
+// SourceHash: 5ec26440134aa09220d8e22c996c388a
 
 START_TEST_SUITE(LexerStringTests)
 {

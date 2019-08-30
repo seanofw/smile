@@ -167,7 +167,7 @@ readMoreName:
 	return StringBuilder_ToString(namebuf);
 }
 
-Int Lexer_ParseName(Lexer lexer, Bool isFirstContentOnLine)
+Int Lexer_ParseName(Lexer lexer)
 {
 	Token token = lexer->token;
 	const Byte *src;
@@ -392,7 +392,7 @@ readMorePunctuation:
 	return StringBuilder_ToString(namebuf);
 }
 
-Int Lexer_ParsePunctuation(Lexer lexer, Bool isFirstContentOnLine)
+Int Lexer_ParsePunctuation(Lexer lexer)
 {
 	Token token = lexer->token;
 	const Byte *src;

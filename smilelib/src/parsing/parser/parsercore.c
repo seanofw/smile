@@ -69,7 +69,7 @@ SmileObject Parser_ParseString(Parser parser, ParseScope scope, String text)
 	Lexer lexer;
 	SmileObject result;
 
-	lexer = Lexer_Create(text, 0, String_Length(text), String_Empty, 1, 1);
+	lexer = Lexer_Create(text, 0, String_Length(text), String_Empty, 1, 1, False);
 	lexer->symbolTable = Smile_SymbolTable;
 	result = Parser_Parse(parser, lexer, scope);
 
@@ -401,7 +401,7 @@ ParseResult Parser_ParseOneExpressionFromText(Parser parser, String string, Lexe
 	ParseResult parseResult;
 
 	oldLexer = parser->lexer;
-	parser->lexer = Lexer_Create(string, 0, String_Length(string), startPosition->filename, startPosition->line, startPosition->column);
+	parser->lexer = Lexer_Create(string, 0, String_Length(string), startPosition->filename, startPosition->line, startPosition->column, False);
 
 	parseResult = Parser_ParseExpr(parser, BINARYLINEBREAKS_DISALLOWED | COMMAMODE_NORMAL | COLONMODE_MEMBERACCESS);
 	if (IS_PARSE_ERROR(parseResult)) {

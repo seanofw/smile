@@ -28,7 +28,7 @@ static Lexer SetupString(String source)
 {
 	Lexer lexer;
 
-	lexer = Lexer_Create(source, 0, String_Length(source), GetTestScriptName(), 1, 1);
+	lexer = Lexer_Create(source, 0, String_Length(source), GetTestScriptName(), 1, 1, False);
 	lexer->symbolTable = Smile_SymbolTable;
 
 	return lexer;

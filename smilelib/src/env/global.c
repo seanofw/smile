@@ -223,7 +223,7 @@ SmileObject Smile_ParseInScope(String text, String filename,
 	Int numMessages;
 
 	// Construct the parsing environment.
-	lexer = Lexer_Create(text, 0, String_Length(text), filename, 1, 0);
+	lexer = Lexer_Create(text, 0, String_Length(text), filename, 1, 0, False);
 	Lexer_SetSymbolTable(lexer, Smile_SymbolTable);
 	parser = Parser_Create();
 	outerScope = ParseScope_CreateRoot();

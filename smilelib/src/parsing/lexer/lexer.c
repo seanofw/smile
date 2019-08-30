@@ -25,18 +25,6 @@
 //---------------------------------------------------------------------------
 //  Core lexer.
 
-STATIC_STRING(KeywordVar, "var");
-STATIC_STRING(KeywordAuto, "auto");
-STATIC_STRING(KeywordConst, "const");
-
-STATIC_STRING(KeywordAnd, "and");
-STATIC_STRING(KeywordOr, "or");
-STATIC_STRING(KeywordNot, "not");
-
-STATIC_STRING(KeywordNew, "new");
-STATIC_STRING(KeywordIs, "is");
-STATIC_STRING(KeywordTypeof, "typeof");
-
 /// <summary>
 /// Create a new instance of a lexical analyzer for the given input text.
 /// </summary>
@@ -47,8 +35,12 @@ STATIC_STRING(KeywordTypeof, "typeof");
 /// <param name="firstLine">The one-based number of the first line where the given start character is located.</param>
 /// <param name="firstColumn">The one-based number of the first column where the given start character is located.
 /// (Note that for these purposes, all characters count as a single column, including tabs.)</param>
+/// <param name="syntaxHighlighterMode">Whether to return ALL lexemes as tokens (True), or whether to return
+/// only the semantically-significant lexemes, discarding semantically-insiginificant things like
+/// whitespace and comments (False).  You usually want False for this argument unless you're using the
+/// Lexer inside an IDE's text editor or developing some other kind of similar tooling for code-analysis.</param>
 /// <returns>The new lexical analyzer for the given input text.</returns>
-Lexer Lexer_Create(String input, Int start, Int length, String filename, Int firstLine, Int firstColumn)
+Lexer Lexer_Create(String input, Int start, Int length, String filename, Int firstLine, Int firstColumn, Bool syntaxHighlighterMode)
 {
 	Lexer lexer = GC_MALLOC_STRUCT(struct LexerStruct);
 	Int inputLength = String_Length(input);
@@ -73,6 +65,13 @@ Lexer Lexer_Create(String input, Int start, Int length, String filename, Int fir
 	lexer->token = lexer->tokenBuffer;
 	lexer->tokenIndex = 0;
 	lexer->ungetCount = 0;
+
+	// Set up the extra internal state flags.
+	lexer->_hasPrecedingWhitespace = False;
+	lexer->_isFirstContentOnLine = False;
+
+	// Whether to run in syntax-highlighter mode (where we return ALL content, even whitespace).
+	lexer->syntaxHighlighterMode = syntaxHighlighterMode;
 
 	return lexer;
 }
@@ -165,15 +164,12 @@ Token Token_Clone(Token token)
 /// <returns>The kind of the next token in the input (see tokenkind.h).</returns>
 Int Lexer_Next(Lexer lexer)
 {
-	Bool isFirstContentOnLine;
-	Bool hasPrecedingWhitespace;
 	Byte ch;
 	Int code;
 	const Byte *src, *start;
 	const Byte *end = lexer->end;
 	Token token;
 	Int tokenKind;
-	UInt identifierCharacterKind;
 
 	// Read from the unget stack, if appropriate.
 	if (lexer->ungetCount > 0) {
@@ -182,8 +178,8 @@ Int Lexer_Next(Lexer lexer)
 		return token->kind;
 	}
 
-	isFirstContentOnLine = False;
-	hasPrecedingWhitespace = False;
+	lexer->_isFirstContentOnLine = False;
+	lexer->_hasPrecedingWhitespace = False;
 
 	// Set up for the next token.
 	lexer->token = token = lexer->tokenBuffer + (++lexer->tokenIndex & 15);
@@ -211,28 +207,58 @@ retryAtSrc:
 		case ' ':
 			// Simple whitespace characters.  We consume as much whitespace as possible for better
 			// performance, since whitespace tends to come in clumps in code.
+			start = src;
 			while (src < end && (ch = *src) <= '\x20' && ch != '\n' && ch != '\r') src++;
-			hasPrecedingWhitespace = True;
-			goto retryAtSrc;
+			if (lexer->syntaxHighlighterMode) {
+				tokenKind = SIMPLE_TOKEN(start, TOKEN_WHITESPACE);
+				lexer->_hasPrecedingWhitespace = True;
+				return tokenKind;
+			}
+			else {
+				lexer->_hasPrecedingWhitespace = True;
+				goto retryAtSrc;
+			}
 
 		case '\n':
 			// Unix-style newlines, and inverted Windows newlines.
+			start = src;
 			if (src < end && (ch = *src) == '\r')
 				src++;
-			lexer->line++;
-			lexer->lineStart = src;
-			isFirstContentOnLine = True;
-			hasPrecedingWhitespace = True;
+			if (lexer->syntaxHighlighterMode) {
+				tokenKind = SIMPLE_TOKEN(start, TOKEN_NEWLINE);
+				lexer->line++;
+				lexer->lineStart = src;
+				lexer->_isFirstContentOnLine = True;
+				lexer->_hasPrecedingWhitespace = True;
+				return tokenKind;
+			}
+			else {
+				lexer->line++;
+				lexer->lineStart = src;
+				lexer->_isFirstContentOnLine = True;
+				lexer->_hasPrecedingWhitespace = True;
+			}
 			goto retryAtSrc;
 
 		case '\r':
 			// Windows-style newlines, and old Mac newlines.
+			start = src;
 			if (src < end && (ch = *src) == '\n')
 				src++;
-			lexer->line++;
-			lexer->lineStart = src;
-			isFirstContentOnLine = True;
-			hasPrecedingWhitespace = True;
+			if (lexer->syntaxHighlighterMode) {
+				tokenKind = SIMPLE_TOKEN(start, TOKEN_NEWLINE);
+				lexer->line++;
+				lexer->lineStart = src;
+				lexer->_isFirstContentOnLine = True;
+				lexer->_hasPrecedingWhitespace = True;
+				return tokenKind;
+			}
+			else {
+				lexer->line++;
+				lexer->lineStart = src;
+				lexer->_isFirstContentOnLine = True;
+				lexer->_hasPrecedingWhitespace = True;
+			}
 			goto retryAtSrc;
 
 		//--------------------------------------------------------------------------
@@ -241,25 +267,22 @@ retryAtSrc:
 		case '/':
 			// Punctuation names, but also comments.
 			lexer->src = src;
-			if ((tokenKind = Lexer_ParseSlash(lexer, isFirstContentOnLine)) != TOKEN_NONE)
+			if ((tokenKind = Lexer_ParseSlash(lexer)) != TOKEN_NONE)
 				return tokenKind;
-			hasPrecedingWhitespace = True;
 			goto retry;
 
 		case '-':
 			// Subtraction, but also separator lines.
 			lexer->src = src - 1;
-			if ((tokenKind = Lexer_ParseHyphenOrEquals(lexer, ch, isFirstContentOnLine, hasPrecedingWhitespace)) != TOKEN_NONE)
+			if ((tokenKind = Lexer_ParseHyphenOrEquals(lexer, ch)) != TOKEN_NONE)
 				return tokenKind;
-			hasPrecedingWhitespace = True;
 			goto retry;
 
 		case '=':
 			// Equate forms, but also separator lines.
 			lexer->src = src - 1;
-			if ((tokenKind = Lexer_ParseHyphenOrEquals(lexer, ch, isFirstContentOnLine, hasPrecedingWhitespace)) != TOKEN_NONE)
+			if ((tokenKind = Lexer_ParseHyphenOrEquals(lexer, ch)) != TOKEN_NONE)
 				return tokenKind;
-			hasPrecedingWhitespace = True;
 			goto retry;
 
 		case '~': case '!': case '?': case '@':
@@ -267,11 +290,11 @@ retryAtSrc:
 		case '+': case '<': case '>':
 			// General punctuation and operator name forms:  [~!?@%^&*=+<>/-]+
 			lexer->src = src - 1;
-			return Lexer_ParsePunctuation(lexer, isFirstContentOnLine);
+			return Lexer_ParsePunctuation(lexer);
 
 		case '.':
 			lexer->src = src;
-			return Lexer_ParseDot(lexer, isFirstContentOnLine);
+			return Lexer_ParseDot(lexer);
 
 		//--------------------------------------------------------------------------
 		//  Single-character special tokens.
@@ -297,14 +320,14 @@ retryAtSrc:
 		case '0':
 			// Octal, hexadecimal, and real values.
 			lexer->src = src;
-			return Lexer_ParseZero(lexer, isFirstContentOnLine);
+			return Lexer_ParseZero(lexer);
 
 		case '1': case '2': case '3': case '4':
 		case '5': case '6': case '7': case '8':
 		case '9':
 			// Decimal integer, or possibly a real value (if we find a '.').
 			lexer->src = src;
-			return Lexer_ParseDigit(lexer, isFirstContentOnLine);
+			return Lexer_ParseDigit(lexer);
 
 		//--------------------------------------------------------------------------
 		//  Identifiers.
@@ -321,24 +344,24 @@ retryAtSrc:
 		case '\\':
 			// Alpha/letter identifier form.
 			lexer->src = src-1;
-			return Lexer_ParseName(lexer, isFirstContentOnLine);
+			return Lexer_ParseName(lexer);
 
 		//--------------------------------------------------------------------------
 		//  Strings and characters.
 
 		case '\"':
 			lexer->src = src;
-			return Lexer_ParseDynamicString(lexer, isFirstContentOnLine);
+			return Lexer_ParseDynamicString(lexer);
 
 		case '\'':
 			lexer->src = src;
-			return Lexer_ParseRawString(lexer, isFirstContentOnLine);
+			return Lexer_ParseRawString(lexer);
 
 		case '#':
 			lexer->src = src - 1;
-			tokenKind = Lexer_ParseLoanword(lexer, isFirstContentOnLine);
+			tokenKind = Lexer_ParseLoanword(lexer);
 			if (tokenKind == TOKEN_NONE) {
-				hasPrecedingWhitespace = True;
+				lexer->_hasPrecedingWhitespace = True;
 				goto retry;
 			}
 			return tokenKind;
@@ -351,21 +374,30 @@ retryAtSrc:
 			// Unicode byte-order mark (zero-width non-breaking space).
 			if (code == 0xFEFF)
 			{
-				hasPrecedingWhitespace = True;
-				goto retryAtSrc;
+				if (lexer->syntaxHighlighterMode) {
+					tokenKind = SIMPLE_TOKEN(start, TOKEN_WHITESPACE_BOM);
+					lexer->_hasPrecedingWhitespace = True;
+					return tokenKind;
+				}
+				else {
+					lexer->_hasPrecedingWhitespace = True;
+					goto retryAtSrc;
+				}
 			}
 
-			// Try Unicode identifiers.			
-			identifierCharacterKind = SmileIdentifierKind(code);
-			if (identifierCharacterKind & IDENTKIND_STARTLETTER) {
-				// General identifier form.
-				lexer->src = start;
-				return Lexer_ParseName(lexer, isFirstContentOnLine);
-			}
-			else if (identifierCharacterKind & IDENTKIND_PUNCTUATION) {
-				// General punctuation and operator name forms:  [~!?@%^&*=+<>/-]+
-				lexer->src = start;
-				return Lexer_ParsePunctuation(lexer, isFirstContentOnLine);
+			// Try Unicode identifiers.	
+			{
+				UInt identifierCharacterKind = SmileIdentifierKind(code);
+				if (identifierCharacterKind & IDENTKIND_STARTLETTER) {
+					// General identifier form.
+					lexer->src = start;
+					return Lexer_ParseName(lexer);
+				}
+				else if (identifierCharacterKind & IDENTKIND_PUNCTUATION) {
+					// General punctuation and operator name forms:  [~!?@%^&*=+<>/-]+
+					lexer->src = start;
+					return Lexer_ParsePunctuation(lexer);
+				}
 			}
 
 			// Everything else is an error at this point.

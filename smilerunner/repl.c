@@ -116,7 +116,7 @@ static Int ParseAndEval(String string, Int lineNumber, ParseScope globalScope, C
 	SmileObject expr;
 	EvalResult evalResult;
 
-	lexer = Lexer_Create(string, 0, String_Length(string), NULL, lineNumber, 1);
+	lexer = Lexer_Create(string, 0, String_Length(string), NULL, lineNumber, 1, False);
 	lexer->symbolTable = Smile_SymbolTable;
 	parser = Parser_Create();
 	parser->lexer = lexer;

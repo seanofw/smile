@@ -195,7 +195,7 @@ static SmileObject ParseOneConstantValue(CommandLineArgs options, const char *te
 	SmileObject result;
 
 	string = String_FromC(text);
-	lexer = Lexer_Create(string, 0, String_Length(string), String_FromC("command-line argument"), 1, 1);
+	lexer = Lexer_Create(string, 0, String_Length(string), String_FromC("command-line argument"), 1, 1, False);
 	lexer->symbolTable = Smile_SymbolTable;
 	parser = Parser_Create();
 
@@ -453,7 +453,7 @@ static Int ParseOnly(CommandLineArgs options, String string, String filename, In
 	globalScope = ParseScope_CreateRoot();
 	ParseScope_DeclareVariablesFromClosureInfo(globalScope, closureInfo);
 
-	lexer = Lexer_Create(string, 0, String_Length(string), Path_Resolve(Path_GetCurrentDir(), filename), line, 1);
+	lexer = Lexer_Create(string, 0, String_Length(string), Path_Resolve(Path_GetCurrentDir(), filename), line, 1, False);
 	lexer->symbolTable = Smile_SymbolTable;
 	parser = Parser_Create();
 
@@ -489,7 +489,7 @@ static Int ParseAndEval(CommandLineArgs options, String string, String filename,
 	globalScope = ParseScope_CreateRoot();
 	ParseScope_DeclareVariablesFromClosureInfo(globalScope, closureInfo);
 
-	lexer = Lexer_Create(string, 0, String_Length(string), Path_Resolve(Path_GetCurrentDir(), filename), line, 1);
+	lexer = Lexer_Create(string, 0, String_Length(string), Path_Resolve(Path_GetCurrentDir(), filename), line, 1, False);
 	lexer->symbolTable = Smile_SymbolTable;
 	parser = Parser_Create();
 

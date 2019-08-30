@@ -686,7 +686,7 @@ SMILE_EXTERNAL_FUNCTION(IsIdent)
 	const Byte *src = String_GetBytes(str);
 	Int length = String_Length(str);
 	const Byte *end = src + length;
-	Lexer lexer = Lexer_Create(str, 0, length, String_Empty, 1, 1);
+	Lexer lexer = Lexer_Create(str, 0, length, String_Empty, 1, 1, False);
 	Int token;
 	Bool isIdentifier;
 
@@ -711,7 +711,7 @@ SMILE_EXTERNAL_FUNCTION(IsAlphaIdent)
 	const Byte *src = String_GetBytes(str);
 	Int length = String_Length(str);
 	const Byte *end = src + length;
-	Lexer lexer = Lexer_Create(str, 0, length, String_Empty, 1, 1);
+	Lexer lexer = Lexer_Create(str, 0, length, String_Empty, 1, 1, False);
 	Int token;
 	Bool isIdentifier;
 
@@ -735,7 +735,7 @@ SMILE_EXTERNAL_FUNCTION(IsPunctIdent)
 	const Byte *src = String_GetBytes(str);
 	Int length = String_Length(str);
 	const Byte *end = src + length;
-	Lexer lexer = Lexer_Create(str, 0, length, String_Empty, 1, 1);
+	Lexer lexer = Lexer_Create(str, 0, length, String_Empty, 1, 1, False);
 	Int token;
 	Bool isIdentifier;
 
@@ -765,9 +765,9 @@ Inline void DecodePattern(SmileArg arg, String *pattern, Regex *regexPattern, co
 	// Decode the pattern.
 	if (patternKind == SMILE_KIND_STRING)
 		*pattern = (String)arg.obj;
-	else if (patternKind == SMILE_KIND_CHAR)
+	else if (patternKind == SMILE_KIND_UNBOXED_CHAR)
 		*pattern = String_CreateRepeat(arg.unboxed.i8, 1);
-	else if (patternKind == SMILE_KIND_UNI)
+	else if (patternKind == SMILE_KIND_UNBOXED_UNI)
 		*pattern = String_CreateFromUnicode(arg.unboxed.uni);
 	else if (patternKind == SMILE_KIND_HANDLE && ((SmileHandle)arg.obj)->handleKind == Smile_KnownSymbols.Regex_)
 		*regexPattern = (Regex)((SmileHandle)arg.obj)->ptr;

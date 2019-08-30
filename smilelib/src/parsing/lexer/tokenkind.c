@@ -24,6 +24,11 @@ STATIC_STRING(TokenString_None, "<none>");
 
 STATIC_STRING(TokenString_Eoi, "end-of-file");
 
+STATIC_STRING(TokenString_Whitespace, "whitespace");
+STATIC_STRING(TokenString_Newline, "newline");
+STATIC_STRING(TokenString_Comment_SingleLine, "//comment");
+STATIC_STRING(TokenString_Comment_MultiLine, "/*comment*/");
+
 STATIC_STRING(TokenString_AlphaName, "alpha name");
 STATIC_STRING(TokenString_PunctName, "punct name");
 
@@ -87,6 +92,11 @@ SMILE_API_FUNC String TokenKind_ToString(Int tokenKind)
 
 		case TOKEN_ERROR: return TokenString_Error;
 		case TOKEN_NONE: return TokenString_None;
+
+		case TOKEN_WHITESPACE: return TokenString_Whitespace;
+		case TOKEN_NEWLINE: return TokenString_Newline;
+		case TOKEN_COMMENT_SINGLELINE: return TokenString_Comment_SingleLine;
+		case TOKEN_COMMENT_MULTILINE: return TokenString_Comment_MultiLine;
 
 		case TOKEN_EOI: return TokenString_Eoi;
 

@@ -28,7 +28,7 @@ STATIC_STRING(UnknownLoanwordMessage, "Loanword \"%S\" is unknown.");
 STATIC_STRING(UnsupportedLoanwordMessage, "Loanword \"%S\" is unsupported in this version of the Smile interpreter.");
 STATIC_STRING(IllegalLoanwordMessage, "Loanword \"%S\" must be followed by whitespace.");
 
-Int Lexer_ParseLoanword(Lexer lexer, Bool isFirstContentOnLine)
+Int Lexer_ParseLoanword(Lexer lexer)
 {
 	const Byte *src = lexer->src;
 	const Byte *end = lexer->end;
@@ -58,7 +58,15 @@ Int Lexer_ParseLoanword(Lexer lexer, Bool isFirstContentOnLine)
 				src++;
 			}
 			lexer->src = src;
-			return TOKEN_NONE;
+			if (lexer->syntaxHighlighterMode) {
+				Int tokenKind = END_TOKEN(TOKEN_COMMENT_HASHBANG);
+				lexer->_hasPrecedingWhitespace = True;
+				return tokenKind;
+			}
+			else {
+				lexer->_hasPrecedingWhitespace = True;
+				return TOKEN_NONE;
+			}
 
 		case '/':
 			// A regex.  Consume everything up to and including the next slash, using \ as an escape,
@@ -71,7 +79,7 @@ Int Lexer_ParseLoanword(Lexer lexer, Bool isFirstContentOnLine)
 				return END_TOKEN(TOKEN_ERROR);
 			}
 			lexer->src = src;
-			return Lexer_ParseRegex(lexer, isFirstContentOnLine);
+			return Lexer_ParseRegex(lexer);
 
 		case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h':
 		case 'i': case 'j': case 'k': case 'l': case 'm': case 'n': case 'o': case 'p':
@@ -86,7 +94,7 @@ Int Lexer_ParseLoanword(Lexer lexer, Bool isFirstContentOnLine)
 
 			// Get the name first.
 			lexer->src = src - 1;
-			if (Lexer_ParseName(lexer, isFirstContentOnLine) == TOKEN_ERROR)
+			if (Lexer_ParseName(lexer) == TOKEN_ERROR)
 				return TOKEN_ERROR;
 
 			// Make sure whitespace follows the name.

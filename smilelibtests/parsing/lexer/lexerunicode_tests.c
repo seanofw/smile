@@ -1,4 +1,4 @@
-﻿//---------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------
 //  Smile Programming Language Interpreter (Unit Tests)
 //  Copyright 2004-2019 Sean Werkema
 //
@@ -30,7 +30,7 @@ static Lexer SetupString(String source)
 
 	Smile_ResetEnvironment();
 
-	lexer = Lexer_Create(source, 0, String_Length(source), GetTestScriptName(), 1, 1);
+	lexer = Lexer_Create(source, 0, String_Length(source), GetTestScriptName(), 1, 1, False);
 	lexer->symbolTable = Smile_SymbolTable;
 
 	return lexer;

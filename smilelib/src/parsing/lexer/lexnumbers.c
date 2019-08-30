@@ -378,7 +378,7 @@ done:
 	return src > start;
 }
 
-Int Lexer_ParseReal(Lexer lexer, Bool isFirstContentOnLine)
+Int Lexer_ParseReal(Lexer lexer)
 {
 	DECLARE_INLINE_STRINGBUILDER(digitBuilder, 256);	// 256 is plenty for most numbers, but it can grow if necessary.
 	const Byte *src = lexer->src;
@@ -390,8 +390,6 @@ Int Lexer_ParseReal(Lexer lexer, Bool isFirstContentOnLine)
 	String digitString, suffix;
 	const Byte *suffixText;
 	Float64 float64;
-
-	UNUSED(isFirstContentOnLine);
 
 	INIT_INLINE_STRINGBUILDER(digitBuilder);
 
@@ -524,7 +522,7 @@ badSuffix:
 	return END_TOKEN(TOKEN_ERROR);
 }
 
-Int Lexer_ParseZero(Lexer lexer, Bool isFirstContentOnLine)
+Int Lexer_ParseZero(Lexer lexer)
 {
 	const Byte *src = lexer->src;
 	const Byte *end = lexer->end;
@@ -583,7 +581,7 @@ Int Lexer_ParseZero(Lexer lexer, Bool isFirstContentOnLine)
 		if (src < lexer->end && *src == '.' && (src+1 >= lexer->end || src[1] != '.')) {
 			// Found a '.' (and it's not part of a ".."), so rewind back and re-parse this as a real or float value.
 			lexer->src = start;
-			return Lexer_ParseReal(lexer, isFirstContentOnLine);
+			return Lexer_ParseReal(lexer);
 		}
 		else {
 			// Collected a whole octal value, so finish it.
@@ -599,7 +597,7 @@ Int Lexer_ParseZero(Lexer lexer, Bool isFirstContentOnLine)
 	}
 }
 
-Int Lexer_ParseDigit(Lexer lexer, Bool isFirstContentOnLine)
+Int Lexer_ParseDigit(Lexer lexer)
 {
 	const Byte *src = lexer->src;
 	const Byte *start, *digitsEnd;
@@ -623,7 +621,7 @@ Int Lexer_ParseDigit(Lexer lexer, Bool isFirstContentOnLine)
 	if (src < lexer->end && *src == '.' && (src + 1 == lexer->end || src[1] != '.')) {
 		// Found a '.' (and it's not part of a ".."), so rewind back and re-parse this as a real or float value.
 		lexer->src = start;
-		return Lexer_ParseReal(lexer, isFirstContentOnLine);
+		return Lexer_ParseReal(lexer);
 	}
 	else {
 		// Collected a whole octal value, so finish it.

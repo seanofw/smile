@@ -44,7 +44,7 @@ static UserFunctionInfo Compile(const char *text)
 
 	source = String_FromC(text);
 
-	lexer = Lexer_Create(source, 0, String_Length(source), GetTestScriptName(), 1, 1);
+	lexer = Lexer_Create(source, 0, String_Length(source), GetTestScriptName(), 1, 1, False);
 	lexer->symbolTable = Smile_SymbolTable;
 
 	globalClosureInfo = ClosureInfo_Create(NULL, CLOSURE_KIND_GLOBAL);

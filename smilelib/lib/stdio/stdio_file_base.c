@@ -25,6 +25,7 @@
 #include <smile/smiletypes/numeric/smilereal64.h>
 #include <smile/smiletypes/numeric/smilebyte.h>
 #include <smile/smiletypes/numeric/smiletimestamp.h>
+#include <smile/smiletypes/range/smileinteger64range.h>
 #include <smile/smiletypes/text/smilesymbol.h>
 #include <smile/smiletypes/raw/smilebytearray.h>
 #include <smile/stringbuilder.h>
@@ -582,6 +583,90 @@ SMILE_EXTERNAL_FUNCTION(WriteUni)
 		StringBuilder_GetBytes(stringBuilder), (UInt32)StringBuilder_GetLength(stringBuilder));
 }
 
+static SmileByteArray ReadToDynamicBuffer(Stdio_File file, Int64 length)
+{
+	Int bufferSize = 4096;
+	Byte *buffer = NULL;
+	Byte *writePtr = NULL;
+	Int count, chunkSize;
+
+	// Handle a weird edge case of 0 or negative length.
+	if (length <= 0)
+		return SmileByteArray_Create((SmileObject)Smile_KnownBases.ByteArray, 0, True);
+
+	// If they want less than our default allocation, allocate something
+	// just big enough to fit.
+	if (bufferSize > length)
+		bufferSize = length;
+	if (bufferSize < 16)
+		bufferSize = 16;
+
+	// Loop until we've either read all they asked for or until there's
+	// no input left to read.
+	while (length > 0) {
+
+		// If we're out of space in the buffer, grow it for the next read.
+		if (writePtr == NULL || writePtr >= buffer + bufferSize) {
+
+			if (writePtr == NULL) {
+				// No buffer before, so make one.
+				buffer = writePtr = GC_MALLOC_ATOMIC(bufferSize);
+			}
+			else {
+				Byte *newBuffer;
+
+				// Multiply its size by 3/2.  This may ultimately end up overallocating
+				// by 50%, but it ensures the amortized copy performance will be closer
+				// to linear than to exponential.  (Since we can't ask the GC to *shrink*
+				// the allocated region after we've read all the data, we go with something
+				// less than the usual doubling algorithm, in hopes of wasting slightly
+				// less memory in exchange for slightly worse CPU performance.)
+				bufferSize += bufferSize >> 1;
+				newBuffer = GC_MALLOC_ATOMIC(bufferSize);
+
+				MemCpy(newBuffer, buffer, (Int)(writePtr - buffer));
+				buffer = newBuffer;
+
+				writePtr = newBuffer + (writePtr - buffer);
+			}
+		}
+
+		// Decide how much data to read.  We want to read enough to populate as
+		// much of the buffer as we can, but we don't want to blow out Int32 either.
+		// So we read in either whatever's left of the buffer, or a megabyte,
+		// whichever of these is smallest.
+		chunkSize = bufferSize - (Int)(writePtr - buffer);
+		if (chunkSize > 0x100000) chunkSize = 0x100000;
+
+		// Read the next chunk of data.
+#		if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+			count = _read(file->fd, buffer, (Int32)chunkSize);
+#		elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+			count = read(file->fd, buffer, (Int32)chunkSize);
+#		else
+#			error Unsupported OS.
+#		endif
+
+		// If we got an error in reading, we give up and return nothing.
+		if (count < 0) return NULL;
+
+		// If we ran out of stuff to read, stop.
+		if (count == 0) break;
+
+		// Move forward past what we've read so far.
+		writePtr += (PtrInt)count;
+		length -= (Int64)count;
+	}
+
+	// The actual total length of the data that we've read is (writePtr - buffer),
+	// no matter how much was asked for.
+	count = (Int)(PtrInt)(writePtr - buffer);
+
+	// Wrap the newly-allocated buffer in a ByteArray object, so it's accessible
+	// within user programs.
+	return SmileByteArray_CreateInternal((SmileObject)Smile_KnownBases.ByteArray, buffer, count, True);
+}
+
 SMILE_EXTERNAL_FUNCTION(Read)
 {
 	Stdio_File file = GetFileFromHandle((SmileHandle)argv[0].obj, (FileInfo)param, "File.read");
@@ -598,38 +683,97 @@ SMILE_EXTERNAL_FUNCTION(Read)
 		default:
 			Smile_ThrowException(Smile_KnownSymbols.native_method_error,
 				String_FromC("File.read: Invalid number of arguments."));
-		case 2:
-			// Buffer only.
-			byteArray = (SmileByteArray)argv[1].obj;
-			if (!(byteArray->kind & SMILE_SECURITY_WRITABLE))
-				Smile_ThrowException(Smile_KnownSymbols.native_method_error,
-					String_FromC("File.read: Cannot write to a read-only ByteArray."));
+		case 1:
+			// Handle only, so read the whole file into a newly-allocated array.
+			byteArray = NULL;
 			start = 0;
-			length = byteArray->length;
+			length = Int64Max;
+			break;
+		case 2:
+			if (SMILE_KIND(argv[1].obj) == SMILE_KIND_BYTEARRAY) {
+				// Buffer only.
+				byteArray = (SmileByteArray)argv[1].obj;
+				if (!(byteArray->kind & SMILE_SECURITY_WRITABLE))
+					Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+						String_FromC("File.read: Cannot write to a read-only ByteArray."));
+				start = 0;
+				length = byteArray->length;
+			}
+			else if (SMILE_KIND(argv[1].obj) == SMILE_KIND_UNBOXED_INTEGER64) {
+				// Length only; we'll have to dynamically-allocate the buffer itself.
+				start = 0;
+				length = argv[1].unboxed.i64;
+				byteArray = NULL;
+			}
+			else {
+				Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+					String_FromC("File.read: Argument 1 must be a ByteArray to write to, or an Integer count of bytes to read."));
+			}
 			break;
 		case 3:
-			// Buffer and length.
-			byteArray = (SmileByteArray)argv[1].obj;
-			if (!(byteArray->kind & SMILE_SECURITY_WRITABLE))
+			// Buffer and length (or range).
+			if (SMILE_KIND(argv[1].obj) == SMILE_KIND_BYTEARRAY) {
+				byteArray = (SmileByteArray)argv[1].obj;
+				if (!(byteArray->kind & SMILE_SECURITY_WRITABLE))
+					Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+						String_FromC("File.read: Cannot write to a read-only ByteArray."));
+			}
+			else {
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error,
-					String_FromC("File.read: Cannot write to a read-only ByteArray."));
-			start = 0;
-			length = argv[2].unboxed.i64;
-			if (length > byteArray->length)
+					String_FromC("File.read: Argument 1 must be a ByteArray to write to, or an Integer count of bytes to read."));
+			}
+			if (SMILE_KIND(argv[2].obj) == SMILE_KIND_INTEGER64) {
+				start = 0;
+				length = argv[2].unboxed.i64;
+				if (length > byteArray->length)
+					Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+						String_FromC("File.read: Cannot write ByteArray outside its boundary."));
+			}
+			else if (SMILE_KIND(argv[2].obj) == SMILE_KIND_INTEGER64RANGE) {
+				SmileInteger64Range range = (SmileInteger64Range)argv[2].obj;
+				start = range->start;
+				length = range->end;
+				if (length < start) {
+					Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+						String_FromC("File.read: Cannot write to a ByteArray in reverse."));
+				}
+				if (range->stepping != 1) {
+					Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+						String_FromC("File.read: Cannot write to a ByteArray with a stepping other than 1."));
+				}
+				length = (length - start) + 1;
+				if (start > byteArray->length || length > byteArray->length - start)
+					Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+						String_FromC("File.read: Cannot write ByteArray outside its boundary."));
+			}
+			else {
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error,
-					String_FromC("File.read: Cannot write ByteArray outside its boundary."));
+					String_FromC("File.read: Argument 2 must be an integer count of bytes to read, or an integer range."));
+			}
 			break;
 		case 4:
-			// Buffer and length.
-			byteArray = (SmileByteArray)argv[1].obj;
-			if (!(byteArray->kind & SMILE_SECURITY_WRITABLE))
+			// Buffer, start, and length.
+			if (SMILE_KIND(argv[1].obj) == SMILE_KIND_BYTEARRAY) {
+				byteArray = (SmileByteArray)argv[1].obj;
+				if (!(byteArray->kind & SMILE_SECURITY_WRITABLE))
+					Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+						String_FromC("File.read: Cannot write to a read-only ByteArray."));
+			}
+			else {
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error,
-					String_FromC("File.read: Cannot write to a read-only ByteArray."));
-			start = argv[2].unboxed.i64;
-			length = argv[3].unboxed.i64;
-			if (start > byteArray->length || length > byteArray->length - start)
+					String_FromC("File.read: Argument 1 must be a ByteArray to write to, or an Integer count of bytes to read."));
+			}
+			if (SMILE_KIND(argv[2].obj) == SMILE_KIND_INTEGER64 && SMILE_KIND(argv[3].obj) == SMILE_KIND_INTEGER64) {
+				start = argv[2].unboxed.i64;
+				length = argv[3].unboxed.i64;
+				if (start > byteArray->length || length > byteArray->length - start)
+					Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+						String_FromC("File.read: Cannot write ByteArray outside its boundary."));
+			}
+			else {
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error,
-					String_FromC("File.read: Cannot write ByteArray outside its boundary."));
+					String_FromC("File.read: Argument 2 must be an integer count of bytes to read, or an integer range."));
+			}
 			break;
 	}
 
@@ -639,39 +783,68 @@ SMILE_EXTERNAL_FUNCTION(Read)
 		Smile_ThrowException(Smile_KnownSymbols.native_method_error,
 			String_FromC("File.read: Length to read cannot be a negative number."));
 
-#	if SizeofPtrInt > 4
-		buffer = byteArray->data + start;
-#	else
-		buffer = byteArray->data + (Int32)start;
-#	endif
+	if (byteArray == NULL) {
 
-	// Read the data for real.
-#	if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
-		if (length > Int32Max) length = Int32Max;
-		count = _read(file->fd, buffer, (Int32)length);
-#	elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
-		if (length > SSIZE_MAX) length = SSIZE_MAX;
-		count = read(file->fd, buffer, (Int32)length);
-#	else
-#		error Unsupported OS.
-#	endif
+		// If they want us to read into a dynamically-allocated ByteArray, do that
+		// specially.  It's a little slower than reading data into a preallocated buffer,
+		// but it's much easier to use programmatically.
+		byteArray = ReadToDynamicBuffer(file, length);
+		count = byteArray->length;
 
-	if (count < 0) {
-		Stdio_File_UpdateLastError(file);
+		if (count < 0) {
+			Stdio_File_UpdateLastError(file);
 
-		// Explicitly *not* the `error symbol, due to the way loops are often written.
-		// Symbols are truthy, so if we returned a symbol, an expression like
-		// 'while file read buffer do [something]' would continue forever if there
-		// was an error.
-		return SmileArg_From(NullObject);
+			// Explicitly *not* the `error symbol, due to the way loops are often written.
+			// Symbols are truthy, so if we returned a symbol, an expression like
+			// 'while file read buffer do [something]' would continue forever if there
+			// was an error.
+			return SmileArg_From(NullObject);
+		}
+
+		if (count == 0)
+			file->isEof = True;
+
+		file->lastErrorCode = 0;
+		file->lastErrorMessage = String_Empty;
+
+		return SmileArg_From((SmileObject)byteArray);
 	}
+	else {
+		// Read into the buffer we're given.
+#		if SizeofPtrInt > 4
+			buffer = byteArray->data + start;
+#		else
+			buffer = byteArray->data + (Int32)start;
+#		endif
 
-	if (count == 0)
-		file->isEof = True;
+		// Read the data for real.
+#		if ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_WINDOWS_FAMILY)
+			if (length > Int32Max) length = Int32Max;
+			count = _read(file->fd, buffer, (Int32)length);
+#		elif ((SMILE_OS & SMILE_OS_FAMILY) == SMILE_OS_UNIX_FAMILY)
+			if (length > SSIZE_MAX) length = SSIZE_MAX;
+			count = read(file->fd, buffer, (Int32)length);
+#		else
+#			error Unsupported OS.
+#		endif
 
-	file->lastErrorCode = 0;
-	file->lastErrorMessage = String_Empty;
-	return SmileUnboxedInteger64_From(count);
+		if (count < 0) {
+			Stdio_File_UpdateLastError(file);
+
+			// Explicitly *not* the `error symbol, due to the way loops are often written.
+			// Symbols are truthy, so if we returned a symbol, an expression like
+			// 'while file read buffer do [something]' would continue forever if there
+			// was an error.
+			return SmileArg_From(NullObject);
+		}
+
+		if (count == 0)
+			file->isEof = True;
+
+		file->lastErrorCode = 0;
+		file->lastErrorMessage = String_Empty;
+		return SmileUnboxedInteger64_From(count);
+	}
 }
 
 SMILE_EXTERNAL_FUNCTION(Write)
@@ -692,24 +865,77 @@ SMILE_EXTERNAL_FUNCTION(Write)
 				String_FromC("File.write: Invalid number of arguments."));
 		case 2:
 			// Buffer only.
-			byteArray = (SmileByteArray)argv[1].obj;
-			start = 0;
-			length = byteArray->length;
+			if (SMILE_KIND(argv[1].obj) == SMILE_KIND_BYTEARRAY) {
+				byteArray = (SmileByteArray)argv[1].obj;
+				start = 0;
+				length = byteArray->length;
+			}
+			else {
+				Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+					String_FromC("File.write: Argument 1 must be a ByteArray to read from."));
+			}
 			break;
 		case 3:
-			// Buffer and length.
-			byteArray = (SmileByteArray)argv[1].obj;
-			start = 0;
-			length = argv[2].unboxed.i64;
-			if (length > byteArray->length)
+			// Buffer and length, or buffer and range.
+			if (SMILE_KIND(argv[1].obj) == SMILE_KIND_BYTEARRAY) {
+				byteArray = (SmileByteArray)argv[1].obj;
+			}
+			else {
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error,
-					String_FromC("File.write: Cannot read ByteArray outside its boundary."));
+					String_FromC("File.write: Argument 1 must be a ByteArray to read from."));
+			}
+			if (SMILE_KIND(argv[2].obj) == SMILE_KIND_INTEGER64) {
+				start = 0;
+				length = argv[2].unboxed.i64;
+				if (length > byteArray->length)
+					Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+						String_FromC("File.write: Cannot read ByteArray outside its boundary."));
+			}
+			else if (SMILE_KIND(argv[2].obj) == SMILE_KIND_INTEGER64RANGE) {
+				SmileInteger64Range range = (SmileInteger64Range)argv[2].obj;
+				start = range->start;
+				length = range->end;
+				if (length < start) {
+					Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+						String_FromC("File.write: Cannot read from a ByteArray in reverse."));
+				}
+				if (range->stepping != 1) {
+					Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+						String_FromC("File.read: Cannot write to a ByteArray with a stepping other than 1."));
+				}
+				length = (length - start) + 1;
+				if (start > byteArray->length || length > byteArray->length - start)
+					Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+						String_FromC("File.write: Cannot read ByteArray outside its boundary."));
+			}
+			else {
+				Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+					String_FromC("File.write: Argument 2 must be an integer length or an integer range."));
+			}
 			break;
 		case 4:
-			// Buffer and length.
-			byteArray = (SmileByteArray)argv[1].obj;
-			start = argv[2].unboxed.i64;
-			length = argv[3].unboxed.i64;
+			// Buffer and start and length.
+			if (SMILE_KIND(argv[1].obj) == SMILE_KIND_BYTEARRAY) {
+				byteArray = (SmileByteArray)argv[1].obj;
+			}
+			else {
+				Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+					String_FromC("File.write: Argument 1 must be a ByteArray to read from."));
+			}
+			if (SMILE_KIND(argv[2].obj) == SMILE_KIND_INTEGER64) {
+				start = argv[2].unboxed.i64;
+			}
+			else {
+				Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+					String_FromC("File.write: Argument 2 must be an integer start."));
+			}
+			if (SMILE_KIND(argv[3].obj) == SMILE_KIND_INTEGER64) {
+				length = argv[3].unboxed.i64;
+			}
+			else {
+				Smile_ThrowException(Smile_KnownSymbols.native_method_error,
+					String_FromC("File.write: Argument 3 must be an integer length."));
+			}
 			if (start > byteArray->length || length > byteArray->length - start)
 				Smile_ThrowException(Smile_KnownSymbols.native_method_error,
 					String_FromC("File.write: Cannot read ByteArray outside its boundary."));
@@ -1838,8 +2064,8 @@ void Stdio_File_Init(SmileUserObject base, IoSymbols ioSymbols)
 	SetupFunction("write-byte", WriteByte, (void *)fileInfo, "file byte", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _writeByteChecks);
 	SetupFunction("write-char", WriteChar, (void *)fileInfo, "file char", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _writeCharChecks);
 	SetupFunction("write-uni", WriteUni, (void *)fileInfo, "file uni", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 2, 2, 2, _writeUniChecks);
-	SetupFunction("read", Read, (void *)fileInfo, "file buffer start size", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 4, 4, _readWriteChecks);
-	SetupFunction("write", Write, (void *)fileInfo, "file buffer start size", ARG_CHECK_MIN | ARG_CHECK_MAX | ARG_CHECK_TYPES, 2, 4, 4, _readWriteChecks);
+	SetupFunction("read", Read, (void *)fileInfo, "file buffer start length", ARG_CHECK_MIN | ARG_CHECK_MAX, 1, 4, 0, NULL);
+	SetupFunction("write", Write, (void *)fileInfo, "file buffer start length", ARG_CHECK_MIN | ARG_CHECK_MAX, 2, 4, 0, NULL);
 	SetupFunction("eof?", IsEof, (void *)fileInfo, "file", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _handleChecks);
 	SetupSynonym("eof?", "eoi?");
 	SetupFunction("flush", Flush, (void *)fileInfo, "file", ARG_CHECK_EXACT | ARG_CHECK_TYPES, 1, 1, 1, _handleChecks);

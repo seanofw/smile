@@ -30,11 +30,10 @@ STATIC_STRING(UnterminatedCommentMessage, "Comment that was started on line %d w
 /// Having seen a slash '/' on the input, parse either a comment or a punctuation name.
 /// </summary>
 /// <param name="lexer">The lexical analyzer.</param>
-/// <param name="isFirstContentOnLine">Whether this identifier is the first non-whitespace non-comment content on its line.</param>
 /// <returns>The next token that was found in the input, or TOKEN_NONE if no token was found (i.e., a comment).</returns>
-Int Lexer_ParseSlash(Lexer lexer, Bool isFirstContentOnLine)
+Int Lexer_ParseSlash(Lexer lexer)
 {
-	const Byte *src = lexer->src;
+	const Byte *src = lexer->src, *start;
 	const Byte *end = lexer->end;
 	Token token = lexer->token;
 	Int startLine;
@@ -44,14 +43,24 @@ Int Lexer_ParseSlash(Lexer lexer, Bool isFirstContentOnLine)
 
 		// A // single-line comment.
 		case '/':
+			start = src - 1;
 			while (src < end && (ch = *src) != '\n' && ch != '\r')
 				src++;
-			lexer->src = src;
-			return TOKEN_NONE;
+			if (lexer->syntaxHighlighterMode) {
+				Int tokenKind = SIMPLE_TOKEN(start, TOKEN_COMMENT_SINGLELINE);
+				lexer->_hasPrecedingWhitespace = True;
+				return tokenKind;
+			}
+			else {
+				lexer->src = src;
+				lexer->_hasPrecedingWhitespace = True;
+				return TOKEN_NONE;
+			}
 
 		// A multi-line comment.
 		case '*':
 			startLine = lexer->line;
+			start = src - 1;
 
 			for (;;) {
 				if (src >= end) {
@@ -78,13 +87,21 @@ Int Lexer_ParseSlash(Lexer lexer, Bool isFirstContentOnLine)
 				}
 			}
 
-			lexer->src = src;
-			return TOKEN_NONE;
+			if (lexer->syntaxHighlighterMode) {
+				Int tokenKind = SIMPLE_TOKEN(start, TOKEN_COMMENT_SINGLELINE);
+				lexer->_hasPrecedingWhitespace = True;
+				return tokenKind;
+			}
+			else {
+				lexer->src = src;
+				lexer->_hasPrecedingWhitespace = True;
+				return TOKEN_NONE;
+			}
 
 		default:
 			// Not a comment: General punctuation.
 			lexer->src = src - 2;
-			return Lexer_ParsePunctuation(lexer, isFirstContentOnLine);
+			return Lexer_ParsePunctuation(lexer);
 	}
 }
 
@@ -93,15 +110,16 @@ Int Lexer_ParseSlash(Lexer lexer, Bool isFirstContentOnLine)
 /// </summary>
 /// <param name="lexer">The lexical analyzer.</param>
 /// <param name="initialChar">The character read so far.</param>
-/// <param name="isFirstContentOnLine">Whether this identifier is the first non-whitespace non-comment content on its line.</param>
-/// <param name="hasPrecedingWhitespace">Whether there was whitespace immediately before the character that was read.</param>
 /// <returns>The next token that was found in the input, or null if no token was found (i.e., a comment).</returns>
-Int Lexer_ParseHyphenOrEquals(Lexer lexer, Int initialChar, Bool isFirstContentOnLine, Bool hasPrecedingWhitespace)
+Int Lexer_ParseHyphenOrEquals(Lexer lexer, Int initialChar)
 {
-	const Byte *src = lexer->src;
+	const Byte *src = lexer->src, *start;
 	const Byte *end = lexer->end;
+	Token token = lexer->token;
 	Int charCount;
 	Int tokenKind;
+
+	start = src;
 
 	// Read hyphens/equals until we run out of them.
 	charCount = 0;
@@ -112,13 +130,22 @@ Int Lexer_ParseHyphenOrEquals(Lexer lexer, Int initialChar, Bool isFirstContentO
 
 	if (charCount >= 5) {
 		// Five or more hyphens/equals is a simple comment, which we flat-out ignore.
-		lexer->src = src;
-		return TOKEN_NONE;
+		if (lexer->syntaxHighlighterMode) {
+			tokenKind = SIMPLE_TOKEN(start,
+				initialChar == '=' ? TOKEN_COMMENT_SEPARATOR_EQUALS : TOKEN_COMMENT_SEPARATOR_HYPHEN);
+			lexer->_hasPrecedingWhitespace = True;
+			return tokenKind;
+		}
+		else {
+			lexer->src = src;
+			lexer->_hasPrecedingWhitespace = True;
+			return TOKEN_NONE;
+		}
 	}
 
 	// Anything else is a punctuation form, with '=' treated specially.
-	tokenKind = Lexer_ParsePunctuation(lexer, isFirstContentOnLine);
-	if (tokenKind == TOKEN_EQUAL && !hasPrecedingWhitespace) {
+	tokenKind = Lexer_ParsePunctuation(lexer);
+	if (tokenKind == TOKEN_EQUAL && !lexer->_hasPrecedingWhitespace) {
 		lexer->token->kind = tokenKind = TOKEN_EQUALWITHOUTWHITESPACE;
 	}
 	return tokenKind;
@@ -136,9 +163,8 @@ Int Lexer_ParseHyphenOrEquals(Lexer lexer, Int initialChar, Bool isFirstContentO
 /// the input accordingly into the correct kind of token.
 /// </summary>
 /// <param name="lexer">The lexical analyzer.</param>
-/// <param name="isFirstContentOnLine">Whether this token is the first non-whitespace non-comment content on its line.</param>
 /// <returns>The next token that was found in the input.</returns>
-Int Lexer_ParseDot(Lexer lexer, Bool isFirstContentOnLine)
+Int Lexer_ParseDot(Lexer lexer)
 {
 	const Byte *src = lexer->src;
 	const Byte *end = lexer->end;
@@ -162,7 +188,7 @@ Int Lexer_ParseDot(Lexer lexer, Bool isFirstContentOnLine)
 	if (ch >= '0' && ch <= '9') {
 		// We got numeric digits after the dot, so this is actually a real value, not a dot operator.
 		lexer->src--;
-		return Lexer_ParseReal(lexer, isFirstContentOnLine);
+		return Lexer_ParseReal(lexer);
 	}
 
 	return SIMPLE_TOKEN(src - 1, TOKEN_DOT);

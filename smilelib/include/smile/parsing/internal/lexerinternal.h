@@ -9,23 +9,23 @@
 #include <smile/parsing/lexer.h>
 #endif
 
-SMILE_INTERNAL_FUNC Int Lexer_ParseName(Lexer lexer, Bool isFirstContentOnLine);
-SMILE_INTERNAL_FUNC Int Lexer_ParsePunctuation(Lexer lexer, Bool isFirstContentOnLine);
+SMILE_INTERNAL_FUNC Int Lexer_ParseName(Lexer lexer);
+SMILE_INTERNAL_FUNC Int Lexer_ParsePunctuation(Lexer lexer);
 
-SMILE_INTERNAL_FUNC Int Lexer_ParseRawString(Lexer lexer, Bool isFirstContentOnLine);
-SMILE_INTERNAL_FUNC Int Lexer_ParseChar(Lexer lexer, Bool isFirstContentOnLine);
-SMILE_INTERNAL_FUNC Int Lexer_ParseDynamicString(Lexer lexer, Bool isFirstContentOnLine);
+SMILE_INTERNAL_FUNC Int Lexer_ParseRawString(Lexer lexer);
+SMILE_INTERNAL_FUNC Int Lexer_ParseChar(Lexer lexer);
+SMILE_INTERNAL_FUNC Int Lexer_ParseDynamicString(Lexer lexer);
 
-SMILE_INTERNAL_FUNC Int Lexer_ParseZero(Lexer lexer, Bool isFirstContentOnLine);
-SMILE_INTERNAL_FUNC Int Lexer_ParseDigit(Lexer lexer, Bool isFirstContentOnLine);
-SMILE_INTERNAL_FUNC Int Lexer_ParseReal(Lexer lexer, Bool isFirstContentOnLine);
+SMILE_INTERNAL_FUNC Int Lexer_ParseZero(Lexer lexer);
+SMILE_INTERNAL_FUNC Int Lexer_ParseDigit(Lexer lexer);
+SMILE_INTERNAL_FUNC Int Lexer_ParseReal(Lexer lexer);
 
-SMILE_INTERNAL_FUNC Int Lexer_ParseLoanword(Lexer lexer, Bool isFirstContentOnLine);
-SMILE_INTERNAL_FUNC Int Lexer_ParseRegex(Lexer lexer, Bool isFirstContentOnLine);
+SMILE_INTERNAL_FUNC Int Lexer_ParseLoanword(Lexer lexer);
+SMILE_INTERNAL_FUNC Int Lexer_ParseRegex(Lexer lexer);
 
-SMILE_INTERNAL_FUNC Int Lexer_ParseSlash(Lexer lexer, Bool isFirstContentOnLine);
-SMILE_INTERNAL_FUNC Int Lexer_ParseDot(Lexer lexer, Bool isFirstContentOnLine);
-SMILE_INTERNAL_FUNC Int Lexer_ParseHyphenOrEquals(Lexer lexer, Int initialChar, Bool isFirstContentOnLine, Bool hasPrecedingWhitespace);
+SMILE_INTERNAL_FUNC Int Lexer_ParseSlash(Lexer lexer);
+SMILE_INTERNAL_FUNC Int Lexer_ParseDot(Lexer lexer);
+SMILE_INTERNAL_FUNC Int Lexer_ParseHyphenOrEquals(Lexer lexer, Int initialChar);
 
 SMILE_INTERNAL_FUNC Bool Lexer_IsValidRestartCharacter(const Byte *src, const Byte *end);
 
@@ -38,7 +38,7 @@ SMILE_INTERNAL_FUNC Bool Lexer_IsValidRestartCharacter(const Byte *src, const By
 	 (token->_position.line = (Int32)lexer->line), \
 	 (token->_position.lineStart = (Int32)(lexer->lineStart - lexer->input)), \
 	 (token->_position.column = (Int32)((lexer->tokenStart = (__startPtr__)) - lexer->lineStart)), \
-	 (token->isFirstContentOnLine = isFirstContentOnLine), \
+	 (token->isFirstContentOnLine = lexer->_isFirstContentOnLine), \
 	 (token->hasEscapes = False))
 
 // End the current token as the given kind.

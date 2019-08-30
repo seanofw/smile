@@ -33,9 +33,8 @@ STATIC_STRING(UnterminatedCharMessage, "Character that was started on line %d ha
 /// Having seen a single quote '\"', parse it into a dynamic string.
 /// </summary>
 /// <param name="lexer">The lexical analyzer.</param>
-/// <param name="isFirstContentOnLine">Whether this identifier is the first non-whitespace non-comment content on its line.</param>
 /// <returns>The next token that was found in the input, or TOKEN_ERROR if a broken token was found (i.e., unterminated string).</returns>
-Int Lexer_ParseDynamicString(Lexer lexer, Bool isFirstContentOnLine)
+Int Lexer_ParseDynamicString(Lexer lexer)
 {
 	DECLARE_INLINE_STRINGBUILDER(stringBuilder, 1024);
 	Int initialQuotes, quoteCount;
@@ -146,9 +145,8 @@ retry:
 /// or into a single 32-bit Uni.
 /// </summary>
 /// <param name="lexer">The lexical analyzer.</param>
-/// <param name="isFirstContentOnLine">Whether this identifier is the first non-whitespace non-comment content on its line.</param>
 /// <returns>The next token that was found in the input, or TOKEN_ERROR if a broken token was found (i.e., unterminated string).</returns>
-Int Lexer_ParseChar(Lexer lexer, Bool isFirstContentOnLine)
+Int Lexer_ParseChar(Lexer lexer)
 {
 	const Byte *src = lexer->src;
 	const Byte *end = lexer->end;
@@ -211,9 +209,8 @@ Int Lexer_ParseChar(Lexer lexer, Bool isFirstContentOnLine)
 /// Having seen a single apostrophe '\'', parse it into a raw string or a character.
 /// </summary>
 /// <param name="lexer">The lexical analyzer.</param>
-/// <param name="isFirstContentOnLine">Whether this identifier is the first non-whitespace non-comment content on its line.</param>
 /// <returns>The next token that was found in the input, or TOKEN_ERROR if a broken token was found (i.e., unterminated string).</returns>
-Int Lexer_ParseRawString(Lexer lexer, Bool isFirstContentOnLine)
+Int Lexer_ParseRawString(Lexer lexer)
 {
 	DECLARE_INLINE_STRINGBUILDER(stringBuilder, 1024);
 	Int initialApostrophes, quoteCount;
@@ -237,7 +234,7 @@ Int Lexer_ParseRawString(Lexer lexer, Bool isFirstContentOnLine)
 
 	// If it's just one, parse it as a single char.
 	if (initialApostrophes == 1) {
-		return Lexer_ParseChar(lexer, isFirstContentOnLine);
+		return Lexer_ParseChar(lexer);
 	}
 
 	// This variable will keep track of how many closing apostrophes we've seen in sequence.

@@ -135,7 +135,7 @@ readMoreOptions:
 /// Consume characters until a trailing '/', allowing '\' to escape subsequent characters;
 /// and then after the '/', consume any alphanumeric characters as options.
 /// </summary>
-Int Lexer_ParseRegex(Lexer lexer, Bool isFirstContentOnLine)
+Int Lexer_ParseRegex(Lexer lexer)
 {
 	Token token = lexer->token;
 	String pattern, flags;
@@ -161,7 +161,7 @@ Int Lexer_ParseRegex(Lexer lexer, Bool isFirstContentOnLine)
 	src = lexer->src;
 
 	// Make the token, except for its data.
-	token->isFirstContentOnLine = isFirstContentOnLine;
+	token->isFirstContentOnLine = lexer->_isFirstContentOnLine;
 	END_TOKEN(TOKEN_LOANWORD_REGEX);
 
 	// Now create the regex, and validate its syntax.

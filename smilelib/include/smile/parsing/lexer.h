@@ -95,14 +95,21 @@ struct LexerStruct {
 	Int ungetCount;				// The number of tokens we have ungotten.  This maxes out at 15 levels deep.
 	const Byte *tokenStart;		// The starting pointer of the current token.
 
+	Bool syntaxHighlighterMode;	// Return everything, including whitespace.
+
 	// External helper constructs.
 	SymbolTable symbolTable;	// The symbol table, for resolving identifiers.
+
+	// These flags are used internally as part of the state to keep track of what
+	// kind of token to return next.  Don't change them outside the Lexer itself.
+	Bool _isFirstContentOnLine;
+	Bool _hasPrecedingWhitespace;
 };
 
 //-------------------------------------------------------------------------------------------------
 //  External parts of the implementation
 
-SMILE_API_FUNC Lexer Lexer_Create(String input, Int start, Int length, String filename, Int firstLine, Int firstColumn);
+SMILE_API_FUNC Lexer Lexer_Create(String input, Int start, Int length, String filename, Int firstLine, Int firstColumn, Bool syntaxHighlighterMode);
 SMILE_API_FUNC Int Lexer_Next(Lexer lexer);
 SMILE_API_FUNC Int Lexer_DecodeEscapeCode(const Byte **input, const Byte *end, Bool allowUnknowns);
 SMILE_API_FUNC Bool Lexer_ConsumeWhitespaceOnThisLine(Lexer lexer);

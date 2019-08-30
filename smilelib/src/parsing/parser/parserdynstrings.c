@@ -73,7 +73,7 @@ ParseResult Parser_ParseDynamicString(Parser parser, String text, LexerPosition 
 	if (String_IsNullOrEmpty(text))
 		return EXPR_RESULT(text);
 
-	stringLexer = Lexer_Create(text, 0, String_Length(text), startPosition->filename, startPosition->line, startPosition->column);
+	stringLexer = Lexer_Create(text, 0, String_Length(text), startPosition->filename, startPosition->line, startPosition->column, False);
 
 	parseError = Parser_SplitDynamicString(stringLexer, &dynamicStringPieces, &numDynamicStringPieces);
 	if (parseError != NULL)
