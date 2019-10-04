@@ -60,6 +60,15 @@ typedef struct __attribute__((aligned(16))) { UInt64 value[2]; } Real128;
 #endif
 
 //------------------------------------------------------------------------------------------------
+//  GC needs to know what platform we're on.
+
+#define GC_THREADS
+#define GC_PTHREADS			// Pretend to be a Unix.
+#ifndef CYGWIN32
+#	define CYGWIN32			// Make sure CYGWIN32 is defined.
+#endif CYGWIN32
+
+//------------------------------------------------------------------------------------------------
 //  Declaration prefixes.
 
 // How to make functions behave as 'inline' in this compiler.

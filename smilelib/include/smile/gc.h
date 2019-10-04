@@ -2,6 +2,10 @@
 #ifndef __SMILE_GC_H__
 #define __SMILE_GC_H__
 
+#ifndef __SMILE_TYPES_H__
+#include <smile/types.h>
+#endif
+
 #ifdef _DEBUG
 #	ifndef GC_DEBUG
 #		define GC_DEBUG
@@ -20,6 +24,7 @@
 #if defined(_MSC_VER) && _MSC_VER >= 1900
 #pragma warning(push)
 #pragma warning(disable: 4464)
+#pragma warning(disable: 4255)
 #endif
 
 #include "../../gc/include/gc.h"

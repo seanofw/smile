@@ -63,6 +63,12 @@ typedef struct __attribute__((aligned(16))) { UInt64 value[2]; } Real128;
 #endif
 
 //------------------------------------------------------------------------------------------------
+//  GC needs to know what platform we're on.
+
+#define GC_THREADS
+#define GC_LINUX_THREADS
+
+//------------------------------------------------------------------------------------------------
 //  Declaration prefixes.
 
 // How to make functions behave as 'inline' in this compiler.

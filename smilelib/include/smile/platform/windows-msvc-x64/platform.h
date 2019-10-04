@@ -49,6 +49,12 @@ typedef struct { UInt64 value; } Real64;
 typedef struct __declspec(align(16)) { UInt64 value[2]; } Real128;
 
 //------------------------------------------------------------------------------------------------
+//  GC needs to know what platform we're on.
+
+#define GC_THREADS
+#define GC_WIN32_THREADS
+
+//------------------------------------------------------------------------------------------------
 //  Declaration prefixes.
 
 // How to make functions behave as 'inline' in this compiler.
