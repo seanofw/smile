@@ -1274,46 +1274,45 @@ SMILE_EXTERNAL_FUNCTION(ReadLink)
 		// Some versions of the SDK don't include FSCTL_GET_REPARSE_POINT or
 		// the other definitions we'll need, so if they're missing, add them.
 #		ifndef FSCTL_GET_REPARSE_POINT
-
 #			define FSCTL_GET_REPARSE_POINT 0x000900A8
-
-			// Maximum reparse buffer info size. The max user defined reparse
-			// data is 16KB, plus there's a header.
-#			define MAX_REPARSE_SIZE 17000
-
-			// Some versions of the SDK don't include the reparse tag types.
-#			ifndef IO_REPARSE_TAG_SYMBOLIC_LINK
-#				define IO_REPARSE_TAG_SYMBOLIC_LINK	0x80000000
-#			endif
-#			ifndef IO_REPARSE_TAG_MOUNT_POINT
-				// a.k.a., a "directory junction".
-#				define IO_REPARSE_TAG_MOUNT_POINT	0xA0000003
-#			endif
-#			ifndef IO_REPARSE_TAG_SYMLINK
-				// This seems to be the way that symlinks are created by Windows' mklink command
-				// and CreateSymbolicLink() APIs.  Does anything use the 0x80000000 tag?
-#				define IO_REPARSE_TAG_SYMLINK		0xA000000C
-#			endif
-#			ifndef IO_REPARSE_TAG_HSM
-#				define IO_REPARSE_TAG_HSM			0xC0000004
-#			endif
-#			ifndef IO_REPARSE_TAG_NSS
-#				define IO_REPARSE_TAG_NSS			0x80000005
-#			endif
-#			ifndef IO_REPARSE_TAG_NSSRECOVER
-#				define IO_REPARSE_TAG_NSSRECOVER	0x80000006
-#			endif
-#			ifndef IO_REPARSE_TAG_SIS
-#				define IO_REPARSE_TAG_SIS			0x80000007
-#			endif
-#			ifndef IO_REPARSE_TAG_DFS
-#				define IO_REPARSE_TAG_DFS			0x80000008
-#			endif
-#			ifndef IO_REPARSE_TAG_WSLSYMLINK
-				// WSL uses its own symlink format.
-#				define IO_REPARSE_TAG_WSLSYMLINK	0xA000001D
-#			endif
 #		endif
+
+		// Some versions of the SDK don't include the reparse tag types.
+#		ifndef IO_REPARSE_TAG_SYMBOLIC_LINK
+#			define IO_REPARSE_TAG_SYMBOLIC_LINK	0x80000000
+#		endif
+#		ifndef IO_REPARSE_TAG_MOUNT_POINT
+			// a.k.a., a "directory junction".
+#			define IO_REPARSE_TAG_MOUNT_POINT	0xA0000003
+#		endif
+#		ifndef IO_REPARSE_TAG_SYMLINK
+			// This seems to be the way that symlinks are created by Windows' mklink command
+			// and CreateSymbolicLink() APIs.  Does anything use the 0x80000000 tag?
+#			define IO_REPARSE_TAG_SYMLINK		0xA000000C
+#		endif
+#		ifndef IO_REPARSE_TAG_HSM
+#			define IO_REPARSE_TAG_HSM			0xC0000004
+#		endif
+#		ifndef IO_REPARSE_TAG_NSS
+#			define IO_REPARSE_TAG_NSS			0x80000005
+#		endif
+#		ifndef IO_REPARSE_TAG_NSSRECOVER
+#			define IO_REPARSE_TAG_NSSRECOVER	0x80000006
+#		endif
+#		ifndef IO_REPARSE_TAG_SIS
+#			define IO_REPARSE_TAG_SIS			0x80000007
+#		endif
+#		ifndef IO_REPARSE_TAG_DFS
+#			define IO_REPARSE_TAG_DFS			0x80000008
+#		endif
+#		ifndef IO_REPARSE_TAG_WSLSYMLINK
+			// WSL uses its own symlink format.
+#			define IO_REPARSE_TAG_WSLSYMLINK	0xA000001D
+#		endif
+
+		// Maximum reparse buffer info size. The max user defined reparse
+		// data is 16KB, plus there's a header.
+#		define MAX_REPARSE_SIZE 17000
 
 		// This is the shape of the NTFS reparse data, if it exists.
 		typedef struct {
