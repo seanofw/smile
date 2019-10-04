@@ -201,6 +201,7 @@ Int Lexer_ParseName(Lexer lexer)
 STATIC_STRING(Lexer_NameEqual, "=");
 STATIC_STRING(Lexer_NameEq, "==");
 STATIC_STRING(Lexer_NameSuperEq, "===");
+STATIC_STRING(Lexer_NameReallyReallyEq, "====");	// Weird special case.
 STATIC_STRING(Lexer_NameNe, "!=");
 STATIC_STRING(Lexer_NameSuperNe, "!==");
 STATIC_STRING(Lexer_NameLt, "<");
@@ -313,10 +314,15 @@ readMorePunctuation:
 				*tokenKind = TOKEN_PUNCTNAME;
 				return Lexer_NameEq;
 			}
-			else if (nameLen == 3 && nameBytes[1] == '=' && nameBytes[2] == '=') {			// "==="
+			else if (nameLen == 3 && nameBytes[1] == '=' && nameBytes[2] == '=') { // "==="
 				lexer->src = src;
 				*tokenKind = TOKEN_PUNCTNAME;
 				return Lexer_NameSuperEq;
+			}
+			else if (nameLen == 4 && nameBytes[1] == '=' && nameBytes[2] == '=' && nameBytes[3] == '=') { // "===="
+				lexer->src = src;
+				*tokenKind = TOKEN_PUNCTNAME;
+				return Lexer_NameReallyReallyEq;
 			}
 			break;
 
