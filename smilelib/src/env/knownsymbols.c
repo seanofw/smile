@@ -632,7 +632,7 @@ STATIC_STRING(decompose, "decompose");
 STATIC_STRING(default_, "default");
 STATIC_STRING(diacritic_q, "diacritic?");
 STATIC_STRING(digit_q, "digit?");
-STATIC_STRING(div, "div");
+STATIC_STRING(div_, "div");
 STATIC_STRING(divide_by_zero, "divide-by-zero");
 STATIC_STRING(does_not_understand, "does-not-understand");
 STATIC_STRING(each, "each");
@@ -964,7 +964,7 @@ static void KnownSymbolsInt_PreloadGeneralSymbols(SymbolTable symbolTable, Known
 	knownSymbols->default_ = SymbolTableInt_AddFast(symbolTable, default_);
 	knownSymbols->diacritic_q = SymbolTableInt_AddFast(symbolTable, diacritic_q);
 	knownSymbols->digit_q = SymbolTableInt_AddFast(symbolTable, digit_q);
-	knownSymbols->div = SymbolTableInt_AddFast(symbolTable, div);
+	knownSymbols->div = SymbolTableInt_AddFast(symbolTable, div_);
 	knownSymbols->divide_by_zero = SymbolTableInt_AddFast(symbolTable, divide_by_zero);
 	knownSymbols->does_not_understand = SymbolTableInt_AddFast(symbolTable, does_not_understand);
 	knownSymbols->each = SymbolTableInt_AddFast(symbolTable, each);
