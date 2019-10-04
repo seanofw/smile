@@ -124,6 +124,7 @@
     <ClCompile Include="string\stringident_tests.c" />
     <ClCompile Include="dict\hash_tests.c" />
     <ClCompile Include="numeric\timestamp_tests.c" />
+    <ClCompile Include="parsing\lexer\lexerposition_tests.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -221,6 +222,7 @@
       <Filter>parsing\lexer</Filter>
     </None>
     <None Include="smile\test.sm" />
+    <None Include="parsing\lexer\lexerposition_tests.generated.inc" />
   </ItemGroup>
   <ItemGroup>
     <Media Include="..\smilelib\bin\$(Platform)-$(Configuration)\SmileLib.dll" />

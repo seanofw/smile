@@ -9,7 +9,7 @@
 #include <smile/parsing/lexer.h>
 #endif
 
-SMILE_INTERNAL_FUNC Int Lexer_ParseName(Lexer lexer);
+SMILE_INTERNAL_FUNC Int Lexer_ParseName(Lexer lexer, Bool startToken);
 SMILE_INTERNAL_FUNC Int Lexer_ParsePunctuation(Lexer lexer);
 
 SMILE_INTERNAL_FUNC Int Lexer_ParseRawString(Lexer lexer);
@@ -37,13 +37,15 @@ SMILE_INTERNAL_FUNC Bool Lexer_IsValidRestartCharacter(const Byte *src, const By
 	((token->_position.filename = lexer->filename), \
 	 (token->_position.line = (Int32)lexer->line), \
 	 (token->_position.lineStart = (Int32)(lexer->lineStart - lexer->input)), \
-	 (token->_position.column = (Int32)((lexer->tokenStart = (__startPtr__)) - lexer->lineStart)), \
+	 (token->_position.column = (Int32)((lexer->tokenStart = (__startPtr__)) - lexer->lineStart + 1)), \
 	 (token->isFirstContentOnLine = lexer->_isFirstContentOnLine), \
 	 (token->hasEscapes = False))
 
 // End the current token as the given kind.
 #define END_TOKEN(__kind__) \
 	((lexer->src = src), \
+	 (lexer->_isFirstContentOnLine = False), \
+	 (lexer->_hasPrecedingWhitespace = False), \
 	 (token->_position.length = (Int32)(src - lexer->tokenStart)), \
 	 (token->kind = (__kind__)))
 

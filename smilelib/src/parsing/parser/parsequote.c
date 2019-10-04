@@ -98,6 +98,7 @@ TemplateResult Parser_ParseRawListTerm(Parser parser, Int modeFlags)
 			return TEMPLATE_RESULT(Parser_ParseScope(parser), TemplateKind_Template);
 
 		case TOKEN_DYNSTRING:
+		case TOKEN_LONGDYNSTRING:
 			parseResult = Parser_ParseDynamicString(parser, token->text, startPosition = Token_GetPosition(token));
 			if (IS_PARSE_ERROR(parseResult))
 				RETURN_TEMPLATE_PARSE_ERROR(parseResult);
@@ -197,6 +198,7 @@ TemplateResult Parser_ParseRawListTerm(Parser parser, Int modeFlags)
 			return TEMPLATE_RESULT(EXPR_RESULT(SmileSymbol_Create(token->data.symbol)), TemplateKind_None);
 
 		case TOKEN_RAWSTRING:
+		case TOKEN_LONGRAWSTRING:
 			return TEMPLATE_RESULT(EXPR_RESULT(token->text), TemplateKind_None);
 
 		case TOKEN_CHAR:

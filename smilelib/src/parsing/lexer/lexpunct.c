@@ -39,15 +39,17 @@ Int Lexer_ParseSlash(Lexer lexer)
 	Int startLine;
 	Byte ch;
 
+	START_TOKEN(src - 1);
+
 	switch (*src++) {
 
 		// A // single-line comment.
 		case '/':
-			start = src - 1;
+			start = src - 2;
 			while (src < end && (ch = *src) != '\n' && ch != '\r')
 				src++;
 			if (lexer->syntaxHighlighterMode) {
-				Int tokenKind = SIMPLE_TOKEN(start, TOKEN_COMMENT_SINGLELINE);
+				Int tokenKind = END_TOKEN(TOKEN_COMMENT_SINGLELINE);
 				lexer->_hasPrecedingWhitespace = True;
 				return tokenKind;
 			}
@@ -60,11 +62,10 @@ Int Lexer_ParseSlash(Lexer lexer)
 		// A multi-line comment.
 		case '*':
 			startLine = lexer->line;
-			start = src - 1;
+			start = src - 2;
 
 			for (;;) {
 				if (src >= end) {
-					START_TOKEN(src - 1);
 					lexer->token->text = String_FormatString(UnterminatedCommentMessage, startLine);
 					return END_TOKEN(TOKEN_ERROR);
 				}
@@ -74,11 +75,13 @@ Int Lexer_ParseSlash(Lexer lexer)
 					if (src < end && *src == '\r')
 						src++;
 					lexer->line++;
+					lexer->lineStart = src;
 				}
 				else if (ch == '\r') {
 					if (src < end && *src == '\n')
 						src++;
 					lexer->line++;
+					lexer->lineStart = src;
 				}
 
 				if (ch == '*' && src < end && *src == '/') {
@@ -88,7 +91,7 @@ Int Lexer_ParseSlash(Lexer lexer)
 			}
 
 			if (lexer->syntaxHighlighterMode) {
-				Int tokenKind = SIMPLE_TOKEN(start, TOKEN_COMMENT_SINGLELINE);
+				Int tokenKind = END_TOKEN(TOKEN_COMMENT_MULTILINE);
 				lexer->_hasPrecedingWhitespace = True;
 				return tokenKind;
 			}
@@ -118,8 +121,9 @@ Int Lexer_ParseHyphenOrEquals(Lexer lexer, Int initialChar)
 	Token token = lexer->token;
 	Int charCount;
 	Int tokenKind;
+	Bool hasPrecedingWhitespace = lexer->_hasPrecedingWhitespace;
 
-	start = src;
+	start = src - 1;
 
 	// Read hyphens/equals until we run out of them.
 	charCount = 0;
@@ -145,7 +149,7 @@ Int Lexer_ParseHyphenOrEquals(Lexer lexer, Int initialChar)
 
 	// Anything else is a punctuation form, with '=' treated specially.
 	tokenKind = Lexer_ParsePunctuation(lexer);
-	if (tokenKind == TOKEN_EQUAL && !lexer->_hasPrecedingWhitespace) {
+	if (tokenKind == TOKEN_EQUAL && !hasPrecedingWhitespace) {
 		lexer->token->kind = tokenKind = TOKEN_EQUALWITHOUTWHITESPACE;
 	}
 	return tokenKind;

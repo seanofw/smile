@@ -137,7 +137,7 @@ retry:
 	lexer->src = src;
 	lexer->token->text = StringBuilder_ToString(stringBuilder);
 
-	return END_TOKEN(TOKEN_DYNSTRING);
+	return END_TOKEN(initialQuotes > 1 ? TOKEN_LONGDYNSTRING : TOKEN_DYNSTRING);
 }
 
 /// <summary>
@@ -304,6 +304,6 @@ retry:
 	lexer->src = src;
 	lexer->token->text = StringBuilder_ToString(stringBuilder);
 
-	return END_TOKEN(TOKEN_RAWSTRING);
+	return END_TOKEN(initialApostrophes == 2 ? TOKEN_RAWSTRING : TOKEN_LONGRAWSTRING);
 }
 

@@ -47,7 +47,9 @@ STATIC_STRING(TokenString_Float64, "float64");
 STATIC_STRING(TokenString_Float128, "float128");
 
 STATIC_STRING(TokenString_RawString, "raw string");
+STATIC_STRING(TokenString_LongRawString, "long raw string");
 STATIC_STRING(TokenString_DynString, "string");
+STATIC_STRING(TokenString_LongDynString, "long string");
 
 STATIC_STRING(TokenString_DoubleHash, "##");
 STATIC_STRING(TokenString_DotDot, "..");
@@ -118,7 +120,9 @@ SMILE_API_FUNC String TokenKind_ToString(Int tokenKind)
 		case TOKEN_FLOAT128: return TokenString_Float128;
 
 		case TOKEN_RAWSTRING: return TokenString_RawString;
+		case TOKEN_LONGRAWSTRING: return TokenString_LongRawString;
 		case TOKEN_DYNSTRING: return TokenString_DynString;
+		case TOKEN_LONGDYNSTRING: return TokenString_LongDynString;
 
 		case TOKEN_LEFTBRACE: return String_LeftBrace;
 		case TOKEN_RIGHTBRACE: return String_RightBrace;

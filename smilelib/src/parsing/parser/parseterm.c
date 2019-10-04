@@ -106,9 +106,11 @@ ParseResult Parser_ParseTerm(Parser parser, Int modeFlags, Token firstUnaryToken
 		return EXPR_RESULT(SmileSymbol_Create(token->data.symbol));
 
 	case TOKEN_RAWSTRING:
+	case TOKEN_LONGRAWSTRING:
 		return EXPR_RESULT(token->text);
 
 	case TOKEN_DYNSTRING:
+	case TOKEN_LONGDYNSTRING:
 		return Parser_ParseDynamicString(parser, token->text, Token_GetPosition(token));
 
 	case TOKEN_CHAR:

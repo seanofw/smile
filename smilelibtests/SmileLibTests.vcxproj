@@ -132,6 +132,7 @@
     <ClCompile Include="parsing\lexer\lexeridentifier_tests.c" />
     <ClCompile Include="parsing\lexer\lexerloanword_tests.c" />
     <ClCompile Include="parsing\lexer\lexernumber_tests.c" />
+    <ClCompile Include="parsing\lexer\lexerposition_tests.c" />
     <ClCompile Include="parsing\lexer\lexerpunctuation_tests.c" />
     <ClCompile Include="parsing\lexer\lexerstring_tests.c" />
     <ClCompile Include="parsing\lexer\lexerunicode_tests.c" />
@@ -173,6 +174,7 @@
     <None Include="parsing\lexer\lexercore_tests.generated.inc" />
     <None Include="parsing\lexer\lexeridentifier_tests.generated.inc" />
     <None Include="parsing\lexer\lexernumber_tests.generated.inc" />
+    <None Include="parsing\lexer\lexerposition_tests.generated.inc" />
     <None Include="parsing\lexer\lexerpunctuation_tests.generated.inc" />
     <None Include="parsing\lexer\lexerstring_tests.generated.inc" />
     <None Include="parsing\lexer\lexerunicode_tests.generated.inc" />

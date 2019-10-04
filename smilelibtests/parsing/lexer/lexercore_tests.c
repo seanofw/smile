@@ -148,4 +148,89 @@ START_TEST(EqualSeparatorCommentsShouldBeSkipped)
 }
 END_TEST
 
+START_TEST(ShortHyphenSequencesShouldBeRecognizedAsIdentifiers)
+{
+	LexerPosition position;
+	Lexer lexer = Setup(".-.--.---.----.-----.");
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_DOT);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT_STRING(lexer->token->text, "-", 1);
+	position = Token_GetPosition(lexer->token);
+	ASSERT(position->length == 1);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_DOT);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT_STRING(lexer->token->text, "--", 2);
+	position = Token_GetPosition(lexer->token);
+	ASSERT(position->length == 2);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_DOT);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT_STRING(lexer->token->text, "---", 3);
+	position = Token_GetPosition(lexer->token);
+	ASSERT(position->length == 3);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_DOT);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT_STRING(lexer->token->text, "----", 4);
+	position = Token_GetPosition(lexer->token);
+	ASSERT(position->length == 4);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_DOT);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_DOT);
+
+	// Five hyphens is a separator comment.
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_EOI);
+}
+END_TEST
+
+START_TEST(ShortEqualSequencesShouldBeRecognizedAsSpecials)
+{
+	LexerPosition position;
+	Lexer lexer = Setup(".=.==.===.====.=====.");
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_DOT);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_EQUALWITHOUTWHITESPACE);
+	position = Token_GetPosition(lexer->token);
+	ASSERT(position->length == 1);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_DOT);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT_STRING(lexer->token->text, "==", 2);
+	position = Token_GetPosition(lexer->token);
+	ASSERT(position->length == 2);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_DOT);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT_STRING(lexer->token->text, "===", 3);
+	position = Token_GetPosition(lexer->token);
+	ASSERT(position->length == 3);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_DOT);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_PUNCTNAME);
+	ASSERT_STRING(lexer->token->text, "====", 4);
+	position = Token_GetPosition(lexer->token);
+	ASSERT(position->length == 4);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_DOT);
+
+	// Five equal-signs is a separator comment.
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_DOT);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_EOI);
+}
+END_TEST
+
 #include "lexercore_tests.generated.inc"

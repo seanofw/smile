@@ -134,13 +134,13 @@ START_TEST(ShouldRecognizeMultiLineRawStrings)
 	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
 	ASSERT_STRING(lexer->token->text, "x", 1);
 	ASSERT(Lexer_Next(lexer) == TOKEN_EQUAL);
-	ASSERT(Lexer_Next(lexer) == TOKEN_RAWSTRING);
+	ASSERT(Lexer_Next(lexer) == TOKEN_LONGRAWSTRING);
 	ASSERT_STRING(lexer->token->text, "This is a test.''\ny = ''This is a test.\\n", 41);
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
 	ASSERT_STRING(lexer->token->text, "x", 1);
 	ASSERT(Lexer_Next(lexer) == TOKEN_EQUAL);
-	ASSERT(Lexer_Next(lexer) == TOKEN_RAWSTRING);
+	ASSERT(Lexer_Next(lexer) == TOKEN_LONGRAWSTRING);
 	ASSERT_STRING(lexer->token->text, "This is a test.'''\ny = '''This is a test.\\n", 43);
 }
 END_TEST
@@ -200,13 +200,13 @@ START_TEST(ShouldRecognizeMultiLineDynamicStrings)
 	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
 	ASSERT_STRING(lexer->token->text, "x", 1);
 	ASSERT(Lexer_Next(lexer) == TOKEN_EQUAL);
-	ASSERT(Lexer_Next(lexer) == TOKEN_DYNSTRING);
+	ASSERT(Lexer_Next(lexer) == TOKEN_LONGDYNSTRING);
 	ASSERT_STRING(lexer->token->text, "This is a test.\"\"\ny = \"\"This is a test.\\n", 41);
 
 	ASSERT(Lexer_Next(lexer) == TOKEN_ALPHANAME);
 	ASSERT_STRING(lexer->token->text, "x", 1);
 	ASSERT(Lexer_Next(lexer) == TOKEN_EQUAL);
-	ASSERT(Lexer_Next(lexer) == TOKEN_DYNSTRING);
+	ASSERT(Lexer_Next(lexer) == TOKEN_LONGDYNSTRING);
 	ASSERT_STRING(lexer->token->text, "This is a test.\"\"\"\ny = \"\"\"This is a test.\\n", 43);
 }
 END_TEST

@@ -113,7 +113,7 @@ ParseResult Parser_ParseDynamicString(Parser parser, String text, LexerPosition 
 	 position->filename = lexer->filename, \
 	 position->line = (Int32)lexer->line, \
 	 position->lineStart = (Int32)(lexer->lineStart - lexer->input), \
-	 position->column = (Int32)(src - lexer->lineStart), \
+	 position->column = (Int32)(src - lexer->lineStart + 1), \
 	 position->length = 0)
 
 static ParseError Parser_SplitDynamicString(Lexer lexer, DynamicStringPiece **dynamicStringPieces, Int *numDynamicStringPieces)

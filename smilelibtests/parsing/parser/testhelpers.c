@@ -96,7 +96,9 @@ static SmileObject RecursiveSimpleParse(Lexer lexer)
 		return (SmileObject)SmileInteger64_Create(lexer->token->data.int64);
 
 	case TOKEN_DYNSTRING:
+	case TOKEN_LONGDYNSTRING:
 	case TOKEN_RAWSTRING:
+	case TOKEN_LONGRAWSTRING:
 		return (SmileObject)lexer->token->text;
 
 	default:

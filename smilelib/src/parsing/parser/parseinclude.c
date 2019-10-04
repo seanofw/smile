@@ -80,7 +80,9 @@ ParseResult Parser_ParseInclude(Parser parser)
 	SmileObject setExpr;
 
 	if ((tokenKind = Lexer_Next(parser->lexer)) != TOKEN_DYNSTRING
-		&& tokenKind != TOKEN_RAWSTRING) {
+		&& tokenKind != TOKEN_LONGDYNSTRING
+		&& tokenKind != TOKEN_RAWSTRING
+		&& tokenKind != TOKEN_LONGRAWSTRING) {
 		return ERROR_RESULT(ParseMessage_Create(PARSEMESSAGE_ERROR, Token_GetPosition(parser->lexer->token),
 			String_FromC("#include must be followed by a string naming a source file or a package")));
 	}

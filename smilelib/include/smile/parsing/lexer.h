@@ -35,8 +35,8 @@
 /// </summary>
 struct LexerPositionStruct {
 	String filename;	// Which source file this position is in.
-	Int32 line;			// On which line this position begins.
-	Int32 column;		// The column within that line (note: tabs count as 1 char)
+	Int32 line;			// On which line this position begins (one-based).
+	Int32 column;		// The column within that line (one-based; tabs count as 1 char)
 	Int32 lineStart;	// The offset of the start of this line from the start of the file.
 	Int32 length;		// The length of the span of content, in characters.
 };
@@ -118,6 +118,10 @@ SMILE_API_FUNC LexerPosition Lexer_GetPosition(Lexer lexer);
 SMILE_API_FUNC LexerPosition LexerPosition_Clone(LexerPosition position);
 SMILE_API_FUNC Token Token_Clone(Token token);
 SMILE_API_FUNC Bool LexerPosition_Equals(LexerPosition a, LexerPosition b);
+
+SMILE_API_FUNC Token Lexer_NextToken(Lexer lexer);
+SMILE_API_FUNC Token Lexer_PeekToken(Lexer lexer);
+SMILE_API_FUNC void Lexer_UngetToken(Lexer lexer);
 
 //-------------------------------------------------------------------------------------------------
 //  Inline parts of the implementation

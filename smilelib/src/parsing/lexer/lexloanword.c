@@ -94,7 +94,7 @@ Int Lexer_ParseLoanword(Lexer lexer)
 
 			// Get the name first.
 			lexer->src = src - 1;
-			if (Lexer_ParseName(lexer) == TOKEN_ERROR)
+			if (Lexer_ParseName(lexer, False) == TOKEN_ERROR)
 				return TOKEN_ERROR;
 
 			// Make sure whitespace follows the name.

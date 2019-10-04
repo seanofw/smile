@@ -67,8 +67,8 @@ Lexer Lexer_Create(String input, Int start, Int length, String filename, Int fir
 	lexer->ungetCount = 0;
 
 	// Set up the extra internal state flags.
-	lexer->_hasPrecedingWhitespace = False;
-	lexer->_isFirstContentOnLine = False;
+	lexer->_hasPrecedingWhitespace = True;				// Behave like there's infinite whitespace before the first character.
+	lexer->_isFirstContentOnLine = (firstColumn <= 1);	// We're starting a line if we're in column 1.
 
 	// Whether to run in syntax-highlighter mode (where we return ALL content, even whitespace).
 	lexer->syntaxHighlighterMode = syntaxHighlighterMode;
@@ -99,7 +99,7 @@ LexerPosition Lexer_GetPosition(Lexer lexer)
 		position->filename = lexer->filename;
 		position->line = (Int32)lexer->line;
 		position->lineStart = (Int32)(lexer->lineStart - lexer->input);
-		position->column = (Int32)(lexer->src - lexer->lineStart);
+		position->column = (Int32)(lexer->src - lexer->lineStart + 1);
 	}
 
 	position->length = 0;
@@ -178,11 +178,9 @@ Int Lexer_Next(Lexer lexer)
 		return token->kind;
 	}
 
-	lexer->_isFirstContentOnLine = False;
-	lexer->_hasPrecedingWhitespace = False;
-
 	// Set up for the next token.
 	lexer->token = token = lexer->tokenBuffer + (++lexer->tokenIndex & 15);
+	MemSet(token, 0, sizeof(struct TokenStruct));
 
 	// Loop (using gotos!) until we either get a valid token or run out of input.
 retry:
@@ -207,7 +205,7 @@ retryAtSrc:
 		case ' ':
 			// Simple whitespace characters.  We consume as much whitespace as possible for better
 			// performance, since whitespace tends to come in clumps in code.
-			start = src;
+			start = src - 1;
 			while (src < end && (ch = *src) <= '\x20' && ch != '\n' && ch != '\r') src++;
 			if (lexer->syntaxHighlighterMode) {
 				tokenKind = SIMPLE_TOKEN(start, TOKEN_WHITESPACE);
@@ -221,7 +219,7 @@ retryAtSrc:
 
 		case '\n':
 			// Unix-style newlines, and inverted Windows newlines.
-			start = src;
+			start = src - 1;
 			if (src < end && (ch = *src) == '\r')
 				src++;
 			if (lexer->syntaxHighlighterMode) {
@@ -242,7 +240,7 @@ retryAtSrc:
 
 		case '\r':
 			// Windows-style newlines, and old Mac newlines.
-			start = src;
+			start = src - 1;
 			if (src < end && (ch = *src) == '\n')
 				src++;
 			if (lexer->syntaxHighlighterMode) {
@@ -344,7 +342,7 @@ retryAtSrc:
 		case '\\':
 			// Alpha/letter identifier form.
 			lexer->src = src-1;
-			return Lexer_ParseName(lexer);
+			return Lexer_ParseName(lexer, True);
 
 		//--------------------------------------------------------------------------
 		//  Strings and characters.
@@ -391,7 +389,7 @@ retryAtSrc:
 				if (identifierCharacterKind & IDENTKIND_STARTLETTER) {
 					// General identifier form.
 					lexer->src = start;
-					return Lexer_ParseName(lexer);
+					return Lexer_ParseName(lexer, True);
 				}
 				else if (identifierCharacterKind & IDENTKIND_PUNCTUATION) {
 					// General punctuation and operator name forms:  [~!?@%^&*=+<>/-]+
@@ -405,4 +403,41 @@ retryAtSrc:
 			lexer->token->text = String_Format("Unknown or invalid character (character code \"%C\")", code);
 			return END_TOKEN(TOKEN_ERROR);
 	}
+}
+
+/// <summary>
+/// An easy interface for external (non-Smile) callers to invoke Lexer_Next().
+/// </summary>
+/// <param name="lexer">The lexer to read from.</param>
+/// <returns>The next token in the input stream.</returns>
+Token Lexer_NextToken(Lexer lexer)
+{
+	Lexer_Next(lexer);
+	return lexer->token;
+}
+
+/// <summary>
+/// An easy interface for external (non-Smile) callers to invoke Lexer_Peek().
+/// </summary>
+/// <param name="lexer">The lexer to read from.</param>
+/// <returns>The next token in the input stream (but it won't be consumed.</returns>
+Token Lexer_PeekToken(Lexer lexer)
+{
+	Token result;
+
+	Lexer_Next(lexer);
+	result = lexer->token;
+
+	Lexer_Unget(lexer);
+
+	return result;
+}
+
+/// <summary>
+/// An easy interface for external (non-Smile) callers to invoke Lexer_Unget().
+/// </summary>
+/// <param name="lexer">The lexer to push the current token back onto.</param>
+void Lexer_UngetToken(Lexer lexer)
+{
+	Lexer_Unget(lexer);
 }

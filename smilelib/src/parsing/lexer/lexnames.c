@@ -167,7 +167,7 @@ readMoreName:
 	return StringBuilder_ToString(namebuf);
 }
 
-Int Lexer_ParseName(Lexer lexer)
+Int Lexer_ParseName(Lexer lexer, Bool startToken)
 {
 	Token token = lexer->token;
 	const Byte *src;
@@ -175,7 +175,8 @@ Int Lexer_ParseName(Lexer lexer)
 	Symbol symbol;
 	Bool hasEscapes;
 
-	START_TOKEN(lexer->src);
+	if (startToken)
+		START_TOKEN(lexer->src);
 
 	text = ParseNameRaw(lexer, &hasEscapes);
 	if (text == NULL) {

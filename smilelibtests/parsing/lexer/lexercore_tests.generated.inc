@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: 97379fdd260be7865ada04a26a006d79
+// SourceHash: fb810a784c5378c00b35b2049c7c957e
 
 START_TEST_SUITE(LexerCoreTests)
 {
@@ -13,6 +13,8 @@ START_TEST_SUITE(LexerCoreTests)
 	MultiLineCommentsShouldBeSkipped2,
 	HyphenSeparatorCommentsShouldBeSkipped,
 	EqualSeparatorCommentsShouldBeSkipped,
+	ShortHyphenSequencesShouldBeRecognizedAsIdentifiers,
+	ShortEqualSequencesShouldBeRecognizedAsSpecials,
 }
 END_TEST_SUITE(LexerCoreTests)
 
