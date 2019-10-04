@@ -233,4 +233,92 @@ START_TEST(ShortEqualSequencesShouldBeRecognizedAsSpecials)
 }
 END_TEST
 
+START_TEST(HyphenSeparatorsShouldBeReturnedInSyntaxHighlighterMode)
+{
+	LexerPosition position;
+	Lexer lexer = Setup("    ----------    \r\n"
+		"   -----   \r\n");
+
+	lexer->syntaxHighlighterMode = True;
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_WHITESPACE);
+	position = Token_GetPosition(lexer->token);
+	ASSERT(position->length == 4);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_COMMENT_SEPARATOR_HYPHEN);
+	position = Token_GetPosition(lexer->token);
+	ASSERT(position->length == 10);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_WHITESPACE);
+	position = Token_GetPosition(lexer->token);
+	ASSERT(position->length == 4);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_NEWLINE);
+	position = Token_GetPosition(lexer->token);
+	ASSERT(position->length == 2);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_WHITESPACE);
+	position = Token_GetPosition(lexer->token);
+	ASSERT(position->length == 3);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_COMMENT_SEPARATOR_HYPHEN);
+	position = Token_GetPosition(lexer->token);
+	ASSERT(position->length == 5);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_WHITESPACE);
+	position = Token_GetPosition(lexer->token);
+	ASSERT(position->length == 3);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_NEWLINE);
+	position = Token_GetPosition(lexer->token);
+	ASSERT(position->length == 2);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_EOI);
+}
+END_TEST
+
+START_TEST(EqualSeparatorsShouldBeReturnedInSyntaxHighlighterMode)
+{
+	LexerPosition position;
+	Lexer lexer = Setup("    ==========    \r\n"
+		"   =====   \r\n");
+
+	lexer->syntaxHighlighterMode = True;
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_WHITESPACE);
+	position = Token_GetPosition(lexer->token);
+	ASSERT(position->length == 4);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_COMMENT_SEPARATOR_EQUALS);
+	position = Token_GetPosition(lexer->token);
+	ASSERT(position->length == 10);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_WHITESPACE);
+	position = Token_GetPosition(lexer->token);
+	ASSERT(position->length == 4);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_NEWLINE);
+	position = Token_GetPosition(lexer->token);
+	ASSERT(position->length == 2);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_WHITESPACE);
+	position = Token_GetPosition(lexer->token);
+	ASSERT(position->length == 3);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_COMMENT_SEPARATOR_EQUALS);
+	position = Token_GetPosition(lexer->token);
+	ASSERT(position->length == 5);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_WHITESPACE);
+	position = Token_GetPosition(lexer->token);
+	ASSERT(position->length == 3);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_NEWLINE);
+	position = Token_GetPosition(lexer->token);
+	ASSERT(position->length == 2);
+
+	ASSERT(Lexer_Next(lexer) == TOKEN_EOI);
+}
+END_TEST
+
 #include "lexercore_tests.generated.inc"

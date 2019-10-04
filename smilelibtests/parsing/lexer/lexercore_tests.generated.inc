@@ -1,6 +1,6 @@
 // This file was auto-generated.  Do not edit!
 //
-// SourceHash: fb810a784c5378c00b35b2049c7c957e
+// SourceHash: 64000123737939e921bc3a617deea020
 
 START_TEST_SUITE(LexerCoreTests)
 {
@@ -15,6 +15,8 @@ START_TEST_SUITE(LexerCoreTests)
 	EqualSeparatorCommentsShouldBeSkipped,
 	ShortHyphenSequencesShouldBeRecognizedAsIdentifiers,
 	ShortEqualSequencesShouldBeRecognizedAsSpecials,
+	HyphenSeparatorsShouldBeReturnedInSyntaxHighlighterMode,
+	EqualSeparatorsShouldBeReturnedInSyntaxHighlighterMode,
 }
 END_TEST_SUITE(LexerCoreTests)
 

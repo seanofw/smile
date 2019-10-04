@@ -123,7 +123,7 @@ Int Lexer_ParseHyphenOrEquals(Lexer lexer, Int initialChar)
 	Int tokenKind;
 	Bool hasPrecedingWhitespace = lexer->_hasPrecedingWhitespace;
 
-	start = src - 1;
+	start = src;
 
 	// Read hyphens/equals until we run out of them.
 	charCount = 0;
