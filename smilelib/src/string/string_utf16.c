@@ -77,6 +77,7 @@ String String_FromUtf16(const UInt16 *text, Int length)
 			value = (ch & 0x3FF) << 10;
 			if (text < end && (ch = *text) < 0xE000 && ch >= 0xDC00) {
 				// Got the low surrogate, so now that we know the whole value, we can append it.
+				text++;
 				value |= (ch & 0x3FF);
 				StringBuilder_AppendUnicode(stringBuilder, value);
 			}
@@ -91,6 +92,99 @@ String String_FromUtf16(const UInt16 *text, Int length)
 		}
 	}
 
+	result = StringBuilder_ToString(stringBuilder);
+	return result;
+}
+
+/// <summary>
+/// Convert the given buffer of UTF-16 words, in host-order (i.e., UTF-16BE
+/// if this computer is big-endian, or UTF-16LE if this computer is little-endian)
+/// to a standard UTF-8 String object, and create a map that projects the UTF-8
+/// bytes back to their source UTF-16 positions.  Note that this is limited to
+/// a maximum string length of 2^31 bytes; for larger strings, the results are
+/// undefined.
+/// </summary>
+/// <param name="text">The buffer of UTF-16 words to convert to a UTF-8 string.</param>
+/// <param name="length">The length of the buffer, in words.</param>
+/// <param name="map">An array of Int32 values, the same length as the equivalent UTF-8 string,
+/// that projects UTF-8 string offsets to their originating UTF-16 offsets.</returns>
+/// <returns>A String that contains UTF-8 code points that match the provided UTF-16 code points.</returns>
+String String_FromUtf16WithMap(const UInt16 *text, Int length, Int32 **map)
+{
+	const UInt16 *end;
+	UInt16 ch;
+	Int32 value;
+	String result;
+	Array array;
+	Int offset;
+	DECLARE_INLINE_STRINGBUILDER(stringBuilder, 256);
+
+	INIT_INLINE_STRINGBUILDER(stringBuilder);
+
+	array = Array_Create(sizeof(Int32), 256, True);
+
+	if (length <= 0)
+	{
+		*map = (Int32 *)array->data;
+		return String_Empty;
+	}
+
+	offset = 0;
+	end = text + length;
+
+	while (text < end) {
+		ch = *text++;
+		if (ch < 0x80) {
+			// Easy case: ASCII and friends.
+			StringBuilder_AppendByte(stringBuilder, (Byte)ch);
+			*(Int32 *)Array_Push(array) = (Int32)offset;
+			offset++;
+		}
+		else if (ch < 0xD800 || ch >= 0xE000) {
+			// Values in the Basic Multilingual Plane can be decoded using the normal Unicode decoder.
+			Int initialLength = StringBuilder_GetLength(stringBuilder);
+			StringBuilder_AppendUnicode(stringBuilder, ch);
+			Int count = StringBuilder_GetLength(stringBuilder) - initialLength;
+			for (Int i = 0; i < count; i++)
+				*(Int32 *)Array_Push(array) = (Int32)offset;
+			offset++;
+		}
+		else if (ch < 0xDC00) {
+			// Got a high surrogate.  Is there a low surrogate after it?
+			value = (ch & 0x3FF) << 10;
+			if (text < end && (ch = *text) < 0xE000 && ch >= 0xDC00) {
+				// Got the low surrogate, so now that we know the whole value, we can append it.
+				text++;
+				value |= (ch & 0x3FF);
+				Int initialLength = StringBuilder_GetLength(stringBuilder);
+				StringBuilder_AppendUnicode(stringBuilder, value);
+				Int count = StringBuilder_GetLength(stringBuilder) - initialLength;
+				for (Int i = 0; i < count; i++)
+					*(Int32 *)Array_Push(array) = (Int32)offset;
+				offset++;
+			}
+			else {
+				// No low surrogate, so this is an error.
+				Int initialLength = StringBuilder_GetLength(stringBuilder);
+				StringBuilder_AppendUnicode(stringBuilder, 0xFFFD);
+				Int count = StringBuilder_GetLength(stringBuilder) - initialLength;
+				for (Int i = 0; i < count; i++)
+					*(Int32 *)Array_Push(array) = (Int32)offset;
+				offset++;
+			}
+		}
+		else {
+			// A low surrogate without a high surrogate is an error.
+			Int initialLength = StringBuilder_GetLength(stringBuilder);
+			StringBuilder_AppendUnicode(stringBuilder, 0xFFFD);
+			Int count = StringBuilder_GetLength(stringBuilder) - initialLength;
+			for (Int i = 0; i < count; i++)
+				*(Int32 *)Array_Push(array) = (Int32)offset;
+			offset++;
+		}
+	}
+
+	*map = (Int32 *)array->data;
 	result = StringBuilder_ToString(stringBuilder);
 	return result;
 }

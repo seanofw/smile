@@ -209,6 +209,7 @@ SMILE_API_FUNC String String_PrefixNewlines(const String str, const String prefi
 
 SMILE_API_FUNC String String_FromUtf16(const UInt16 *text, Int length);
 SMILE_API_FUNC UInt16 *String_ToUtf16(const String str, Int *length);
+SMILE_API_FUNC String String_FromUtf16WithMap(const UInt16 *text, Int length, Int32 **map);
 
 //-------------------------------------------------------------------------------------------------
 //  External parts of the implementation (HTML-specific transformations)
